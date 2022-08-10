@@ -11,11 +11,12 @@ import { TransformProps } from "@itwin/core-geometry";
 import { Placement2dProps, Placement3dProps } from "../ElementProps";
 import { ElementGeometryDataEntry } from "../geometry/ElementGeometry";
 import { GeometryStreamProps } from "../geometry/GeometryStream";
-import { ContentFlags, EdgeType, TreeFlags } from "../tile/TileMetadata";
+import { ContentFlags, TreeFlags } from "../tile/TileMetadata";
 
 /** Wire format describing properties common to [[PersistentGraphicsRequestProps]] and [[DynamicGraphicsRequestProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface GraphicsRequestProps {
   /** Uniquely identifies this request among all [[ElementGraphicsRequestProps]] for a given [[IModel]]. */
@@ -36,9 +37,15 @@ export interface GraphicsRequestProps {
   /** If true, surface edges will be omitted from the graphics. */
   readonly omitEdges?: boolean;
   /** If omitEdges is false, specifies the type of edges to produce. Generally determined by TileAdmin.requestElementGraphics.
+   * @note This uses the deleted EdgeType enum where 1 indicates non-indexed edges and 2 indicates indexed edges, to avoid breaking the RPC API.
    * @internal
    */
-  readonly edgeType?: EdgeType;
+  readonly edgeType?: 1 | 2;
+  /** If true, and omitEdges is false, a polyface with no edge visibility info will display edges for all faces;
+   * if false, edges will be inferred from the polyface's topology.
+   * @internal
+   */
+  readonly smoothPolyfaceEdges?: boolean;
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
   /** If defined, the compact string representation of a [ClipVector]($core-geometry) to be applied to the geometry to produce section-cut
@@ -46,11 +53,16 @@ export interface GraphicsRequestProps {
    * @see [ClipVector.toCompactString]($core-geometry) to produce the string representation.
    */
   readonly sectionCut?: string;
+  /** If true, vertex positions will be quantized to [[QPoint3d]]s to conserve space at the expense of accuracy. Quantization may produce
+   * perceptible inaccuracies when producing graphics for large and/or highly-detailed elements.
+   */
+  quantizePositions?: boolean;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
   /** The element whose geometry is to be used to generate the graphics. */
@@ -59,6 +71,7 @@ export interface PersistentGraphicsRequestProps extends GraphicsRequestProps {
 
 /** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in JSON format.
  * @public
+ * @extensions
  */
 export interface JsonGeometryStream {
   /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
@@ -69,6 +82,7 @@ export interface JsonGeometryStream {
 
 /** As part of a [[DynamicGraphicsRequestProps]], specifies the geometry from which to generate the graphics in binary flatbuffer-encoded format.
  * @public
+ * @extensions
  */
 export interface FlatBufferGeometryStream {
   /** Discriminator for [[DynamicGraphicsRequestProps.geometry]]. */
@@ -81,6 +95,7 @@ export interface FlatBufferGeometryStream {
  * @see [[DynamicGraphicsRequest2dProps]] and [[DynamicGraphicsRequest3dProps]].
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
   /** The geometry from which to generate the graphics. */
@@ -101,6 +116,7 @@ export interface DynamicGraphicsRequestProps extends GraphicsRequestProps {
 /** Wire format describing a request to produce graphics in "iMdl" format for a 2d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 2d. */
@@ -112,6 +128,7 @@ export interface DynamicGraphicsRequest2dProps extends DynamicGraphicsRequestPro
 /** Wire format describing a request to produce graphics in "iMdl" format for a 3d geometry stream.
  * @see [[ElementGraphicsRequestProps]] for more details.
  * @public
+ * @extensions
  */
 export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestProps {
   /** Specifies the geometry is 3d. */
@@ -125,5 +142,6 @@ export interface DynamicGraphicsRequest3dProps extends DynamicGraphicsRequestPro
  * @see [TileAdmin.requestElementGraphics]($frontend) and [IModelDb.generateElementGraphics]($backend) to fulfill such a request.
  * @see [readElementGraphics]($frontend) to convert the result of a request to a [RenderGraphic]($frontend) for display.
  * @public
+ * @extensions
  */
 export type ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps;

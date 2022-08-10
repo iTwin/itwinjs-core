@@ -15,6 +15,7 @@ import { System } from "../../../render/webgl/System";
 import { Target } from "../../../render/webgl/Target";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
 import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
+import { Logger, LogLevel } from "@itwin/core-bentley";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -54,7 +55,9 @@ describe("Techniques", () => {
     const useWebGL2 = webGLVersion === 2;
     describe(`WebGL ${webGLVersion}`, () => {
       before(async () => {
-        await IModelApp.startup({ renderSys: { useWebGL2 } });
+        await IModelApp.startup({ renderSys: { useWebGL2, errorOnMissingUniform: true } });
+        Logger.initializeToConsole();
+        Logger.setLevel("core-frontend.Render", LogLevel.Error);
       });
 
       after(async () => {
@@ -88,7 +91,8 @@ describe("Techniques", () => {
       });
 
       // NB: compiling all shaders can potentially take a long time, especially on our mac build machines.
-      const compileTimeout = "95000";
+      // A timeout of zero means no timeout.
+      const compileTimeout = 0;
       async function compileAllShaders(disabledExtension?: WebGLExtensionName): Promise<void> {
         if (disabledExtension) {
           // The extensions we're disabling are core in WebGL 2.
@@ -99,9 +103,12 @@ describe("Techniques", () => {
           await IModelApp.startup({
             renderSys: {
               useWebGL2: false,
+              errorOnMissingUniform: true,
               disabledExtensions: [disabledExtension],
             },
           });
+          Logger.initializeToConsole();
+          Logger.setLevel("core-frontend.Render", LogLevel.Error);
         }
 
         expect(System.instance.techniques.compileShaders()).to.be.true;
@@ -109,7 +116,9 @@ describe("Techniques", () => {
         if (disabledExtension) {
           // Reset render system to previous state
           await IModelApp.shutdown();
-          await IModelApp.startup({ renderSys: { useWebGL2: false } });
+          await IModelApp.startup({ renderSys: { useWebGL2: false, errorOnMissingUniform: true } });
+          Logger.initializeToConsole();
+          Logger.setLevel("core-frontend.Render", LogLevel.Error);
         }
       }
 
@@ -181,7 +190,7 @@ describe("Techniques", () => {
 
         expect(compiled).to.be.false;
         expect(ex).not.to.be.undefined;
-        expect(ex!.toString().includes("uniform u_unused not found.")).to.be.true;
+        expect(ex!.toString().includes("uniform u_unused not found")).to.be.true;
       });
 
       describe("Number of varying vectors", () => {

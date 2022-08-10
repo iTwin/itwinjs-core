@@ -206,8 +206,8 @@ describe("Learning Snippets", () => {
           { label: { displayValue: "Converted Groups" } },
           { label: { displayValue: "Converted Sheets" } },
           { label: { displayValue: "Definition Model For DgnV8Bridge:D:\\Temp\\Properties_60InstancesWithUrl2.dgn, Default" } },
+          { label: { displayValue: "DgnV8Bridge" } },
           { label: { displayValue: "Geometric Model Node" } },
-          { label: { displayValue: "Ñót spêçìfíêd" } },
         ]);
       });
 

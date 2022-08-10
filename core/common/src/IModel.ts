@@ -55,6 +55,7 @@ export interface IModelRpcProps extends IModelRpcOpenProps {
  * possibly offset in altitude by the terrain elevation above the ellipsoid but other general 3D coordinate systems
  * can be defined.
  * @public
+ * @extensions
  */
 export interface EcefLocationProps {
   /** The Origin of an iModel on the earth in ECEF coordinates */
@@ -69,8 +70,9 @@ export interface EcefLocationProps {
   readonly yVector?: XYZProps;
 }
 
-/** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
+/** Properties of the [Root Subject]($docs/bis/guide/references/glossary#subject-root).
  * @public
+ * @extensions
  */
 export interface RootSubjectProps {
   /** The name of the root subject. */
@@ -118,8 +120,11 @@ export interface CreateIModelProps extends IModelProps {
   readonly thumbnail?: ThumbnailProps;
 }
 
-/** Encryption-related properties that can be supplied when creating or opening snapshot iModels.
+/**
+ * Encryption-related properties that can be supplied when creating or opening snapshot iModels.
+ * NOTE: Encrypted iModels are no longer supported since they require licensed code.
  * @public
+ * @deprecated
  */
 export interface IModelEncryptionProps {
   /** The password used to encrypt/decrypt the snapshot iModel. */
@@ -138,14 +143,15 @@ export interface OpenDbKey {
   readonly key?: string;
 }
 
+/** @beta TODO documentation */
+export interface CloudContainerUri {
+  readonly uriParams: string;
+}
+
 /** Options to open a [SnapshotDb]($backend).
  * @public
  */
-export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
-  /** @internal */
-  readonly lazyBlockCache?: boolean;
-  /** @internal */
-  readonly autoUploadBlocks?: boolean;
+export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
   /**
    * The "base" name that can be used for creating temporary files related to this Db.
    * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
@@ -165,6 +171,7 @@ export type StandaloneOpenOptions = OpenDbKey;
 /** Options that can be supplied when creating snapshot iModels.
  * @public
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface CreateSnapshotIModelProps extends IModelEncryptionProps {
   /** If true, then create SQLite views for Model, Element, ElementAspect, and Relationship classes.
    * These database views can often be useful for interoperability workflows.
@@ -181,6 +188,7 @@ export type CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotI
 /** Options that can be supplied when creating standalone iModels.
  * @internal
  */
+// eslint-disable-next-line deprecation/deprecation
 export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
   /** If present, file will allow local editing, but cannot be used to create changesets */
   readonly allowEdit?: string;
@@ -192,7 +200,10 @@ export interface CreateStandaloneIModelProps extends IModelEncryptionProps {
  */
 export type CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps;
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export interface FilePropertyProps {
   readonly namespace: string;
   readonly name: string;

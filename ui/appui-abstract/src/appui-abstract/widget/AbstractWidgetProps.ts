@@ -56,7 +56,10 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly priority?: number;
   /** Defines the SyncUi event Ids that will trigger the stateFunc to run to determine the state of the widget. */
   readonly syncEventIds?: string[];
-  /** Function executed to determine the state of the widget. */
+  /** Function executed to determine the state of the widget.
+   *  Used by UI 1.0 widgets ONLY.
+   * @deprecated
+  */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
@@ -72,4 +75,6 @@ export interface AbstractWidgetProps extends ProvidedItem {
    * Certain widget can't be intrinsically sized and must specify a content. These are typically ones that use a canvas element
    * internally. */
   defaultFloatingSize?: { width: number, height: number };
+  /** Optional prop that tells the widget system to fade this widget out with the rest of the UI when it is in floating state */
+  hideWithUiWhenFloating?: boolean;
 }

@@ -9,25 +9,7 @@
 import { BaseUiItemsProvider, CommonToolbarItem, ToolbarOrientation, ToolbarUsage, UiItemsManager } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
-
-/**
- * Defines what tools to include from the provider. If any tools in the horizontal or vertical group are
- * specified then only those tools will be provided to stage.
- * @public
- */
-export interface DefaultNavigationTools {
-  horizontal?: {
-    rotateView?: boolean;
-    panView?: boolean;
-    fitView?: boolean;
-    windowArea?: boolean;
-    viewUndoRedo?: boolean;
-  };
-  vertical?: {
-    walk?: boolean;
-    toggleCamera?: boolean;
-  };
-}
+import { DefaultNavigationTools } from "./StandardNavigationToolsUiItemsProvider";
 
 /**
  * Provide standard tools for the ViewNavigationWidgetComposer.

@@ -8,6 +8,7 @@
 
 /** Wire format describing [[PlanProjectionSettings]].
  * @public
+ * @extensions
  */
 export interface PlanProjectionSettingsProps {
   /** If defined, the absolute height in meters at which to display the model. */
@@ -32,13 +33,13 @@ export interface PlanProjectionSettingsProps {
  * @public
  */
 export class PlanProjectionSettings {
-  /** @see [[PlanProjectionSettingsProps.elevation]] */
+  /** See [[PlanProjectionSettingsProps.elevation]] */
   public readonly elevation?: number;
-  /** @see [[PlanProjectionSettingsProps.transparency]] */
+  /** See [[PlanProjectionSettingsProps.transparency]] */
   public readonly transparency?: number;
-  /** @see [[PlanProjectionSettingsProps.overlay]] */
+  /** See [[PlanProjectionSettingsProps.overlay]] */
   public readonly overlay: boolean;
-  /** @see [[PlanProjectionSettingsProps.enforceDisplayPriority]] */
+  /** See [[PlanProjectionSettingsProps.enforceDisplayPriority]] */
   public readonly enforceDisplayPriority?: boolean;
 
   public toJSON(): PlanProjectionSettingsProps {

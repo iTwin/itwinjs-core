@@ -13,11 +13,13 @@ import { IModelVersionProps } from "./IModelVersion";
 
 /** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public
+ * @extensions
  */
 export type BriefcaseId = number;
 
 /** Values of [[BriefcaseId]] that have special meaning.
  * @public
+ * @extensions
  */
 export enum BriefcaseIdValue {
   /** Indicates an invalid/illegal BriefcaseId */
@@ -48,6 +50,7 @@ export enum BriefcaseIdValue {
 
 /** Whether a briefcase is editable or may only accept incoming changesets from iModelHub
  * @public
+ * @extensions
  */
 export enum SyncMode {
   /** Use a fixed version (i.e. a checkpoint). See [CheckpointManager]($backend) for preferred approach to using checkpoint files. */
@@ -83,7 +86,7 @@ export interface BriefcaseProps {
 /** Properties for opening a local briefcase file via [BriefcaseDb.open]($backend)
  * @public
  */
-export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
+export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey { // eslint-disable-line deprecation/deprecation
   /** the full path to the briefcase file  */
   readonly fileName: LocalFileName;
   /** If true, open the briefcase readonly */
@@ -92,6 +95,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
 
 /** Properties of a local briefcase file, returned by [BriefcaseManager.getCachedBriefcases]($backend) and [BriefcaseManager.downloadBriefcase]($backend)
  * @public
+ * @extensions
  */
 export interface LocalBriefcaseProps {
   /** Full path of local file. */
@@ -117,6 +121,7 @@ export interface LocalBriefcaseProps {
 
 /** Properties for downloading a briefcase to a local file, from iModelHub.
  * @public
+ * @extensions
  */
 export interface RequestNewBriefcaseProps {
   /** iTwin that the iModel belongs to. */

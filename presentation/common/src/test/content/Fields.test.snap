@@ -286,3 +286,46 @@ Object {
   },
 }
 `;
+
+exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON with navigation property 1`] = `
+Object {
+  "category": "test-category",
+  "editor": undefined,
+  "isReadonly": false,
+  "label": "Properties Field",
+  "name": "PropertiesField",
+  "priority": 0,
+  "properties": Array [
+    Object {
+      "property": Object {
+        "classInfo": Object {
+          "id": "0x1",
+          "label": "Class Label",
+          "name": "SchemaName:ClassName",
+        },
+        "name": "PropertyName",
+        "navigationPropertyInfo": Object {
+          "classInfo": Object {
+            "id": "0x1",
+            "label": "Class Label",
+            "name": "SchemaName:ClassName",
+          },
+          "isForwardRelationship": false,
+          "isTargetPolymorphic": true,
+          "targetClassInfo": Object {
+            "id": "0x1",
+            "label": "Class Label",
+            "name": "SchemaName:ClassName",
+          },
+        },
+        "type": "string",
+      },
+    },
+  ],
+  "renderer": undefined,
+  "type": Object {
+    "typeName": "string",
+    "valueFormat": "Primitive",
+  },
+}
+`;

@@ -115,6 +115,10 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@itwin/appui-test-providers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/backend-webpack-tools",
       "allowedCategories": [ "internal" ]
     },
@@ -212,7 +216,7 @@
     },
     {
       "name": "@itwin/ecschema-rpcinterface-impl",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/editor-backend",
@@ -244,6 +248,10 @@
     },
     {
       "name": "@itwin/hypermodeling-frontend",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/imodel-browser-react",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -284,6 +292,14 @@
     },
     {
       "name": "@itwin/map-layers",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -351,11 +367,23 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@opentelemetry/api",
+      "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "@playwright/test",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@reduxjs/toolkit",
       "allowedCategories": [ "internal" ]
     },
     {
       "name": "@svgdotjs/svg.js",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@testing-library/dom",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -399,6 +427,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "assert",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
     },
@@ -415,8 +447,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "browserify-zlib",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "buffer",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -647,6 +683,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "https-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "i18next",
       "allowedCategories": [ "frontend" ]
     },
@@ -692,7 +732,7 @@
     },
     {
       "name": "jsdom",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "jsdom-global",
@@ -768,7 +808,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "nyc",
@@ -785,6 +825,10 @@
     {
       "name": "openid-client",
       "allowedCategories": [ "integration-testing" ]
+    },
+    {
+      "name": "path-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -863,6 +907,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "react-router-dom",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-select",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -879,12 +927,12 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "react-window",
+      "name": "react-transition-group",
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "readline",
-      "allowedCategories": [ "tools" ]
+      "name": "react-window",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "recursive-readdir",
@@ -936,10 +984,18 @@
     },
     {
       "name": "source-map-support",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "extensions", "frontend", "tools" ]
     },
     {
       "name": "spdy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "stream-http",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -1011,15 +1067,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "webpack-core",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },
     {

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Observable } from "rxjs/internal/Observable";
+import { concat } from "rxjs/internal/observable/concat";
+import { defer } from "rxjs/internal/observable/defer";
 import { from } from "rxjs/internal/observable/from";
 import { throwError } from "rxjs/internal/observable/throwError";
-import { timer } from "rxjs/internal/observable/timer";
-import { takeUntil } from "rxjs/internal/operators/takeUntil";
 import { tap } from "rxjs/internal/operators/tap";
 import { scheduled } from "rxjs/internal/scheduled/scheduled";
 import { asapScheduler } from "rxjs/internal/scheduler/asap";
@@ -16,8 +16,8 @@ import { queueScheduler } from "rxjs/internal/scheduler/queue";
 import { ObservableInput, SchedulerLike } from "rxjs/internal/types";
 import sinon from "sinon";
 import { scheduleSubscription, SubscriptionScheduler } from "../../components-react/common/SubscriptionScheduler";
-import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
 import { ResolvablePromise } from "../test-helpers/misc";
+import { extractSequence, waitForUnsubscription } from "./ObservableTestHelpers";
 
 async function expectSequence<T>(expectedSequence: T[], observable: Observable<T>): Promise<void> {
   const actualSequence = await extractSequence(observable);
@@ -78,19 +78,6 @@ describe("SubscriptionScheduler", () => {
           expect(secondSubscriptionSpy).to.have.been.calledOnce;
         });
 
-        it("reuses the same observable while it is scheduled", async () => {
-          const source = createScheduledObservable(sequence, scheduler);
-          const subscriptionSpy = sinon.spy(source, "subscribe");
-
-          const firstScheduledObservable = subscriptionScheduler.scheduleSubscription(source).subscribe();
-          const secondScheduledObservable = subscriptionScheduler.scheduleSubscription(source).subscribe();
-
-          await waitForUnsubscription(firstScheduledObservable);
-          await waitForUnsubscription(secondScheduledObservable);
-
-          expect(subscriptionSpy).to.have.been.calledOnce;
-        });
-
         it("reschedules the same observable source after it has been completed", async () => {
           const source = createScheduledObservable(sequence, scheduler);
           const subscriptionSpy = sinon.spy(source, "subscribe");
@@ -119,25 +106,22 @@ describe("SubscriptionScheduler", () => {
           expect(firstCompleteSpy).to.have.been.calledBefore(secondNextSpy);
         });
 
-        it("does not subscribe to the next observable until first is resolved", async () => {
-          const firstSourcePromise = new ResolvablePromise<number>();
-          const firstSource = createScheduledObservable(firstSourcePromise, scheduler);
+        it("does not subscribe to the next observable until the first one is resolved", async () => {
+          const firstSourcePromise1 = new ResolvablePromise<number>();
+          const firstSourcePromise2 = new ResolvablePromise<number>();
+          const firstSource = createScheduledObservable(concat(firstSourcePromise1, firstSourcePromise2), scheduler);
 
           const secondSource = createScheduledObservable(sequence, scheduler);
           const secondSpy = sinon.spy(secondSource, "subscribe");
 
-          const firstSubscription = subscriptionScheduler.scheduleSubscription(firstSource).pipe(takeUntil(timer(1))).subscribe();
-          const secondSubscription = subscriptionScheduler.scheduleSubscription(secondSource).subscribe();
+          const firstSubscription = subscriptionScheduler.scheduleSubscription(firstSource).subscribe();
+          subscriptionScheduler.scheduleSubscription(secondSource).subscribe();
 
-          expect(secondSpy).to.have.not.been.called;
+          await firstSourcePromise1.resolve(0);
+          expect(secondSpy).to.not.have.been.called;
+
+          await firstSourcePromise2.resolve(1);
           await waitForUnsubscription(firstSubscription);
-
-          // should not be subscribed to second source as first is not resolved yet
-          expect(secondSpy).to.have.not.been.called;
-
-          await firstSourcePromise.resolve(999);
-
-          await waitForUnsubscription(secondSubscription);
           expect(secondSpy).to.have.been.called;
         });
 
@@ -170,6 +154,14 @@ describe("SubscriptionScheduler", () => {
           expect(errorSpy).to.have.been.calledBefore(nextSpy);
           expect(nextSpy).to.have.been.calledThrice;
           expect(completeSpy).to.have.been.calledAfter(nextSpy);
+        });
+
+        it("does not subscribe to source observable after schedule cancellation", async () => {
+          const onSubscribe = sinon.fake(() => createScheduledObservable(sequence, scheduler));
+          const source = defer<Observable<number>>(onSubscribe);
+          subscriptionScheduler.scheduleSubscription(source).subscribe().unsubscribe();
+          await Promise.resolve();
+          expect(onSubscribe).not.to.have.been.called;
         });
       });
     }

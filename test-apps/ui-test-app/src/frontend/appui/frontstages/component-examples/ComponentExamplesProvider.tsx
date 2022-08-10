@@ -46,7 +46,6 @@ import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
 import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
-
 function DualColorPickers() {
   const [colorDef, setColorDef] = React.useState(ColorDef.green);
   const onPopupClose = (color: ColorDef) => {
@@ -393,7 +392,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function ColorPickerToggle() {
+export function ColorPickerToggle({ hideRgb }: { hideRgb?: boolean }) {
   const [colorDialogTitle] = React.useState("Select Color");
   const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
   const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
@@ -429,8 +428,8 @@ export function ColorPickerToggle() {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
-      colorInputType="rgb" />);
-  }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
+      colorInputType={!!hideRgb ? undefined : "rgb"} />);
+  }, [colorDialogTitle, handleBackgroundColorDialogOk, handleBackgroundColorDialogCancel, hideRgb]);
 
   return (
     <ColorSwatch className="map-manager-base-item-color" colorDef={selectedColor} round={false} onColorPick={handleBgColorClick} />
@@ -566,6 +565,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Button", "Round with Caret",
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} round showCaret />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
+        createComponentExample("Color Picker Dialog no rgb", undefined, <ColorPickerToggle hideRgb />),
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
@@ -895,6 +895,7 @@ export class ComponentExamplesProvider {
   };
 
   private static get messageSamples(): ComponentExampleCategory {
+    MessageManager.registerAnimateOutToElement(null);
     return {
       title: "Messages",
       examples: [
@@ -904,7 +905,7 @@ export class ComponentExamplesProvider {
           }>Toast message</UnderlinedButton>),
         createComponentExample("Toast with link", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            () => MessageManager.displayMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage), undefined, {placement: "top"}
             )}>Toast with link</UnderlinedButton>),
         createComponentExample("Sticky", undefined,
           <UnderlinedButton onActivate={

@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Buffer } from "buffer";
 import * as chai from "chai";
-import { AccessToken, Id64, Id64Set } from "@itwin/core-bentley";
+import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesRequestProps, ModelQueryParams,
+  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
@@ -313,6 +314,37 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
 
     const result = await IModelReadRpcInterface.getClient().getMassProperties(iModel.getRpcProps(), requestProps);
     expect(result).to.not.be.null;
+  });
+  it("getMassPropertiesPerCandidate should be able to process multiple elements", async () => {
+    const candidates = [...await iModel.elements.queryIds({ from: "BisCore.GeometricElement3d", limit: 2, where: "GeometryStream IS NOT NULL" })];
+    expect(candidates.length).to.be.equal(2);
+
+    const requestProps: MassPropertiesPerCandidateRequestProps = {
+      operations: [MassPropertiesOperation.AccumulateVolumes],
+      candidates: CompressedId64Set.compressIds(candidates),
+    };
+
+    const result = await IModelReadRpcInterface.getClient().getMassPropertiesPerCandidate(iModel.getRpcProps(), requestProps);
+    expect(result).to.not.be.null;
+    expect(result.length).to.be.equal(2);
+    const candidate1Result = result.find((r) => r.candidate === candidates[0]);
+    const candidate2Result = result.find((r) => r.candidate === candidates[1]);
+    expect(candidate1Result).to.not.be.undefined;
+    expect(candidate2Result).to.not.be.undefined;
+    expect(candidate1Result?.status).to.be.equal(BentleyStatus.SUCCESS);
+    expect(candidate2Result?.status).to.be.equal(BentleyStatus.SUCCESS);
+
+    const expectedCandidate1Result = await IModelReadRpcInterface.getClient().getMassProperties(
+      iModel.getRpcProps(),
+      { operation: MassPropertiesOperation.AccumulateVolumes, candidates: [candidates[0]] },
+    );
+    const expectedCandidate2Result = await IModelReadRpcInterface.getClient().getMassProperties(
+      iModel.getRpcProps(),
+      { operation: MassPropertiesOperation.AccumulateVolumes, candidates: [candidates[1]] },
+    );
+
+    expect(candidate1Result).to.deep.eq({ ...expectedCandidate1Result, candidate: candidates[0] });
+    expect(candidate2Result).to.deep.eq({ ...expectedCandidate2Result, candidate: candidates[1] });
   });
 });
 

@@ -10,7 +10,7 @@ import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, ColorDef, DisplayStyle3dSettingsProps,
   GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@itwin/core-common";
-import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -735,6 +735,12 @@ export class ViewAttributes {
     });
     slider.div.style.textAlign = "left";
 
+    const smoothEdgesCb = this.addCheckbox("Smooth Polyface Edges", (enabled: boolean) => {
+      IModelApp.tileAdmin.generateAllPolyfaceEdges = enabled;
+      this._vp.invalidateScene();
+      this.sync();
+    }, edgeDisplayDiv);
+
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
       this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
       hidEdgesCb.checkbox.disabled = !enabled;
@@ -770,6 +776,7 @@ export class ViewAttributes {
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
+      smoothEdgesCb.checkbox.checked = IModelApp.tileAdmin.generateAllPolyfaceEdges;
       hidEditor.hidden = !vf.hiddenEdges;
     });
     const hr = document.createElement("hr");

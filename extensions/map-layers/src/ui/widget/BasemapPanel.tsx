@@ -10,7 +10,7 @@ import { BaseMapLayerSettings, ColorByName, ColorDef, ImageMapLayerSettings, Map
 import { DisplayStyleState } from "@itwin/core-frontend";
 import { WebFontIcon } from "@itwin/core-react";
 import { ColorPickerDialog, ColorSwatch } from "@itwin/imodel-components-react";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, Select, SelectOption } from "@itwin/itwinui-react";
 import * as React from "react";
 import { MapLayersUI } from "../../mapLayers";
 import "./BasemapPanel.scss";
@@ -100,7 +100,7 @@ export function BasemapPanel() {
 
   const handleBgColorClick = React.useCallback((newColor: ColorDef, e: React.MouseEvent<Element, MouseEvent>) => {
     e.preventDefault();
-    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors}
+    ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors} colorInputType={"rgb"}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel} />);
   }, [presetColors, handleBackgroundColorDialogOk]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -152,11 +152,11 @@ export function BasemapPanel() {
   return (
     <>
       <div className="map-manager-base-item" >
-        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
+        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange}>
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
-        </button>
+        </Button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <Select options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
+        <Select className="map-manager-base-item-select" options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />

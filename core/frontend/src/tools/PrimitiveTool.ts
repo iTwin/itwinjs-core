@@ -18,6 +18,7 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  * @public
+ * @extensions
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   /** The viewport within which the tool operates.
@@ -177,9 +178,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onUndoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onUndoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }
@@ -195,9 +196,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onRedoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onRedoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }

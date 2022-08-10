@@ -1909,6 +1909,10 @@
             "boolean"
           ]
         },
+        "isReadOnly": {
+          "description": "This attribute controls whether the property field is read-only. If the attribute value is not set, the field is\nread-only when at least one of the properties is read-only.",
+          "type": "boolean"
+        },
         "labelOverride": {
           "description": "This is an attribute that allows overriding the property label. May be localized.",
           "type": "string"
@@ -1919,6 +1923,10 @@
         },
         "overridesPriority": {
           "description": "There may be multiple property specifications that apply to a single property and there may be conflicts between\ndifferent attributes. The `overridesPriority` attribute is here to help solve the problem - if multiple specifications\nattempt to override the same attribute, the override of specification with highest `overridesPriority` value is used.\nThe order of overrides from specification with the same `overridesPriority` is defined by the order they appear in\nthe overrides list.",
+          "type": "number"
+        },
+        "priority": {
+          "description": "This attribute controls the order in which property fields should be displayed. Property fields with higher priority\nwill appear before property fields with lower priority. If the attribute value is not set, the field's priority\nwill be the maximum priority of its properties.",
           "type": "number"
         },
         "renderer": {
@@ -2067,6 +2075,10 @@
           "description": "Should the field containing related properties be assigned the `NestedContentField.autoExpand`\nattribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.",
           "type": "boolean"
         },
+        "forceCreateRelationshipCategory": {
+          "description": "Specifies whether a relationship category should be created regardless of whether any relationship properties were included.",
+          "type": "boolean"
+        },
         "handleTargetClassPolymorphically": {
           "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
@@ -2128,6 +2140,31 @@
             "SameInstance"
           ],
           "type": "string"
+        },
+        "relationshipProperties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "*",
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names or definitions of relationship class properties that should be included in the content."
         },
         "skipIfDuplicate": {
           "description": "Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.",

@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { assert, expect } from "chai";
+import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState,
-  StandardViewId,
+  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
@@ -295,6 +296,39 @@ describe("EmphasizeElements tests", () => {
     expectAppearance(red, FeatureOverrideType.ColorAndAlpha, { rgb, transparency });
   });
 
+  it("ignores animation overrides for de-emphasized elements", () => {
+    const vp = ScreenViewport.create(viewDiv, spatialView.clone());
+    vp.viewFlags = vp.viewFlags.with("weights", true);
+
+    const emph = EmphasizeElements.getOrCreate(vp);
+    const deemphasized = FeatureAppearance.fromTransparency(0.5);
+    emph.wantEmphasis = true;
+    emph.emphasizeElements("0x1", vp, deemphasized);
+
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const ovrs = new FeatureSymbology.Overrides(vp);
+    ovrs.overrideAnimationNode(1, red);
+    emph.addFeatureOverrides(ovrs, vp);
+
+    const emphasized = FeatureAppearance.fromJSON({ emphasized: true });
+    const emphasizedRed = FeatureAppearance.fromJSON({ rgb: { r: 255, g: 0, b: 0 }, emphasized: true });
+    const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elementId), "0x123", undefined, nodeId)!;
+      expect(actual).not.to.be.undefined;
+      expect(actual.toJSON()).to.deep.equal(expected.toJSON());
+    };
+
+    expectAppearance("0x1", 0, emphasized);
+    expectAppearance("0x1", 2, emphasized);
+    expectAppearance("0x1", 1, emphasizedRed);
+
+    expectAppearance("0x2", 0, deemphasized);
+    expectAppearance("0x2", 2, deemphasized);
+    expectAppearance("0x2", 1, deemphasized);
+
+    EmphasizeElements.clear(vp);
+  });
+
   it("Override to/from key", async () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
@@ -308,8 +342,8 @@ describe("EmphasizeElements tests", () => {
 
     for (const entry of overrides) {
       const key = emph.createOverrideKey(entry.color, entry.overrideType);
-      assert(undefined !== key);
-      const { overrideType, color } = { ...emph.getOverrideFromKey(key!) };
+      bAssert(undefined !== key);
+      const { overrideType, color } = { ...emph.getOverrideFromKey(key) };
       assert(overrideType === entry.overrideType);
       switch (overrideType) {
         case FeatureOverrideType.ColorOnly:

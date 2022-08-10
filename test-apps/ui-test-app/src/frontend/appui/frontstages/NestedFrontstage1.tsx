@@ -6,8 +6,8 @@
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
-  NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
+  ActionItemButton, CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, GroupButton, ModalDialogManager,
+  NavigationWidget, NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
 } from "@itwin/appui-react";
 import { Direction, Toolbar } from "@itwin/appui-layout-react";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -15,6 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NestedFrontstage2 } from "./NestedFrontstage2";
 import { AppUi } from "../AppUi";
+import { TestModalDialog } from "../dialogs/TestModalDialog";
 
 /* eslint-disable react/jsx-key */
 
@@ -32,7 +33,6 @@ export class NestedFrontstage1 extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -105,6 +105,14 @@ class FrontstageToolWidget extends React.Component {
     });
   }
 
+  private get _openModal() {
+    return new CommandItemDef({
+      iconSpec: "icon-smiley-happy",
+      label: "Open Modal Dialog",
+      execute: () => ModalDialogManager.openDialog(<TestModalDialog />),
+    });
+  }
+
   private _horizontalToolbar = (
     <Toolbar // eslint-disable-line deprecation/deprecation
       expandsTo={Direction.Bottom} // eslint-disable-line deprecation/deprecation
@@ -114,6 +122,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
           <ActionItemButton actionItem={this._openNestedFrontstage2} />
+          <ActionItemButton actionItem={this._openModal} />
         </>
       }
     />);

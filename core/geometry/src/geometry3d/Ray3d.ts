@@ -119,7 +119,7 @@ export class Ray3d implements BeJSONFunctions {
       result.direction.setStartEnd(origin, target);
       return result;
     }
-    return new Ray3d(origin, Vector3d.createStartEnd(origin, target));
+    return new Ray3d(origin.clone(), Vector3d.createStartEnd(origin, target));
   }
   /** Return a reference to the ray's origin. */
   public getOriginRef(): Point3d { return this.origin; }

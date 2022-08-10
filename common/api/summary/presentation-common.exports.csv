@@ -26,9 +26,15 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+alpha;ClientDiagnostics 
+public;ClientDiagnosticsAttribute
+alpha;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
+alpha;ClientDiagnosticsOptions 
 internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
+alpha;ComputeSelectionRequestOptions
+alpha;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
 public;ConditionContainer
 deprecated;ConditionContainer
 public;Content
@@ -64,13 +70,12 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
-alpha;DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void
+alpha;Diagnostics
 alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
 alpha;DiagnosticsLogEntry
 alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
 alpha;DiagnosticsLogMessage
 alpha;DiagnosticsOptions
-alpha;DiagnosticsOptionsWithHandler 
 alpha;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 public;DisplayLabelRequestOptions
@@ -111,6 +116,7 @@ beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
+alpha;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -178,6 +184,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+internal;isComputeSelectionRequestOptions
 beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
@@ -205,6 +212,9 @@ public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfoJSON
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
@@ -213,13 +223,6 @@ public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
 public;NoCategoryIdentifier
-public;Node
-public;Node
-internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
-internal;listFromJSON(json: NodeJSON[] | string): Node[]
-internal;listReviver(key: string, value: any): any
-internal;reviver(key: string, value: any): any
-internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
@@ -241,7 +244,6 @@ public;NodePathFilteringData
 public;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
-public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
@@ -325,6 +327,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
+alpha;RpcDiagnosticsOptions = Omit_2
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
@@ -347,6 +350,7 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
+alpha;SelectionScopeProps = ElementSelectionScopeProps |
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
@@ -399,3 +403,4 @@ public;VariableValue = boolean | string | number | number[] | Id64String | Id64S
 public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
 public;VariableValueType
 public;VariableValueTypes
+public;WithCancelEvent

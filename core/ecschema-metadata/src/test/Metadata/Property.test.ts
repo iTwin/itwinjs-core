@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert as bAssert } from "@itwin/core-bentley";
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
@@ -943,15 +944,15 @@ describe("PrimitiveProperty", () => {
     it("Should load KindOfQuantity synchronously", () => {
       testProperty.fromJSONSync(propertyJson);
       const koq = testProperty.getKindOfQuantitySync();
-      assert(koq !== undefined);
-      assert.strictEqual(koq!.name, "MyKindOfQuantity");
+      bAssert(koq !== undefined);
+      assert.strictEqual(koq.name, "MyKindOfQuantity");
     });
 
     it("Should load KindOfQuantity", async () => {
       await testProperty.fromJSON(propertyJson);
       const koq = await testProperty.kindOfQuantity;
-      assert(koq !== undefined);
-      assert.strictEqual(koq!.name, "MyKindOfQuantity");
+      bAssert(koq !== undefined);
+      assert.strictEqual(koq.name, "MyKindOfQuantity");
     });
   });
 
@@ -979,15 +980,15 @@ describe("PrimitiveProperty", () => {
     it("Should load PropertyCategory synchronously", () => {
       testProperty.fromJSONSync(propertyJson);
       const cat = testProperty.getCategorySync();
-      assert(cat !== undefined);
-      assert.strictEqual(cat!.name, "MyCategory");
+      bAssert(cat !== undefined);
+      assert.strictEqual(cat.name, "MyCategory");
     });
 
     it("Should load PropertyCategory", async () => {
       await testProperty.fromJSON(propertyJson);
       const cat = await testProperty.category;
-      assert(cat !== undefined);
-      assert.strictEqual(cat!.name, "MyCategory");
+      bAssert(cat !== undefined);
+      assert.strictEqual(cat.name, "MyCategory");
     });
   });
 

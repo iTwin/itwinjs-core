@@ -24,7 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
-alpha;ActivationEvent
+alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -33,16 +33,12 @@ beta;AngleDescription
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
 internal;AnimationBranchStates
+internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
-internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
-internal;ArcGisToken
-internal;ArcGisTokenClientType
-internal;ArcGisTokenGenerator
-internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -75,8 +71,6 @@ public;BriefcaseConnection
 alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
-alpha;BuildExtensionManifest 
-alpha;BuiltInExtensionLoaderProps
 internal;CachedDecoration =
 internal;CachedIModelCoordinatesResponseProps
 public;calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise
@@ -96,6 +90,9 @@ public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
+public;connectViewportFrusta(viewports: Iterable
+public;connectViewports(viewports: Iterable
+public;connectViewportViews(viewports: Iterable
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -160,12 +157,8 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
-alpha;ExtensionAdmin
-alpha;ExtensionHost
-alpha;ExtensionImpl
-alpha;ExtensionLoader
-alpha;ExtensionLoaderProps
 alpha;ExtensionManifest
+alpha;ExtensionProvider
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -235,6 +228,8 @@ internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
+internal;GltfSampler 
+internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
@@ -327,7 +322,8 @@ public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
-alpha;LocalExtensionProps
+alpha;LocalExtensionProvider 
+alpha;LocalExtensionProviderProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -349,22 +345,25 @@ internal;MapBoxLayerImageryProvider
 internal;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
-internal;MapLayerAuthenticationInfo
-beta;MapLayerAuthType
+beta;MapLayerAccessClient
+beta;MapLayerAccessToken
+beta;MapLayerAccessTokenParams
+beta;MapLayerAuthenticationInfo
 internal;MapLayerClassifiers = Map
 alpha;MapLayerFeatureInfo
-internal;MapLayerFormat
-internal;MapLayerFormatRegistry
-internal;MapLayerFormatType = typeof MapLayerFormat
+beta;MapLayerFormat
+internal;MapLayerFormatEntry
+beta;MapLayerFormatRegistry
+beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
-internal;MapLayerSource
+public;MapLayerSource
 internal;MapLayerSources
-internal;MapLayerSourceStatus
-internal;MapLayerSourceValidation
+public;MapLayerSourceStatus
+public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
-internal;MapLayerTokenEndpoint
+beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
@@ -399,6 +398,7 @@ beta;ModelDisplayTransformProvider
 internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
 public;ModelState 
+public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
@@ -499,6 +499,8 @@ internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
+alpha;RemoteExtensionProvider 
+alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -510,7 +512,6 @@ internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
-internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
@@ -524,6 +525,7 @@ internal;class RenderTerrainGeometry
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
+alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
@@ -544,7 +546,6 @@ public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
-public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
@@ -578,12 +579,14 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
+public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
+public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
+public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
@@ -651,7 +654,6 @@ public;ToolAssistanceInstructions
 public;ToolAssistanceKeyboardInfo
 public;ToolAssistanceSection
 public;ToolList = ToolType[]
-alpha;ToolProvider 
 public;ToolRegistry
 public;ToolSettings
 internal;ToolSettingsState

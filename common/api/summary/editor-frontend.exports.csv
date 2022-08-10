@@ -9,15 +9,25 @@ alpha;ChamferEdgesTool
 alpha;CircleMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+alpha;CopyElementsTool 
 alpha;CreateArcTool 
 alpha;CreateBCurveTool 
+alpha;CreateBoxTool 
 alpha;CreateCircleTool 
+alpha;CreateConePhase
+alpha;CreateConeTool 
 alpha;CreateCurvePhase
+alpha;CreateCylinderPhase
+alpha;CreateCylinderTool 
 alpha;class CreateElementTool 
+alpha;class CreateElementWithDynamicsTool 
 alpha;CreateEllipseTool 
 alpha;CreateLineStringTool 
 alpha;class CreateOrContinuePathTool 
 alpha;CreateRectangleTool 
+alpha;CreateSphereTool 
+alpha;CreateTorusPhase
+alpha;CreateTorusTool 
 alpha;CurveData
 alpha;CutSolidElementsTool 
 alpha;DeleteElementsTool 
@@ -58,6 +68,7 @@ alpha;RotateElementsTool
 alpha;RotateMethod
 alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
+alpha;class SolidPrimitiveTool 
 alpha;SpinFacesTool 
 alpha;SubEntityData
 alpha;SubtractSolidElementsTool 

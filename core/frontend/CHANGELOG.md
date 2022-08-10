@@ -1,6 +1,103 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+### Updates
+
+- Add IModelConnection.categories for querying category information. Add support for hiliting the intersection of a set of models and a set of subcategories.
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+### Updates
+
+- Avoid attempting to load ViewState data from the backend for a BlankConnection.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+### Updates
+
+- Fix tile display issues for layer tiles not covering the entire tile tree and TileMap service is not available.  Derive minimum LOD from the minimum scale.  Use 'fullExtent' metadata to get cartoRange of layer when getFootPrints request doesnt include data extent.
+- Made several map-layers functions public
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+### Updates
+
+- added errorOnMissingUniform render option
+- Omit authorization in RPC communication between mobile frontend and backend.
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Add option to quantize positions in TileAdmin.requestElementGraphics.
+- Prevent an assertion when creating a pickable graphic with an empty FeatureTable.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Dispose reality mesh textures when disposing the tiles are dispose
+- Use a function constructor to avoid webpack warnings when dynamically importing extension files.
+- Fixed visibility of edges when using Ambient Occlusion
+- Added documentation for MapLayerKey.
+- MapLayerFormatRegistry allows MapLayerAccessClient objects to be provided for each format, enabling extended support of various authentication methods.
+- Improve RealityTile loading priority calculation
+- Prevent 0-dimension assignment in CanvasState.updateDimensions. This resolved a blank rendering issue when dropping and re-adding a viewport with the same size.
+- ViewState3d.lookAtGlobalLocation should account for orthographic view points.
+- Mark animateFrustumChange public.
+- Added public method IModelConnection.getMassPropertiesPerCandidate.
+- bugfix for viewstate2d's hydrateViewState
+- Add preload, postload functions to ViewStates. Use hydrateViewState in load function
+- Fix bug in which DisplayStyleState.changeBackgroundMapProvider failed to preserve previous values as advertised.
+- Prevent calls to readPixels from being enqueued when mousing over canvas decorations.
+- Fix scaled monochrome mode not applying to instanced geometry.
+- Add GraphicBuilder.activatePickableId to enable batching of multiple pickable objects into a single graphic.
+- Added connectViewports and related functions to enable synchronizing the states of any number of viewports.
+- Do not produce mip-maps for reality tile textures.
+- Make Viewport.readPixels return undefined if the viewport has been disposed.
+- Ensure the render loop is processed immediately after the selection set changes.
+- Reduce number of OnMotionSnap call
+- Use zoom target on reality tile priority calculation
+- Add support for remote extensions
+- Catch snap abandoned exception.
+- Add extension API generation
+- Fix view zoom jumps on touch devices
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+### Updates
+
+- Fix OOM stemming from JS trying to parse a very large object. Prefer use of `JSON.parse()` for very large objects."
 
 ## 3.1.1
 Thu, 31 Mar 2022 15:55:48 GMT

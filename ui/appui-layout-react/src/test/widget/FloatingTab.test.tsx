@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch,
+  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
 } from "../../appui-layout-react";
-import { createDragItemInfo, TestNineZoneProvider } from "../Providers";
+import { createDragInfo, TestNineZoneProvider } from "../Providers";
 
 describe("FloatingTab", () => {
-  it("should render", () => {
+  it("should render", async () => {
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
     nineZone = addTab(nineZone, "t1", { label: "tab 1" });
@@ -22,14 +22,35 @@ describe("FloatingTab", () => {
         position: new Point(10, 20).toProps(),
       });
     });
-    const { container } = render(
+    const { findByText } = render(
       <TestNineZoneProvider
         state={nineZone}
       >
         <FloatingTab />
       </TestNineZoneProvider>,
     );
-    container.firstChild!.should.matchSnapshot();
+    await findByText("tab 1");
+  });
+
+  it("should render with icon", async () => {
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1", iconSpec: <div>icon</div> });
+    nineZone = produce(nineZone, (draft) => {
+      draft.draggedTab = createDraggedTabState("t1", {
+        position: new Point(10, 20).toProps(),
+      });
+    });
+    const { findByText } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <ShowWidgetIconContext.Provider value={true}>
+          <FloatingTab />
+        </ShowWidgetIconContext.Provider>
+      </TestNineZoneProvider>,
+    );
+    await findByText("icon");
   });
 
   it("should dispatch WIDGET_TAB_DRAG", () => {
@@ -54,7 +75,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -72,7 +93,7 @@ describe("FloatingTab", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { label: "tab 1", preferredFloatingWidgetSize: {width: 33, height: 33}});
+    nineZone = addTab(nineZone, "t1", { label: "tab 1", preferredFloatingWidgetSize: { width: 33, height: 33 } });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -89,7 +110,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -111,7 +132,7 @@ describe("FloatingTab", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "leftEnd", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { label: "tab 1", preferredFloatingWidgetSize: {width: 33, height: 33} });
+    nineZone = addTab(nineZone, "t1", { label: "tab 1", preferredFloatingWidgetSize: { width: 33, height: 33 } });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -128,7 +149,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -150,7 +171,7 @@ describe("FloatingTab", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
     nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { label: "tab 1", isFloatingStateWindowResizable: true, preferredFloatingWidgetSize: {width: 50, height: 50} });
+    nineZone = addTab(nineZone, "t1", { label: "tab 1", isFloatingStateWindowResizable: true, preferredFloatingWidgetSize: { width: 50, height: 50 } });
     nineZone = produce(nineZone, (draft) => {
       draft.draggedTab = createDraggedTabState("t1", {
         position: new Point(10, 20).toProps(),
@@ -167,7 +188,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -211,7 +232,7 @@ describe("FloatingTab", () => {
     );
     act(() => {
       dragManager.current!.handleDragStart({
-        info: createDragItemInfo(),
+        info: createDragInfo(),
         item: {
           type: "tab",
           id: "t1",
@@ -220,6 +241,7 @@ describe("FloatingTab", () => {
       dragManager.current!.handleTargetChanged({
         type: "panel",
         side: "left",
+        newWidgetId: "",
       });
       fireEvent.mouseUp(document);
     });
@@ -231,4 +253,52 @@ describe("FloatingTab", () => {
       },
     })).should.true;
   });
+
+  it("should dispatch WIDGET_TAB_DRAG_END with widget target", () => {
+    const dragManager = React.createRef<DragManager>();
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { label: "tab 1" });
+    nineZone = produce(nineZone, (draft) => {
+      draft.draggedTab = createDraggedTabState("t1", {
+        position: new Point(10, 20).toProps(),
+      });
+    });
+    render(
+      <TestNineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+        dragManagerRef={dragManager}
+      >
+        <FloatingTab />
+      </TestNineZoneProvider>,
+    );
+    act(() => {
+      dragManager.current!.handleDragStart({
+        info: createDragInfo(),
+        item: {
+          type: "tab",
+          id: "t1",
+        },
+      });
+      dragManager.current!.handleTargetChanged({
+        type: "section",
+        side: "right",
+        sectionIndex: 0,
+        newWidgetId: "nw1",
+      });
+      fireEvent.mouseUp(document);
+    });
+    sinon.assert.calledOnceWithExactly(dispatch, sinon.match({
+      type: "WIDGET_TAB_DRAG_END",
+      id: "t1",
+      target: {
+        type: "section",
+        side: "right",
+        sectionIndex: 0,
+      },
+    }));
+  });
+
 });

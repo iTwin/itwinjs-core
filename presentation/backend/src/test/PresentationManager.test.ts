@@ -8,18 +8,17 @@ import * as faker from "faker";
 import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsOptions, DiagnosticsScopeLogs,
+  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo,
-  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
-  VariableValueTypes,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
+  HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
+  MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
+  SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -31,8 +30,9 @@ import {
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationUnitSystem } from "../presentation-backend/NativePlatform";
 import {
-  getKeysForContentRequest, HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
+  HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
+import { getKeysForContentRequest } from "../presentation-backend/PresentationManagerDetail";
 import { RulesetManagerImpl } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
@@ -342,15 +342,6 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
-        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: false }), (_) => {
-          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
-        });
-        using(new PresentationManager({ addon: addon.object, enableSchemasPreload: true }), (_) => {
-          expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
-        });
-      });
-
       it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
@@ -407,7 +398,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId });
@@ -425,7 +416,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.locale === locale;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "{}" }))
           .verifiable(moq.Times.once());
         await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: rulesetId, locale });
@@ -451,7 +442,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.Metric;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
@@ -468,7 +459,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
@@ -486,7 +477,7 @@ describe("PresentationManager", () => {
           .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((serializedRequest: string): boolean => {
             const request = JSON.parse(serializedRequest);
             return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
-          })))
+          }), undefined))
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
         await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
@@ -504,10 +495,10 @@ describe("PresentationManager", () => {
       const manager = new PresentationManager({ addon: addonMock.object });
       const managerUsedSpy = sinon.spy();
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: "[]" }));
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: "{}" }));
 
       manager.setOnManagerUsedHandler(managerUsedSpy);
@@ -551,14 +542,6 @@ describe("PresentationManager", () => {
       manager.dispose();
       // note: verify native platform's `dispose` called only once
       nativePlatformMock.verify((x) => x.dispose(), moq.Times.once());
-    });
-
-    it("unsubscribes from `IModelDb.onOpened` event if `enableSchemasPreload` is set", () => {
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      const manager = new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true });
-      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
-      manager.dispose();
-      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
     });
 
     it("throws when attempting to use native platform after disposal", () => {
@@ -617,7 +600,7 @@ describe("PresentationManager", () => {
     it("registers ruleset if `rulesetOrId` is a ruleset", async () => {
       const ruleset = await createRandomRuleset();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -631,7 +614,7 @@ describe("PresentationManager", () => {
     it("doesn't register ruleset if `rulesetOrId` is a string", async () => {
       const rulesetId = faker.random.word();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), undefined))
         .returns(async () => ({ result: "{}" }))
         .verifiable(moq.Times.once());
       addonMock
@@ -648,32 +631,20 @@ describe("PresentationManager", () => {
         editor: "info",
         dev: "warning",
       };
-      const diagnosticsResult: DiagnosticsScopeLogs = {
-        scope: "test",
-        duration: 123,
+      const diagnosticsResult: Diagnostics = {
+        logs: [{
+          scope: "test",
+          duration: 123,
+        }],
       };
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
-    });
-
-  });
-
-  describe("preloading schemas", () => {
-
-    it("calls addon's `forceLoadSchemas` on `IModelDb.onOpened` events", () => {
-      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
-      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
-      using(new PresentationManager({ addon: nativePlatformMock.object, enableSchemasPreload: true }), (_) => {
-        BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
-        nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
-      });
+      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
   });
@@ -698,7 +669,7 @@ describe("PresentationManager", () => {
       nativePlatformMock.reset();
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
       manager = new PresentationManager({ addon: nativePlatformMock.object });
-      sinon.stub(manager, "rulesets").returns(sinon.createStubInstance(RulesetManagerImpl, {
+      sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
         add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
       }));
     });
@@ -709,7 +680,7 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       const serialized = JSON.stringify(addonResponse);
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString()))
+      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
         .returns(async () => ({ result: JSON.stringify(addonResponse) }));
       return JSON.parse(serialized);
     };
@@ -719,7 +690,7 @@ describe("PresentationManager", () => {
         const param = JSON.parse(serializedParam);
         expectedParams = JSON.parse(JSON.stringify(expectedParams));
         return deepEqual(param, expectedParams);
-      })), moq.Times.once());
+      }), undefined), moq.Times.once());
     };
     const verifyWithSnapshot = (result: any, expectedParams: any, recreateSnapshot: boolean = false) => {
       // verify the addon was called with correct params
@@ -1082,7 +1053,7 @@ describe("PresentationManager", () => {
           prev: {},
           rulesetOrId: "test",
         });
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         expect(result).to.deep.eq({ changes: [] });
       });
 
@@ -1097,7 +1068,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         await expect(manager.compareHierarchies(options)).to.eventually.be.rejected;
-        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
       });
 
       it("uses manager's `activeLocale` for comparison", async () => {
@@ -1229,6 +1200,7 @@ describe("PresentationManager", () => {
             keys: getKeysForContentRequest(keys),
             selection: testData.selectionInfo,
             rulesetId: manager.getRulesetId(testData.rulesetOrId),
+            contentFlags: ContentFlags.DescriptorOnly,
           },
         };
 
@@ -2097,7 +2069,7 @@ describe("PresentationManager", () => {
     });
 
     it("throws on invalid addon response", async () => {
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString())).returns(() => (undefined as any));
+      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(() => (undefined as any));
       const options: HierarchyRequestOptions<IModelDb, NodeKey> = {
         imodel: imodelMock.object,
         rulesetOrId: testData.rulesetOrId,
@@ -2154,7 +2126,16 @@ describe("PresentationManager", () => {
       const resultKeys = new KeySet();
       const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
       const result = await manager.computeSelection({ imodel: imodel.object, ids, scopeId: "test scope" });
-      expect(stub).to.be.calledOnceWith({ imodel: imodel.object }, ids, "test scope");
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds: ids, scope: { id: "test scope" } });
+      expect(result).to.eq(resultKeys);
+    });
+
+    it("computes element selection using `SelectionScopesHelper`", async () => {
+      const elementIds = [createRandomId()];
+      const resultKeys = new KeySet();
+      const stub = sinon.stub(SelectionScopesHelper, "computeSelection").resolves(resultKeys);
+      const result = await manager.computeSelection({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
+      expect(stub).to.be.calledOnceWith({ imodel: imodel.object, elementIds, scope: { id: "element", ancestorLevel: 123 } });
       expect(result).to.eq(resultKeys);
     });
 

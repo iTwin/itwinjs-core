@@ -7,13 +7,13 @@
  */
 
 import memoize from "micro-memoize";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
+  ClientDiagnosticsOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
@@ -89,7 +89,7 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _pagingSize?: number;
   private _disposeVariablesChangeListener: () => void;
   private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
-  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
+  private _diagnosticsOptions?: ClientDiagnosticsOptions;
   private _nodesCreateProps: CreateTreeNodeItemProps;
 
   /** Constructor. */

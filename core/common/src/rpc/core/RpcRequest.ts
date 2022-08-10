@@ -15,13 +15,14 @@ import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheCo
 import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
-import { RpcProtocol } from "./RpcProtocol";
+import { RpcManagedStatus, RpcProtocol, RpcProtocolVersion } from "./RpcProtocol";
 import { CURRENT_REQUEST } from "./RpcRegistry";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 // cspell:ignore csrf
 
-const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
+/** @internal */
+export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** @internal */
 export class ResponseLike implements Response {
@@ -111,8 +112,13 @@ export abstract class RpcRequest<TResponse = any> {
   private _created: number = 0;
   private _lastSubmitted: number = 0;
   private _lastUpdated: number = 0;
-  private _status: RpcRequestStatus = RpcRequestStatus.Unknown;
-  private _extendedStatus: string = "";
+
+  /** @internal */
+  public _status: RpcRequestStatus = RpcRequestStatus.Unknown;
+
+  /** @internal */
+  public _extendedStatus: string = "";
+
   private _connecting: boolean = false;
   private _active: boolean = true;
   private _hasRawListener = false;
@@ -123,6 +129,7 @@ export abstract class RpcRequest<TResponse = any> {
   private _transientFaults = 0;
   protected _response: Response | undefined = undefined;
   protected _rawPromise: Promise<Response | undefined>;
+  public responseProtocolVersion = RpcProtocolVersion.None;
 
   /** All RPC requests that are currently in flight. */
   public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
@@ -266,11 +273,6 @@ export abstract class RpcRequest<TResponse = any> {
     this._lastUpdated = new Date().getTime();
   }
 
-  /** Override to describe available headers based on a protocol-specific criteria (such as a CORS whitelist). */
-  protected isHeaderAvailable(_name: string): boolean {
-    return true;
-  }
-
   protected computeRetryAfter(attempts: number) {
     return (((Math.pow(2, attempts) - 1) / 2) * 500) + 500;
   }
@@ -281,6 +283,14 @@ export abstract class RpcRequest<TResponse = any> {
 
   protected resetTransientFaultCount() {
     this._transientFaults = 0;
+  }
+
+  protected supportsStatusCategory() {
+    if (!this.protocol.supportsStatusCategory) {
+      return false;
+    }
+
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
   /* @internal */
@@ -359,7 +369,8 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
-    const status = this.protocol.getStatus(code);
+    const protocolStatus = this.protocol.getStatus(code);
+    const status = this.transformResponseStatus(protocolStatus, value);
 
     if (RpcRequestStatus.isTransientError(status)) {
       return this.handleTransientError(status);
@@ -386,6 +397,35 @@ export abstract class RpcRequest<TResponse = any> {
         return this.handleNoContent();
       }
     }
+  }
+
+  private transformResponseStatus(protocolStatus: RpcRequestStatus, value: RpcSerializedValue): RpcRequestStatus {
+    if (!this.supportsStatusCategory()) {
+      return protocolStatus;
+    }
+
+    let status = protocolStatus;
+
+    if (protocolStatus === RpcRequestStatus.Pending) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.NotFound) {
+      status = RpcRequestStatus.Rejected;
+    } else if (protocolStatus === RpcRequestStatus.Unknown) {
+      status = RpcRequestStatus.Rejected;
+    }
+
+    if (value.objects.indexOf("iTwinRpcCoreResponse") !== -1 && value.objects.indexOf("managedStatus") !== -1) {
+      const managedStatus: RpcManagedStatus = JSON.parse(value.objects);
+      value.objects = managedStatus.responseValue as string;
+
+      if (managedStatus.managedStatus === "pending") {
+        status = RpcRequestStatus.Pending;
+      } else if (managedStatus.managedStatus === "notFound") {
+        status = RpcRequestStatus.NotFound;
+      }
+    }
+
+    return status;
   }
 
   private handleResolved(value: RpcSerializedValue) {
@@ -524,9 +564,8 @@ export abstract class RpcRequest<TResponse = any> {
 
   protected async setHeaders(): Promise<void> {
     const versionHeader = this.protocol.protocolVersionHeaderName;
-    if (versionHeader && RpcProtocol.protocolVersion && this.isHeaderAvailable(versionHeader)) {
+    if (versionHeader && RpcProtocol.protocolVersion)
       this.setHeader(versionHeader, RpcProtocol.protocolVersion.toString());
-    }
 
     const headerNames = this.protocol.serializedClientRequestContextHeaderNames;
     const headerValues = await RpcConfiguration.requestContext.serialize(this);

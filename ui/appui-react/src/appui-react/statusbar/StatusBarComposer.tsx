@@ -76,7 +76,7 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
       data-item-type="status-bar-item"
       data-item-location={props.section}
       data-item-priority={props.itemPriority}
-      data-item-providerid={props.providerId}
+      data-item-provider-id={props.providerId}
       className={className}
       ref={ref}
       style={props.style}
@@ -325,11 +325,14 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       >
         <DockedStatusBarItem key={key} itemId={item.id} itemPriority={itemPriority} providerId={providerId} section={getSectionName(section)} >
           {isStatusBarItem(item) && item.reactNode}
-          {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
-          {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
+          {// eslint-disable-next-line deprecation/deprecation
+            isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
+          {// eslint-disable-next-line deprecation/deprecation
+            isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
         </DockedStatusBarItem>
       </DockedStatusBarEntry>
     );
+    // eslint-disable-next-line deprecation/deprecation
   }, [statusBarContext.isInFooterMode, handleEntryResize]);
 
   const getSectionItems = React.useCallback((section: StatusBarSection): React.ReactNode[] => {

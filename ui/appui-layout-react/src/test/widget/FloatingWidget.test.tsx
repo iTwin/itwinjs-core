@@ -43,6 +43,40 @@ describe("FloatingWidget", () => {
     container.firstChild!.should.matchSnapshot();
   });
 
+  it("should render hidden", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], { hidden: true }, undefined);
+    nineZone = addTab(nineZone, "t1");
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
+          widget={nineZone.widgets.w1}
+        />
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
+  it("should render hidden when hideWithUiWhenFloating is true", () => {
+    let nineZone = createNineZoneState();
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true });
+    const { container } = render(
+      <TestNineZoneProvider
+        state={nineZone}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
+          widget={nineZone.widgets.w1}
+        />
+      </TestNineZoneProvider>,
+    );
+    container.firstChild!.should.matchSnapshot();
+  });
+
   it("should render dragged", () => {
     let nineZone = createNineZoneState();
     nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });

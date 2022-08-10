@@ -14,6 +14,7 @@ import { TerrainProps, TerrainSettings } from "./TerrainSettings";
  * @see [[BackgroundMapProps]]
  * @see [[DisplayStyleSettingsProps]]
  * @public
+ * @extensions
  */
 export enum GlobeMode {
   /** Display Earth as 3d ellipsoid */
@@ -25,6 +26,7 @@ export enum GlobeMode {
 /** In-memory JSON representation of a [[BackgroundMapSettings]].
  * @see [[PersistentBackgroundMapProps]] for the persistent JSON representation.
  * @public
+ * @extensions
  */
 export interface BackgroundMapProps {
   /** The elevation of the map in meters relative the WGS84 ellipsoid. Default value: 0. */
@@ -50,9 +52,9 @@ export interface BackgroundMapProps {
    */
   planarClipMask?: PlanarClipMaskProps;
 
-  /** @see [[DeprecatedBackgroundMapProps.providerName]]. */
+  /** See [[DeprecatedBackgroundMapProps.providerName]]. */
   providerName?: never;
-  /** @see [[DeprecatedBackgroundMapProps.providerData]]. */
+  /** See [[DeprecatedBackgroundMapProps.providerData]]. */
   providerData?: never;
 }
 
@@ -60,6 +62,7 @@ export interface BackgroundMapProps {
  * These properties are omitted from [[BackgroundMapProps]] as they are no longer part of the API, but are included in
  * [[PersistentBackgroundMapProps]] because they remain part of the persistence format.
  * @public
+ * @extensions
  */
 export interface DeprecatedBackgroundMapProps {
   /** Identifies the source of the map tiles. Currently supported providers are "BingProvider" and "MapBoxProvider".
@@ -78,6 +81,7 @@ export interface DeprecatedBackgroundMapProps {
 
 /** Persistent JSON representation of a [[BackgroundMapSettings]].
  * @public
+ * @extensions
  */
 export type PersistentBackgroundMapProps = Omit<BackgroundMapProps, keyof DeprecatedBackgroundMapProps> & DeprecatedBackgroundMapProps;
 

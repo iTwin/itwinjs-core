@@ -14,34 +14,6 @@ import { RpcProtocol } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { RpcInterface } from "../../RpcInterface";
-import { RpcManager } from "../../RpcManager";
-import { RpcRoutingToken } from "../core/RpcRoutingToken";
-import { BentleyError, Logger } from "@itwin/core-bentley";
-
-class InitializeInterface extends RpcInterface {
-  public static readonly interfaceName = "InitializeInterface";
-  public static readonly interfaceVersion = "1.0.0";
-  public async initialize() { return this.forward(arguments); }
-
-  public static createRequest(protocol: WebAppRpcProtocol) {
-    const routing = RpcRoutingToken.generate();
-
-    const config = class extends RpcConfiguration {
-      public interfaces = () => [InitializeInterface];
-      public protocol = protocol;
-    };
-
-    RpcConfiguration.assignWithRouting(InitializeInterface, routing, config);
-
-    const instance = RpcConfiguration.obtain(config);
-    RpcConfiguration.initializeInterfaces(instance);
-
-    const client = RpcManager.getClientForInterface(InitializeInterface, routing);
-    return new (protocol.requestType)(client, "initialize", []);
-  }
-}
 
 /** An HTTP server request object.
  * @public
@@ -85,32 +57,6 @@ export interface HttpServerResponse extends Writable {
 export abstract class WebAppRpcProtocol extends RpcProtocol {
   public override preserveStreams = true;
 
-  private _initialized: Promise<void> | undefined;
-
-  /** @internal */
-  public allowedHeaders: Set<string> = new Set();
-
-  /** @internal */
-  public async initialize() {
-    if (this._initialized) {
-      return this._initialized;
-    }
-
-    return this._initialized = new Promise(async (resolve) => {
-      try {
-        const request = InitializeInterface.createRequest(this);
-        const response = await request.preflight();
-        if (response && response.ok) {
-          (response.headers.get("Access-Control-Allow-Headers") || "").split(",").forEach((v) => this.allowedHeaders.add(v.trim()));
-        }
-      } catch (err) {
-        Logger.logWarning(CommonLoggerCategory.RpcInterfaceFrontend, "Unable to discover backend capabilities.", BentleyError.getErrorProps(err));
-      }
-
-      resolve();
-    });
-  }
-
   /** Convenience handler for an RPC operation get request for an HTTP server. */
   public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {
     return this.handleOperationPostRequest(req, res);
@@ -120,7 +66,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
     const request = await WebAppRpcRequest.parseRequest(this, req);
     const fulfillment = await this.fulfill(request);
-    WebAppRpcRequest.sendResponse(this, request, fulfillment, res);
+    await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
 
   /** Convenience handler for an OpenAPI description request for an HTTP server. */
@@ -183,6 +129,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       default: return 501;
     }
   }
+
+  public override supportsStatusCategory = true;
 
   /** Whether an HTTP status code indicates a request timeout. */
   public isTimeout(code: number): boolean {

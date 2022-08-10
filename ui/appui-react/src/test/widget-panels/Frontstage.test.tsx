@@ -12,7 +12,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
-import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, getUniqueId, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
@@ -1082,6 +1082,55 @@ describe("Frontstage local storage wrapper", () => {
           }).should.not.throw();
         });
       });
+
+      describe("useToolAsToolSettingsLabel", () => {
+
+        it("should use localized default name when false", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+
+          renderHook(() => useFrontstageManager(frontstageDef, false));
+
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq("widget.labels.toolSettings");
+        });
+
+        it("should use localized default name when tool or flyover is not defined", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+
+          renderHook(() => useFrontstageManager(frontstageDef, true));
+
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq("widget.labels.toolSettings");
+        });
+
+        it("should use tool label when true", () => {
+          const frontstageDef = new FrontstageDef();
+          let state = createNineZoneState();
+          state = addPanelWidget(state, "left", "w1", [toolSettingsTabId]);
+          state = addTab(state, toolSettingsTabId);
+          frontstageDef.nineZoneState = state;
+          const fakeActiveToolId = "activeTool1";
+          const fakeToolLabel = "activeToolLabel";
+
+          sinon.stub(FrontstageManager, "activeToolId").get(() =>fakeActiveToolId);
+          const findSpy = sinon.stub(IModelApp.tools, "find").returns({flyover: fakeToolLabel} as any);
+
+          renderHook(() => useFrontstageManager(frontstageDef, true));
+
+          findSpy.calledWith(fakeActiveToolId).should.be.true;
+          frontstageDef.nineZoneState?.tabs[toolSettingsTabId].label.should.eq(fakeToolLabel);
+
+          sinon.restore();
+        });
+
+      });
+
     });
 
     describe("initializeNineZoneState", () => {
@@ -1132,7 +1181,7 @@ describe("Frontstage local storage wrapper", () => {
         const widgetDef = new WidgetDef({
           id: "w1",
           preferredPanelSize: "fit-content",
-          defaultFloatingSize: {width: 33, height: 33},
+          defaultFloatingSize: { width: 33, height: 33 },
         });
         sinon.stub(frontstageDef, "topCenter").get(() => zoneDef);
         sinon.stub(zoneDef, "getSingleWidgetDef").returns(widgetDef);
@@ -1144,22 +1193,38 @@ describe("Frontstage local storage wrapper", () => {
         const frontstageDef = new FrontstageDef();
         const panelDef = new StagePanelDef();
         const start = new StagePanelZoneDef();
-        const middle = new StagePanelZoneDef(); // middle should be moved to end
         const end = new StagePanelZoneDef();
         const w1 = new WidgetDef({ id: "w1" });
-        const w2 = new WidgetDef({ id: "w2" });
         const w3 = new WidgetDef({ id: "w3" });
         sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
         sinon.stub(panelDef.panelZones, "start").get(() => start);
         sinon.stub(panelDef.panelZones, "end").get(() => end);
         sinon.stub(start, "widgetDefs").get(() => [w1]);
-        sinon.stub(middle, "widgetDefs").get(() => [w2]);
         sinon.stub(end, "widgetDefs").get(() => [w3]);
         const state = initializeNineZoneState(frontstageDef);
         state.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
-        should().exist("w1");
-        should().exist("w2");
-        should().exist("w3");
+        state.widgets.leftStart.tabs.should.eql(["w1"]);
+        state.widgets.leftEnd.tabs.should.eql(["w3"]);
+      });
+
+      it("should not duplicate widgets", () => {
+        const frontstageDef = new FrontstageDef();
+        const panelDef = new StagePanelDef();
+        const start = new StagePanelZoneDef();
+        const end = new StagePanelZoneDef();
+        const w1 = new WidgetDef({ id: "w1" });
+        const w3 = new WidgetDef({ id: "w3" });
+        sinon.stub(frontstageDef, "leftPanel").get(() => panelDef);
+        sinon.stub(frontstageDef, "rightPanel").get(() => panelDef);
+        sinon.stub(panelDef.panelZones, "start").get(() => start);
+        sinon.stub(panelDef.panelZones, "end").get(() => end);
+        sinon.stub(start, "widgetDefs").get(() => [w1]);
+        sinon.stub(end, "widgetDefs").get(() => [w1, w3]);
+        const state = initializeNineZoneState(frontstageDef);
+        state.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
+        state.panels.right.widgets.should.empty;
+        state.widgets.leftStart.tabs.should.eql(["w1"]);
+        state.widgets.leftEnd.tabs.should.eql(["w3"]);
       });
     });
 
@@ -1336,6 +1401,7 @@ describe("Frontstage local storage wrapper", () => {
         const widget = new WidgetDef({
           id: "w1",
           label: "Widget 1",
+          hideWithUiWhenFloating: true,
         });
         state = addWidgets(state, [widget], "left", "leftStart");
         state.tabs.w1.label.should.eq("Widget 1");
@@ -1421,7 +1487,7 @@ describe("Frontstage local storage wrapper", () => {
         it("should add removed tab", () => {
           let nineZone = createNineZoneState();
           nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-          nineZone = addTab(nineZone, "t1");
+          nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true });
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t2" }), WidgetState.Open);
           sut.panels.left.widgets.length.should.eq(2);
         });
@@ -1518,6 +1584,47 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "t1");
           const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Hidden);
           sut.widgets.w1.tabs.should.eql(["t2"]);
+        });
+
+        it("should reopen hidden widget", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
+          nineZone = addTab(nineZone, "w1");
+          const widgetDef = new WidgetDef({ id: "w1", hideWithUiWhenFloating: true });
+          let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          let showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
+          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+
+          hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          widgetDef.setFloatingContainerId(undefined);
+          showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
+          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+
+        });
+
+        it("should add floating widget if it is not in state", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
+          nineZone = addTab(nineZone, "w1");
+          const widgetDef = new WidgetDef({ id: "w1" });
+          widgetDef.defaultFloatingSize = {width: 450, height: 250};
+          let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          let newState =  produce(hideWidgetState, (stateDraft) => {
+            delete stateDraft.floatingWidgets.byId.w1;
+          });
+          let showWidgetState = setWidgetState(newState, widgetDef, WidgetState.Open);
+          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+          hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
+          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          newState =  produce(hideWidgetState, (stateDraft) => {
+            delete stateDraft.floatingWidgets.byId.w1;
+          });
+          widgetDef.setFloatingContainerId(undefined);
+          showWidgetState = setWidgetState(newState, widgetDef, WidgetState.Open);
+          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
         });
 
         it("should use default panel side for a floating widget", () => {
@@ -1660,7 +1767,9 @@ describe("Frontstage local storage wrapper", () => {
       it("should remove labels", () => {
         let nineZone = createNineZoneState();
         nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+        nineZone = addFloatingWidget(nineZone, getUniqueId(), ["t2"]);
         nineZone = addTab(nineZone, "t1");
+        nineZone = addTab(nineZone, getUniqueId());
         const sut = packNineZoneState(nineZone);
         sut.should.matchSnapshot();
       });
@@ -1942,6 +2051,66 @@ describe("Frontstage local storage wrapper", () => {
         newState.widgets.bottomStart.tabs.should.eql(["start1", "w1", "ws1"]);
         newState.widgets.bottomEnd.tabs.should.eql(["end1", "w2", "we1"]);
       });
+
+      it("should add no duplicate widgets", () => {
+        const state = createNineZoneState();
+        const frontstageDef = new FrontstageDef();
+        const leftPanelDef = new StagePanelDef();
+        leftPanelDef.initializeFromProps({
+          resizable: true,
+          widgets: [
+            <Widget
+              key="w1"
+              id="w1"
+            />,
+          ],
+          panelZones: {
+            start: {
+              widgets: [
+                <Widget
+                  key="w1"
+                  id="w1"
+                />,
+              ],
+            },
+            end: {
+              widgets: [
+                <Widget
+                  key="w1"
+                  id="w1"
+                />,
+              ],
+            },
+          },
+        }, StagePanelLocation.Bottom);
+        const rightPanelDef = new StagePanelDef();
+        rightPanelDef.initializeFromProps({
+          resizable: true,
+          widgets: [
+            <Widget
+              key="w1"
+              id="w1"
+            />,
+          ],
+        }, StagePanelLocation.BottomMost);
+        sinon.stub(frontstageDef, "leftPanel").get(() => leftPanelDef);
+        sinon.stub(frontstageDef, "rightPanel").get(() => rightPanelDef);
+
+        const newState = addMissingWidgets(frontstageDef, state);
+        const widgets =  Object.values(newState.widgets);
+        const widgetIds = widgets.reduce<Array<string>>((acc, w) => {
+          acc.push(w.id);
+          return acc;
+        }, []);
+        const tabs = widgets.reduce<Array<string>>((acc, w) => {
+          acc.push(...w.tabs);
+          return acc;
+        }, []);
+
+        widgetIds.should.eql(["leftStart"]);
+        tabs.should.eql(["w1"]);
+        newState.widgets.leftStart.tabs.should.eql(["w1"]);
+      });
     });
 
     describe("dynamic widgets", () => {
@@ -2001,7 +2170,7 @@ describe("Frontstage local storage wrapper", () => {
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
-        expect (widgetDef).to.not.be.undefined;
+        expect(widgetDef).to.not.be.undefined;
 
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         // should be hidden initially
@@ -2031,7 +2200,7 @@ describe("Frontstage local storage wrapper", () => {
 
         await FrontstageManager.setActiveFrontstageDef(frontstageDef);
         const widgetDef = frontstageDef?.findWidgetDef("TestHiddenWidgetProviderLM1");
-        expect (widgetDef).to.not.be.undefined;
+        expect(widgetDef).to.not.be.undefined;
 
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         // should be hidden initially
@@ -2054,7 +2223,7 @@ describe("Frontstage local storage wrapper", () => {
         const spy = sinon.stub(frontstageDef!, "setIsApplicationClosing");
         const wrapper = render(<Provider store={TestUtils.store}><WidgetPanelsFrontstage /></Provider>);
         spy.calledOnce.should.true;
-        window.dispatchEvent(new Event("beforeunload"));
+        window.dispatchEvent(new Event("unload"));
         spy.calledTwice.should.true;
         wrapper.unmount();
       });
@@ -2152,7 +2321,7 @@ describe("Frontstage local storage wrapper", () => {
         state.panels.bottom.widgets.should.eql(["bottomStart", "bottomEnd"]);
 
         state.widgets.leftStart.tabs.should.eql(["CenterLeft1", "LeftStart1"]);
-        state.widgets.leftEnd.tabs.should.eql(["BottomLeft1", "LeftMiddle1", "LeftEnd1","Left1"]);
+        state.widgets.leftEnd.tabs.should.eql(["BottomLeft1", "LeftMiddle1", "LeftEnd1", "Left1"]);
 
         state.widgets.rightStart.tabs.should.eql(["CenterRight1", "RightStart1"]);
         state.widgets.rightEnd.tabs.should.eql(["BottomRight1", "RightMiddle1", "RightEnd1", "Right1"]);

@@ -28,6 +28,7 @@ import { ScreenViewport } from "./Viewport";
  * can be used many times by many SpriteLocations and a single SpriteLocation can
  * change both position and which Sprite is shown at that position over time.
  * @public
+ * @extensions
  */
 export class Sprite {
   /** The image for this Sprite. If undefined, the Spite is not valid. */
@@ -60,6 +61,7 @@ export class Sprite {
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.
  * They are cached by name, and the cache is cleared when the ToolAdmin is shut down.
  * @public
+ * @extensions
  */
 export class IconSprites {
   private static readonly _sprites = new Map<string, Sprite>();
@@ -85,6 +87,7 @@ export class IconSprites {
  *
  * A SpriteLocation can also specify that a Sprite should be drawn partially transparent.
  * @public
+ * @extensions
  */
 export class SpriteLocation implements CanvasDecoration {
   private _viewport?: ScreenViewport;

@@ -1,6 +1,66 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Thu, 31 Mar 2022 15:55:48 GMT and should not be manually modified.
+This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:37 GMT
+
+### Updates
+
+- Add support for nth level element selection scopes
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:57 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Repository model label calculation fix
+- Move schemas preloading logic from PresentationManager to Presentation.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
 
 ## 3.1.1
 Thu, 31 Mar 2022 15:55:48 GMT

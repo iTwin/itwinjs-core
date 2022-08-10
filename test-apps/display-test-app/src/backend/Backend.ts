@@ -11,18 +11,17 @@ import { IModelBankClient } from "@bentley/imodelbank-client";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelbank-client/lib/cjs/imodelhub-node";
-import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { AndroidHost, IOSHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { app } from "electron";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -159,11 +158,20 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return fileName;
   }
 
+  public override async getEnvConfig(): Promise<DtaConfiguration> {
+    return getConfig();
+  }
+
   public override async terminate() {
     await IModelHost.shutdown();
 
     // Electron only
-    if (app !== undefined) app.exit();
+    try {
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      if (app !== undefined) app.exit();
+    } catch {
+
+    }
 
     // Browser only
     if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
@@ -191,7 +199,7 @@ export const loadBackendConfig = (): DtaConfiguration => {
 export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & MobileHostOpts) => {
   const dtaConfig = loadBackendConfig();
 
-  const iModelHost = new IModelHostConfiguration();
+  const iModelHost: IModelHostOptions = {};
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
@@ -199,7 +207,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     const hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
     iModelHost.hubAccess = new IModelHubBackend(hubClient);
   } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   }
 
@@ -238,10 +246,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     if (authClient)
       await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
-  } else if (ProcessDetector.isIOSAppBackend) {
-    await IOSHost.startup(opts);
-  } else if (ProcessDetector.isAndroidAppBackend) {
-    await AndroidHost.startup(opts);
+  } else if (ProcessDetector.isIOSAppBackend || ProcessDetector.isAndroidAppBackend) {
+    await MobileHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);

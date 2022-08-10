@@ -7,6 +7,7 @@
  */
 
 import { compareStrings, Id64, Id64Arg, Id64String, SortedArray } from "@itwin/core-bentley";
+import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { Viewport } from "./Viewport";
 
@@ -17,6 +18,7 @@ import { Viewport } from "./Viewport";
  * will be visible, regardless of any [SubCategoryOverride]($common)s applied by the view's [[DisplayStyleState]].
  * @see [[Viewport.perModelCategoryVisibility]] to define the per-model category visibility for a viewport.
  * @public
+ * @extensions
  */
 export namespace PerModelCategoryVisibility {
   /** Describes whether and how a category's visibility is overridden. */
@@ -47,12 +49,29 @@ export namespace PerModelCategoryVisibility {
     getOverride(modelId: Id64String, categoryId: Id64String): Override;
     /** Changes the override state of one or more categories for one or more models. */
     setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+    /** Changes multiple overrides, given an array of overrides *
+     * @beta
+     */
+    setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
     /** Removes all overrides for the specified models, or for all models if `modelIds` is undefined. */
     clearOverrides(modelIds?: Id64Arg): void;
     /** An iterator over all of the visibility overrides. */
     [Symbol.iterator]: () => Iterator<OverrideEntry>;
     /** Populate the symbology overrides based on the per-model category visibility. */
     addOverrides(fs: FeatureSymbology.Overrides, ovrs: Id64.Uint32Map<Id64.Uint32Set>): void;
+  }
+
+  /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
+   * @see [[PerModelCategoryVisibility.Overrides.setOverrides]].
+   * @beta
+  */
+  export interface Props {
+    /** The id of the model to which the overrides apply. */
+    modelId: string;
+    /** The ids of the categories whose visibility are to be overridden within the context of the model. */
+    categoryIds: Iterable<Id64String>;
+    /** The visibility to be applied to the specified categories. */
+    visOverride: PerModelCategoryVisibility.Override;
   }
 
   export function createOverrides(viewport: Viewport): PerModelCategoryVisibility.Overrides {
@@ -102,27 +121,73 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       return PerModelCategoryVisibility.Override.None;
   }
 
-  public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
+  /**
+   * set the overrides for multiple perModelCategoryVisibility props, loading categoryIds from the iModel if necessary.
+   * @see [[PerModelCategoryVisibility]]
+   * @param perModelCategoryVisibility array of model category visibility overrides @see [[PerModelCategoryVisibility.Props]]
+   * @param iModel Optional param iModel. If no iModel is provided, then the iModel associated with the viewport (used to construct this class) is used.
+   * This optional iModel param is useful for apps which may show multiple iModels at once. Passing in an iModel ensures that the subcategories cache for the provided iModel
+   * is populated as opposed to the iModel associated with the viewport which may or may not be an empty iModel.
+   * @returns a promise that resolves once the overrides have been applied.
+   */
+  public async setOverrides(perModelCategoryVisibility: PerModelCategoryVisibility.Props[], iModel?: IModelConnection): Promise<void> {
+    let anyChanged = false;
+    const catIdsToLoad: string[] = [];
+    const iModelToUse = iModel ? iModel : this._vp.iModel;
+    for (const override of perModelCategoryVisibility) {
+      const modelId = override.modelId;
+      // The caller may pass a single categoryId as a string, if we don't convert this to an array we will iterate
+      // over each individual character of that string, which is not the desired behavior.
+      const categoryIds = typeof override.categoryIds === "string" ? [override.categoryIds] : override.categoryIds;
+      const visOverride = override.visOverride;
+      for (const categoryId of categoryIds) {
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, visOverride)) {
+          anyChanged = true;
+          if (PerModelCategoryVisibility.Override.None !== visOverride) {
+            catIdsToLoad.push(categoryId);
+          }
+        }
+      }
+    }
+    if (anyChanged) {
+      this._vp.setViewedCategoriesPerModelChanged();
+      if (catIdsToLoad.length !== 0) {
+        this._vp.subcategories.push(iModelToUse.subcategories, catIdsToLoad, () => this._vp.setViewedCategoriesPerModelChanged());
+      }
+    }
+    return;
+  }
+
+  /** Find and update the override in the array of overrides. If override not found, adds it to the array.
+   *  If the array was changed, returns true. */
+  private findAndUpdateOverrideInArray(modelId: Id64String, categoryId: Id64String, override: PerModelCategoryVisibility.Override): boolean {
     const ovr = this._scratch;
+    ovr.reset(modelId, categoryId, false);
+    let changed = false;
+    const index = this.indexOf(ovr);
+    if (-1 === index) {
+      if (PerModelCategoryVisibility.Override.None !== override) {
+        this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
+        changed = true;
+      }
+    } else {
+      if (PerModelCategoryVisibility.Override.None === override) {
+        this._array.splice(index, 1);
+        changed = true;
+      } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
+        this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  public setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: PerModelCategoryVisibility.Override): void {
     let changed = false;
     for (const modelId of Id64.iterable(modelIds)) {
       for (const categoryId of Id64.iterable(categoryIds)) {
-        ovr.reset(modelId, categoryId, false);
-        const index = this.indexOf(ovr);
-        if (-1 === index) {
-          if (PerModelCategoryVisibility.Override.None !== override) {
-            this.insert(new PerModelCategoryVisibilityOverride(modelId, categoryId, PerModelCategoryVisibility.Override.Show === override));
-            changed = true;
-          }
-        } else {
-          if (PerModelCategoryVisibility.Override.None === override) {
-            this._array.splice(index, 1);
-            changed = true;
-          } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
-            this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
-            changed = true;
-          }
-        }
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, override))
+          changed = true;
       }
     }
 

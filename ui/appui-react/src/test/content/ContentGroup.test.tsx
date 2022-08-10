@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import * as sinon from "sinon";
-import { Logger } from "@itwin/core-bentley";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroup, ContentGroupProps, ContentProps,
   NavigationAidControl,
@@ -52,22 +50,6 @@ describe("ContentGroup", () => {
     ConfigurableUiManager.registerControl("TestContentControl", TestNavigationAidControl);
     expect(() => contentGroup.getContentControl(contentProps, 0)).to.throw(Error);
     ConfigurableUiManager.unregisterControl("TestContentControl");
-  });
-
-  it("ContentGroup.getControlFromElement should log Error if passed an invalid node", () => {
-    const spyMethod = sinon.spy(Logger, "logError");
-
-    const contentProps: ContentProps = { id: "myContent", classId: "TestContentControl" };
-    const groupProps: ContentGroupProps = {
-      id: "testGroup",
-      layout: StandardContentLayouts.singleView,
-      contents: [contentProps],
-    };
-    const contentGroup = new ContentGroup(groupProps);
-
-    contentGroup.getControlFromElement(null);
-
-    spyMethod.called.should.true;
   });
 
   it("ContentGroup.toJSON should throw Error if class not registered", () => {

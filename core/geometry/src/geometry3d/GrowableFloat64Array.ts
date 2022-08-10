@@ -29,20 +29,57 @@ export type BlockComparisonFunction = (data: Float64Array, blockSize: number, in
 export class GrowableFloat64Array {
   private _data: Float64Array;
   private _inUse: number;
-  constructor(initialCapacity: number = 8) {
+  private _growthFactor: number;
+
+  /** Construct a GrowableFloat64Array.
+   * @param initialCapacity initial capacity (default 8)
+   * @param growthFactor used by ensureCapacity to expand requested reallocation size (default 1.5)
+   */
+  constructor(initialCapacity: number = 8, growthFactor?: number) {
     this._data = new Float64Array(initialCapacity);
     this._inUse = 0;
+    this._growthFactor = (undefined !== growthFactor && growthFactor >= 1.0) ? growthFactor : 1.5;
   }
+
+  /** Copy data from source array. Does not reallocate or change active entry count.
+   * @param source array to copy from
+   * @param sourceCount copy the first sourceCount entries; all entries if undefined
+   * @param destOffset copy to instance array starting at this index; zero if undefined
+   * @return count and offset of entries copied
+   */
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+    let myOffset = destOffset ?? 0;
+    if (myOffset < 0)
+      myOffset = 0;
+    if (myOffset >= this._data.length)
+      return {count: 0, offset: 0};
+    let myCount = sourceCount ?? source.length;
+    if (myCount > 0) {
+      if (myCount > source.length)
+        myCount = source.length;
+      if (myOffset + myCount > this._data.length)
+        myCount = this._data.length - myOffset;
+    }
+    if (myCount <= 0)
+      return {count: 0, offset: 0};
+    if (myCount === source.length)
+      this._data.set(source, myOffset);
+    else if (source instanceof Float64Array)
+      this._data.set(source.subarray(0, myCount), myOffset);
+    else
+      this._data.set(source.slice(0, myCount), myOffset);
+    return {count: myCount, offset: myOffset};
+  }
+
   /**
    * Create a GrowableFloat64Array with given contents.
    * @param contents data to copy into the array
    */
   public static create(contents: Float64Array | number[]): GrowableFloat64Array {
-    const result = new GrowableFloat64Array(contents.length);
-    for (const a of contents) {
-      result.push(a);
-    }
-    return result;
+    const out = new GrowableFloat64Array(contents.length);
+    out.copyData(contents);
+    out._inUse = contents.length;
+    return out;
   }
   /** sort-compatible comparison.
    * * Returns `(a-b)` which is
@@ -58,11 +95,9 @@ export class GrowableFloat64Array {
    * * optionally trimmed capacity to the active length or replicate the capacity and unused space.
    */
   public clone(maintainExcessCapacity: boolean = false): GrowableFloat64Array {
-    const n = this._inUse;
-    const data = this._data;
-    const out = new GrowableFloat64Array(maintainExcessCapacity ? this.capacity() : n);
-    for (let i = 0; i < n; i++)
-      out.push(data[i]);
+    const out = new GrowableFloat64Array(maintainExcessCapacity ? this.capacity() : this._inUse);
+    out.copyData(this._data, this._inUse);
+    out._inUse = this._inUse;
     return out;
   }
   /**
@@ -105,39 +140,30 @@ export class GrowableFloat64Array {
    * @param toPush value to append to the active array.
    */
   public push(toPush: number) {
-    if (this._inUse + 1 <= this._data.length) {
-      this._data[this._inUse] = toPush;
-      this._inUse++;
-    } else {
-      // Make new array (double size), copy values, then push toPush
-      const newData = new Float64Array(4 + this._inUse * 2);
-      for (let i = 0; i < this._inUse; i++) {
-        newData[i] = this._data[i];
-      }
-      this._data = newData;
-      this._data[this._inUse] = toPush;
-      this._inUse++;
-    }
+    this.ensureCapacity(this._inUse + 1);
+    this._data[this._inUse] = toPush;
+    this._inUse++;
   }
   /**
    * Push each value from an array.
    * @param data array of values to push
    */
   public pushArray(data: Float64Array | number[]) {
-    for (const a of data) this.push(a);
+    this.ensureCapacity(this._inUse + data.length);
+    this.copyData(data, data.length, this._inUse);
+    this._inUse += data.length;
   }
-  /** Push a `numToCopy` consecutive values starting at `copyFromIndex` to the end of the array. */
+  /** Push `numToCopy` consecutive values starting at `copyFromIndex`. */
   public pushBlockCopy(copyFromIndex: number, numToCopy: number) {
-    const newLength = this._inUse + numToCopy;
-    this.ensureCapacity(newLength);
-    const limit = copyFromIndex + numToCopy;
-    for (let i = copyFromIndex; i < limit; i++)
-      this._data[this._inUse++] = this._data[i];
+    if (copyFromIndex >= 0 && copyFromIndex < this._inUse && numToCopy > 0 && copyFromIndex + numToCopy <= this._inUse) {
+      this.ensureCapacity(this._inUse + numToCopy);
+      this._data.copyWithin(this._inUse, copyFromIndex, copyFromIndex + numToCopy);
+      this._inUse += numToCopy;
+    }
   }
   /** Clear the array to 0 length.  The underlying memory remains allocated for reuse. */
   public clear() {
-    while (this._inUse > 0)
-      this.pop();
+    this._inUse = 0;
   }
   /**
    * Returns the number of entries in the supporting Float64Array buffer.
@@ -147,36 +173,34 @@ export class GrowableFloat64Array {
     return this._data.length;
   }
   /**
-   * * If the capacity (Float64Array length) is less than or equal to the requested newCapacity, do nothing
-   * * If the requested newCapacity is larger than the existing capacity, reallocate (and copy existing values) with the larger capacity.
-   * @param newCapacity
+   * * If the capacity (Float64Array length) is less than or equal to the requested newCapacity, do nothing.
+   * * If the requested newCapacity is larger than the existing capacity, reallocate to larger capacity, and copy existing values.
+   * @param newCapacity size of new array
+   * @param applyGrowthFactor whether to apply the growth factor to newCapacity when reallocating
    */
-  public ensureCapacity(newCapacity: number) {
+  public ensureCapacity(newCapacity: number, applyGrowthFactor: boolean = true) {
     if (newCapacity > this.capacity()) {
-      const oldInUse = this._inUse;
-      const newData = new Float64Array(newCapacity);
-      for (let i = 0; i < oldInUse; i++)
-        newData[i] = this._data[i];
-      this._data = newData;
+      if (applyGrowthFactor)
+        newCapacity *= this._growthFactor;
+      const prevData = this._data;
+      this._data = new Float64Array(newCapacity);
+      this.copyData(prevData, this._inUse);
     }
   }
   /**
-   * * If newLength is less than current (active) length, just set (active) length.
-   * * If newLength is greater, ensureCapacity (newSize) and pad with padValue up to newSize;
+   * * If newLength is less than current length, just reset current length to newLength, effectively trimming active entries but preserving original capacity.
+   * * If newLength is greater than current length, reallocate to (exactly) newLength, copy existing entries, and pad with padValue up to newLength.
    * @param newLength new data count
    * @param padValue value to use for padding if the length increases.
    */
   public resize(newLength: number, padValue: number = 0) {
-    // quick out for easy case ...
-    if (newLength <= this._inUse) {
+    if (newLength >= 0 && newLength < this._inUse)
       this._inUse = newLength;
-      return;
+    else if (newLength > this._inUse) {
+      this.ensureCapacity(newLength, false);
+      this._data.fill(padValue, this._inUse);
+      this._inUse = newLength;
     }
-    const oldLength = this._inUse;
-    this.ensureCapacity(newLength);
-    for (let i = oldLength; i < newLength; i++)
-      this._data[i] = padValue;
-    this._inUse = newLength;
   }
   /**
    * * Reduce the length by one.

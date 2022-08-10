@@ -15,6 +15,7 @@ import { ViewState } from "../ViewState";
 
 /** Contains types that enable an application to customize how [Feature]($common)s are drawn within a [[Viewport]].
  * @public
+ * @extensions
  */
 export namespace FeatureSymbology {
   /** An object that serves as the source of a [[FeatureSymbology.Overrides]].
@@ -155,9 +156,9 @@ export namespace FeatureSymbology {
           this.override({ modelId: realityModel.modelId, appearance: realityModel.appearanceOverrides });
       });
 
-      const script = style.scheduleState;
+      const script = style.scheduleScript;
       if (script)
-        script.getSymbologyOverrides(this, style.settings.timePoint ?? 0);
+        script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
       if (!view.is3d())
         return;

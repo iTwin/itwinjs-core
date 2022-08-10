@@ -36,12 +36,12 @@ There are two forms of iModels:
 
 The contents of an iModel are defined by [BIS](../bis/index.md) classes.
 
-- ✔️️ [Elements](../bis/intro/element-fundamentals.md)
-- ✔️️ [ElementAspects](../bis/intro/elementaspect-fundamentals.md)
-- ✔️️ [Models](../bis/intro/model-fundamentals.md)
-- ✔️️ [Relationships](../bis/intro/relationship-fundamentals.md)
-- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/intro/information-hierarchy.md)
-- ✔️️ [Categories](../bis/intro/categories.md)
+- ✔️️ [Elements](../bis/guide/fundamentals/element-fundamentals.md)
+- ✔️️ [ElementAspects](../bis/guide/fundamentals/elementaspect-fundamentals.md)
+- ✔️️ [Models](../bis/guide/fundamentals/model-fundamentals.md)
+- ✔️️ [Relationships](../bis/guide/fundamentals/relationship-fundamentals.md)
+- ✔️️ Subjects and Partitions which form the [information hierarchy](../bis/guide/fundamentals/information-hierarchy.md)
+- ✔️️ [Categories](../bis/guide/fundamentals/categories.md)
 
 ### GeoLocation
 
@@ -203,19 +203,19 @@ Examples:
 
 ## User Interface
 
-The [9-Zone UI](./learning/ui/ninezone/index.md) UX pattern organizes the screen into 9 purpose-specific zones for ease of use and consistency.
+The [AppUI](./learning/ui/appui/index) UX pattern provides specific zones for tools and tool settings, and allow panels around the main content area to be populated with widgets that interact with an iModel.
 
-The iTwin.js UI layer is based in React, so its UI controls can be added to existing web apps.
+The iTwin.js UI layer is based in React, so its UI controls can be added to existing iModelApp-based applications that can run in a browser or on a desktop that runs Electron.
 
 ### UI Controls
 
-Controls built to implement a UI using the 9-zone pattern.
+Controls built to participate in the AppUI pattern.
 
-- ✔️ [Widgets](./learning/ui/framework/Widgets.md)
+- ✔️ [Widgets](./learning/ui/appui-react/Widgets.md)
 - ✔️ Toolbars
-- ✔️ [Backstage](./learning/ui/framework/Backstage.md)
-- ✔️ [Frontstages](./learning/ui/framework/Frontstages.md)
-- ✔️ [Stage Panels](./learning/ui/framework/StagePanels.md)
+- ✔️ [Backstage](./learning/ui/appui-react/Backstage.md)
+- ✔️ [Frontstages](./learning/ui/appui-react/Frontstages.md)
+- ✔️ [Stage Panels](./learning/ui/appui-react/StagePanels.md)
 - ✔️ View Layout system to configure the working area.
 
 ### Data-driven controls

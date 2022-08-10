@@ -244,6 +244,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
  * @see [Display system overview]($docs/learning/display/index.md)
  * @see [[IModelApp.renderSystem]].
  * @public
+ * @extensions
  */
 export abstract class RenderSystem implements IDisposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
@@ -418,11 +419,11 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_params: RealityMeshGraphicParams): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
@@ -852,6 +853,12 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      * @internal
      */
     contextAttributes?: WebGLContextAttributes;
+
+    /** If true, will cause exception when a shader uniform is missing (usually optimized out), otherwise will only log these.
+     * Default value: false
+     * @public
+     */
+    errorOnMissingUniform?: boolean;
 
     /** If true, and the `WEBGL_debug_shaders` extension is available, accumulate debug information during shader compilation.
      * This information can be accessed via `RenderSystemDebugControl.debugShaderFiles`.

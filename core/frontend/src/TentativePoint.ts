@@ -16,7 +16,10 @@ import { ViewHandleType, ViewManip } from "./tools/ViewTool";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export class TentativePoint {
   public isActive = false;
   public currSnap?: SnapDetail;
@@ -254,7 +257,7 @@ export class TentativePoint {
         if (currTool && currTool instanceof ViewManip && currTool.viewHandles.hasHandle(ViewHandleType.TargetCenter))
           currTool.updateTargetCenter(); // Change target center to tentative location...
         else
-          IModelApp.toolAdmin.updateDynamics(); // Don't wait for motion to update tool dynamics...
+          IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
       }
     });
   }

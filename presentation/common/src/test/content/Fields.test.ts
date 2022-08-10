@@ -120,13 +120,32 @@ describe("PropertiesField", () => {
         category,
         properties: [{ property: createTestPropertyInfo() }],
       }).toJSON();
-      const field = Field.fromJSON(json, [category]);
+      const field = PropertiesField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 
     it("returns undefined for undefined JSON", () => {
       const field = PropertiesField.fromJSON(undefined, []);
       expect(field).to.be.undefined;
+    });
+
+    it("creates valid PropertiesField from valid JSON with navigation property", () => {
+      const category = createTestCategoryDescription();
+      const json = createTestPropertiesContentField({
+        category,
+        properties: [{
+          property: createTestPropertyInfo({
+            navigationPropertyInfo: {
+              classInfo: createTestECClassInfo(),
+              isForwardRelationship: false,
+              targetClassInfo: createTestECClassInfo(),
+              isTargetPolymorphic: true,
+            },
+          }),
+        }],
+      }).toJSON();
+      const field = PropertiesField.fromJSON(json, [category]);
+      expect(field).to.matchSnapshot();
     });
 
   });
@@ -252,7 +271,7 @@ describe("NestedContentField", () => {
         category,
         nestedFields: [createTestSimpleContentField({ category })],
       }).toJSON();
-      const field = Field.fromJSON(json, [category]);
+      const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 
@@ -263,7 +282,7 @@ describe("NestedContentField", () => {
         nestedFields: [createTestSimpleContentField({ category })],
         relationshipMeaning: RelationshipMeaning.SameInstance,
       }).toJSON();
-      const field = Field.fromJSON(json, [category]);
+      const field = NestedContentField.fromJSON(json, [category]);
       expect(field).to.matchSnapshot();
     });
 

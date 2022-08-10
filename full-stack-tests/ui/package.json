@@ -1,0 +1,23 @@
+{
+  "name": "ui-end-to-end-tests",
+  "version": "0.0.0",
+  "description": "UI full stack tests",
+  "license": "MIT",
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "private": true,
+  "scripts": {
+    "build": "",
+    "build:ci": "",
+    "clean": "",
+    "cover": "",
+    "docs": "",
+    "lint": "",
+    "test": ""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.24.1"
+  }
+}

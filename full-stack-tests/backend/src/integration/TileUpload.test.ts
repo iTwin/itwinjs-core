@@ -7,13 +7,14 @@ import * as zlib from "zlib";
 import * as Azure from "@azure/storage-blob";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, EdgeType, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
+  BatchType, CloudStorageTileCache, ContentIdProvider, defaultTileOptions, IModelRpcProps, IModelTileRpcInterface, iModelTileTreeIdToString,
   RpcManager, RpcRegistry, TileContentSource,
 } from "@itwin/core-common";
-import { GeometricModel3d, IModelDb, IModelHost, IModelHostConfiguration, RpcTrace } from "@itwin/core-backend";
-import { HubWrappers, TestUtils } from "@itwin/core-backend/lib/cjs/test";
+import { GeometricModel3d, IModelDb, IModelHost, IModelHostOptions, RpcTrace } from "@itwin/core-backend";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { HubUtility } from "../HubUtility";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { startupForIntegration } from "./StartupShutdown";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -35,7 +36,7 @@ export async function getTileProps(iModel: IModelDb): Promise<TileContentRequest
     if (model.isNotSpatiallyLocated || model.isTemplate)
       continue;
 
-    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: EdgeType.None }, defaultTileOptions);
+    const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, defaultTileOptions);
     const treeProps = await iModel.tiles.requestTileTreeProps(treeId);
     // Ignore empty tile trees.
     if (treeProps.rootTile.maximumSize === 0 && treeProps.rootTile.isLeaf === true)
@@ -67,17 +68,17 @@ describe("TileUpload", () => {
 
   before(async () => {
     // Shutdown IModelHost to allow this test to use it.
-    await TestUtils.shutdownBackend();
-
-    const config = new IModelHostConfiguration();
+    await IModelHost.shutdown();
 
     // Default account and key for azurite
-    config.tileCacheAzureCredentials = {
-      account: "devstoreaccount1",
-      accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+    const config: IModelHostOptions = {
+      tileCacheAzureCredentials: {
+        account: "devstoreaccount1",
+        accessKey: "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==",
+      },
     };
 
-    await TestUtils.startBackend(config);
+    await startupForIntegration(config);
 
     assert.isTrue(IModelHost.usingExternalTileCache);
     IModelHost.applicationId = "TestApplication";
@@ -90,7 +91,7 @@ describe("TileUpload", () => {
     testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
 
     // Get URL for cached tile
-    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheAzureCredentials.account, config.tileCacheAzureCredentials.accessKey);
+    const credentials = new Azure.StorageSharedKeyCredential(config.tileCacheAzureCredentials!.account, config.tileCacheAzureCredentials!.accessKey);
     const pipeline = Azure.newPipeline(credentials);
     blobService = new Azure.BlobServiceClient(`http://127.0.0.1:10000/${credentials.accountName}`, pipeline);
 
@@ -105,8 +106,8 @@ describe("TileUpload", () => {
 
   after(async () => {
     // Re-start backend with default config
-    await TestUtils.shutdownBackend();
-    await TestUtils.startBackend();
+    await IModelHost.shutdown();
+    await startupForIntegration();
   });
 
   it("should upload tile to external cache with metadata", async () => {

@@ -15,7 +15,7 @@ import {
   OutputMessageType, ToolAssistanceInstructions, ToolTipOptions,
 } from "@itwin/core-frontend";
 import { MessageSeverity, UiEvent } from "@itwin/appui-abstract";
-import { MessageContainer } from "@itwin/core-react";
+import { MessageContainer, ReactMessage } from "@itwin/core-react";
 import { ConfigurableUiActionId } from "../configurableui/state";
 import { ModalDialogManager } from "../dialog/ModalDialogManager";
 import { StandardMessageBox } from "../dialog/StandardMessageBox";
@@ -25,6 +25,8 @@ import { MessageSpan } from "./MessageSpan";
 import { PointerMessage } from "./Pointer";
 import { NotifyMessageDetailsType, NotifyMessageType } from "./ReactNotifyMessageDetails";
 import { StatusMessageManager } from "./StatusMessageManager";
+import { Small, toaster, ToastOptions } from "@itwin/itwinui-react";
+import { ToasterSettings } from "@itwin/itwinui-react/cjs/core/Toast/Toaster";
 
 class MessageBoxCallbacks {
   constructor(
@@ -144,6 +146,7 @@ export class MessageManager {
   private static _ongoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
   private static _lastMessage?: NotifyMessageDetailsType;
   private static _activeMessageManager = new StatusMessageManager();
+  private static _animateOutToElement: HTMLElement | null;
 
   /** The MessageAddedEvent is fired when a message is added via outputMessage(). */
   public static readonly onMessageAddedEvent = new MessageAddedEvent();
@@ -219,6 +222,54 @@ export class MessageManager {
     }
 
     MessageManager.addMessage(message);
+  }
+
+  /** Set the element where messages should be animated out to on exit.
+   * @param  element `HTMLElement` to animate out to.
+   */
+  public static registerAnimateOutToElement(element: HTMLElement | null) {
+    this._animateOutToElement = element;
+  }
+
+  /** Display a message.
+   * Works only with `Sticky` and `Toast` message types.
+   * @param  message  Details about the message to display.
+   * @param options Optionally override individual toast parameters.
+   * @param settings Optionally override all toasts settings (i.e. placement or order).
+   * @returns Object with reference to the message (i.e. to close it programmatically) if it was displayed.
+   */
+  public static displayMessage(message: NotifyMessageDetailsType, options?: ToastOptions, settings?: ToasterSettings) {
+    if (message.msgType !== OutputMessageType.Sticky && message.msgType !== OutputMessageType.Toast) {
+      return;
+    }
+    const toastOptions: ToastOptions = {
+      hasCloseButton: true,
+      duration: message.displayTime.milliseconds,
+      type:
+        message.msgType === OutputMessageType.Sticky
+          ? "persisting"
+          : "temporary",
+      animateOutTo: this._animateOutToElement,
+      ...options,
+    };
+    toaster.setSettings({ placement: "bottom", order: "ascending", ...settings });
+    const content = <>
+      {message.briefMessage}
+      {message.detailedMessage &&
+      <Small>{(message.detailedMessage as ReactMessage).reactNode || message.detailedMessage}</Small>
+      }
+    </>;
+    switch (message.priority) {
+      case OutputMessagePriority.Warning:
+        return toaster.warning(content, toastOptions);
+      case OutputMessagePriority.Info:
+        return toaster.informational(content, toastOptions);
+      case OutputMessagePriority.Error:
+      case OutputMessagePriority.Fatal:
+        return toaster.negative(content, toastOptions);
+      default:
+        return toaster.positive(content, toastOptions);
+    }
   }
 
   /** Output a message and/or alert to the user.

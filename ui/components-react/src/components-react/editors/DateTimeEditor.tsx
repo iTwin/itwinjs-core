@@ -156,6 +156,8 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
         initialValue = new Date(record.value.value);
       else if (typeof record.value.value === "string")
         initialValue = new Date(record.value.value);
+      else if (record.value.value === undefined)
+        initialValue = new Date();
 
       typeConverter = TypeConverterManager.getConverter(record.property.typename, record.property.converter?.name);
 

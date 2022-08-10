@@ -31,13 +31,16 @@ interface MessageCenterState {
   activeTab: MessageCenterActiveTab;
   target: HTMLDivElement | null;
   messageCount: number;
+  openWidget: string | null;
 }
 
 /** Properties for withMessageCenterFieldProps HOC.
  * @public
  */
 export interface MessageCenterFieldProps extends StatusFieldProps {
-  /** Message center dialog target. */
+  /** Message center dialog target.
+   * @deprecated Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
+  */
   targetRef?: React.Ref<HTMLElement>;
 }
 
@@ -51,23 +54,26 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   private _unloadMessagesUpdatedHandler?: () => void;
   private _removeOpenMessagesCenterHandler?: () => void;
 
-  public override readonly state: Readonly<MessageCenterState> = {
-    activeTab: MessageCenterActiveTab.AllMessages,
-    target: null,
-    messageCount: MessageManager.messages.length,
-  };
-
   constructor(p: MessageCenterFieldProps) {
     super(p);
 
     const instance = this.constructor;
     this._className = instance.name;
+
+    this.state = {
+      activeTab: MessageCenterActiveTab.AllMessages,
+      target: null,
+      messageCount: MessageManager.messages.length,
+      // eslint-disable-next-line deprecation/deprecation
+      openWidget: p.openWidget ?? null,
+    };
   }
 
   /** @internal */
   public override componentDidMount() {
     this._unloadMessagesUpdatedHandler = MessageManager.onMessagesUpdatedEvent.addListener(this._handleMessagesUpdatedEvent, this);
     this._removeOpenMessagesCenterHandler = MessageManager.onOpenMessageCenterEvent.addListener(this._handleOpenMessageCenterEvent, this);
+    MessageManager.registerAnimateOutToElement(this._indicator.current);
   }
 
   /** @internal */
@@ -107,15 +113,18 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
         >
           <MessageCenter
             indicatorRef={this._indicator}
-            isInFooterMode={this.props.isInFooterMode}
-            label={this.props.isInFooterMode ? this._title : undefined}
+            // eslint-disable-next-line deprecation/deprecation
+            isInFooterMode={this.props.isInFooterMode ?? true}
+            // eslint-disable-next-line deprecation/deprecation
+            label={(this.props.isInFooterMode ?? true) ? this._title : undefined}
             onClick={this._handleMessageIndicatorClick}
           >
             {this.state.messageCount.toString()}
           </MessageCenter>
         </div>
         <FooterPopup
-          isOpen={this.props.openWidget === this._className}
+          // eslint-disable-next-line deprecation/deprecation
+          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this.state.target}
@@ -150,10 +159,12 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   }
 
   private _handleTargetRef = (target: HTMLDivElement | null) => {
-    if (typeof this.props.targetRef === "function")
-      this.props.targetRef(target);
-    else if (this.props.targetRef)
-      (this.props.targetRef as React.MutableRefObject<HTMLElement | null>).current = target;
+    // eslint-disable-next-line deprecation/deprecation
+    const ref = this.props.targetRef;
+    if (typeof ref === "function")
+      ref(target);
+    else if (ref)
+      (ref as React.MutableRefObject<HTMLElement | null>).current = target;
     this.setState({ target });
   };
 
@@ -171,7 +182,8 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   };
 
   private _handleMessageIndicatorClick = () => {
-    const isOpen = this.props.openWidget === this._className;
+    // eslint-disable-next-line deprecation/deprecation
+    const isOpen = (this.props.openWidget ?? this.state.openWidget) === this._className;
     if (isOpen)
       this.setOpenWidget(null);
     else
@@ -223,8 +235,8 @@ export class MessageCenterField extends React.Component<MessageCenterFieldProps,
   }
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
+    // eslint-disable-next-line deprecation/deprecation
+    this.props.onOpenWidget?.(openWidget);
+    this.setState({openWidget});
   }
 }

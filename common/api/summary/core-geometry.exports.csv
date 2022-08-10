@@ -296,6 +296,7 @@ public;WriteableHasZ
 public;XAndY = Readonly
 public;XY 
 public;XYAndZ = Readonly
+public;XYAndZ
 public;XYProps =
 public;XYZ 
 public;XYZProps =

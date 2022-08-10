@@ -6,10 +6,12 @@
  * @module Symbology
  */
 
+import { compareNumbers } from "@itwin/core-bentley";
 import { ColorDef } from "./ColorDef";
 
 /** JSON representation of an [[RgbColor]], with each component an integer in the range [0, 255].
  * @public
+ * @extensions
  */
 export interface RgbColorProps {
   r: number;
@@ -69,5 +71,9 @@ export class RgbColor {
 
   public equals(rhs: RgbColor): boolean {
     return this.r === rhs.r && this.g === rhs.g && this.b === rhs.b;
+  }
+
+  public compareTo(other: RgbColor): number {
+    return compareNumbers(this.r, other.r) || compareNumbers(this.g, other.g) || compareNumbers(this.b, other.b);
   }
 }

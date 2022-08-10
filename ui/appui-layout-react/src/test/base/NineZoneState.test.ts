@@ -15,6 +15,8 @@ import {
 import {
   addWidgetTabToPanelSection,
   convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating,
+  isTabDragDropTargetState,
+  isWidgetDragDropTargetState,
   NineZoneState,
 } from "../../appui-layout-react/base/NineZoneState";
 
@@ -25,6 +27,26 @@ describe("isHorizontalPanelState", () => {
 
   it("returns false based on side property", () => {
     isHorizontalPanelState(createVerticalPanelState("left")).should.false;
+  });
+});
+
+describe("isWidgetDragDropTargetState", () => {
+  it("returns `true`", () => {
+    isWidgetDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
+    isWidgetDragDropTargetState({ type: "floatingWidget", newFloatingWidgetId: "", size: { height: 0, width: 0 } }).should.false;
+  });
+});
+
+describe("isTabDragDropTargetState", () => {
+  it("returns `true`", () => {
+    isTabDragDropTargetState({ type: "tab", tabIndex: 0, widgetId: "w1" }).should.true;
+  });
+
+  it("returns `false`", () => {
+    isTabDragDropTargetState({ type: "window" }).should.false;
   });
 });
 
@@ -405,7 +427,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "fw1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         (!!newState.floatingWidgets.byId.fw1).should.true;
@@ -432,7 +454,7 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_DRAG_END",
           floatingWidgetId: "w1",
           target: {
-            type: "floatingWidget",
+            type: "window",
           },
         });
         newState.floatingWidgets.byId.w1.bounds.should.eql({
@@ -494,8 +516,29 @@ describe("NineZoneStateReducer", () => {
       });
     });
 
+    describe("section target", () => {
+      it("should add a section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
+        state = addPanelWidget(state, "left", "w2", ["t2"]);
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_DRAG_END",
+          floatingWidgetId: "fw1",
+          target: {
+            type: "section",
+            newWidgetId: "newId",
+            side: "left",
+            sectionIndex: 1,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(3);
+        newState.panels.left.widgets[1].should.eq("newId");
+      });
+    });
+
     describe("widget target", () => {
-      it("should add widget", () => {
+      it("should add tabs to a section widget", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "w1", ["t1"]);
         state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -505,13 +548,26 @@ describe("NineZoneStateReducer", () => {
           floatingWidgetId: "fw1",
           target: {
             type: "widget",
-            newWidgetId: "newId",
-            side: "left",
-            widgetIndex: 1,
+            widgetId: "w2",
           },
         });
-        newState.panels.left.widgets.length.should.eq(3);
-        newState.panels.left.widgets[1].should.eq("newId");
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.widgets.w2.tabs.should.eql(["t2", "fwt1"]);
+      });
+
+      it("should add tabs to a floating widget", () => {
+        let state = createNineZoneState();
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
+        state = addFloatingWidget(state, "fw2", ["fwt2"]);
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_DRAG_END",
+          floatingWidgetId: "fw1",
+          target: {
+            type: "widget",
+            widgetId: "fw2",
+          },
+        });
+        newState.widgets.fw2.tabs.should.eql(["fwt2", "fwt1"]);
       });
     });
 
@@ -524,12 +580,12 @@ describe("NineZoneStateReducer", () => {
           floatingWidgetId: "fw1",
           target: {
             type: "panel",
-            newWidgetId: "newId",
+            newWidgetId: "leftStart",
             side: "left",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
-        newState.panels.left.widgets[0].should.eq("newId");
+        newState.panels.left.widgets[0].should.eq("leftStart");
       });
     });
   });
@@ -555,8 +611,7 @@ describe("NineZoneStateReducer", () => {
       });
       newState.widgets.leftStart.tabs.should.eql(["t0", "t1", "t2"]);
       should().not.exist(newState.widgets.fw1);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to specified `left` panel widget via function call", () => {
@@ -577,8 +632,7 @@ describe("NineZoneStateReducer", () => {
       const newState = dockWidgetContainer(state, "fw1", true);
       newState!.widgets.w1.tabs.should.eql(["t0", "t1", "t2"]);
       should().not.exist(newState!.widgets.fw1);
-      should().not.exist(newState!.floatingWidgets.byId.fw1);
-      newState!.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState!.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to specified `left` panel widget via tabId and function call", () => {
@@ -599,8 +653,7 @@ describe("NineZoneStateReducer", () => {
       const newState = dockWidgetContainer(state, "t1", false);
       newState!.widgets.w1.tabs.should.eql(["t0", "t1", "t2"]);
       should().not.exist(newState!.widgets.fw1);
-      should().not.exist(newState!.floatingWidgets.byId.fw1);
-      newState!.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState!.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to specified `right` panel widget", () => {
@@ -619,8 +672,7 @@ describe("NineZoneStateReducer", () => {
       });
       newState.widgets.w1.tabs.should.eql(["t0", "t1", "t2"]);
       should().not.exist(newState.widgets.fw1);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to widget container named same as floating widget when widgetId is undefined", () => {
@@ -644,8 +696,8 @@ describe("NineZoneStateReducer", () => {
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftStart.tabs.should.eql(["t1"]);
       newState.widgets.leftEnd.tabs.should.eql(["t2", "t3"]);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      should().not.exist(newState.widgets.fw1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to widget container by index when widgetId is undefined", () => {
@@ -669,8 +721,7 @@ describe("NineZoneStateReducer", () => {
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftEnd.tabs.should.eql(["t1"]);
       newState.widgets.leftStart.tabs.should.eql(["t2", "t3"]);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should send back to a newly created widget container if the container no longer exists because all widget tabs were floated", () => {
@@ -693,8 +744,8 @@ describe("NineZoneStateReducer", () => {
 
       newState.panels.left.widgets.should.eql(["w1", "w2"]);
       newState.widgets.w1.tabs.should.eql(["t1", "t2"]);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      should().not.exist(newState.widgets.fw1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
     });
 
     it("should re-dock floating insert to provided widgetIndex", () => {
@@ -719,9 +770,66 @@ describe("NineZoneStateReducer", () => {
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftStart.tabs.should.eql(["t1", "t2"]);
       newState.widgets.leftEnd.tabs.should.eql(["t3", "ft1", "ft2"]);
-      should().not.exist(newState.floatingWidgets.byId.fw1);
-      newState.floatingWidgets.allIds.indexOf("fw1").should.eq(-1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
       should().not.exist(newState.widgets.fw1);
+    });
+
+    it("should find saved state when re-adding a floating widget", () => {
+      let state = createNineZoneState();
+      state = addPanelWidget(state, "left", "leftStart", ["t1"], {
+        tabs: ["t0"],
+      });
+      state = addFloatingWidget(state, "fw1", ["fwt1"], {
+        home: {
+          side: "left",
+          widgetId: "leftStart",
+          widgetIndex: 0,
+        },
+      }, {
+        tabs: ["t1", "t2"],
+      });
+      const newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw1",
+      });
+      newState.widgets.leftStart.tabs.should.eql(["t0", "t1", "t2"]);
+      should().not.exist(newState.widgets.fw1);
+      expect(newState.floatingWidgets.byId.fw1.hidden).to.be.true;
+
+      const floatedState = addFloatingWidget(newState, "fw1", ["fwt1"], {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+      });
+
+      should().exist (floatedState?.widgets.fw1);
+      expect(floatedState?.floatingWidgets.byId.fw1.hidden).to.be.false;
+    });
+
+    it("should send back to existing panel section", () => {
+      let state = createNineZoneState();
+      state = addFloatingWidget(state, "fw1", ["t1"], {
+        home: {
+          side: "left",
+          widgetId: undefined,
+          widgetIndex: 0,
+        },
+      });
+      state = addFloatingWidget(state, "fw2", ["t2"], {
+        home: {
+          side: "left",
+          widgetId: undefined,
+          widgetIndex: 0,
+        },
+      });
+      let newState = NineZoneStateReducer(state, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw1",
+      });
+      newState = NineZoneStateReducer(newState, {
+        type: "FLOATING_WIDGET_SEND_BACK",
+        id: "fw2",
+      });
+      newState.panels.left.widgets.should.eql(["leftStart"]);
+      newState.widgets.leftStart.tabs.should.eql(["t1", "t2"]);
     });
   });
 
@@ -849,7 +957,7 @@ describe("NineZoneStateReducer", () => {
         side: undefined,
         widgetId: "fw1",
       });
-      (!!newState.floatingWidgets.byId.fw1).should.false;
+      (!!newState.floatingWidgets.byId.fw1.hidden).should.true;
     });
 
     it("should remove popout widget", () => {
@@ -996,7 +1104,7 @@ describe("NineZoneStateReducer", () => {
       });
     });
 
-    describe("widget target", () => {
+    describe("section target", () => {
       it("should add widget", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "leftStart", ["t1"]);
@@ -1009,10 +1117,10 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "widget",
+            type: "section",
             newWidgetId: "leftEnd",
             side: "left",
-            widgetIndex: 1,
+            sectionIndex: 1,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
@@ -1032,17 +1140,42 @@ describe("NineZoneStateReducer", () => {
           type: "WIDGET_TAB_DRAG_END",
           id: "dt",
           target: {
-            type: "widget",
-            newWidgetId: "",
+            type: "section",
+            newWidgetId: "nw1",
             side: "left",
-            widgetIndex: 1,
+            sectionIndex: 1,
           },
         });
         newState.panels.left.widgets.length.should.eq(2);
         newState.panels.left.widgets[0].should.eq("leftStart");
-        newState.panels.left.widgets[1].should.eq("leftEnd");
+        newState.panels.left.widgets[1].should.eq("nw1");
       });
 
+      it("should add widget to new panel start section", () => {
+        let state = createNineZoneState();
+        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = produce(state, (draft) => {
+          draft.draggedTab = createDraggedTabState("dt", {
+            position: new Point(100, 200).toProps(),
+          });
+        });
+        const newState = NineZoneStateReducer(state, {
+          type: "WIDGET_TAB_DRAG_END",
+          id: "dt",
+          target: {
+            type: "section",
+            newWidgetId: "nw1",
+            side: "left",
+            sectionIndex: 0,
+          },
+        });
+        newState.panels.left.widgets.length.should.eq(2);
+        newState.panels.left.widgets[0].should.eq("nw1");
+        newState.panels.left.widgets[1].should.eq("leftEnd");
+      });
+    });
+
+    describe("widget target", () => {
       it("should add widget to existing end panel section", () => {
         let state = createNineZoneState();
         state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
@@ -1056,9 +1189,7 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 1,
+            widgetId: "leftEnd",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
@@ -1078,18 +1209,16 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 0,
+            widgetId: "leftStart",
           },
         });
         newState.panels.left.widgets.length.should.eq(1);
         newState.panels.left.widgets[0].should.eq("leftStart");
       });
 
-      it("should add widget to new panel start section", () => {
+      it("should add tabs to a floating widget", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
+        state = addFloatingWidget(state, "fw1", ["fwt1"]);
         state = produce(state, (draft) => {
           draft.draggedTab = createDraggedTabState("dt", {
             position: new Point(100, 200).toProps(),
@@ -1100,14 +1229,10 @@ describe("NineZoneStateReducer", () => {
           id: "dt",
           target: {
             type: "widget",
-            newWidgetId: "",
-            side: "left",
-            widgetIndex: 0,
+            widgetId: "fw1",
           },
         });
-        newState.panels.left.widgets.length.should.eq(2);
-        newState.panels.left.widgets[0].should.eq("leftStart");
-        newState.panels.left.widgets[1].should.eq("leftEnd");
+        newState.widgets.fw1.tabs.should.eql(["fwt1", "dt"]);
       });
     });
 
@@ -1190,8 +1315,7 @@ describe("NineZoneStateReducer", () => {
       });
       newState.toolSettings.type.should.eq("docked");
       should().not.exist(newState.widgets.w1);
-      should().not.exist(newState.floatingWidgets.byId.w1);
-      newState.floatingWidgets.allIds.indexOf("w1").should.eq(-1);
+      expect(newState.floatingWidgets.byId.w1.hidden).to.be.true;
     });
   });
 
@@ -1335,13 +1459,14 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
     expect(dockedState).to.not.be.undefined;
-    // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+
+    // Should be docked to existing widget w/ index of 0 - `rightMiddle`, since `maxWidgetCount` is 2.
+    dockedState.panels.right.widgets.should.eql(["rightMiddle", "rightEnd"]);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply position and preferred size", () => {
@@ -1372,10 +1497,9 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     expect(dockedState).to.not.be.undefined;
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply default position {x:50, y:100} and size {height:400, width:400}", () => {
@@ -1407,13 +1531,11 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     // exercise code that return if already docked
     dockWidgetContainer(newState!, "t1");
     expect(dockedState).to.not.be.undefined;
-    // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should apply position and default size of (400,400)", () => {
@@ -1444,10 +1566,9 @@ describe("float widget tab", () => {
     });
 
     // restore widget tab "t1" back to original "rightStart" location
-    const dockedState = dockWidgetContainer(newState!, "t1");
+    const dockedState = dockWidgetContainer(newState!, "t1")!;
     expect(dockedState).to.not.be.undefined;
-    dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    dockedState.widgets.rightMiddle.tabs.should.eql(["t2", "t1"]);
   });
 
   it("should properly handle multiple widget tabs", () => {
@@ -1484,7 +1605,7 @@ describe("float widget tab", () => {
     expect(dockedState).to.not.be.undefined;
     // console.log (JSON.stringify(dockedState)); // eslint-disable-line no-console
     dockedState!.widgets.rightStart.tabs.indexOf("t1").should.not.eq(-1);
-    expect(Object.entries(dockedState!.floatingWidgets.byId).length).to.be.eql(0);
+    expect(dockedState!.floatingWidgets.byId[floatingWidgetContainerId].hidden).to.be.true;
   });
 
   it("should create popout entries with default size and location", () => {

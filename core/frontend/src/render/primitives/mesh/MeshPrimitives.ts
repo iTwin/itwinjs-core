@@ -215,7 +215,7 @@ export class Mesh {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
     this._data = Mesh.PrimitiveType.Mesh === type ? new TriangleList() : new MeshPolylineList();
     this.displayParams = displayParams;
-    this.features = features;
+    this.features = features ? new Mesh.Features(features) : undefined;
     this.type = type;
     this.is2d = is2d;
     this.isPlanar = isPlanar;
@@ -328,7 +328,7 @@ export class Mesh {
   }
 
   public addVertex(props: VertexKeyProps): number {
-    const { position, normal, uvParam, fillColor } = props;
+    const { feature, position, normal, uvParam, fillColor } = props;
 
     this.points.add(position);
 
@@ -337,6 +337,11 @@ export class Mesh {
 
     if (undefined !== uvParam)
       this.uvParams.push(uvParam);
+
+    if (feature) {
+      assert(undefined !== this.features);
+      this.features.add(feature, this.points.length);
+    }
 
     // Don't allocate color indices until we have non-uniform colors
     if (0 === this.colorMap.length) {
@@ -417,7 +422,7 @@ export namespace Mesh { // eslint-disable-line no-redeclare
 
   export interface Props {
     displayParams: DisplayParams;
-    features?: Mesh.Features;
+    features?: FeatureTable;
     type: Mesh.PrimitiveType;
     range: Range3d;
     quantizePositions: boolean;

@@ -3,15 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, IModelDb, IModelHost, PhysicalModel, PhysicalObject, PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import * as path from "path";
 import * as fs from "fs";
+import * as path from "path";
+import {
+  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
+  PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
+} from "@itwin/core-backend";
+import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { IModelTransformer } from "@itwin/core-transformer";
-import { HubMock } from "@itwin/core-backend/lib/cjs/test/HubMock";
-import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { IModelTransformer } from "@itwin/core-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
@@ -174,9 +176,9 @@ describe("IModelBranchingOperations", () => {
   const version0Path = path.join(KnownTestLocations.outputDir, "branching-ops.bim");
 
   before(async () => {
-    HubMock.startup("IModelBranchingOperations");
+    HubMock.startup("IModelBranchingOperations", KnownTestLocations.outputDir);
     if (!fs.existsSync(version0Path))
-      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" }});
+      SnapshotDb.createEmpty(version0Path, { rootSubject: { name: "branching-ops" } });
   });
 
   after(() => {
@@ -197,5 +199,7 @@ describe("IModelBranchingOperations", () => {
     await forwardSyncMasterToBranch(masterDb, branchDb, myAccessToken);
     await arbitraryEdit(branchDb, myAccessToken, "edit branch");
     await reverseSyncBranchToMaster(branchDb, masterDb, myAccessToken);
+    masterDb.close();
+    branchDb.close();
   });
 });

@@ -163,7 +163,6 @@ export class Frontstage4 extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="TestContent1"
-        isInFooterMode={true}
         contentManipulationTools={
           <Zone
             widgets={[
@@ -288,9 +287,7 @@ export class Frontstage4 extends FrontstageProvider {
 
   private modalDialog(): React.ReactNode {
     return (
-      <TestModalDialog
-        opened={true}
-      />
+      <TestModalDialog />
     );
   }
 
@@ -337,7 +334,6 @@ export class Frontstage4 extends FrontstageProvider {
       execute: () => {
         ModelessDialogManager.openDialog(
           <SampleModelessDialog
-            opened={true}
             dialogId={dialogId}
             onClose={() => this._handleModelessClose(dialogId)}
           />, dialogId);
@@ -358,7 +354,6 @@ export class Frontstage4 extends FrontstageProvider {
       execute: () => {
         ModalDialogManager.openDialog(
           <SampleModalDialog
-            opened={true}
             onResult={(result) => this._handleModalResult(result)}
           />);
       },
