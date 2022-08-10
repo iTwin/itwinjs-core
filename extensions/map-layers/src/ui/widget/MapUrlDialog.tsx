@@ -24,6 +24,7 @@ export const MAP_TYPES = {
   arcGis: "ArcGIS",
   wmts: "WMTS",
   tileUrl: "TileURL",
+  arcGisFeature: "ArcGISFeature",
 };
 
 interface MapUrlDialogProps {
@@ -121,6 +122,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [mapTypes] = React.useState((): SelectOption<string>[] => {
     const types = [
       { value: MAP_TYPES.arcGis, label: MAP_TYPES.arcGis },
+      { value: MAP_TYPES.arcGisFeature, label: MAP_TYPES.arcGisFeature },
       { value: MAP_TYPES.wms, label: MAP_TYPES.wms },
       { value: MAP_TYPES.wmts, label: MAP_TYPES.wmts },
     ];
