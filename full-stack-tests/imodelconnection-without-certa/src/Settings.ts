@@ -52,20 +52,20 @@ export class Settings {
   public iModel: IModelData = {} as IModelData;
 
   constructor() {
-    const envFile = path.join(__dirname, "..", "..", ".env");
-    if (!fs.existsSync(envFile))
-      return;
-
+    const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
-    const envResult = dotenv.config({ path: envFile });
-    if (envResult.error) {
-      throw envResult.error;
+
+    // First check in process.cwd() for the config
+    let result = dotenv.config();
+    if (result.error) {
+      const potential = path.resolve(process.cwd(), "..", "..", "..", "imodeljs-config", ".env");
+      result = dotenv.config({ path: potential });
+      if (result.error)
+        throw result.error;
     }
 
-    dotenvExpand(envResult);
-
-    // Loads the config out of the environment.
+    dotenvExpand(result);
     this.load();
   }
 
