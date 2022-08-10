@@ -1,0 +1,5 @@
+# Run `git config blame.ignoreRevsFile .git-blame-ignore-revs`
+
+# Ignore bulk EOL change
+
+007be59f93813bc5525b1fe2afc48f20761bca56
