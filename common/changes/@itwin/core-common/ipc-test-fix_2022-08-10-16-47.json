@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Test fix",
+      "comment": "Ensure IPC messages are processed sequentially on the backend",
       "type": "none"
     }
   ],
