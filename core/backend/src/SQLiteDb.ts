@@ -190,9 +190,9 @@ export class SQLiteDb implements IDisposable {
   }
 
   /**
-   * Perform an operation on this database within a savepoint. If the operation completes successfully, the
-   * changes are saved within the current transaction, which must be committed or canceled.If the operation throws an exception, the savepoint is rolled back
-   * and all changes to the database are reversed.
+   * Perform an operation on this database within a [savepoint](https://www.sqlite.org/lang_savepoint.html). If the operation completes successfully, the
+   * changes remain in the current transaction. If the operation throws an exception, the savepoint is rolled back
+   * and all changes to the database from this method are reversed, leaving the transaction exactly as it was before this method.
    */
   public withSavePoint(savePointName: string, operation: () => void) {
     if (this.isReadonly)
@@ -286,6 +286,7 @@ export namespace SQLiteDb {
     /** see https://www.sqlite.org/pragma.html#pragma_page_size */
     pageSize?: number;
   }
+
   /** Parameters for creating a new SQLiteDb */
   export type CreateParams = OpenOrCreateParams & PageSize;
 
@@ -311,8 +312,9 @@ export namespace SQLiteDb {
     container?: SQLiteDb.CloudContainer;
   }
 
+  /** Arguments for `SQLiteDb.vacuum` */
   export interface VacuumDbArgs extends PageSize {
-    /** if present, name of new file to vacuum into */
+    /** if present, name of new file to [vacuum into](https://www.sqlite.org/lang_vacuum.html) */
     into?: LocalFileName;
   }
 }

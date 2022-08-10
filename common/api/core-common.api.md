@@ -1212,7 +1212,7 @@ export class Code implements CodeProps {
     static fromJSON(json?: any): Code;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
-    scope: string;
+    scope: Id64String;
     spec: Id64String;
     // (undocumented)
     toJSON(): CodeProps;
@@ -1222,11 +1222,8 @@ export class Code implements CodeProps {
 
 // @public
 export interface CodeProps {
-    // (undocumented)
     scope: CodeScopeProps;
-    // (undocumented)
-    spec: Id64String;
-    // (undocumented)
+    spec: Id64String | string;
     value?: string;
 }
 
@@ -2609,7 +2606,7 @@ export interface ElementLoadOptions {
 // @public
 export interface ElementLoadProps extends ElementLoadOptions {
     // (undocumented)
-    code?: CodeProps;
+    code?: Required<CodeProps>;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)

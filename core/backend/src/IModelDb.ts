@@ -223,7 +223,7 @@ export abstract class IModelDb extends IModel {
   /** @internal */
   protected _codeService?: CodeService;
 
-  /** @internal */
+  /** @alpha */
   public get codeService() { return this._codeService; }
 
   /**
@@ -2182,6 +2182,7 @@ export class BriefcaseDb extends IModelDb {
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
 
+  /** @alpha */
   public static readonly onCodeServiceCreated = new BeEvent<(service: CodeService) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
