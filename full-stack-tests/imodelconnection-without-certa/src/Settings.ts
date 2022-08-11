@@ -56,16 +56,17 @@ export class Settings {
     const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
 
-    // First check in process.cwd() for the config
-    let result = dotenv.config();
-    if (result.error) {
-      const potential = path.resolve(process.cwd(), "..", "..", "..", "imodeljs-config", ".env");
-      result = dotenv.config({ path: potential });
-      if (result.error)
-        throw result.error;
+    const envFile = path.join(__dirname, "..", "..", ".env")
+    if (!fs.existsSync(envFile))
+      return;
+
+    const envResult = dotenv.config({ path: envFile });
+    if (envResult.error) {
+      throw envResult.error;
     }
 
-    dotenvExpand(result);
+    dotenvExpand(envResult);
+
     this.load();
   }
 
