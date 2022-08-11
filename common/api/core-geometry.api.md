@@ -548,13 +548,8 @@ export class BezierCurve3dH extends BezierCurveBase {
     poleProductsXYZW(products: Float64Array, ax: number, ay: number, az: number, aw: number): void;
     tryMultiplyMatrix4dInPlace(matrix: Matrix4d): void;
     tryTransformInPlace(transform: Transform): boolean;
-<<<<<<< HEAD
     updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean;
-    }
-=======
-    updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail, testAt0?: boolean, testAt1?: boolean): boolean;
 }
->>>>>>> 406399c34a (stroke centerline in PolyfaceBuilder.addMiteredPipes() with builder options (#4071))
 
 // @public
 export abstract class BezierCurveBase extends CurvePrimitive {
