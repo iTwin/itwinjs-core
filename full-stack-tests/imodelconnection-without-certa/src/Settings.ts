@@ -52,18 +52,22 @@ export class Settings {
   public iModel: IModelData = {} as IModelData;
 
   constructor() {
-    const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
 
-    const envFile = path.join(__dirname, "..", "..", ".env")
-    if (!fs.existsSync(envFile))
-      return;
-
-    const envResult = dotenv.config({ path: envFile });
-    if (envResult.error) {
-      throw envResult.error;
+    let envFile = path.join(__dirname, "..", "..", ".env")
+    if (!fs.existsSync(envFile)) {
+      console.log("Env file not found, trying other configuration.");
+      envFile = path.join(__dirname, "..", "..", "..", ".env")
+      if (!fs.existsSync(envFile)) {
+        console.log("Still not found, returning");
+        return;
+      }
     }
+
+    let envResult = dotenv.config({ path: envFile });
+    if (envResult.error)
+        throw envResult.error;
 
     dotenvExpand(envResult);
 
