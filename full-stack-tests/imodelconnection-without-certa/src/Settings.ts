@@ -52,26 +52,23 @@ export class Settings {
   public iModel: IModelData = {} as IModelData;
 
   constructor() {
+    this.loadEnv(path.join(__dirname, "..", "..", ".env"));
+    this.load();
+  }
+
+  /** Loads the provided `.env` file into process.env */
+  private loadEnv(envFile: string) {
+    if (!fs.existsSync(envFile))
+      return;
+
     const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
     const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
-
-    let envFile = path.join(__dirname, "..", "..", ".env")
-    if (!fs.existsSync(envFile)) {
-      console.log("Env file not found, trying other configuration.");
-      envFile = path.join(__dirname, "..", "..", "..", ".env")
-      if (!fs.existsSync(envFile)) {
-        console.log("Still not found, returning");
-        return;
-      }
+    const envResult = dotenv.config({ path: envFile });
+    if (envResult.error) {
+      throw envResult.error;
     }
 
-    let envResult = dotenv.config({ path: envFile });
-    if (envResult.error)
-        throw envResult.error;
-
     dotenvExpand(envResult);
-
-    this.load();
   }
 
   /** Loads the necessary variables from `process.env`.
