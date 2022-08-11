@@ -66,7 +66,7 @@ steps:
 
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/imodelconnection-without-certa"
-    displayName: "Run IModelConnection Without Certa Tests"
+    displayName: "Run Node IModelConnection Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer

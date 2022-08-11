@@ -1,5 +1,5 @@
 {
-  "name": "imodelconnection-without-certa",
+  "name": "node-imodelconnection",
   "version": "0.0.0",
   "description": "Tests to ensure iModelConnections are possible outside of certa.",
   "private": true,

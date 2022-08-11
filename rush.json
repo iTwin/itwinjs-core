@@ -533,8 +533,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "imodelconnection-without-certa",
-      "projectFolder": "full-stack-tests/imodelconnection-without-certa",
+      "packageName": "node-imodelconnection",
+      "projectFolder": "full-stack-tests/node-imodelconnection",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
