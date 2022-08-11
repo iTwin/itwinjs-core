@@ -385,7 +385,11 @@ export interface ElementLoadOptions {
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
-  code?: Required<CodeProps>;
+  /** The properties of the Code of the element to load.
+   * @note the Value member is required even though it is not declared so here. If no value is supplied, no element will ever be loaded.
+   * TODO: change to Required<CodeProps> in Version 4.0
+   */
+  code?: CodeProps;
   federationGuid?: GuidString;
 }
 

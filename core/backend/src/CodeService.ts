@@ -10,7 +10,7 @@ import { BriefcaseDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
 
 /**
- * A readonly index of all used and reserved Codes for an iTwin. The CodeIndex may be slightly out-of-date
+ * A readonly index of all known Codes for an iTwin. The CodeIndex may be slightly out-of-date
  * with the master copy in the cloud, but it should be periodically synchronized. Whenever codes are reserved/updated/deleted
  * locally, this copy is always up-to-date as of those changes.
  * @alpha
@@ -49,11 +49,11 @@ export interface CodeIndex {
    */
   getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
 
-  /** Call a `CodeIterator` function for all codes in this index, optionally filtered by a `CodeFilter ` */
-  forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
+  /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
+  forAllCodes: (iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter) => void;
 
-  /** Call an iterator function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-  forAllCodeSpecs: (iter: CodeService.NameAndJsonIterator, filter?: CodeService.ValueFilter) => void;
+  /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
+  forAllCodeSpecs: (iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter) => void;
 }
 
 /**
@@ -126,6 +126,7 @@ export interface CodeService {
   /**
    * Attempt to reserve a single proposed code.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
+   * @throws `CodeService.Error` if the proposed code cannot be reserved.
    */
   reserveCode: (code: CodeService.ProposedCode) => Promise<void>;
 
@@ -135,6 +136,7 @@ export interface CodeService {
    * @see the `problems` member of the `CodeService.Error` exception
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    * @note If you have a set of codes to reserve, it is considerably more efficient to do them as an array rather than one at a time.
+   * @throws `CodeService.Error` if any of the proposed code cannot be reserved. The details for each failed code are in the `problems` member.
    */
   reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<number>;
 
@@ -241,14 +243,14 @@ export namespace CodeService {
   /** An optional number associated with a code that may be used for "status" information. Values must be defined by applications. */
   export type CodeState = number;
 
-  /** The return status of an iterator function. The value "stop" causes the iteration to terminate. */
-  export type IteratorReturn = void | "stop";
+  /** The return status of an iteration function. The value "stop" causes the iteration to terminate. */
+  export type IterationReturn = void | "stop";
 
-  /** An iterator function over codes in a code index. It is called with the Guid of a each code. */
-  export type CodeIterator = (guid: GuidString) => IteratorReturn;
+  /** An iteration function over codes in a code index. It is called with the Guid of a each code. */
+  export type CodeIteration = (guid: GuidString) => IterationReturn;
 
-  /** An iterator function over code specs in a code index. It is called with the name and json of a each code spec. */
-  export type NameAndJsonIterator = (nameAndJson: NameAndJson) => IteratorReturn;
+  /** An iteration function over code specs in a code index. It is called with the name and json of a each code spec. */
+  export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
 
   /** Parameters used to obtain the write lock on a cloud container */
   export interface ObtainLockParams {
@@ -364,7 +366,7 @@ export namespace CodeService {
     readonly json?: SettingObject;
   }
 
-  /** A filter used to limit and/or sort the values returned by an iterator. */
+  /** A filter used to limit and/or sort the values returned by an iteration. */
   export interface ValueFilter {
     /** A value filter. May include wild cards when used with `GLOB` or `LIKE` */
     readonly value?: string;
@@ -376,7 +378,7 @@ export namespace CodeService {
     readonly sqlExpression?: string;
   }
 
-  /** A filter to limit and/or sort the values for the [[CodeIndex.forAllCodes]] iterator. */
+  /** A filter to limit and/or sort the values for the [[CodeIndex.forAllCodes]] iteration. */
   export interface CodeFilter extends ValueFilter {
     /** If supplied, limit results to only those with this spec */
     readonly spec?: CodeSpecName;
@@ -460,8 +462,6 @@ export namespace CodeService {
   export interface CodeSequence {
     /** the name of this CodeSequence. */
     get sequenceName(): string;
-    /** the type of this CodeSequence. Usually this is the class name of the sequence. */
-    get sequenceType(): string;
     /** Get the first valid value for this CodeSequence */
     getFirstValue(): CodeValue;
     /** Get the last valid value for this CodeSequence */

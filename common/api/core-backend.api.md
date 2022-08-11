@@ -763,8 +763,8 @@ export interface CodeIndex {
     findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
     findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
     findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
-    forAllCodes: (iter: CodeService.CodeIterator, filter?: CodeService.CodeFilter) => void;
-    forAllCodeSpecs: (iter: CodeService.NameAndJsonIterator, filter?: CodeService.ValueFilter) => void;
+    forAllCodes: (iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter) => void;
+    forAllCodeSpecs: (iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter) => void;
     getCode: (guid: CodeService.CodeGuid) => CodeService.CodeEntry | undefined;
     getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
     isCodePresent: (guid: CodeService.CodeGuid) => boolean;
@@ -823,7 +823,7 @@ export namespace CodeService {
         readonly json?: SettingObject;
         readonly state?: CodeState;
     }
-    export type CodeIterator = (guid: GuidString) => IteratorReturn;
+    export type CodeIteration = (guid: GuidString) => IterationReturn;
     export type CodeOriginName = string;
     export interface CodeSequence {
         getFirstValue(): CodeValue;
@@ -831,7 +831,6 @@ export namespace CodeService {
         getNextValue(code: CodeValue): CodeValue;
         isValidCode(code: CodeValue): boolean;
         get sequenceName(): string;
-        get sequenceType(): string;
     }
     export type CodeSpecName = string;
     export type CodeState = number;
@@ -848,7 +847,7 @@ export namespace CodeService {
     }
     export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
     export function getSequence(name: string): CodeSequence;
-    export type IteratorReturn = void | "stop";
+    export type IterationReturn = void | "stop";
     export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
     export interface MakeProposedCodeArgs {
         // (undocumented)
@@ -865,7 +864,7 @@ export namespace CodeService {
         // (undocumented)
         readonly name: string;
     }
-    export type NameAndJsonIterator = (nameAndJson: NameAndJson) => IteratorReturn;
+    export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
     export interface ObtainLockParams {
         nRetries: number;
         onFailure?: CloudSqlite.WriteLockBusyHandler;

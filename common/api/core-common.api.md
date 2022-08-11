@@ -2605,8 +2605,7 @@ export interface ElementLoadOptions {
 
 // @public
 export interface ElementLoadProps extends ElementLoadOptions {
-    // (undocumented)
-    code?: Required<CodeProps>;
+    code?: CodeProps;
     // (undocumented)
     federationGuid?: GuidString;
     // (undocumented)
