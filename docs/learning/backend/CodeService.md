@@ -33,19 +33,19 @@ However, the uniqueness constraint at the IModel database level is necessary but
 
 The purpose of a `Code` is to *uniquely identify* something. That is, no two "things" in the real world (hereinafter "entities") may have the exact same Code. Likewise, in the digital world no two objects (hereinafter "elements") may have the exact same Code. An obvious question becomes "how does one enforce uniqueness," or more specifically "how can one determine the set of extant values" for a given scope and spec? Since the identity of a scope entity is *globally unique* by definition (it is a GUID), the problem does not need any form of "global registry", but merely a registry of codes used by entities *within a limited scope*.
 
-Since iTwin.js is concerned only with digital twins of infrastructure assets, the definition of "limited scope" for iTwin.js is an iTwin. The `CodeService` api provides a *registry of used codes within an iTwin*.
+Since iTwin.js is concerned only with digital twins of infrastructure assets, the definition of "limited scope" for iTwin.js is an iTwin. The `CodeService` api provides a *registry of known codes within an iTwin*.
 
 The following rules may be helpful:
 
 - Every iTwin may have a `CodeService`.
-- A `CodeService` holds the set of extant Codes, and properties of the Codes, for entities in its iTwin.
+- A `CodeService` holds the set of known Codes, and properties of the Codes, for entities in its iTwin.
 - Every entity with a Code must have a Guid. That is its identity in the `CodeService`.
 - The rules for acquiring/reserving/validating new Codes are *not* the responsibility of the `CodeService`. It is generally expected that some other "master code service" (e.g. an enterprise ERP system) will create new Codes. The `CodeService` merely records them and enforces that Codes within it are unique.
 - In the absence of some other master code service, a `CodeService` can be used as an *index* for creating new unique codes.
 - The Codes in a `CodeService` may originate from external coding systems or from iModels. Therefore a Code in a `CodeService` may or may not relate to an element in an iModel.
-- Every iModel may have only one `CodeService`. It must be for its iTwin or one of its iTwin's parent iTwins.
+- Every iModel may have only one `CodeService`. It must be for its iTwin, or one of its iTwin's parent iTwins.
 - An iTwin may be comprised of one or more iModels, so code uniqueness may also span iModels (that is, a Code may not be available in one iModel because it is already used in another iModel in the same iTwin.)
-- If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid of the Code in the `CodeService`.
+- If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid in the `CodeService`.
 - Elements in different iModels of an iTwin *may* have the same Code. The `CodeService` does *not* record where/if Codes are used, and cannot be used to "find" elements. However, the `CodeService` does record the "origin" of a Code. If the origin was an iModel, there's a good chance that there is (or was) an element in that iModel with that Code.
 
 ## CodeService API
@@ -74,14 +74,14 @@ To improve performance and convenience of checking the set of existing codes, th
 
 `CodeIndex` has methods to get the properties of Codes and code specs, as well as to iterate over them, optionally applying a filter:
 
-[CodeIndex.isCodePresent]($backend) to check if a code exists
-[CodeIndex.getCode]($backend) to get the properties of a code, given its Guid
-[CodeIndex.findCode]($backend) to look up a code by value/scope
-[CodeIndex.forAllCodes]($backend) to iterate of a set of codes
-[CodeIndex.getCodeSpec]($backend) to get the properties of a code spec
-[CodeIndex.forAllCodeSpecs]($backend) to iterate over a set of code specs
+- [CodeIndex.isCodePresent]($backend) to check if a code exists
+- [CodeIndex.getCode]($backend) to get the properties of a code, given its Guid
+- [CodeIndex.findCode]($backend) to look up a code by value/scope
+- [CodeIndex.forAllCodes]($backend) to iterate of a set of codes
+- [CodeIndex.getCodeSpec]($backend) to get the properties of a code spec
+- [CodeIndex.forAllCodeSpecs]($backend) to iterate over a set of code specs
 
-The [CodeService.synchronizeWithCloud]($backend) brings the `CodeIndex` up to date with the state of the `CodeService`, as of the when it is called.
+The method [CodeService.synchronizeWithCloud]($backend) brings the `CodeIndex` up to date with the state of the `CodeService`, as of the when it is called.
 
 ### Reserving Codes via the CodeService API
 
@@ -99,14 +99,14 @@ The expectation is that Codes are *reserved* by applications up-front, before cr
 
 Generally it is a good idea to reserve a group of codes together rather than one-at-a-time, if possible. To reserve codes, use:
 
-[CodeService.reserveCode]($backend) to reserve a single code
-[CodeService.reserveCodes]($backend) to reserve a set of codes
+- [CodeService.reserveCode]($backend) to reserve a single code
+- [CodeService.reserveCodes]($backend) to reserve a set of codes
 
 There are also `CodeService` apis for updating properties of and deleting codes. They have the same rules for authentication and serialization as reserving Codes. They are:
 
-[CodeService.updateCode]($backend) to modify the properties of a code
-[CodeService.updateCodes]($backend) to modify the properties of a set of codes
-[CodeService.deleteCodes]($backend) to delete a set of codes
+- [CodeService.updateCode]($backend) to modify the properties of a code
+- [CodeService.updateCodes]($backend) to modify the properties of a set of codes
+- [CodeService.deleteCodes]($backend) to delete a set of codes
 
 ### Code Sequences
 
@@ -116,8 +116,8 @@ Applications may supply their own code sequencing algorithm by implementing the 
 
 A `CodeSequence` determines a pattern for code values within a "scope and spec". To reserve a code from a code sequence, use:
 
-[CodeService.reserveNextAvailableCode]($backend)
-[CodeService.reserveNextAvailableCodes]($backend)
+- [CodeService.reserveNextAvailableCode]($backend)
+- [CodeService.reserveNextAvailableCodes]($backend)
 
 and supply a [CodeService.SequenceScope]($backend) containing:
 
@@ -133,7 +133,7 @@ Sometimes the sequence can be *full* for specific scope/spec and generate errors
 
 The combination of `CodeSequence`s and deleting codes causes some ambiguities. Sometimes applications wish to *reuse* deleted values (aka *holes*), and sometimes they do not. To control that, you can use:
 
-[CodeIndex.findNextAvailable]($backend)
-[CodeIndex.findHighestUsed]($backend)
+- [CodeIndex.findNextAvailable]($backend)
+- [CodeIndex.findHighestUsed]($backend)
 
 in combination with [CodeService.SequenceScope.start]($backend).
