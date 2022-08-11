@@ -1,0 +1,25 @@
+{
+  // Comments are allowed here!
+  "testBundle": "./lib/cjs/test/webpack/bundled-tests.js",
+  "ports": {
+    "debugging": 5858,
+    "frontend": 3090,
+    "frontendDebugging": 9223
+  },
+  "mochaOptions": {
+    "timeout": 10000,
+    "reporter": "node_modules/@itwin/build-tools/mocha-reporter",
+    "reporterOptions": {
+      "mochaFile": "lib/test/junit_results.xml"
+    }
+  },
+  "chromeOptions": {
+    "args": [
+      "--disable-web-security",
+      "--no-sandbox"
+    ],
+    "publicDirs": [
+      "src/test/public"
+    ]
+  }
+}
