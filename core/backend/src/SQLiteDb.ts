@@ -83,6 +83,7 @@ export class SQLiteDb implements IDisposable {
    * 1. open a database
    * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
    * 3. close the database (even if exceptions are thrown)
+   * @internal
    */
   public static withOpenDb<T>(args: {
     /** The name of the database to open */
