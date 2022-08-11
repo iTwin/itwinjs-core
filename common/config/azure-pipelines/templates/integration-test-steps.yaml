@@ -30,8 +30,8 @@ steps:
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
       # full-stack-tests/ecschema-rpc-interface/package.json
       node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
-      # full-stack-tests/imodelconnection-without-certa/package.json
-      node ./common/scripts/install-run-rush build -v --to imodelconnection-without-certa
+      # full-stack-tests/node-imodelconnection/package.json
+      node ./common/scripts/install-run-rush build -v --to node-imodelconnection
       # full-stack-tests/rpc/package.json
       node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
       # full-stack-tests/rpc-interface/package.json
@@ -65,7 +65,7 @@ steps:
     condition: succeededOrFailed()
 
   - script: npm run test:integration
-    workingDirectory: "full-stack-tests/imodelconnection-without-certa"
+    workingDirectory: "full-stack-tests/node-imodelconnection"
     displayName: "Run Node IModelConnection Tests"
     condition: succeededOrFailed()
 
@@ -110,7 +110,7 @@ steps:
   - task: PublishTestResults@2
     displayName: "Publish IModelConnection Without Certa Integration Test Results"
     inputs:
-      testResultsFiles: "full-stack-tests/imodelconnection-without-certa/lib/test/junit_results.xml"
+      testResultsFiles: "full-stack-tests/node-imodelconnection/lib/test/junit_results.xml"
       testRunTitle: "iModelConnection Without Certa - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
