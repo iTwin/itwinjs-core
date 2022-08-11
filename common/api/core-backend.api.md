@@ -4242,6 +4242,7 @@ export class SQLiteDb implements IDisposable {
         busyHandler?: CloudSqlite.WriteLockBusyHandler;
     },
     operation: (db: SQLiteDb) => Promise<void>): Promise<void>;
+    // @internal
     static withOpenDb<T>(args: {
         dbName: string;
         openMode?: OpenMode | SQLiteDb.OpenParams;
