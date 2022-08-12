@@ -5,6 +5,7 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
+import { BriefcaseDb } from '@itwin/core-backend';
 import { CodeSpec } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
@@ -19,6 +20,7 @@ import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
 import { IModelDb } from '@itwin/core-backend';
+import { IModelJsNative } from '@itwin/core-backend';
 import { Model } from '@itwin/core-backend';
 import { ModelProps } from '@itwin/core-common';
 import { Placement2d } from '@itwin/core-common';
@@ -39,7 +41,12 @@ export class IModelExporter {
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void>;
+    exportChanges(user?: AccessToken, startChangesetId?: {
+        startChangesetId?: string;
+        changedInstanceIds?: ChangedInstanceIds;
+    }): Promise<void>;
+    // @deprecated (undocumented)
+    exportChanges(user: AccessToken | undefined, startChangesetId: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -133,6 +140,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
+    deleteModel(modelId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     protected getAdditionalStateJson(): any;
@@ -146,6 +154,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onDeleteModel(modelId: Id64String): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
@@ -204,7 +213,9 @@ export class IModelTransformer extends IModelExportHandler {
     protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
-    initFromExternalSourceAspects(): void;
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
+    // @deprecated (undocumented)
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
     // @internal
@@ -212,7 +223,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected loadAdditionalStateJson(_additionalState: any): void;
     protected loadStateFromDb(db: SQLiteDb): void;
     onDeleteElement(sourceElementId: Id64String): void;
-    onDeleteModel(_sourceModelId: Id64String): void;
+    onDeleteModel(sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
     onExportElement(sourceElement: Element_2): void;
