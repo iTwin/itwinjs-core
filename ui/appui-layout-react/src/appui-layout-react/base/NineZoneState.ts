@@ -9,10 +9,11 @@
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
-import { IconSpec, Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
+import { IconSpec, Point, Rectangle, RectangleProps, SizeProps, UiCore } from "@itwin/core-react";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
+import { PanelsProvider } from "../toolbar/Toolbar";
 
 const category = "appui-layout-react:layout";
 
@@ -380,7 +381,7 @@ export interface ToolSettingsDockAction {
 }
 
 /** @internal */
-export type NineZoneActionTypes =
+export type NineZoneAction =
   ResizeAction |
   PanelToggleCollapsedAction |
   PanelSetCollapsedAction |
@@ -411,67 +412,82 @@ export type NineZoneActionTypes =
 export const toolSettingsTabId = "nz-tool-settings-tab";
 
 /** @internal */
-export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneActionTypes) => NineZoneState = produce(( // eslint-disable-line @typescript-eslint/naming-convention
-  state: Draft<NineZoneState>,
-  action: NineZoneActionTypes,
-) => {
+export function NineZoneStateReducer(state: NineZoneState, action: NineZoneAction): NineZoneState {
   switch (action.type) {
     case "RESIZE": {
-      setSizeProps(state.size, action.size);
+      state = produce(state, (draft) => {
+        setSizeProps(draft.size, action.size);
+      });
       const nzBounds = Rectangle.createFromSize(action.size);
       for (const id of state.floatingWidgets.allIds) {
         const floatingWidget = state.floatingWidgets.byId[id];
         const bounds = Rectangle.create(floatingWidget.bounds);
         const containedBounds = bounds.containIn(nzBounds);
-        setRectangleProps(floatingWidget.bounds, containedBounds);
+        state = updateFloatingWidgetState(state, id, {
+          bounds: containedBounds.toProps(),
+        });
       }
-      return;
+      return state;
     }
     case "PANEL_TOGGLE_COLLAPSED": {
-      const panel = state.panels[action.side];
-      panel.collapsed = !panel.collapsed;
-      return;
+      const { side } = action;
+      const panel = state.panels[side];
+      const collapsed = !panel.collapsed;
+      return updatePanelState(state, action.side, {
+        collapsed,
+      });
     }
     case "PANEL_SET_COLLAPSED": {
-      const panel = state.panels[action.side];
-      panel.collapsed = action.collapsed;
-      return;
+      const { side, collapsed } = action;
+      return updatePanelState(state, side, {
+        collapsed,
+      });
     }
     case "PANEL_SET_SIZE": {
       const panel = state.panels[action.side];
-      const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
-      state.panels[action.side].size = newSize;
-      // eslint-disable-next-line no-console
-      // console.log(`${action.side} panel resized to value of ${newSize}`);
-      return;
+      const size = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
+      return updatePanelState(state, action.side, {
+        size,
+      });
     }
     case "PANEL_SET_SPLITTER_VALUE": {
-      const percent = Math.min(Math.max(action.percent, 0), 100);
-      state.panels[action.side].splitterPercent = percent;
-      return;
+      const splitterPercent = Math.min(Math.max(action.percent, 0), 100);
+      return updatePanelState(state, action.side, {
+        splitterPercent,
+      });
     }
     case "PANEL_TOGGLE_SPAN": {
-      const panel = state.panels[action.side];
-      state.panels[action.side].span = !panel.span;
-      return;
+      const { side } = action;
+      const panel = state.panels[side];
+      const span = !panel.span;
+      return updatePanelState(state, side, {
+        span,
+      });
     }
     case "PANEL_TOGGLE_PINNED": {
-      const panel = state.panels[action.side];
-      state.panels[action.side].pinned = !panel.pinned;
-      return;
+      const { side } = action;
+      const panel = state.panels[side];
+      const pinned = !panel.pinned;
+      return updatePanelState(state, side, {
+        pinned,
+      });
     }
     case "PANEL_INITIALIZE": {
+      const { side } = action;
       const panel = state.panels[action.side];
-      const newSize = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
-      state.panels[action.side].size = newSize;
-      return;
+      const size = Math.min(Math.max(action.size, panel.minSize), panel.maxSize);
+      return updatePanelState(state, side, {
+        size,
+      });
     }
     case "PANEL_WIDGET_DRAG_START": {
-      const panel = state.panels[action.side];
+      const { side, newFloatingWidgetId } = action;
+      const panel = state.panels[side];
       const widgetIndex = panel.widgets.indexOf(action.id);
+      const widget = state.widgets[action.id];
 
-      state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
-      state.floatingWidgets.byId[action.newFloatingWidgetId] = {
+      state = removePanelWidget(state, action.id);
+      return addFloatingWidget(state, newFloatingWidgetId, [], {
         bounds: Rectangle.create(action.bounds).toProps(),
         userSized: action.userSized,
         id: action.newFloatingWidgetId,
@@ -480,118 +496,117 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           widgetId: undefined,
           widgetIndex,
         },
-      };
-      state.widgets[action.newFloatingWidgetId] = state.widgets[action.id];
-      const widget = state.widgets[action.newFloatingWidgetId];
-      widget.id = action.newFloatingWidgetId;
-      widget.minimized = false;
-      delete state.widgets[action.id];
-
-      panel.widgets.splice(widgetIndex, 1);
-
-      const expandedWidget = panel.widgets.find((widgetId) => {
-        return state.widgets[widgetId].minimized === false;
+      }, {
+        ...widget,
+        id: newFloatingWidgetId,
+        minimized: false,
       });
-      if (!expandedWidget && panel.widgets.length > 0) {
-        const firstWidget = state.widgets[panel.widgets[0]];
-        firstWidget.minimized = false;
-      }
-      return;
     }
     case "WIDGET_DRAG": {
-      const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
-      assert(!!floatingWidget);
-      const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
-      setRectangleProps(floatingWidget.bounds, newBounds);
-      return;
+      const { floatingWidgetId, dragBy } = action;
+      const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
+      const newBounds = Rectangle.create(floatingWidget.bounds).offset(dragBy);
+      return updateFloatingWidgetState(state, floatingWidgetId, {
+        bounds: newBounds.toProps(),
+      });
     }
     case "WIDGET_DRAG_END": {
       // TODO: handle duplicates in WIDGET_TAB_DRAG_END action
-      const target = action.target;
-      const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
-      const draggedWidget = state.widgets[action.floatingWidgetId];
+      const { target, floatingWidgetId } = action;
+      const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
+      const draggedWidget = state.widgets[floatingWidgetId];
+
       if (isWindowDropTargetState(target)) {
         const nzBounds = Rectangle.createFromSize(state.size);
+        let newBounds = Rectangle.create(floatingWidget.bounds);
         if (draggedWidget.minimized) {
-          const bounds = Rectangle.create(floatingWidget.bounds);
-          const containedBounds = bounds.setHeight(35).containIn(nzBounds);
-          const newBounds = Rectangle.create(floatingWidget.bounds).setPosition(containedBounds.topLeft());
-          setRectangleProps(floatingWidget.bounds, newBounds);
+          const containedBounds = newBounds.setHeight(35).containIn(nzBounds);
+          newBounds = newBounds.setPosition(containedBounds.topLeft());
         } else {
-          const containedBounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
-          setRectangleProps(floatingWidget.bounds, containedBounds);
+          newBounds = newBounds.containIn(nzBounds);
         }
-        floatingWidgetBringToFront(state, action.floatingWidgetId);
-        return;
+        state = updateFloatingWidgetState(state, floatingWidgetId, {
+          bounds: newBounds.toProps(),
+        });
+        return floatingWidgetBringToFront(state, floatingWidgetId);
       }
+
+      state = removeFloatingWidget(state, floatingWidgetId);
       if (isTabDropTargetState(target)) {
-        updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
+        state = updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
         const targetWidget = state.widgets[target.widgetId];
-        targetWidget.tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
+        const tabs = [...targetWidget.tabs];
+        tabs.splice(target.tabIndex, 0, ...draggedWidget.tabs);
+        state = updateWidgetState(state, target.widgetId, {
+          tabs,
+        });
       } else if (isSectionDropTargetState(target)) {
         const panel = state.panels[target.side];
-        panel.widgets.splice(target.sectionIndex, 0, target.newWidgetId);
-        panel.collapsed = false;
-        state.widgets[target.newWidgetId] = {
+        const widgets = [...panel.widgets];
+        widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        state = updatePanelState(state, target.side, {
+          widgets,
+          collapsed: false,
+        });
+        state = addWidgetState(state, target.newWidgetId, [], {
           ...draggedWidget,
           id: target.newWidgetId,
-        };
+        });
       } else if (isWidgetDropTargetState(target)) {
-        updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
+        state = updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
         const widget = findWidget(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
-          const panel = state.panels[widget.side];
-          panel.collapsed = false;
+          state = updatePanelState(state, widget.side, {
+            collapsed: false,
+          });
         }
         const targetWidget = state.widgets[target.widgetId];
-        targetWidget.tabs.splice(targetWidget.tabs.length, 0, ...draggedWidget.tabs);
+        const tabs = [...targetWidget.tabs];
+        tabs.splice(targetWidget.tabs.length, 0, ...draggedWidget.tabs);
+        state = updateWidgetState(state, target.widgetId, {
+          tabs,
+        });
       } else {
         const panelSectionId = getWidgetPanelSectionId(target.side, 0);
-        const panel = state.panels[target.side];
-        panel.widgets = [panelSectionId];
-        panel.collapsed = false;
-        state.widgets[panelSectionId] = {
+        state = updatePanelState(state, target.side, {
+          widgets: [panelSectionId],
+          collapsed: false,
+        });
+        state = addWidgetState(state, panelSectionId, [], {
           ...draggedWidget,
           id: panelSectionId,
           minimized: false,
-        };
+        });
       }
-      delete state.widgets[action.floatingWidgetId];
-      delete state.floatingWidgets.byId[action.floatingWidgetId];
-      const idIndex = state.floatingWidgets.allIds.indexOf(action.floatingWidgetId);
-      state.floatingWidgets.allIds.splice(idIndex, 1);
-      return;
+      return state;
     }
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
-      const floatingWidget = state.floatingWidgets.byId[action.id];
-      // if this is not a tool settings widget then set the userSized flag
-      // istanbul ignore else
-      if (!isToolSettingsFloatingWidget(state, action.id)) {
-        floatingWidget.userSized = true;
-      }
+      return produce(state, (draft) => {
+        const floatingWidget = draft.floatingWidgets.byId[action.id];
+        // if this is not a tool settings widget then set the userSized flag
+        // istanbul ignore else
+        if (!isToolSettingsFloatingWidget(draft, action.id)) {
+          floatingWidget.userSized = true;
+        }
 
-      assert(!!floatingWidget);
-      const bounds = Rectangle.create(floatingWidget.bounds);
-      const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
-      setRectangleProps(floatingWidget.bounds, newBounds);
+        assert(!!floatingWidget);
+        const bounds = Rectangle.create(floatingWidget.bounds);
+        const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
+        setRectangleProps(floatingWidget.bounds, newBounds);
 
-      const widget = state.widgets[action.id];
-      const size = newBounds.getSize();
-      const tab = state.tabs[widget.activeTabId];
-      initSizeProps(tab, "preferredFloatingWidgetSize", size);
-      tab.userSized = true;
-      return;
+        const widget = draft.widgets[action.id];
+        const size = newBounds.getSize();
+        const tab = draft.tabs[widget.activeTabId];
+        initSizeProps(tab, "preferredFloatingWidgetSize", size);
+        tab.userSized = true;
+      });
     }
-
     case "FLOATING_WIDGET_CLEAR_USER_SIZED": {
-      floatingWidgetClearUserSizedFlag(state, action.id);
-      return;
+      return floatingWidgetClearUserSizedFlag(state, action.id);
     }
-
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
-      floatingWidgetBringToFront(state, action.id);
-      return;
+      return floatingWidgetBringToFront(state, action.id);
     }
     case "FLOATING_WIDGET_SEND_BACK": {
       const floatingWidget = state.floatingWidgets.byId[action.id];
@@ -610,28 +625,20 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
 
       // Add tabs to an existing widget.
       if (destinationWidget) {
-        destinationWidget.tabs.push(...widget.tabs);
-        removeWidget(state, widget.id);
-        return;
+        const tabs = [...destinationWidget.tabs, ...widget.tabs];
+        state = updateWidgetState(state, destinationWidget.id, {
+          tabs,
+        });
+        return removeWidget(state, widget.id);
       }
 
-      // Add a new widget.
-      state.widgets[destinationWidgetId] = {
-        activeTabId: widget.tabs[0],
-        id: destinationWidgetId,
-        minimized: false,
-        tabs: [...widget.tabs],
-      };
-
-      let insertIndex = destinationWidgetId.endsWith("End") ? 1 : 0;
-      // istanbul ignore next
+      // Add tabs to a new panel widget.
+      let sectionIndex = destinationWidgetId.endsWith("End") ? 1 : 0;
       if (0 === panel.widgets.length)
-        insertIndex = 0;
-      panel.widgets.splice(insertIndex, 0, destinationWidgetId);
-      widget.minimized = false;
+        sectionIndex = 0;
 
-      removeWidget(state, widget.id);
-      return;
+      state = removeWidget(state, widget.id);
+      return insertPanelWidget(state, panel.side, sectionIndex, destinationWidgetId, widget.tabs);
     }
     case "POPOUT_WIDGET_SEND_BACK": {
       const popoutWidget = state.popoutWidgets.byId[action.id];
@@ -647,63 +654,45 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         homeWidgetPanelSection = state.widgets[widgetPanelSectionId];
       }
 
+      state = removeWidget(state, popoutWidget.id);
       if (homeWidgetPanelSection) {
-        homeWidgetPanelSection.tabs.push(...widget.tabs);
-        removeWidget(state, popoutWidget.id);
+        const tabs = [...homeWidgetPanelSection.tabs, ...widget.tabs];
+        state = updateWidgetState(state, homeWidgetPanelSection.id, {
+          tabs,
+        });
       } else {
         // if widget panel section was removed because it was empty insert it
-        state.widgets[widgetPanelSectionId] = {
-          activeTabId: widget.tabs[0],
-          id: widgetPanelSectionId,
-          minimized: false,
-          tabs: [...widget.tabs],
-        };
-
-        let insertIndex = widgetPanelSectionId.endsWith("End") ? 1 : 0;
-        // istanbul ignore next
+        let sectionIndex = widgetPanelSectionId.endsWith("End") ? 1 : 0;
         if (0 === panel.widgets.length)
-          insertIndex = 0;
-        panel.widgets.splice(insertIndex, 0, widgetPanelSectionId);
-        widget.minimized = false;
-        removeWidget(state, popoutWidget.id);
-        removePopoutWidget(state, popoutWidget.id);
+          sectionIndex = 0;
+        state = insertPanelWidget(state, panel.side, sectionIndex, widgetPanelSectionId, [...widget.tabs]);
       }
-      return;
+      return state;
     }
-
     case "WIDGET_TAB_CLICK": {
       const widget = state.widgets[action.widgetId];
-      const floatingWidget = state.floatingWidgets.byId[action.widgetId];
-      if (floatingWidget) {
-        const size = Rectangle.create(floatingWidget.bounds).getSize();
-        const activeTab = state.tabs[action.id];
-        initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
-      }
 
-      setWidgetActiveTabId(state, widget.id, action.id);
-      if (widget.minimized) {
-        widget.minimized = false;
-        return;
-      }
-      return;
+      state = setWidgetActiveTabId(state, widget.id, action.id);
+      return updateWidgetState(state, widget.id, {
+        minimized: false,
+      });
     }
-
     case "WIDGET_TAB_DOUBLE_CLICK": {
+      if (action.floatingWidgetId === undefined)
+        return state;
+
       const widget = state.widgets[action.widgetId];
-      // istanbul ignore else
-      if (action.floatingWidgetId !== undefined) {
-        const active = action.id === widget.activeTabId;
-        if (!active) {
-          setWidgetActiveTabId(state, widget.id, action.id);
-          return;
-        }
-        widget.minimized = !widget.minimized;
-      }
-      return;
+      const active = action.id === widget.activeTabId;
+      if (!active)
+        return setWidgetActiveTabId(state, widget.id, action.id);
+
+      return updateWidgetState(state, widget.id, {
+        minimized: !widget.minimized,
+      });
     }
     case "WIDGET_TAB_DRAG_START": {
       const tabId = action.id;
-      let home: FloatingWidgetHomeState | undefined;
+      let home: FloatingWidgetHomeState;
       if (action.floatingWidgetId) {
         const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
         home = floatingWidget.home;
@@ -717,60 +706,68 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           widgetIndex,
         };
       }
-      state.draggedTab = {
-        tabId,
-        position: Point.create(action.position).toProps(),
-        home,
-      };
-      removeWidgetTabInternal(state, action.widgetId, action.floatingWidgetId, undefined, action.side, action.id);
-      return;
+      state = produce(state, (draft) => {
+        draft.draggedTab = {
+          tabId,
+          position: Point.create(action.position).toProps(),
+          home: castDraft(home),
+        };
+      });
+      return removeTabFromWidget(state, tabId);
     }
     case "WIDGET_TAB_DRAG": {
       const draggedTab = state.draggedTab;
       assert(!!draggedTab);
-      const newPosition = Point.create(draggedTab.position).offset(action.dragBy);
-      setPointProps(draggedTab.position, newPosition);
-      return;
+      const position = Point.create(draggedTab.position).offset(action.dragBy);
+      return updateDraggedTabState(state, {
+        position,
+      });
     }
     case "WIDGET_TAB_DRAG_END": {
       assert(!!state.draggedTab);
       const target = action.target;
       if (isTabDropTargetState(target)) {
-        updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
+        state = updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
         const targetWidget = state.widgets[target.widgetId];
         const tabIndex = target.tabIndex;
-        targetWidget.tabs.splice(tabIndex, 0, action.id);
+        const tabs = [...targetWidget.tabs];
+        tabs.splice(tabIndex, 0, action.id);
+        state = updateWidgetState(state, targetWidget.id, {
+          tabs,
+        });
       } else if (isPanelDropTargetState(target)) {
         const panel = state.panels[target.side];
-        panel.widgets.push(target.newWidgetId);
-        panel.collapsed = false;
-        state.widgets[target.newWidgetId] = {
-          activeTabId: action.id,
-          id: target.newWidgetId,
-          minimized: false,
-          tabs: [action.id],
-        };
-
+        const widgets = [...panel.widgets, target.newWidgetId];
+        state = updatePanelState(state, panel.side, {
+          collapsed: false,
+          widgets,
+        });
+        state = addWidgetState(state, target.newWidgetId, [action.id]);
       } else if (isSectionDropTargetState(target)) {
         const panel = state.panels[target.side];
-        panel.widgets.splice(target.sectionIndex, 0, target.newWidgetId);
-        panel.collapsed = false;
-        state.widgets[target.newWidgetId] = {
-          activeTabId: action.id,
-          id: target.newWidgetId,
-          minimized: false,
-          tabs: [action.id],
-        };
+        const widgets = [...panel.widgets];
+        widgets.splice(target.sectionIndex, 0, target.newWidgetId);
+        state = updatePanelState(state, panel.side, {
+          widgets,
+          collapsed: false,
+        });
+        state = addWidgetState(state, target.newWidgetId, [action.id]);
       } else if (isWidgetDropTargetState(target)) {
         updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
         const widget = findWidget(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
           const panel = state.panels[widget.side];
-          panel.collapsed = false;
+          state = updatePanelState(state, panel.side, {
+            collapsed: false,
+          });
         }
         const targetWidget = state.widgets[target.widgetId];
         const tabIndex = targetWidget.tabs.length;
-        targetWidget.tabs.splice(tabIndex, 0, action.id);
+        const tabs = [...targetWidget.tabs];
+        tabs.splice(tabIndex, 0, action.id);
+        state = updateWidgetState(state, targetWidget.id, {
+          tabs,
+        });
       } else {
         const tab = state.tabs[state.draggedTab.tabId];
         const nzBounds = Rectangle.createFromSize(state.size);
@@ -778,65 +775,51 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
         const containedBounds = bounds.containIn(nzBounds);
         const userSized = tab.userSized || (tab.isFloatingStateWindowResizable && /* istanbul ignore next */ !!tab.preferredFloatingWidgetSize);
 
-        state.floatingWidgets.byId[target.newFloatingWidgetId] = {
-          bounds: containedBounds.toProps(),
-          id: target.newFloatingWidgetId,
+        state = addFloatingWidget(state, target.newFloatingWidgetId, [action.id], {
+          bounds: containedBounds,
           home: state.draggedTab.home,
           userSized,
-        };
-        state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
-        state.widgets[target.newFloatingWidgetId] = {
-          activeTabId: action.id,
-          id: target.newFloatingWidgetId,
-          minimized: false,
-          tabs: [action.id],
-        };
+        });
       }
-      state.draggedTab = undefined;
-      return;
+      return produce(state, (draft) => {
+        draft.draggedTab = undefined;
+      });
     }
     case "TOOL_SETTINGS_DRAG_START": {
-      if (isDockedToolSettingsState(state.toolSettings)) {
-        const tab = state.tabs[toolSettingsTabId];
-        state.toolSettings = {
+      if (!isDockedToolSettingsState(state.toolSettings))
+        return state;
+
+      const { newFloatingWidgetId } = action;
+      state = produce(state, (draft) => {
+        draft.toolSettings = {
           type: "widget",
         };
-        state.widgets[action.newFloatingWidgetId] = {
-          activeTabId: toolSettingsTabId,
-          id: action.newFloatingWidgetId,
-          minimized: false,
-          tabs: [toolSettingsTabId],
-        };
-        const size = tab.preferredFloatingWidgetSize || { height: 200, width: 300 };
-        state.floatingWidgets.byId[action.newFloatingWidgetId] = {
-          bounds: Rectangle.createFromSize(size).toProps(),
-          id: action.newFloatingWidgetId,
-          home: {
-            side: "left",
-            widgetId: undefined,
-            widgetIndex: 0,
-          },
-        };
-        state.floatingWidgets.allIds.push(action.newFloatingWidgetId);
-      }
-      return;
+      });
+
+      const tab = state.tabs[toolSettingsTabId];
+      const size = tab.preferredFloatingWidgetSize || { height: 200, width: 300 };
+      return addFloatingWidget(state, newFloatingWidgetId, [toolSettingsTabId], {
+        bounds: Rectangle.createFromSize(size).toProps(),
+      });
     }
     case "TOOL_SETTINGS_DOCK": {
-      removeWidgetTab(state, toolSettingsTabId);
-      state.toolSettings = {
-        type: "docked",
-      };
-      return;
+      state = removeTabFromWidget(state, toolSettingsTabId);
+      return produce(state, (draft) => {
+        draft.toolSettings = {
+          type: "docked",
+        };
+      });
     }
   }
-});
+  return state;
+}
 
 /** @internal */
 export function getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number) {
   return 0 === panelSectionIndex ? `${side}Start` : `${side}End`;
 }
 
-function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
+function isToolSettingsFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"]) {
   const widget = state.widgets[id];
   return (widget.tabs.length === 1 &&
     widget.tabs[0] === toolSettingsTabId &&
@@ -845,141 +828,266 @@ function isToolSettingsFloatingWidget(state: Draft<NineZoneState>, id: WidgetSta
 }
 
 /** Updated home state of floating tool settings widget. */
-function updateHomeOfToolSettingsWidget(state: Draft<NineZoneState>, id: WidgetState["id"], home: FloatingWidgetHomeState) {
+function updateHomeOfToolSettingsWidget(state: NineZoneState, id: FloatingWidgetState["id"], home: FloatingWidgetHomeState): NineZoneState {
   if (!isToolSettingsFloatingWidget(state, id))
-    return;
-  state.floatingWidgets.byId[id].home = home;
+    return state;
+
+  return updateFloatingWidgetState(state, id, {
+    home,
+  });
 }
 
 /** @internal */
-export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
-  const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
-  const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
-  state.floatingWidgets.allIds.push(spliced[0]);
+export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState {
+  return produce(state, (draft) => {
+    const idIndex = draft.floatingWidgets.allIds.indexOf(floatingWidgetId);
+    const spliced = draft.floatingWidgets.allIds.splice(idIndex, 1);
+    draft.floatingWidgets.allIds.push(spliced[0]);
+  });
 }
 
 /** @internal */
-export function floatingWidgetClearUserSizedFlag(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
-  const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
-  floatingWidget.userSized = false;
-  const widget = state.widgets[floatingWidgetId];
-  const tab = state.tabs[widget.activeTabId];
-  tab.userSized = false;
+export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
+  return produce(state, (draft) => {
+    const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
+    floatingWidget.userSized = false;
+    const widget = draft.widgets[floatingWidgetId];
+    const tab = draft.tabs[widget.activeTabId];
+    tab.userSized = false;
+  });
 }
 
 /** Removes tab from the UI, but keeps the tab state.
  * @internal
  */
-export function removeWidgetTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
+export function removeTabFromWidget(state: NineZoneState, tabId: TabState["id"]): NineZoneState {
   const location = findTab(state, tabId);
   if (!location)
-    return;
-  const floatingWidgetId = "floatingWidgetId" in location ? location.floatingWidgetId : undefined;
-  const popoutWidgetId = "popoutWidgetId" in location ? location.popoutWidgetId : undefined;
-  const side = "side" in location ? location.side : undefined;
-  return removeWidgetTabInternal(state, location.widgetId, floatingWidgetId, popoutWidgetId, side, tabId);
+    return state;
+
+  const widgetId = location.widgetId;
+  const widget = state.widgets[widgetId];
+  const tabs = [...widget.tabs];
+  const tabIndex = tabs.indexOf(tabId);
+  tabs.splice(tabIndex, 1);
+
+  if (tabs.length === 0) {
+    return removeWidget(state, widgetId);
+  }
+
+  if (tabId === widget.activeTabId) {
+    state = setWidgetActiveTabId(state, widget.id, tabs[0]);
+  }
+
+  return updateWidgetState(state, widgetId, {
+    tabs,
+  });
 }
 
 /** Removes tab from the UI and deletes the tab state.
  * @internal
  */
-export function removeTab(state: Draft<NineZoneState>, tabId: TabState["id"]) {
-  removeWidgetTab(state, tabId);
-  // keep state.tabs[tabId] around for preferred size info
-}
-
-/** @internal */
-export function updateTabState(state: NineZoneState, tabId: TabState["id"], args: Partial<TabState>) {
+export function removeTabState(state: NineZoneState, tabId: TabState["id"]): NineZoneState {
   if (!(tabId in state.tabs))
     throw new UiError(category, "Tab not found");
 
+  state = removeTabFromWidget(state, tabId);
   return produce(state, (draft) => {
-    const tab = draft.tabs[tabId];
-    draft.tabs[tabId] = {
+    delete draft.tabs[tabId];
+  });
+}
+
+/** @internal */
+export function updateTabState(state: NineZoneState, id: TabState["id"], args: Partial<TabState>) {
+  if (!(id in state.tabs))
+    throw new UiError(category, "Tab not found");
+
+  return produce(state, (draft) => {
+    const tab = draft.tabs[id];
+    draft.tabs[id] = {
       ...tab,
       ...args,
     };
   });
 }
 
-function removeWidgetTabInternal(
-  state: Draft<NineZoneState>,
-  widgetId: WidgetState["id"],
-  floatingWidgetId: FloatingWidgetState["id"] | undefined,
-  popoutWidgetId: PopoutWidgetState["id"] | undefined,
-  side: PanelSide | undefined,
-  tabId: TabState["id"],
-) {
-  const widget = state.widgets[widgetId];
-  const tabs = widget.tabs;
-  const tabIndex = tabs.indexOf(tabId);
-  tabs.splice(tabIndex, 1);
-  if (tabId === widget.activeTabId) {
-    setWidgetActiveTabId(state, widget.id, widget.tabs[0]);
+/** @internal */
+export function updateWidgetState(state: NineZoneState, id: WidgetState["id"], args: Partial<WidgetState>) {
+  if (!(id in state.widgets))
+    throw new UiError(category, "Widget not found");
+
+  return produce(state, (draft) => {
+    const widget = draft.widgets[id];
+    draft.widgets[id] = {
+      ...widget,
+      ...castDraft(args),
+    };
+  });
+}
+
+/** @internal */
+export function addWidgetState(state: NineZoneState, id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>) {
+  if (id in state.widgets)
+    throw new UiError(category, "Widget already exists");
+
+  const widget = createWidgetState(id, tabs, args);
+  for (const tabId of widget.tabs) {
+    if (!(tabId in state.tabs))
+      throw new UiError(category, "Tab does not exist", undefined, () => ({ tabId }));
+
+    const location = findTab(state, tabId);
+    if (location)
+      throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
   }
-
-  if (tabs.length === 0) {
-    if (floatingWidgetId !== undefined) {
-      state.floatingWidgets.byId[floatingWidgetId].hidden = true;
-      const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
-      state.floatingWidgets.allIds.splice(idIndex, 1);
-    }
-    if (popoutWidgetId !== undefined) {
-      delete state.popoutWidgets.byId[popoutWidgetId];
-      const idIndex = state.popoutWidgets.allIds.indexOf(popoutWidgetId);
-      state.popoutWidgets.allIds.splice(idIndex, 1);
-    }
-    if (side) {
-      const widgets = state.panels[side].widgets;
-      const widgetIndex = widgets.indexOf(widgetId);
-      widgets.splice(widgetIndex, 1);
-
-      const expandedWidget = widgets.find((wId) => {
-        return state.widgets[wId].minimized === false;
-      });
-      if (!expandedWidget && widgets.length > 0) {
-        const firstWidget = state.widgets[widgets[0]];
-        firstWidget.minimized = false;
-      }
-    }
-    delete state.widgets[widgetId];
-  }
+  return produce(state, (draft) => {
+    draft.widgets[id] = castDraft(widget);
+  });
 }
 
-function removeWidget(state: Draft<NineZoneState>, id: WidgetState["id"]) {
-  delete state.widgets[id];
-  removeFloatingWidget(state, id);
-  removePopoutWidget(state, id);
+/** @internal */
+export function updateDraggedTabState(state: NineZoneState, args: Partial<DraggedTabState>) {
+  if (!state.draggedTab)
+    throw new UiError(category, "Tab is not dragged");
+
+  return produce(state, (draft) => {
+    const { position, ...other } = castDraft(args);
+
+    const draggedTab = draft.draggedTab;
+    assert(!!draggedTab);
+
+    if (position)
+      setPointProps(draggedTab.position, position);
+
+    draft.draggedTab = {
+      ...draggedTab,
+      ...other,
+    };
+  });
 }
 
-function removeFloatingWidget(state: Draft<NineZoneState>, id: FloatingWidgetState["id"]) {
-  if (id in state.floatingWidgets.byId)
-    state.floatingWidgets.byId[id].hidden = true;
-  const index = state.floatingWidgets.allIds.indexOf(id);
-  index >= 0 && state.floatingWidgets.allIds.splice(index, 1);
+/** @internal */
+export function updateFloatingWidgetState(state: NineZoneState, id: FloatingWidgetState["id"], args: Partial<FloatingWidgetState>) {
+  if (!(id in state.floatingWidgets.byId))
+    throw new UiError(category, "Floating widget not found");
+
+  return produce(state, (draft) => {
+    const floatingWidget = draft.floatingWidgets.byId[id];
+    const { bounds, ...other } = args;
+    draft.floatingWidgets.byId[id] = {
+      ...floatingWidget,
+      ...other,
+    };
+    if (bounds)
+      setRectangleProps(floatingWidget.bounds, bounds);
+  });
 }
 
-function removePopoutWidget(state: Draft<NineZoneState>, id: PopoutWidgetState["id"]) {
-  // istanbul ignore else
-  if (state.popoutWidgets) {
-    delete state.popoutWidgets.byId[id];
+/** @internal */
+export function updatePanelState<K extends keyof PanelsState>(state: NineZoneState, side: K, args: Partial<PanelsState[K]>) {
+  return produce(state, (draft) => {
+    const panel = draft.panels[side];
+    draft.panels[side] = {
+      ...panel,
+      ...args,
+    };
+  });
+}
+
+function removeWidget(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
+  const location = findWidget(state, id);
+  if (!location)
+    throw new UiError(category, "Widget not found");
+
+  if (isFloatingWidgetLocation(location))
+    return removeFloatingWidget(state, id);
+  if (isPopoutWidgetLocation(location))
+    return removePopoutWidget(state, id);
+  return removePanelWidget(state, id, location);
+}
+
+/** Removes floating widget from the UI and deletes the widget state. */
+function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"]): NineZoneState {
+  if (!(id in state.floatingWidgets.byId))
+    throw new UiError(category, "Floating widget not found");
+
+  state = removeWidgetState(state, id);
+  return produce(state, (draft) => {
+    delete draft.floatingWidgets.byId[id];
+    const idIndex = draft.floatingWidgets.allIds.indexOf(id);
+    draft.floatingWidgets.allIds.splice(idIndex, 1);
+  });
+}
+
+/** Removes floating widget from the UI and deletes the widget state. */
+function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
+  if (!(id in state.popoutWidgets.byId))
+    throw new UiError(category, "Popout widget not found");
+
+  state = produce(state, (draft) => {
+    delete draft.popoutWidgets.byId[id];
     const index = state.popoutWidgets.allIds.indexOf(id);
-    index >= 0 && state.popoutWidgets.allIds.splice(index, 1);
-  }
+    draft.popoutWidgets.allIds.splice(index, 1);
+  });
+  return removeWidgetState(state, id);
 }
 
-function setWidgetActiveTabId(
-  state: Draft<NineZoneState>,
-  widgetId: WidgetState["id"],
-  tabId: WidgetState["activeTabId"],
-) {
-  state.widgets[widgetId].activeTabId = tabId;
-  const floatingWidget = state.floatingWidgets.byId[widgetId];
-  if (floatingWidget && tabId && (tabId in state.tabs)) {
-    const activeTab = state.tabs[tabId];
-    const size = Rectangle.create(floatingWidget.bounds).getSize();
-    initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
+function removeWidgetState(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
+  if (!(id in state.widgets))
+    throw new UiError(category, "Widget not found");
+  return produce(state, (draft) => {
+    delete draft.widgets[id];
+  });
+}
+
+function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {
+  const location = findWidget(state, id);
+  if (location && isPanelWidgetLocation(location))
+    return location;
+  return undefined;
+}
+
+function removePanelWidget(state: NineZoneState, id: WidgetState["id"], location?: PanelWidgetLocation): NineZoneState {
+  location = location || findPanelWidget(state, id);
+  if (!location)
+    throw new UiError(category, "Panel widget not found");
+
+  const panel = state.panels[location.side];
+  const widgets = [...panel.widgets];
+  widgets.splice(location.index, 1);
+  state = updatePanelState(state, panel.side, {
+    widgets,
+  });
+
+  const expandedWidget = widgets.find((widgetId) => {
+    return !state.widgets[widgetId].minimized;
+  });
+  if (!expandedWidget && widgets.length > 0) {
+    const firstWidgetId = widgets[0];
+    state = updateWidgetState(state, firstWidgetId, {
+      minimized: false,
+    });
   }
+
+  return removeWidgetState(state, id);
+}
+
+function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState["id"], tabId: WidgetState["activeTabId"]): NineZoneState {
+  if (!(tabId in state.tabs))
+    throw new UiError(category, "Tab not found");
+
+  state = updateWidgetState(state, widgetId, {
+    activeTabId: tabId,
+  });
+
+  const floatingWidget = state.floatingWidgets.byId[widgetId];
+  if (floatingWidget) {
+    const activeTab = state.tabs[tabId];
+    const preferredFloatingWidgetSize = Rectangle.create(floatingWidget.bounds).getSize();
+    state = updateTabState(state, activeTab.id, {
+      preferredFloatingWidgetSize,
+    });
+  }
+  return state;
 }
 
 /** @internal */
@@ -1096,10 +1204,18 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 
 /** @internal */
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
-  const widget = createWidgetState(id, tabs, widgetArgs);
-  return produce(state, (stateDraft) => {
-    stateDraft.widgets[widget.id] = castDraft(widget);
-    stateDraft.panels[side].widgets.push(widget.id);
+  const panel = state.panels[side];
+  const sectionIndex = panel.widgets.length;
+  return insertPanelWidget(state, side, sectionIndex, id, tabs, widgetArgs);
+}
+
+/** @internal */
+export function insertPanelWidget(state: NineZoneState, side: PanelSide, sectionIndex: number, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
+  state = addWidgetState(state, id, tabs, widgetArgs);
+  // TODO: check `maxWidgetCount`
+  return produce(state, (draft) => {
+    const panel = draft.panels[side];
+    panel.widgets.splice(sectionIndex, 0, id);
   });
 }
 
@@ -1107,22 +1223,15 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
-  if (id in state.floatingWidgets.byId) {
-    const widget = createWidgetState(id, tabs, widgetArgs);
-    return produce(state, (stateDraft) => {
-      stateDraft.floatingWidgets.byId[id].hidden = false;
-      stateDraft.floatingWidgets.allIds.push(id);
-      stateDraft.widgets[id] = castDraft(widget);
-    });
-  } else {
-    const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
-    const widget = createWidgetState(id, tabs, widgetArgs);
-    return produce(state, (stateDraft) => {
-      stateDraft.floatingWidgets.byId[id] = floatingWidget;
-      stateDraft.floatingWidgets.allIds.push(id);
-      stateDraft.widgets[id] = castDraft(widget);
-    });
-  }
+  if (id in state.floatingWidgets.byId)
+    throw new UiError(category, "Floating widget already exists");
+
+  state = addWidgetState(state, id, tabs, widgetArgs);
+  const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
+  return produce(state, (stateDraft) => {
+    stateDraft.floatingWidgets.byId[id] = floatingWidget;
+    stateDraft.floatingWidgets.allIds.push(id);
+  });
 }
 
 /** @internal */
@@ -1130,11 +1239,10 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
   const popoutWidget = createPopoutWidgetState(id, popoutWidgetArgs);
-  const widget = createWidgetState(id, tabs, widgetArgs);
+  state = addWidgetState(state, id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.popoutWidgets.byId[id] = popoutWidget;
     stateDraft.popoutWidgets.allIds.push(id);
-    stateDraft.widgets[id] = castDraft(widget);
   });
 }
 
@@ -1233,8 +1341,7 @@ export function isTabDragDropTargetState(state: DropTargetState): state is TabDr
   return true;
 }
 
-/** @internal */
-export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
+function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
   props.left = bounds.left;
   props.right = bounds.right;
   props.top = bounds.top;
@@ -1357,6 +1464,7 @@ export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation |
 
 interface PanelWidgetLocation {
   side: PanelSide;
+  index: number;
 }
 
 interface FloatingWidgetLocation {
@@ -1390,6 +1498,7 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
     if (index >= 0) {
       return {
         side,
+        index,
       };
     }
   }
@@ -1397,57 +1506,47 @@ export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetL
 }
 
 /** @internal */
-export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
+export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {
   const location = findTab(state, widgetTabId);
-  if (location) {
-    if (isFloatingLocation(location))
-      return undefined; // already floating
+  if (!location)
+    throw new UiError(category, "Tab not found");
 
-    const tab = state.tabs[widgetTabId];
-    const preferredSize = size ?? (tab.preferredFloatingWidgetSize ?? { height: 400, width: 400 });
-    const preferredPoint = point ?? { x: 50, y: 100 };
-    const preferredBounds = Rectangle.createFromSize(preferredSize).offset(preferredPoint);
-    const nzBounds = Rectangle.createFromSize(state.size);
-    const containedBounds = preferredBounds.containIn(nzBounds);
+  if (isFloatingLocation(location))
+    return state;
 
-    // istanbul ignore else - no else/using as type guard to cast
-    if (isPanelLocation(location)) {
-      const floatingWidgetId = widgetTabId ? widgetTabId : /* istanbul ignore next */ getUniqueId();
-      const panel = state.panels[location.side];
-      const widgetIndex = panel.widgets.indexOf(location.widgetId);
+  const tab = state.tabs[widgetTabId];
+  const preferredSize = size ?? (tab.preferredFloatingWidgetSize ?? { height: 400, width: 400 });
+  const preferredPoint = point ?? { x: 50, y: 100 };
+  const preferredBounds = Rectangle.createFromSize(preferredSize).offset(preferredPoint);
+  const nzBounds = Rectangle.createFromSize(state.size);
+  const containedBounds = preferredBounds.containIn(nzBounds);
 
-      return produce(state, (draft) => {
-        const floatedTab = draft.tabs[widgetTabId];
-        initSizeProps(floatedTab, "preferredFloatingWidgetSize", preferredSize);
-        removeWidgetTab(draft, widgetTabId);
-        draft.floatingWidgets.byId[floatingWidgetId] = {
-          bounds: containedBounds.toProps(),
-          id: floatingWidgetId,
-          home: {
-            side: location.side,
-            widgetId: location.widgetId,
-            widgetIndex,
-          },
-          hidden: false,
-        };
-        draft.floatingWidgets.allIds.push(floatingWidgetId);
-        draft.widgets[floatingWidgetId] = {
-          activeTabId: widgetTabId,
-          id: floatingWidgetId,
-          minimized: false,
-          tabs: [widgetTabId],
-          isFloatingStateWindowResizable: floatedTab.isFloatingStateWindowResizable,
-        };
-      });
-    } else if (isPopoutLocation(location)) {
-      return convertPopoutWidgetContainerToFloating(state, location.popoutWidgetId);
-    }
+  if (isPanelLocation(location)) {
+    const floatingWidgetId = widgetTabId ? widgetTabId : /* istanbul ignore next */ getUniqueId();
+    const panel = state.panels[location.side];
+    const widgetIndex = panel.widgets.indexOf(location.widgetId);
+
+    const floatedTab = state.tabs[widgetTabId];
+    state = updateTabState(state, floatedTab.id, {
+      preferredFloatingWidgetSize: preferredSize,
+    });
+    state = removeTabFromWidget(state, widgetTabId);
+    return addFloatingWidget(state, floatingWidgetId, [widgetTabId], {
+      bounds: containedBounds,
+      home: {
+        side: location.side,
+        widgetId: location.widgetId,
+        widgetIndex,
+      },
+    }, {
+      isFloatingStateWindowResizable: floatedTab.isFloatingStateWindowResizable,
+    });
   }
-  return undefined;
+  return convertPopoutWidgetContainerToFloating(state, location.popoutWidgetId);
 }
 
 /** @internal */
-export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean) {
+export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState {
   if (idIsContainerId) {
     const widgetLocation = findWidget(state, widgetTabId);
     if (widgetLocation) {
@@ -1489,8 +1588,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
       }
     }
   }
-
-  return undefined;
+  throw new UiError(category, "Widget not found");
 }
 
 /** @internal */
@@ -1556,96 +1654,79 @@ export function convertAllPopupWidgetContainersToFloating(state: NineZoneState):
 }
 
 /** @internal */
-export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps) {
+export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {
   const location = findTab(state, widgetTabId);
-  // istanbul ignore else
-  if (location) {
-    if (isPopoutLocation(location))
-      return undefined; // already popout
+  if (!location)
+    throw new UiError(category, "Tab not found");
 
-    const tab = state.tabs[widgetTabId];
-    const preferredSizeAndPosition = { height: 800, width: 600, x: 0, y: 0, ...tab.preferredPopoutWidgetSize, ...size, ...point };
-    const preferredBounds = Rectangle.createFromSize(preferredSizeAndPosition).offset(preferredSizeAndPosition);
+  // Already in popout state.
+  if (isPopoutLocation(location))
+    return state;
 
-    const nzBounds = Rectangle.createFromSize(state.size);
-    const containedBounds = preferredBounds.containIn(nzBounds);
-    const popoutWidgetId = getUniqueId();
+  const tab = state.tabs[widgetTabId];
+  const preferredSizeAndPosition = { height: 800, width: 600, x: 0, y: 0, ...tab.preferredPopoutWidgetSize, ...size, ...point };
+  const preferredBounds = Rectangle.createFromSize(preferredSizeAndPosition).offset(preferredSizeAndPosition);
 
-    // istanbul ignore else - no else/using as type guard to cast
-    if (isPanelLocation(location)) {
-      const panel = state.panels[location.side];
-      const widgetIndex = panel.widgets.indexOf(location.widgetId);
+  const nzBounds = Rectangle.createFromSize(state.size);
+  const containedBounds = preferredBounds.containIn(nzBounds);
+  const popoutWidgetId = getUniqueId();
 
-      return produce(state, (draft) => {
-        const popoutTab = draft.tabs[widgetTabId];
-        initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-        removeWidgetTab(draft, widgetTabId);
-        if (!draft.popoutWidgets) {
-          draft.popoutWidgets = {
-            byId: {},
-            allIds: [],
-          };
-        }
-        draft.popoutWidgets.byId[popoutWidgetId] = {
-          bounds: containedBounds.toProps(),
-          id: popoutWidgetId,
-          home: {
-            side: location.side,
-            widgetId: location.widgetId,
-            widgetIndex,
-          },
-        };
-        draft.popoutWidgets.allIds.push(popoutWidgetId);
-        draft.widgets[popoutWidgetId] = {
-          activeTabId: widgetTabId,
-          id: popoutWidgetId,
-          minimized: false,
-          tabs: [widgetTabId],
-        };
-      });
-    } else if (isFloatingLocation(location)) {
-      const floatingWidget = state.widgets[location.floatingWidgetId];
-      // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
-      if (floatingWidget.tabs.length === 1) {
-        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft) => {
-          const popoutTab = draft.tabs[widgetTabId];
-          initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-        });
-      }
+  if (isPanelLocation(location)) {
+    const panel = state.panels[location.side];
+    const widgetIndex = panel.widgets.indexOf(location.widgetId);
 
-      // remove the tab from the floating container and create a new popout container
-      const home = state.floatingWidgets.byId[location.floatingWidgetId].home;
-      return produce(state, (draft) => {
-        const popoutTab = draft.tabs[widgetTabId];
-        initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-        removeWidgetTab(draft, widgetTabId);
-        if (!draft.popoutWidgets) {
-          draft.popoutWidgets = {
-            byId: {},
-            allIds: [],
-          };
-        }
-        draft.popoutWidgets.byId[popoutWidgetId] = {
-          bounds: containedBounds.toProps(),
-          id: popoutWidgetId,
-          home,
-        };
-        draft.popoutWidgets.allIds.push(popoutWidgetId);
-        draft.widgets[popoutWidgetId] = {
-          activeTabId: widgetTabId,
-          id: popoutWidgetId,
-          minimized: false,
-          tabs: [widgetTabId],
-        };
-      });
-    }
+    state = updateTabState(state, tab.id, {
+      preferredPopoutWidgetSize: preferredSizeAndPosition,
+    });
+    state = removeTabFromWidget(state, widgetTabId);
+    return addPopoutWidget(state, popoutWidgetId, [widgetTabId], {
+      bounds: containedBounds.toProps(),
+      home: {
+        side: location.side,
+        widgetId: location.widgetId,
+        widgetIndex,
+      },
+    });
   }
-  return undefined;
+
+  // Floating location
+  const floatingWidget = state.widgets[location.floatingWidgetId];
+  // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
+  if (floatingWidget.tabs.length === 1) {
+    return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft) => {
+      const popoutTab = draft.tabs[widgetTabId];
+      initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+    });
+  }
+
+  // remove the tab from the floating container and create a new popout container
+  const home = state.floatingWidgets.byId[location.floatingWidgetId].home;
+  return produce(state, (draft) => {
+    const popoutTab = draft.tabs[widgetTabId];
+    initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+    removeTabFromWidget(draft, widgetTabId);
+    if (!draft.popoutWidgets) {
+      draft.popoutWidgets = {
+        byId: {},
+        allIds: [],
+      };
+    }
+    draft.popoutWidgets.byId[popoutWidgetId] = {
+      bounds: containedBounds.toProps(),
+      id: popoutWidgetId,
+      home,
+    };
+    draft.popoutWidgets.allIds.push(popoutWidgetId);
+    draft.widgets[popoutWidgetId] = {
+      activeTabId: widgetTabId,
+      id: popoutWidgetId,
+      minimized: false,
+      tabs: [widgetTabId],
+    };
+  });
 }
 
-/**
- * @internal
- */
+/** @internal */
 export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps) {
   if (floatingWidgetId in state.floatingWidgets.byId) {
     return produce(state, (draft) => {
@@ -1685,42 +1766,32 @@ export function addWidgetTabToPanelSection(state: NineZoneState, side: PanelSide
  * Adds the floating tab to an existing draft state
  * @internal
  */
-export function addWidgetTabToDraftFloatingPanel(draft: Draft<NineZoneState>, floatingWidgetId: string, widgetTabId: string,
+export function addWidgetTabToDraftFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, tab: TabState, preferredSize?: SizeProps, preferredPosition?: PointProps,
   userSized?: boolean, isFloatingStateWindowResizable?: boolean) {
   const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
-  const preferredPoint = preferredPosition ?? { x: (draft.size.width - size.width) / 2, y: (draft.size.height - size.height) / 2 };
-  const nzBounds = Rectangle.createFromSize(draft.size);
+  const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+  const nzBounds = Rectangle.createFromSize(state.size);
   const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
   const containedBounds = bounds.containIn(nzBounds);
 
-  // add new id to list of floatingWidgets
-  if (!draft.floatingWidgets.allIds.includes(floatingWidgetId))
-    draft.floatingWidgets.allIds.push(floatingWidgetId);
-
-  // add new floating widget to array of widgets in the state
-  const floatedTab = draft.tabs[widgetTabId];
-  initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
-  if (!(floatingWidgetId in draft.floatingWidgets.byId)) {
-    draft.floatingWidgets.byId[floatingWidgetId] = {
-      bounds: containedBounds.toProps(),
-      id: floatingWidgetId,
+  if (floatingWidgetId in state.floatingWidgets.byId) {
+    const floatingWidget = state.widgets[floatingWidgetId];
+    const tabs = [...floatingWidget.tabs, widgetTabId];
+    state = updateWidgetState(state, floatingWidgetId, {
+      tabs,
+    });
+  } else {
+    state = addFloatingWidget(state, floatingWidgetId, [widgetTabId], {
+      bounds: containedBounds,
       home,
       userSized,
-    };
+    }, {
+      isFloatingStateWindowResizable,
+    });
   }
 
-  if (floatingWidgetId in draft.widgets) {
-    draft.widgets[floatingWidgetId].tabs.push(widgetTabId);
-  } else {
-    draft.widgets[floatingWidgetId] = {
-      activeTabId: widgetTabId,
-      id: floatingWidgetId,
-      minimized: false,
-      tabs: [widgetTabId],
-      isFloatingStateWindowResizable,
-    };
-  }
+  return state;
 }
 
 /** Add a new Floating Panel with a single widget tab
@@ -1736,7 +1807,5 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
   // tab must be defined but not placed in a container (ie not in panel, floating, or popout)
   const tab = state.tabs[widgetTabId];
 
-  return produce(state, (draft) => {
-    addWidgetTabToDraftFloatingPanel (draft, floatingWidgetId, widgetTabId, home, tab, preferredSize, preferredPosition, userSized, isFloatingStateWindowResizable);
-  });
+  return addWidgetTabToDraftFloatingPanel(state, floatingWidgetId, widgetTabId, home, tab, preferredSize, preferredPosition, userSized, isFloatingStateWindowResizable);
 }

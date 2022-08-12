@@ -15,13 +15,13 @@ import { WidgetContentManager } from "../widget/ContentManager";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
 import {
-  DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
+  DraggedTabState, FloatingWidgetsState, NineZoneAction, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
 import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
 
 /** @internal */
-export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
+export type NineZoneDispatch = (action: NineZoneAction) => void;
 
 /** @internal */
 export interface NineZoneProps {

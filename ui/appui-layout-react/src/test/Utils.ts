@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as enzyme from "enzyme";
+import { addTab, NineZoneState, TabState } from "../appui-layout-react";
 
 before(() => {
   window.requestAnimationFrame = (cb: FrameRequestCallback) => {
@@ -55,4 +56,12 @@ export const mount: typeof enzyme.mount = (global as any).enzymeMount;
 /** Waits until all async operations finish */
 export async function flushAsyncOperations() {
   return new Promise((resolve) => setTimeout(resolve, 300));
+}
+
+/** Utiltiy function to add multiple tabs to the state. */
+export function addTabs(state: NineZoneState, ids: string[], args?: Partial<TabState> | undefined) {
+  for (const id of ids) {
+    state = addTab(state, id, args);
+  }
+  return state;
 }

@@ -21,7 +21,6 @@ import {
   getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
 } from "./Widget";
 import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
-import { setRectangleProps } from "../../base/NineZoneState";
 
 /** Widget zone id.
  *
@@ -497,7 +496,10 @@ export class ZonesManager {
         if (!bounds)
           draft.floatingZonesBounds = undefined;
         else {
-          setRectangleProps(draft.floatingZonesBounds, bounds);
+          draft.floatingZonesBounds.bottom = bounds.bottom;
+          draft.floatingZonesBounds.top = bounds.bottom;
+          draft.floatingZonesBounds.left = bounds.left;
+          draft.floatingZonesBounds.right = bounds.right;
         }
       } else {
         draft.floatingZonesBounds = bounds && Rectangle.create(bounds).toProps();
