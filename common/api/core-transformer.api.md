@@ -283,6 +283,14 @@ export interface IModelTransformOptions {
 }
 
 // @beta
+export interface InitFromExternalSourceAspectsArgs {
+    // (undocumented)
+    accessToken?: AccessToken;
+    // (undocumented)
+    startChangesetId?: string;
+}
+
+// @beta
 export interface OptimizeGeometryOptions {
     inlineUniqueGeometryParts?: boolean;
 }

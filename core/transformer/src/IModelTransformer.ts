@@ -238,7 +238,7 @@ function mapId64<R>(
 /** Arguments you can pass to [[IModelTransformer.initExternalSourceAspects]]
  * @beta
  */
-interface InitFromExternalSourceAspectsArgs {
+export interface InitFromExternalSourceAspectsArgs {
   accessToken?: AccessToken;
   startChangesetId?: string;
 }
