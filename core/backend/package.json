@@ -44,13 +44,9 @@
     "@itwin/core-bentley": "workspace:^3.4.0-dev.10",
     "@itwin/core-common": "workspace:^3.4.0-dev.10",
     "@itwin/core-geometry": "workspace:^3.4.0-dev.10",
-    "@itwin/ecschema-metadata": "workspace:^3.4.0-dev.10",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
-    "@itwin/ecschema-metadata": {
-      "optional": true
-    },
     "@opentelemetry/api": {
       "optional": true
     }
@@ -65,7 +61,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@opentelemetry/api": "^1.0.4",
     "@types/chai": "4.3.1",
