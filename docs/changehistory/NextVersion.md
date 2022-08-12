@@ -22,3 +22,22 @@ New effect, shown below:
 ![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
+
+## IModelSchemaLoader replaced with SchemaLoader
+
+Replaced IModelSchemaLoader with generic SchemaLoader class and function to get schemas from an iModel.  This allows us to remove the ecschema-metadata dependency in core-backend.
+
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { getSchemaJsonFromIModel } from "@itwin/core-backend";
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader(getSchemaJsonFromIModel);
+const schema = loader.getSchema("BisCore");
+```
+
+The new SchemaLoader can be constructed with any function that returns schema json when passed a schema name or undefined if the schema cannot be found
