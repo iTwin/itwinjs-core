@@ -335,14 +335,14 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it("should merge changes made on a branch back to master", async () => {
+  it.only("should merge changes made on a branch back to master", async () => {
     // create and push master IModel
     const masterIModelName = "Master";
     const masterSeedFileName = join(outputDir, `${masterIModelName}.bim`);
     if (IModelJsFs.existsSync(masterSeedFileName))
       IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
 
-    const state0 = [1, 2];
+    const state0 = [1, 2, 20]; // 20 will be deleted by a branch
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
@@ -412,7 +412,7 @@ describe("IModelTransformerHub", () => {
 
       // push Branch1 State1
       const delta01 = [2, 3, 4]; // update 2, insert 3 and 4
-      const state1 = [1, 2, 3, 4];
+      const state1 = [1, 2, 3, 4, 20];
       maintainPhysicalObjects(branchDb1, delta01);
       assertPhysicalObjects(branchDb1, state1);
       await saveAndPushChanges(branchDb1, "State0 -> State1");
@@ -420,7 +420,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State1, changesetBranch1State0);
 
       // push Branch1 State2
-      const delta12 = [1, -3, 5, 6]; // update 1, delete 3, insert 5 and 6
+      const delta12 = [1, -3, 5, 6, -20]; // update 1, delete 3, 20, insert 5 and 6
       const state2 = [1, 2, -3, 4, 5, 6];
       maintainPhysicalObjects(branchDb1, delta12);
       assertPhysicalObjects(branchDb1, state2);
@@ -671,7 +671,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("should delete branch-deleted elements in reverse synchronization", async () => {
+  it("should delete branch-deleted elements in reverse synchronization", async () => {
     const masterIModelName = "ReSyncDeleteMaster";
     const masterIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: masterIModelName, noLocks: true });
     let branchIModelId!: GuidString;
