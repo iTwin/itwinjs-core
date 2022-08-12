@@ -10,7 +10,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { getSchemaJsonFromIModel } from "../../ECSchemaFromIModel";
 
-describe("getScheamJsonFromIModel", () => {
+describe("getSchemaJsonFromIModel", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
