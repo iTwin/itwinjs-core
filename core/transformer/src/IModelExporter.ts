@@ -257,7 +257,6 @@ export class IModelExporter {
     startChangesetId?: string;
     changedInstanceIds?: ChangedInstanceIds;
   } = {}): Promise<void> {
-    await this.exportChanges(undefined, undefined);
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
