@@ -202,8 +202,8 @@ export namespace CodeService {
    * the `scope` member refers to the element Id of the scope element in the iModel. This helper function
    * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
-  export function makeScopeAndSpec(briefcase: BriefcaseDb, code: Required<CodeProps>): CodeService.ScopeAndSpec {
-    const scope = briefcase.elements.getElementProps({ code, onlyBaseProperties: true }).federationGuid;
+  export function makeScopeAndSpec(briefcase: BriefcaseDb, code: CodeProps): CodeService.ScopeAndSpec {
+    const scope = briefcase.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
     if (undefined === scope)
       throw new CodeService.Error("MissingGuid", IModelStatus.InvalidCode, "code scope element has no federationGuid");
 
