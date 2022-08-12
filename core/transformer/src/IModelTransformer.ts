@@ -18,6 +18,7 @@ import {
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
+  ChangeOpCode,
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
@@ -515,18 +516,19 @@ export class IModelTransformer extends IModelExportHandler {
         this.sourceDb.withPreparedStatement(
           `
         SELECT esac.Element.Id, esac.Identifier
-        FROM ecchange.InstanceChange ic
+        FROM ecchange.change.InstanceChange ic
         -- JOIN ECDbMeta.Class -- need to get the "root class", since those changes might overlap
-        JOIN BisCore.ExternalSourceAspect.Changes(:changesetIndex, 'BeforeDelete') esac
+        JOIN BisCore.ExternalSourceAspect.Changes(:changesetId, 'BeforeDelete') esac
           ON ic.ChangedInstance.Id=esac.ECInstanceId
-        WHERE ic.OpCode='Delete'
-          AND ic.Summary.Id=:changesetIndex -- IN :changesetIds
-          AND esac.targetScopeElementId=:targetScopeElementId
+        WHERE ic.OpCode=:opcode
+          AND ic.Summary.Id=:changesetId -- IN :changesetIds
+          AND esac.Scope.Id=:targetScopeElementId
           -- AND ic.ChangedInstance.ClassId is an aspect class
         `,
           (stmt) => {
             // stmt.bindArray("changesetIds", changesetIds);
-            stmt.bindInteger("changesetId", +changesetId);
+            stmt.bindInteger("opcode", ChangeOpCode.Delete);
+            stmt.bindInteger("changesetId", changesetId);
             stmt.bindInteger("targetScopeElementId", this.targetScopeElementId);
             while (DbResult.BE_SQLITE_ROW === stmt.step()) {
               const targetId = stmt.getValue(0).getId();
@@ -538,7 +540,8 @@ export class IModelTransformer extends IModelExportHandler {
         );
       }
     } finally {
-      ChangeSummaryManager.detachChangeCache(this.sourceDb);
+      if (ChangeSummaryManager.isChangeCacheAttached(this.sourceDb))
+        ChangeSummaryManager.detachChangeCache(this.sourceDb);
     }
   }
 
