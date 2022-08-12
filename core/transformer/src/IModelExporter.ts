@@ -809,8 +809,6 @@ class ChangedInstanceOps {
   public insertIds = new Set<Id64String>();
   public updateIds = new Set<Id64String>();
   public deleteIds = new Set<Id64String>();
-  /** for each deleted id if applicable, the identifier in the external source */
-  public deletedExternalSources = new Map<Id64String, Id64String>();
   public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
     if (undefined !== val) {
       if ((undefined !== val.insert) && (Array.isArray(val.insert))) { val.insert.forEach((id: Id64String) => this.insertIds.add(id)); }
@@ -832,11 +830,11 @@ class ChangedInstanceIds {
   public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken })).index;
-    const changedInstanceIds = new ChangedInstanceIds();
     const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, accessToken })).index;
     const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    const changesetFiles = changesets.map((c) => c.pathname);
 
+    const changedInstanceIds = new ChangedInstanceIds();
+    const changesetFiles = changesets.map((c) => c.pathname);
     const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSets(changesetFiles);
     if (statusOrResult.error) {
       throw new IModelError(statusOrResult.error.status, "Error processing changeset");
@@ -849,10 +847,6 @@ class ChangedInstanceIds {
     changedInstanceIds.aspect.addFromJson(result.aspect);
     changedInstanceIds.relationship.addFromJson(result.relationship);
     changedInstanceIds.font.addFromJson(result.font);
-
-    if (changedInstanceIds.element === undefined)
-      return changedInstanceIds;
-
     return changedInstanceIds;
   }
 }
