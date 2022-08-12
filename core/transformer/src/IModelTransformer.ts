@@ -842,8 +842,14 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
-  public override onDeleteModel(_sourceModelId: Id64String): void {
-    // WIP: currently ignored
+  public override onDeleteModel(sourceModelId: Id64String): void {
+    // It is possible and apparently occasionally sensical to delete a model without deleting its underlying element.
+    // - If only the model is deleted, [[initFromExternalSourceAspects]] will have already remapped the underlying element since it still exists.
+    // - If both were deleted, [[remapDeletedSourceElements]] will find and remap the deleted element making this operation valid
+    const targetModelId: Id64String = this.context.findTargetElementId(sourceModelId);
+    if (Id64.isValidId64(targetModelId)) {
+      this.importer.deleteElement(targetModelId);
+    }
   }
 
   /** Cause the model container, contents, and sub-models to be exported from the source iModel and imported into the target iModel.
