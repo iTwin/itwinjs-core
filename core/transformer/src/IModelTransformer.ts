@@ -1412,7 +1412,7 @@ export class IModelTransformer extends IModelExportHandler {
     this.logSettings();
     this.validateScopeProvenance();
     await this.initFromExternalSourceAspects({accessToken, startChangesetId});
-    await this.exporter.exportChanges(accessToken, { startChangesetId });
+    await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 
     if (this._options.optimizeGeometry)
