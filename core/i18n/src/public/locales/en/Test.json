@@ -1,0 +1,10 @@
+{
+  "Trivial": {
+    "Test1": "Localized Trivial Test 1",
+    "Test2": "Localized Trivial Test 2"
+  },
+  "Substitution": {
+    "Test1": "Substitute {{varA}} and {{varB}}",
+    "Test2": "Reverse substitute {{varB}} and {{varA}}"
+  }
+}
