@@ -33,12 +33,13 @@ import {
   SchemaContextEditor,
   SchemaContext,
   SchemaComparer,
+  SchemaLoader,
   ISchemaCompareReporter,
   SchemaChanges,
   ISchemaChanges,
   AnyDiagnostic,
 } from "@itwin/ecschema-metadata";
-import { IModelSchemaLoader } from "@itwin/core-backend/lib/cjs/IModelSchemaLoader";
+import { getSchemaJsonFromIModel } from "@itwin/core-backend";
 import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
@@ -172,7 +173,7 @@ export class DynamicSchemaGenerator {
       return newSchema;
     };
 
-    const loader = new IModelSchemaLoader(imodel);
+    const loader = new SchemaLoader(getSchemaJsonFromIModel(imodel));
     const existingSchema = loader.tryGetSchema("COBieConnectorDynamic");
     const latestSchema = await createSchema(false);
 
