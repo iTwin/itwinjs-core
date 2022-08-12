@@ -82,7 +82,6 @@ export class IModelSession {
       this._iModel = await CheckpointConnection.openRemote(this.iTwinId, this.iModelId);
       expect(this._iModel).to.exist;
     } catch (e: any) {
-      console.log(e);
       throw new Error(`Failed to open test iModel. Error: ${e.message}`);
     }
 

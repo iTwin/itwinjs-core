@@ -178,7 +178,6 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        console.log(reason);
         reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
       }
     });
