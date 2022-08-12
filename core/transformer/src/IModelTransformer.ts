@@ -474,11 +474,11 @@ export class IModelTransformer extends IModelExportHandler {
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
-   *       You must await the returned promise as well in this case. The synchronous behavior is still supported but can't process everything.
+   *       You must await the returned promise as well in this case. The synchronous behavior has not changed but is deprecated and won't process everything.
    */
   public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
   /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
-  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void;
+  public initFromExternalSourceAspects(): void;
   // eslint-disable-next-line @typescript-eslint/promise-function-async
   public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void> {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {

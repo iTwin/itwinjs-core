@@ -208,7 +208,7 @@ export class IModelTransformer extends IModelExportHandler {
     readonly importer: IModelImporter;
     initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @deprecated (undocumented)
-    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void;
+    initFromExternalSourceAspects(): void;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
     // @internal
