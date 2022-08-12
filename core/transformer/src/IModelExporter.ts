@@ -265,14 +265,23 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
+    const deletedSubModels = new Set<Id64String>();
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
+        const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
+        // must delete submodels first since they have a constraint on the element
+        if (subModelAlsoDeleted) {
+          this.handler.onDeleteModel(elementId);
+          deletedSubModels.add(elementId);
+        }
         this.handler.onDeleteElement(elementId);
       }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
+      const alreadyDeletedSubModel = deletedSubModels.has(modelId);
+      if (alreadyDeletedSubModel) continue;
       this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {

@@ -23,6 +23,13 @@ New effect, shown below:
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
 
+## Transformer API
+
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
+It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
+awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
+changes instead of the full source contents.
+
 ## IModelSchemaLoader replaced with SchemaLoader
 
 Replaced IModelSchemaLoader with generic SchemaLoader class and function to get schemas from an iModel.  This allows us to remove the ecschema-metadata dependency in core-backend.
