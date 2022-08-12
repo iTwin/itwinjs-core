@@ -821,12 +821,7 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
-  public static async initialize(
-    accessToken: AccessToken | undefined,
-    iModel: BriefcaseDb,
-    firstChangesetId: string,
-    targetScopeElementId: Id64String
-  ): Promise<ChangedInstanceIds> {
+  public static async initialize(accessToken: AccessToken | undefined, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, accessToken })).index;
     const changedInstanceIds = new ChangedInstanceIds();

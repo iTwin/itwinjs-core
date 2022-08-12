@@ -7,14 +7,14 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
@@ -232,6 +232,14 @@ function mapId64<R>(
     ].join("\n"));
   }
   return results;
+}
+
+/** Arguments you can pass to [[IModelTransformer.initExternalSourceAspects]]
+ * @beta
+ */
+interface InitFromExternalSourceAspectsArgs {
+  accessToken?: AccessToken;
+  startChangesetId?: string;
 }
 
 /** Base class used to transform a source iModel into a different target iModel.
@@ -464,33 +472,43 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
+   * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
+   *       You must await the returned promise as well in this case. The synchronous behavior is still supported but can't process everything.
    */
-  public initFromExternalSourceAspects(): Promise<void>;
+  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
   /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
-  public initFromExternalSourceAspects(): void;
+  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void;
   // eslint-disable-next-line @typescript-eslint/promise-function-async
-  public initFromExternalSourceAspects(): void | Promise<void> {
+  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void> {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
+    if (args) return this.initRemapOfDeletedElements(args);
   }
 
-  private async initFromExternalSourceAspectsAsync(args: {
-    accessToken?: AccessToken;
-    iModel: IModelDb & { iTwinId: GuidString };
-    firstChangesetIndex: number;
-  }) {
+  private async initRemapOfDeletedElements(args: InitFromExternalSourceAspectsArgs) {
+    // we need a connected iModel with changes to remap elements with deletions
+    if (this.sourceDb.iTwinId === undefined) return;
+
     try {
+      const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
+      const firstChangesetIndex = (
+        await IModelHost.hubAccess.queryChangeset({
+          iModelId: this.sourceDb.iModelId,
+          changeset: { id: startChangesetId },
+          accessToken: args.accessToken,
+        })
+      ).index;
       const changesetIds = await ChangeSummaryManager.createChangeSummaries({
         accessToken: args.accessToken,
-        iModelId: args.iModel.iModelId,
-        iTwinId: args.iModel.iTwinId,
-        range: { first: args.firstChangesetIndex },
+        iModelId: this.sourceDb.iModelId,
+        iTwinId: this.sourceDb.iTwinId,
+        range: { first: firstChangesetIndex },
       });
-      ChangeSummaryManager.attachChangeCache(args.iModel);
+      ChangeSummaryManager.attachChangeCache(this.sourceDb);
       // TODO: test out dynamic changesetIndex parameter to Changes but I doubt it can be done
       for (const changesetId of changesetIds) {
-        args.iModel.withPreparedStatement(
+        this.sourceDb.withPreparedStatement(
           `
         SELECT esac.Element.Id, esac.Identifier
         FROM ecchange.InstanceChange ic
@@ -515,7 +533,7 @@ export class IModelTransformer extends IModelExportHandler {
         );
       }
     } finally {
-      ChangeSummaryManager.detachChangeCache(args.iModel);
+      ChangeSummaryManager.detachChangeCache(this.sourceDb);
     }
   }
 
@@ -1380,9 +1398,8 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initFromExternalSourceAspects();
-    await this.initFromExternalSourceAspectsAsync({accessToken, startChangesetId}));
-    await this.exporter.exportChanges(accessToken, startChangesetId);
+    await this.initFromExternalSourceAspects({accessToken, startChangesetId});
+    await this.exporter.exportChanges(accessToken, { startChangesetId });
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 
     if (this._options.optimizeGeometry)
