@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "fix element deletions in reverse synchronization",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}
