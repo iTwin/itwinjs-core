@@ -7,10 +7,11 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, DbResult, Guid, GuidString, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
+  ChangeSummaryManager,
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
@@ -440,7 +441,7 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
+  /** Iterate all matching ExternalSourceAspects in the provenance (target unless reverse sync) iModel and call a function for each one. */
   private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
       throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old");
@@ -464,10 +465,58 @@ export class IModelTransformer extends IModelExportHandler {
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
    */
-  public initFromExternalSourceAspects(): void {
+  public initFromExternalSourceAspects(): Promise<void>;
+  /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
+  public initFromExternalSourceAspects(): void;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public initFromExternalSourceAspects(): void | Promise<void> {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
+  }
+
+  private async initFromExternalSourceAspectsAsync(args: {
+    accessToken?: AccessToken;
+    iModel: IModelDb & { iTwinId: GuidString };
+    firstChangesetIndex: number;
+  }) {
+    try {
+      const changesetIds = await ChangeSummaryManager.createChangeSummaries({
+        accessToken: args.accessToken,
+        iModelId: args.iModel.iModelId,
+        iTwinId: args.iModel.iTwinId,
+        range: { first: args.firstChangesetIndex },
+      });
+      ChangeSummaryManager.attachChangeCache(args.iModel);
+      // TODO: test out dynamic changesetIndex parameter to Changes but I doubt it can be done
+      for (const changesetId of changesetIds) {
+        args.iModel.withPreparedStatement(
+          `
+        SELECT esac.Element.Id, esac.Identifier
+        FROM ecchange.InstanceChange ic
+        -- JOIN ECDbMeta.Class -- need to get the "root class", since those changes might overlap
+        JOIN BisCore.ExternalSourceAspect.Changes(:changesetIndex, 'BeforeDelete') esac
+          ON ic.ChangedInstance.Id=esac.ECInstanceId
+        WHERE ic.OpCode='Delete'
+          AND ic.Summary.Id=:changesetIndex -- IN :changesetIds
+          AND esac.targetScopeElementId=:targetScopeElementId
+          -- AND ic.ChangedInstance.ClassId is an aspect class
+        `,
+          (stmt) => {
+            // stmt.bindArray("changesetIds", changesetIds);
+            stmt.bindInteger("changesetId", +changesetId);
+            stmt.bindInteger("targetScopeElementId", this.targetScopeElementId);
+            while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+              const targetId = stmt.getValue(0).getId();
+              const sourceId: Id64String = stmt.getValue(1).getString(); // BisCore.ExternalSourceAspect.Identifier stores a hex Id64String
+              this.context.remapElement(targetId, sourceId);
+            }
+          }
+        );
+      }
+    } finally {
+      ChangeSummaryManager.detachChangeCache(args.iModel);
+    }
   }
 
   /** Returns `true` if *brute force* delete detections should be run.
@@ -1102,7 +1151,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processAll()");
     this.logSettings();
     this.validateScopeProvenance();
-    this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
@@ -1331,7 +1380,8 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspectsAsync({accessToken, startChangesetId}));
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 

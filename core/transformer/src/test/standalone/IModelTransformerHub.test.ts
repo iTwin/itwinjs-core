@@ -671,7 +671,7 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("reverse synchronization deletes", async () => {
+  it.only("should delete branch-deleted elements in reverse synchronization", async () => {
     const masterIModelName = "ReSyncDeleteMaster";
     const masterIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: masterIModelName, noLocks: true });
     let branchIModelId!: GuidString;
@@ -782,10 +782,10 @@ describe("IModelTransformerHub", () => {
       synchronizer.dispose();
 
       // check that the element was deleted in the master
-      const physModel2InMasterId = masterDb.elements.queryElementIdByCode(
+      const physModel2InBranchId = masterDb.elements.queryElementIdByCode(
         PhysicalPartition.createCode(masterDb, IModelDb.rootSubjectId, "phys-model-2"),
       );
-      expect(physModel2InMasterId).to.be.undefined;
+      expect(physModel2InBranchId).to.be.undefined;
 
       // close iModel briefcases
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, masterDb);
