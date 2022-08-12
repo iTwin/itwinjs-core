@@ -1145,9 +1145,9 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeSeparator();
     await this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AccessToken, startChangesetId?: string): Promise<void> {
+  public async exportChanges(requestContext: AccessToken, startChangeSetId?: string): Promise<void> {
     this._shouldIndent = false;
-    return this.exporter.exportChanges(requestContext, startChangesetId);
+    return this.exporter.exportChanges(requestContext, startChangeSetId);
   }
   private writeLine(line: string, indentLevel: number = 0): void {
     if (this._shouldIndent) {
