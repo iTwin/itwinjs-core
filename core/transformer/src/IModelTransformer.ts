@@ -449,7 +449,7 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Iterate all matching ExternalSourceAspects in the provenance (target unless reverse sync) iModel and call a function for each one. */
+  /** Iterate all matching ExternalSourceAspects in the provenance iModel (target unless reverse sync) and call a function for each one. */
   private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
       throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old");
@@ -483,10 +483,14 @@ export class IModelTransformer extends IModelExportHandler {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
-    if (args) return this.initRemapOfDeletedElements(args);
+    if (args) return this.remapDeletedSourceElements(args);
   }
 
-  private async initRemapOfDeletedElements(args: InitFromExternalSourceAspectsArgs) {
+  /** When processing deleted elements in a reverse synchronization, the [[provenanceDb]] (usually a branch iModel) has already
+   * deleted the [ExternalSourceAspect]($backend)s that tell us which elements in the reverse synchronization target (usually
+   * a master iModel) should be deleted. We must use the changesets to get the values of those before they were deleted.
+   */
+  private async remapDeletedSourceElements(args: InitFromExternalSourceAspectsArgs) {
     // we need a connected iModel with changes to remap elements with deletions
     if (this.sourceDb.iTwinId === undefined) return;
 
@@ -527,6 +531,7 @@ export class IModelTransformer extends IModelExportHandler {
             while (DbResult.BE_SQLITE_ROW === stmt.step()) {
               const targetId = stmt.getValue(0).getId();
               const sourceId: Id64String = stmt.getValue(1).getString(); // BisCore.ExternalSourceAspect.Identifier stores a hex Id64String
+              // TODO: maybe delete and don't just remap
               this.context.remapElement(targetId, sourceId);
             }
           }
