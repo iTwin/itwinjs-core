@@ -515,15 +515,6 @@ export class IModelTransformer extends IModelExportHandler {
       for (const changesetId of changesetIds) {
         this.sourceDb.withPreparedStatement(
           `
-          WITH bisCoreExternalSourceAspectClassId(id) AS (
-            SELECT c.ECInstanceId
-            FROM ECDbMeta.ECClassDef c
-            JOIN ECDbMeta.ECSchemaDef s
-              ON c.Schema.Id=s.ECInstanceId
-            WHERE c.Name='ExternalSourceAspect'
-              AND s.Name='BisCore'
-            LIMIT 1
-          )
           SELECT esac.Element.Id, esac.Identifier
           FROM ecchange.change.InstanceChange ic
           JOIN BisCore.ExternalSourceAspect.Changes(:changesetId, 'BeforeDelete') esac
@@ -531,7 +522,8 @@ export class IModelTransformer extends IModelExportHandler {
           WHERE ic.OpCode=:opcode
             AND ic.Summary.Id=:changesetId
             AND esac.Scope.Id=:targetScopeElementId
-            AND ic.ChangedInstance.ClassId IN (SELECT Id FROM bisCoreExternalSourceAspectClassId)
+            -- not yet documented ecsql feature to check class id
+            AND ic.ChangedInstance.ClassId IS (ONLY BisCore.ExternalSourceAspect)
           `,
           (stmt) => {
             stmt.bindInteger("opcode", ChangeOpCode.Delete);
