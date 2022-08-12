@@ -247,16 +247,8 @@ export class IModelExporter {
    * @param startChangesetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
    * @note To form a range of versions to export, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
-   * Passing a string for the `options` (second) argument is deprecated, pass an object containing `startChangesetId` instead.
    */
-  public async exportChanges(user?: AccessToken, startChangesetId?: { startChangesetId?: string, changedInstanceIds?: ChangedInstanceIds }): Promise<void>;
-  /** @deprecated use an options object containing a `startChangesetId` property as the second argument instead of passing a string directly */
-  public async exportChanges(user: AccessToken | undefined, startChangesetId: string): Promise<void>;
-  // eslint-disable-next-line @typescript-eslint/unified-signatures
-  public async exportChanges(user?: AccessToken, optionsOrStartChangesetId: string | {
-    startChangesetId?: string;
-    changedInstanceIds?: ChangedInstanceIds;
-  } = {}): Promise<void> {
+  public async exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void> {
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes");
     }
@@ -264,14 +256,10 @@ export class IModelExporter {
       await this.exportAll(); // no changesets, so revert to exportAll
       return;
     }
-    const options = typeof optionsOrStartChangesetId === "string" ? { startChangesetId: optionsOrStartChangesetId } : optionsOrStartChangesetId;
-    if (options.changedInstanceIds && options.startChangesetId) {
-      throw new IModelError(IModelStatus.BadRequest, "");
+    if (undefined === startChangesetId) {
+      startChangesetId = this.sourceDb.changeset.id;
     }
-    if (undefined === options.startChangesetId) {
-      options.startChangesetId = this.sourceDb.changeset.id;
-    }
-    this._sourceDbChanges = options.changedInstanceIds ?? await ChangedInstanceIds.initialize(user, this.sourceDb, options.startChangesetId);
+    this._sourceDbChanges = await ChangedInstanceIds.initialize(user, this.sourceDb, startChangesetId);
     await this.exportCodeSpecs();
     await this.exportFonts();
     await this.exportModelContents(IModel.repositoryModelId);
