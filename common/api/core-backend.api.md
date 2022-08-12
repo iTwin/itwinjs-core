@@ -170,7 +170,6 @@ import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
-import type { Schema as Schema_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -373,8 +372,6 @@ export enum BackendLoggerCategory {
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
     IModelHost = "core-backend.IModelHost",
-    // @alpha
-    IModelSchemaLoader = "core-backend.IModelSchemaLoader",
     IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
     IModelTileUpload = "core-backend.IModelTileUpload",
     LinearReferencing = "core-backend.LinearReferencing",
@@ -2177,6 +2174,9 @@ export class GeometryPart extends DefinitionElement {
     toJSON(): GeometryPartProps;
 }
 
+// @alpha
+export const getSchemaJsonFromIModel: (iModel: IModelDb) => (schemaName: string) => string | undefined;
+
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -2789,14 +2789,6 @@ export { IModelJsNative }
 export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
     readonly iModelName: string;
-}
-
-// @alpha
-export class IModelSchemaLoader {
-    // @internal
-    constructor(_iModel: IModelDb);
-    getSchema<T extends Schema_2>(schemaName: string): T;
-    tryGetSchema<T extends Schema_2>(schemaName: string): T | undefined;
 }
 
 // @public

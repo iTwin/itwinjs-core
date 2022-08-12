@@ -722,6 +722,9 @@ export interface FormatProps extends SchemaItemProps {
     readonly uomSeparator?: string;
 }
 
+// @alpha
+export type GetSchemaJson = (schemaName: string) => string | undefined;
+
 // @beta
 export class InvertedUnit extends SchemaItem {
     constructor(schema: Schema, name: string);
@@ -1829,6 +1832,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: GetSchemaJson);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1862,6 +1872,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: GetSchemaJson);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
