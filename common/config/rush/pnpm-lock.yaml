@@ -1951,13 +1951,18 @@ importers:
   ../../full-stack-tests/node-imodelconnection:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/ecschema-rpcinterface-common': workspace:*
+      '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@itwin/express-server': workspace:*
+      '@itwin/imodels-access-backend': ^1.0.1
       '@itwin/imodels-access-frontend': ^1.0.1
+      '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/imodels-client-management': ^1.0.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
@@ -1974,18 +1979,24 @@ importers:
       jsdom-global: 3.0.2
       mocha: ^10.0.0
       node-fetch: ^2.0.0
+      npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
+      '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@itwin/express-server': link:../../core/express-server
+      '@itwin/imodels-access-backend': 1.0.2
       '@itwin/imodels-access-frontend': 1.0.2
+      '@itwin/imodels-client-authoring': 1.1.0
       '@itwin/imodels-client-management': 1.1.0
       '@itwin/oidc-signin-tool': 3.4.1
       '@itwin/projects-client': 0.6.0
@@ -2002,6 +2013,7 @@ importers:
       jsdom-global: 3.0.2_jsdom@19.0.0
       mocha: 10.0.0
       node-fetch: 2.6.7
+      npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.4.4
@@ -5040,7 +5052,6 @@ packages:
     engines: {node: '>=12.0.0'}
     dependencies:
       tslib: 2.4.0
-    dev: false
 
   /@azure/core-auth/1.4.0:
     resolution: {integrity: sha512-HFrcTgmuSuukRf/EdPmqBrc5l6Q5Uu+2TbuhaKbgaCpP2TfAeiNaQPAadxO+CYBRHGUzIDteMAjFspFLDLnKVQ==}
@@ -5048,7 +5059,6 @@ packages:
     dependencies:
       '@azure/abort-controller': 1.1.0
       tslib: 2.4.0
-    dev: false
 
   /@azure/core-client/1.6.1:
     resolution: {integrity: sha512-mZ1MSKhZBYoV8GAWceA+PEJFWV2VpdNSpxxcj1wjIAOi00ykRuIQChT99xlQGZWLY3/NApWhSImlFwsmCEs4vA==}
@@ -5085,7 +5095,6 @@ packages:
       xml2js: 0.4.23
     transitivePeerDependencies:
       - encoding
-    dev: false
 
   /@azure/core-lro/2.2.5:
     resolution: {integrity: sha512-/7LKDHNd2Q6gGCrg7zV4va/N90w250pE4vaQUfFt+hTd/dyycgJWCqQ6EljQr8hrIFiH93C8Apk97tsnl7Czkg==}
@@ -5094,14 +5103,12 @@ packages:
       '@azure/abort-controller': 1.1.0
       '@azure/logger': 1.0.3
       tslib: 2.4.0
-    dev: false
 
   /@azure/core-paging/1.3.0:
     resolution: {integrity: sha512-H6Tg9eBm0brHqLy0OSAGzxIh1t4UL8eZVrSUMJ60Ra9cwq2pOskFqVpz2pYoHDsBY1jZ4V/P8LRGb5D5pmC6rg==}
     engines: {node: '>=12.0.0'}
     dependencies:
       tslib: 2.4.0
-    dev: false
 
   /@azure/core-rest-pipeline/1.9.1:
     resolution: {integrity: sha512-OVtt0LP0K5ktsKTmh6/695P0mPFmngjdCJPr4V0uvrkhHTkARSQ3VYRnxRc0LC9g3mHcH90C+8a6iF7ApMAZKg==}
@@ -5127,7 +5134,6 @@ packages:
     dependencies:
       '@opentelemetry/api': 1.1.0
       tslib: 2.4.0
-    dev: false
 
   /@azure/core-tracing/1.0.1:
     resolution: {integrity: sha512-I5CGMoLtX+pI17ZdiFJZgxMJApsK6jjfm85hpgp3oazCdq5Wxgh4wMr7ge/TTWW1B5WBuvIOI1fMU/FrOAMKrw==}
@@ -5187,7 +5193,6 @@ packages:
     engines: {node: '>=12.0.0'}
     dependencies:
       tslib: 2.4.0
-    dev: false
 
   /@azure/ms-rest-js/1.11.2:
     resolution: {integrity: sha512-2AyQ1IKmLGKW7DU3/x3TsTBzZLcbC9YRI+yuDPuXAQrv3zar340K9wsxU413kHFIDjkWNCo9T0w5VtwcyWxhbQ==}
@@ -5255,7 +5260,6 @@ packages:
       tslib: 2.4.0
     transitivePeerDependencies:
       - encoding
-    dev: false
 
   /@babel/code-frame/7.12.11:
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -7337,7 +7341,6 @@ packages:
     transitivePeerDependencies:
       - debug
       - encoding
-    dev: false
 
   /@itwin/imodels-access-frontend/1.0.2:
     resolution: {integrity: sha512-ya20mAwvGltFXH5hguy39laQU1Ku1hHMU7KSSGgxKlN8WSrpe4haM3nT0FR5Fj+XUBdQ+c7T/V1+Kg27uz4BFw==}
@@ -7357,7 +7360,6 @@ packages:
     transitivePeerDependencies:
       - debug
       - encoding
-    dev: false
 
   /@itwin/imodels-client-management/1.1.0:
     resolution: {integrity: sha512-fj60aj4FHUGm33YrOc4ozvuPc0PzIG46wOMY6q2WjqAPqBR3Q0Vlkx6k3Mk6aHXj1cB9VfxbQUY+yni1Wgx1/A==}
@@ -8753,7 +8755,6 @@ packages:
     dependencies:
       '@types/node': 16.11.7
       form-data: 3.0.1
-    dev: false
 
   /@types/node/12.20.24:
     resolution: {integrity: sha512-yxDeaQIAJlMav7fH5AQqPH1u8YIuhYJXYBzxaQ4PifsU0GDO38MSdmEDeRlIxrKbC6NbEaaEHDanWb+y30U8SQ==}
@@ -9011,7 +9012,6 @@ packages:
     resolution: {integrity: sha512-sOUTGn6h1SfQ+gbgqC364jLFBw2lnFqkgF3q0WovEHRLMrVD1sd5aufqi/aJObLekJO+Aq5z646U4Oxy6shXMA==}
     dependencies:
       '@types/node': 16.11.7
-    dev: false
 
   /@types/uuid/7.0.5:
     resolution: {integrity: sha512-hKB88y3YHL8oPOs/CNlaXtjWn93+Bs48sDQR37ZUqG2tLeCS7EA1cmnkKsuQsub9OKEB/y/Rw9zqJqqNSbqVlQ==}
@@ -18666,7 +18666,6 @@ packages:
   /process/0.11.10:
     resolution: {integrity: sha512-cdGef/drWFoydD1JsMzuFf8100nZl+GT+yacc2bEced5f9Rjk4z+WtFUTBu9PhOi9j/jfmBPu0mMEY4wIdAF8A==}
     engines: {node: '>= 0.6.0'}
-    dev: false
 
   /progress/2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
@@ -22387,12 +22386,10 @@ packages:
     dependencies:
       sax: 1.2.4
       xmlbuilder: 11.0.1
-    dev: false
 
   /xmlbuilder/11.0.1:
     resolution: {integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==}
     engines: {node: '>=4.0'}
-    dev: false
 
   /xmlchars/2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
