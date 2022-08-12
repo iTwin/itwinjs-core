@@ -770,6 +770,9 @@ describe("IModelTransformerHub", () => {
           return super.onExportElement(sourceElement);
         }
       }
+
+      // FIXME: add known non-equal mapping in branch
+
       const synchronizer = new IModelTransformerInjected(branchDb, new IModelImporterInjected(masterDb), {
         // NOTE: not using a targetScopeElementId because this test deals with temporary dbs, but that is a bad practice, use one
         isReverseSynchronization: true,

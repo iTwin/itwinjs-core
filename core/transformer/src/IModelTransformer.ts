@@ -510,23 +510,30 @@ export class IModelTransformer extends IModelExportHandler {
         iTwinId: this.sourceDb.iTwinId,
         range: { first: firstChangesetIndex },
       });
+
       ChangeSummaryManager.attachChangeCache(this.sourceDb);
-      // TODO: test out dynamic changesetIndex parameter to Changes but I doubt it can be done
       for (const changesetId of changesetIds) {
         this.sourceDb.withPreparedStatement(
           `
-        SELECT esac.Element.Id, esac.Identifier
-        FROM ecchange.change.InstanceChange ic
-        -- JOIN ECDbMeta.Class -- need to get the "root class", since those changes might overlap
-        JOIN BisCore.ExternalSourceAspect.Changes(:changesetId, 'BeforeDelete') esac
-          ON ic.ChangedInstance.Id=esac.ECInstanceId
-        WHERE ic.OpCode=:opcode
-          AND ic.Summary.Id=:changesetId -- IN :changesetIds
-          AND esac.Scope.Id=:targetScopeElementId
-          -- AND ic.ChangedInstance.ClassId is an aspect class
-        `,
+          WITH bisCoreExternalSourceAspectClassId(id) AS (
+            SELECT c.ECInstanceId
+            FROM ECDbMeta.ECClassDef c
+            JOIN ECDbMeta.ECSchemaDef s
+              ON c.Schema.Id=s.ECInstanceId
+            WHERE c.Name='ExternalSourceAspect'
+              AND s.Name='BisCore'
+            LIMIT 1
+          )
+          SELECT esac.Element.Id, esac.Identifier
+          FROM ecchange.change.InstanceChange ic
+          JOIN BisCore.ExternalSourceAspect.Changes(:changesetId, 'BeforeDelete') esac
+            ON ic.ChangedInstance.Id=esac.ECInstanceId
+          WHERE ic.OpCode=:opcode
+            AND ic.Summary.Id=:changesetId
+            AND esac.Scope.Id=:targetScopeElementId
+            AND ic.ChangedInstance.ClassId IN bisCoreExternalSourceAspectClassId
+          `,
           (stmt) => {
-            // stmt.bindArray("changesetIds", changesetIds);
             stmt.bindInteger("opcode", ChangeOpCode.Delete);
             stmt.bindInteger("changesetId", changesetId);
             stmt.bindInteger("targetScopeElementId", this.targetScopeElementId);
