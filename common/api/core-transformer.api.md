@@ -5,7 +5,6 @@
 ```ts
 
 import { AccessToken } from '@itwin/core-bentley';
-import { BriefcaseDb } from '@itwin/core-backend';
 import { CodeSpec } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
@@ -20,7 +19,6 @@ import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
 import { IModelDb } from '@itwin/core-backend';
-import { IModelJsNative } from '@itwin/core-backend';
 import { Model } from '@itwin/core-backend';
 import { ModelProps } from '@itwin/core-common';
 import { Placement2d } from '@itwin/core-common';
@@ -41,12 +39,7 @@ export class IModelExporter {
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(user?: AccessToken, startChangesetId?: {
-        startChangesetId?: string;
-        changedInstanceIds?: ChangedInstanceIds;
-    }): Promise<void>;
-    // @deprecated (undocumented)
-    exportChanges(user: AccessToken | undefined, startChangesetId: string): Promise<void>;
+    exportChanges(user?: AccessToken, startChangesetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
