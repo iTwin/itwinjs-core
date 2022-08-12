@@ -26,7 +26,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb } from "@itwin/core-backend";
+import { IModelDb, getSchemaJsonFromIModel } from "@itwin/core-backend";
 import {
   Schema,
   PrimitiveType,
@@ -39,7 +39,6 @@ import {
   ISchemaChanges,
   AnyDiagnostic,
 } from "@itwin/ecschema-metadata";
-import { getSchemaJsonFromIModel } from "@itwin/core-backend";
 import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
