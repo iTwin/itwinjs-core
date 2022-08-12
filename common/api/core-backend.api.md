@@ -857,7 +857,7 @@ export namespace CodeService {
         // (undocumented)
         readonly props: CodeService.CodeGuidStateJson;
     }
-    export function makeScopeAndSpec(briefcase: BriefcaseDb, props: CodeProps): CodeService.ScopeAndSpec;
+    export function makeScopeAndSpec(briefcase: BriefcaseDb, code: Required<CodeProps>): CodeService.ScopeAndSpec;
     export interface NameAndJson {
         // (undocumented)
         readonly json?: SettingObject;
@@ -2703,7 +2703,7 @@ export namespace IModelDb {
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
-        getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;

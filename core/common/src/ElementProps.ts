@@ -364,6 +364,8 @@ export interface RenderTimelineLoadProps {
  * @extensions
  */
 export interface ElementLoadOptions {
+  /** if true, only load the members of [[ElementProps]], and no members from subclasses */
+  onlyBaseProperties?: boolean;
   /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
    * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
    */

@@ -2467,6 +2467,17 @@ describe("iModel", () => {
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
 
+    const elProps = imodel1.elements.getElementProps({ id: elementId, onlyBaseProperties: true });
+    expect(elProps.userLabel).equal(element.userLabel);
+    expect(elProps.classFullName).equal(SpatialCategory.classFullName);
+    expect(elProps.model).equal(element.model);
+    expect(elProps.code.value).equal(element.code.value);
+    expect(elProps.code.scope).equal(element.code.scope);
+    expect(elProps.code.spec).equal(element.code.spec);
+    expect(elProps.federationGuid).equal(element.federationGuid);
+    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isInstanceOfEntity).undefined;
+
     // update UserLabel to undefined
     element.userLabel = undefined;
     element.update();

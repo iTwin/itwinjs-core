@@ -1515,11 +1515,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elementProps = this.tryGetElementProps<T>(elementId);
-      if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
-      return elementProps;
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
+      if (typeof props === "string") {
+        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+      } else if (props instanceof Code) {
+        props = { code: props };
+      }
+      return this._iModel.nativeDb.getElement(props) as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1563,6 +1565,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
         elementId = { code: elementId };
+      else
+        elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
       const elementProps = this.tryGetElementJson<ElementProps>(elementId);
       if (undefined === elementProps)
