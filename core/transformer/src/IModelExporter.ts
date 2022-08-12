@@ -283,8 +283,10 @@ export class IModelExporter {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
         const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
         // must delete submodels first since they have a constraint on the element
-        if (subModelAlsoDeleted)
+        if (subModelAlsoDeleted) {
           this.handler.onDeleteModel(elementId);
+          deletedSubModels.add(elementId);
+        }
         this.handler.onDeleteElement(elementId);
       }
     }

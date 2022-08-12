@@ -848,7 +848,7 @@ export class IModelTransformer extends IModelExportHandler {
     // - If both were deleted, [[remapDeletedSourceElements]] will find and remap the deleted element making this operation valid
     const targetModelId: Id64String = this.context.findTargetElementId(sourceModelId);
     if (Id64.isValidId64(targetModelId)) {
-      this.importer.deleteElement(targetModelId);
+      this.importer.deleteModel(targetModelId);
     }
   }
 
