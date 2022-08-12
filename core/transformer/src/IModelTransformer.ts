@@ -531,7 +531,7 @@ export class IModelTransformer extends IModelExportHandler {
           WHERE ic.OpCode=:opcode
             AND ic.Summary.Id=:changesetId
             AND esac.Scope.Id=:targetScopeElementId
-            AND ic.ChangedInstance.ClassId IN bisCoreExternalSourceAspectClassId
+            AND ic.ChangedInstance.ClassId IN (SELECT Id FROM bisCoreExternalSourceAspectClassId)
           `,
           (stmt) => {
             stmt.bindInteger("opcode", ChangeOpCode.Delete);
