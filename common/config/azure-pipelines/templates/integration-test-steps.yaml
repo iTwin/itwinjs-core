@@ -43,6 +43,11 @@ steps:
     displayName: "Rush build"
 
   - script: npm run test:integration
+    workingDirectory: "full-stack-tests/node-imodelconnection"
+    displayName: "Run Node IModelConnection Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
@@ -62,11 +67,6 @@ steps:
   - script: npm run test:integration
     workingDirectory: "full-stack-tests/ecschema-rpc-interface"
     displayName: "Run ECSchema RPC Interface Tests"
-    condition: succeededOrFailed()
-
-  - script: npm run test:integration
-    workingDirectory: "full-stack-tests/node-imodelconnection"
-    displayName: "Run Node IModelConnection Tests"
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer
