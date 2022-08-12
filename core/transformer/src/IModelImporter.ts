@@ -281,7 +281,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.trackProgress();
   }
 
-  /** Delete the specified Element from the target iModel. */
+  /** Delete the specified Model from the target iModel. */
   public deleteModel(modelId: Id64String): void {
     this.onDeleteModel(modelId);
   }
