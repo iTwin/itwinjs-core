@@ -469,7 +469,7 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          let settings = this.thematicSettings ?? ThematicGradientSettings.defaults;
+          const settings = this.thematicSettings ?? ThematicGradientSettings.defaults;
 
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;

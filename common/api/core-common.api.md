@@ -3778,6 +3778,8 @@ export namespace Gradient {
         static fromJSON(json?: SymbProps): Symb;
         getImage(width: number, height: number): ImageBuffer;
         // @internal
+        getTextureImage(width: number, height: number): ImageBuffer;
+        // @internal
         getThematicImageForRenderer(maxDimension: number): ImageBuffer;
         // (undocumented)
         get hasTranslucency(): boolean;
