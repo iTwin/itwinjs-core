@@ -83,6 +83,12 @@ export namespace Gradient {
     thematicSettings?: ThematicGradientSettingsProps;
   }
 
+  export interface ProduceImageArgs {
+    width: number;
+    height: number;
+    includeThematicMargin?: boolean;
+  }
+
   /** Multi-color area fill defined by a range of colors that vary by position.
    * Gradient fill can be applied to planar regions.
    * @see [[Gradient.SymbProps]]
@@ -343,26 +349,18 @@ export namespace Gradient {
       return imageBuffer;
     }
 
-    /** @internal used by renderer when producing texture images - slightly different behavior for thematic gradients. */
-    public getTextureImage(width: number, height: number): ImageBuffer {
-      return this._getImage(width, height, true);
-    }
-
-    /** Applies this gradient's settings to produce a bitmap image.
+    /** Produces a bitmap image from this gradient.
      * @param width Width of the image
      * @param height Height of the image
-     * @returns Bitmap image of the specified dimensions. For thematic gradients with a width > 1, pixels in each column will be identical.
+     * @see [[
      */
     public getImage(width: number, height: number): ImageBuffer {
-      return this._getImage(width, height, false);
+      return this.produceImage({ width, height, includeThematicMargin: true });
     }
 
-    /** Produce a bitmap image from the gradient.
-     * If this is a thematic gradient and forTextureImage is true, include the margin color and constrain the width to 1; otherwise omit the margin color.
-     */
-    private _getImage(width: number, height: number, forTextureImage: boolean): ImageBuffer {
-      if (forTextureImage && this.mode === Mode.Thematic)
-        width = 1; // all pixels in each row are identical, no point in width > 1.
+    /** Produces a bitmap image from this gradient. */
+    public produceImage(args: ProduceImageArgs): ImageBuffer {
+      const { width, height, includeThematicMargin } = { ...args };
 
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
@@ -475,7 +473,7 @@ export namespace Gradient {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            if (forTextureImage && (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax)) {
+            if (includeThematicMargin && (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax)) {
               color = settings.marginColor;
             } else {
               f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
