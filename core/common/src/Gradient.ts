@@ -83,9 +83,17 @@ export namespace Gradient {
     thematicSettings?: ThematicGradientSettingsProps;
   }
 
+  /** Arguments supplied to [[Gradient.Symb.produceImage]].
+   * @public
+   */
   export interface ProduceImageArgs {
+    /** The desired width of the image in pixels. Must be an integer greater than zero. */
     width: number;
+    /** The desired height of the image in pixels. Must be an integer greater than zero. */
     height: number;
+    /** If true and the gradient uses [[Gradient.Mode.Thematic]], the margin color specified by [[ThematicGradientSettings.marginColor]] will be included
+     * in the top and bottom rows of the image; otherwise only the gradient colors will be included in the image.
+     */
     includeThematicMargin?: boolean;
   }
 
@@ -352,9 +360,13 @@ export namespace Gradient {
     /** Produces a bitmap image from this gradient.
      * @param width Width of the image
      * @param height Height of the image
-     * @see [[
+     * @note If this gradient uses [[Gradient.Mode.Thematic]], then the width of the image will be 1 and the margin color will be included in the top and bottom rows.
+     * @see [[produceImage]] for more customization.
      */
     public getImage(width: number, height: number): ImageBuffer {
+      if (this.mode === Mode.Thematic)
+        width = 1;
+
       return this.produceImage({ width, height, includeThematicMargin: true });
     }
 
