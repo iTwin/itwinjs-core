@@ -771,7 +771,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   /** Attempt to create a texture using gradient symbology. */
   public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
-    const source = symb.getImage(0x100, 0x100);
+    const source = symb.getTextureImage(0x100, 0x100);
     return this.createTexture({
       image: {
         source,

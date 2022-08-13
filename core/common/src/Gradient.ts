@@ -343,12 +343,27 @@ export namespace Gradient {
       return imageBuffer;
     }
 
+    /** @internal used by renderer when producing texture images - slightly different behavior for thematic gradients. */
+    public getTextureImage(width: number, height: number): ImageBuffer {
+      return this._getImage(width, height, true);
+    }
+
     /** Applies this gradient's settings to produce a bitmap image.
      * @param width Width of the image
      * @param height Height of the image
      * @returns Bitmap image of the specified dimensions. For thematic gradients with a width > 1, pixels in each column will be identical.
      */
     public getImage(width: number, height: number): ImageBuffer {
+      return this._getImage(width, height, false);
+    }
+
+    /** Produce a bitmap image from the gradient.
+     * If this is a thematic gradient and forTextureImage is true, include the margin color and constrain the width to 1; otherwise omit the margin color.
+     */
+    private _getImage(width: number, height: number, forTextureImage: boolean): ImageBuffer {
+      if (forTextureImage && this.mode === Mode.Thematic)
+        width = 1; // all pixels in each row are identical, no point in width > 1.
+
       const thisAngle = (this.angle === undefined) ? 0 : this.angle.radians;
       const cosA = Math.cos(thisAngle);
       const sinA = Math.sin(thisAngle);
@@ -454,30 +469,32 @@ export namespace Gradient {
           break;
         }
         case Mode.Thematic: {
-          let settings = this.thematicSettings;
-          if (settings === undefined) {
-            settings = ThematicGradientSettings.defaults;
-          }
+          let settings = this.thematicSettings ?? ThematicGradientSettings.defaults;
 
           for (let j = 0; j < height; j++) {
             let f = 1 - j / height;
             let color: ColorDef;
 
-            f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
-            switch (settings.mode) {
-              case ThematicGradientMode.SteppedWithDelimiter:
-              case ThematicGradientMode.IsoLines:
-              case ThematicGradientMode.Stepped: {
-                if (settings.stepCount > 1) {
-                  const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
-                  color = this.mapColor(fStep);
+            if (forTextureImage && (f < ThematicGradientSettings.margin || f > ThematicGradientSettings.contentMax)) {
+              color = settings.marginColor;
+            } else {
+              f = (f - ThematicGradientSettings.margin) / (ThematicGradientSettings.contentRange);
+              switch (settings.mode) {
+                case ThematicGradientMode.SteppedWithDelimiter:
+                case ThematicGradientMode.IsoLines:
+                case ThematicGradientMode.Stepped: {
+                  if (settings.stepCount > 1) {
+                    const fStep = Math.floor(f * settings.stepCount - 0.00001) / (settings.stepCount - 1);
+                    color = this.mapColor(fStep);
+                  }
+                  break;
                 }
-                break;
+                case ThematicGradientMode.Smooth:
+                  color = this.mapColor(f);
+                  break;
               }
-              case ThematicGradientMode.Smooth:
-                color = this.mapColor(f);
-                break;
             }
+
             for (let i = 0; i < width; i++) {
               image[currentIdx--] = color!.getAlpha();
               image[currentIdx--] = color!.colors.b;
