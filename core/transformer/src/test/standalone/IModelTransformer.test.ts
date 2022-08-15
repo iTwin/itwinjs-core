@@ -52,6 +52,9 @@ describe("IModelTransformer", () => {
     }
   });
 
+  /** a namespace of lazy initialized promises each a series of snapshots comprising
+   * a test scenario that can be reused in independent tests
+   */
   class ReusableSnapshots {
     private static _extensiveTestScenarioPromise: undefined | Promise<{
       sourceDb: IModelDb;
@@ -307,9 +310,7 @@ describe("IModelTransformer", () => {
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const extensiveTestScenario = await ReusableSnapshots.extensiveTestScenario;
-    // have to copy since this test will mutate this
-    const sourcePath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
-    const sourceDb = copyDbPreserveId(extensiveTestScenario.sourceDb, sourcePath);
+    const sourceDb = extensiveTestScenario.sourceDb;
 
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
@@ -362,10 +363,7 @@ describe("IModelTransformer", () => {
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
     // create target iModel
-    const targetDbFile = path.join(KnownTestLocations.outputDir, "IModelTransformer", "Clone-Target.bim");
-    if (IModelJsFs.existsSync(targetDbFile)) {
-      IModelJsFs.removeSync(targetDbFile);
-    }
+    const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Clone-Target.bim");
     const targetDbProps: CreateIModelProps = {
       rootSubject: { name: `Cloned target of ${sourceDb.elements.getRootSubject().code.value}` },
       ecefLocation: sourceDb.ecefLocation,
