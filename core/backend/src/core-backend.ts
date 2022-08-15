@@ -7,6 +7,7 @@ export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./DisplayStyle";
 export * from "./ECDb";
