@@ -6,12 +6,13 @@
  * @module Schema
  */
 
-import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
-import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
+import { ConcreteEntityIds } from "./ConcreteEntityId";
+import assert = require("assert");
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -110,32 +111,54 @@ export class ClassRegistry {
     // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
-    const navigationProps = Object.entries(entityMetaData.properties)
-      .filter(([_propName, prop]) => prop.isNavigation)
-      .map(([propName, _prop]) => propName);
-
-    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element); // Entity.is check but with type information to avoid casts later
-
     // a class only gets an automatic `collectReferenceConcreteIds` implementation if:
-    // - it derives from `BisCore:Element`
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
-    if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
+    if (!generatedClassHasNonGeneratedNonCoreAncestor) {
+      interface NavPropData {
+        name: string;
+        /** can be undefined if loading was deferred */
+        concreteEntityType: ConcreteEntityTypes | undefined;
+        relClassName: string;
+      }
+
+      const navigationProps: NavPropData[] = Object.entries(entityMetaData.properties)
+        .filter(([_name, prop]) => prop.isNavigation)
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        .map(([name, prop]) => {
+          assert(prop.relationshipClass);
+          const navPropRelClass = ClassRegistry.findRegisteredClass(prop.relationshipClass);
+          // FIXME: test this case
+          // because this data is generated while classes are registered, it is possible the target won't have been registered yet
+          // so leave as undefined and the usage below will lazy load it or throw if it can't
+          return {
+            name,
+            relClassName: prop.relationshipClass,
+            concreteEntityType: navPropRelClass && ConcreteEntityIds.typeFromClass(navPropRelClass),
+          };
+        });
+
       Object.defineProperty(
         generatedClass.prototype,
         "collectReferenceConcreteIds",
         {
-          // first prototype of `this` is its class
-          value(this: typeof generatedClass, referenceIds: Id64Set) {
+          value(this: typeof generatedClass, referenceIds: Id64Set | ConcreteEntityIdSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
             const superImpl = superclass.prototype["collectReferenceConcreteIds"];
             superImpl.call(this, referenceIds);
             for (const navProp of navigationProps) {
-              const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
+              const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id))
                 continue;
-
-              referenceIds.add(relatedElem.id);
+              // we deferred resolving the concrete entity type before, let's try again
+              if (navProp.concreteEntityType === undefined) {
+                const navPropRelClass = ClassRegistry.findRegisteredClass(navProp.relClassName);
+                if (navPropRelClass === undefined)
+                  throw Error(`Class '${navProp.relClassName}' has not been registered, register all classes before calling collectReferenceConcreteIds`);
+                navProp.concreteEntityType = ConcreteEntityIds.typeFromClass(navPropRelClass);
+              }
+              const concreteId = ConcreteEntityIds.fromEntityType(relatedElem.id, navProp.concreteEntityType);
+              referenceIds.add(concreteId);
             }
           },
           // defaults for methods on a prototype (required for sinon to stub out methods on tests)

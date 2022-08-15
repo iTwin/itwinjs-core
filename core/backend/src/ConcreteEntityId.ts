@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
@@ -28,16 +28,63 @@ export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps
  * @public
  */
 export class ConcreteEntityIds extends BentleyConcreteEntityIds {
+
   // TODO: fix this horror somehow
-  // necessary to prevent cyclic dependencies, the required modules will be in the require cache already
-  /* eslint-disable @typescript-eslint/naming-convention */
-  private static get _ElementClass() { return require("./Element").Element; } // eslint-disable-line @typescript-eslint/no-var-requires
-  private static get _ElementAspectClass() { return require("./ElementAspect").ElementAspect; } // eslint-disable-line @typescript-eslint/no-var-requires
-  /* eslint-enable @typescript-eslint/naming-convention */
-  public static from(entity: ConcreteEntity): ConcreteEntityId {
-    return `${entity instanceof this._ElementClass ? "e" : entity instanceof this._ElementAspectClass ? "a" : "r"}:${entity.id}`;
+  // necessary to prevent cyclic dependencies, the required modules will be in the require cache already so I don't store
+  /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
+  private static get _ElementClass() {
+    // typescript doesn't seem to understand the types of these static relative imports
+    return (require("./Element") as typeof import("./Element")).Element;
   }
-  public static fromClass(entityClass: typeof Entity, id: Id64String): ConcreteEntityId {
-    return `${entityClass.is(this._ElementClass) ? "e": entityClass.is(this._ElementAspectClass)  ? "a" : "r"}:${id}`;
+  private static get _ElementAspectClass() {
+    return (require("./ElementAspect") as typeof import("./ElementAspect")).ElementAspect;
+  }
+  private static get _ModelClass() {
+    return (require("./Model") as typeof import("./Model")).Model;
+  }
+  private static get _RelationshipClass() {
+    return (require("./Relationship") as typeof import("./Relationship")).Relationship;
+  }
+  private static get _CodeSpecClass() {
+    // FIXME: this is wrong
+    return (require("./CodeSpecs") as typeof import("./CodeSpecs")).CodeSpecs;
+  }
+  private static get _ClassRegistry() {
+    return (require("./ClassRegistry") as typeof import("./ClassRegistry")).ClassRegistry;
+  }
+  /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
+
+  public static from(entity: ConcreteEntity): ConcreteEntityId {
+    return `${entity instanceof this._ElementClass ? "e" : entity instanceof this._ElementAspectClass ? "a" : "r"}${entity.id}`;
+  }
+  public static fromClass(id: Id64String, entityClass: typeof Entity): ConcreteEntityId {
+    return `${entityClass.is(this._ElementClass) ? "e": entityClass.is(this._ElementAspectClass)  ? "a" : "r"}${id}`;
+  }
+  /** Searches for a class by name in the [ClassRegistry]($backend) */
+  public static fromClassFullName(id: Id64String, classFullName: string): ConcreteEntityId {
+    const ecclass = this._ClassRegistry.findRegisteredClass(classFullName);
+    if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
+    return `${ecclass.is(this._ElementClass) ? "e": ecclass.is(this._ElementAspectClass)  ? "a" : "r"}${id}`;
+  }
+
+  /** Searches for a class by name in the [ClassRegistry]($backend) */
+  public static fromEntityType(id: Id64String, type: ConcreteEntityTypes): ConcreteEntityId {
+    return `${type}${id}`;
+  }
+
+  /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
+  public static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
+    if (entityClass instanceof this._ElementClass)
+      return ConcreteEntityTypes.Element;
+    if (entityClass instanceof this._ModelClass)
+      return ConcreteEntityTypes.Model;
+    if (entityClass instanceof this._ElementAspectClass)
+      return ConcreteEntityTypes.ElementAspect;
+    if (entityClass instanceof this._RelationshipClass)
+      return ConcreteEntityTypes.Relationship;
+    if (entityClass instanceof this._CodeSpecClass)
+      return ConcreteEntityTypes.CodeSpec;
+    else
+      throw Error(`A non-concrete entity '${entityClass.classFullName}' was passed to ConcreteEntityIds.typeFromClass`);
   }
 }
