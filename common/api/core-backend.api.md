@@ -857,7 +857,7 @@ export namespace CodeService {
         // (undocumented)
         readonly props: CodeService.CodeGuidStateJson;
     }
-    export function makeScopeAndSpec(briefcase: BriefcaseDb, code: Required<CodeProps>): CodeService.ScopeAndSpec;
+    export function makeScopeAndSpec(briefcase: BriefcaseDb, code: CodeProps): CodeService.ScopeAndSpec;
     export interface NameAndJson {
         // (undocumented)
         readonly json?: SettingObject;
