@@ -34,7 +34,7 @@ export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: 
   return { modelId, spatialCategoryId };
 }
 
-describe.only("IModelWriteTest", () => {
+describe("IModelWriteTest", () => {
   let managerAccessToken: AccessToken;
   let superAccessToken: AccessToken;
   let testITwinId: string;
@@ -702,7 +702,7 @@ describe.only("IModelWriteTest", () => {
     rwIModel2.close();
   });
 
-  it.only("parent lock should suffice when inserting into deeply nested sub-model", async () => {
+  it("parent lock should suffice when inserting into deeply nested sub-model", async () => {
     const version0 = IModelTestUtils.resolveAssetFile("test.bim");
     const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId: testITwinId, iModelName: "subModelCoveredByParentLockTest", version0 });
     const iModel = await HubWrappers.downloadAndOpenBriefcase({ iTwinId: testITwinId, iModelId });
