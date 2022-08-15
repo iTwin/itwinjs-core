@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -58,6 +58,21 @@ export class ClassRegistry {
 
     Schemas.registerSchema(schemaClass); // register the class before we return it.
     return schemaClass;
+  }
+
+  private static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
+    let rootClassMetaData = entityMetaData;
+    while (true) {
+      if (rootClassMetaData.baseClasses.length === 0)
+        break;
+      const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
+      const firstBaseIsMixin = firstBase.customAttributes?.some((ca) => ca.ecclass === "IsMixin");
+      if (firstBaseIsMixin)
+        break;
+      else
+        rootClassMetaData = firstBase;
+    }
+    return rootClassMetaData;
   }
 
   /** Generate a JavaScript class from Entity metadata.
@@ -115,27 +130,18 @@ export class ClassRegistry {
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
     if (!generatedClassHasNonGeneratedNonCoreAncestor) {
-      interface NavPropData {
-        name: string;
-        /** can be undefined if loading was deferred */
-        concreteEntityType: ConcreteEntityTypes | undefined;
-        relClassName: string;
-      }
-
-      const navigationProps: NavPropData[] = Object.entries(entityMetaData.properties)
+      const navigationProps = Object.entries(entityMetaData.properties)
         .filter(([_name, prop]) => prop.isNavigation)
         // eslint-disable-next-line @typescript-eslint/no-shadow
         .map(([name, prop]) => {
           assert(prop.relationshipClass);
-          const navPropRelClass = ClassRegistry.findRegisteredClass(prop.relationshipClass);
-          // FIXME: test this case
-          // because this data is generated while classes are registered, it is possible the target won't have been registered yet
-          // so leave as undefined and the usage below will lazy load it or throw if it can't
-          return {
-            name,
-            relClassName: prop.relationshipClass,
-            concreteEntityType: navPropRelClass && ConcreteEntityIds.typeFromClass(navPropRelClass),
-          };
+          const ecClassMetaData = iModel.getMetaData(prop.relationshipClass);
+          const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, ecClassMetaData);
+          // root class must be in BisCore so should be loaded since biscore classes will never get this
+          // generated implementation
+          const rootClass = ClassRegistry.findRegisteredClass(`BisCore:${rootClassMetaData.ecclass}`);
+          assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
+          return { name, concreteEntityType: ConcreteEntityIds.typeFromClass(rootClass) };
         });
 
       Object.defineProperty(
@@ -150,13 +156,6 @@ export class ClassRegistry {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id))
                 continue;
-              // we deferred resolving the concrete entity type before, let's try again
-              if (navProp.concreteEntityType === undefined) {
-                const navPropRelClass = ClassRegistry.findRegisteredClass(navProp.relClassName);
-                if (navPropRelClass === undefined)
-                  throw Error(`Class '${navProp.relClassName}' has not been registered, register all classes before calling collectReferenceConcreteIds`);
-                navProp.concreteEntityType = ConcreteEntityIds.typeFromClass(navPropRelClass);
-              }
               const concreteId = ConcreteEntityIds.fromEntityType(relatedElem.id, navProp.concreteEntityType);
               referenceIds.add(concreteId);
             }
