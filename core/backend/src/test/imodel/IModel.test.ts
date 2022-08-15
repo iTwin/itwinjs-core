@@ -478,6 +478,7 @@ describe("iModel", () => {
     const styleId = imodel2.elements.insertElement(props);
     let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
+    expect(style.code.spec).equal(imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id);
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
@@ -944,7 +945,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
@@ -2465,6 +2466,17 @@ describe("iModel", () => {
     });
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
+    const elProps = imodel1.elements.getElementProps({ id: elementId, onlyBaseProperties: true });
+    expect(elProps.userLabel).equal(element.userLabel);
+    expect(elProps.classFullName).equal(SpatialCategory.classFullName);
+    expect(elProps.model).equal(element.model);
+    expect(elProps.code.value).equal(element.code.value);
+    expect(elProps.code.scope).equal(element.code.scope);
+    expect(elProps.code.spec).equal(element.code.spec);
+    expect(elProps.federationGuid).equal(element.federationGuid);
+    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isInstanceOfEntity).undefined;
 
     // update UserLabel to undefined
     element.userLabel = undefined;
