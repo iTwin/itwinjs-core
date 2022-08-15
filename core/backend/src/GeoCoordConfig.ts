@@ -55,9 +55,14 @@ export class GeoCoordConfig {
         SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName);
 
     } catch (e: unknown) {
-      Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)}, account=${account.accessName}`);
+      Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)},
+      account=${account.accessName},
+      storage=${account.storageType},
+      isPublic=${containerProps.isPublic},
+      container=${containerProps.containerId},
+      rootDir=${ws.cloudCache?.rootDir}`
+      );
     }
-  }
 
   private static loadAll(settings: Settings, settingName: string) {
     settings.resolveSetting(settingName, (val) => {

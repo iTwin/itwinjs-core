@@ -50,7 +50,7 @@ The following rules may be helpful:
 
 ## CodeService API
 
-The [CodeService]($backend) interface in iTwin.js provides an api to integrate the Code system for elements in an iModel, with a `CodeService` that can:
+The `CodeService.\1` interface in iTwin.js provides an api to integrate the Code system for elements in an iModel, with a `CodeService` that can:
 
 - be queried to find the properties of existing codes
 - reserve one or more codes*
@@ -61,27 +61,27 @@ The [CodeService]($backend) interface in iTwin.js provides an api to integrate t
 
 ### IModel Codes vs. CodeService
 
-The [Code]($common) api in iTwin.js deals with `Codes` on [Element]($backend)s. For efficiency, the [Code.spec]($common) member holds a local Id into the [CodeSpecs]($backend) table in the iModel. Likewise, the [Code.scope]($common) member contains the element Id of the code scope element. Both of these values are *iModel local* identifiers, and are not appropriate for the iTwin [CodeService]($backend) api. The `codeService` api deals with code specs by their name, and code scopes by [Guid]($common).
+The [Code]($common) api in iTwin.js deals with `Codes` on [Element]($backend)s. For efficiency, the [Code.spec]($common) member holds a local Id into the [CodeSpecs]($backend) table in the iModel. Likewise, the [Code.scope]($common) member contains the element Id of the code scope element. Both of these values are *iModel local* identifiers, and are not appropriate for the iTwin `CodeService` api. The `codeService` api deals with code specs by their name, and code scopes by [Guid]($bentley).
 
-The helper function [CodeService.makeScopeAndSpec]($backend) converts an iModel-specific [CodeProps]($common) object into a [CodeService.ScopeAndSpec]($backend) object. To do this, it:
+The helper function `CodeService.makeScopeAndSpec` converts an iModel-specific [CodeProps]($common) object into a `CodeService.ScopeAndSpec` object. To do this, it:
 
 - converts the `FederationGuid` of the code scope element into the `scope` member
 - converts the code spec Id into the name of the code spec as the `spec` member
 
 ### CodeIndex
 
-To improve performance and convenience of checking the set of existing codes, the `CodeService` api has a member called [CodeService.codeIndex]($backend) that implements the [CodeIndex]($backend) api. The `CodeIndex` is a local cache of the `CodeService` as of some point of time in the past. It has fast and efficient methods to query the set of Codes in the `CodeService`. Since it is a local cache, each user's use of their `CodeIndex` has no impact on other users, nor does reading from the `CodeIndex` block others from writing to the `CodeService`.
+To improve performance and convenience of checking the set of existing codes, the `CodeService` api has a member called `CodeService.codeIndex` that implements the `CodeIndex` api. The `CodeIndex` is a local cache of the `CodeService` as of some point of time in the past. It has fast and efficient methods to query the set of Codes in the `CodeService`. Since it is a local cache, each user's use of their `CodeIndex` has no impact on other users, nor does reading from the `CodeIndex` block others from writing to the `CodeService`.
 
 `CodeIndex` has methods to get the properties of Codes and code specs, as well as to iterate over them, optionally applying a filter:
 
-- [CodeIndex.isCodePresent]($backend) to check if a code exists
-- [CodeIndex.getCode]($backend) to get the properties of a code, given its Guid
-- [CodeIndex.findCode]($backend) to look up a code by value/scope
-- [CodeIndex.forAllCodes]($backend) to iterate of a set of codes
-- [CodeIndex.getCodeSpec]($backend) to get the properties of a code spec
-- [CodeIndex.forAllCodeSpecs]($backend) to iterate over a set of code specs
+- `CodeIndex.isCodePresent` to check if a code exists
+- `CodeIndex.getCode` to get the properties of a code, given its Guid
+- `CodeIndex.findCode` to look up a code by value/scope
+- `CodeIndex.forAllCodes` to iterate of a set of codes
+- `CodeIndex.getCodeSpec` to get the properties of a code spec
+- `CodeIndex.forAllCodeSpecs` to iterate over a set of code specs
 
-The method [CodeService.synchronizeWithCloud]($backend) brings the `CodeIndex` up to date with the state of the `CodeService`, as of the when it is called.
+The method `CodeService.synchronizeWithCloud` brings the `CodeIndex` up to date with the state of the `CodeService`, as of the when it is called.
 
 ### Reserving Codes via the CodeService API
 
@@ -99,33 +99,33 @@ The expectation is that Codes are *reserved* by applications up-front, before cr
 
 Generally it is a good idea to reserve a group of codes together rather than one-at-a-time, if possible. To reserve codes, use:
 
-- [CodeService.reserveCode]($backend) to reserve a single code
-- [CodeService.reserveCodes]($backend) to reserve a set of codes
+- `CodeService.reserveCode` to reserve a single code
+- `CodeService.reserveCodes` to reserve a set of codes
 
 There are also `CodeService` apis for updating properties of and deleting codes. They have the same rules for authentication and serialization as reserving Codes. They are:
 
-- [CodeService.updateCode]($backend) to modify the properties of a code
-- [CodeService.updateCodes]($backend) to modify the properties of a set of codes
-- [CodeService.deleteCodes]($backend) to delete a set of codes
+- `CodeService.updateCode` to modify the properties of a code
+- `CodeService.updateCodes` to modify the properties of a set of codes
+- `CodeService.deleteCodes` to delete a set of codes
 
 ### Code Sequences
 
 Some types of Codes follow a *sequential* pattern wherein the value of a new Code is be determined by applying a sequencing algorithm to the previous value.
 
-Applications may supply their own code sequencing algorithm by implementing the interface [CodeService.CodeSequence]($backend), supplying methods to get the first and last valid values, and a method to get the next value given another valid value. `CodeSequences` have a name, and can be registered with the [CodeService.registerSequence]($backend) and found via [CodeService.getSequence]($backend).
+Applications may supply their own code sequencing algorithm by implementing the interface `CodeService.CodeSequence`, supplying methods to get the first and last valid values, and a method to get the next value given another valid value. `CodeSequences` have a name, and can be registered with the `CodeService.registerSequence` and found via `CodeService.getSequence`.
 
 A `CodeSequence` determines a pattern for code values within a "scope and spec". To reserve a code from a code sequence, use:
 
-- [CodeService.reserveNextAvailableCode]($backend)
-- [CodeService.reserveNextAvailableCodes]($backend)
+- `CodeService.reserveNextAvailableCode`
+- `CodeService.reserveNextAvailableCodes`
 
-and supply a [CodeService.SequenceScope]($backend) containing:
+and supply a `CodeService.SequenceScope` containing:
 
 - the `CodeSequence`
 - code scope Guid
 - code spec name
 
-along with one or more [CodeService.ProposedCodeProps]($backend). The code value(s) will be returned in the `value` member.
+along with one or more `CodeService.ProposedCodeProps`. The code value(s) will be returned in the `value` member.
 
 Sometimes the sequence can be *full* for specific scope/spec and generate errors. See the documentation for details.
 
@@ -133,7 +133,7 @@ Sometimes the sequence can be *full* for specific scope/spec and generate errors
 
 The combination of `CodeSequence`s and deleting codes causes some ambiguities. Sometimes applications wish to *reuse* deleted values (aka *holes*), and sometimes they do not. To control that, you can use:
 
-- [CodeIndex.findNextAvailable]($backend)
-- [CodeIndex.findHighestUsed]($backend)
+- `CodeIndex.findNextAvailable`
+- `CodeIndex.findHighestUsed`
 
-in combination with [CodeService.SequenceScope.start]($backend).
+in combination with `CodeService.SequenceScope.start`
