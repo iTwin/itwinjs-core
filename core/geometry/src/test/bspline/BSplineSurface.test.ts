@@ -5,7 +5,7 @@
 // import { Point3d } from "../PointVector";
 
 import { expect } from "chai";
-import { BSplineSurface3dH, BSplineSurface3dQuery } from "../../bspline/BSplineSurface";
+import { BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -143,10 +143,10 @@ describe("BSplineSurface", () => {
     const surfaceA = Sample.createXYGridBsplineSurface(4, 3, 3, 2);
     if (ck.testPointer(surfaceA)) {
       // test that bogus closure setups get rejected . .
-      surfaceA.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
+      surfaceA.setWrappable(UVSelect.vDirection, BSplineWrapMode.OpenByAddingControlPoints);
       testBSplineSurface(ck, surfaceA);
-      ck.testFalse(surfaceA.isClosable(1));
-      ck.testFalse(surfaceA.isClosable(0));
+      ck.testFalse(BSplineWrapMode.OpenByAddingControlPoints === surfaceA.isClosableUV(UVSelect.vDirection));
+      ck.testTrue(BSplineWrapMode.None === surfaceA.isClosableUV(UVSelect.uDirection));
     }
     // A rational surface with unit weigths ... This is just a plane
     const surfaceAH1 = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2);
@@ -172,12 +172,10 @@ describe("BSplineSurface", () => {
         const bsurf = Sample.createPseudoTorusBsplineSurface(
           4.0, 1.0, // radii
           Math.max(12, orderU + 1), Math.max(6, orderV + 1),    // grid edges
-          orderU, orderV);    // order}
+          orderU, orderV);
         if (ck.testPointer(bsurf)) {
-
-          ck.testTrue(bsurf.isClosable(0));
-          ck.testTrue(bsurf.isClosable(1));
-
+          ck.testTrue(BSplineWrapMode.OpenByAddingControlPoints === bsurf.isClosableUV(UVSelect.uDirection));
+          ck.testTrue(BSplineWrapMode.OpenByAddingControlPoints === bsurf.isClosableUV(UVSelect.vDirection));
           bsurf.tryTranslateInPlace(dx, dy);
           allGeometry.push(bsurf);
         }

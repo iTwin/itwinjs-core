@@ -1266,8 +1266,8 @@ export class Sample {
     }
     const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
     if (result) {
-      result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
-      result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
+      result.setWrappable(0, uKnots.wrappable);
+      result.setWrappable(1, vKnots.wrappable);
     }
     return result;
   }

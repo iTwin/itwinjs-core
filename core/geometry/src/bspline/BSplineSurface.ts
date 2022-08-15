@@ -28,9 +28,10 @@ import { BSplineWrapMode, KnotVector } from "./KnotVector";
 export enum UVSelect {
   /** index of u direction */
   uDirection = 0,
-  /** index of v direction */
+  /** @deprecated replaced by vDirection */
   VDirection = 1,
-
+  /** index of v direction */
+  vDirection = 1,
 }
 /**
  * Enumeration of how weights are carried
@@ -105,8 +106,10 @@ export interface BSplineSurface3dQuery {
   extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /** test for nearly equality with `other` */
   isAlmostEqual(other: any): boolean;
-  /** ask if the u or v direction could be converted to periodic form */
+  /** @deprecated replaced by isCloseableUV */
   isClosable(select: UVSelect): boolean;
+  /** ask if the u or v direction could be converted to periodic form */
+  isClosableUV(select: UVSelect): BSplineWrapMode;
   /** Ask if the entire surface is within a plane. */
   isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
   /** return the total number of poles (product of u,v counts) */
@@ -212,7 +215,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * @param i index in [0, numPolesU)
    * @param j index in [0, numPolesV)
    */
-  public getPoint4dPoleXYZW(i: number, j: number, result?: Point4d): Point4d | undefined {
+  public getPoint4dPole(i: number, j: number, result?: Point4d): Point4d | undefined {
     return Point4d.createFromPackedXYZW(this.coffs, (i + j * this._numPoles[0]) * 4, result);
   }
   /**
@@ -363,9 +366,12 @@ export abstract class BSpline2dNd extends GeometryQuery {
       kU += stepV;
     }
   }
-  // cSpell:word sumpole
-  /** sum derivatives by the weights in the basisBuffer, using poles for given span */
+  /** @deprecated replaced by sumPoleBufferDerivativesForSpan */
   public sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
+    return this.sumPoleBufferDerivativesForSpan(spanIndexU, spanIndexV);
+  }
+  /** sum derivatives by the weights in the basisBuffer, using poles for given span */
+  public sumPoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number) {
     const poleBuffer1U = this._poleBuffer1UV[0];
     const poleBuffer1V = this._poleBuffer1UV[1];
     poleBuffer1U.fill(0);
@@ -420,7 +426,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
       this.knots[0].evaluateBasisFunctions1(knotIndex0U, u, this._basisBufferUV[0], this._basisBuffer1UV[0]);
       this.knots[1].evaluateBasisFunctions1(knotIndex0V, v, this._basisBufferUV[1], this._basisBuffer1UV[1]);
       this.sumPoleBufferForSpan(poleIndex0U, poleIndex0V);
-      this.sumpoleBufferDerivativesForSpan(poleIndex0U, poleIndex0V);
+      this.sumPoleBufferDerivativesForSpan(poleIndex0U, poleIndex0V);
     }
   }
   // Swap numSwap entries in coffs, starting at i0 and i1 (absolute indices -- not blocks)
@@ -466,26 +472,21 @@ export abstract class BSpline2dNd extends GeometryQuery {
     this.knots[select].wrappable = value;
   }
   /**
-   * Test if `degree` leading and trailing (one of U or V) blocks match, as if the data is an unwrapped closed spline in the selected direction.
-   * @param select select U or V direction
-   * @returns true if coordinates matched.
+   * Test if leading and trailing blocks of points match in a given direction.
+   * @param data packed array of points in row-major order (numRows x numColumns x dimension numbers)
+   * @param numRows number of rows of points in the array
+   * @param numColumns number of columns of points in the array (equal to the number of points in each row)
+   * @param dimension point dimension (e.g., 2,3,4)
+   * @param blockLength number of leading/trailing points to check
+   * @param select 0 to test first/last columns of points; 1 to test first/last rows of points
+   * @returns true if coordinates matched
    */
-  public isClosable(select: UVSelect): boolean {
-    if (this.knots[select].wrappable === BSplineWrapMode.None)
-      return false;
-    if (!this.knots[select].testClosable())
-      return false;
-
-    const numU = this.numPolesUV(0);
-    const numV = this.numPolesUV(1);
-    const blockSize = this.poleDimension;
-    const rowToRowStep = numU * blockSize;
-    const degreeU = this.degreeUV(0);
-    const degreeV = this.degreeUV(1);
-    const data = this.coffs;
-    if (select === 0) {
-      const numTest = blockSize * degreeU;  // degreeU contiguous poles.
-      for (let row = 0; row < numV; row++) {
+  public static isWrappedGrid(data: Float64Array, numRows: number, numColumns: number, dimension: number, blockLength: number, select: UVSelect): boolean {
+    const rowToRowStep = numColumns * dimension;
+    if (UVSelect.uDirection === select) {
+      // Test the contiguous block at the start/end of each row
+      const numTest = dimension * blockLength;
+      for (let row = 0; row < numRows; row++) {
         const i0 = row * rowToRowStep;
         const i1 = i0 + rowToRowStep - numTest;
         for (let i = 0; i < numTest; i++) {
@@ -494,15 +495,48 @@ export abstract class BSpline2dNd extends GeometryQuery {
         }
       }
     } else {
-      // Test the entire multi-row contiguous block in one loop . ..
-      const numTest = degreeV * rowToRowStep;
-      const i1 = blockSize * numU * numV - numTest;
+      // Test the entire multi-row contiguous block at the start/end of the array
+      const numTest = blockLength * rowToRowStep;
+      const i1 = numRows * numColumns * dimension - numTest;
       for (let i = 0; i < numTest; i++) {
         if (!Geometry.isSameCoordinate(data[i], data[i1 + i]))
           return false;
       }
     }
     return true;
+  }
+  /**
+   * Test if `degree` leading and trailing (one of U or V) blocks match, as if the data is a non-periodic physically closed spline in the selected direction.
+   * @param select select U or V direction
+   * @returns true if coordinates matched.
+   */
+  public testClosableGrid(select: UVSelect, mode?: BSplineWrapMode | undefined): boolean {
+    if (mode === undefined)
+      mode = this.knots[select].wrappable;
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints)
+      return BSpline2dNd.isWrappedGrid(this.coffs, this.numPolesUV(UVSelect.vDirection), this.numPolesUV(UVSelect.uDirection), this.poleDimension, this.degreeUV(select), select);
+    if (mode === BSplineWrapMode.OpenByRemovingKnots)
+      return true;  // no pole conditions
+    return false;
+  }
+  /** @deprecated replaced by isClosableUV */
+  public isClosable(select: UVSelect): boolean {
+    return BSplineWrapMode.None !== this.isClosableUV(select);
+  }
+  /**
+   * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping in the selected parametric direction.
+   * @param select select U or V direction
+   * @returns the manner of closing. See `BSplineWrapMode` for particulars of each mode.
+   */
+  public isClosableUV(select: UVSelect): BSplineWrapMode {
+    const mode = this.knots[select].wrappable;
+    if (mode === BSplineWrapMode.None)
+      return BSplineWrapMode.None;
+    if (!this.knots[select].testClosable(mode))
+      return BSplineWrapMode.None;
+    if (!this.testClosableGrid(select, mode))
+      return BSplineWrapMode.None;
+    return mode;
   }
 }
 
@@ -546,7 +580,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
   public getPointGridJSON(): PackedPointGrid {
     const result = {
       points: Point3dArray.unpackNumbersToNestedArraysIJK(this.coffs, 3, this.numPolesUV(0)),
-      weighStyle: WeightStyle.UnWeighted,
+      weightStyle: WeightStyle.UnWeighted,
       numCartesianDimensions: 3,
     };
     return result;

@@ -12,19 +12,20 @@ import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 
 /**
- * Enumeration of the possible ways the B-spline was converted from legacy periodic data.
+ * B-spline curve and surface types in this library are non-periodic. But they can be created from legacy periodic data.
+ * This enumeration lists the possible ways a B-spline object can have been created from legacy periodic data.
  * @public
  */
 export enum BSplineWrapMode {
   /** No conversion performed. */
   None = 0,
-  /** The periodic B-spline was opened up by adding degree wrap-around control points.
-   * * This is typical for periodic B-splines constructed with maximum continuity.
+  /** The B-spline was opened up by adding degree wrap-around control points to the legacy periodic data.
+   * * This is typical of B-splines constructed with maximum (degree - 1) continuity.
    * * Knots are unaffected by this conversion.
    */
   OpenByAddingControlPoints = 1,
-  /** The periodic B-spline was opened up by removing degree extreme knots.
-   * * This is typical of closed B-splines constructed as exact circular or elliptical arcs.
+  /** The B-spline was opened up by removing degree extreme knots from the legacy periodic data.
+   * * This is typical of rational B-spline curves representing full circles and ellipses.
    * * Poles are unaffected by this conversion.
    */
   OpenByRemovingKnots = 2,
@@ -103,7 +104,7 @@ export class KnotVector {
   public get knotLength01(): number { return this._knot1 - this._knot0; }
   /**
    * Returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
-   * @param mode optional test mode.  If undefined, use the this.wrappable.
+   * @param mode optional test mode.  If undefined, use this.wrappable.
    */
   public testClosable(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
@@ -113,30 +114,28 @@ export class KnotVector {
     const period = this.rightKnot - this.leftKnot;
     const degree = this.degree;
     const indexDelta = rightKnotIndex - leftKnotIndex;
-    // maximum continuity mode .  . .
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree; k0++) {
+      // maximum continuity mode: we expect degree periodically extended knots at each end
+      for (let k0 = 0; k0 < leftKnotIndex + degree; k0++) {
         const k1 = k0 + indexDelta;
-        if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
+        if (Math.abs(this.knots[k0] + period - this.knots[k1]) >= KnotVector.knotTolerance)
           return false;
       }
       return true;
     }
-    // arc mode ...
     if (mode === BSplineWrapMode.OpenByRemovingKnots) {
-      // we expect {degree} replicated knots at each end . . .
+      // legacy periodic mode: we expect multiplicity degree knots at each end
       const numRepeated = degree - 1;
-      const leftKnot = this.knots[leftKnotIndex];
-      const rightKnot = this.knots[rightKnotIndex];
+      const leftKnot = this.leftKnot;
+      const rightKnot = this.rightKnot;
       for (let i = 0; i < numRepeated; i++) {
-        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i - 1]))
+        if (Math.abs(leftKnot - this.knots[leftKnotIndex - i - 1]) >= KnotVector.knotTolerance)
           return false;
-        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i + 1]))
+        if (Math.abs(rightKnot - this.knots[rightKnotIndex + i + 1]) >= KnotVector.knotTolerance)
           return false;
       }
       return true;
     }
-
     return false;
   }
   /** Test matching degree and knot values */
@@ -248,7 +247,7 @@ export class KnotVector {
    * @param a1 right knot value for active interval
    */
   public static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector {
-    const knots = new KnotVector(numInterval + 2 * degree - 1, degree);
+    const knots = new KnotVector(numInterval + 2 * degree - 1, degree, BSplineWrapMode.OpenByAddingControlPoints);
     const du = 1.0 / numInterval;
     for (let i = 1 - degree, k = 0; i < numInterval + degree; i++, k++) {
       knots.knots[k] = Geometry.interpolate(a0, i * du, a1);
@@ -455,7 +454,9 @@ export class KnotVector {
    * in classic over-clamped manner
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
-    const wrap = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
+    let isExtraEndKnotPeriodic = false;
+    if (includeExtraEndKnot)
+      isExtraEndKnotPeriodic = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
     const leftIndex = this.leftKnotIndex;
     const rightIndex = this.rightKnotIndex;
     const a0 = this.leftKnot;
@@ -464,7 +465,7 @@ export class KnotVector {
     const degree = this.degree;
     const values: number[] = [];
     if (includeExtraEndKnot) {
-      if (wrap) {
+      if (isExtraEndKnotPeriodic) {
         values.push(this.knots[rightIndex - degree] - delta);
       } else {
         values.push(this.knots[0]);
@@ -472,7 +473,7 @@ export class KnotVector {
     }
     for (const u of this.knots) values.push(u);
     if (includeExtraEndKnot) {
-      if (wrap) {
+      if (isExtraEndKnotPeriodic) {
         values.push(this.knots[leftIndex + degree] + delta);
       } else
         values.push(values[values.length - 1]);

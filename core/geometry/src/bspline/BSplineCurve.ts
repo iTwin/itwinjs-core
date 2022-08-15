@@ -438,7 +438,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const degree = order - 1;
     const numIntervals = numPoles;
     const knots = KnotVector.createUniformWrapped(numIntervals, degree, 0.0, 1.0);
-    knots.wrappable = BSplineWrapMode.OpenByAddingControlPoints;
     // append degree wraparound poles
     const curve = new BSplineCurve3d(numPoles + degree, order, knots);
     if (poles instanceof Float64Array) {
@@ -643,8 +642,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
   /**
    * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping.
-   * @returns the manner of closing.   Se BSplineWrapMode for particulars of each mode.
-   *
+   * @returns the manner of closing. See `BSplineWrapMode` for particulars of each mode.
    */
   public get isClosable(): BSplineWrapMode {
     const mode = this._bcurve.knots.wrappable;
@@ -652,7 +650,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       return BSplineWrapMode.None;
     if (!this._bcurve.knots.testClosable(mode))
       return BSplineWrapMode.None;
-    if (!this._bcurve.testCloseablePolygon(mode))
+    if (!this._bcurve.testClosablePolygon(mode))
       return BSplineWrapMode.None;
     return mode;
   }

@@ -179,20 +179,24 @@ export class BSpline1dNd {
     }
     this.knots.reflectKnots();
   }
+  /** @deprecated replaced by testClosablePolygon */
+  public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
+    return this.testClosablePolygon(mode);
+  }
   /**
    * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon which has been expanded
    * to act as a normal bspline.
    * @returns true if `degree` leading and trailing polygon blocks match
    */
-  public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
+  public testClosablePolygon(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.knots.wrappable;
-    const degree = this.degree;
-    const blockSize = this.poleLength;
-    const indexDelta = (this.numPoles - this.degree) * blockSize;
-    const data = this.packedData;
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
       // expect {degree} matched points.
+      const degree = this.degree;
+      const blockSize = this.poleLength;
+      const indexDelta = (this.numPoles - degree) * blockSize;
+      const data = this.packedData;
       const numValuesToTest = degree * blockSize;
       for (let i0 = 0; i0 < numValuesToTest; i0++) {
         if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
@@ -200,12 +204,8 @@ export class BSpline1dNd {
       }
       return true;
     }
-
-    if (mode === BSplineWrapMode.OpenByRemovingKnots) {
-      // no pole conditions are applied.
-      return true;
-    }
-
+    if (mode === BSplineWrapMode.OpenByRemovingKnots)
+      return true;  // no pole conditions are applied.
     return false;
   }
 

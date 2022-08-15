@@ -202,9 +202,9 @@ export class BGFBWriter {
 
   public writeBSplineSurfaceAsFBVariantGeometry(bsurf: BSplineSurface3d | BSplineSurface3dH): number | undefined {
     const orderU = bsurf.orderUV(UVSelect.uDirection);
-    const orderV = bsurf.orderUV(UVSelect.VDirection);
+    const orderV = bsurf.orderUV(UVSelect.vDirection);
     const numPolesU = bsurf.numPolesUV(UVSelect.uDirection);
-    const numPolesV = bsurf.numPolesUV(UVSelect.VDirection);
+    const numPolesV = bsurf.numPolesUV(UVSelect.vDirection);
     const closedU = false;  // typescript bsurfs are not closed.  There is API to impose wrapping . . .
     const closedV = false;
     const holeOrigin = 0;

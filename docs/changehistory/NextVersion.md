@@ -22,3 +22,17 @@ New effect, shown below:
 ![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
+
+## Deprecations
+
+### @itwin/core-geometry
+
+The B-spline API has several name changes for consistency:
+
+| Deprecated                                                    | Replacement                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------- |
+| [BSpline1dNd.testCloseablePolygon]($core-geometry)            | [BSpline1dNd.testClosablePolygon]($core-geometry)             |
+| [BSpline2dNd.isClosable]($core-geometry)                      | [BSpline2dNd.isClosableUV]($core-geometry)                    |
+| [BSpline2dNd.sumpoleBufferDerivativesForSpan]($core-geometry) | [BSpline2dNd.sumPoleBufferDerivativesForSpan]($core-geometry) |
+| [BSplineSurface3dQuery.isClosable]($core-geometry)            | [BSplineSurface3dQuery.isClosableUV]($core-geometry)          |
+| [UVSelect.VDirection]($core-geometry)                         | [UVSelect.vDirection]($core-geometry)                         |
