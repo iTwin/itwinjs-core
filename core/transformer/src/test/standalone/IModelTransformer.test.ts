@@ -24,10 +24,9 @@ import {
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  assertIdentityTransformation,
-  AssertOrderTransformer,
-  ClassCounter, copyDbPreserveId, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  assertIdentityTransformation, AssertOrderTransformer, ClassCounter, copyDbPreserveId, FilterByViewTransformer, IModelToTextFileExporter,
+  IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator, RecordingIModelImporter, TestIModelImporter, TestIModelTransformer,
+  TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
