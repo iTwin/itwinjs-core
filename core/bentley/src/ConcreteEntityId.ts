@@ -8,7 +8,6 @@
 
 import { Id64String } from "./Id";
 
-
 /**
  * Types of concrete entities. Used for storing strings in JavaScript reference-equality containers which encode
  * low-level entity information.
@@ -64,10 +63,10 @@ export class ConcreteEntityIds {
  */
 export class ConcreteEntityIdSet extends Set<ConcreteEntityId> {
   public addElement(id: Id64String) { this.add(`e${id}`); }
+  // FIXME: probably shouldn't add it as an element
   public addModel(id: Id64String) { this.addElement(id); }
   public addAspect(id: Id64String) { this.add(`a${id}`); }
   public addRelationship(id: Id64String) { this.add(`r${id}`); }
-  /** create a ConcreteEntityIdSet-like wrapper around a plain Id64Set */
 
   /** Wrap a set with methods from [[ConcreteEntityIdSet]] to more literately add entities where you have the raw id and know what type it is.
    * This is so transitionary consumers can still iterate over purely raw valid element ids.
