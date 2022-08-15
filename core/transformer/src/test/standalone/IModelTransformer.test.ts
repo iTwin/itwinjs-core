@@ -1928,7 +1928,8 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("handle out-of-order references in aspects during consolidations", async () => {
+  // this functionality is a WIP and this will be unskipped when ready
+  it.skip("handle out-of-order references in aspects during consolidations", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectCyclicRefs.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "aspect-cyclic-refs" }});
 
@@ -1965,67 +1966,6 @@ describe("IModelTransformer", () => {
 
     const sourceRepositoryInTargetId = transformer.context.findTargetElementId(sourceRepositoryId);
     expect(extSrcAspect1InTarget?.scope?.id).to.equal(sourceRepositoryInTargetId);
-
-    sourceDb.close();
-    targetDb.close();
-  });
-
-  it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
-    // TODO: choose a reusable scenario with more aspects
-    // confirm the assumption that there are multiple aspect classes
-    const { sourceDb, targetDb, importer, transformer } = await ReusableSnapshots.extensiveTestScenario;
-    const physicalObj1InSourceId = IModelTransformerTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
-    const physicalObj1InTargetId = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
-    assert(physicalObj1InSourceId !== Id64.invalid);
-    assert(physicalObj1InTargetId !== Id64.invalid);
-
-    const exportedAspectSourceIds = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
-    const importedAspectTargetIds = importer.importedAspectIdsByElement.get(physicalObj1InTargetId);
-    assert(exportedAspectSourceIds !== undefined);
-    assert(importedAspectTargetIds !== undefined);
-    assert(exportedAspectSourceIds.length === importedAspectTargetIds.length);
-
-    for (let i = 0; i < exportedAspectSourceIds.length; ++i) {
-      const sourceId = exportedAspectSourceIds[i];
-      const targetId = importedAspectTargetIds[i];
-      const mappedTarget = transformer.context.findTargetAspectId(sourceId);
-      assert(mappedTarget !== Id64.invalid);
-      const indexInResult = importedAspectTargetIds.findIndex((id) => id === mappedTarget);
-      assert(mappedTarget === targetId, `aspect ${i} (${sourceId} in source, ${mappedTarget} in target) but got ${targetId} and the expected id was at index ${indexInResult}`);
-    }
-  });
-
-  it("new bug test", async () => {
-    const seedDb = SnapshotDb.openFile("/tmp/bad-scope.bim");
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
-    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
-
-    sourceDb.saveChanges();
-
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-
-    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "phys-model-in-target");
-
-    targetDb.saveChanges();
-
-    class TestTransformer extends IModelTransformer {
-      public remapCount = 0;
-      public override shouldExportElement(sourceElement: Element): boolean {
-        if (sourceElement instanceof PhysicalPartition) {
-          this.remapCount++;
-          this.context.remapElement(sourceElement.id, targetModelId);
-        }
-        return super.shouldExportElement(sourceElement);
-      }
-    }
-
-    const transformer = new TestTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
-    transformer.importer.doNotUpdateElementIds.add(targetModelId);
-
-    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
-    await expect(transformer.processAll()).to.eventually.be.fulfilled;
-    expect(transformer.remapCount).to.be.greaterThanOrEqual(2);
 
     sourceDb.close();
     targetDb.close();

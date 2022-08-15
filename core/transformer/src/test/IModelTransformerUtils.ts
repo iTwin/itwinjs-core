@@ -1066,7 +1066,7 @@ export class CountingIModelImporter extends IModelImporter {
     this.numElementsDeleted++;
     super.onDeleteElement(elementId);
   }
-  protected override onInsertElementAspect(aspectProps: ElementAspectProps): Id64String {
+  protected override onInsertElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsInserted++;
     return super.onInsertElementAspect(aspectProps);
   }
@@ -1165,15 +1165,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
  * test-specific data for tests to analyze.
  */
 export class TestIModelImporter extends RecordingIModelImporter {
-  public importedAspectIdsByElement = new Map<Id64String, Id64String[]>();
-  public override importElementMultiAspects(...args: Parameters<IModelImporter["importElementMultiAspects"]>) {
-    const resultTargetIds = super.importElementMultiAspects(...args);
-    const [aspectsProps] = args;
-    const elementId = aspectsProps[0].element.id;
-    assert(!this.importedAspectIdsByElement.has(elementId), "should only export multiaspects for an element once");
-    this.importedAspectIdsByElement.set(elementId, resultTargetIds);
-    return resultTargetIds;
-  }
+  // will be used by future tests
 }
 
 /** Specialization of IModelExport that exports to an output text file. */
