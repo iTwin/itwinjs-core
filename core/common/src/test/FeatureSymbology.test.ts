@@ -12,11 +12,7 @@ import { LinePixels } from "../LinePixels";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
 import {
-  FeatureAppearance,
-  FeatureAppearanceProps,
-  FeatureAppearanceProvider,
-  FeatureAppearanceSource,
-  FeatureOverrides,
+  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides,
 } from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
@@ -345,6 +341,85 @@ describe("FeatureOverrides", () => {
     expectAppearance(1, blue);
     expectAppearance(2, FeatureAppearance.defaults);
     expectAppearance(0, green);
+  });
+
+  it("animation overrides extend element overrides", () => {
+    const ovrs = new Overrides();
+
+    const expectAppearance = (elementId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elementId), "0x1", undefined, nodeId);
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    const merge = (src: FeatureAppearance, plus: FeatureAppearanceProps): FeatureAppearance => {
+      return FeatureAppearance.fromJSON({
+        ...src.toJSON(),
+        ...plus,
+      });
+    };
+
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const halfTransp = FeatureAppearance.fromTransparency(0.5);
+    const halfTranspWeight5 = merge(halfTransp, { weight: 5 });
+
+    ovrs.overrideAnimationNode(1, red);
+    ovrs.overrideAnimationNode(2, halfTransp);
+    ovrs.overrideAnimationNode(3, halfTranspWeight5);
+
+    expectAppearance("0xa", 1, red);
+    expectAppearance("0xa", 2, halfTransp);
+    expectAppearance("0xa", 3, halfTranspWeight5);
+
+    ovrs.overrideElement("0xc", FeatureAppearance.defaults); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xc", 1, red);
+    expectAppearance("0xc", 2, halfTransp);
+    expectAppearance("0xc", 3, halfTranspWeight5);
+
+    ovrs.overrideElement("0xa", blue); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xa", 1, blue);
+    expectAppearance("0xa", 2, merge(blue, { transparency: 0.5 }));
+    expectAppearance("0xa", 3, merge(blue, { transparency: 0.5, weight: 5 }));
+
+    const greenWeight3 = FeatureAppearance.fromJSON({ rgb: { r: 0, g: 255, b: 0 }, weight: 3 });
+    ovrs.overrideElement("0xb", greenWeight3); // eslint-disable-line deprecation/deprecation
+    expectAppearance("0xb", 1, greenWeight3);
+    expectAppearance("0xb", 2, merge(greenWeight3, { transparency: 0.5 }));
+    expectAppearance("0xb", 3, merge(greenWeight3, { transparency: 0.5 }));
+  });
+
+  it("ignores animation color/transparency overrides if specified", () => {
+    const ovrs = new Overrides();
+
+    const red = FeatureAppearance.fromRgb(ColorDef.red);
+    const green = FeatureAppearance.fromRgb(ColorDef.green);
+    const blue = FeatureAppearance.fromRgb(ColorDef.blue);
+    ovrs.overrideAnimationNode(1, red);
+    ovrs.overrideAnimationNode(5, green);
+    ovrs.overrideAnimationNode(10, blue);
+
+    ovrs.ignoreAnimationOverrides((args) => args.elementId.lower > 5);
+    ovrs.ignoreAnimationOverrides((args) => args.animationNodeId < 5);
+
+    const expectAppearance = (elemId: string, nodeId: number, expected: FeatureAppearance) => {
+      const actual = ovrs.getFeatureAppearance(new Feature(elemId), "0x1", undefined, nodeId);
+      expect(actual).not.to.be.undefined;
+      expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
+    };
+
+    expectAppearance("0x1", 10, blue);
+    expectAppearance("0x1", 5, green);
+
+    expectAppearance("0x10", 10, FeatureAppearance.defaults);
+    expectAppearance("0x1", 1, FeatureAppearance.defaults);
+    expectAppearance("0x6", 5, FeatureAppearance.defaults);
+
+    const black = FeatureAppearance.fromRgb(ColorDef.black);
+    ovrs.setDefaultOverrides(black);
+    expectAppearance("0x10", 10, black);
+    expectAppearance("0x1", 1, black);
+    expectAppearance("0x6", 5, black);
   });
 
   it("applies conflict strategy", () => {

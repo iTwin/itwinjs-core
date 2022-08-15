@@ -117,10 +117,13 @@ export class RequireMagicCommentsPlugin {
 
 const externalPrefix = "BeWebpack-EXTERNAL:";
 export const addExternalPrefix = (req: string) => externalPrefix + req;
-export const handlePrefixedExternals = (_ctx: any, request: string, cb: any) => {
+
+export const handlePrefixedExternals = (
+  { request }: any,
+  cb: (err?: Error, result?: string) => void
+) => {
   if (request.startsWith(externalPrefix)) {
-    cb(null, request.replace(externalPrefix, ""), "commonjs");
-    return;
+    return cb(undefined, `commonjs ${request.replace(externalPrefix, "")}`);
   }
   cb();
 };
@@ -128,10 +131,11 @@ export const handlePrefixedExternals = (_ctx: any, request: string, cb: any) => 
 const copyFilesSuffix = "BeWebpack-COPYFILE";
 export const addCopyFilesSuffix = (req: string) => `${req}?${copyFilesSuffix}}`;
 export const copyFilesRule = {
-  resourceQuery: new RegExp(copyFilesSuffix).compile(),
+  resourceQuery: new RegExp(copyFilesSuffix),
   loader: require.resolve("file-loader"),
   options: {
     name: "static/[name].[hash:6].[ext]",
     postTransformPublicPath: (p: string) => `require("path").resolve(__dirname, ${p})`,
+    esModule: false,
   },
 };

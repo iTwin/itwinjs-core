@@ -3,27 +3,29 @@ publish: false
 ---
 # NextVersion
 
-Table of contents:
+## Ambient Occlusion Improvements
 
-- [Deprecations](#deprecations)
-- [Presentation](#presentation)
+The ambient occlusion effect has undergone some quality improvements.
 
-## Deprecations
+Changes:
 
-### @itwin/core-bentley
+- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
+- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
+- The effect will now fade as it approaches the maximum distance.
 
-The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
+Old effect, as shown below:
 
-### @itwin/core-mobile
+![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
 
-IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
+New effect, shown below:
 
-IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
+![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
-## Presentation
+For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
 
-### Relationship properties
+## Transformer API
 
-Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
-
-When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
+It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
+awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
+changes instead of the full source contents.

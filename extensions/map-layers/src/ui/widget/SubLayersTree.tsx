@@ -12,13 +12,56 @@ import {
 } from "@itwin/components-react";
 import { ImageMapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@itwin/core-common";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, useLayoutResizeObserver, useRefState, WebFontIcon } from "@itwin/core-react";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@itwin/core-react";
 import { Button, Input } from "@itwin/itwinui-react";
 import * as React from "react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import "./SubLayersTree.scss";
 import { MapLayersUI } from "../../mapLayers";
+
+const getWindow = () => {
+  return typeof window === "undefined" ? undefined : window;
+};
+
+const useResizeObserver = <T extends HTMLElement>(
+  onResize: (size: DOMRectReadOnly) => void,
+) => {
+  const resizeObserver = React.useRef<ResizeObserver>();
+
+  const elementRef = React.useCallback(
+    (element: T | null) => {
+      if (!getWindow()?.ResizeObserver) {
+        return;
+      }
+
+      resizeObserver.current?.disconnect();
+      if (element) {
+        resizeObserver.current = new ResizeObserver(([{ contentRect }]) =>
+          onResize(contentRect),
+        );
+        resizeObserver.current?.observe(element);
+      }
+    },
+    [onResize],
+  );
+
+  return [elementRef, resizeObserver.current] as const;
+};
+
+/**
+ Mimic processing of `react-resize-detector` to return width and height.
+* @internal
+ */
+function useResizeDetector(): { width: number | undefined, height: number | undefined, ref: React.Ref<HTMLDivElement> } {
+  const [width, setWidth] = React.useState<number>();
+  const [height, setHeight] = React.useState<number>();
+  const [ref] = useResizeObserver(React.useCallback((size: DOMRectReadOnly) => {
+    setWidth(size.width);
+    setHeight(size.height);
+  }, []));
+  return { width, height, ref };
+}
 
 interface ToolbarProps {
   searchField?: React.ReactNode;
@@ -136,8 +179,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
     setLayerFilterString(event.target.value);
   }, []);
 
-  const [divRef, divElement] = useRefState<HTMLDivElement>();
-  const [width, height] = useLayoutResizeObserver(divElement ?? null);
+  const { width, height, ref: containerRef } = useResizeDetector();
 
   return <>
     <div className="map-manager-sublayer-tree">
@@ -151,17 +193,16 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
         }
       >
         {mapLayer.provider?.mutualExclusiveSubLayer ? undefined : [
-          <Button size="small"styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
+          <Button size="small" styleType="borderless" key="show-all-btn" title={allOnLabel} onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
           </Button>,
-          <Button size="small"styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
+          <Button size="small" styleType="borderless" key="hide-all-btn" title={allOffLabel} onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
           </Button>,
         ]}
       </Toolbar>
-      {/* <div ref={ref} className="map-manager-sublayer-tree-content"> */}
-      <div ref={divRef} className="map-manager-sublayer-tree-content">
-        {width && height ? <ControlledTree
+      <div ref={containerRef} className="map-manager-sublayer-tree-content">
+        {width !== undefined && height !== undefined && <ControlledTree
           nodeLoader={nodeLoader}
           selectionMode={SelectionMode.None}
           eventsHandler={eventHandler}
@@ -170,7 +211,7 @@ export function SubLayersTree(props: { mapLayer: StyleMapLayerSettings }) {
           nodeHighlightingProps={nodeHighlightingProps}
           width={width}
           height={height}
-        /> : null}
+        />}
       </div>
     </div>
   </>;

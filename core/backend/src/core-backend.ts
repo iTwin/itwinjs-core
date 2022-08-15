@@ -14,6 +14,7 @@ export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
@@ -78,17 +79,17 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Models
- * Subclasses of [Models]($docs/BIS/intro/model-fundamentals.md).
+ * Subclasses of [Models]($docs/BIS/guide/fundamentals/model-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Elements
- * Subclasses of [Elements]($docs/BIS/intro/element-fundamentals.md).
+ * Subclasses of [Elements]($docs/BIS/guide/fundamentals/element-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Codes
- * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ * Classes for working with [Codes]($docs/BIS/guide/fundamentals/codes.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
@@ -98,16 +99,16 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Relationships
- * Classes that describe the [relationships]($docs/bis/intro/relationship-fundamentals.md) between elements.
+ * Classes that describe the [relationships]($docs/bis/guide/fundamentals/relationship-fundamentals.md) between elements.
  */
 /**
  * @docs-group-description ElementAspects
- * Subclasses of [ElementAspects]($docs/bis/intro/elementaspect-fundamentals.md).
+ * Subclasses of [ElementAspects]($docs/bis/guide/fundamentals/elementaspect-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Categories
- * Classes for [Categories]($docs/bis/intro/categories.md).
+ * Classes for [Categories]($docs/bis/guide/fundamentals/categories.md).
  */
 /**
  * @docs-group-description Symbology
@@ -174,6 +175,6 @@ export * from "./IModelDb"; // must be last
  * APIs for loading and using Settings and Workspace resources
  */
 /**
- * @docs-group-description ViewStateHydrater
+ * @docs-group-description ViewStateHydrator
  * Class responsible for loading ViewStates.
  */

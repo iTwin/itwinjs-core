@@ -46,11 +46,11 @@ export enum SpatialClassifierOutsideDisplay {
  * @extensions
  */
 export interface SpatialClassifierFlagsProps {
-  /** @see [[SpatialClassifierFlags.inside]]. */
+  /** See [[SpatialClassifierFlags.inside]]. */
   inside: SpatialClassifierInsideDisplay;
-  /** @see [[SpatialClassifierFlags.outside]]. */
+  /** See [[SpatialClassifierFlags.outside]]. */
   outside: SpatialClassifierOutsideDisplay;
-  /** @see [[SpatialClassifierFlags.isVolumeClassifier]]. */
+  /** See [[SpatialClassifierFlags.isVolumeClassifier]]. */
   isVolumeClassifier?: boolean;
 }
 
@@ -117,16 +117,16 @@ export class SpatialClassifierFlags {
  * @extensions
  */
 export interface SpatialClassifierProps {
-  /** @see [[SpatialClassifier.modelId]]. */
+  /** See [[SpatialClassifier.modelId]]. */
   modelId: Id64String;
-  /** @see [[SpatialClassifier.expand]]. */
+  /** See [[SpatialClassifier.expand]]. */
   expand: number;
-  /** @see [[SpatialClassifier.flags]]. */
+  /** See [[SpatialClassifier.flags]]. */
   flags: SpatialClassifierFlagsProps;
-  /** @see [[SpatialClassifier.name]]. */
+  /** See [[SpatialClassifier.name]]. */
   name: string;
   /** Records whether this is the active classifier.
-   * @see [[SpatialClassifier.active]].
+   * See [[SpatialClassifier.active]].
    */
   isActive?: boolean;
 }
@@ -141,7 +141,7 @@ export interface SpatialClassifierProps {
  * Two types of classification are supported:
  *  - Planar classification, in which the geometry of the classifier model is projected onto a plane to classify geometry within a region extruded perpendicular
  * the plane (e.g., the building footprints example); and
- *  - Volume classification, in which closed volumes within the classifier classify geometry that intersects those same volumes (e.g., imagine using boxes instead
+ *  - Volume classification, in which closed, non-intersecting volumes within the classifier classify geometry that intersects (i.e. is contained within) those same volumes (e.g., imagine using boxes instead
  * of footprints to classify buildings, or floors of buildings).
  * @see this (interactive example)[https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=classifier-sample].
  * @see [[SpatialClassifiers]] to define a set of classifiers.

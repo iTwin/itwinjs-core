@@ -30,7 +30,6 @@ import { GeometricModel2dState, GeometricModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { SheetViewState } from "./SheetViewState";
 import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -285,7 +284,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  /** See [DisplayStyleSettings.analysisStyle]($common). */
   public get analysisStyle(): AnalysisStyle | undefined {
     return this.displayStyle.settings.analysisStyle;
   }
@@ -298,8 +297,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this.displayStyle.scheduleState;
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line deprecation/deprecation
+    return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
   }
 
   /** Get the globe projection mode.
@@ -341,7 +340,6 @@ export abstract class ViewState extends ElementState {
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId))
       hydrateRequest.acsId = acsId;
-    this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
   }
 
   /** Asynchronously load any required data for this ViewState from the backend.
@@ -350,19 +348,27 @@ export abstract class ViewState extends ElementState {
    * @see [Views]($docs/learning/frontend/Views.md)
    */
   public async load(): Promise<void> {
+    // If the iModel associated with the viewState is a blankConnection,
+    // then no data can be retrieved from the backend.
+    if (this.iModel.isBlank)
+      return;
+
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
-    const promises = [
-      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest),
+    const promises: Promise<any>[] = [
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
+        then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
     ];
-    const result = await Promise.all<any>(promises);
-    const hydrateResponse = result[0];
-    await this.postload(hydrateResponse);
+
+    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
+    if (undefined !== subcategories)
+      promises.push(subcategories.promise.then((_) => { }));
+
+    await Promise.all(promises);
   }
 
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
-    this.iModel.subcategories.postload(hydrateResponse);
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }
