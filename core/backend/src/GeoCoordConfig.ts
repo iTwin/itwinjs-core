@@ -56,13 +56,13 @@ export class GeoCoordConfig {
 
     } catch (e: unknown) {
       Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)},
-      account=${account.accessName},
+      account="${account.accessName}"/"${containerProps.containerId}",
       storage=${account.storageType},
       isPublic=${containerProps.isPublic},
-      container=${containerProps.containerId},
       rootDir=${ws.cloudCache?.rootDir}`
       );
     }
+  }
 
   private static loadAll(settings: Settings, settingName: string) {
     settings.resolveSetting(settingName, (val) => {
