@@ -9,7 +9,7 @@ import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
-describe.only("SchemaLoaderPerformance", () => {
+describe("SchemaLoaderPerformance", () => {
   let iModelFilepath: string;
   const outDir: string = path.join(KnownTestLocations.outputDir, "SchemaLoaderPerformance");
   const assetDir: string = path.join(__dirname, "..", "..", "..", "assets");
@@ -47,7 +47,6 @@ describe.only("SchemaLoaderPerformance", () => {
 
   after(() => {
     const csvPath = path.join(outDir, "SchemaLoaderPerfResults.csv");
-    console.log(csvPath);
     reporter.exportCSV(csvPath);
   });
 
