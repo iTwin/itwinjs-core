@@ -6,20 +6,21 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
+import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String, isSubclassOf } from "@itwin/core-bentley";
+import { CodeSpec, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
 import type { Element } from "./Element";
 import type { ElementAspect } from "./ElementAspect";
 import type { Relationship, RelationshipProps } from "./Relationship";
+import * as assert from "assert";
 
 // re-export so consumers don't need to manually import the basic types we are extending
 export * from "@itwin/core-bentley/lib/cjs/ConcreteEntityId";
 
 // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
 /** an entity that can be created  */
-export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
+export type ConcreteEntity = Element | Model | ElementAspect | Relationship | CodeSpec;
 
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
@@ -55,16 +56,20 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
   /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
 
   public static from(entity: ConcreteEntity): ConcreteEntityId {
-    return `${entity instanceof this._ElementClass ? "e" : entity instanceof this._ElementAspectClass ? "a" : "r"}${entity.id}`;
+    const type = this.typeFromClass(entity.constructor as typeof Entity);
+    return `${type}${entity.id}`;
   }
+
   public static fromClass(id: Id64String, entityClass: typeof Entity): ConcreteEntityId {
-    return `${entityClass.is(this._ElementClass) ? "e": entityClass.is(this._ElementAspectClass)  ? "a" : "r"}${id}`;
+    const type = this.typeFromClass(entityClass);
+    return `${type}${id}`;
   }
+
   /** Searches for a class by name in the [ClassRegistry]($backend) */
   public static fromClassFullName(id: Id64String, classFullName: string): ConcreteEntityId {
     const ecclass = this._ClassRegistry.findRegisteredClass(classFullName);
     if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
-    return `${ecclass.is(this._ElementClass) ? "e": ecclass.is(this._ElementAspectClass)  ? "a" : "r"}${id}`;
+    return this.fromClass(id, ecclass);
   }
 
   /** Searches for a class by name in the [ClassRegistry]($backend) */
@@ -74,18 +79,11 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
   public static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
-    if (this._ElementClass.is(entityClass))
-      return ConcreteEntityTypes.Element;
-    if (this._ModelClass.is(entityClass))
-      return ConcreteEntityTypes.Model;
-    if (this._ElementAspectClass.is(entityClass))
-      return ConcreteEntityTypes.ElementAspect;
-    if (this._RelationshipClass.is(entityClass))
-      return ConcreteEntityTypes.Relationship;
-    // FIXME: why
-    // if (this._CodeSpecClass.is(entityClass))
-      // return ConcreteEntityTypes.CodeSpec;
-    else
-      throw Error(`A non-concrete entity '${entityClass.classFullName}' was passed to ConcreteEntityIds.typeFromClass`);
+    if (entityClass.is(this._ElementClass)) return ConcreteEntityTypes.Element;
+    else if (entityClass.is(this._ElementAspectClass)) return ConcreteEntityTypes.ElementAspect;
+    else if (entityClass.is(this._ModelClass)) return ConcreteEntityTypes.Model;
+    else if (entityClass.is(this._RelationshipClass)) return ConcreteEntityTypes.Relationship;
+    else if (isSubclassOf(entityClass,  this._CodeSpecClass)) return ConcreteEntityTypes.CodeSpec;
+    else assert(false, "unknown or abstract entity type passed to ConcreteEntityIds.from");
   }
 }
