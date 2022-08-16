@@ -2,9 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-// import { Point3d } from "../PointVector";
-
 import { expect } from "chai";
+import * as fs from "fs";
 import { BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
@@ -13,10 +12,11 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-// import { BSplineSurface3d } from "../BSplineSurface";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 /* eslint-disable no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
@@ -231,4 +231,15 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it.only("LegacyClosureRoundtrip", () => {
+    const ck = new Checker();
+    for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_legacy.imjs",
+                            "./src/test/testInputs/BSplineSurface/torus6_legacy.imjs"]) {
+      const json = fs.readFileSync(filename, "utf8");
+      const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
+      for (const input of inputs)
+        testGeometryQueryRoundTrip(ck, input);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

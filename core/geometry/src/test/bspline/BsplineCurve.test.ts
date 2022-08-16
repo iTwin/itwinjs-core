@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
-// import { prettyPrint } from "./testFunctions";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -30,6 +30,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 import { prettyPrint } from "../testFunctions";
 
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
@@ -686,6 +687,15 @@ describe("BsplineCurve", () => {
       x0Out += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "StrokeParabola");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LegacyClosureRoundtrip", () => {
+    const ck = new Checker();
+    const json = fs.readFileSync("./src/test/testInputs/curve/openAndClosedCurves.imjs", "utf8");
+    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
+    for (const input of inputs)
+      testGeometryQueryRoundTrip(ck, input);
     expect(ck.getNumErrors()).equals(0);
   });
 });

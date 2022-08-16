@@ -38,7 +38,6 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { XYProps, XYZProps } from "../geometry3d/XYZProps";
 import { YawPitchRollAngles, YawPitchRollProps } from "../geometry3d/YawPitchRollAngles";
-import { Point4d } from "../geometry4d/Point4d";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Box } from "../solid/Box";
@@ -784,10 +783,10 @@ export namespace IModelJson {
     }
 
     /**
-     * Recognize special legacy periodic B-spline data (BSplineWrapMode.OpenByRemovingKnots) and return the corresponding open clamped knots.
+     * Recognize the special legacy periodic B-spline data of mode BSplineWrapMode.OpenByRemovingKnots, and return the corresponding open clamped knots.
      * * Note that the B-spline poles corresponding to the converted knots remain unchanged, but it is assumed that first and last poles are equal.
-     * * Example: the 7-point quadratic circle has periodic knots {-1/3 0 0 0 1/3 1/3 2/3 2/3 1 1 1 4/3}, and open knots {0 0 1/3 1/3 2/3 2/3 1 1}.
-     * * General form of knot vector (k=order, d=k-1=degree, p=numPoles):
+     * * Example: the legacy 7-point quadratic circle periodic knots {-1/3 0 0 0 1/3 1/3 2/3 2/3 1 1 1 4/3} are converted to open knots {0 0 1/3 1/3 2/3 2/3 1 1}.
+     * * General form of knot vector (k = order, d = k-1 = degree, p = numPoles):
      * * * legacy: {k/2 periodically extended knots} {start knot multiplicity k} {p-k interior knots} {end knot multiplicity k} {d/2 periodically extended knots}
      * * * converted: {start knot multiplicity d} {p-k interior knots} {end knot multiplicity d}
      * @param knots knot vector to test
@@ -801,9 +800,8 @@ export namespace IModelJson {
       if (order >= 2 && numPoles + 2 * order - 1 === numKnots) {
         const startKnot = knots[order - 1];
         const endKnot = knots[numKnots - order];
-        const iOffset = Math.floor((order + 1) / 2);
-        const iStart0 = order - iOffset;              // index of first expected multiple of the start knot
-        const iEnd0 = numKnots - iOffset - 1 - order; // index of first expected multiple of the end knot
+        const iStart0 = Math.floor(order / 2);        // index of first expected multiple of the start knot
+        const iEnd0 = iStart0 + numPoles;             // index of first expected multiple of the end knot
         const iEnd1 = iEnd0 + order;                  // one past index of last expected multiple of the end knot
         for (let i = 0; i < order; ++i) {
           if (Math.abs(knots[iStart0 + i] - startKnot) >= KnotVector.knotTolerance)
@@ -1924,8 +1922,8 @@ export namespace IModelJson {
       return { indexedMesh: contents };
     }
     /**
-     * Restore special legacy periodic B-spline knots.
-     * @param knots knot vector opened with wrapMode BSplineWrapMode.OpenByRemovingKnots
+     * Restore special legacy periodic B-spline knots of mode BSplineWrapMode.OpenByRemovingKnots.
+     * @param knots knot vector: {start knot multiplicity d} {p-k interior knots} {end knot multiplicity d}
      * @param order curve order
      * @param newKnots array to receive new knots
      * @see openLegacyPeriodicKnots
@@ -1937,13 +1935,13 @@ export namespace IModelJson {
       const leftKnot = knots[leftIndex];
       const rightKnot = knots[rightIndex];
       const knotPeriod = rightKnot - leftKnot;
-      for (let i = 0; i < Math.floor(order / 2); ++i)
-        newKnots.push(knots[rightIndex - i - 1] - knotPeriod);
+      for (let i = Math.floor(order / 2); i > 0; --i)
+        newKnots.push(knots[rightIndex - i] - knotPeriod);
       newKnots.push(leftKnot);   // extraneous start knot
       for (const k of knots) newKnots.push(k);
       newKnots.push(rightKnot);  // extraneous end knot
-      for (let i = 0; i < Math.floor(degree / 2); ++i)
-        newKnots.push(knots[leftIndex + i + 1] + knotPeriod);
+      for (let i = 1; i <= Math.floor(degree / 2); ++i)
+        newKnots.push(knots[leftIndex + i] + knotPeriod);
     }
     private handleBSplineCurve(curve: BSplineCurve3d | BSplineCurve3dH): any {
       const myPoles = curve.copyPoints();
