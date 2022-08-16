@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64String } from "./Id";
+import { Id64, Id64String } from "./Id";
 
 /**
  * Types of concrete entities. Used for storing strings in JavaScript reference-equality containers which encode
@@ -26,20 +26,28 @@ export enum ConcreteEntityTypes {
   CodeSpec = "c",
 }
 
-/** used by the transformer to figure out where to check for the existence in a db of a concrete element id
- * @internal
+/**
+ * Adds some utilities to the [[ConcreteEntityTypes]] enum
+ * @alpha
  */
-export function concreteEntityTypeToBisCoreRootClassFullName(type: ConcreteEntityTypes): string {
-  const map = {
+export namespace ConcreteEntityTypes {
+  const toBisCoreRootClassFullNameMap = {
     [ConcreteEntityTypes.Model]: "BisCore:Model",
     [ConcreteEntityTypes.Element]: "BisCore:Element",
     [ConcreteEntityTypes.ElementAspect]: "BisCore:ElementAspect",
     [ConcreteEntityTypes.Relationship]: "BisCore:Relationship",
     [ConcreteEntityTypes.CodeSpec]: "BisCore:CodeSpec",
   } as const;
-  return map[type];
+
+  /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
+   * @internal
+   */
+  export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string {
+    return toBisCoreRootClassFullNameMap[type];
+  }
 }
 
+// FIXME: probably rename this to entity reference because otherwise every `entityId` local name is now ambiguous
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
@@ -72,6 +80,13 @@ export class ConcreteEntityIds {
   }
   public static split(id: ConcreteEntityId): [ConcreteEntityTypes, Id64String] {
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
+  }
+
+  /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
+   * @internal
+   */
+  public static isValid(id: ConcreteEntityId): boolean {
+    return Id64.isValid(ConcreteEntityIds.toId64(id));
   }
 }
 

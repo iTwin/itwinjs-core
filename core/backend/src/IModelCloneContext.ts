@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIds, ConcreteEntityTypes, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
@@ -140,6 +140,95 @@ export class IModelCloneContext {
    */
   public findTargetAspectId(sourceAspectId: Id64String): Id64String {
     return this._aspectRemapTable.get(sourceAspectId) ?? Id64.invalid;
+  }
+
+  /** Look up a target [ConcreteEntityId]($bentley) from a source [ConcreteEntityId]($bentley)
+   * @returns the target CodeSpecId or a [ConcreteEntityId]($bentley) containing [Id64.invalid]($bentley) if a mapping is not found.
+   */
+  public findTargetEntityId(sourceEntityId: ConcreteEntityId): ConcreteEntityId {
+    const [type, rawId] = ConcreteEntityIds.split(sourceEntityId);
+    const makeGetConcreteEntityTypeSql = (property: string) =>  `
+      CASE
+        WHEN [${property}] IS (BisCore.ElementUniqueAspect) OR [${property}] IS (BisCore.ElementMultiAspect)
+          THEN 'a'
+        WHEN [${property}] IS (BisCore.Element)
+          THEN 'e'
+        WHEN [${property}] IS (BisCore.Model)
+          THEN 'm'
+        WHEN [${property}] IS (BisCore.CodeSpec)
+          THEN 'c'
+        WHEN [${property}] IS (BisCore.ElementRefersToElements) -- TODO: ElementDrivesElement still not handled by the transformer
+          THEN 'r'
+        ELSE 'error'
+      END
+    `;
+
+    switch (type) {
+      case ConcreteEntityTypes.CodeSpec:
+        return `c${this.findTargetCodeSpecId(rawId)}`;
+      case ConcreteEntityTypes.Model:
+        return `m${this.findTargetElementId(rawId)}`;
+      case ConcreteEntityTypes.Element:
+        return `e${this.findTargetElementId(rawId)}`;
+      case ConcreteEntityTypes.ElementAspect:
+        return `a${this.findTargetAspectId(rawId)}`;
+      case ConcreteEntityTypes.Relationship: {
+        const relInSource = this.sourceDb.withPreparedStatement(
+          `
+          SELECT
+            SourceECInstanceId,
+            TargetECInstanceId,
+            (${makeGetConcreteEntityTypeSql("SourceECClassId")}) AS SourceType,
+            (${makeGetConcreteEntityTypeSql("TargetECClassId")}) AS TargetType
+          FROM BisCore:ElementRefersToElements
+          WHERE ECInstanceId=?
+          `, (stmt) => {
+            stmt.bindId(1, rawId);
+            let status: DbResult;
+            while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
+              const sourceId = stmt.getValue(0).getId();
+              const targetId = stmt.getValue(1).getId();
+              const sourceType = stmt.getValue(2).getString() as ConcreteEntityTypes | "error";
+              const targetType = stmt.getValue(3).getString() as ConcreteEntityTypes | "error";
+              if (sourceType === "error" || targetType === "error")
+                throw Error("relationship end had unknown root class");
+              return {
+                sourceId: `${sourceType}${sourceId}`,
+                targetId: `${targetType}${targetId}`,
+              } as const;
+            }
+            if (status !== DbResult.BE_SQLITE_DONE)
+              throw new IModelError(status, "unexpected query failure");
+            return undefined;
+          });
+        if (relInSource === undefined) break;
+        // just in case prevent recursion
+        if (relInSource.sourceId === sourceEntityId || relInSource.targetId === sourceEntityId)
+          throw Error("link table relationship end was resolved to itself. This should be impossible");
+        const relInTarget = {
+          sourceId: this.findTargetEntityId(relInSource.sourceId),
+          targetId: this.findTargetEntityId(relInSource.targetId),
+        };
+        const relInTargetId = this.sourceDb.withPreparedStatement(
+          `
+          SELECT ECInstanceId
+          FROM BisCore:ElementRefersToElements
+          WHERE SourceECInstanceId=?
+            AND TargetECInstanceId=?
+          `, (stmt) => {
+            stmt.bindId(1, ConcreteEntityIds.toId64(relInTarget.sourceId));
+            stmt.bindId(2, ConcreteEntityIds.toId64(relInTarget.targetId));
+            let status: DbResult;
+            if ((status = stmt.step()) === DbResult.BE_SQLITE_ROW)
+              return stmt.getValue(0).getId();
+            if (status !== DbResult.BE_SQLITE_DONE)
+              throw new IModelError(status, "unexpected query failure");
+            return Id64.invalid;
+          });
+        return `r${relInTargetId}`;
+      }
+    }
+    return `${type}${Id64.invalid}`;
   }
 
   /** Filter out geometry entries in the specified SubCategory from GeometryStreams in the target iModel.
