@@ -34,12 +34,11 @@ export enum BSplineWrapMode {
  * Array of non-decreasing numbers acting as a knot array for B-splines.
  *
  * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
- * * Various B-spline libraries have confusion over how many "end knots" are needed. Many libraries (including MicroStation)
+ * * Various B-spline libraries have confusion over how many "end knots" are needed. Many libraries (including MicroStation and Parasolid)
  * demand order knots at each end for clamping. But only order-1 are really needed. This class uses the order-1 convention.
- * * This class provides queries to convert among spanIndex and knotIndex.
  * * A span is a single interval of the knots.
  * * The left knot of span {k} is knot {k+degree-1}.
- * * This class provides queries to convert among spanFraction, fraction of knot range, and knot.
+ * * This class provides queries to convert among spanIndex, knotIndex, spanFraction, fraction of knot range, and knot.
  * * Core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
  * know their primary values (global knot, spanFraction).
  * @public
