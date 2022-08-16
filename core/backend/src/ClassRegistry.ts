@@ -13,6 +13,7 @@ import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { ConcreteEntityIds } from "./ConcreteEntityId";
 import assert = require("assert");
+import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -135,11 +136,15 @@ export class ClassRegistry {
         // eslint-disable-next-line @typescript-eslint/no-shadow
         .map(([name, prop]) => {
           assert(prop.relationshipClass);
-          const ecClassMetaData = iModel.getMetaData(prop.relationshipClass);
+          const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
+          assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
+          const relMetaData: RelationshipClassProps = JSON.parse(maybeMetaData.result);
+          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
+          const ecClassMetaData = iModel.getMetaData(normalizeClassName(relMetaData.target.constraintClasses[0]));
           const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, ecClassMetaData);
           // root class must be in BisCore so should be loaded since biscore classes will never get this
           // generated implementation
-          const rootClass = ClassRegistry.findRegisteredClass(`BisCore:${rootClassMetaData.ecclass}`);
+          const rootClass = ClassRegistry.findRegisteredClass(rootClassMetaData.ecclass);
           assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
           return { name, concreteEntityType: ConcreteEntityIds.typeFromClass(rootClass) };
         });

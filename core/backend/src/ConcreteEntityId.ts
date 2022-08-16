@@ -74,16 +74,17 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
   public static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
-    if (entityClass instanceof this._ElementClass)
+    if (this._ElementClass.is(entityClass))
       return ConcreteEntityTypes.Element;
-    if (entityClass instanceof this._ModelClass)
+    if (this._ModelClass.is(entityClass))
       return ConcreteEntityTypes.Model;
-    if (entityClass instanceof this._ElementAspectClass)
+    if (this._ElementAspectClass.is(entityClass))
       return ConcreteEntityTypes.ElementAspect;
-    if (entityClass instanceof this._RelationshipClass)
+    if (this._RelationshipClass.is(entityClass))
       return ConcreteEntityTypes.Relationship;
-    if (entityClass instanceof this._CodeSpecClass)
-      return ConcreteEntityTypes.CodeSpec;
+    // FIXME: why
+    // if (this._CodeSpecClass.is(entityClass))
+      // return ConcreteEntityTypes.CodeSpec;
     else
       throw Error(`A non-concrete entity '${entityClass.classFullName}' was passed to ConcreteEntityIds.typeFromClass`);
   }
