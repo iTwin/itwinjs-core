@@ -773,15 +773,17 @@ importers:
       '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/node': 16.11.7
       eslint: ^7.11.0
-      i18next: ^21.9.0
+      i18next: ^21.2.6
       i18next-browser-languagedetector: ^6.1.2
-      i18next-http-backend: ^1.4.1
+      i18next-http-backend: ^1.3.1
+      i18next-xhr-backend: ^3.2.2
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
       i18next: 21.9.0
       i18next-browser-languagedetector: 6.1.5
       i18next-http-backend: 1.4.1
+      i18next-xhr-backend: 3.2.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../bentley
@@ -14452,6 +14454,13 @@ packages:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
       - encoding
+    dev: false
+
+  /i18next-xhr-backend/3.2.2:
+    resolution: {integrity: sha512-OtRf2Vo3IqAxsttQbpjYnmMML12IMB5e0fc5B7qKJFLScitYaXa1OhMX0n0X/3vrfFlpHL9Ro/H+ps4Ej2j7QQ==}
+    deprecated: replaced by i18next-http-backend
+    dependencies:
+      '@babel/runtime': 7.18.9
     dev: false
 
   /i18next/21.9.0:
