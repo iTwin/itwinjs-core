@@ -333,6 +333,26 @@ export class Sample {
     return result;
   }
 
+  /** Create various orders of non-rational B-spline curves with helical poles */
+   public static createBsplineCurveHelices(radius: number, height: number, numTurns: number, numSamplesPerTurn: number): BSplineCurve3d[] {
+    const pts: Point3d[] = [];
+    const zDelta = (height / numTurns) / numSamplesPerTurn;
+    const aDelta = 2 * Math.PI / numSamplesPerTurn;
+    for (let iTurn = 0; iTurn < numTurns; ++iTurn) {
+      for (let iSample = 0; iSample < numSamplesPerTurn; iSample++) {
+        pts.push(Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta));
+      }
+    }
+    const result: BSplineCurve3d[] = [];
+    for (const order of [2, 3, 4, 9, 16, 25]) {
+      if (order > pts.length) continue;
+      const curve = BSplineCurve3d.createUniformKnots(pts, order);
+      if (curve !== undefined)
+        result.push(curve);
+    }
+    return result;
+  }
+
   /** Create weighted bsplines for circular arcs.
    */
   public static createBspline3dHArcs(): BSplineCurve3dH[] {

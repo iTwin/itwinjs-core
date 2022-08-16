@@ -3761,6 +3761,11 @@ export namespace Gradient {
         Spherical = 4,
         Thematic = 6
     }
+    export interface ProduceImageArgs {
+        height: number;
+        includeThematicMargin?: boolean;
+        width: number;
+    }
     export class Symb {
         // (undocumented)
         angle?: Angle;
@@ -3784,6 +3789,7 @@ export namespace Gradient {
         mapColor(value: number): ColorDef;
         // (undocumented)
         mode: Mode;
+        produceImage(args: ProduceImageArgs): ImageBuffer;
         // (undocumented)
         shift: number;
         // (undocumented)
