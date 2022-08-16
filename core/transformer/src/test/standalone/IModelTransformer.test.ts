@@ -254,7 +254,7 @@ describe("IModelTransformer", () => {
     });
   }
 
-  it.only("should import everything below a Subject", async () => {
+  it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });

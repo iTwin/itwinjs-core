@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { Logger } from "@itwin/core-bentley";
-import { ECClass, Mixin, Schema, StrengthDirection } from "@itwin/ecschema-metadata";
+import { ConcreteEntityTypes, Logger } from "@itwin/core-bentley";
+import { ECClass, Mixin, Schema } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
@@ -37,8 +37,15 @@ const nameForEntityRefTypeMap = {
   [EntityRefType.CodeSpec]: "CodeSpec",
 } as const;
 
+/** @internal */
 export function nameForEntityRefType(entityRefType: EntityRefType) {
   return nameForEntityRefTypeMap[entityRefType];
+}
+
+/** @internal */
+export interface RelTypeInfo {
+  source: ConcreteEntityTypes;
+  target: ConcreteEntityTypes;
 }
 
 /**
@@ -48,17 +55,17 @@ export function nameForEntityRefType(entityRefType: EntityRefType) {
  */
 export class ECClassNavPropReferenceCache {
   /** nesting based tuple map keyed by property qualifier [schemaName, className, propName] */
-  private _propQualifierToRefType = new Map<string, Map<string, Map<string, EntityRefType>>>();
+  private _propQualifierToRefType = new Map<string, Map<string, Map<string, RelTypeInfo>>>();
   private _initedSchemas = new Set<string>();
 
-  private static bisRootClassToRefType: Record<string, EntityRefType | undefined> = {
+  private static bisRootClassToRefType: Record<string, ConcreteEntityTypes | undefined> = {
     /* eslint-disable quote-props, @typescript-eslint/naming-convention */
-    "Element": EntityRefType.Element,
-    "Model": EntityRefType.Model,
-    "ElementAspect": EntityRefType.Aspect,
-    "ElementRefersToElements": EntityRefType.Relationship,
-    "ElementDrivesElement": EntityRefType.Relationship,
-    "CodeSpec": EntityRefType.CodeSpec,
+    "Element": ConcreteEntityTypes.Element,
+    "Model": ConcreteEntityTypes.Model,
+    "ElementAspect": ConcreteEntityTypes.ElementAspect,
+    "ElementRefersToElements": ConcreteEntityTypes.Relationship,
+    "ElementDrivesElement": ConcreteEntityTypes.Relationship,
+    // "CodeSpec": ConcreteEntityTypes.CodeSpec,
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 
@@ -68,53 +75,59 @@ export class ECClassNavPropReferenceCache {
       return;
     }
 
-    const classMap = new Map<string, Map<string, EntityRefType>>();
+    const classMap = new Map<string, Map<string, RelTypeInfo>>();
     this._propQualifierToRefType.set(schema.name.toLowerCase(), classMap);
 
     for (const ecclass of schema.getClasses()) {
-      const propMap = new Map<string, EntityRefType>();
+      const propMap = new Map<string, RelTypeInfo>();
       classMap.set(ecclass.name.toLowerCase(), propMap);
 
       for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
-        // for nav props no need to check relClass.strengthDirection, it always points to the source class
-        const constraints = relClass.source.constraintClasses;
-        assert(constraints !== undefined);
-        const constraint = await constraints[0];
-        let bisRootForConstraint: ECClass = constraint;
-        await constraint.traverseBaseClasses((baseClass) => {
-          // The depth first traversal will descend all the way to the root class before making any lateral traversal
-          // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarch)
-          // Once we see that we've moved laterally, we can terminate early
-          const isFirstTest = bisRootForConstraint === constraint;
-          const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
-          const stillTraversingRootPath = isFirstTest || !traversalSwitchedRootPath;
-          if (!stillTraversingRootPath)
-            return true; // stop traversal early
-          bisRootForConstraint = baseClass;
-          return false;
-        });
-        // if the root class of the constraint was a mixin, use its AppliesToEntityClass
-        if (bisRootForConstraint instanceof Mixin) {
-          assert(bisRootForConstraint.appliesTo !== undefined, "The referenced AppliesToEntityClass could not be found, how did it pass schema validation?");
-          bisRootForConstraint = await bisRootForConstraint.appliesTo;
+
+        async function getRootBisClass(constraints: typeof relClass.source.constraintClasses) {
+          assert(constraints !== undefined);
+          const constraint = await constraints[0];
+          let bisRootForConstraint: ECClass = constraint;
+          await constraint.traverseBaseClasses((baseClass) => {
+            // The depth first traversal will descend all the way to the root class before making any lateral traversal
+            // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarch)
+            // Once we see that we've moved laterally, we can terminate early
+            const isFirstTest = bisRootForConstraint === constraint;
+            const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
+            const stillTraversingRootPath = isFirstTest || !traversalSwitchedRootPath;
+            if (!stillTraversingRootPath)
+              return true; // stop traversal early
+            bisRootForConstraint = baseClass;
+            return false;
+          });
+          // if the root class of the constraint was a mixin, use its AppliesToEntityClass
+          if (bisRootForConstraint instanceof Mixin) {
+            assert(bisRootForConstraint.appliesTo !== undefined, "The referenced AppliesToEntityClass could not be found, how did it pass schema validation?");
+            bisRootForConstraint = await bisRootForConstraint.appliesTo;
+          }
+          return bisRootForConstraint;
         }
-        const refType = ECClassNavPropReferenceCache.bisRootClassToRefType[bisRootForConstraint.name];
+
+        const sourceRootClass = await getRootBisClass(relClass.source.constraintClasses);
+        const targetRootClass = await getRootBisClass(relClass.target.constraintClasses);
+        if (sourceRootClass.name === "CodeSpec" || targetRootClass.name === "CodeSpec") continue;
+        const sourceType = ECClassNavPropReferenceCache.bisRootClassToRefType[sourceRootClass.name];
+        const targetType = ECClassNavPropReferenceCache.bisRootClassToRefType[targetRootClass.name];
         // FIXME: write a test on this assumption by iterating through biscore schema metadata and ensuring all classes have one of
         // the above bases
-        assert(
-          refType !== undefined,
-          `An unknown root class '${bisRootForConstraint.name}' was encountered while populating the nav prop reference type cache. This is a bug.`
-        );
-        propMap.set(prop.name.toLowerCase(), refType);
+        const makeAssertMsg = (cls: typeof sourceRootClass) => `An unknown root class '${cls.name}' was encountered while populating the nav prop reference type cache. This is a bug.`;
+        assert(sourceType !== undefined, makeAssertMsg(sourceRootClass));
+        assert(targetType !== undefined, makeAssertMsg(targetRootClass));
+        propMap.set(prop.name.toLowerCase(), { source: sourceType, target: targetType });
       }
     }
 
     this._initedSchemas.add(schema.name);
   }
 
-  public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | EntityRefType {
+  public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | RelTypeInfo {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
     return this._propQualifierToRefType
       .get(schemaName.toLowerCase())
