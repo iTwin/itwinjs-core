@@ -21,11 +21,8 @@ export interface ClientDiagnostics extends Diagnostics {
 
 /** @alpha */
 export interface DiagnosticsOptions {
-  /**
-   * Flag specifying that performance should be measured, or
-   * minimum duration in milliseconds for which performance metric should be included.
-   */
-  perf?: boolean | { duration: number };
+  /** Measure performance */
+  perf?: boolean;
   /** Severity for developer log messages */
   dev?: boolean | DiagnosticsLoggerSeverity;
   /** Severity for presentation rules' editor log messages */
@@ -59,17 +56,11 @@ export interface DiagnosticsLogMessage {
 }
 
 /** @alpha */
-export interface Attributes  {
-  [attributeKey: string]: string | string[];
-}
-
-/** @alpha */
 export interface DiagnosticsScopeLogs {
   scope: string;
   scopeCreateTimestamp?: number;
   duration?: number;
   logs?: DiagnosticsLogEntry[];
-  attributes?: Attributes;
 }
 
 /** @alpha */

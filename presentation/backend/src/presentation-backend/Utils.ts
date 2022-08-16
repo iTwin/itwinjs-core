@@ -10,7 +10,7 @@ import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String, SpanKind } from "@itwin/core-bentley";
-import { Attributes, Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
+import { Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
 import { randomBytes } from "crypto";
 
 /** @internal */
@@ -55,44 +55,6 @@ export interface BackendDiagnosticsAttribute {
   diagnostics?: BackendDiagnosticsOptions;
 }
 
-/** @internal */
-export function filterDiagnostics(diagnostics: Diagnostics, duration?: number): Diagnostics | undefined {
-  const defaultMinDuration = 100;
-  const minDuration = duration && duration > defaultMinDuration ? duration : defaultMinDuration;
-  const filteredLogs: DiagnosticsScopeLogs[] = [];
-  for (const logs of diagnostics.logs ?? []) {
-    const filteredScopeLogs = filterScopeLogs(logs, minDuration);
-    if (filteredScopeLogs)
-      filteredLogs.push(filteredScopeLogs);
-  }
-
-  if (filteredLogs.length === 0)
-    return undefined;
-
-  return { logs: filteredLogs };
-}
-
-/** @internal */
-function filterScopeLogs(logs: DiagnosticsScopeLogs, duration: number): DiagnosticsScopeLogs | undefined {
-  const { logs: _, ...leftOverLogs } = logs;
-  const filteredNestedLogs: DiagnosticsLogEntry[] = [];
-  for (const entry of logs.logs ?? []) {
-    if (isLogMessage(entry))
-      filteredNestedLogs.push(entry);
-    else {
-      const filteredScopeLogs = filterScopeLogs(entry, duration);
-      if (filteredScopeLogs)
-        filteredNestedLogs.push(filteredScopeLogs);
-    }
-  }
-
-  const isValidTime = logs.duration && logs.duration >= duration;
-  if (filteredNestedLogs.length === 0 && !isValidTime)
-    return undefined;
-
-  return { ...leftOverLogs, ...(filteredNestedLogs.length > 0 ? { logs: filteredNestedLogs } : undefined ) };
-}
-
 /** @alpha */
 export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 
@@ -125,6 +87,11 @@ export enum SpanStatusCode {
   UNSET = 0,
   OK = 1,
   ERROR = 2
+}
+
+/** @internal */
+export interface Attributes  {
+  [attributeKey: string]: string | string[];
 }
 
 /** @internal */
@@ -192,7 +159,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
     endTime: millisToHrTime(logs.scopeCreateTimestamp + logs.duration),
     status: { code: SpanStatusCode.UNSET },
-    attributes: { ...(logs.attributes ? logs.attributes : undefined) },
+    attributes: {},
     links: [],
     events,
     duration: millisToHrTime(logs.duration),

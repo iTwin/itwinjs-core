@@ -7,8 +7,7 @@ import * as moq from "typemoq";
 import { DbResult, SpanKind } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { convertToReadableSpans, filterDiagnostics, getElementKey, normalizeVersion, Resource, SpanStatusCode } from "../presentation-backend/Utils";
-import { Diagnostics } from "@itwin/presentation-common";
+import { convertToReadableSpans, getElementKey, normalizeVersion, Resource, SpanStatusCode } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
 
@@ -63,88 +62,6 @@ describe("getNormalizedVersion", () => {
 
   it("returns `0.0.0` on invalid version string", () => {
     expect(normalizeVersion("invalid")).to.eq("0.0.0");
-  });
-
-});
-
-describe("filterDiagnostics", () => {
-
-  it("returns undefined when diagnostics don't have logs", () => {
-    expect(filterDiagnostics({})).to.be.undefined;
-  });
-
-  it("returns undefined when all logs removed", () => {
-    const diagnostics: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 200 },
-    ]};
-    expect(filterDiagnostics(diagnostics, 500)).to.be.undefined;
-  });
-
-  it("uses default duration when duration not passed", () => {
-    const diagnostics: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
-        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40 },
-      ]},
-    ]};
-
-    const expectedResult: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
-    ]};
-
-    const actualResult = filterDiagnostics(diagnostics);
-    expect(actualResult).to.deep.eq(expectedResult);
-  });
-
-  it("uses default duration when passed duration is too small", () => {
-    const diagnostics: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
-        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40 },
-      ]},
-    ]};
-
-    const expectedResult: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
-    ]};
-
-    const actualResult = filterDiagnostics(diagnostics, 20);
-    expect(actualResult).to.deep.eq(expectedResult);
-  });
-
-  it("filters diagnostics by duration", () => {
-    const diagnostics: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
-        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 500 },
-        { scope: "test scope 3", scopeCreateTimestamp: 12400, duration: 700, logs: [
-          { scope: "test scope 4", scopeCreateTimestamp: 12400, duration: 200 },
-        ]},
-      ]},
-    ]};
-
-    const expectedResult: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111, logs: [
-        { scope: "test scope 3", scopeCreateTimestamp: 12400, duration: 700 },
-      ]},
-    ]};
-
-    const actualResult = filterDiagnostics(diagnostics, 600);
-    expect(actualResult).to.deep.eq(expectedResult);
-  });
-
-  it("includes messages", () => {
-    const diagnostics: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 10, logs: [
-        { severity: { dev: "error", editor: "info" }, message: "test message", category: "test category", timestamp: 12350 },
-      ]},
-    ]};
-
-    const expectedResult: Diagnostics = { logs: [
-      { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 10, logs: [
-        { severity: { dev: "error", editor: "info" }, message: "test message", category: "test category", timestamp: 12350 },
-      ]},
-    ]};
-
-    const actualResult = filterDiagnostics(diagnostics, 2000);
-    expect(actualResult).to.deep.eq(expectedResult);
   });
 
 });
@@ -208,7 +125,7 @@ describe("convertToReadableSpans", () => {
     const actualSpans = convertToReadableSpans({
       logs: [
         { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
-        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40, attributes: { rules: ["rule1", "rule2"] } },
+        { scope: "test scope 2", scopeCreateTimestamp: 12350, duration: 40 },
       ],
     });
 
@@ -222,7 +139,6 @@ describe("convertToReadableSpans", () => {
       },
       {
         ...defaultSpanAttributes,
-        attributes: { rules: ["rule1", "rule2"] },
         name: "test scope 2",
         startTime: [12, 350000000],
         endTime: [12, 390000000],

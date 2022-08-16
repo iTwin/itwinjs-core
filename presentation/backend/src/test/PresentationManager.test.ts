@@ -647,49 +647,6 @@ describe("PresentationManager", () => {
       expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
-    it("uses default duration for filtering", async () => {
-      const diagnosticsResult: Diagnostics = {
-        logs: [
-          { scope: "test1", duration: 1234, logs: [
-            { scope: "test2", duration: 12 },
-          ]},
-        ],
-      };
-      const filteredDiagnosticsResult: Diagnostics = {
-        logs: [{ scope: "test1", duration: 1234 }],
-      };
-      const diagnosticsListener = sinon.spy();
-      addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
-        .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { handler: diagnosticsListener } });
-      addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(filteredDiagnosticsResult);
-    });
-
-    it("filters diagnostics results by duration in DiagnosticsOptions", async () => {
-      const diagnosticOptions: DiagnosticsOptions = { perf: { duration: 500 } };
-      const diagnosticsResult: Diagnostics = {
-        logs: [
-          { scope: "test1", duration: 1234, logs: [
-            { scope: "test2", duration: 120 },
-          ]},
-        ],
-      };
-      const filteredDiagnosticsResult: Diagnostics = {
-        logs: [{ scope: "test1", duration: 1234 }],
-      };
-      const diagnosticsListener = sinon.spy();
-      addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match({ perf: true }).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
-        .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
-      addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(filteredDiagnosticsResult);
-    });
-
     it("invokes diagnostics callback with diagnostic results", async () => {
       const diagnosticsCallback = sinon.spy();
       addonMock.reset();

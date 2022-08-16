@@ -595,9 +595,7 @@ export interface DiagnosticsLogMessage {
 export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
-    perf?: boolean | {
-        duration: number;
-    };
+    perf?: boolean;
 }
 
 // @alpha (undocumented)

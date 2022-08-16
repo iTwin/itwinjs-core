@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, DiagnosticsCallback, filterDiagnostics, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -149,17 +149,15 @@ export class PresentationManagerDetail implements IDisposable {
 
     let diagnosticsListener: BackendDiagnosticsHandler | undefined;
     if (diagnostics) {
-      const { handler: tempDiagnosticsListener, perf, ...diagnosticsOptions } = diagnostics;
+      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
       diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = { perf: !!perf, ...diagnosticsOptions };
+      nativeRequestParams.params.diagnostics = diagnosticsOptions;
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
     if (response.diagnostics) {
-      const duration = (diagnostics && typeof diagnostics.perf === "object") ? diagnostics.perf.duration : undefined;
-      const filteredDiagnostics = filterDiagnostics({ logs: [response.diagnostics] }, duration);
-      diagnosticsListener && filteredDiagnostics && diagnosticsListener(filteredDiagnostics);
-      this._diagnosticsCallback && filteredDiagnostics && this._diagnosticsCallback(convertToReadableSpans(filteredDiagnostics));
+      diagnosticsListener && diagnosticsListener({ logs: [response.diagnostics] });
+      this._diagnosticsCallback && this._diagnosticsCallback(convertToReadableSpans({ logs: [response.diagnostics] }));
     }
 
     return response.result;

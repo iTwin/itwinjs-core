@@ -317,7 +317,7 @@ describe("PresentationRpcImpl", () => {
           ...defaultRpcParams,
           rulesetOrId: testData.rulesetOrId,
           diagnostics: {
-            perf: { duration: 200 },
+            perf: true,
           },
         };
 
@@ -326,7 +326,7 @@ describe("PresentationRpcImpl", () => {
           rulesetOrId: testData.rulesetOrId,
           parentKey: undefined,
           diagnostics: {
-            perf: { duration: 200 },
+            perf: true,
           },
           cancelEvent: new BeEvent<() => void>(),
         };
