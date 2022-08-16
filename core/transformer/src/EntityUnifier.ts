@@ -8,7 +8,7 @@
  * for entity-generic operations in the transformer
  */
 import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Model, Relationship } from "@itwin/core-backend";
-import { ConcreteEntityId, ConcreteEntityIds, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityIds, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
 import { DbResult, ElementAspectProps, ElementProps, IModelError, ModelProps, RelationshipProps } from "@itwin/core-common";
 import { IModelTransformer } from "./IModelTransformer";
 
@@ -49,8 +49,9 @@ export namespace EntityUnifier {
 
   export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { concreteEntityId: ConcreteEntityId }) {
     if ("concreteEntityId" in arg) {
-      const id = ConcreteEntityIds.toId64(arg.concreteEntityId);
-      return db.withPreparedStatement("SELECT 1 FROM bis.Element WHERE ECInstanceId=?", (stmt) => {
+      const [type, id] = ConcreteEntityIds.split(arg.concreteEntityId);
+      const bisCoreRootClassName = ConcreteEntityTypes.toBisCoreRootClassFullName(type);
+      return db.withPreparedStatement(`SELECT 1 FROM ${bisCoreRootClassName} WHERE ECInstanceId=?`, (stmt) => {
         stmt.bindId(1, id);
         const matchesResult = stmt.step();
         if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
@@ -66,6 +67,7 @@ export namespace EntityUnifier {
         else throw new IModelError(matchesResult, "query failed");
       });
     } else {
+      // FIXME: maybe lone id should default to an element id for backwards compat?
       return db.withPreparedStatement(`
         SELECT 1 FROM (
           -- all possible bis core root types
@@ -83,6 +85,8 @@ export namespace EntityUnifier {
           SELECT ECInstanceId FROM bis.ElementDrivesElement
           UNION ALL
           SELECT ECInstanceId FROM bis.ModelSelectorRefersToModels
+          UNION ALL
+          SELECT ECInstanceId FROM bis.CodeSpec
         ) WHERE ECInstanceId=?
       `, (stmt) => {
         stmt.bindId(1, arg.id);

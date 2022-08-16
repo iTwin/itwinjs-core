@@ -7,7 +7,7 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, ConcreteEntityId, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
+import { AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -154,17 +154,13 @@ class PartiallyCommittedEntity {
      * It is possible for the submodel of an element to be separately resolved from the actual element,
      * so its resolution must be tracked separately
      */
-    private _missingReferences: Set<string>,
+    private _missingReferences: ConcreteEntityIdSet,
     private _onComplete: () => void
   ) {}
-  public resolveReference(id: Id64String, isModelRef: boolean) {
-    const key = PartiallyCommittedEntity.makeReferenceKey(id, isModelRef);
-    this._missingReferences.delete(key);
+  public resolveReference(id: ConcreteEntityId) {
+    this._missingReferences.delete(id);
     if (this._missingReferences.size === 0)
       this._onComplete();
-  }
-  public static makeReferenceKey(id: Id64String, isModelRef: boolean) {
-    return `${isModelRef ? "model" : "element"}${id}`;
   }
   public forceComplete() {
     this._onComplete();
@@ -185,7 +181,25 @@ class EntityProcessState {
     public needsSubModelImport = false,
   ) {}
   public static fromEntityAndTransformer(concreteEntityId: ConcreteEntityId, transformer: IModelTransformer): EntityProcessState {
-    const entityId = ConcreteEntityIds.toId64(concreteEntityId);
+    // FIXME: maybe better to rename ConcreteEntity to EntityRef, since it's not purely an id?
+    const [type, entityId] = ConcreteEntityIds.split(concreteEntityId);
+    switch (type) {
+      case ConcreteEntityTypes.Relationship: {
+        break;
+      }
+      case ConcreteEntityTypes.ElementAspect: {
+        break;
+      }
+      case ConcreteEntityTypes.Element: {
+        break;
+      }
+      case ConcreteEntityTypes.Model: {
+        break;
+      }
+      case ConcreteEntityTypes.CodeSpec: {
+        break;
+      }
+    }
     if (ConcreteEntityIds.isElementAspect(concreteEntityId)) {
       return new EntityProcessState(concreteEntityId, transformer.context.findTargetAspectId(entityId) === Id64.invalid);
     }
@@ -686,14 +700,19 @@ export class IModelTransformer extends IModelExportHandler {
    * create a [[PartiallyCommittedEntity]] to track resolution of those references
    */
   private collectUnmappedReferences(entity: ConcreteEntity) {
-    const missingReferences = new Set<string>();
+    const missingReferences = new ConcreteEntityIdSet();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
     for (const referenceId of entity.getReferenceConcreteIds()) {
-      const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
-      if (!referenceState.needsImport)
+      // models must have an owning element, so the model existing ensures the element does too
+      EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
+      // const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
+      // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
+      const concreteIdInTarget = this.context.findTargetEntityId(referenceId);
+      const alreadyImported = ConcreteEntityIds.isValid(concreteIdInTarget);
+      if (alreadyImported)
         continue;
-
+      EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
       const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       if (!exists) {
@@ -719,20 +738,7 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedEntities.has(entity))
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
-      if (referenceState.needsSubModelImport) {
-        missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, true));
-        // NOTE:
-        // it looks like I'm going to have to deprecate the string return type of collectElementReferences
-        // because I need classes to declare whether their references are to an element or not
-        // raw strings will be interpreted as to pointing to an element
-        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "m" : "n"}${ConcreteEntityIds.from(entity)}`);
-        this._pendingReferences.set(pendingRef, thisPartialElem);
-      }
-      if (referenceState.needsSelfImport) {
-        missingReferences.add(PartiallyCommittedEntity.makeReferenceKey(referenceId, false));
-        const pendingRef = PendingReference.from(referenceId, `${entity instanceof Element ? "e" : "n"}${ConcreteEntityIds.from(entity)}`);
-        this._pendingReferences.set(pendingRef, thisPartialElem);
-      }
+      missingReferences.add(referenceId);
     }
   }
 
@@ -785,6 +791,7 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
+          // FIXME: bad
           // For now we just consider all required references to be elements, and do not support
           // entities that refuse to be inserted without a specific aspect or relationship first being inserted
           return EntityProcessState.fromEntityAndTransformer(`e${id}`, this);
@@ -870,13 +877,11 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   private resolvePendingReferences(entity: ConcreteEntity) {
-    // FIXME: support non element entities
-    const isModelRef = entity instanceof Model;
     for (const referencer of this._pendingReferences.getReferencers(entity)) {
       const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
-      pendingRef.resolveReference(entity.id, isModelRef);
+      pendingRef.resolveReference(ConcreteEntityIds.from(entity));
       this._pendingReferences.delete(key);
     }
   }

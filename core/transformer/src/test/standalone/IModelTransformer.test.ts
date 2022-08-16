@@ -54,7 +54,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it.only("should transform changes from source to target", async () => {
+  it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
@@ -254,7 +254,7 @@ describe("IModelTransformer", () => {
     });
   }
 
-  it("should import everything below a Subject", async () => {
+  it.only("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
