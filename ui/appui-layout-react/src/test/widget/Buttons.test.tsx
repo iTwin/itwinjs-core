@@ -29,7 +29,6 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-sendBack")).to.not.be.null;
-    wrapper.unmount();
   });
 
   it("Floating widget that canPopout should render Popout button", () => {
@@ -55,13 +54,10 @@ describe("TabBarButtons", () => {
     );
     expect(wrapper.container.querySelector("button.nz-widget-sendBack")).to.not.be.null;
     expect(wrapper.container.querySelector("button.nz-widget-popoutToggle")).to.not.be.null;
-
-    wrapper.unmount();
   });
 
   it("Floating ToolSettings should not render Popout if no active tab set", () => {
     let state = createNineZoneState();
-    state = addTab(state, toolSettingsTabId, { label: "tool-label" });
     state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
     const wrapper = render(
       <PanelStateContext.Provider value={state.panels.left}>
@@ -79,12 +75,10 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-dock")).to.be.null;
-    wrapper.unmount();
   });
 
   it("Floating ToolSettings should render Dock button", () => {
     let state = createNineZoneState();
-    state = addTab(state, toolSettingsTabId, { label: "tool-label" });
     state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
     const wrapper = render(
       <PanelStateContext.Provider value={state.panels.left}>
@@ -104,7 +98,6 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-dock")).to.not.be.null;
-    wrapper.unmount();
   });
 
   it("Main Panel widget should not render Pin buttons", () => {
@@ -127,7 +120,6 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-pinToggle")).to.not.be.null;
-    wrapper.unmount();
   });
 
   it("Main Panel widget that canPopout should render Popout and Pin buttons", () => {
@@ -151,7 +143,6 @@ describe("TabBarButtons", () => {
     );
     expect(wrapper.container.querySelector("button.nz-widget-popoutToggle")).to.not.be.null;
     expect(wrapper.container.querySelector("button.nz-widget-pinToggle")).to.not.be.null;
-    wrapper.unmount();
   });
 
   it("Secondary Panel widget should render Popout buttons", () => {
@@ -174,10 +165,9 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-popoutToggle")).to.not.be.null;
-    wrapper.unmount();
   });
 
-  it("Floating ToolSettings should render Dock button", () => {
+  it("should render popout button", () => {
     let state = createNineZoneState();
     state = addTab(state, "t1", { label: "t1-label", canPopout: true });
     state = addPanelWidget(state, "left", "w1", ["t1"], { activeTabId: "t1" });
@@ -195,6 +185,5 @@ describe("TabBarButtons", () => {
       </PanelStateContext.Provider>
     );
     expect(wrapper.container.querySelector("button.nz-widget-popoutToggle")).to.not.be.null;
-    wrapper.unmount();
   });
 });

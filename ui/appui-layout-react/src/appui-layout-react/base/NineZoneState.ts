@@ -1009,12 +1009,12 @@ function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"
   if (!(id in state.floatingWidgets.byId))
     throw new UiError(category, "Floating widget not found");
 
-  state = removeWidgetState(state, id);
-  return produce(state, (draft) => {
+  state = produce(state, (draft) => {
     delete draft.floatingWidgets.byId[id];
     const idIndex = draft.floatingWidgets.allIds.indexOf(id);
     draft.floatingWidgets.allIds.splice(idIndex, 1);
   });
+  return removeWidgetState(state, id);
 }
 
 /** Removes floating widget from the UI and deletes the widget state. */
@@ -1210,11 +1210,15 @@ export function addPanelWidget(state: NineZoneState, side: PanelSide, id: Widget
 
 /** @internal */
 export function insertPanelWidget(state: NineZoneState, side: PanelSide, sectionIndex: number, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
+  const panel = state.panels[side];
+  const maxWidgetCount = panel.maxWidgetCount;
+  if (panel.widgets.length >= maxWidgetCount)
+    throw new UiError(category, "Max widget count exceeded", undefined, () => ({ maxWidgetCount }));
+
   state = addWidgetState(state, id, tabs, widgetArgs);
-  // TODO: check `maxWidgetCount`
   return produce(state, (draft) => {
-    const panel = draft.panels[side];
-    panel.widgets.splice(sectionIndex, 0, id);
+    const widgets = draft.panels[side].widgets;
+    widgets.splice(sectionIndex, 0, id);
   });
 }
 
@@ -1247,7 +1251,8 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 
 /** @internal */
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
-  // TODO: validation
+  if (id in state.tabs)
+    throw new UiError(category, "Tab already exists");
   const tab = {
     ...createTabState(id),
     ...tabArgs,

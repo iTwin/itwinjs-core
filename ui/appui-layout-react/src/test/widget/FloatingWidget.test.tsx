@@ -131,7 +131,6 @@ describe("FloatingWidget", () => {
   it("tool settings should NOT have resize handles", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let state = createNineZoneState();
-    state = addTab(state, "nz-tool-settings-tab");
     state = addFloatingWidget(state, "toolSettings", ["nz-tool-settings-tab"], undefined, { minimized: true, isFloatingStateWindowResizable: false });
     const { container } = render(
       <TestNineZoneProvider

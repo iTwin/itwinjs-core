@@ -334,9 +334,9 @@ describe("useResizeGrip", () => {
   });
 
   it("should expand collapsed panel", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
-      stateDraft.panels.left.collapsed = true;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
+      draft.panels.left.collapsed = true;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -360,9 +360,9 @@ describe("useResizeGrip", () => {
   });
 
   it("should not expand if collapseOffset is not reached", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
-      stateDraft.panels.left.collapsed = true;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
+      draft.panels.left.collapsed = true;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -382,8 +382,8 @@ describe("useResizeGrip", () => {
   });
 
   it("should collapse", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 200;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 200;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -413,8 +413,8 @@ describe("useResizeGrip", () => {
   });
 
   it("should not resize if drag direction does not match resize direction", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
