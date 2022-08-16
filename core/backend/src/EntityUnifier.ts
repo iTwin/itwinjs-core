@@ -35,45 +35,28 @@ export namespace EntityUnifier {
     else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
   }
 
-  export function exists(
-    db: IModelDb,
-    arg:
-    | { entity: ConcreteEntity }
-    | { id: Id64String }
-    | { concreteEntityId: ConcreteEntityId }
-    | { rawIdAndType: [ConcreteEntityTypes, Id64String] }
-  ) {
-    if ("concreteEntityId" in arg || "rawIdAndType" in arg) {
-      const [type, id] = "rawIdAndType" in arg
-        ? arg.rawIdAndType
-        : ConcreteEntityIds.split(arg.concreteEntityId);
-      const bisCoreRootClassName =
-        ConcreteEntityTypes.toBisCoreRootClassFullName(type);
-      return db.withPreparedStatement(
-        `SELECT 1 FROM ${bisCoreRootClassName} WHERE ECInstanceId=?`,
-        (stmt) => {
-          stmt.bindId(1, id);
-          const matchesResult = stmt.step();
-          if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
-          if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
-          else throw new IModelError(matchesResult, "query failed");
-        }
-      );
+  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { concreteEntityId: ConcreteEntityId }) {
+    if ("concreteEntityId" in arg) {
+      const [type, id] = ConcreteEntityIds.split(arg.concreteEntityId);
+      const bisCoreRootClassName = ConcreteEntityTypes.toBisCoreRootClassFullName(type);
+      return db.withPreparedStatement(`SELECT 1 FROM ${bisCoreRootClassName} WHERE ECInstanceId=?`, (stmt) => {
+        stmt.bindId(1, id);
+        const matchesResult = stmt.step();
+        if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
+        if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
+        else throw new IModelError(matchesResult, "query failed");
+      });
     } else if ("entity" in arg) {
-      return db.withPreparedStatement(
-        `SELECT 1 FROM [${arg.entity.schemaName}].[${arg.entity.className}] WHERE ECInstanceId=?`,
-        (stmt) => {
-          stmt.bindId(1, arg.entity.id);
-          const matchesResult = stmt.step();
-          if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
-          if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
-          else throw new IModelError(matchesResult, "query failed");
-        }
-      );
+      return db.withPreparedStatement(`SELECT 1 FROM [${arg.entity.schemaName}].[${arg.entity.className}] WHERE ECInstanceId=?`, (stmt) => {
+        stmt.bindId(1, arg.entity.id);
+        const matchesResult = stmt.step();
+        if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
+        if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
+        else throw new IModelError(matchesResult, "query failed");
+      });
     } else {
       // FIXME: maybe lone id should default to an element id for backwards compat?
-      return db.withPreparedStatement(
-        `
+      return db.withPreparedStatement(`
         SELECT 1 FROM (
           -- all possible bis core root types
           -- FIXME: create a test verifying the assumption that this is all of them...
@@ -93,15 +76,13 @@ export namespace EntityUnifier {
           UNION ALL
           SELECT ECInstanceId FROM bis.CodeSpec
         ) WHERE ECInstanceId=?
-      `,
-        (stmt) => {
-          stmt.bindId(1, arg.id);
-          const matchesResult = stmt.step();
-          if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
-          if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
-          else throw new IModelError(matchesResult, "query failed");
-        }
-      );
+      `, (stmt) => {
+        stmt.bindId(1, arg.id);
+        const matchesResult = stmt.step();
+        if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
+        if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
+        else throw new IModelError(matchesResult, "query failed");
+      });
     }
   }
 }
