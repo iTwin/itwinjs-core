@@ -413,7 +413,6 @@ export class IModelTransformer extends IModelExportHandler {
       kind: ExternalSourceAspect.Kind.Element,
       version: this.sourceDb.elements.queryLastModifiedTime(sourceElementId),
     };
-    aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
     return aspectProps;
   }
 
@@ -847,13 +846,13 @@ export class IModelTransformer extends IModelExportHandler {
 
     if (!this._options.noProvenance) {
       const aspectProps: ExternalSourceAspectProps = this.initElementProvenance(sourceElement.id, targetElementProps.id!);
-      if (aspectProps.id === undefined) {
-        this.provenanceDb.elements.insertAspect(aspectProps);
-        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
+      let aspectId = this.queryExternalSourceAspectId(aspectProps);
+      if (aspectId === undefined) {
+        aspectId = this.provenanceDb.elements.insertAspect(aspectProps);
       } else {
         this.provenanceDb.elements.updateAspect(aspectProps);
       }
-      assert(aspectProps.id !== undefined);
+      aspectProps.id = aspectId;
       this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: false });
     }
   }
@@ -1017,8 +1016,7 @@ export class IModelTransformer extends IModelExportHandler {
     if (!this._options.noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
       const aspectProps: ExternalSourceAspectProps = this.initRelationshipProvenance(sourceRelationship, targetRelationshipInstanceId);
       if (undefined === aspectProps.id) {
-        this.provenanceDb.elements.insertAspect(aspectProps);
-        aspectProps.id = this.queryExternalSourceAspectId(aspectProps);
+        aspectProps.id = this.provenanceDb.elements.insertAspect(aspectProps);
       }
       assert(aspectProps.id !== undefined);
       this.markLastProvenance(aspectProps as MarkRequired<ExternalSourceAspectProps, "id">, { isRelationship: true });
