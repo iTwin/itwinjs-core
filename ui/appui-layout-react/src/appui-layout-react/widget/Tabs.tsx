@@ -18,7 +18,6 @@ import { WidgetTabProvider } from "./Tab";
 import { WidgetTabTarget } from "./TabTarget";
 import { ActiveTabIdContext, WidgetStateContext } from "./Widget";
 import { TitleBarTarget } from "../target/TitleBarTarget";
-import { TabState } from "../base/NineZoneState";
 
 /** @internal */
 export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -26,17 +25,16 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(!!widget);
+  const tabIds = widget.tabs;
+  assert(tabIds.length > 0);
   const showWidgetIcon = React.useContext(ShowWidgetIconContext);
   const [showOnlyTabIcon, setShowOnlyTabIcon] = React.useState(false);
-  const visibleTabs = useVisibleTabs();
-  assert(visibleTabs.length > 0);
 
-  const activeTabId = useActiveTabId(widget.activeTabId, visibleTabs[0].id);
-  const activeTabIndex = visibleTabs.findIndex((tab) => tab.id === activeTabId);
+  const activeTabIndex = tabIds.findIndex((tabId) => tabId === widget.activeTabId);
   const children = React.useMemo<React.ReactNode>(() => {
-    return visibleTabs.map((tabState, index, array) => {
+    return tabIds.map((tabId, index, array) => {
       const firstInactive = activeTabIndex + 1 === index;
-      const tabId = tabState.id;
+      const tab = tabs[tabId];
       return (
         <React.Fragment
           key={tabId}
@@ -49,7 +47,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
             first={index === 0}
             firstInactive={firstInactive}
             last={index === array.length - 1}
-            tab={tabs[tabId]}
+            tab={tab}
             showOnlyTabIcon={showOnlyTabIcon && showWidgetIcon}
           />
           <WidgetTabTarget
@@ -58,7 +56,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
         </React.Fragment>
       );
     });
-  }, [visibleTabs, activeTabIndex, tabs, showOnlyTabIcon, showWidgetIcon]);
+  }, [tabIds, activeTabIndex, tabs, showOnlyTabIcon, showWidgetIcon]);
   const [overflown, handleResize, handleOverflowResize, handleEntryResize] = useOverflow(children, activeTabIndex);
   const horizontal = side && isHorizontalPanelSide(side);
   const handleContainerResize = React.useCallback((w: number) => {
@@ -85,7 +83,7 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
     return [key, child];
   }) : [];
   return (
-    <ActiveTabIdContext.Provider value={activeTabId}>
+    <ActiveTabIdContext.Provider value={widget.activeTabId}>
       <div
         className="nz-widget-tabs"
         ref={ref}
@@ -121,25 +119,6 @@ export const WidgetTabs = React.memo(function WidgetTabs() { // eslint-disable-l
     </ActiveTabIdContext.Provider>
   );
 });
-
-function useVisibleTabs() {
-  const tabs = React.useContext(TabsStateContext);
-  const widget = React.useContext(WidgetStateContext);
-  assert(!!widget);
-  const widgetTabIds = widget.tabs;
-  return React.useMemo(() => {
-    const widgetTabs = widgetTabIds.map((tabId) => tabs[tabId]);
-    return widgetTabs.filter((tab) => !tab.hidden);
-  }, [tabs, widgetTabIds]);
-}
-
-function useActiveTabId(activeTabId: TabState["id"], fallbackTabId: TabState["id"]) {
-  const tabs = React.useContext(TabsStateContext);
-  const activeTab = tabs[activeTabId];
-  if (!activeTab.hidden)
-    return activeTabId;
-  return fallbackTabId;
-}
 
 interface WidgetTabsEntryContextArgs {
   readonly lastNotOverflown: boolean;

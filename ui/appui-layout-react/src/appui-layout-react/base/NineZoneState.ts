@@ -19,7 +19,9 @@ const category = "appui-layout-react:layout";
 /** @internal */
 export interface SizeAndPositionProps extends SizeProps, PointProps { }
 
-/** @internal */
+/** `WidgetDef` is equivalent structure in `appui-react`.
+ * @internal
+ */
 export interface TabState {
   readonly id: string;
   readonly label: string;
@@ -32,15 +34,15 @@ export interface TabState {
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
   readonly hideWithUiWhenFloating?: boolean;
-  readonly hidden?: boolean;
 }
 
 /** @internal */
 export interface TabsState { readonly [id: string]: TabState }
 
-/** @internal */
+/** State of a stacked widget, which can contain multiple tabs. I.e. in a panel section or a floating widget.
+ * @internal
+ */
 export interface WidgetState {
-  // Preferred active tab. The tab might not be active if it is hidden.
   readonly activeTabId: TabState["id"];
   readonly id: string;
   readonly minimized: boolean;

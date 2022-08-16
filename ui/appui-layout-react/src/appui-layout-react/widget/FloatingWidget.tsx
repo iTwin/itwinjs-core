@@ -63,9 +63,6 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     hideFloatingWidget && "nz-hidden",
   ), [minimized, hideFloatingWidget]);
 
-  const isVisible = useIsVisible(tabs);
-  if (!isVisible)
-    return null;
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>
@@ -89,18 +86,6 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 /** @internal */
 export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
-
-function useIsVisible(tabIds: WidgetState["tabs"]) {
-  const tabsState = React.useContext(TabsStateContext);
-  return React.useMemo(() => {
-    for (const tabId of tabIds) {
-      const tab = tabsState[tabId];
-      if (!tab.hidden)
-        return true;
-    }
-    return false;
-  }, [tabsState, tabIds]);
-}
 
 const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
