@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String, isSubclassOf } from "@itwin/core-bentley";
-import { CodeSpec, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
+import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
+import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
 import type { Element } from "./Element";
@@ -19,8 +19,8 @@ import * as assert from "assert";
 export * from "@itwin/core-bentley/lib/cjs/ConcreteEntityId";
 
 // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
-/** an entity that can be created  */
-export type ConcreteEntity = Element | Model | ElementAspect | Relationship | CodeSpec;
+/** an entity that can be created, with the notable exception of CodeSpecs since those are not treated like other entities */
+export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
 
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
@@ -45,10 +45,6 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
   }
   private static get _RelationshipClass() {
     return (require("./Relationship") as typeof import("./Relationship")).Relationship;
-  }
-  private static get _CodeSpecClass() {
-    // FIXME: this is wrong
-    return (require("./CodeSpecs") as typeof import("./CodeSpecs")).CodeSpecs;
   }
   private static get _ClassRegistry() {
     return (require("./ClassRegistry") as typeof import("./ClassRegistry")).ClassRegistry;
@@ -83,7 +79,6 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
     else if (entityClass.is(this._ElementAspectClass)) return ConcreteEntityTypes.ElementAspect;
     else if (entityClass.is(this._ModelClass)) return ConcreteEntityTypes.Model;
     else if (entityClass.is(this._RelationshipClass)) return ConcreteEntityTypes.Relationship;
-    else if (isSubclassOf(entityClass,  this._CodeSpecClass)) return ConcreteEntityTypes.CodeSpec;
     else assert(false, "unknown or abstract entity type passed to ConcreteEntityIds.from");
   }
 }

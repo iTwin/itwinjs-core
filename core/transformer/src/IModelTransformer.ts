@@ -12,7 +12,7 @@ import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, ChangeSummaryManager, ConcreteEntity, ConcreteEntityIds,
-  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
+  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, EntityUnifier, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
@@ -37,7 +37,7 @@ const nullLastProvenanceEntityInfo = {
   aspectKind: ExternalSourceAspect.Kind.Element,
 };
 
-type EntityTransformHandler = (entity: Element | Model | Relationship | ElementAspect) => ElementProps | ModelProps | RelationshipProps | ElementAspectProps;
+type EntityTransformHandler = (entity: ConcreteEntity) => ElementProps | ModelProps | RelationshipProps | ElementAspectProps;
 
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
@@ -195,9 +195,6 @@ class EntityProcessState {
         break;
       }
       case ConcreteEntityTypes.Model: {
-        break;
-      }
-      case ConcreteEntityTypes.CodeSpec: {
         break;
       }
     }
@@ -722,6 +719,8 @@ export class IModelTransformer extends IModelExportHandler {
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
       missingReferences.add(referenceId);
+      const concreteEntityId = ConcreteEntityIds.from(entity);
+      this._pendingReferences.set({ referenced: referenceId, referencer: concreteEntityId }, thisPartialElem);
     }
   }
 
@@ -775,8 +774,8 @@ export class IModelTransformer extends IModelExportHandler {
             }
           }
           // FIXME: bad
-          // For now we just consider all required references to be elements, and do not support
-          // entities that refuse to be inserted without a specific aspect or relationship first being inserted
+          // For now we just consider all required references to be elements (as they are in biscore), and do not support
+          // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
           return EntityProcessState.fromEntityAndTransformer(`e${id}`, this);
         });
       })

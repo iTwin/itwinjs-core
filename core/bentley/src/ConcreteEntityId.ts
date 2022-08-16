@@ -23,7 +23,6 @@ export enum ConcreteEntityTypes {
   Element = "e",
   ElementAspect = "a",
   Relationship = "r",
-  CodeSpec = "c",
 }
 
 /**
@@ -36,7 +35,6 @@ export namespace ConcreteEntityTypes {
     [ConcreteEntityTypes.Element]: "BisCore:Element",
     [ConcreteEntityTypes.ElementAspect]: "BisCore:ElementAspect",
     [ConcreteEntityTypes.Relationship]: "BisCore:Relationship",
-    [ConcreteEntityTypes.CodeSpec]: "BisCore:CodeSpec",
   } as const;
 
   /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
@@ -71,9 +69,6 @@ export class ConcreteEntityIds {
   }
   public static isRelationship(id: ConcreteEntityId) {
     return id[0] === ConcreteEntityTypes.Relationship;
-  }
-  public static isCodeSpec(id: ConcreteEntityId) {
-    return id[0] === ConcreteEntityTypes.CodeSpec;
   }
   public static toId64(id: ConcreteEntityId) {
     return id.slice(1);
