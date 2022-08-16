@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Restructured GeoService unit tests.\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
