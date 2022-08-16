@@ -26,6 +26,20 @@ export enum ConcreteEntityTypes {
   CodeSpec = "c",
 }
 
+/** used by the transformer to figure out where to check for the existence in a db of a concrete element id
+ * @internal
+ */
+export function concreteEntityTypeToBisCoreRootClassFullName(type: ConcreteEntityTypes): string {
+  const map = {
+    [ConcreteEntityTypes.Model]: "BisCore:Model",
+    [ConcreteEntityTypes.Element]: "BisCore:Element",
+    [ConcreteEntityTypes.ElementAspect]: "BisCore:ElementAspect",
+    [ConcreteEntityTypes.Relationship]: "BisCore:Relationship",
+    [ConcreteEntityTypes.CodeSpec]: "BisCore:CodeSpec",
+  } as const;
+  return map[type];
+}
+
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
@@ -56,6 +70,9 @@ export class ConcreteEntityIds {
   public static toId64(id: ConcreteEntityId) {
     return id.slice(1);
   }
+  public static split(id: ConcreteEntityId): [ConcreteEntityTypes, Id64String] {
+    return [id[0] as ConcreteEntityTypes, id.slice(1)];
+  }
 }
 
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
@@ -63,8 +80,7 @@ export class ConcreteEntityIds {
  */
 export class ConcreteEntityIdSet extends Set<ConcreteEntityId> {
   public addElement(id: Id64String) { this.add(`e${id}`); }
-  // FIXME: probably shouldn't add it as an element
-  public addModel(id: Id64String) { this.addElement(id); }
+  public addModel(id: Id64String) { this.add(`m${id}`); }
   public addAspect(id: Id64String) { this.add(`a${id}`); }
   public addRelationship(id: Id64String) { this.add(`r${id}`); }
 
