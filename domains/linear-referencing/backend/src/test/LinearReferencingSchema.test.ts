@@ -68,7 +68,7 @@ describe("LinearReferencing Domain", () => {
   const outputDir = path.join(__dirname, "output");
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     LinearReferencingSchema.registerSchema();
     TestLinearReferencingSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {

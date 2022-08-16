@@ -14,7 +14,7 @@ describe("PhysicalMaterialSchema", () => {
   const outputDir = path.join(__dirname, "output");
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     PhysicalMaterialSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {
       IModelJsFs.mkdirSync(outputDir);
