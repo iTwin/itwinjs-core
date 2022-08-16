@@ -156,8 +156,9 @@ export class PresentationManagerDetail implements IDisposable {
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
     if (response.diagnostics) {
-      diagnosticsListener && diagnosticsListener({ logs: [response.diagnostics] });
-      this._diagnosticsCallback && this._diagnosticsCallback(convertToReadableSpans({ logs: [response.diagnostics] }));
+      const logs = { logs: [response.diagnostics] };
+      diagnosticsListener && diagnosticsListener(logs);
+      this._diagnosticsCallback && this._diagnosticsCallback(convertToReadableSpans(logs));
     }
 
     return response.result;

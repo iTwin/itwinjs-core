@@ -59,7 +59,8 @@ export interface BackendDiagnosticsAttribute {
 export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 
 /**
- * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js)
+ * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js).
+ * ReadableSpan[] can be passed to OpenTelemetry exporters.
  * @public
  */
 export interface ReadableSpan {
