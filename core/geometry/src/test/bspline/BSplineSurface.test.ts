@@ -231,7 +231,7 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("LegacyClosureRoundtrip", () => {
+  it("LegacyClosureRoundtrip", () => {
     const ck = new Checker();
     for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_legacy.imjs",
                             "./src/test/testInputs/BSplineSurface/torus6_legacy.imjs"]) {

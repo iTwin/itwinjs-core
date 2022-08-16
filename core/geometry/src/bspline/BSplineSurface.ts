@@ -36,8 +36,8 @@ export enum UVSelect {
 /**
  * Enumeration of how weights are carried
  * * UnWeighted (0) -- there are no weights
- * * WeightsAlreadyAppliedToCoordinates (1) -- for real point (x,y,z) the homogeneous point has weight applied throughout as (wx,wy,wz,w)
- * * WeightsSeparateFromCoordinates (2) -- for real point (x,y,z) the homogeneous point is (x,y,z,w)
+ * * WeightsAlreadyAppliedToCoordinates (1) -- for real point (x,y,z) the homogeneous point (wx,wy,wx,w) is stored as (wx,wy,wz,w)
+ * * WeightsSeparateFromCoordinates (2) -- for real point (x,y,z) the homogeneous point (wx,wy,wx,w) is stored as (x,y,z,w)
  *   * Note that "internal" computations never use WeightsSeparateFromCoordinates.
  *   * WeightsSeparateFromCoordinates is only useful as input or output state in serializer.
  * @public
@@ -46,13 +46,13 @@ export enum WeightStyle {
   /** There are no weights. */
   UnWeighted = 0,
   /**
-   * * Data is weighted
-   * * point with normalized coordinate `[x,y,z]` and weight `w` has weights already multiplied in as `[x*w,y*w,z*w,w]`
+   * * Data is weighted.
+   * * The point with normalized coordinate `[x,y,z]` and weight `w` is stored as `[x*w,y*w,z*w,w]`
    * */
   WeightsAlreadyAppliedToCoordinates = 1,
   /**
-   * * Data is weighted
-   * * point with normalized coordinate `[x,y,z]` and weight `w` has is `[x,y,z,w]`
+   * * Data is weighted.
+   * * The point with normalized coordinate `[x,y,z]` and weight `w` is stored as `[x,y,z,w]`
    * */
   WeightsSeparateFromCoordinates = 2,
 }

@@ -858,19 +858,19 @@ export namespace IModelJson {
           && (dim = data.points[0].length) >= 2 && dim <= 4
          ) {
         const order = data.order;
-        let numPole = data.points.length;
-        const polesExpanded: number[][] = [];
-        const knotsCorrected: number[] = [];
         let poles = data.points;
         let knots = data.knots;   // initially includes extraneous knot at start and end
         let wrapMode = BSplineWrapMode.None;
         const closed = (data.hasOwnProperty("closed") && true === data.closed) ? true : false;
 
         if (closed) {
+          let numPole = data.points.length;
+          const knotsCorrected: number[] = [];
           if (this.openLegacyPeriodicKnots(knots, numPole, order, knotsCorrected)) {
             knots = knotsCorrected;   // knots corrected, poles are OK
             wrapMode = BSplineWrapMode.OpenByRemovingKnots;
           } else {
+            const polesExpanded: number[][] = [];
             this.copyBcurvePolesIfEmpty(polesExpanded, poles);
             for (let i = 0; i < order - 1; ++i) {
               const wraparoundPt = [];
@@ -1104,8 +1104,6 @@ export namespace IModelJson {
         let numPoleV = data.points.length;      // number of rows of poles
         let numPoleU = data.points[0].length;   // number of poles in each row
         const polesExpanded: number[][][] = [];
-        const uKnotsCorrected: number[] = [];
-        const vKnotsCorrected: number[] = [];
         let poles = data.points;
         let uKnots = data.uKnots;
         let vKnots = data.vKnots;
@@ -1115,6 +1113,7 @@ export namespace IModelJson {
         const closedV = (data.hasOwnProperty("closedV") && true === data.closedV) ? true : false;
 
         if (closedU) {
+          const uKnotsCorrected: number[] = [];
           if (this.openLegacyPeriodicKnots(uKnots, numPoleU, orderU, uKnotsCorrected)) {
             uKnots = uKnotsCorrected;   // knots corrected, poles are OK
             uWrapMode = BSplineWrapMode.OpenByRemovingKnots;
@@ -1135,6 +1134,7 @@ export namespace IModelJson {
         }
 
         if (closedV) {
+          const vKnotsCorrected: number[] = [];
           if (this.openLegacyPeriodicKnots(vKnots, numPoleV, orderV, vKnotsCorrected)) {
             vKnots = vKnotsCorrected;   // knots corrected, poles are OK
             vWrapMode = BSplineWrapMode.OpenByRemovingKnots;

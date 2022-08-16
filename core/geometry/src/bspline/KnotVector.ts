@@ -108,13 +108,13 @@ export class KnotVector {
   public testClosable(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.wrappable;
+    const degree = this.degree;
     const leftKnotIndex = this.leftKnotIndex;
     const rightKnotIndex = this.rightKnotIndex;
-    const period = this.rightKnot - this.leftKnot;
-    const degree = this.degree;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
       // maximum continuity mode: we expect degree periodically extended knots at each end
+      const period = this.rightKnot - this.leftKnot;
+      const indexDelta = rightKnotIndex - leftKnotIndex;
       for (let k0 = 0; k0 < leftKnotIndex + degree; k0++) {
         const k1 = k0 + indexDelta;
         if (Math.abs(this.knots[k0] + period - this.knots[k1]) >= KnotVector.knotTolerance)

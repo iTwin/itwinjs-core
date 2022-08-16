@@ -11,7 +11,7 @@ import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
-import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, UVSelect, WeightStyle } from "../bspline/BSplineSurface";
 import { BSplineWrapMode, KnotVector } from "../bspline/KnotVector";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
@@ -1266,8 +1266,8 @@ export class Sample {
     }
     const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
     if (result) {
-      result.setWrappable(0, uKnots.wrappable);
-      result.setWrappable(1, vKnots.wrappable);
+      result.setWrappable(UVSelect.uDirection, uKnots.wrappable);
+      result.setWrappable(UVSelect.vDirection, vKnots.wrappable);
     }
     return result;
   }
@@ -1313,10 +1313,8 @@ export class Sample {
     const result = BSplineSurface3dH.createGrid(controlPoints,
       WeightStyle.WeightsSeparateFromCoordinates,
       3, uKnots, 2, vKnots);
-    // if (result) {
-    // result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
-    // result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
-    // }
+    if (result)
+      result.setWrappable(UVSelect.uDirection, BSplineWrapMode.OpenByRemovingKnots);
     return result;
   }
   /** Create bspline surface on xy grid with weights. */
