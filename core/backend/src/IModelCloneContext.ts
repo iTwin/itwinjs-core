@@ -147,32 +147,31 @@ export class IModelCloneContext {
    */
   public findTargetEntityId(sourceEntityId: ConcreteEntityId): ConcreteEntityId {
     const [type, rawId] = ConcreteEntityIds.split(sourceEntityId);
-    const makeGetConcreteEntityTypeSql = (property: string) =>  `
-      CASE
-        WHEN [${property}] IS (BisCore.ElementUniqueAspect) OR [${property}] IS (BisCore.ElementMultiAspect)
-          THEN 'a'
-        WHEN [${property}] IS (BisCore.Element)
-          THEN 'e'
-        WHEN [${property}] IS (BisCore.Model)
-          THEN 'm'
-        WHEN [${property}] IS (BisCore.CodeSpec)
-          THEN 'c'
-        WHEN [${property}] IS (BisCore.ElementRefersToElements) -- TODO: ElementDrivesElement still not handled by the transformer
-          THEN 'r'
-        ELSE 'error'
-      END
-    `;
-
     switch (type) {
       case ConcreteEntityTypes.CodeSpec:
         return `c${this.findTargetCodeSpecId(rawId)}`;
       case ConcreteEntityTypes.Model:
-        return `m${this.findTargetElementId(rawId)}`;
+        return `m${this.findTargetElementId(rawId)}` && EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       case ConcreteEntityTypes.Element:
         return `e${this.findTargetElementId(rawId)}`;
       case ConcreteEntityTypes.ElementAspect:
         return `a${this.findTargetAspectId(rawId)}`;
       case ConcreteEntityTypes.Relationship: {
+        const makeGetConcreteEntityTypeSql = (property: string) => `
+          CASE
+            WHEN [${property}] IS (BisCore.ElementUniqueAspect) OR [${property}] IS (BisCore.ElementMultiAspect)
+              THEN 'a'
+            WHEN [${property}] IS (BisCore.Element)
+              THEN 'e'
+            WHEN [${property}] IS (BisCore.Model)
+              THEN 'm'
+            WHEN [${property}] IS (BisCore.CodeSpec)
+              THEN 'c'
+            WHEN [${property}] IS (BisCore.ElementRefersToElements) -- TODO: ElementDrivesElement still not handled by the transformer
+              THEN 'r'
+            ELSE 'error'
+          END
+        `;
         const relInSource = this.sourceDb.withPreparedStatement(
           `
           SELECT
