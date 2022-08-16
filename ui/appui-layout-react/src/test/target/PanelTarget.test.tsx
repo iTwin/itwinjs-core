@@ -22,7 +22,7 @@ describe("useAllowedPanelTarget", () => {
 
   it("should return `false` if dragged tab doesn't allow a panel target", () => {
     let state = createNineZoneState();
-    state = addTab(state, "t1", { allowedPanelTargets: ["right"]});
+    state = addTab(state, "t1", { allowedPanelTargets: ["right"] });
     const { result } = renderHook(() => useAllowedPanelTarget(), {
       wrapper: (props) => ( // eslint-disable-line react/display-name
         <TestNineZoneProvider state={state}>
@@ -39,8 +39,8 @@ describe("useAllowedPanelTarget", () => {
 
   it("should return `false` if active tab of a dragged widget doesn't allow a panel target", () => {
     let state = createNineZoneState();
+    state = addTab(state, "t1", { allowedPanelTargets: ["right"] });
     state = addPanelWidget(state, "left", "w1", ["t1"]);
-    state = addTab(state, "t1", { allowedPanelTargets: ["right" ]});
     const { result } = renderHook(() => useAllowedPanelTarget(), {
       wrapper: (props) => ( // eslint-disable-line react/display-name
         <TestNineZoneProvider state={state}>

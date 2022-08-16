@@ -10,14 +10,14 @@ import { addFloatingWidget, toolSettingsTabId } from "../../appui-layout-react/b
 
 describe("TabBarButtons", () => {
   it("Floating widget should render Sendback button", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "fw1", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { label: "t1-label" });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label" });
+    state = addFloatingWidget(state, "fw1", ["t1"]);
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.fw1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.fw1}>
               <FloatingWidgetIdContext.Provider value="fw1">
                 <FloatingWidgetContext.Provider value={createFloatingWidgetState("fw1")}>
                   <TabBarButtons />
@@ -33,14 +33,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Floating widget that canPopout should render Popout button", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "fw1", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { label: "t1-label", canPopout: true });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label", canPopout: true });
+    state = addFloatingWidget(state, "fw1", ["t1"]);
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.fw1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.fw1}>
               <FloatingWidgetIdContext.Provider value="fw1">
                 <FloatingWidgetContext.Provider value={createFloatingWidgetState("fw1")}>
                   <ActiveTabIdContext.Provider value="t1">
@@ -60,14 +60,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Floating ToolSettings should not render Popout if no active tab set", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "tsw", [toolSettingsTabId]);
-    nineZone = addTab(nineZone, toolSettingsTabId, { label: "tool-label" });
+    let state = createNineZoneState();
+    state = addTab(state, toolSettingsTabId, { label: "tool-label" });
+    state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.tsw}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.tsw}>
               <FloatingWidgetIdContext.Provider value="tsw">
                 <FloatingWidgetContext.Provider value={createFloatingWidgetState("tsw")}>
                   <TabBarButtons />
@@ -83,14 +83,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Floating ToolSettings should render Dock button", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "tsw", [toolSettingsTabId]);
-    nineZone = addTab(nineZone, toolSettingsTabId, { label: "tool-label" });
+    let state = createNineZoneState();
+    state = addTab(state, toolSettingsTabId, { label: "tool-label" });
+    state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.tsw}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.tsw}>
               <FloatingWidgetIdContext.Provider value="tsw">
                 <FloatingWidgetContext.Provider value={createFloatingWidgetState("tsw")}>
                   <ActiveTabIdContext.Provider value={toolSettingsTabId}>
@@ -108,14 +108,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Main Panel widget should not render Pin buttons", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "t1", { label: "t1-label", canPopout: false });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label", canPopout: false });
+    state = addPanelWidget(state, "left", "w1", ["t1"], { activeTabId: "t1" });
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.w1}>
               <WidgetIdContext.Provider value="w1">
                 <ActiveTabIdContext.Provider value="t1">
                   <TabBarButtons />
@@ -131,14 +131,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Main Panel widget that canPopout should render Popout and Pin buttons", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "t1", { label: "t1-label", canPopout: true });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label", canPopout: true });
+    state = addPanelWidget(state, "left", "w1", ["t1"], { activeTabId: "t1" });
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.w1}>
               <WidgetIdContext.Provider value="w1">
                 <ActiveTabIdContext.Provider value="t1">
                   <TabBarButtons />
@@ -155,14 +155,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Secondary Panel widget should render Popout buttons", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "t1", { label: "t1-label", canPopout: true });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label", canPopout: true });
+    state = addPanelWidget(state, "left", "w1", ["t1"], { activeTabId: "t1" });
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.w1}>
               <WidgetIdContext.Provider value="main">
                 <ActiveTabIdContext.Provider value="t1">
                   <TabBarButtons />
@@ -178,14 +178,14 @@ describe("TabBarButtons", () => {
   });
 
   it("Floating ToolSettings should render Dock button", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { activeTabId: "t1" });
-    nineZone = addTab(nineZone, "t1", { label: "t1-label", canPopout: true });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { label: "t1-label", canPopout: true });
+    state = addPanelWidget(state, "left", "w1", ["t1"], { activeTabId: "t1" });
     const wrapper = render(
-      <PanelStateContext.Provider value={nineZone.panels.left}>
+      <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
-          <TabsStateContext.Provider value={nineZone.tabs}>
-            <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+          <TabsStateContext.Provider value={state.tabs}>
+            <WidgetStateContext.Provider value={state.widgets.w1}>
               <ActiveTabIdContext.Provider value="t1">
                 <TabBarButtons />
               </ActiveTabIdContext.Provider>

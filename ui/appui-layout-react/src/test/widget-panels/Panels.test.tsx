@@ -18,12 +18,12 @@ describe("WidgetPanels", () => {
   });
 
   it("should render widget content", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         widgetContent={<div>Hello World!</div>}
       >
         <WidgetPanels />

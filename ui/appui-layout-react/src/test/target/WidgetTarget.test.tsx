@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addFloatingWidget, createNineZoneState, NineZoneState, WidgetIdContext, WidgetState } from "../../appui-layout-react";
+import { addFloatingWidget, addTab, createNineZoneState, NineZoneState, WidgetIdContext, WidgetState } from "../../appui-layout-react";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { WidgetTarget } from "../../appui-layout-react/target/WidgetTarget";
 import { TestNineZoneProvider } from "../Providers";
@@ -31,6 +31,7 @@ function Wrapper({ children, state, widgetId }: React.PropsWithChildren<WrapperP
 describe("WidgetTarget", () => {
   it("should render a merge target", () => {
     let state = createNineZoneState();
+    state = addTab(state, "ft1");
     state = addFloatingWidget(state, "fw1", ["ft1"]);
     const { container } = render(
       <WidgetTarget />,

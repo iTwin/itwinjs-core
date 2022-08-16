@@ -9,11 +9,10 @@
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
-import { IconSpec, Point, Rectangle, RectangleProps, SizeProps, UiCore } from "@itwin/core-react";
+import { IconSpec, Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
 import { getUniqueId } from "./NineZone";
-import { PanelsProvider } from "../toolbar/Toolbar";
 
 const category = "appui-layout-react:layout";
 
@@ -1248,6 +1247,7 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 
 /** @internal */
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
+  // TODO: validation
   const tab = {
     ...createTabState(id),
     ...tabArgs,

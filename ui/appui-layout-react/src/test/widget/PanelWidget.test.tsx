@@ -12,6 +12,7 @@ import {
   TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
+import { addTabs } from "../Utils";
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -44,12 +45,12 @@ function Provider(props: ProviderProps) {
 
 describe("PanelWidget", () => {
   it("should render", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
       >
         <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
@@ -58,12 +59,12 @@ describe("PanelWidget", () => {
   });
 
   it("should render minimized", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"], { minimized: true });
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"], { minimized: true });
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
       >
         <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
@@ -72,14 +73,14 @@ describe("PanelWidget", () => {
   });
 
   it("should render with fit-content", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { preferredPanelWidgetSize: "fit-content" });
+    state = addTab(state, "t2");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
       >
         <PanelWidget widgetId="w1" {...defaultProps} />
       </Provider>,
@@ -88,14 +89,14 @@ describe("PanelWidget", () => {
   });
 
   it("should render horizontal with fit-content", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "top", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { preferredPanelWidgetSize: "fit-content" });
+    state = addTab(state, "t2");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
+    state = addPanelWidget(state, "top", "w2", ["t2"]);
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <PanelWidget widgetId="w1" {...defaultProps} />
@@ -105,12 +106,12 @@ describe("PanelWidget", () => {
   });
 
   it("should render with nz-transition", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <PanelWidget
@@ -125,12 +126,12 @@ describe("PanelWidget", () => {
   });
 
   it("should render with flexBasis", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { container } = render(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <PanelWidget
@@ -145,16 +146,16 @@ describe("PanelWidget", () => {
   });
 
   it("should invoke onBeforeTransition when mode is changing", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "top", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { preferredPanelWidgetSize: "fit-content" });
+    state = addTab(state, "t2");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
+    state = addPanelWidget(state, "top", "w2", ["t2"]);
 
     const spy = sinon.spy();
     const { rerender } = render(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <PanelWidget
@@ -165,13 +166,13 @@ describe("PanelWidget", () => {
       </Provider>,
     );
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.tabs.t1.preferredPanelWidgetSize = undefined;
     });
 
     rerender(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <PanelWidget
@@ -186,11 +187,11 @@ describe("PanelWidget", () => {
   });
 
   it("should invoke onBeforeTransition when tab is changing", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "top", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { preferredPanelWidgetSize: "fit-content" });
+    state = addTab(state, "t2");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
+    state = addPanelWidget(state, "top", "w2", ["t2"]);
 
     const spy = sinon.spy();
     const onSaveTransientState = new EventEmitter<(tabId: TabState["id"]) => void>();
@@ -201,7 +202,7 @@ describe("PanelWidget", () => {
     };
     render(
       <Provider
-        state={nineZone}
+        state={state}
         side="top"
       >
         <WidgetContentManagerContext.Provider value={widgetContentManager}>
@@ -222,29 +223,25 @@ describe("PanelWidget", () => {
 
 describe("useMode", () => {
   it("should force fill", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
-    nineZone = addPanelWidget(nineZone, "left", "w3", ["t3"], { minimized: true });
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t3", { preferredPanelWidgetSize: "fit-content" });
+    let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2", "t3"], { preferredPanelWidgetSize: "fit-content" });
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
+    state = addPanelWidget(state, "left", "w3", ["t3"], { minimized: true });
     const { result } = renderHook(() => useMode("w2"), {
-      wrapper: (props) => <Provider state={nineZone} {...props} />, // eslint-disable-line react/display-name
+      wrapper: (props) => <Provider state={state} {...props} />, // eslint-disable-line react/display-name
     });
     result.current.should.eq("fill");
   });
 
   it("should only force fill last widget", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
-    nineZone = addPanelWidget(nineZone, "left", "w3", ["t3"]);
-    nineZone = addTab(nineZone, "t1", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t2", { preferredPanelWidgetSize: "fit-content" });
-    nineZone = addTab(nineZone, "t3", { preferredPanelWidgetSize: "fit-content" });
+    let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2", "t3"], { preferredPanelWidgetSize: "fit-content" });
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
+    state = addPanelWidget(state, "left", "w3", ["t3"]);
     const { result } = renderHook(() => useMode("w2"), {
-      wrapper: (props) => <Provider state={nineZone} {...props} />, // eslint-disable-line react/display-name
+      wrapper: (props) => <Provider state={state} {...props} />, // eslint-disable-line react/display-name
     });
     result.current.should.eq("fit");
   });
@@ -274,9 +271,9 @@ describe("useBorders", () => {
     it("should render w/o top border in docked tool settings mode", () => {
       const side: PanelSide = "top";
       let state = createNineZoneState();
-      state = addPanelWidget(state, "top", "t1", ["t1_1"]);
-      state = addTab(state, "t1_1");
-      const { result } = renderHook(() => useBorders("t1"), {
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "top", "w1", ["t1"]);
+      const { result } = renderHook(() => useBorders("w1"), {
         initialProps: {
           state,
           side,
@@ -291,9 +288,9 @@ describe("useBorders", () => {
     it("should render w/o bottom border", () => {
       const side: PanelSide = "bottom";
       let state = createNineZoneState();
-      state = addPanelWidget(state, "bottom", "b1", ["b1_1"]);
-      state = addTab(state, "b1_1");
-      const { result } = renderHook(() => useBorders("b1"), {
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "bottom", "w1", ["t1"]);
+      const { result } = renderHook(() => useBorders("w1"), {
         initialProps: {
           state,
           side,
@@ -308,10 +305,9 @@ describe("useBorders", () => {
     describe(`horizontal panel - ${side}`, () => {
       it("should render w/o left border (except first widget)", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, side, "w1", ["w1_1"]);
-        state = addPanelWidget(state, side, "w2", ["w2_1"]);
-        state = addTab(state, "w1_1");
-        state = addTab(state, "w2_1");
+        state = addTabs(state, ["t1", "t2"]);
+        state = addPanelWidget(state, side, "w1", ["t1"]);
+        state = addPanelWidget(state, side, "w2", ["t2"]);
         const { result } = renderHook(() => useBorders("w2"), {
           initialProps: {
             state,
@@ -328,10 +324,9 @@ describe("useBorders", () => {
             [side]: createHorizontalPanelState(side, { span: false }),
           }),
         });
-        state = addPanelWidget(state, side, "w1", ["w1_1"]);
-        state = addPanelWidget(state, "left", "l1", ["l1_1"]);
-        state = addTab(state, "w1_1");
-        state = addTab(state, "l1_1");
+        state = addTabs(state, ["t1", "t2"]);
+        state = addPanelWidget(state, side, "w1", ["t1"]);
+        state = addPanelWidget(state, "left", "w2", ["t2"]);
         const { result } = renderHook(() => useBorders("w1"), {
           initialProps: {
             state,
@@ -348,10 +343,9 @@ describe("useBorders", () => {
             [side]: createHorizontalPanelState(side, { span: false }),
           }),
         });
-        state = addPanelWidget(state, side, "w1", ["w1_1"]);
-        state = addPanelWidget(state, "right", "r1", ["r1_1"]);
-        state = addTab(state, "w1_1");
-        state = addTab(state, "r1_1");
+        state = addTabs(state, ["t1", "t2"]);
+        state = addPanelWidget(state, side, "w1", ["t1"]);
+        state = addPanelWidget(state, "right", "w2", ["t2"]);
         const { result } = renderHook(() => useBorders("w1"), {
           initialProps: {
             state,
@@ -368,10 +362,9 @@ describe("useBorders", () => {
     describe(`vertical panel - ${side}`, () => {
       it("should render w/o top border if there is top panel above", () => {
         let state = createNineZoneState();
-        state = addPanelWidget(state, side, "w1", ["w1_1"]);
-        state = addPanelWidget(state, "top", "t1", ["t1_1"]);
-        state = addTab(state, "w1_1");
-        state = addTab(state, "t1_1");
+        state = addTabs(state, ["t1", "t2"]);
+        state = addPanelWidget(state, side, "w1", ["t1"]);
+        state = addPanelWidget(state, "top", "w2", ["t2"]);
         const { result } = renderHook(() => useBorders("w1"), {
           initialProps: {
             state,

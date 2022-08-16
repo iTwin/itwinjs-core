@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { PanelTargets } from "../../appui-layout-react/target/PanelTargets";
 import { TestNineZoneProvider } from "../Providers";
+import { addTabs } from "../Utils";
 
 interface WrapperProps {
   state: NineZoneState;
@@ -48,6 +49,7 @@ describe("PanelTargets", () => {
         }),
       }),
     });
+    state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <PanelTargets />,
@@ -67,6 +69,7 @@ describe("PanelTargets", () => {
         }),
       }),
     });
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
     const { container } = render(
@@ -81,6 +84,7 @@ describe("PanelTargets", () => {
 
   it("should render no targets if panel is expanded", () => {
     let state = createNineZoneState();
+    state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <PanelTargets />,
