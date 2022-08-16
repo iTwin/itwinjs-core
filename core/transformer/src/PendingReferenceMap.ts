@@ -6,29 +6,8 @@
  * @module Utils
  */
 
-import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds, Element, Model } from "@itwin/core-backend";
+import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
-
-// FIXME: cosolidate this with ConcreteEntityId somehow? Or at least use an enum too?
-/**
- * An encoding of a reference to an entity
- * m = model (submodel of an element)
- * e = element
- * n = nonelement entity
- * @internal
- * @see ConcreteEntityId
- */
-export type EntityReference = `${"m"|"e"|"n"}${ConcreteEntityId}`;
-
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-namespace EntityReference {
-  export function from(entity: ConcreteEntity): EntityReference {
-    return `${entity instanceof Element ? "e" : entity instanceof Model ? "m" : "n"}${ConcreteEntityIds.from(entity)}`;
-  }
-  export function toEntityId(ref: EntityReference): ConcreteEntityId {
-    return ref.slice(1) as ConcreteEntityId;
-  }
-}
 
 /**
  * A reference relationships from an element, "referencer", to an element or its submodel, "referenced"
@@ -36,13 +15,13 @@ namespace EntityReference {
  */
 export interface PendingReference {
   referencer: ConcreteEntityId;
-  referenced: EntityReference;
+  referenced: ConcreteEntityId;
 }
 
 export namespace PendingReference {
-  export function from(referencer: ConcreteEntity | ConcreteEntityId, referenced: ConcreteEntity | EntityReference): PendingReference {
+  export function from(referencer: ConcreteEntity | ConcreteEntityId, referenced: ConcreteEntity | ConcreteEntityId): PendingReference {
     if (typeof referencer !== "string") referencer = ConcreteEntityIds.from(referencer);
-    if (typeof referenced !== "string") referenced = EntityReference.from(referenced);
+    if (typeof referenced !== "string") referenced = ConcreteEntityIds.from(referenced);
     return { referencer, referenced };
   }
 
@@ -51,7 +30,7 @@ export namespace PendingReference {
   }
 
   export function fromKey(key: string): PendingReference {
-    const [referencer, referenced] = key.split("\x00") as [ConcreteEntityId, EntityReference];
+    const [referencer, referenced] = key.split("\x00") as [ConcreteEntityId, ConcreteEntityId];
     return { referencer, referenced };
   }
 }
@@ -78,7 +57,7 @@ export class PendingReferenceMap<T> {
 
   public delete(ref: PendingReference): boolean {
     const deleteResult = this._map.delete(PendingReference.toKey(ref));
-    const referencedKey = EntityReference.toEntityId(ref.referenced);
+    const referencedKey = ref.referenced;
     const referencers = this._referencedToReferencers.getByKey(referencedKey);
     if (referencers !== undefined)
       referencers.delete(ref.referencer);
@@ -95,7 +74,7 @@ export class PendingReferenceMap<T> {
 
   public set(ref: PendingReference, value: T): this {
     this._map.set(PendingReference.toKey(ref), value);
-    const referencedKey = EntityReference.toEntityId(ref.referenced);
+    const referencedKey = ref.referenced;
     let referencers = this._referencedToReferencers.getByKey(referencedKey);
     if (referencers === undefined) {
       referencers = new Set();

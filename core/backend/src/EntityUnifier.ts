@@ -56,6 +56,7 @@ export namespace EntityUnifier {
       });
     } else {
       // FIXME: maybe lone id should default to an element id for backwards compat?
+      // or just not be supported, I don't think this is even called atm
       return db.withPreparedStatement(`
         SELECT 1 FROM (
           -- all possible bis core root types
@@ -73,8 +74,6 @@ export namespace EntityUnifier {
           SELECT ECInstanceId FROM bis.ElementDrivesElement
           UNION ALL
           SELECT ECInstanceId FROM bis.ModelSelectorRefersToModels
-          UNION ALL
-          SELECT ECInstanceId FROM bis.CodeSpec
         ) WHERE ECInstanceId=?
       `, (stmt) => {
         stmt.bindId(1, arg.id);
