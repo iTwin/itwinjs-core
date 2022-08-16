@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Reporter } from "@itwin/perf-tools";
-import { IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
 
-describe("SchemaLoaderPerformance", () => {
+describe.only("SchemaLoaderPerformance", () => {
   let iModelFilepath: string;
   const outDir: string = path.join(KnownTestLocations.outputDir, "SchemaLoaderPerformance");
   const assetDir: string = path.join(__dirname, "..", "..", "..", "assets");
@@ -23,6 +23,8 @@ describe("SchemaLoaderPerformance", () => {
 
     if (!IModelJsFs.existsSync(assetDir))
       IModelJsFs.mkdirSync(assetDir);
+
+    await IModelHost.startup();
 
     copyBisSchemasToAssetsDir();
 
@@ -45,6 +47,7 @@ describe("SchemaLoaderPerformance", () => {
 
   after(() => {
     const csvPath = path.join(outDir, "SchemaLoaderPerfResults.csv");
+    console.log(csvPath);
     reporter.exportCSV(csvPath);
   });
 
@@ -125,6 +128,23 @@ describe("SchemaLoaderPerformance", () => {
     imodel.close();
   }
 
+  async function timeBisSchemasLoadingAsync(schemaName: string) {
+    const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
+
+    const startTime: number = new Date().getTime();
+    const schemaResult =  await imodel.nativeDb.getSchemaPropsAsync(schemaName);
+    const endTime: number = new Date().getTime();
+
+    if (schemaResult === undefined) {
+      throw new Error("Schema does not exist");
+    }
+    const elapsedTime = endTime - startTime;
+
+    reporter.addEntry("SchemaLoaderPerfTest - Async", `Get schema from imodel: ${schemaName}`, "Execution time(ms)", elapsedTime, {});
+
+    imodel.close();
+  }
+
   it("Time BisSchemas data read from imodel", async () => {
     timeBisSchemasLoading("Units");
     timeBisSchemasLoading("Formats");
@@ -145,5 +165,27 @@ describe("SchemaLoaderPerformance", () => {
     timeBisSchemasLoading("CifSubsurface");
     timeBisSchemasLoading("CifSubsurfaceConflictAnalysis");
     timeBisSchemasLoading("CifUnits");
+  });
+
+  it("Time BisSchemas data read from imodel - Async", async () => {
+    await timeBisSchemasLoadingAsync("Units");
+    await timeBisSchemasLoadingAsync("Formats");
+
+    await timeBisSchemasLoadingAsync("BisCore");
+
+    await timeBisSchemasLoadingAsync("ProcessFunctional");
+    await timeBisSchemasLoadingAsync("ProcessPhysical");
+
+    await timeBisSchemasLoadingAsync("CifBridge");
+    await timeBisSchemasLoadingAsync("CifCommon");
+    await timeBisSchemasLoadingAsync("CifGeometricRules");
+    await timeBisSchemasLoadingAsync("CifHydraulicAnalysis");
+    await timeBisSchemasLoadingAsync("CifHydraulicResults");
+    await timeBisSchemasLoadingAsync("CifQuantityTakeoffs");
+    await timeBisSchemasLoadingAsync("CifRail");
+    await timeBisSchemasLoadingAsync("CifRoads");
+    await timeBisSchemasLoadingAsync("CifSubsurface");
+    await timeBisSchemasLoadingAsync("CifSubsurfaceConflictAnalysis");
+    await timeBisSchemasLoadingAsync("CifUnits");
   });
 });
