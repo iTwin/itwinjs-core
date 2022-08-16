@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module iModels
  */
+import * as assert from "assert";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -217,17 +218,16 @@ export class IModelCloneContext {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
           const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
-          // this must be called after we check if it was undefined so we can use the non-null assertion safely.
-          const throwOnUnhandled = () => { throw Error(`Unhandled navprop type '${nameForEntityRefType(navPropRefType!)}', this is a bug.`); };
-          const throwOnNotInCache = () => { throw Error(`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`); };
+          /* eslint-disable @typescript-eslint/indent */
           const targetEntityId
             = navPropRefType === EntityRefType.Element || navPropRefType === EntityRefType.Model
               ? this.findTargetElementId(sourceNavProp.id)
             : navPropRefType === EntityRefType.Aspect
               ? this.findTargetAspectId(sourceNavProp.id)
             : navPropRefType === undefined
-              ? throwOnNotInCache()
-            : throwOnUnhandled();
+              ? assert(false,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`) as never
+            : assert(false, `unhandled navprop type '${nameForEntityRefType(navPropRefType)}`) as never;
+          /* eslint-enable @typescript-eslint/indent */
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
         }
