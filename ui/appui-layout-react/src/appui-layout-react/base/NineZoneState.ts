@@ -634,7 +634,7 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
         sectionIndex = 0;
 
       state = removeWidget(state, widget.id);
-      return insertPanelWidget(state, panel.side, sectionIndex, destinationWidgetId, widget.tabs);
+      return insertPanelWidget(state, panel.side, destinationWidgetId, widget.tabs, sectionIndex);
     }
     case "POPOUT_WIDGET_SEND_BACK": {
       const popoutWidget = state.popoutWidgets.byId[action.id];
@@ -661,7 +661,7 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
         let sectionIndex = widgetPanelSectionId.endsWith("End") ? 1 : 0;
         if (0 === panel.widgets.length)
           sectionIndex = 0;
-        state = insertPanelWidget(state, panel.side, sectionIndex, widgetPanelSectionId, [...widget.tabs]);
+        state = insertPanelWidget(state, panel.side, widgetPanelSectionId, [...widget.tabs], sectionIndex);
       }
       return state;
     }
@@ -1196,13 +1196,11 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 
 /** @internal */
 export function addPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
-  const panel = state.panels[side];
-  const sectionIndex = panel.widgets.length;
-  return insertPanelWidget(state, side, sectionIndex, id, tabs, widgetArgs);
+  return insertPanelWidget(state, side, id, tabs, Infinity, widgetArgs);
 }
 
 /** @internal */
-export function insertPanelWidget(state: NineZoneState, side: PanelSide, sectionIndex: number, id: WidgetState["id"], tabs: WidgetState["tabs"], widgetArgs?: Partial<WidgetState>): NineZoneState {
+export function insertPanelWidget(state: NineZoneState, side: PanelSide, id: WidgetState["id"], tabs: WidgetState["tabs"], sectionIndex: number, widgetArgs?: Partial<WidgetState>): NineZoneState {
   const panel = state.panels[side];
   const maxWidgetCount = panel.maxWidgetCount;
   if (panel.widgets.length >= maxWidgetCount)
@@ -1212,6 +1210,27 @@ export function insertPanelWidget(state: NineZoneState, side: PanelSide, section
   return produce(state, (draft) => {
     const widgets = draft.panels[side].widgets;
     widgets.splice(sectionIndex, 0, id);
+  });
+}
+
+/** @internal */
+export function addTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"]): NineZoneState {
+  return insertTabToWidget(state, tabId, widgetId, Infinity);
+}
+
+/** @internal */
+export function insertTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"], tabIndex: number): NineZoneState {
+  if (!(tabId in state.tabs))
+    throw new UiError(category, "Tab not found", undefined, () => ({ tabId }));
+  if (!(widgetId in state.widgets))
+    throw new UiError(category, "Widget not found", undefined, () => ({ widgetId }));
+  const location = findTab(state, tabId)
+  if (location)
+    throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
+
+  return produce(state, (draft) => {
+    const widget = draft.widgets[widgetId];
+    widget.tabs.splice(tabIndex, 0, tabId);
   });
 }
 
@@ -1266,7 +1285,7 @@ function createPanelState(side: PanelSide) {
     side,
     size: undefined,
     widgets: [],
-    maxWidgetCount: getMaxWidgetCount(side),
+    maxWidgetCount: 2,
     splitterPercent: 50,
   };
 }
@@ -1387,11 +1406,6 @@ export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPosit
     height: inValue.height,
     width: inValue.width,
   };
-}
-
-// note: panel side is no longer needed since only 2 panel sections are desired for any "PanelSide"
-function getMaxWidgetCount(_side: PanelSide) {
-  return 2;
 }
 
 interface PanelLocation {
