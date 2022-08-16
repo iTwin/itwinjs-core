@@ -704,15 +704,11 @@ export class IModelTransformer extends IModelExportHandler {
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
     for (const referenceId of entity.getReferenceConcreteIds()) {
-      // models must have an owning element, so the model existing ensures the element does too
-      EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
-      // const referenceState = EntityProcessState.fromEntityAndTransformer(referenceId, this);
       // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
       const concreteIdInTarget = this.context.findTargetEntityId(referenceId);
       const alreadyImported = ConcreteEntityIds.isValid(concreteIdInTarget);
       if (alreadyImported)
         continue;
-      EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
       const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       if (!exists) {
