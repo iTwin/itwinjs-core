@@ -652,29 +652,6 @@ export class IModelTransformer extends IModelExportHandler {
     return true;
   }
 
-  private findTargetId(sourceEntity: ConcreteEntity): Id64String {
-    if (sourceEntity instanceof Element || sourceEntity instanceof Model) {
-      return this.context.findTargetElementId(sourceEntity.id);
-    } else if (sourceEntity instanceof Relationship) {
-      const relSourceInTargetId = this.context.findTargetElementId(sourceEntity.sourceId);
-      const relTargetInTargetId = this.context.findTargetElementId(sourceEntity.targetId);
-      for (const rel of [ElementRefersToElements, ElementDrivesElement]) {
-        const maybeTargetId = this.targetDb.relationships.getInstance(rel.classFullName, {
-          sourceId: relSourceInTargetId,
-          targetId: relTargetInTargetId,
-        })?.id;
-        if (maybeTargetId) {
-          return maybeTargetId;
-        }
-      }
-      return Id64.invalid;
-    } else if (sourceEntity instanceof ElementAspect) {
-      return this.context.findTargetAspectId(sourceEntity.id);
-    } else {
-      throw Error(`unreachable; sourceEntity was '${(sourceEntity as any).constructor.name}' not an Element, Relationship, or ElementAspect`);
-    }
-  }
-
   private static transformCallbackFor(transformer: IModelTransformer, entity: ConcreteEntity): EntityTransformHandler {
     if (entity instanceof Element) return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
     else if (entity instanceof Element) return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
@@ -690,8 +667,8 @@ export class IModelTransformer extends IModelExportHandler {
     sourceEntity: ConcreteEntity
   ) {
     return () => {
-      const targetId = this.findTargetId(sourceEntity);
-      if (targetId === Id64.invalid)
+      const targetId = this.context.findTargetEntityId(ConcreteEntityIds.from(sourceEntity));
+      if (!ConcreteEntityIds.isValid(targetId))
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
       const onEntityTransform = IModelTransformer.transformCallbackFor(this, sourceEntity);
       const updateEntity = EntityUnifier.updaterFor(this.targetDb, sourceEntity);
@@ -700,7 +677,7 @@ export class IModelTransformer extends IModelExportHandler {
         (targetProps as RelationshipProps).sourceId = this.context.findTargetElementId(sourceEntity.sourceId);
         (targetProps as RelationshipProps).targetId = this.context.findTargetElementId(sourceEntity.targetId);
       }
-      updateEntity({ ...targetProps, id: targetId });
+      updateEntity({ ...targetProps, id: ConcreteEntityIds.toId64(targetId) });
       this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
@@ -718,7 +695,8 @@ export class IModelTransformer extends IModelExportHandler {
       const alreadyImported = ConcreteEntityIds.isValid(concreteIdInTarget);
       if (alreadyImported)
         continue;
-      Logger.logTrace(loggerCategory, `Deferred resolution of reference '${referenceId}' of element '${entity.id}'`);
+      Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
+      // NOTE: this runs a query that `findTargetEntityId` already does in the iModel case, might want to figure out how to remove the double query
       const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       if (!exists) {
         Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);

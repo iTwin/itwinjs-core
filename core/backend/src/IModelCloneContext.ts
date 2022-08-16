@@ -153,8 +153,8 @@ export class IModelCloneContext {
         return `c${this.findTargetCodeSpecId(rawId)}`;
       case ConcreteEntityTypes.Model:
         const targetId = `m${this.findTargetElementId(rawId)}` as const;
-        // check if the model exists, this can be false if the element exists but not the model
-        // which can occur in the transformer since a submodeled element is imported before its submodel
+        // Check if the model exists, `findTargetElementId` may have worked because the element exists when the model doesn't.
+        // That can occur in the transformer since a submodeled element is imported before its submodel.
         return EntityUnifier.exists(this.targetDb, { concreteEntityId: targetId })
           ? targetId
           : ConcreteEntityIds.makeInvalid(ConcreteEntityTypes.Model);
