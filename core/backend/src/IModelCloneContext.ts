@@ -310,16 +310,20 @@ export class IModelCloneContext {
         // copy via spread to prevent altering the source
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
-          const navPropRefType = this._navPropRefCache.getNavPropRefType(sourceElementAspect.schemaName, sourceElementAspect.className, propertyName);
+          const navPropRefType = this._navPropRefCache.getNavPropRefType(
+            sourceElementAspect.schemaName,
+            sourceElementAspect.className,
+            propertyName
+          )?.[propertyMetaData.direction === "Forward" ? "target" : "source"];
           /* eslint-disable @typescript-eslint/indent */
-          const targetEntityId
-            = navPropRefType === EntityRefType.Element || navPropRefType === EntityRefType.Model
+          const targetEntityId // FIXME: use findTargetEntityId
+            = navPropRefType === ConcreteEntityTypes.Element || navPropRefType === ConcreteEntityTypes.Model
               ? this.findTargetElementId(sourceNavProp.id)
-            : navPropRefType === EntityRefType.Aspect
+            : navPropRefType === ConcreteEntityTypes.ElementAspect
               ? this.findTargetAspectId(sourceNavProp.id)
             : navPropRefType === undefined
               ? assert(false,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`) as never
-            : assert(false, `unhandled navprop type '${nameForEntityRefType(navPropRefType)}`) as never;
+            : assert(false, `unhandled navprop type '${ConcreteEntityTypes.toBisCoreRootClassFullName(navPropRefType)}`) as never;
           /* eslint-enable @typescript-eslint/indent */
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
