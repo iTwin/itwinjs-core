@@ -42,6 +42,9 @@ public;CloudContainerArgs
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
+alpha;CodeIndex
+alpha;CodeService
+alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
@@ -328,13 +331,13 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
-beta;SpecialElementTreeBottomUp 
 public;SQLiteDb 
 public;SQLiteDb
 internal;BlobIO = IModelJsNative.BlobIO
 internal;CloudCache = IModelJsNative.CloudCache
 internal;CloudContainer = IModelJsNative.CloudContainer
 internal;CloudPrefetch = IModelJsNative.CloudPrefetch
+internal;LockAndOpenArgs
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

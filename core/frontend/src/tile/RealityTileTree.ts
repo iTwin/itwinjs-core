@@ -192,6 +192,7 @@ export class RealityTileTree extends TileTree {
     const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
+    args.processSelectedTiles(selectedTiles);
     let sortIndices;
 
     if (!this.parentsAndChildrenExclusive) {

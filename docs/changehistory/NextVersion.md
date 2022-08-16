@@ -7,6 +7,7 @@ publish: false
 Table of contents:
 
 - [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
+- [Transformer API](#transformer-api)
 - [Electron versions support](#electron-versions-support)
 
 ## Ambient Occlusion Improvements
@@ -28,6 +29,13 @@ New effect, shown below:
 ![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
+
+## Transformer API
+
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
+It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
+awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
+changes instead of the full source contents.
 
 ## Electron versions support
 
