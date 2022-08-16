@@ -272,6 +272,20 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.onDeleteElement(elementId);
   }
 
+  /** Delete the specified Model from the target iModel.
+   * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteModel`.
+   */
+  protected onDeleteModel(modelId: Id64String): void {
+    this.targetDb.models.deleteModel(modelId);
+    Logger.logInfo(loggerCategory, `Deleted model ${modelId}`);
+    this.trackProgress();
+  }
+
+  /** Delete the specified Model from the target iModel. */
+  public deleteModel(modelId: Id64String): void {
+    this.onDeleteModel(modelId);
+  }
+
   /** Format an Element for the Logger. */
   private formatElementForLogger(elementProps: ElementProps): string {
     const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
