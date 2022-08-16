@@ -12,6 +12,7 @@ export * from "./CodeSpecs";
 export * from "./CloudSqlite";
 export * from "./ConcreteEntityId";
 export * from "./EntityKey";
+export * from "./EntityUnifier";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";

@@ -78,6 +78,8 @@ export class ConcreteEntityIds {
   public static toId64(id: ConcreteEntityId) {
     return id.slice(1);
   }
+
+  /** split a concrete entity id into its type and raw id */
   public static split(id: ConcreteEntityId): [ConcreteEntityTypes, Id64String] {
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
   }
@@ -87,6 +89,13 @@ export class ConcreteEntityIds {
    */
   public static isValid(id: ConcreteEntityId): boolean {
     return Id64.isValid(ConcreteEntityIds.toId64(id));
+  }
+
+  /** create the invalid id for a concrete entity type
+   * @internal
+   */
+  public static makeInvalid(type: ConcreteEntityTypes): ConcreteEntityId {
+    return `${type}${Id64.invalid}`;
   }
 }
 

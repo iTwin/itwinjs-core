@@ -13,7 +13,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChannelRootAspect, ChangeSummaryManager, ConcreteEntity, ConcreteEntityIds,
   DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementDrivesElement, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, EntityUnifier, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
@@ -27,7 +27,6 @@ import { IModelImporter, IModelImporterState, OptimizeGeometryOptions } from "./
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { PendingReference, PendingReferenceMap } from "./PendingReferenceMap";
 import { EntityMap } from "./EntityMap";
-import { EntityUnifier } from "./EntityUnifier";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
@@ -37,6 +36,8 @@ const nullLastProvenanceEntityInfo = {
   aspectVersion: "",
   aspectKind: ExternalSourceAspect.Kind.Element,
 };
+
+type EntityTransformHandler = (entity: Element | Model | Relationship | ElementAspect) => ElementProps | ModelProps | RelationshipProps | ElementAspectProps;
 
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
@@ -674,6 +675,14 @@ export class IModelTransformer extends IModelExportHandler {
     }
   }
 
+  private static transformCallbackFor(transformer: IModelTransformer, entity: ConcreteEntity): EntityTransformHandler {
+    if (entity instanceof Element) return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Element) return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Relationship) return transformer.onTransformRelationship as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof ElementAspect) return transformer.onTransformElementAspect as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
+  }
+
   /** callback to perform when a partial element says it's ready to be completed
    * transforms the source element with all references now valid, then updates the partial element with the results
    */
@@ -684,7 +693,7 @@ export class IModelTransformer extends IModelExportHandler {
       const targetId = this.findTargetId(sourceEntity);
       if (targetId === Id64.invalid)
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
-      const onEntityTransform = EntityUnifier.transformCallbackFor(this, sourceEntity);
+      const onEntityTransform = IModelTransformer.transformCallbackFor(this, sourceEntity);
       const updateEntity = EntityUnifier.updaterFor(this.targetDb, sourceEntity);
       const targetProps = onEntityTransform.call(this, sourceEntity);
       if (sourceEntity instanceof Relationship) {
