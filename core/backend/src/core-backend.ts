@@ -11,6 +11,7 @@ export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./ConcreteEntityId";
 export * from "./EntityKey";
+export * from "./EntityUnifier";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";

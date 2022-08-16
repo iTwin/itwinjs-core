@@ -17,6 +17,7 @@ import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
 import { ECClassNavPropReferenceCache, EntityRefType, nameForEntityRefType } from "./ECClassNavPropReferenceCache";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
+import { EntityUnifier } from "./EntityUnifier";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -151,7 +152,12 @@ export class IModelCloneContext {
       case ConcreteEntityTypes.CodeSpec:
         return `c${this.findTargetCodeSpecId(rawId)}`;
       case ConcreteEntityTypes.Model:
-        return `m${this.findTargetElementId(rawId)}` && EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
+        const targetId = `m${this.findTargetElementId(rawId)}` as const;
+        // check if the model exists, this can be false if the element exists but not the model
+        // which can occur in the transformer since a submodeled element is imported before its submodel
+        return EntityUnifier.exists(this.targetDb, { concreteEntityId: targetId })
+          ? targetId
+          : ConcreteEntityIds.makeInvalid(ConcreteEntityTypes.Model);
       case ConcreteEntityTypes.Element:
         return `e${this.findTargetElementId(rawId)}`;
       case ConcreteEntityTypes.ElementAspect:
