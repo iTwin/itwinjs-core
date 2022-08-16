@@ -606,6 +606,8 @@ export interface DiagnosticsScopeLogs {
     logs?: DiagnosticsLogEntry[];
     // (undocumented)
     scope: string;
+    // (undocumented)
+    scopeCreateTimestamp?: number;
 }
 
 // @public

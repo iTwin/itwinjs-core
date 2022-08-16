@@ -55,12 +55,12 @@ export interface BackendDiagnosticsAttribute {
   diagnostics?: BackendDiagnosticsOptions;
 }
 
-/** @alpha */
+/** @public */
 export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 
 /**
  * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js)
- * @alpha
+ * @public
  */
 export interface ReadableSpan {
   name: string;
@@ -79,29 +79,29 @@ export interface ReadableSpan {
   instrumentationLibrary: { name: string };
 }
 
-/** @internal */
+/** @public */
 export type HrTime = [number, number];
 
-/** @internal */
+/** @public */
 export enum SpanStatusCode {
   UNSET = 0,
   OK = 1,
   ERROR = 2
 }
 
-/** @internal */
+/** @public */
 export interface Attributes  {
   [attributeKey: string]: string | string[];
 }
 
-/** @internal */
+/** @public */
 export interface TimedEvent {
   time: HrTime;
   name: string;
   attributes: { [attributeKey: string]: string };
 }
 
-/** @internal */
+/** @public */
 export class Resource {
   public attributes: Attributes;
 
