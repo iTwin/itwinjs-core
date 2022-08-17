@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-i18n",
-      "comment": "Revert \"Remove deprecated i18next-xhr-backend\"",
+      "comment": "",
       "type": "none"
     }
   ],
