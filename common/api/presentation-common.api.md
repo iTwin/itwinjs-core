@@ -595,7 +595,9 @@ export interface DiagnosticsLogMessage {
 export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
-    perf?: boolean;
+    perf?: boolean | {
+        minimumDuration: number;
+    };
 }
 
 // @alpha (undocumented)
@@ -3085,7 +3087,6 @@ export enum VariableValueTypes {
 export type WithCancelEvent<TOptions extends {}> = TOptions & {
     cancelEvent?: BeEvent<() => void>;
 };
-
 
 // (No @packageDocumentation comment for this package)
 
