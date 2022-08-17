@@ -5,14 +5,11 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { TestRpcInterface, WebRoutingInterface } from "../common/TestRpcInterface";
-import { RpcProtocol, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-common";
+import { BentleyCloudRpcProtocol, RpcProtocol, RpcProtocolVersion, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-common";
 import { currentEnvironment } from "./_Setup.test";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("Web Routing", () => {
-    if (currentEnvironment === "websocket") {
-      return;
-    }
 
     it("should always send and recieve protocolVersion without prefectch", async () => {
       if (currentEnvironment === "websocket") {
@@ -47,6 +44,55 @@ if (!ProcessDetector.isElectronAppFrontend) {
         client.ping503(sent),
         client.ping504(sent),
       ]).then((results) => results.forEach((result) => assert.isTrue(result)));
+    });
+
+    it("should return 400 response for requests with invalid URL parameters", async () => {
+      if (currentEnvironment === "websocket")
+        return;
+
+      const protocol = TestRpcInterface.getClient().configuration.protocol as BentleyCloudRpcProtocol;
+
+      const testParamsWithSuffix = async (suffix: string) => {
+        const realParams = btoa(JSON.stringify([1, 10])); // eslint-disable-line deprecation/deprecation
+        assert.equal(realParams.indexOf("="), -1);  // we don't want any padding in the real base64 value
+
+        const response = await fetch(`${protocol.pathPrefix}/${protocol.info.title}/${protocol.info.version}/mode/1/context/undefined/imodel/undefined/changeset/0/${TestRpcInterface.interfaceName}-${TestRpcInterface.interfaceVersion}-op1?parameters=${encodeURIComponent(realParams)}${suffix}`, {
+          method: "GET",
+          headers: {
+            "accept": "*/*",
+            "content-type": "text/plain",
+            [protocol.protocolVersionHeaderName]: String(RpcProtocolVersion.IntroducedStatusCategory),
+            [protocol.serializedClientRequestContextHeaderNames.id]: "foo",
+          },
+        });
+        assert.equal(response.status, 400);
+        const result = (await (response.json()));
+        assert.isTrue(result.isError);
+        assert.equal(result.message, "Error: Invalid request: Malformed URL parameters detected.");
+      };
+      await testParamsWithSuffix("%3D%27%27");
+      await testParamsWithSuffix("%27%27BAD");
+      await testParamsWithSuffix("%27%27%2BAD");
+    });
+
+    it("should return 400 response for requests with missing id", async () => {
+      if (currentEnvironment === "websocket")
+        return;
+
+      const protocol = TestRpcInterface.getClient().configuration.protocol as BentleyCloudRpcProtocol;
+      const realParams = btoa(JSON.stringify([1, 10])); // eslint-disable-line deprecation/deprecation
+      const response = await fetch(`${protocol.pathPrefix}/${protocol.info.title}/${protocol.info.version}/mode/1/context/undefined/imodel/undefined/changeset/0/${TestRpcInterface.interfaceName}-${TestRpcInterface.interfaceVersion}-op1?parameters=${encodeURIComponent(realParams)}`, {
+        method: "GET",
+        headers: {
+          "accept": "*/*",
+          "content-type": "text/plain",
+          [protocol.protocolVersionHeaderName]: String(RpcProtocolVersion.IntroducedStatusCategory),
+        },
+      });
+      assert.equal(response.status, 400);
+      const result = (await (response.json()));
+      assert.isTrue(result.isError);
+      assert.equal(result.message, "Error: Invalid request: Missing required activity ID.");
     });
   });
 }
