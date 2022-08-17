@@ -1212,7 +1212,7 @@ export class Code implements CodeProps {
     static fromJSON(json?: any): Code;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
-    scope: string;
+    scope: Id64String;
     spec: Id64String;
     // (undocumented)
     toJSON(): CodeProps;
@@ -1222,11 +1222,8 @@ export class Code implements CodeProps {
 
 // @public
 export interface CodeProps {
-    // (undocumented)
     scope: CodeScopeProps;
-    // (undocumented)
-    spec: Id64String;
-    // (undocumented)
+    spec: Id64String | string;
     value?: string;
 }
 
@@ -2601,6 +2598,7 @@ export interface ElementIdsAndRangesProps {
 // @public
 export interface ElementLoadOptions {
     displayStyle?: DisplayStyleLoadProps;
+    onlyBaseProperties?: boolean;
     renderTimeline?: RenderTimelineLoadProps;
     wantBRepData?: boolean;
     wantGeometry?: boolean;
@@ -2608,7 +2606,6 @@ export interface ElementLoadOptions {
 
 // @public
 export interface ElementLoadProps extends ElementLoadOptions {
-    // (undocumented)
     code?: CodeProps;
     // (undocumented)
     federationGuid?: GuidString;
@@ -3764,6 +3761,11 @@ export namespace Gradient {
         Spherical = 4,
         Thematic = 6
     }
+    export interface ProduceImageArgs {
+        height: number;
+        includeThematicMargin?: boolean;
+        width: number;
+    }
     export class Symb {
         // (undocumented)
         angle?: Angle;
@@ -3787,6 +3789,7 @@ export namespace Gradient {
         mapColor(value: number): ColorDef;
         // (undocumented)
         mode: Mode;
+        produceImage(args: ProduceImageArgs): ImageBuffer;
         // (undocumented)
         shift: number;
         // (undocumented)
@@ -4197,7 +4200,7 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // (undocumented)
+    // @deprecated (undocumented)
     notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -4215,7 +4218,7 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
@@ -4597,6 +4600,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse>;
+    // (undocumented)
+    querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)

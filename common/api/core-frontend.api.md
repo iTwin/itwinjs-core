@@ -1201,8 +1201,6 @@ export class ArcGisUtilities {
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
-    static getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
-    // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
@@ -4850,6 +4848,8 @@ export abstract class IModelConnection extends IModel {
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
+    // @internal
+    querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
@@ -7623,6 +7623,14 @@ export namespace PerModelCategoryVisibility {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+        // @beta
+        setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+    }
+    // @beta
+    export interface Props {
+        categoryIds: Iterable<Id64String>;
+        modelId: string;
+        visOverride: PerModelCategoryVisibility.Override;
     }
 }
 
@@ -10092,8 +10100,6 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
-    postload(options: HydrateViewStateResponseProps): void;
-    preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
 }
 
 // @internal
