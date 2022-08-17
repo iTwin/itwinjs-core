@@ -483,7 +483,7 @@ export class PresentationManager {
    */
   public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
     const content = await this._detail.getContent(requestOptions);
-    if(!content)
+    if (!content)
       return undefined;
     return this._localizationHelper.getLocalizedContent(content);
   }
