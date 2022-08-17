@@ -771,7 +771,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   /** Attempt to create a texture using gradient symbology. */
   public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
-    const source = symb.getImage(0x100, 0x100);
+    let width = 0x100;
+    let height = 0x100;
+    if (symb.mode === Gradient.Mode.Thematic) {
+      // Pixels in each row are identical, no point in having width > 1.
+      width = 1;
+      // We want maximum height to minimize bleeding of margin color.
+      height = this.maxTextureSize;
+    }
+
+    const source = symb.produceImage({ width, height, includeThematicMargin: true });
     return this.createTexture({
       image: {
         source,

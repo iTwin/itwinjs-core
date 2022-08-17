@@ -2,7 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import * as nock from "nock";
+import * as path from "path";
 import { IModelDb, IModelHost, IModelJsFs, NativeHost } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
@@ -15,7 +17,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
 
   public async restartIModelHost(): Promise<void> {
     await IModelHost.shutdown();
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {

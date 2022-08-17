@@ -34,7 +34,7 @@ export class GeoCoordConfig {
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
-        Logger.logInfo("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
+        Logger.logError("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
         return;
       }
 
@@ -54,13 +54,9 @@ export class GeoCoordConfig {
       if (true === dbProps.prefetch)
         SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName);
 
-    } catch (e: unknown) {
-      Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)},
-         account=${account.accessName},
-         storage=${account.storageType},
-         isPublic=${containerProps.isPublic},
-         container=${containerProps.containerId},
-         rootDir=${ws.cloudCache?.rootDir}`
+    } catch (e: any) {
+      Logger.logError(loggerCat, `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)},`
+        + `account="${account.accessName}"/"${containerProps.containerId}", storage=${account.storageType}, isPublic=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`
       );
     }
   }

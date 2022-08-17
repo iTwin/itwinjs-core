@@ -364,6 +364,8 @@ export interface RenderTimelineLoadProps {
  * @extensions
  */
 export interface ElementLoadOptions {
+  /** if true, only load the members of [[ElementProps]], and no members from subclasses */
+  onlyBaseProperties?: boolean;
   /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
    * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
    */
@@ -385,6 +387,10 @@ export interface ElementLoadOptions {
  */
 export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
+  /** The properties of the Code of the element to load.
+   * @note the Value member is required even though it is not declared so here. If no value is supplied, no element will ever be loaded.
+   * TODO: change to Required<CodeProps> in Version 4.0
+   */
   code?: CodeProps;
   federationGuid?: GuidString;
 }

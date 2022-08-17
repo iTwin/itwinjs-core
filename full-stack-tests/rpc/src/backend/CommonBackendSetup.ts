@@ -10,15 +10,17 @@ import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
+import { join } from "path";
 
 export async function commonSetup(): Promise<void> {
   RpcConfiguration.developmentMode = true;
 
+  const cacheDir = join(__dirname, ".cache");
   // Start the backend
-  if (ProcessDetector.isElectronAppBackend){
-    await ElectronHost.startup({ electronHost: { rpcInterfaces } });
+  if (ProcessDetector.isElectronAppBackend) {
+    await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost: { cacheDir } });
   } else
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir });
 
   registerBackendCallback(BackendTestCallbacks.registerTestRpcImpl2Class, () => {
     TestRpcImpl2.register();
