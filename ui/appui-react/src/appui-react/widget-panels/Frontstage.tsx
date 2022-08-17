@@ -30,7 +30,7 @@ import { StagePanelMaxSizeSpec } from "../stagepanels/StagePanel";
 import { StagePanelState, StagePanelZoneDefKeys } from "../stagepanels/StagePanelDef";
 import { UiFramework } from "../UiFramework";
 import { useUiStateStorageHandler } from "../uistate/useUiStateStorage";
-import { WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
+import { TabLocation, WidgetDef, WidgetEventArgs, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
 import { ZoneState } from "../zones/ZoneDef";
 import { WidgetContent } from "./Content";
 import { WidgetPanelsFrontstageContent } from "./FrontstageContent";
@@ -904,10 +904,14 @@ function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneSt
     }
 
     // Add to a new floating widget.
-    const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize }; // TODO: restore bounds
-    const preferredPoint = { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+    const floatingBounds = tabLocation.floatingBounds;
+    let bounds = floatingBounds ? Rectangle.create(floatingBounds) : undefined;
+    if (!bounds) {
+      const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize };
+      const preferredPoint = { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+      bounds = Rectangle.createFromSize(size).offset(preferredPoint);
+    }
     const nzBounds = Rectangle.createFromSize(state.size);
-    let bounds = Rectangle.createFromSize(size).offset(preferredPoint);
     bounds = bounds.containIn(nzBounds);
 
     const home: FloatingWidgetHomeState = { // TODO: restore home state
@@ -918,6 +922,7 @@ function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneSt
     return addFloatingWidget(state, floatingWidgetId, [tabId], {
       home,
       bounds: bounds.toProps(),
+      userSized: tabLocation.userSized,
     });
   }
 
@@ -1009,6 +1014,8 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
       widgetId: widgetDef.id,
       widgetIndex: widget.home.widgetIndex,
       floating: true,
+      floatingBounds: widget.bounds,
+      userSized: widget.userSized,
     };
   } else if (!isPopoutLocation(location)) {
     const widgetId = location.widgetId;

@@ -5,6 +5,8 @@
 import { Locator, Page } from '@playwright/test';
 
 export async function runKeyin(page: Page, keyin: string) {
+  const ui = page.locator("#uifw-configurableui-wrapper");
+  await ui.waitFor();
   await page.keyboard.press("Control+F2");
   const input = page.locator(`[placeholder="Enter key-in"]`);
   await input.fill(keyin);

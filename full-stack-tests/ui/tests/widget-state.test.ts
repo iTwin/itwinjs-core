@@ -96,6 +96,40 @@ test.describe("widget state", () => {
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-3");
   });
 
+  test("should maintain bounds of a hidden floating widget", async ({ page }) => {
+    await setWidgetState(page, "FW-2", WidgetState.Hidden);
+    await setWidgetState(page, "FW-3", WidgetState.Hidden);
+
+    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widgetBounds = await widget.boundingBox();
+    expect(widgetBounds).toBeDefined();
+
+    await setWidgetState(page, "FW-1", WidgetState.Hidden);
+    await expect(widget).not.toBeVisible();
+
+    await setWidgetState(page, "FW-1", WidgetState.Open);
+    const newWidgetBounds = await widget.boundingBox();
+    expect(newWidgetBounds).toEqual(widgetBounds);
+  });
+
+  test("should maintain bounds of a hidden floating widget after reload", async ({ page }) => {
+    await setWidgetState(page, "FW-2", WidgetState.Hidden);
+    await setWidgetState(page, "FW-3", WidgetState.Hidden);
+
+    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widgetBounds = await widget.boundingBox();
+    expect(widgetBounds).toBeDefined();
+
+    await setWidgetState(page, "FW-1", WidgetState.Hidden);
+    await expect(widget).not.toBeVisible();
+
+    await page.reload();
+
+    await setWidgetState(page, "FW-1", WidgetState.Open);
+    const newWidgetBounds = await widget.boundingBox();
+    expect(newWidgetBounds).toEqual(widgetBounds);
+  });
+
   test("should hide a panel section", async ({ page }) => {
     const panel = panelLocator(page, "left");
     const widget = widgetLocator(page, { panel });

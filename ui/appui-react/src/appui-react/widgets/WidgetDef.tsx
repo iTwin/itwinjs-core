@@ -20,7 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
-import { IconHelper, IconSpec, SizeProps } from "@itwin/core-react";
+import { IconHelper, IconSpec, RectangleProps, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -107,6 +107,8 @@ export interface TabLocation {
   side: PanelSide;
   tabIndex: number;
   floating?: boolean;
+  floatingBounds?: RectangleProps;
+  userSized?: boolean;
 }
 
 // -----------------------------------------------------------------------------
