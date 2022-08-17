@@ -19,7 +19,7 @@ import { Rectangle, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus 
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addFloatingWidget,
-  addPanelWidget, addTab, addWidgetTabToFloatingPanel, addWidgetTabToPanelSection, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingLocation,
+  addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab, findWidget, floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingLocation,
   isHorizontalPanelSide, isPopoutLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState,
   NineZoneStateReducer, PanelSide, panelSides, removeTabFromWidget, removeTabState, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
@@ -344,15 +344,40 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
     });
+
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
       const floatingContainerId = widgetDef.floatingContainerId ?? getUniqueId();
       const widgetContainerId = getWidgetId(side, panelZoneKeys[preferredWidgetIndex]);
-      const homePanelInfo: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
+      const home: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
       const preferredPosition = widgetDef.defaultFloatingPosition;
-      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
+
+
+      if (floatingContainerId in state.widgets) {
+        state = addTabToWidget(state, widgetDef.id, floatingContainerId);
+      } else {
+        const tab = state.tabs[widgetDef.id];
+
+        const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize }; // TODO: code duplication
+        const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+        const nzBounds = Rectangle.createFromSize(state.size);
+        const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
+        const containedBounds = bounds.containIn(nzBounds);
+
+        state = addFloatingWidget(state, floatingContainerId, [widgetDef.id], {
+          bounds: containedBounds.toProps(),
+          home,
+          userSized,
+        }, {
+          isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+        });
+      }
     } else {
       const widgetPanelSectionId = getWidgetPanelSectionId(side, preferredWidgetIndex);
-      state = addWidgetTabToPanelSection(state, side, widgetPanelSectionId, widgetDef.id);
+      if (widgetPanelSectionId in state.widgets) {
+        state = addTabToWidget(state, widgetDef.id, widgetPanelSectionId);
+      } else {
+        state = addPanelWidget(state, side, widgetPanelSectionId, [widgetDef.id]);
+      }
     }
   }
 
