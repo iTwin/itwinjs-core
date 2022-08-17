@@ -41,7 +41,7 @@ describe("Diagnostics", async () => {
         imodel,
         rulesetOrId: ruleset,
         diagnostics: {
-          perf: { duration: 2 },
+          perf: { minimumDuration: 2 },
           handler: (logs) => {
             diagnostics = logs;
           },
@@ -58,7 +58,7 @@ describe("Diagnostics", async () => {
         imodel,
         rulesetOrId: ruleset,
         diagnostics: {
-          perf: { duration: 5000 },
+          perf: { minimumDuration: 5000 },
           handler: (logs) => {
             diagnostics = logs;
           },
