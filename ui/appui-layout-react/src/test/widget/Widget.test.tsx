@@ -70,7 +70,7 @@ describe("PanelWidget", () => {
       const handle = titleBar.getElementsByClassName("nz-handle")[0];
       act(() => {
         fireEvent.mouseDown(handle, { clientX: 230 });
-        fireEvent.mouseMove(handle);
+        fireEvent.mouseMove(handle, { clientX: 230 });
       });
 
       dispatch.calledOnce.should.true;
