@@ -16,6 +16,7 @@ import { PresentationManager } from "../presentation-backend/PresentationManager
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { join } from "path";
 
 describe("Presentation", () => {
 
@@ -38,7 +39,7 @@ describe("Presentation", () => {
     });
 
     it("can be safely shutdown via IModelHost shutdown listener", async () => {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
       Presentation.initialize();
       await IModelHost.shutdown();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
@@ -51,10 +52,10 @@ describe("Presentation", () => {
     });
 
     it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
-      Presentation.initialize({enableSchemasPreload: false});
+      Presentation.initialize({ enableSchemasPreload: false });
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
       Presentation.terminate();
-      Presentation.initialize({enableSchemasPreload: true});
+      Presentation.initialize({ enableSchemasPreload: true });
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
     });
 
@@ -128,7 +129,7 @@ describe("Presentation", () => {
     });
 
     it("unsubscribes from `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
-      Presentation.initialize({enableSchemasPreload: true});
+      Presentation.initialize({ enableSchemasPreload: true });
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
       Presentation.terminate();
       expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
@@ -145,7 +146,7 @@ describe("Presentation", () => {
       managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
       nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
 
-      Presentation.initialize({enableSchemasPreload: true, clientManagerFactory: () => managerMock.object});
+      Presentation.initialize({ enableSchemasPreload: true, clientManagerFactory: () => managerMock.object });
       BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
       nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });

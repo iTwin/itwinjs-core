@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Limit the shadow-casting range for tile trees that span the entire globe, like the OpenStreetMap buildings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
