@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, convertToReadableSpans, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -158,7 +158,7 @@ export class PresentationManagerDetail implements IDisposable {
     if (response.diagnostics) {
       const logs = { logs: [response.diagnostics] };
       diagnosticsListener && diagnosticsListener(logs);
-      this._diagnosticsCallback && this._diagnosticsCallback(convertToReadableSpans(logs));
+      this._diagnosticsCallback && this._diagnosticsCallback(logs);
     }
 
     return response.result;

@@ -81,11 +81,11 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
-// @internal (undocumented)
-export function convertToReadableSpans(diagnostics: Diagnostics): ReadableSpan[];
+// @public (undocumented)
+export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[];
 
 // @public (undocumented)
-export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -323,11 +323,7 @@ export interface ReadableSpan {
     // (undocumented)
     resource: Resource;
     // (undocumented)
-    spanContext: () => {
-        traceId: string;
-        spanId: string;
-        traceFlags: number;
-    };
+    spanContext: () => SpanContext;
     // (undocumented)
     startTime: HrTime;
     // (undocumented)
@@ -432,6 +428,16 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 export interface SingleManagerPresentationProps extends PresentationPropsBase {
     // @alpha
     useSingleManager?: boolean;
+}
+
+// @public (undocumented)
+export interface SpanContext {
+    // (undocumented)
+    spanId: string;
+    // (undocumented)
+    traceFlags: number;
+    // (undocumented)
+    traceId: string;
 }
 
 // @public (undocumented)

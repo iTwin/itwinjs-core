@@ -660,19 +660,13 @@ describe("PresentationManager", () => {
           duration: 123,
         }],
       };
-      const spansResult = {
-        name: "test",
-        startTime: [1, 0],
-        endTime: [1, 123000000],
-        duration: [0, 123000000],
-      };
       addonMock
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
         .verifiable(moq.Times.once());
       await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
       addonMock.verifyAll();
-      expect(diagnosticsCallback).to.be.calledOnceWith([sinon.match(spansResult)]);
+      expect(diagnosticsCallback).to.be.calledOnceWith(diagnosticsResult);
     });
 
   });

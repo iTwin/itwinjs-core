@@ -5,8 +5,8 @@ public;BackendDiagnosticsAttribute
 alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
 alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
-internal;convertToReadableSpans(diagnostics: Diagnostics): ReadableSpan[]
-public;DiagnosticsCallback = (spans: ReadableSpan[]) => void
+public;convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[]
+public;DiagnosticsCallback = (diagnostics: Diagnostics) => void
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 internal;getLocalesDirectory: (assetsDirectory: string) => string
@@ -37,6 +37,7 @@ internal;RulesetManagerImpl
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
 public;SingleManagerPresentationProps 
+public;SpanContext
 public;SpanStatusCode
 public;TimedEvent
 public;UnitSystemFormat

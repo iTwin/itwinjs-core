@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import { DbResult, SpanKind } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { convertToReadableSpans, getElementKey, normalizeVersion, Resource, SpanStatusCode } from "../presentation-backend/Utils";
+import { convertToReadableSpans, getElementKey, normalizeVersion, Resource, SpanContext, SpanStatusCode } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
 
@@ -152,6 +152,30 @@ describe("convertToReadableSpans", () => {
     expect(actualSpans[0].spanContext().traceId).to.not.eq(actualSpans[1].spanContext().traceId);
     expect(actualSpans[0].spanContext().spanId.length).to.eq(16);
     expect(actualSpans[0].spanContext().traceId.length).to.eq(32);
+  });
+
+  it("converts logs to readable spans when parent span id is provided", () => {
+    const parentSpanContext: SpanContext = { traceId: "testTraceId", spanId: "testSpanId", traceFlags: 0 };
+    const actualSpans = convertToReadableSpans({
+      logs: [
+        { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },
+      ],
+    }, parentSpanContext);
+
+    const expectedSpans = [
+      {
+        ...defaultSpanAttributes,
+        name: "test scope 1",
+        startTime: [12, 345000000],
+        endTime: [13, 456000000],
+        duration: [1, 111000000],
+      },
+    ];
+
+    expect(actualSpans.length).to.be.eq(1);
+    expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
+    expect(actualSpans[0].spanContext().traceId).to.eq(parentSpanContext.traceId);
+    expect(actualSpans[0].parentSpanId).to.be.eq(parentSpanContext.spanId);
   });
 
   it("converts nested logs to readable spans", () => {

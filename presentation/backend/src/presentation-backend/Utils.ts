@@ -10,7 +10,7 @@ import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String, SpanKind } from "@itwin/core-bentley";
-import { Diagnostics, DiagnosticsLogEntry, DiagnosticsLogMessage, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
+import { Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, DiagnosticsScopeLogs, InstanceKey } from "@itwin/presentation-common";
 import { randomBytes } from "crypto";
 
 /** @internal */
@@ -56,7 +56,7 @@ export interface BackendDiagnosticsAttribute {
 }
 
 /** @public */
-export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 /**
  * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js).
@@ -66,7 +66,7 @@ export type DiagnosticsCallback = (spans: ReadableSpan[]) => void;
 export interface ReadableSpan {
   name: string;
   kind: SpanKind;
-  spanContext: () => { traceId: string, spanId: string, traceFlags: number };
+  spanContext: () => SpanContext;
   parentSpanId?: string;
   startTime: HrTime;
   endTime: HrTime;
@@ -78,6 +78,13 @@ export interface ReadableSpan {
   ended: boolean;
   resource: Resource;
   instrumentationLibrary: { name: string };
+}
+
+/** @public */
+export interface SpanContext {
+  traceId: string;
+  spanId: string;
+  traceFlags: number;
 }
 
 /** @public */
@@ -115,17 +122,16 @@ export class Resource {
   }
 }
 
-/** @internal */
-export function convertToReadableSpans(diagnostics: Diagnostics): ReadableSpan[] {
+/** @public */
+export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[] {
   let spans: ReadableSpan[] = [];
   for (const logs of diagnostics.logs ?? []) {
-    const nestedSpans = convertScopeToReadableSpans(logs, generateTraceId());
+    const nestedSpans = convertScopeToReadableSpans(logs, parentSpanContext ? parentSpanContext.traceId : generateTraceId(), parentSpanContext?.spanId);
     spans = spans.concat(nestedSpans);
   }
   return spans;
 }
 
-/** @internal */
 function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string, parentSpanId?: string): ReadableSpan[] {
   if (!logs.scopeCreateTimestamp || !logs.duration)
     return [];
@@ -135,7 +141,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
   const events: TimedEvent[] = [];
 
   for (const entry of logs.logs ?? []) {
-    if (isLogMessage(entry)) {
+    if (DiagnosticsLogEntry.isMessage(entry)) {
       const event: TimedEvent = {
         time: millisToHrTime(entry.timestamp),
         name: entry.message,
@@ -175,7 +181,6 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
 
 /**
  * A valid span identifier is an 8-byte array with at least one non-zero byte
- * @internal
  */
 function generateSpanId(): string {
   return randomBytes(8).toString("hex");
@@ -183,18 +188,11 @@ function generateSpanId(): string {
 
 /**
  * A valid trace identifier is a 16-byte array with at least one non-zero byte
- * @internal
  */
 function generateTraceId(): string {
   return randomBytes(16).toString("hex");
 }
 
-/** @internal */
-function isLogMessage(logEntry: DiagnosticsLogEntry): logEntry is DiagnosticsLogMessage {
-  return (logEntry as DiagnosticsLogMessage).message !== undefined;
-}
-
-/** @internal */
 function millisToHrTime(millis: number): HrTime {
   const hrTime: HrTime = [0, 0];
   hrTime[0] = Math.trunc(millis / 1000);
