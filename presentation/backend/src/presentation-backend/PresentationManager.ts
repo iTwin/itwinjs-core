@@ -325,10 +325,7 @@ export class PresentationManager {
     this._detail = new PresentationManagerDetail(this._props);
     this.activeLocale = this._props.defaultLocale; // eslint-disable-line deprecation/deprecation
 
-    if(props?.getLocalizedString)
-      this._localizationHelper = new LocalizationHelper({getLocalizedString: props.getLocalizedString});
-    else
-      this._localizationHelper = new LocalizationHelper({getLocalizedString: getLocalizedStringEN});
+      this._localizationHelper = new LocalizationHelper({ getLocalizedString: props.getLocalizedString ?? getLocalizedStringEN });
   }
 
   /**
