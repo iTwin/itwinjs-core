@@ -528,7 +528,7 @@ export class PresentationManager {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       const elementProperties = await this._detail.getElementProperties(requestOptions);
       // istanbul ignore if
-      if(elementProperties === undefined)
+      if (!elementProperties)
         return undefined;
       return this._localizationHelper.getLocalizedElementProperties(elementProperties);
     }
