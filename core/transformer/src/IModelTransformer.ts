@@ -720,10 +720,15 @@ export class IModelTransformer extends IModelExportHandler {
           // For now we just consider all required references to be elements (as they are in biscore), and do not support
           // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
           return `${elemClass.requiredReferenceKeyTypeMap[referenceKey]}${id}` as ConcreteEntityId;
-        });
+        })
+          .filter((sourceReferenceId: ConcreteEntityId | undefined): sourceReferenceId is ConcreteEntityId => {
+            if (sourceReferenceId === undefined) return false;
+            const referenceInTargetId = this.context.findTargetEntityId(sourceReferenceId);
+            const isInTarget = ConcreteEntityIds.isValid(referenceInTargetId);
+            return !isInTarget;
+          });
       })
-      .flat()
-      .filter((id): id is ConcreteEntityId => id !== undefined);
+      .flat();
 
     if (unresolvedReferences.length > 0) {
       for (const reference of unresolvedReferences) {

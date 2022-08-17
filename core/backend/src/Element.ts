@@ -368,6 +368,7 @@ export class Element extends Entity {
     return this.getReferenceIds();
   }
 
+  // FIXME: since this is beta, replace it with an array of objects containing the reference type
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
    * This is the list of property keys on this element that store references to those elements
    * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
