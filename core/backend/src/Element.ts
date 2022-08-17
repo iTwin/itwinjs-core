@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, ConcreteEntityIdSet, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, ConcreteEntityIdSet, ConcreteEntityTypes, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
   ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
@@ -370,11 +370,20 @@ export class Element extends Entity {
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
    * This is the list of property keys on this element that store references to those elements
-   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces required references.
+   * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
    * @note any property listed here must be added to the reference ids in [[collectReferenceIds]]
    * @beta
    */
   public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
+
+  /** A map of every [[requiredReferenceKeys]] on this class to their entity type.
+   * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
+   * @beta
+   */
+  public static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    parent: ConcreteEntityTypes.Element,
+    model: ConcreteEntityTypes.Model,
+  };
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -477,6 +486,11 @@ export abstract class GeometricElement extends Element {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "category"];
+  /** @beta */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    category: ConcreteEntityTypes.Element,
+  };
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.

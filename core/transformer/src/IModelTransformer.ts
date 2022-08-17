@@ -7,7 +7,10 @@
  */
 import * as path from "path";
 import * as Semver from "semver";
-import { AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired, OpenMode, YieldManager } from "@itwin/core-bentley";
+import {
+  AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
+  OpenMode, YieldManager,
+} from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
@@ -166,64 +169,6 @@ class PartiallyCommittedEntity {
   public forceComplete() {
     this._onComplete();
   }
-}
-
-/**
- * A helper for checking the in-transformation processing state of an element,
- * whether it has been transformed, and if its submodel has been
- * @internal
- */
-class EntityProcessState {
-  public constructor(
-    public id: ConcreteEntityId,
-    /** whether or not this element needs to be processed */
-    public needsSelfImport: boolean,
-    /** only applicable if this is an element, whether or not this element's submodel needs to be processed */
-    public needsSubModelImport = false,
-  ) {}
-  public static fromEntityAndTransformer(concreteEntityId: ConcreteEntityId, transformer: IModelTransformer): EntityProcessState {
-    // FIXME: maybe better to rename ConcreteEntity to EntityRef, since it's not purely an id?
-    const [type, entityId] = ConcreteEntityIds.split(concreteEntityId);
-    switch (type) {
-      case ConcreteEntityTypes.Relationship: {
-        break;
-      }
-      case ConcreteEntityTypes.ElementAspect: {
-        break;
-      }
-      case ConcreteEntityTypes.Element: {
-        break;
-      }
-      case ConcreteEntityTypes.Model: {
-        break;
-      }
-    }
-    if (ConcreteEntityIds.isElementAspect(concreteEntityId)) {
-      return new EntityProcessState(concreteEntityId, transformer.context.findTargetAspectId(entityId) === Id64.invalid);
-    }
-    if (ConcreteEntityIds.isRelationship(concreteEntityId)) {
-      // FIXME: still not sure how we index relationships yet
-      return new EntityProcessState(concreteEntityId, transformer.context.findTargetElementId(entityId) === Id64.invalid);
-    }
-    // we don't need to load all of the props of the model to check if the model exists
-    const dbHasModel = (db: IModelDb, id: Id64String) => db.withPreparedStatement("SELECT 1 FROM bis.Model WHERE ECInstanceId=? LIMIT 1", (stmt) => {
-      stmt.bindId(1, id);
-      const stepResult = stmt.step();
-      if (stepResult === DbResult.BE_SQLITE_DONE)
-        return false;
-
-      if (stepResult === DbResult.BE_SQLITE_ROW)
-        return true;
-      else
-        throw new IModelError(stepResult, "expected 1 or no rows");
-    });
-    const isSubModeled = dbHasModel(transformer.sourceDb, entityId);
-    const idOfElemInTarget = transformer.context.findTargetElementId(entityId);
-    const isElemInTarget = Id64.invalid !== idOfElemInTarget;
-    const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(transformer.targetDb, idOfElemInTarget));
-    return new EntityProcessState(concreteEntityId, !isElemInTarget, needsModelImport);
-  }
-  public get needsImport() { return this.needsSelfImport || this.needsSubModelImport; }
 }
 
 /**
@@ -756,13 +701,12 @@ export class IModelTransformer extends IModelExportHandler {
   public override async preExportElement(sourceElement: Element): Promise<void> {
     const elemClass = sourceElement.constructor as typeof Element;
 
-    const unresolvedReferencesProcessStates = elemClass.requiredReferenceKeys
+    const unresolvedReferences = elemClass.requiredReferenceKeys
       .map((referenceKey) => {
         const idContainer = sourceElement[referenceKey as keyof Element];
         return mapId64(idContainer, (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId)
-            return; // not allowed to directly export the root subject
-
+            return undefined; // not allowed to directly export the root subject
           if (!this.context.isBetweenIModels) {
             // Within the same iModel, can use existing DefinitionElements without remapping
             // This is relied upon by the TemplateModelCloner
@@ -775,21 +719,23 @@ export class IModelTransformer extends IModelExportHandler {
           // FIXME: bad
           // For now we just consider all required references to be elements (as they are in biscore), and do not support
           // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
-          return EntityProcessState.fromEntityAndTransformer(`e${id}`, this);
+          return `${elemClass.requiredReferenceKeyTypeMap[referenceKey]}${id}` as ConcreteEntityId;
         });
       })
       .flat()
-      .filter((maybeProcessState): maybeProcessState is EntityProcessState =>
-        maybeProcessState !== undefined && maybeProcessState.needsImport
-      );
+      .filter((id): id is ConcreteEntityId => id !== undefined);
 
-    if (unresolvedReferencesProcessStates.length > 0) {
-      for (const processState of unresolvedReferencesProcessStates) {
+    if (unresolvedReferences.length > 0) {
+      for (const reference of unresolvedReferences) {
+        const rawId = ConcreteEntityIds.toId64(reference);
         // must export element first if not done so
-        if (processState.needsSelfImport)
-          await this.exporter.exportElement(processState.id);
-        if (processState.needsSubModelImport)
-          await this.exporter.exportModel(processState.id);
+        if (ConcreteEntityIds.isModel(reference))
+          await this.exporter.exportModel(rawId);
+        // FIXME: if it's a model, doesn't its element have to be imported first?
+        else if (ConcreteEntityIds.isElement(reference))
+          await this.exporter.exportElement(rawId);
+        else
+          assert(false, "unsupported reference type: ${}, only model and element references are supported");
       }
     }
   }

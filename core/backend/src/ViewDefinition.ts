@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { ConcreteEntityIdSet, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, ConcreteEntityTypes, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -227,6 +227,12 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
+  /** @beta */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    categorySelectorId: ConcreteEntityTypes.Element,
+    displayStyleId: ConcreteEntityTypes.Element,
+  };
 
   /** @internal */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
@@ -369,6 +375,11 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
+  /** @beta */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    modelSelectorId: ConcreteEntityTypes.Element,
+  };
 
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
