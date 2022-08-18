@@ -36,6 +36,28 @@ import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/a
 describe("IModelTransformer", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelTransformer");
 
+  /** Instead creating empty snapshots and populating them via routines for new tests incurring a wait,
+   * if it's going to be reused, store it here as a getter and a promise that `SnapshotDb.createFrom` can be called on
+   */
+  class ReusedSnapshots {
+    private static _extensiveTestScenario: Promise<SnapshotDb> | undefined;
+
+    public static get extensiveTestScenario(): Promise<SnapshotDb> {
+      return this._extensiveTestScenario ??= (async () => {
+        const dbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ReusedExtensiveTestScenario.bim");
+        const db = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "ReusedExtensiveTestScenario" }, createClassViews: true });
+        await TransformerExtensiveTestScenario.prepareDb(db);
+        TransformerExtensiveTestScenario.populateDb(db);
+        db.saveChanges();
+        return db;
+      })();
+    }
+
+    public static async cleanup() {
+      (await this._extensiveTestScenario)?.close();
+    }
+  }
+
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir)) {
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
@@ -53,13 +75,14 @@ describe("IModelTransformer", () => {
     }
   });
 
+  after(async () => {
+    await ReusedSnapshots.cleanup();
+  });
+
   it("should transform changes from source to target", async () => {
     // Source IModelDb
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
-    TransformerExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
     // Target IModelDb
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
@@ -188,10 +211,7 @@ describe("IModelTransformer", () => {
   it("should synchronize changes from master to branch and back", async () => {
     // Simulate branching workflow by initializing branchDb to be a copy of the populated masterDb
     const masterDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
-    const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
-    await TransformerExtensiveTestScenario.prepareDb(masterDb);
-    TransformerExtensiveTestScenario.populateDb(masterDb);
-    masterDb.saveChanges();
+    const masterDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, masterDbFile);
     const branchDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
     const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
 
@@ -256,9 +276,7 @@ describe("IModelTransformer", () => {
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
-    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
-    TransformerExtensiveTestScenario.populateDb(sourceDb);
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     sourceDb.saveChanges();
@@ -287,9 +305,7 @@ describe("IModelTransformer", () => {
   it.skip("should clone Model within same iModel", async () => {
     // Set up the IModelDb with a populated source Subject and an "empty" target Subject
     const iModelFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
-    const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
-    await TransformerExtensiveTestScenario.prepareDb(iModelDb);
-    TransformerExtensiveTestScenario.populateDb(iModelDb);
+    const iModelDb  = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, iModelFile);
     const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
@@ -1921,10 +1937,7 @@ describe("IModelTransformer", () => {
 
   it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderSrc.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "AspectIdOrderSrc" } });
-    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
-    TransformerExtensiveTestScenario.populateDb(sourceDb);
-    sourceDb.saveChanges();
+    const sourceDb  = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
 
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "AspectIdOrderTarget" } });
