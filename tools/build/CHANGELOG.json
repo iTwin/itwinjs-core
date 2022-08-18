@@ -2,6 +2,21 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "3.3.0",
+      "tag": "@itwin/build-tools_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade @microsoft/api-extractor to 7.24.2"
+          },
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.8",
       "tag": "@itwin/build-tools_v3.2.8",
       "date": "Tue, 09 Aug 2022 15:52:41 GMT",

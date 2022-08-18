@@ -3,6 +3,7 @@ publish: false
 ---
 # NextVersion
 
+<<<<<<< HEAD
 ## Ambient Occlusion Improvements
 
 The ambient occlusion effect has undergone some quality improvements.
@@ -45,3 +46,5 @@ useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
 const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
+=======
+>>>>>>> 7ff41354c9 (3.3.0)
