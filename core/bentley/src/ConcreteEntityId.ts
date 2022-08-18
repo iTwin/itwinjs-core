@@ -14,6 +14,8 @@ import { Id64, Id64String } from "./Id";
  * @note the values of this enum are unstable, do not depend upon their values between versions of iTwin.js
  *       (e.g. do not serialize them and load them in another version of iTwin.js and expect them to work)
  * // FIXME implement this test
+ * // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
+ * CodeSpecs are excepted since those are not treated like other entities.
  * @note the string value of each variant is required/guaranteed to be 1 character, this is confirmed in tests
  * @see ConcreteEntityId
  * @alpha

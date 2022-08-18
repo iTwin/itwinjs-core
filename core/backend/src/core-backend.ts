@@ -10,6 +10,7 @@ export * from "./ClassRegistry";
 export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./ConcreteEntityId";
+export * from "./ECClassNavPropReferenceCache";
 export * from "./EntityKey";
 export * from "./EntityUnifier";
 export * from "./DisplayStyle";
