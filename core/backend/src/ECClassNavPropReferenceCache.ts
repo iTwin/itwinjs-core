@@ -7,7 +7,7 @@
  */
 
 import { ConcreteEntityTypes, Logger } from "@itwin/core-bentley";
-import { ECClass, Mixin, Schema } from "@itwin/ecschema-metadata";
+import { ECClass, Mixin, Schema, SchemaKey } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
@@ -29,19 +29,6 @@ export enum EntityRefType {
   CodeSpec = "c",
 }
 
-const nameForEntityRefTypeMap = {
-  [EntityRefType.Model]: "Model",
-  [EntityRefType.Element]: "Element",
-  [EntityRefType.Aspect]: "Aspect",
-  [EntityRefType.Relationship]: "Relationship",
-  [EntityRefType.CodeSpec]: "CodeSpec",
-} as const;
-
-/** @internal */
-export function nameForEntityRefType(entityRefType: EntityRefType) {
-  return nameForEntityRefTypeMap[entityRefType];
-}
-
 /** @internal */
 export interface RelTypeInfo {
   source: ConcreteEntityTypes;
@@ -54,9 +41,12 @@ export interface RelTypeInfo {
  * @internal
  */
 export class ECClassNavPropReferenceCache {
+  /** singleton because using multiple of these is mostly reinitializing duplicated info expensively */
+  public static globalCache = new ECClassNavPropReferenceCache();
+
   /** nesting based tuple map keyed by property qualifier [schemaName, className, propName] */
   private _propQualifierToRefType = new Map<string, Map<string, Map<string, RelTypeInfo>>>();
-  private _initedSchemas = new Set<string>();
+  private _initedSchemas = new Map<string, SchemaKey>();
 
   private static bisRootClassToRefType: Record<string, ConcreteEntityTypes | undefined> = {
     /* eslint-disable quote-props, @typescript-eslint/naming-convention */
@@ -65,14 +55,21 @@ export class ECClassNavPropReferenceCache {
     "ElementAspect": ConcreteEntityTypes.ElementAspect,
     "ElementRefersToElements": ConcreteEntityTypes.Relationship,
     "ElementDrivesElement": ConcreteEntityTypes.Relationship,
+    // code spec is technically a potential root class but it is sealed and not treated
     // "CodeSpec": ConcreteEntityTypes.CodeSpec,
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 
   public async initSchema(schema: Schema): Promise<void> {
     if (this._initedSchemas.has(schema.name)) {
-      logger.logInfo("schema was already inited");
-      return;
+      const cachedSchemaKey = this._initedSchemas.get(schema.name);
+      assert(cachedSchemaKey !== undefined);
+      // FIXME: test this logic
+      const incomingSchemaIsEqualOrOlder = schema.schemaKey.compareByVersion(cachedSchemaKey) <= 0;
+      if (incomingSchemaIsEqualOrOlder) {
+        logger.logInfo("schema was already inited");
+        return;
+      }
     }
 
     const classMap = new Map<string, Map<string, RelTypeInfo>>();
@@ -124,7 +121,7 @@ export class ECClassNavPropReferenceCache {
       }
     }
 
-    this._initedSchemas.add(schema.name);
+    this._initedSchemas.set(schema.name, schema.schemaKey);
   }
 
   public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | RelTypeInfo {

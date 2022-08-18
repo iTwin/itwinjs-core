@@ -15,7 +15,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
-import { ECClassNavPropReferenceCache, EntityRefType, nameForEntityRefType } from "./ECClassNavPropReferenceCache";
+import { ECClassNavPropReferenceCache } from "./ECClassNavPropReferenceCache";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { EntityUnifier } from "./EntityUnifier";
 
@@ -29,8 +29,6 @@ export class IModelCloneContext {
   public readonly targetDb: IModelDb;
   /** The native import context */
   private _nativeContext: IModelJsNative.ImportContext;
-  /** the cache of types referenced by navigation properties */
-  private _navPropRefCache: ECClassNavPropReferenceCache = new ECClassNavPropReferenceCache();
 
   /** Construct a new IModelCloneContext.
    * @param sourceDb The source IModelDb.
@@ -55,7 +53,7 @@ export class IModelCloneContext {
       while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
         const schemaName = stmt.getValue(0).getString();
         const schema = schemaLoader.getSchema(schemaName);
-        await this._navPropRefCache.initSchema(schema);
+        await ECClassNavPropReferenceCache.globalCache.initSchema(schema);
       }
       if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
     });
@@ -307,10 +305,9 @@ export class IModelCloneContext {
     targetElementAspectProps.id = undefined;
     sourceElementAspect.forEachProperty((propertyName, propertyMetaData) => {
       if (propertyMetaData.isNavigation) {
-        // copy via spread to prevent altering the source
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
-          const navPropRefType = this._navPropRefCache.getNavPropRefType(
+          const navPropRefType = ECClassNavPropReferenceCache.globalCache.getNavPropRefType(
             sourceElementAspect.schemaName,
             sourceElementAspect.className,
             propertyName
