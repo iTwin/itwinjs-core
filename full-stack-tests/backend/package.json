@@ -40,7 +40,7 @@
     "@bentley/cif-subsurface-schema": "^1.0.3",
     "@bentley/cif-subsurface-conflict-analysis-schema": "^1.0.3",
     "@bentley/cif-units-schema": "^1.0.1",
-    "@bentley/imodeljs-native": "3.4.6",
+    "@bentley/imodeljs-native": "3.4.7",
     "@bentley/plant-custom-attributes-schema": "^1.0.1",
     "@bentley/process-functional-schema": "^1.0.1",
     "@bentley/process-physical-schema": "^1.0.2",
