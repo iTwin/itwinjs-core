@@ -12,7 +12,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
@@ -837,23 +837,34 @@ export class FrontstageDef {
    * @internal */
   public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
     const location = findWidget(state, widgetContainerId);
-    // istanbul ignore else
-    if (location && isPopoutWidgetLocation(location) && 1 === state.widgets[widgetContainerId].tabs.length) {
-      // NOTE: Popout Widget Container will only contain a single WidgetTab
-      const widgetDef = this.findWidgetDef(state.widgets[widgetContainerId].tabs[0]);
-      // istanbul ignore else
-      if (widgetDef) {
-        const tab = state.tabs[widgetDef.id];
-        const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
-        const position: ChildWindowLocationProps = {
-          width: tab.preferredPopoutWidgetSize?.width ?? 600,
-          height: tab.preferredPopoutWidgetSize?.height ?? 800,
-          left: tab.preferredPopoutWidgetSize?.x ?? 0,
-          top: tab.preferredPopoutWidgetSize?.y ?? 0,
-        };
-        UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
-      }
-    }
+    if (!location)
+      return;
+    if (!isPopoutWidgetLocation(location))
+      return;
+
+    const widget = state.widgets[widgetContainerId];
+    const popoutWidget = state.popoutWidgets.byId[location.popoutWidgetId];
+
+    // Popout widget should only contain a single tab.
+    if (widget.tabs.length !== 1)
+      return;
+
+    const tabId = widget.tabs[0];
+    const widgetDef = this.findWidgetDef(tabId);
+    if (!widgetDef)
+      return;
+
+    const tab = state.tabs[widgetDef.id];
+    const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+    const bounds = Rectangle.create(popoutWidget.bounds);
+
+    const position: ChildWindowLocationProps = {
+      width: bounds.getWidth(),
+      height: bounds.getHeight(),
+      left: bounds.left,
+      top: bounds.top,
+    };
+    UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
   }
 
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
@@ -866,42 +877,52 @@ export class FrontstageDef {
    */
   public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
     // istanbul ignore else
-    if (this.nineZoneState) {
-      let location = findTab(this.nineZoneState, widgetId);
-      // istanbul ignore else
-      if (location) {
-        if (isPopoutTabLocation(location))
-          return;
+    if (!this.nineZoneState)
+      return;
 
-        // get the state to apply that will pop-out the specified WidgetTab to child window.
-        const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
-        // istanbul ignore else
-        if (state) {
-          // now that the state is updated get the id of the container that houses the widgetTab/widgetId
-          location = findTab(state, widgetId);
-          // istanbul ignore else
-          if (location && isPopoutTabLocation(location)) {
-            const widgetDef = this.findWidgetDef(widgetId);
-            // istanbul ignore else
-            if (widgetDef) {
-              const widgetContainerId = location.widgetId;
-              const tab = state.tabs[widgetId];
-              this.nineZoneState = state;
-              setTimeout(() => {
-                const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
-                const position: ChildWindowLocationProps = {
-                  width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above
-                  height: tab.preferredPopoutWidgetSize!.height,
-                  left: tab.preferredPopoutWidgetSize!.x,
-                  top: tab.preferredPopoutWidgetSize!.y,
-                };
-                UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
-              });
-            }
-          }
-        }
-      }
-    }
+    let location = findTab(this.nineZoneState, widgetId);
+    if (!location)
+      return;
+    if (isPopoutTabLocation(location))
+      return;
+
+    // get the state to apply that will pop-out the specified WidgetTab to child window.
+    let preferredBounds = Rectangle.createFromSize({ height: 800, width: 600 });
+    if (size)
+      preferredBounds = preferredBounds.setSize(size);
+    if (point)
+      preferredBounds = preferredBounds.setPosition(point);
+
+    const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, preferredBounds);
+    if (!state)
+      return;
+
+    // now that the state is updated get the id of the container that houses the widgetTab/widgetId
+    location = findTab(state, widgetId);
+    if (!location || !isPopoutTabLocation(location))
+      return;
+
+    const widgetDef = this.findWidgetDef(widgetId);
+    if (!widgetDef)
+      return;
+
+    this.nineZoneState = state;
+
+    const widgetContainerId = location.widgetId;
+    const tab = state.tabs[widgetId];
+    const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
+    const bounds = Rectangle.create(popoutWidget.bounds);
+
+    setTimeout(() => {
+      const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+      const position: ChildWindowLocationProps = {
+        width: bounds.getWidth(),
+        height: bounds.getHeight(),
+        left: bounds.left,
+        top: bounds.top,
+      };
+      UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+    });
   }
 
   public get isStageClosing() {
@@ -918,11 +939,11 @@ export class FrontstageDef {
 
   /** @internal */
   public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
-    // istanbul ignore else
-    if (this.nineZoneState) {
-      const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
-      this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
-    }
+    if (!this.nineZoneState)
+      return;
+
+    const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
+    this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
   }
 
   /** @internal */

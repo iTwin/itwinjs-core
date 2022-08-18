@@ -16,9 +16,6 @@ import { getUniqueId } from "./NineZone";
 
 const category = "appui-layout-react:layout";
 
-/** @internal */
-export interface SizeAndPositionProps extends SizeProps, PointProps { }
-
 /** `WidgetDef` is equivalent structure in `appui-react`.
  * @internal
  */
@@ -27,7 +24,6 @@ export interface TabState {
   readonly label: string;
   readonly iconSpec?: IconSpec;
   readonly preferredFloatingWidgetSize?: SizeProps;
-  readonly preferredPopoutWidgetSize?: SizeAndPositionProps;
   readonly preferredPanelWidgetSize?: "fit-content";
   readonly allowedPanelTargets?: PanelSide[];
   readonly canPopout?: boolean;
@@ -61,6 +57,7 @@ export interface FloatingWidgetState {
 
 /** @internal */
 export interface PopoutWidgetState {
+  // TODO: rename to preferred bounds.
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
@@ -1253,6 +1250,9 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
 export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"], tabs: WidgetState["tabs"], popoutWidgetArgs?: Partial<PopoutWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
+  if (tabs.length !== 1)
+    throw new UiError(category, "Popout widget should contain one tab only", undefined, () => ({ tabs }));
+
   const popoutWidget = createPopoutWidgetState(id, popoutWidgetArgs);
   state = addWidgetState(state, id, tabs, widgetArgs);
   return produce(state, (stateDraft) => {
@@ -1384,27 +1384,6 @@ function initSizeProps<T, K extends KeysOfType<T, SizeProps | undefined>>(obj: T
   (obj[key] as SizeProps) = {
     height: size.height,
     width: size.width,
-  };
-}
-
-function setSizeAndPointProps(props: Draft<SizeAndPositionProps>, inValue: SizeAndPositionProps) {
-  props.x = inValue.x;
-  props.y = inValue.y;
-  props.height = inValue.height;
-  props.width = inValue.width;
-}
-
-/** @internal */
-export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPositionProps | undefined>>(obj: T, key: K, inValue: SizeAndPositionProps) {
-  if (obj[key]) {
-    setSizeAndPointProps(obj[key], inValue);
-    return;
-  }
-  (obj[key] as SizeAndPositionProps) = {
-    x: inValue.x,
-    y: inValue.y,
-    height: inValue.height,
-    width: inValue.width,
   };
 }
 
@@ -1665,8 +1644,8 @@ export function convertAllPopupWidgetContainersToFloating(state: NineZoneState):
 }
 
 /** @internal */
-export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {
-  const location = findTab(state, widgetTabId);
+export function popoutWidgetToChildWindow(state: NineZoneState, tabId: string, preferredBounds: RectangleProps): NineZoneState {
+  const location = findTab(state, tabId);
   if (!location)
     throw new UiError(category, "Tab not found");
 
@@ -1674,24 +1653,17 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
   if (isPopoutTabLocation(location))
     return state;
 
-  const tab = state.tabs[widgetTabId];
-  const preferredSizeAndPosition = { height: 800, width: 600, x: 0, y: 0, ...tab.preferredPopoutWidgetSize, ...size, ...point };
-  const preferredBounds = Rectangle.createFromSize(preferredSizeAndPosition).offset(preferredSizeAndPosition);
-
-  const nzBounds = Rectangle.createFromSize(state.size);
-  const containedBounds = preferredBounds.containIn(nzBounds);
   const popoutWidgetId = getUniqueId();
+  const nzBounds = Rectangle.createFromSize(state.size);
+  const bounds = Rectangle.create(preferredBounds).containIn(nzBounds);
 
   if (isPanelTabLocation(location)) {
     const panel = state.panels[location.side];
     const widgetIndex = panel.widgets.indexOf(location.widgetId);
 
-    state = updateTabState(state, tab.id, {
-      preferredPopoutWidgetSize: preferredSizeAndPosition,
-    });
-    state = removeTabFromWidget(state, widgetTabId);
-    return addPopoutWidget(state, popoutWidgetId, [widgetTabId], {
-      bounds: containedBounds.toProps(),
+    state = removeTabFromWidget(state, tabId);
+    return addPopoutWidget(state, popoutWidgetId, [tabId], {
+      bounds: bounds.toProps(),
       home: {
         side: location.side,
         widgetId: location.widgetId,
@@ -1701,39 +1673,14 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
   }
 
   // Floating location
-  const floatingWidget = state.widgets[location.floatingWidgetId];
-  // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
-  if (floatingWidget.tabs.length === 1) {
-    return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft) => {
-      const popoutTab = draft.tabs[widgetTabId];
-      initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-    });
-  }
+  const floatingWidget = state.floatingWidgets.byId[location.floatingWidgetId];
+  const home = floatingWidget.home;
 
-  // remove the tab from the floating container and create a new popout container
-  const home = state.floatingWidgets.byId[location.floatingWidgetId].home;
-  return produce(state, (draft) => {
-    const popoutTab = draft.tabs[widgetTabId];
-    initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-    removeTabFromWidget(draft, widgetTabId);
-    if (!draft.popoutWidgets) {
-      draft.popoutWidgets = {
-        byId: {},
-        allIds: [],
-      };
-    }
-    draft.popoutWidgets.byId[popoutWidgetId] = {
-      bounds: containedBounds.toProps(),
-      id: popoutWidgetId,
-      home,
-    };
-    draft.popoutWidgets.allIds.push(popoutWidgetId);
-    draft.widgets[popoutWidgetId] = {
-      activeTabId: widgetTabId,
-      id: popoutWidgetId,
-      minimized: false,
-      tabs: [widgetTabId],
-    };
+  // Move the tab from the floating container and create a new popout container
+  state = removeTabFromWidget(state, tabId);
+  return addPopoutWidget(state, popoutWidgetId, [tabId], {
+    bounds: bounds.toProps(),
+    home,
   });
 }
 

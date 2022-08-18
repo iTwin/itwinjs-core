@@ -12,7 +12,7 @@ import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, Fr
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { UiStateStorageStatus } from "@itwin/core-react";
+import { Rectangle, UiStateStorageStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
@@ -211,7 +211,7 @@ describe("FrontstageDef", () => {
     const frontstageDef = new FrontstageDef();
     frontstageDef.nineZoneState = state;
     const fw1Visible = frontstageDef.isWidgetDisplayed("t1");
-    expect (fw1Visible).to.be.true;
+    expect(fw1Visible).to.be.true;
 
     const t2 = new WidgetDef({
       id: "t2",
@@ -233,17 +233,17 @@ describe("FrontstageDef", () => {
     findWidgetDefGetter.returns(t3);
 
     const rightMiddleVisible = frontstageDef.isWidgetDisplayed("t2");
-    expect (rightMiddleVisible).to.be.true;
+    expect(rightMiddleVisible).to.be.true;
     const rightEndVisible = frontstageDef.isWidgetDisplayed("t3");
-    expect (rightEndVisible).to.be.false;
+    expect(rightEndVisible).to.be.false;
     const floatingWidgetVisible = frontstageDef.isWidgetDisplayed("t4");
-    expect (floatingWidgetVisible).to.be.true;
+    expect(floatingWidgetVisible).to.be.true;
     expect(frontstageDef.getWidgetCurrentState(t4)).to.eql(WidgetState.Floating);
   });
 
   it("should save size and position", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPopoutWidget(state, "pw1", ["t1"]);
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
@@ -260,21 +260,23 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerWidth").get(() => 999);
     sinon.stub(window, "innerHeight").get(() => 999);
 
-    await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
+    await frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
 
     const uiSettingsStorage = UiFramework.getUiStateStorage();
-    if (uiSettingsStorage) {
-      const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiStateStorageStatus.Success === settingsResult.status);
-      const newState = settingsResult.setting.nineZone as NineZoneState;
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
-    }
+    const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
+    expect(UiStateStorageStatus.Success === settingsResult.status);
+    const newState = settingsResult.setting.nineZone as NineZoneState;
+    expect(newState.popoutWidgets.byId.pw1.bounds).to.eql({
+      left: 99,
+      top: 99,
+      right: 99 + 999,
+      bottom: 99 + 999,
+    });
   });
 
   it("should save size and position in Electron", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPopoutWidget(state, "pw1", ["t1"]);
     state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
@@ -292,18 +294,19 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerHeight").get(() => 999);
 
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => true);
-    await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
+    await frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => false);
 
     const uiSettingsStorage = UiFramework.getUiStateStorage();
-    if (uiSettingsStorage) {
-      const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiStateStorageStatus.Success === settingsResult.status);
-      const newState = settingsResult.setting.nineZone as NineZoneState;
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999 + 39);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.width).to.eql(999 + 16);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
-    }
+    const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
+    expect(UiStateStorageStatus.Success === settingsResult.status);
+    const newState = settingsResult.setting.nineZone as NineZoneState;
+    expect(newState.popoutWidgets.byId.pw1.bounds).to.eql({
+      left: 99,
+      top: 99,
+      right: 99 + 999 + 16,
+      bottom: 99 + 999 + 39,
+    });
   });
 });
 
@@ -334,7 +337,7 @@ describe("float and dock widget", () => {
     state = addPanelWidget(state, "left", "leftStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2", "t4"], { activeTabId: "t2" });
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
+    state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
     state = produce(state, (draft) => {
@@ -387,7 +390,7 @@ describe("float and dock widget", () => {
     state = addPopoutWidget(state, "fw1", ["t1"]);
     state = addPopoutWidget(state, "fw2", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
+    state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
 

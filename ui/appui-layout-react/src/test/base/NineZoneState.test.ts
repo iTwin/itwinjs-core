@@ -8,7 +8,7 @@ import { Point, Rectangle } from "@itwin/core-react";
 import {
   addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createDraggedTabState, createFloatingWidgetState,
   createHorizontalPanelState, createNineZoneState, createTabState, createVerticalPanelState, createWidgetState, dockWidgetContainer, findTab, floatWidget,
-  initSizeAndPositionProps, isHorizontalPanelState, NineZoneStateReducer, popoutWidgetToChildWindow,
+  isHorizontalPanelState, NineZoneStateReducer, popoutWidgetToChildWindow,
   removeTabState, setFloatingWidgetContainerBounds, toolSettingsTabId,
 } from "../../appui-layout-react";
 import {
@@ -1276,11 +1276,11 @@ describe("NineZoneStateReducer", () => {
       state = addTabs(state, ["t1", "ta", "tb"]);
       state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
 
-      let newState = popoutWidgetToChildWindow(state, "t1");
+      let newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ height: 800, width: 600 }));
       expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
       const popoutWidgetContainerId1 = Object.keys(newState.popoutWidgets.byId)[0];
 
-      newState = popoutWidgetToChildWindow(newState, "ta");
+      newState = popoutWidgetToChildWindow(newState, "ta", Rectangle.createFromSize({ height: 800, width: 600 }));
       expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
       const popoutWidgetContainerId2 = Object.keys(newState.popoutWidgets.byId)[1];
       const latestState = NineZoneStateReducer(newState, {
@@ -1612,7 +1612,7 @@ describe("floatWidget", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
-    const newState = popoutWidgetToChildWindow(state, "t1");
+    const newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
     const popoutWidgetContainerId = Object.keys(newState.popoutWidgets.byId)[0];
 
@@ -1628,7 +1628,7 @@ describe("floatWidget", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
-    const newState = popoutWidgetToChildWindow(state, "t1", { x: 5, y: 10 }, { width: 100, height: 200 });
+    const newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ width: 100, height: 200 }).offset({ x: 5, y: 10 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
     const popoutWidgetContainerId = Object.keys(newState.popoutWidgets.byId)[0];
 
@@ -1650,7 +1650,7 @@ describe("floatWidget", () => {
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
 
-    const newState = popoutWidgetToChildWindow(state, "t1", { x: 5, y: 10 }, { width: 100, height: 200 });
+    const newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ width: 100, height: 200 }).offset({ x: 5, y: 10 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
     const popoutWidgetContainerId = Object.keys(newState.popoutWidgets.byId)[0];
 
@@ -1667,11 +1667,11 @@ describe("floatWidget", () => {
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
 
-    let newState = popoutWidgetToChildWindow(state, "t1");
+    let newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
     const popoutWidgetContainerId1 = Object.keys(newState.popoutWidgets.byId)[0];
 
-    newState = popoutWidgetToChildWindow(newState, "ta");
+    newState = popoutWidgetToChildWindow(newState, "ta", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
     const popoutWidgetContainerId2 = Object.keys(newState.popoutWidgets.byId)[1];
     let latestState = dockWidgetContainer(newState, popoutWidgetContainerId2, true);
@@ -1686,9 +1686,9 @@ describe("floatWidget", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
-    let newState = popoutWidgetToChildWindow(state, "t1");
+    let newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
-    newState = popoutWidgetToChildWindow(newState, "ta");
+    newState = popoutWidgetToChildWindow(newState, "ta", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
     newState = convertAllPopupWidgetContainersToFloating(newState);
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(0);
@@ -1698,36 +1698,16 @@ describe("floatWidget", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
     state = addTabs(state, ["t1", "ta", "tb"]);
     state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
-    let newState = popoutWidgetToChildWindow(state, "t1");
+    let newState = popoutWidgetToChildWindow(state, "t1", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
     const popoutWidgetContainerId1 = Object.keys(newState.popoutWidgets.byId)[0];
-    newState = popoutWidgetToChildWindow(newState, "ta");
+    newState = popoutWidgetToChildWindow(newState, "ta", Rectangle.createFromSize({ height: 800, width: 600 }));
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
     newState = convertPopoutWidgetContainerToFloating(newState, popoutWidgetContainerId1);
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(1);
 
     newState = convertFloatingWidgetContainerToPopout(newState, popoutWidgetContainerId1);
     expect(Object.entries(newState.popoutWidgets.byId).length).to.be.eql(2);
-  });
-
-  it("should process initSizeAndPositionProps", () => {
-    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addTabs(state, ["t1", "ta", "tb"]);
-    state = addPanelWidget(state, "right", "rightStart", ["t1", "ta", "tb"], { minimized: true });
-
-    const preferredSizeAndPosition = { height: 800, width: 600, x: 55, y: 55 };
-    state = produce(state, (draft) => {
-      initSizeAndPositionProps(draft.tabs.t1, "preferredPopoutWidgetSize", preferredSizeAndPosition);
-    });
-    expect(state.tabs.t1.preferredPopoutWidgetSize?.height).to.be.eql(preferredSizeAndPosition.height);
-    expect(state.tabs.t1.preferredPopoutWidgetSize?.width).to.be.eql(preferredSizeAndPosition.width);
-
-    const preferredSizeAndPosition2 = { height: 800, width: 600, x: 75, y: 75 };
-    state = produce(state, (draft) => {
-      initSizeAndPositionProps(draft.tabs.t1, "preferredPopoutWidgetSize", preferredSizeAndPosition2);
-    });
-    expect(state.tabs.t1.preferredPopoutWidgetSize?.height).to.be.eql(preferredSizeAndPosition2.height);
-    expect(state.tabs.t1.preferredPopoutWidgetSize?.width).to.be.eql(preferredSizeAndPosition2.width);
   });
 
   it("should set and clear user sized setting for floating widgets", () => {

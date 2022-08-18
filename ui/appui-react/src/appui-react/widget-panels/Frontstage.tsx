@@ -20,7 +20,7 @@ import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab, findWidget,
   floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
-  isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
+  isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTabFromWidget, removeTabState, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -329,7 +329,6 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     const saveTab = state.tabs[widgetDef.id];
     const preferredPanelWidgetSize = saveTab ? saveTab.preferredPanelWidgetSize : widgetDef.preferredPanelSize;
     const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : widgetDef.defaultFloatingSize;
-    const preferredPopoutWidgetSize = saveTab ? saveTab.preferredPopoutWidgetSize : undefined;
     // if a defaultFloatingSize is specified then this mean the widget can't determine its intrinsic size and must be explicitly sized
     const userSized = saveTab ? (saveTab.userSized || !!widgetDef.defaultFloatingSize && !!saveTab.preferredFloatingWidgetSize)
       : !!widgetDef.defaultFloatingSize;
@@ -339,7 +338,6 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       canPopout: widgetDef.canPopout,
       preferredPanelWidgetSize,
       preferredFloatingWidgetSize,
-      preferredPopoutWidgetSize,
       userSized,
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
@@ -830,7 +828,6 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
-        preferredPopoutWidgetSize: tab.preferredPopoutWidgetSize,
         allowedPanelTargets: tab.allowedPanelTargets,
         userSized: tab.userSized,
       };
@@ -1353,34 +1350,36 @@ function determineNewWidgets(defs: readonly WidgetDef[] | undefined, state: Nine
 /** @internal */
 export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window) {
   const location = findWidget(state, childWindowId);
-  // istanbul ignore else
-  if (location) {
-    const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
-    const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
-    const newState = produce(state, (draft) => {
-      const widget = draft.widgets[childWindowId];
-      const tab = draft.tabs[widget.activeTabId];
-      tab.preferredPopoutWidgetSize = {
-        x: childWindow.screenX,
-        y: childWindow.screenY,
-        width: childWindow.innerWidth + adjustmentWidth,
-        height: childWindow.innerHeight + adjustmentHeight,
-      };
-    });
+  if (!location)
+    return state;
+  if (!isPopoutWidgetLocation(location))
+    return state;
 
-    const setting: WidgetPanelsFrontstageState = {
-      id: stageId,
-      nineZone: packNineZoneState(newState),
-      widgets: {
-        allIds: [],
-        byId: {},
-      },
-      stateVersion,
-      version: stageVersion,
-    };
-    await UiFramework.getUiStateStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
-    return newState;
-  }
-  // istanbul ignore next
-  return state;
+  const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+  const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
+  const newState = produce(state, (draft) => {
+    const popoutWidget = draft.popoutWidgets.byId[location.popoutWidgetId];
+
+    const width = childWindow.innerWidth + adjustmentWidth;
+    const height = childWindow.innerHeight + adjustmentHeight;
+    const bounds = Rectangle.createFromSize({ width, height }).offset({ x: childWindow.screenX, y: childWindow.screenY });
+
+    popoutWidget.bounds.left = bounds.left;
+    popoutWidget.bounds.top = bounds.top;
+    popoutWidget.bounds.right = bounds.right;
+    popoutWidget.bounds.bottom = bounds.bottom;
+  });
+
+  const setting: WidgetPanelsFrontstageState = {
+    id: stageId,
+    nineZone: packNineZoneState(newState),
+    widgets: {
+      allIds: [],
+      byId: {},
+    },
+    stateVersion,
+    version: stageVersion,
+  };
+  await UiFramework.getUiStateStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
+  return newState;
 }

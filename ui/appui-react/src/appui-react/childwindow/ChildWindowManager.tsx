@@ -125,11 +125,11 @@ export class ChildWindowManager {
 
       childWindow.onbeforeunload = () => {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
-        if (frontStageDef) {
-          void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
-            this.closeChildWindow(childWindowId, false);
-          });
-        }
+        if (!frontStageDef)
+          return;
+        void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
+          this.closeChildWindow(childWindowId, false);
+        });
       };
     }
   }
