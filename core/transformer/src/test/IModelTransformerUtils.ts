@@ -1417,6 +1417,10 @@ export async function runWithCpuProfiler<F extends () => any>(
     profileName = "profile",
     /** an extension to append to the profileName, including the ".". Defaults to ".js.cpuprofile" */
     profileExtension = ".js.cpuprofile",
+    /** profile sampling interval in microseconds, you may want to adjust this to increase the resolution of your test
+     * default to half a millesecond
+     */
+    sampleIntervalMicroSec = 500, // half a millisecond
   } = {}
 ): Promise<ReturnType<F>> {
   const maybeNameTimePortion = timestamp ? `_${new Date().toISOString()}` : "";
@@ -1440,7 +1444,8 @@ export async function runWithCpuProfiler<F extends () => any>(
   const session = new inspector.Session();
   session.connect();
   await invokeFunc(session, "Profiler.enable");
-  await invokeFunc(session, "Profiler.start", { profilePath });
+  await invokeFunc(session, "Profiler.setSamplingInterval", { interval: sampleIntervalMicroSec });
+  await invokeFunc(session, "Profiler.start");
   const result = await f();
   await stopProfiler(session, "Profiler.stop", profilePath);
   await invokeFunc(session, "Profiler.disable");
