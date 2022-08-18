@@ -19,6 +19,7 @@ export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./GeoCoordConfig";
 export * from "./LocalHub";
 export * from "./HubMock";
 export * from "./IModelJsFs";

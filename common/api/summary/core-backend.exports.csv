@@ -168,6 +168,7 @@ public;GenericGraphicalType2d
 public;GenericPhysicalMaterial 
 public;GenericPhysicalType 
 public;GenericSchema 
+internal;GeoCoordConfig
 public;class GeometricElement 
 public;class GeometricElement2d 
 public;GeometricElement2dHasTypeDefinition 
