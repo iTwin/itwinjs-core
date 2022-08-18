@@ -5,7 +5,8 @@
 // NB: This file is not a CommonJs module - it needs to run in the browser. Do not import or export modules here!
 
 type CertaConfig = import("../CertaConfig").CertaConfig;
-declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
+declare const _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
+declare const _CERTA_MOCHA_HOOKS: any; // eslint-disable-line @typescript-eslint/naming-convention
 
 ((config: CertaConfig) => {
   const mochaOpts = config.mochaOptions;
@@ -30,4 +31,15 @@ declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslin
   // Disable timeouts when debugging.
   if (config.debug)
     mocha.timeout(0);
+
+  if (_CERTA_MOCHA_HOOKS) {
+    const { mochaOptions, mochaGlobalSetup, mochaGlobalTeardown } = _CERTA_MOCHA_HOOKS;
+    if (mochaOptions)
+      mochaOptions();
+    if (mochaGlobalSetup)
+      mocha.globalSetup(mochaGlobalSetup);
+    if (mochaGlobalTeardown)
+      mocha.globalTeardown(mochaGlobalTeardown);
+  }
+
 })(_CERTA_CONFIG);

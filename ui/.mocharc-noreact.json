@@ -4,7 +4,8 @@
     "raf/polyfill",
     "source-map-support/register",
     "jsdom-global/register",
-    "ignore-styles"
+    "ignore-styles",
+    "@itwin/build-tools/mocha-hooks"
   ],
   "checkLeaks": true,
   "timeout": 60000,

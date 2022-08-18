@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { ipcRenderer } from "electron";
 
+type CertaConfig = import("../../CertaConfig").CertaConfig;
+declare let _CERTA_CONFIG: CertaConfig; // eslint-disable-line @typescript-eslint/naming-convention
+
 // NB: This has to happen _before_ we import mocha!
 window._CertaConsole = (name: string, args: any[] = [""]) => {
   if (args.length === 0)
@@ -28,6 +31,7 @@ window.onunhandledrejection = (event: any) => {
 // Initialize mocha
 declare const window: any;
 window.mocha = new Mocha();
+window._CERTA_MOCHA_HOOKS = (_CERTA_CONFIG.mochaOptions.hooks) && require(_CERTA_CONFIG.mochaOptions.hooks);
 import "../../utils/initMocha";
 
 async function startCertaTests(entryPoint: string) {

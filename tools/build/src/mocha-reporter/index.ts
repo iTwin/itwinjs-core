@@ -10,6 +10,7 @@ if (debugLeaks)
   require("wtfnode");
 
 import * as path from "path";
+import type { MochaOptions, Reporter, Runner } from "mocha";
 
 const fs = require("fs-extra");
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/utils/utils");
@@ -25,18 +26,6 @@ function withStdErr(callback: () => void) {
   Base.consoleLog = originalConsoleLog;
 }
 
-declare const mocha: any;
-const isCI = process.env.CI || process.env.TF_BUILD;
-
-// Force rush test to fail CI builds if describe.only or it.only is used.
-// These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
-if (isCI) {
-  if (typeof (mocha) !== "undefined")
-    mocha.forbidOnly();
-  else
-    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })]!.exports.forbidOnly = true;
-}
-
 // This is necessary to enable colored output when running in rush test:
 Object.defineProperty(Base, "color", {
   get: () => process.env.FORCE_COLOR !== "false" && process.env.FORCE_COLOR !== "0",
@@ -44,10 +33,19 @@ Object.defineProperty(Base, "color", {
 });
 
 class BentleyMochaReporter extends Spec {
-  protected _junitReporter: any;
-  constructor(_runner: any, _options: any) {
+  protected _junitReporter: Reporter;
+  constructor(runner: Runner, _options: MochaOptions) {
     super(...arguments);
     this._junitReporter = new MochaJUnitReporter(...arguments);
+    this.flakyTests = 0;
+
+    runner.on("pass", (test: any) => {
+      if (/#FLAKY/.test(test.title))
+        this.flakyTests++;
+      if (test.currentRetry() > 0) {
+        logBuildWarning(`Test "${test.fullTitle()}" only succeeded after ${test.currentRetry()} retries.`);
+      }
+    });
   }
 
   public epilogue(...args: any[]) {
@@ -85,24 +83,17 @@ class BentleyMochaReporter extends Spec {
       }, 5000).unref();
     }
 
-    if (!this.stats.pending)
-      return;
+    const pluralize = (i: number) => (i === 1) ? `1 test` : `${i} tests`;
+    const currentPkgJson = path.join(process.cwd(), "package.json");
+    const packageSuffix = (fs.existsSync(currentPkgJson)) ? ` in ${require(currentPkgJson).name}` : "";
+
+    // Log warnings in CI builds when tests are marked #FLAKY.
+    if (this.flakyTests)
+      logBuildWarning(`${pluralize(this.flakyTests)} marked #FLAKY${packageSuffix}`);
 
     // Also log warnings in CI builds when tests have been skipped.
-    const currentPkgJson = path.join(process.cwd(), "package.json");
-
-    if (fs.existsSync(currentPkgJson)) {
-      const currentPackage = require(currentPkgJson).name;
-      if (this.stats.pending === 1)
-        logBuildWarning(`1 test skipped in ${currentPackage}`);
-      else
-        logBuildWarning(`${this.stats.pending} tests skipped in ${currentPackage}`);
-    } else {
-      if (this.stats.pending === 1)
-        logBuildWarning(`1 test skipped`);
-      else
-        logBuildWarning(`${this.stats.pending} tests skipped`);
-    }
+    if (this.stats.pending)
+      logBuildWarning(`${pluralize(this.stats.pending)} skipped${packageSuffix}`);
   }
 }
 

@@ -54,10 +54,6 @@ export class ChromeTestRunner {
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
-    // FIXME: Do we really want to always enforce this behavior?
-    if (process.env.CI || process.env.TF_BUILD)
-      (config.mochaOptions as any).forbidOnly = true;
-
     const { failures, coverage } = await runTestsInPuppeteer(config, process.env.CERTA_PORT!);
     webserverProcess.kill();
 
@@ -98,6 +94,15 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
       const testBundle = (config.cover && config.instrumentedTestBundle) || config.testBundle;
       await page.goto(`http://localhost:${port}`);
       await page.addScriptTag({ content: `var _CERTA_CONFIG = ${JSON.stringify(config)};` });
+      if (config.mochaOptions.hooks) {
+        const { mochaOptions, mochaGlobalSetup, mochaGlobalTeardown } = require(config.mochaOptions.hooks);
+        await page.addScriptTag({
+          content: `var _CERTA_MOCHA_HOOKS = {
+          mochaOptions: (${mochaOptions?.toString() ?? 'undefined'}),
+          mochaGlobalSetup: (${mochaGlobalSetup?.toString() ?? 'undefined'}),
+          mochaGlobalTeardown: (${mochaGlobalTeardown?.toString() ?? 'undefined'}),
+        }; ` });
+      }
       await loadScript(page, require.resolve("../../utils/initLogging.js"));
       await loadScript(page, require.resolve("mocha/mocha.js"));
       await loadScript(page, require.resolve("source-map-support/browser-source-map-support.js"));

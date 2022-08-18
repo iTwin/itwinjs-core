@@ -23,6 +23,8 @@ export interface CertaMochaOpts {
   reporter: string;
   /** Mocha reporter-specific options. */
   reporterOptions?: object;
+  /** Path to a module optionally exporting [global fixtures](https://mochajs.org/#global-fixtures) and/or a `mochaOptions` function that runs even earlier and can set additional options (e.g., `mocha.forbidOnly`). */
+  hooks?: string;
 }
 
 /** Defines options specific to the chrome test runner */

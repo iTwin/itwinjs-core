@@ -1,7 +1,8 @@
 {
   "require": [
     "../scripts/copy-test-setup.js",
-    "source-map-support/register"
+    "source-map-support/register",
+    "@itwin/build-tools/mocha-hooks"
   ],
   "checkLeaks": true,
   "timeout": 60000,
@@ -11,9 +12,7 @@
   "exclude": [
     "lib/cjs/test/coverage/**/*"
   ],
-  "reporter": [
-    "node_modules/@itwin/build-tools/mocha-reporter"
-  ],
+  "reporter": "@itwin/build-tools/mocha-reporter",
   "reporterOptions": [
     "mochaFile=lib/test/junit_results.xml"
   ]
