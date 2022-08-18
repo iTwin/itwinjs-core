@@ -3108,6 +3108,8 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     readonly containerDir: LocalDirName;
     // (undocumented)
+    static finalize(): void;
+    // (undocumented)
     findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
@@ -5162,9 +5164,10 @@ export interface WorkspaceDb {
 
 // @beta
 export interface WorkspaceOpts {
-    cloudCacheProps?: WorkspaceCloudCacheProps;
     containerDir?: LocalDirName;
     settingsFiles?: LocalFileName | [LocalFileName];
+    // @internal
+    testCloudCache?: SQLiteDb.CloudCache;
 }
 
 // @beta
