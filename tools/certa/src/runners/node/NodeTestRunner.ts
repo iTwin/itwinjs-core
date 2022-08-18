@@ -14,7 +14,7 @@ export class NodeTestRunner {
     // Initialize mocha
     global.mocha = new Mocha();
     global._CERTA_CONFIG = config;
-    global._CERTA_MOCHA_HOOKS = (config.mochaOptions.hooks) && require(config.mochaOptions.hooks);;
+    global._CERTA_MOCHA_HOOKS = (config.mochaOptions.hooks) && require(config.mochaOptions.hooks);
     require("../../utils/initMocha");
 
     // Setup source maps

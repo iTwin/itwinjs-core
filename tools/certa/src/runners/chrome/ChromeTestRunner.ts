@@ -98,9 +98,9 @@ async function runTestsInPuppeteer(config: CertaConfig, port: string) {
         const { mochaOptions, mochaGlobalSetup, mochaGlobalTeardown } = require(config.mochaOptions.hooks);
         await page.addScriptTag({
           content: `var _CERTA_MOCHA_HOOKS = {
-          mochaOptions: (${mochaOptions?.toString() ?? 'undefined'}),
-          mochaGlobalSetup: (${mochaGlobalSetup?.toString() ?? 'undefined'}),
-          mochaGlobalTeardown: (${mochaGlobalTeardown?.toString() ?? 'undefined'}),
+          mochaOptions: (${mochaOptions?.toString() ?? "undefined"}),
+          mochaGlobalSetup: (${mochaGlobalSetup?.toString() ?? "undefined"}),
+          mochaGlobalTeardown: (${mochaGlobalTeardown?.toString() ?? "undefined"}),
         }; ` });
       }
       await loadScript(page, require.resolve("../../utils/initLogging.js"));
