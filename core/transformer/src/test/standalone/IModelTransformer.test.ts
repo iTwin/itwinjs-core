@@ -24,10 +24,9 @@ import {
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
-  assertIdentityTransformation,
-  AssertOrderTransformer,
+  assertIdentityTransformation, AssertOrderTransformer,
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  RecordingIModelImporter, runWithCpuProfiler, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -1927,6 +1926,26 @@ describe("IModelTransformer", () => {
     await expect(transformer.processAll()).to.eventually.be.fulfilled;
     expect(transformer.remapCount).to.be.greaterThanOrEqual(2);
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it.only("should profile an IModel transformation", async function () {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
+    const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformationTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "ProfileTransformationTarget"}});
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    // force initialize to not profile the schema reference cache hydration that will happen the first time an IModelCloneContext is created
+    await transformer.initialize();
+    await runWithCpuProfiler(async () => {
+      await transformer.processAll();
+    }, {
+      profileName: `newbranch_${this.test?.title.replace(/ /g, "_")}`,
+      timestamp: true,
+      sampleIntervalMicroSec: 30, // this is a small space, let's get more resolution
+    });
+    transformer.dispose();
     sourceDb.close();
     targetDb.close();
   });
