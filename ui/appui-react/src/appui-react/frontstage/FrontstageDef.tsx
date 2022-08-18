@@ -35,7 +35,7 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
+import { SavedWidgets, saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
 import { BentleyStatus } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
@@ -86,6 +86,7 @@ export class FrontstageDef {
   private _nineZoneState?: NineZoneState;
   private _contentGroupProvider?: ContentGroupProvider;
   private _floatingContentControls?: ContentControl[];
+  private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -240,6 +241,12 @@ export class FrontstageDef {
         state,
       });
     }
+  }
+
+  /** @internal */
+  public get savedWidgetDefs() { return this._savedWidgetDefs; }
+  public set savedWidgetDefs(widgets: SavedWidgets | undefined) {
+    this._savedWidgetDefs = widgets;
   }
 
   /** @internal */
@@ -683,17 +690,12 @@ export class FrontstageDef {
 
   /** @beta */
   public restoreLayout() {
-    for (const zoneDef of this.zoneDefs) {
-      for (const widgetDef of zoneDef.widgetDefs) {
-        widgetDef.setWidgetState(widgetDef.defaultState);
-      }
-    }
     for (const panelDef of this.panelDefs) {
       panelDef.size = panelDef.defaultSize;
       panelDef.panelState = panelDef.defaultState;
-      for (const widgetDef of panelDef.widgetDefs) {
-        widgetDef.setWidgetState(widgetDef.defaultState);
-      }
+    }
+    for (const widgetDef of this.widgetDefs) {
+      widgetDef.setWidgetState(widgetDef.defaultState);
     }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
@@ -1016,5 +1018,32 @@ export class FrontstageDef {
       return this.nineZoneState.floatingWidgets.byId[floatingWidgetId].bounds;
     }
     return undefined;
+  }
+
+  private *_widgetDefs(): Iterator<WidgetDef> {
+    for (const zoneDef of this.zoneDefs) {
+      for (const widgetDef of zoneDef.widgetDefs) {
+        yield widgetDef;
+      }
+    }
+    for (const panelDef of this.panelDefs) {
+      for (const widgetDef of panelDef.widgetDefs) {
+        yield widgetDef;
+      }
+    }
+
+    return undefined;
+  }
+
+  /** Iterable of all widget definitions in a frontstage.
+   * @internal
+   */
+  public get widgetDefs() {
+    const defs = this._widgetDefs();
+    return {
+      [Symbol.iterator]() {
+        return defs;
+      }
+    };
   }
 }

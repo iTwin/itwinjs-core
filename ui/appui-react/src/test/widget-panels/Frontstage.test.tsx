@@ -48,6 +48,10 @@ function createFrontstageState(nineZone = createSavedNineZoneState()): WidgetPan
   return {
     id: "frontstage1",
     nineZone,
+    widgets: {
+      allIds: [],
+      byId: {},
+    },
     stateVersion: 100,
     version: 100,
   };
@@ -1118,8 +1122,8 @@ describe("Frontstage local storage wrapper", () => {
           const fakeActiveToolId = "activeTool1";
           const fakeToolLabel = "activeToolLabel";
 
-          sinon.stub(FrontstageManager, "activeToolId").get(() =>fakeActiveToolId);
-          const findSpy = sinon.stub(IModelApp.tools, "find").returns({flyover: fakeToolLabel} as any);
+          sinon.stub(FrontstageManager, "activeToolId").get(() => fakeActiveToolId);
+          const findSpy = sinon.stub(IModelApp.tools, "find").returns({ flyover: fakeToolLabel } as any);
 
           renderHook(() => useFrontstageManager(frontstageDef, true));
 
@@ -1592,15 +1596,15 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "w1");
           const widgetDef = new WidgetDef({ id: "w1", hideWithUiWhenFloating: true });
           let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          expect(hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
           let showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
-          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+          expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
 
           hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          expect(hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
           widgetDef.setFloatingContainerId(undefined);
           showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
-          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+          expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
 
         });
 
@@ -1609,22 +1613,22 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
           nineZone = addTab(nineZone, "w1");
           const widgetDef = new WidgetDef({ id: "w1" });
-          widgetDef.defaultFloatingSize = {width: 450, height: 250};
+          widgetDef.defaultFloatingSize = { width: 450, height: 250 };
           let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
-          let newState =  produce(hideWidgetState, (stateDraft) => {
+          expect(hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          let newState = produce(hideWidgetState, (stateDraft) => {
             delete stateDraft.floatingWidgets.byId.w1;
           });
           let showWidgetState = setWidgetState(newState, widgetDef, WidgetState.Open);
-          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+          expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
           hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          expect (hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
-          newState =  produce(hideWidgetState, (stateDraft) => {
+          expect(hideWidgetState.floatingWidgets.byId.w1.hidden).to.be.true;
+          newState = produce(hideWidgetState, (stateDraft) => {
             delete stateDraft.floatingWidgets.byId.w1;
           });
           widgetDef.setFloatingContainerId(undefined);
           showWidgetState = setWidgetState(newState, widgetDef, WidgetState.Open);
-          expect (showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
+          expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
         });
 
         it("should use default panel side for a floating widget", () => {
@@ -2097,7 +2101,7 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(frontstageDef, "rightPanel").get(() => rightPanelDef);
 
         const newState = addMissingWidgets(frontstageDef, state);
-        const widgets =  Object.values(newState.widgets);
+        const widgets = Object.values(newState.widgets);
         const widgetIds = widgets.reduce<Array<string>>((acc, w) => {
           acc.push(w.id);
           return acc;

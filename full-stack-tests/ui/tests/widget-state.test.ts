@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect, Page } from '@playwright/test';
 import assert from 'assert';
-import { activeTabLocator, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
+import { activeTabLocator, expectSavedFrontstageState, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
 
 enum WidgetState {
   Open = 0,
@@ -112,7 +112,7 @@ test.describe("widget state", () => {
     expect(newWidgetBounds).toEqual(widgetBounds);
   });
 
-  test("should maintain bounds of a hidden floating widget after reload", async ({ page }) => {
+  test("should maintain bounds of a hidden floating widget after reload", async ({ context, page }) => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
@@ -122,6 +122,11 @@ test.describe("widget state", () => {
 
     await setWidgetState(page, "FW-1", WidgetState.Hidden);
     await expect(widget).not.toBeVisible();
+
+    // Wait for "FW-1" state to be saved before reloading.
+    await expectSavedFrontstageState(context, (setting) => {
+      return setting.widgets.allIds.includes("FW-1");
+    });
 
     await page.reload();
 

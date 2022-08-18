@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Locator, Page } from '@playwright/test';
+import { BrowserContext, expect, Locator, Page } from '@playwright/test';
 
 export async function runKeyin(page: Page, keyin: string) {
   const ui = page.locator("#uifw-configurableui-wrapper");
@@ -37,4 +37,26 @@ export function activeTabLocator(widget: Locator) {
 
 export function panelLocator(page: Page, side: PanelSide) {
   return page.locator(`.nz-widgetPanels-panel.nz-${side}`);
+}
+
+export interface SavedFrontstageState {
+  widgets: {
+    allIds: string[];
+  };
+}
+
+/** Assertion helper that polls saved frontstage state from local storage until `conditionFn` is satisfied. */
+export async function expectSavedFrontstageState<T extends SavedFrontstageState>(context: BrowserContext, conditionFn: (state: T) => boolean) {
+  await expect.poll(async () => {
+    const storage = await context.storageState();
+    const origin = storage.origins[0];
+    const localStorage = origin.localStorage;
+    const setting = localStorage.find(({ name }) => {
+      return name.startsWith("uifw-frontstageSettings.frontstageState[");
+    });
+    if (!setting)
+      return undefined;
+    const state = JSON.parse(setting.value);
+    return conditionFn(state);
+  }, {}).toBeTruthy();
 }

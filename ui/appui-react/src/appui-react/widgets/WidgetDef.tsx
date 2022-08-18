@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
-import { Direction, PanelSide } from "@itwin/appui-layout-react";
+import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -106,9 +106,7 @@ export interface TabLocation {
   widgetIndex: number;
   side: PanelSide;
   tabIndex: number;
-  floating?: boolean;
-  floatingBounds?: RectangleProps;
-  userSized?: boolean;
+  floatingWidget?: FloatingWidgetState;
 }
 
 // -----------------------------------------------------------------------------
