@@ -50,7 +50,7 @@
     "@itwin/imodel-components-react": "workspace:*",
     "@itwin/electron-authorization": "^0.8.3",
     "@itwin/itwinui-css": "0.x",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0",
     "react-resize-detector": "^6.7.6",
