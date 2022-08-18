@@ -166,7 +166,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
     endTime: millisToHrTime(logs.scopeCreateTimestamp + logs.duration),
     status: { code: SpanStatusCode.UNSET },
-    attributes: {},
+    attributes: { ...logs.attributes ? convertToStringAttributes(logs.attributes) : undefined },
     links: [],
     events,
     duration: millisToHrTime(logs.duration),
@@ -198,4 +198,15 @@ function millisToHrTime(millis: number): HrTime {
   hrTime[0] = Math.trunc(millis / 1000);
   hrTime[1] = (millis - hrTime[0] * 1000) * 1e6;
   return hrTime;
+}
+
+function convertToStringAttributes(attributes: { [attributeKey: string]: string | string[] }): Attributes {
+  const convertedAttributes: Attributes = {};
+  for (const attributeKey of Object.keys(attributes)) {
+    if (typeof attributes[attributeKey] === "string")
+      convertedAttributes[attributeKey] = attributes[attributeKey].toString();
+    else
+      convertedAttributes[attributeKey] = JSON.stringify(attributes[attributeKey]);
+  }
+  return convertedAttributes;
 }

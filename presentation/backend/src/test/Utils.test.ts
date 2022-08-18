@@ -178,6 +178,37 @@ describe("convertToReadableSpans", () => {
     expect(actualSpans[0].parentSpanId).to.be.eq(parentSpanContext.spanId);
   });
 
+  it("adds span attributes", () => {
+    const actualSpans = convertToReadableSpans({
+      logs: [{
+        scope: "test scope 1",
+        scopeCreateTimestamp: 12345,
+        duration: 1111,
+        attributes: {
+          stringAttribute: "stringAttributeValue",
+          stringArrayAttribute: [ "value1", "value2" ],
+        },
+      }],
+    });
+
+    const expectedSpans = [
+      {
+        ...defaultSpanAttributes,
+        attributes: {
+          stringAttribute: "stringAttributeValue",
+          stringArrayAttribute: "[\"value1\",\"value2\"]",
+        },
+        name: "test scope 1",
+        startTime: [12, 345000000],
+        endTime: [13, 456000000],
+        duration: [1, 111000000],
+      },
+    ];
+
+    expect(actualSpans.length).to.eq(1);
+    expect(actualSpans[0]).to.deep.include(expectedSpans[0]);
+  });
+
   it("converts nested logs to readable spans", () => {
     const actualSpans = convertToReadableSpans({
       logs: [
