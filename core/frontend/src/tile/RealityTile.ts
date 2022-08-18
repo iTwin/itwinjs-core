@@ -66,7 +66,7 @@ export class RealityTile extends Tile {
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this.transformToRoot = props.transformToRoot;
-    this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
+    this.additiveRefinement = props.additiveRefinement ?? this.realityParent?.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
@@ -187,7 +187,7 @@ export class RealityTile extends Tile {
     const children = this.realityChildren;
     let hasProtectedChildren = false;
 
-    if (children) {
+    if (children && !this.additiveRefinement) {
       for (const child of children) {
         hasProtectedChildren = child.preloadProtectedTiles(args, context) || hasProtectedChildren;
       }
@@ -348,7 +348,7 @@ export class RealityTile extends Tile {
     const tilesToPurge = new Set<RealityTile>();
 
     // Get the list of tiles to purge
-    if (useProtectedTiles)
+    if (useProtectedTiles && !this.additiveRefinement)
       this.getTilesToPurge(olderThan, tilesToPurge);
     else
       this.getTilesToPurgeWithoutProtection(olderThan, tilesToPurge);
