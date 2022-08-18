@@ -5,6 +5,7 @@
 import { assert, expect } from "chai";
 import { Angle } from "@itwin/core-geometry";
 import { Gradient } from "../Gradient";
+import { ImageBuffer, ImageBufferFormat } from "../Image";
 
 describe("Gradient.Symb", () => {
   it("should round-trip through JSON", () => {
@@ -243,16 +244,96 @@ describe("Gradient.Symb", () => {
     }
   });
 
-  it("should produce gradient image of the correct dimensions", () => {
-    const symb = Gradient.Symb.fromJSON({
-      mode: Gradient.Mode.Thematic,
-      flags: Gradient.Flags.Outline,
-      tint: 0.6,
-      shift: 1,
-      keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+  function getPixel(img: ImageBuffer, x: number, y: number): number {
+    expect(img.format).to.equal(ImageBufferFormat.Rgba);
+    expect(img.data.byteLength).to.equal(img.width * img.height * 4);
+
+    const data = new Uint32Array(img.data.buffer);
+    const index = x + y * img.width;
+    return data[index];
+  }
+
+  describe("getImage", () => {
+    it("produces an image of the specified dimensions", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Linear,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+      });
+
+      const img = symb.getImage(123, 456);
+      expect(img.width).to.equal(123);
+      expect(img.height).to.equal(456);
     });
-    const img = symb.getImage(50, 25);
-    expect(img.width).to.equal(50);
-    expect(img.height).to.equal(25);
+
+    it("constraints width of thematic image to 1", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+      });
+
+      const img = symb.getImage(123, 456);
+      expect(img.width).to.equal(1);
+      expect(img.height).to.equal(456);
+    });
+
+    it("includes thematic margin color", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        thematicSettings: { marginColor: 0x00ff00 },
+      });
+
+      const img = symb.getImage(1, 8192);
+      expect(getPixel(img, 0, 8191)).to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 0)).to.equal(0xff00ff00);
+    });
+  });
+
+  describe("produceImage", () => {
+    it("produces an image of the specified dimensions", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Linear,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+      });
+
+      const img = symb.produceImage({ width: 123, height: 456 });
+      expect(img.width).to.equal(123);
+      expect(img.height).to.equal(456);
+    });
+
+    it("does not constrain dimensions of thematic images", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+      });
+
+      const img = symb.produceImage({ width: 123, height: 456 });
+      expect(img.width).to.equal(123);
+      expect(img.height).to.equal(456);
+    });
+
+    it("allows thematic margin color to be included or omitted", () => {
+      const symb = Gradient.Symb.fromJSON({
+        mode: Gradient.Mode.Thematic,
+        keys: [{ value: .65, color: 100 }, { value: .12, color: 100 }],
+        thematicSettings: { marginColor: 0x00ff00 },
+      });
+
+      let img = symb.produceImage({ width: 1, height: 8192, includeThematicMargin: true });
+      expect(getPixel(img, 0, 8191)).to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 0)).to.equal(0xff00ff00);
+
+      img = symb.produceImage({ width: 1, height: 8192, includeThematicMargin: false });
+      expect(getPixel(img, 0, 8191)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 0)).not.to.equal(0xff00ff00);
+
+      img = symb.produceImage({ width: 1, height: 8192 });
+      expect(getPixel(img, 0, 8191)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 127)).not.to.equal(0xff00ff00);
+      expect(getPixel(img, 0, 0)).not.to.equal(0xff00ff00);
+    });
   });
 });

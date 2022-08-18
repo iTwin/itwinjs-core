@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { join } from "path";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
@@ -11,7 +12,7 @@ describe("#performance Element properties loading", () => {
   let imodel: SnapshotDb;
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
     Presentation.initialize({
       useMmap: true,
     });

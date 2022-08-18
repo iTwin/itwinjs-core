@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-i18n",
-      "comment": "replace deprecated i18next-xhr-backend with i18next-http-backend",
+      "comment": "",
       "type": "none"
     }
   ],
