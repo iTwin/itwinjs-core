@@ -776,7 +776,7 @@ export interface CodeService {
     // @internal (undocumented)
     addAllCodeSpecs: () => Promise<void>;
     addCodeSpec: (val: CodeService.NameAndJson) => Promise<void>;
-    readonly appParams: CodeService.ObtainLockParams & CodeService.AuthorAndOrigin;
+    readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
     readonly briefcase: BriefcaseDb;
     // @internal (undocumented)
     close: () => void;
@@ -865,12 +865,6 @@ export namespace CodeService {
         readonly name: string;
     }
     export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
-    export interface ObtainLockParams {
-        nRetries: number;
-        onFailure?: CloudSqlite.WriteLockBusyHandler;
-        retryDelayMs: number;
-        user?: string;
-    }
     export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
     export interface ProposedCodeProps extends CodeGuidStateJson {
         value?: CodeValue;
@@ -3960,6 +3954,54 @@ export enum ProgressStatus {
     Continue = 0
 }
 
+// @alpha
+export interface PropertyStore {
+    readonly appParams: SQLiteDb.ObtainLockParams;
+    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
+    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    sasToken: AccessToken;
+    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
+    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
+    // @internal
+    startPrefetch(): SQLiteDb.CloudPrefetch;
+    synchronizeWithCloud: () => void;
+    readonly values: PropertyStore.Values;
+}
+
+// @alpha (undocumented)
+export namespace PropertyStore {
+    let // @internal (undocumented)
+    openPropertyStore: undefined | ((props: CloudSqlite.ContainerAccessProps) => PropertyStore);
+    export type IterationReturn = void | "stop";
+    export type PropertyArray = {
+        name: PropertyName;
+        value: PropertyType;
+    }[];
+    export interface PropertyFilter {
+        readonly orderBy?: "ASC" | "DESC";
+        readonly sqlExpression?: string;
+        readonly value?: string;
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    }
+    export type PropertyIteration = (name: string) => IterationReturn;
+    export type PropertyName = string;
+    export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+    export interface Values {
+        forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
+        getBlob(name: PropertyName): Uint8Array | undefined;
+        getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
+        getBoolean(name: PropertyName): boolean | undefined;
+        getBoolean(name: PropertyName, defaultValue: boolean): boolean;
+        getNumber(name: PropertyName): number | undefined;
+        getNumber(name: PropertyName, defaultValue: number): number;
+        getObject<T extends SettingObject>(name: PropertyName): T | undefined;
+        getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+        getProperty(name: PropertyName): PropertyType | undefined;
+        getString(name: PropertyName): string | undefined;
+        getString(name: PropertyName, defaultValue: string): string;
+    }
+}
+
 // @public
 export type PullChangesArgs = ToChangesetArgs;
 
@@ -4536,6 +4578,13 @@ export namespace SQLiteDb {
         container: SQLiteDb.CloudContainer;
         dbName: string;
         user: string;
+    }
+    // @internal
+    export interface ObtainLockParams {
+        nRetries: number;
+        onFailure?: CloudSqlite.WriteLockBusyHandler;
+        retryDelayMs: number;
+        user?: string;
     }
     export interface OpenOrCreateParams {
         defaultTxn?: 0 | 1 | 2 | 3;

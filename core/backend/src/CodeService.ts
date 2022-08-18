@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
 import { BriefcaseDb } from "./IModelDb";
+import { SQLiteDb } from "./SQLiteDb";
 import { SettingObject } from "./workspace/Settings";
 
 /**
@@ -78,7 +78,7 @@ export interface CodeService {
    * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
    * that is called every time a BriefcaseDb that uses code services is opened for write access.
    */
-  readonly appParams: CodeService.ObtainLockParams & CodeService.AuthorAndOrigin;
+  readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
 
   /**
    * The token that grants access to the cloud container for this CodeService.
@@ -251,22 +251,6 @@ export namespace CodeService {
 
   /** An iteration function over code specs in a code index. It is called with the name and json of a each code spec. */
   export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
-
-  /** Parameters used to obtain the write lock on a cloud container */
-  export interface ObtainLockParams {
-    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
-    user?: string;
-    /** number of times to retry in the event the lock currently held by someone else.
-     * After this number of attempts, `onFailure` is called. Default is 20.
-     */
-    nRetries: number;
-    /** Delay between retries, in milliseconds. Default is 100. */
-    retryDelayMs: number;
-    /** function called if lock cannot be obtained after all retries. It is called with the name of the user currently holding the lock and
-     * generally is expected that the user will be consulted whether to wait further.
-     * If this function returns "stop", an exception will be thrown. Otherwise the retry cycle is restarted. */
-    onFailure?: CloudSqlite.WriteLockBusyHandler;
-  }
 
   /** Argument for reserving an array of new codes. */
   export interface ReserveCodesArgs {
