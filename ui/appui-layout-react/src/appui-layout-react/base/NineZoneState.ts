@@ -1408,35 +1408,35 @@ export function initSizeAndPositionProps<T, K extends KeysOfType<T, SizeAndPosit
   };
 }
 
-interface PanelLocation {
+interface PanelTabLocation {
   widgetId: WidgetState["id"];
   side: PanelSide;
 }
 
-interface FloatingLocation {
+interface FloatingTabLocation {
   widgetId: WidgetState["id"];
   floatingWidgetId: FloatingWidgetState["id"];
 }
 
-interface PopoutLocation {
+interface PopoutTabLocation {
   widgetId: WidgetState["id"];
   popoutWidgetId: PopoutWidgetState["id"];
 }
 
-type TabLocation = PanelLocation | FloatingLocation | PopoutLocation;
+type TabLocation = PanelTabLocation | FloatingTabLocation | PopoutTabLocation;
 
 /** @internal */
-export function isFloatingLocation(location: TabLocation): location is FloatingLocation {
+export function isFloatingTabLocation(location: TabLocation): location is FloatingTabLocation {
   return "floatingWidgetId" in location;
 }
 
 /** @internal */
-export function isPopoutLocation(location: TabLocation): location is PopoutLocation {
+export function isPopoutTabLocation(location: TabLocation): location is PopoutTabLocation {
   return "popoutWidgetId" in location;
 }
 
 /** @internal */
-export function isPanelLocation(location: TabLocation): location is PanelLocation {
+export function isPanelTabLocation(location: TabLocation): location is PanelTabLocation {
   return "side" in location;
 }
 
@@ -1522,7 +1522,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   if (!location)
     throw new UiError(category, "Tab not found");
 
-  if (isFloatingLocation(location))
+  if (isFloatingTabLocation(location))
     return state;
 
   const tab = state.tabs[widgetTabId];
@@ -1532,7 +1532,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
   const nzBounds = Rectangle.createFromSize(state.size);
   const containedBounds = preferredBounds.containIn(nzBounds);
 
-  if (isPanelLocation(location)) {
+  if (isPanelTabLocation(location)) {
     const floatingWidgetId = widgetTabId ? widgetTabId : /* istanbul ignore next */ getUniqueId();
     const panel = state.panels[location.side];
     const widgetIndex = panel.widgets.indexOf(location.widgetId);
@@ -1581,7 +1581,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
   } else {
     const location = findTab(state, widgetTabId);
     if (location) {
-      if (isFloatingLocation(location)) {
+      if (isFloatingTabLocation(location)) {
         const floatingWidgetId = location.widgetId;
         return NineZoneStateReducer(state, {
           type: "FLOATING_WIDGET_SEND_BACK",
@@ -1589,7 +1589,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
         });
       } else {
         // istanbul ignore else
-        if (isPopoutLocation(location)) {
+        if (isPopoutTabLocation(location)) {
           const popoutWidgetId = location.widgetId;
           return NineZoneStateReducer(state, {
             type: "POPOUT_WIDGET_SEND_BACK",
@@ -1671,7 +1671,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
     throw new UiError(category, "Tab not found");
 
   // Already in popout state.
-  if (isPopoutLocation(location))
+  if (isPopoutTabLocation(location))
     return state;
 
   const tab = state.tabs[widgetTabId];
@@ -1682,7 +1682,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
   const containedBounds = preferredBounds.containIn(nzBounds);
   const popoutWidgetId = getUniqueId();
 
-  if (isPanelLocation(location)) {
+  if (isPanelTabLocation(location)) {
     const panel = state.panels[location.side];
     const widgetIndex = panel.widgets.indexOf(location.widgetId);
 
