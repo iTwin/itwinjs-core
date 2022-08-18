@@ -20,7 +20,7 @@ import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab, findWidget,
   floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
-  isHorizontalPanelSide, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
+  isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTabFromWidget, removeTabState, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -1000,40 +1000,38 @@ export function setWidgetState(
 
     return produce(state, (draft) => {
       assert(!!location);
-      if (!!widgetDef.tabLocation.floatingWidget) {
-        draft.floatingWidgets.byId[widgetDef.floatingContainerId ?? widgetDef.id].hidden = false;
-      }
       const widget = draft.widgets[location.widgetId];
       widget.minimized = false;
       widget.activeTabId = id;
-      // ensure panel containing widget is not collapsed
-      // istanbul ignore else
-      if ("side" in location) {
+
+      if (isFloatingTabLocation(location)) {
+        const floatingWidget = draft.floatingWidgets.byId[location.floatingWidgetId];
+        floatingWidget.hidden = false;
+      } else if (isPanelTabLocation(location)) {
         const panel = draft.panels[location.side];
-        panel.collapsed && (panel.collapsed = false);
-        // istanbul ignore next
+        panel.collapsed = false;
         if (undefined === panel.size || 0 === panel.size) {
           panel.size = panel.minSize ?? 200;
         }
       }
     });
   } else if (widgetState === WidgetState.Closed) {
+    const id = widgetDef.id;
+    let location = findTab(state, id);
+    if (!location) {
+      state = addHiddenWidget(state, widgetDef);
+      location = findTab(state, id);
+    }
+
+    // TODO: should change activeTabId of a widget with multiple tabs.
     return produce(state, (draft) => {
-      const id = widgetDef.id;
-      let location = findTab(state, id);
-      if (id in state.tabs) {
-        // state = updateTabState(state, id, { hidden: false }); // TODO: wip
-      }
-      if (!location) {
-        addHiddenWidget(draft, widgetDef);
-        location = findTab(state, id);
-        assert(!!location);
-      }
+      assert(!!location);
+      const widget = draft.widgets[location.widgetId];
+
       if (isFloatingTabLocation(location)) {
-        const widget = draft.widgets[location.widgetId];
-        if (id !== widget.activeTabId)
-          return;
-        widget.minimized = true;
+        if (id === widget.activeTabId) {
+          widget.minimized = true;
+        }
       }
     });
   }
