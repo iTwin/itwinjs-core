@@ -6,7 +6,7 @@ import * as React from "react";
 
 import { getQuantityFormatsSettingsManagerEntry, getUiSettingsManagerEntry, UiFramework } from "@itwin/appui-react";
 import { SettingsTabEntry, SettingsTabsProvider } from "@itwin/core-react";
-import { AccudrawSettingsPageComponent } from "../frontstages/Settings";
+import { AccudrawSettingsPageComponent, TargetSettingsPageComponent } from "../frontstages/Settings";
 
 // Sample settings provider that dynamically adds settings into the setting stage
 export class AppSettingsTabsProvider implements SettingsTabsProvider {
@@ -23,6 +23,13 @@ export class AppSettingsTabsProvider implements SettingsTabsProvider {
         tooltip: "Accudraw Settings",
       },
       getUiSettingsManagerEntry(30, true),
+      {
+        itemPriority: 20, tabId: "ui-test-app:Target", label: "Drop Targets",
+        page: <TargetSettingsPageComponent />,
+        isDisabled: false,
+        icon: "icon-drag",
+        tooltip: "Drop Target Settings",
+      },
     ];
   }
 

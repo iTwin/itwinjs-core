@@ -55,7 +55,6 @@ export class IModelIndexFrontstage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         usage={StageUsage.Private}
       />
     );

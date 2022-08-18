@@ -284,7 +284,7 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  /** See [DisplayStyleSettings.analysisStyle]($common). */
   public get analysisStyle(): AnalysisStyle | undefined {
     return this.displayStyle.settings.analysisStyle;
   }
@@ -340,7 +340,6 @@ export abstract class ViewState extends ElementState {
     const acsId = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValid(acsId))
       hydrateRequest.acsId = acsId;
-    this.iModel.subcategories.preload(hydrateRequest, this.categorySelector.categories);
   }
 
   /** Asynchronously load any required data for this ViewState from the backend.
@@ -356,17 +355,20 @@ export abstract class ViewState extends ElementState {
 
     const hydrateRequest: HydrateViewStateRequestProps = {};
     this.preload(hydrateRequest);
-    const promises = [
-      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest),
+    const promises: Promise<any>[] = [
+      IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).hydrateViewState(this.iModel.getRpcProps(), hydrateRequest).
+        then(async (hydrateResponse) => this.postload(hydrateResponse)),
       this.displayStyle.load(),
     ];
-    const result = await Promise.all<any>(promises);
-    const hydrateResponse = result[0];
-    await this.postload(hydrateResponse);
+
+    const subcategories = this.iModel.subcategories.load(this.categorySelector.categories);
+    if (undefined !== subcategories)
+      promises.push(subcategories.promise.then((_) => { }));
+
+    await Promise.all(promises);
   }
 
   protected async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
-    this.iModel.subcategories.postload(hydrateResponse);
     if (hydrateResponse.acsElementProps)
       this._auxCoordSystem = AuxCoordSystemState.fromProps(hydrateResponse.acsElementProps, this.iModel);
   }

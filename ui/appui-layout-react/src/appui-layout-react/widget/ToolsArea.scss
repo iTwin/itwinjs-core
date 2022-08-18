@@ -2,11 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "./tools/button/variables";
 @import "../widgetopacity";
 
 .nz-tools-widget {
-  transition: visibility 0.5s ease, opacity 0.5s ease;
+  transition: visibility $iui-speed ease, opacity $iui-speed ease;
 
   &.nz-hidden {
     opacity: 0;
@@ -22,18 +23,18 @@
   justify-items: start;
   grid-template-columns: auto 1fr;
 
-  > .nz-vertical-tool-area {
+  >.nz-vertical-tool-area {
     display: inline-flex;
     flex-direction: column;
     height: 100%;
     align-items: flex-start;
 
-    > .nz-app-button {
+    >.nz-app-button {
       pointer-events: auto;
       @include nz-widget-opacity;
     }
 
-    > .nz-vertical-toolbar-container {
+    >.nz-vertical-toolbar-container {
       height: calc(100% - 60px);
       display: inline-flex;
       flex-direction: column;
@@ -41,7 +42,7 @@
     }
   }
 
-  > .nz-horizontal-toolbar-container {
+  >.nz-horizontal-toolbar-container {
     width: 100%;
     @include nz-widget-opacity;
   }

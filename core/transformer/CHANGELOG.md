@@ -1,6 +1,35 @@
 # Change Log - @itwin/core-transformer
 
-This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- always close transformer resumption state db even on errors
+- make sure tests use a unique cacheDir
+- IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance
+- move HubMock to core-backend
+- deprecate danglingPredecessorsBehavior in favor of danglingReferencesBehavior
+- fix IModelExporter not exporting brep data when exporting geometry
+- Fix assertion on valid case in mapId64.
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
 
 ## 3.2.5
 Wed, 13 Jul 2022 15:45:52 GMT

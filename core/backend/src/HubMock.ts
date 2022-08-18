@@ -10,7 +10,7 @@ import {
 } from "@itwin/core-common";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckpointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
   LockMap, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { CheckpointProps } from "./CheckpointManager";
@@ -18,6 +18,11 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
+
+function wasStarted(val: string | undefined): asserts val is string {
+  if (undefined === val)
+    throw new Error("Call HubMock.startup first");
+}
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -59,10 +64,8 @@ export class HubMock {
 
   /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
-
   public static get iTwinId() {
-    if (undefined === this._iTwinId)
-      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+    wasStarted(this._iTwinId);
     return this._iTwinId;
   }
 
@@ -89,7 +92,7 @@ export class HubMock {
    * @note this function throws an exception if any of the iModels used during the tests are left open.
    */
   public static shutdown() {
-    if (!this.isValid)
+    if (this.mockRoot === undefined)
       return;
 
     HubMock._iTwinId = undefined;
@@ -97,10 +100,8 @@ export class HubMock {
       hub[1].cleanup();
 
     this.hubs.clear();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    IModelJsFs.purgeDirSync(this.mockRoot!);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    IModelJsFs.removeSync(this.mockRoot!);
+    IModelJsFs.purgeDirSync(this.mockRoot);
+    IModelJsFs.removeSync(this.mockRoot);
     IModelHost.setHubAccess(this._saveHubAccess);
     this.mockRoot = undefined;
   }
@@ -114,9 +115,7 @@ export class HubMock {
 
   /** create a [[LocalHub]] for an iModel.  */
   public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
-    if (!this.mockRoot)
-      throw new Error("call startup first");
-
+    wasStarted(this.mockRoot);
     const props = { ...arg, iModelId: Guid.createValue() };
     const mock = new LocalHub(join(this.mockRoot, props.iModelId), props);
     this.hubs.set(props.iModelId, mock);
@@ -179,11 +178,11 @@ export class HubMock {
     return this.findLocalHub(arg.iModelId).releaseBriefcaseId(arg.briefcaseId);
   }
 
-  public static async downloadChangeset(arg: ChangesetArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps> {
+  public static async downloadChangeset(arg: DownloadChangesetArg): Promise<ChangesetFileProps> {
     return this.findLocalHub(arg.iModelId).downloadChangeset({ index: this.changesetIndexFromArg(arg), targetDir: arg.targetDir });
   }
 
-  public static async downloadChangesets(arg: ChangesetRangeArg & { targetDir: LocalDirName }): Promise<ChangesetFileProps[]> {
+  public static async downloadChangesets(arg: DownloadChangesetRangeArg): Promise<ChangesetFileProps[]> {
     return this.findLocalHub(arg.iModelId).downloadChangesets({ range: arg.range, targetDir: arg.targetDir });
   }
 
@@ -203,10 +202,7 @@ export class HubMock {
     return undefined;
   }
 
-  public static async downloadV2Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
-    return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
-  }
-
+  // eslint-disable-next-line deprecation/deprecation
   public static async downloadV1Checkpoint(arg: CheckpointArg): Promise<ChangesetIndexAndId> {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: arg.checkpoint.changeset, targetFile: arg.localFile });
   }
