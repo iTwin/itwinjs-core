@@ -99,14 +99,14 @@ export enum SpanStatusCode {
 
 /** @public */
 export interface Attributes  {
-  [attributeKey: string]: string | string[];
+  [attributeKey: string]: string;
 }
 
 /** @public */
 export interface TimedEvent {
   time: HrTime;
   name: string;
-  attributes: { [attributeKey: string]: string };
+  attributes: Attributes;
 }
 
 /** @public */

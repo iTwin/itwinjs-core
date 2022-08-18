@@ -57,7 +57,7 @@ import { WithCancelEvent } from '@itwin/presentation-common';
 // @public (undocumented)
 export interface Attributes {
     // (undocumented)
-    [attributeKey: string]: string | string[];
+    [attributeKey: string]: string;
 }
 
 // @public (undocumented)
@@ -453,9 +453,7 @@ export enum SpanStatusCode {
 // @public (undocumented)
 export interface TimedEvent {
     // (undocumented)
-    attributes: {
-        [attributeKey: string]: string;
-    };
+    attributes: Attributes;
     // (undocumented)
     name: string;
     // (undocumented)
