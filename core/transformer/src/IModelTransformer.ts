@@ -637,7 +637,6 @@ export class IModelTransformer extends IModelExportHandler {
       if (alreadyImported)
         continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
-      // NOTE: this runs a query that `findTargetEntityId` already does in the iModel case, might want to figure out how to remove the double query
       const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
       if (!exists) {
         Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);
@@ -1194,7 +1193,8 @@ export class IModelTransformer extends IModelExportHandler {
    * Called by all `process*` functions implicitly.
    * Overriders must call `super.initialize()` first
    */
-  protected async initialize() {
+  public async initialize() {
+    // FIXME
     // ^^ or just deprecate (externally) initFromExternalSourceAspects and suggest people use initialize instead
     if (this._initialized) return;
 
