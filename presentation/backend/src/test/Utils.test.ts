@@ -196,7 +196,7 @@ describe("convertToReadableSpans", () => {
         ...defaultSpanAttributes,
         attributes: {
           stringAttribute: "stringAttributeValue",
-          stringArrayAttribute: "[\"value1\",\"value2\"]",
+          stringArrayAttribute: ["value1", "value2"],
         },
         name: "test scope 1",
         startTime: [12, 345000000],
