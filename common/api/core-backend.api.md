@@ -2608,6 +2608,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    getSchemaProps(name: string): IModelJsNative.SchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
@@ -3589,9 +3590,6 @@ export interface LockStatusShared {
     // (undocumented)
     state: LockState.Shared;
 }
-
-// @alpha
-export const makeSchemaPropsGetterFromIModel: (iModel: IModelDb) => (schemaName: string) => IModelJsNative;
 
 // @internal
 export class MetaDataRegistry {

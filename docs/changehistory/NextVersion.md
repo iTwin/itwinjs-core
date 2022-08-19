@@ -57,9 +57,8 @@ const loader = new IModelSchemaLoader(iModel);
 const schema = loader.getSchema("BisCore");
 
 // New
-import { makeSchemaPropsGetterFromIModel } from "@itwin/core-backend";
 import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader(makeSchemaPropsGetterFromIModel(iModel));
+const loader = new SchemaLoader((name: string) => { return iModel.getSchemaProps(name); });
 const schema = loader.getSchema("BisCore");
 ```
 

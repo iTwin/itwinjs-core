@@ -1033,6 +1033,14 @@ export abstract class IModelDb extends IModel {
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
+  /** Returns the full schema for the input name or undefined if the schema does not exist in this iModel.
+   * @param name The name of the schema e.g. 'BisCore'
+   * @returns The SchemaProps for the requested schema or undefined
+   */
+  public getSchemaProps(name: string): IModelJsNative.SchemaProps {
+    return this.nativeDb.getSchemaProps(name);
+  }
+
   /** Query if this iModel contains the definition of the specified class.
    * @param classFullName The full name of the class, for example, SomeSchema:SomeClass
    * @returns true if the iModel contains the class definition or false if not.
