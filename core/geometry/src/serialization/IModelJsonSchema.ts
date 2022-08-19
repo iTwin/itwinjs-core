@@ -1963,14 +1963,18 @@ export namespace IModelJson {
         myKnots = curve.copyKnots(true);  // add clamped extraneous knots
       }
 
-      return {
+      interface Bcurve {
         bcurve: {
-          points: myPoles,
-          knots: myKnots,
-          order: curve.order,
-          closed: myClosed,
-        },
-      };
+          points: number[][];
+          knots: number[];
+          order: number;
+          closed?: boolean;
+        };
+      }
+      const json: Bcurve = { bcurve: {points: myPoles, knots: myKnots, order: curve.order} };
+      if (myClosed)
+        json.bcurve.closed = true;
+      return json;
     }
 
     /** Convert strongly typed instance to tagged json */
@@ -2037,6 +2041,8 @@ export namespace IModelJson {
       const myPoles = surface.getPointGridJSON().points;
       let myKnotsU: number[];
       let myKnotsV: number[];
+      const myOrderU = surface.orderUV(UVSelect.uDirection);
+      const myOrderV = surface.orderUV(UVSelect.vDirection);
       let myClosedU = false;
       let myClosedV = false;
 
@@ -2050,7 +2056,7 @@ export namespace IModelJson {
         myClosedU = true;
       } else if (wrapModeU === BSplineWrapMode.OpenByRemovingKnots) {
         // re-close the legacy periodic case. Poles unchanged.
-        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.uDirection, false), surface.orderUV(UVSelect.uDirection), myKnotsU = []);
+        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.uDirection, false), myOrderU, myKnotsU = []);
         myClosedU = true;
       } else {
         myKnotsU = surface.copyKnots(UVSelect.uDirection, true);  // add clamped extraneous knots
@@ -2065,23 +2071,29 @@ export namespace IModelJson {
         myClosedV = true;
       } else if (wrapModeV === BSplineWrapMode.OpenByRemovingKnots) {
         // re-close the legacy periodic case. Poles unchanged.
-        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.vDirection, false), surface.orderUV(UVSelect.vDirection), myKnotsV = []);
+        Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.vDirection, false), myOrderV, myKnotsV = []);
         myClosedV = true;
       } else {
         myKnotsV = surface.copyKnots(UVSelect.vDirection, true);  // add clamped extraneous knots
       }
 
-      return {
+      interface Bsurf {
         bsurf: {
-          points: myPoles,
-          uKnots: myKnotsU,
-          vKnots: myKnotsV,
-          orderU: surface.orderUV(UVSelect.uDirection),
-          orderV: surface.orderUV(UVSelect.vDirection),
-          closedU: myClosedU,
-          closedV: myClosedV,
-        },
-      };
+          points: number[][][];
+          uKnots: number[];
+          vKnots: number[];
+          orderU: number;
+          orderV: number;
+          closedU?: boolean;
+          closedV?: boolean;
+        };
+      }
+      const json: Bsurf = { bsurf: {points: myPoles, uKnots: myKnotsU, vKnots: myKnotsV, orderU: myOrderU, orderV: myOrderV} };
+      if (myClosedU)
+        json.bsurf.closedU = true;
+      if (myClosedV)
+        json.bsurf.closedV = true;
+      return json;
     }
 
     /** Convert strongly typed instance to tagged json */
