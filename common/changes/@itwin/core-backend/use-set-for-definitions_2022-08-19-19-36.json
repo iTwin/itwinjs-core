@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Use `Set` in `sortChildrenBeforeParents`",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
