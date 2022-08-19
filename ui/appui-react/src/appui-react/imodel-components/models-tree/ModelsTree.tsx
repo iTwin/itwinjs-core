@@ -108,6 +108,7 @@ export function ModelsTree(props: ModelsTreeProps) {
 
   const visibilityHandler = useVisibilityHandler(
     nodeLoader.dataProvider.rulesetId,
+    props.iModel,
     activeView,
     modelsVisibilityHandler,
     getFilteredDataProvider(filteredNodeLoader.dataProvider),
@@ -199,15 +200,15 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
 
 function useVisibilityHandler(
   rulesetId: string,
+  iModel: IModelConnection,
   activeView?: Viewport,
   visibilityHandler?: ModelsVisibilityHandler,
   filteredDataProvider?: IFilteredPresentationTreeDataProvider,
   hierarchyAutoUpdateEnabled?: boolean,
 ) {
-  const iModel = activeView?.iModel;
-  const subjectModelIdsCache = React.useMemo(() => iModel ? new SubjectModelIdsCache(iModel) : undefined, [iModel]);
+  const subjectModelIdsCache = React.useMemo(() => new SubjectModelIdsCache(iModel), [iModel]);
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
-    if (activeView && subjectModelIdsCache)
+    if (activeView)
       return createVisibilityHandler(rulesetId, activeView, subjectModelIdsCache, hierarchyAutoUpdateEnabled);
     return undefined;
   }, [rulesetId, activeView, subjectModelIdsCache, hierarchyAutoUpdateEnabled]));
