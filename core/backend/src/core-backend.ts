@@ -34,7 +34,6 @@ export * from "./Model";
 export * from "./NavigationRelationship";
 export * from "./RpcBackend";
 export * from "./Schema";
-export * from "./SchemaPropsFromIModel";
 export * from "./SqliteStatement";
 export * from "./SQLiteDb";
 export * from "./ViewDefinition";
