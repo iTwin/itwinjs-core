@@ -47,18 +47,11 @@ import { SelectClassInfo } from '@itwin/presentation-common';
 import { SelectionScope } from '@itwin/presentation-common';
 import { SelectionScopeRequestOptions } from '@itwin/presentation-common';
 import { SingleElementPropertiesRequestOptions } from '@itwin/presentation-common';
-import { SpanKind } from '@itwin/core-bentley';
 import { UnitSystemKey } from '@itwin/core-quantity';
 import { UpdateInfoJSON } from '@itwin/presentation-common';
 import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
-
-// @public (undocumented)
-export interface Attributes {
-    // (undocumented)
-    [attributeKey: string]: string;
-}
 
 // @public (undocumented)
 export interface BackendDiagnosticsAttribute {
@@ -80,9 +73,6 @@ export interface ContentCacheConfig {
     // @alpha
     size?: number;
 }
-
-// @public (undocumented)
-export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[];
 
 // @public (undocumented)
 export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
@@ -115,9 +105,6 @@ export enum HierarchyCacheMode {
     Hybrid = "hybrid",
     Memory = "memory"
 }
-
-// @public (undocumented)
-export type HrTime = [number, number];
 
 // @beta
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
@@ -296,51 +283,6 @@ export interface PresentationPropsBase extends PresentationManagerProps {
     requestTimeout?: number;
 }
 
-// @public
-export interface ReadableSpan {
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    duration: HrTime;
-    // (undocumented)
-    ended: boolean;
-    // (undocumented)
-    endTime: HrTime;
-    // (undocumented)
-    events: TimedEvent[];
-    // (undocumented)
-    instrumentationLibrary: {
-        name: string;
-    };
-    // (undocumented)
-    kind: SpanKind;
-    // (undocumented)
-    links: [];
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    parentSpanId?: string;
-    // (undocumented)
-    resource: Resource;
-    // (undocumented)
-    spanContext: () => SpanContext;
-    // (undocumented)
-    startTime: HrTime;
-    // (undocumented)
-    status: {
-        code: SpanStatusCode;
-    };
-}
-
-// @public (undocumented)
-export class Resource {
-    constructor(attributes: Attributes);
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    merge(other: Resource | null): Resource;
-}
-
 // @beta
 export class RulesetEmbedder {
     constructor(props: RulesetEmbedderProps);
@@ -428,36 +370,6 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
 export interface SingleManagerPresentationProps extends PresentationPropsBase {
     // @alpha
     useSingleManager?: boolean;
-}
-
-// @public (undocumented)
-export interface SpanContext {
-    // (undocumented)
-    spanId: string;
-    // (undocumented)
-    traceFlags: number;
-    // (undocumented)
-    traceId: string;
-}
-
-// @public (undocumented)
-export enum SpanStatusCode {
-    // (undocumented)
-    ERROR = 2,
-    // (undocumented)
-    OK = 1,
-    // (undocumented)
-    UNSET = 0
-}
-
-// @public (undocumented)
-export interface TimedEvent {
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    time: HrTime;
 }
 
 // @public

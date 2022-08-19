@@ -1,11 +1,9 @@
 sep=;
 Release Tag;API Item
-public;Attributes
 public;BackendDiagnosticsAttribute
 alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
 alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
-public;convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[]
 public;DiagnosticsCallback = (diagnostics: Diagnostics) => void
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
@@ -13,7 +11,6 @@ internal;getLocalesDirectory: (assetsDirectory: string) => string
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
-public;HrTime = [number, number]
 beta;HybridCacheConfig 
 beta;MemoryHierarchyCacheConfig 
 alpha;MultiElementPropertiesResponse
@@ -27,8 +24,6 @@ public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps
 public;PresentationPropsBase 
-public;ReadableSpan
-public;Resource
 beta;RulesetEmbedder
 public;RulesetEmbedderProps
 beta;RulesetInsertOptions
@@ -37,7 +32,4 @@ internal;RulesetManagerImpl
 public;RulesetVariablesManager
 internal;RulesetVariablesManagerImpl 
 public;SingleManagerPresentationProps 
-public;SpanContext
-public;SpanStatusCode
-public;TimedEvent
 public;UnitSystemFormat
