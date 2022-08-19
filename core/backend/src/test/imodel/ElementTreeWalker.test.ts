@@ -406,6 +406,11 @@ describe("ElementTreeWalker", () => {
       imodel = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ElementTreeWalker Test" } });
     });
 
+    afterEach(() => {
+      sinon.restore();
+      imodel.close();
+    });
+
     it("definition model models definition container", (): void => {
       //                         o - subject
       //                         |
