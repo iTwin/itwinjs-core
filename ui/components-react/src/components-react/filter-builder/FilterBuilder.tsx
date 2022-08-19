@@ -22,6 +22,7 @@ export interface PropertyFilterBuilderProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   ruleGroupDepthLimit?: number;
+  itemBuilder?: (name: string) => JSX.Element;
 }
 
 /** @alpha */
@@ -30,6 +31,7 @@ export interface PropertyFilterBuilderContextProps {
   properties: PropertyDescription[];
   onRulePropertySelected?: (property: PropertyDescription) => void;
   ruleGroupDepthLimit?: number;
+  itemBuilder?: (name: string) => JSX.Element;
 }
 
 /** @alpha */
@@ -48,7 +50,7 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit } = props;
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, itemBuilder } = props;
   const { state, actions } = usePropertyFilterBuilderState();
   const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -58,8 +60,8 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(
-    () => ({actions, properties, onRulePropertySelected, ruleGroupDepthLimit}),
-    [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
+    () => ({actions, properties, onRulePropertySelected, ruleGroupDepthLimit, itemBuilder}),
+    [actions, properties, onRulePropertySelected, ruleGroupDepthLimit, itemBuilder]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
     () => ({ruleOperatorRenderer, ruleValueRenderer}),

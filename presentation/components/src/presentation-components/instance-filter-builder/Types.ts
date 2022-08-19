@@ -31,4 +31,6 @@ export interface PropertyInfo {
   sourceClassIds: ClassId[];
   field: PropertiesField;
   propertyDescription: PropertyDescription;
+  className?: string;
+  categoryLabel?: string;
 }

@@ -84,7 +84,7 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): Pr
     fields.push(...createPropertyInfos(descriptor, {
       categoryName: category.name,
       name: getPrefixedString(`${category.name}/`, parentInfo.name),
-      label: getPrefixedLabel(`[${category.label}]`, parentInfo.label),
+      label: parentInfo.label ? getPrefixedLabel(category.label, `${parentInfo.label} |`) : category.label,
     }));
   }
 
@@ -111,7 +111,7 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
   const fieldName = getPrefixedFieldName(field.name, fieldNamePrefix);
   const propertyDescription = createPropertyDescriptionFromFieldInfo({
     name: getCategorizedFieldName(fieldName, parentInfo.name),
-    label: getPrefixedLabel(field.label, parentInfo.label),
+    label: field.label,
     type: field.type,
     editor: field.editor,
     enum: field.properties[0].property.enumerationInfo,
@@ -123,6 +123,8 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
     field,
     sourceClassIds: sourceClassIds ?? [field.properties[0].property.classInfo.id],
     propertyDescription,
+    categoryLabel: parentInfo.label,
+    className: field.properties[0].property.classInfo.name,
   }];
 }
 

@@ -16,6 +16,8 @@ import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierar
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilter, PropertyInfo } from "./Types";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
+import { Badge, Tag, TagContainer, Tooltip } from "@itwin/itwinui-react";
+import  "./PresentationInstanceFilterBuilder.scss"
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
@@ -86,15 +88,54 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     });
   }, [classes, propertyInfos, classHierarchyProvider, enableClassFiltering]);
 
+  const itemBuilder = React.useCallback((name: string) => {
+    const propertyInfo = propertyInfos.find((info) => info.propertyDescription.name === name);
+    return getPresentationItemBuilder(propertyInfo);
+  }, [propertyInfos]);
+
   return {
     onPropertySelected,
     onClearClasses,
     onClassDeselected,
     onClassSelected,
+    itemBuilder,
     properties,
     classes,
     selectedClasses,
   };
+}
+
+function getPrefixedLabel(label: string, prefix?: string) {
+  return prefix !== undefined ? `${prefix} ${label}` : label;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function getItemDisplayLabel(propertyInfo: PropertyInfo | undefined) {
+  if(!propertyInfo)
+    return undefined;
+  return getPrefixedLabel(getPrefixedLabel(propertyInfo.propertyDescription.displayLabel, `(${propertyInfo.className})`), propertyInfo.categoryLabel);
+}
+
+/** @alpha */
+export function getPresentationItemBuilder(propertyInfo: PropertyInfo | undefined) {
+  const categoryTitle = "Category label: " + propertyInfo?.categoryLabel + "\nClass name: " + propertyInfo?.className;
+  const categoryBadgeRef = React.useRef();
+  return <div className="propertyItemLine">
+    <Tooltip content={propertyInfo?.propertyDescription.displayLabel} placement="bottom">
+      <div className="propertyDiplayLabel" title={propertyInfo?.propertyDescription.displayLabel}>
+        {propertyInfo?.propertyDescription.displayLabel}
+      </div>
+    </Tooltip>
+    <div className="propertyBadgeContainer">
+      {propertyInfo?.categoryLabel && <Tooltip content={categoryTitle} placement="bottom" className="tooltipCategory" >
+        <div>
+          <Badge className="propertyCategoryLabelBadge" backgroundColor={"montecarlo"}>
+            {propertyInfo.categoryLabel}
+          </Badge>
+        </div>
+      </Tooltip>}
+    </div>
+  </div>;
 }
 
 function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassHierarchyProvider): ClassHierarchiesSet | undefined {

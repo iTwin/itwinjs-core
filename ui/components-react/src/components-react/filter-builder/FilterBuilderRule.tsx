@@ -23,7 +23,7 @@ export interface PropertyFilterBuilderRuleRendererProps {
 /** @alpha */
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
   const { path, rule} = props;
-  const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);
+  const { properties, actions, onRulePropertySelected, itemBuilder } = React.useContext(PropertyFilterBuilderContext);
   const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
@@ -68,6 +68,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         properties={properties}
         selectedProperty={rule.property}
         onSelectedPropertyChanged={onSelectedPropertyChanged}
+        itemBuilder={itemBuilder}
       />
       {property && operatorRenderer(property)}
       {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}

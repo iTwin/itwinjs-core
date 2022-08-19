@@ -1,0 +1,34 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.propertyItemLine{
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+
+  .propertyBadgeContainer {
+    margin-left: auto;
+
+    .tooltipCategory{
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      .propertyCategoryLabelBadge, .iui-badge {
+          vertical-align: middle;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          padding: 1px 6px;
+          text-transform: none;
+        }
+    }
+  }
+
+
+  .propertyDiplayLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+}

@@ -27,6 +27,7 @@ export interface InstanceFilterBuilderProps {
   onClearClasses: () => void;
   onPropertySelected?: (property: PropertyDescription) => void;
   ruleGroupDepthLimit?: number;
+  itemBuilder?: (name: string) => JSX.Element;
 }
 
 /** @alpha */
@@ -72,6 +73,7 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
       onFilterChanged={onFilterChanged}
       onRulePropertySelected={onPropertySelected}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
+      itemBuilder={props.itemBuilder}
     />
   </div>;
 }

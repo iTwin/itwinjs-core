@@ -5,14 +5,66 @@
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
 import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { DiagnosticsProps } from "@itwin/presentation-components";
+import { DiagnosticsProps, PresentationInstanceFilterBuilder } from "@itwin/presentation-components";
 import { FilteringInput, FilteringInputStatus } from "@itwin/components-react";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 import { Tree } from "./Tree";
+import { ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
+
+const getDescriptor = async (imodel: IModelConnection) => {
+  const ruleset: Ruleset = {
+    id: "MyRuleset",
+    rules: [{
+      ruleType: RuleTypes.Content,
+      specifications: [{
+        specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
+        classes: { schemaName: "BisCore", classNames: ["GeometricElement3d"], arePolymorphic: true },
+        handlePropertiesPolymorphically: true,
+      }],
+    }],
+  };
+  const descriptor = await Presentation.presentation.getContentDescriptor({
+    imodel, rulesetOrId: ruleset,
+    displayType: DefaultContentDisplayTypes.PropertyPane,
+    keys: new KeySet(),
+  });
+  return descriptor;
+};
 
 interface Props {
   imodel: IModelConnection;
   rulesetId?: string;
+}
+
+interface FilterBuilderProps {
+  imodel: IModelConnection;
+  rulesetId?: string;
+}
+
+export function FilterBuilderWidget(this: any, props: FilterBuilderProps) {
+  const {imodel} = props;
+  const [descriptor, setDescriptor] = React.useState<Descriptor>();
+
+  React.useEffect(() => {
+    const getContentDescriptor = async () => {
+      const latestdescriptor = await getDescriptor(imodel);
+      setDescriptor(latestdescriptor);
+    };
+    void getContentDescriptor();
+  }, [imodel]);
+
+  return (
+    <div className="treewidget">
+      {descriptor && <div className="filteredTree">
+        <PresentationInstanceFilterBuilder
+          imodel={imodel}
+          descriptor={descriptor}
+          onInstanceFilterChanged={ () => {} }
+        />
+      </div>}
+    </div>
+  );
 }
 
 export function TreeWidget(props: Props) {
