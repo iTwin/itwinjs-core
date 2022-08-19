@@ -1930,7 +1930,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.only("should profile an IModel transformation", async function () {
+  it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
     const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformationTarget.bim");
@@ -1938,6 +1938,7 @@ describe("IModelTransformer", () => {
     const transformer = new IModelTransformer(sourceDb, targetDb);
     // force initialize to not profile the schema reference cache hydration that will happen the first time an IModelCloneContext is created
     await transformer.initialize();
+    await transformer.processSchemas();
     await runWithCpuProfiler(async () => {
       await transformer.processAll();
     }, {
