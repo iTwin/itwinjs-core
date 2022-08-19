@@ -170,24 +170,24 @@ describe("SchemaLoaderPerformance", () => {
   });
 
   it("Time BisSchemas data read from imodel - Async", async () => {
-    void timeBisSchemasLoadingAsync("Units");
-    void timeBisSchemasLoadingAsync("Formats");
+    await timeBisSchemasLoadingAsync("Units");
+    await timeBisSchemasLoadingAsync("Formats");
 
-    void timeBisSchemasLoadingAsync("BisCore");
+    await timeBisSchemasLoadingAsync("BisCore");
 
-    void timeBisSchemasLoadingAsync("ProcessFunctional");
-    void timeBisSchemasLoadingAsync("ProcessPhysical");
+    await timeBisSchemasLoadingAsync("ProcessFunctional");
+    await timeBisSchemasLoadingAsync("ProcessPhysical");
 
-    void timeBisSchemasLoadingAsync("CifBridge");
-    void timeBisSchemasLoadingAsync("CifCommon");
-    void timeBisSchemasLoadingAsync("CifGeometricRules");
-    void timeBisSchemasLoadingAsync("CifHydraulicAnalysis");
-    void timeBisSchemasLoadingAsync("CifHydraulicResults");
-    void timeBisSchemasLoadingAsync("CifQuantityTakeoffs");
-    void timeBisSchemasLoadingAsync("CifRail");
-    void timeBisSchemasLoadingAsync("CifRoads");
-    void timeBisSchemasLoadingAsync("CifSubsurface");
-    void timeBisSchemasLoadingAsync("CifSubsurfaceConflictAnalysis");
-    void timeBisSchemasLoadingAsync("CifUnits");
+    await timeBisSchemasLoadingAsync("CifBridge");
+    await timeBisSchemasLoadingAsync("CifCommon");
+    await timeBisSchemasLoadingAsync("CifGeometricRules");
+    await timeBisSchemasLoadingAsync("CifHydraulicAnalysis");
+    await timeBisSchemasLoadingAsync("CifHydraulicResults");
+    await timeBisSchemasLoadingAsync("CifQuantityTakeoffs");
+    await timeBisSchemasLoadingAsync("CifRail");
+    await timeBisSchemasLoadingAsync("CifRoads");
+    await timeBisSchemasLoadingAsync("CifSubsurface");
+    await timeBisSchemasLoadingAsync("CifSubsurfaceConflictAnalysis");
+    await timeBisSchemasLoadingAsync("CifUnits");
   });
 });
