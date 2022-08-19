@@ -384,7 +384,7 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "NameSource Information"
+          "label": "Source Information"
         }
       ],
       "relatedProperties": [
@@ -432,7 +432,7 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "NameSource Information",
+          "label": "Source Information",
           "parentId": {
             "type": "Root"
           },

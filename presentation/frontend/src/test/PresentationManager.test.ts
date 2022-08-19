@@ -455,8 +455,8 @@ describe("PresentationManager", () => {
 
     it("requests localized root nodes from proxy", async () => {
       i18nMock.reset();
-      i18nMock.setup((x) => x.getLocalizedString("RulesEngine:LABEL_General_NotSpecified", moq.It.isAny())).returns(() => {return "Not specified";});
-      const prelocalizedNode = [createRandomECInstancesNode({label: {rawValue: "@RulesEngine:LABEL_General_NotSpecified@", displayValue: "@RulesEngine:LABEL_General_NotSpecified@", typeName: "string"}})];
+      i18nMock.setup((x) => x.getLocalizedString("RulesEngine:LABEL_General_NotSpecified", moq.It.isAny())).returns(() => { return "Not specified"; });
+      const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@RulesEngine:LABEL_General_NotSpecified@", displayValue: "@RulesEngine:LABEL_General_NotSpecified@", typeName: "string" } })];
       const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
         imodel: testData.imodelMock.object,
         rulesetOrId: testData.rulesetId,

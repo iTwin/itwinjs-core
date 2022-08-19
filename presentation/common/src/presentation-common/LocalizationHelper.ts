@@ -25,13 +25,13 @@ const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 export function getLocalizedStringEN(key: string) {
   const namespace = key.split(":", 2)[0];
   const identifier = key.split(":", 2)[1];
-  if(namespace === "ECPresentation") {
+  if (namespace === "ECPresentation") {
     return ecPresentation[identifier];
   }
-  if(namespace === "RulesEngine") {
+  if (namespace === "RulesEngine") {
     return rulesEngine[identifier];
   }
-  return `@${  key  }@`;
+  return `@${key}@`;
 }
 
 /** @internal */
@@ -43,7 +43,7 @@ export interface LocalizationHelperProps {
 export class LocalizationHelper {
   private _getLocalizedString: (key: string) => string;
 
-  constructor(props: LocalizationHelperProps){
+  constructor(props: LocalizationHelperProps) {
     this._getLocalizedString = props.getLocalizedString;
   }
 
@@ -82,38 +82,38 @@ export class LocalizationHelper {
   private translateContentItem(item: Item) {
     for (const key in item.displayValues) {
       // istanbul ignore else
-      if(key)
+      if (key)
         item.displayValues[key] = this.translateContentItemDisplayValue(item.displayValues[key]);
     }
     for (const key in item.values) {
       // istanbul ignore else
-      if(key)
+      if (key)
         item.values[key] = this.translateContentItemValue(item.values[key]);
     }
     this.translateLabelDefinition(item.label);
   }
 
-  private translateContentItemDisplayValue(value: DisplayValue): DisplayValue{
+  private translateContentItemDisplayValue(value: DisplayValue): DisplayValue {
     // istanbul ignore else
-    if(typeof value === "string"){
+    if (typeof value === "string") {
       value = this.getLocalizedString(value);
     }
     return value;
   }
 
-  private translateContentItemValue(value: Value): Value{
-    if(typeof value === "string"){
+  private translateContentItemValue(value: Value): Value {
+    if (typeof value === "string") {
       value = this.getLocalizedString(value);
-    }else if (Value.isNestedContent(value)) {
+    } else if (Value.isNestedContent(value)) {
       for (const nestedValue of value) {
-        for(const key in nestedValue.values) {
+        for (const key in nestedValue.values) {
           // istanbul ignore else
-          if(key)
+          if (key)
             nestedValue.values[key] = this.translateContentItemValue(nestedValue.values[key]);
         }
-        for(const key in nestedValue.displayValues) {
+        for (const key in nestedValue.displayValues) {
           // istanbul ignore else
-          if(key)
+          if (key)
             nestedValue.displayValues[key] = this.translateContentItemDisplayValue(nestedValue.displayValues[key]);
         }
       }
@@ -121,11 +121,11 @@ export class LocalizationHelper {
     return value;
   }
 
-  private translateContentDescriptorField(field: Field){
+  private translateContentDescriptorField(field: Field) {
     field.label = this.getLocalizedString(field.label);
   }
 
-  private translateContentDescriptorCategory(category: CategoryDescription){
+  private translateContentDescriptorCategory(category: CategoryDescription) {
     category.label = this.getLocalizedString(category.label);
     category.description = this.getLocalizedString(category.description);
   }
@@ -133,7 +133,7 @@ export class LocalizationHelper {
   private translateNode(node: Node) {
     this.translateLabelDefinition(node.label);
     // istanbul ignore else
-    if(node.description)
+    if (node.description)
       node.description = this.getLocalizedString(node.description);
   }
 
@@ -144,7 +144,7 @@ export class LocalizationHelper {
 
     if (labelDefinition.typeName === LabelDefinition.COMPOSITE_DEFINITION_TYPENAME)
       translateComposite(labelDefinition.rawValue as LabelCompositeValue);
-    else if (labelDefinition.typeName === "string"){
+    else if (labelDefinition.typeName === "string") {
       labelDefinition.rawValue = this.getLocalizedString(labelDefinition.rawValue as string);
       labelDefinition.displayValue = this.getLocalizedString(labelDefinition.displayValue);
     }

@@ -14,15 +14,15 @@ import {
   DefaultContentDisplayTypes,
   Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions,  getLocalizedStringEN,  HierarchyCompareInfo,  HierarchyCompareOptions,  HierarchyRequestOptions,  InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,MultiElementPropertiesRequestOptions,
+  FilterByTextHierarchyRequestOptions, getLocalizedStringEN, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper, MultiElementPropertiesRequestOptions,
   Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
   SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import { bisElementInstanceKeysProcessor, getKeysForContentRequest, getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
@@ -209,7 +209,7 @@ export interface PresentationManagerProps {
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    *
-   * @deprecated
+   * @deprecated use getLocalizedString to localize data returned by PresentationManager
    */
   localeDirectories?: string[];
 
@@ -217,7 +217,7 @@ export interface PresentationManagerProps {
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
    *
-   * @deprecated
+   * @deprecated use getLocalizedString to localize data returned by PresentationManager
    */
   defaultLocale?: string;
 
@@ -301,7 +301,7 @@ export interface PresentationManagerProps {
   /** @internal */
   addon?: NativePlatformDefinition;
 
-  /** @internal */
+  /** @alpha */
   getLocalizedString?: (key: string) => string;
 }
 
@@ -317,6 +317,12 @@ export class PresentationManager {
   private _localizationHelper: LocalizationHelper;
 
   /**
+   *set active locale used for localizing presentation data
+   * @deprecated use getLocalizedString
+   */
+  public activeLocale: string | undefined;
+
+  /**
    * Creates an instance of PresentationManager.
    * @param props Optional configuration properties.
    */
@@ -325,15 +331,8 @@ export class PresentationManager {
     this._detail = new PresentationManagerDetail(this._props);
     this.activeLocale = this._props.defaultLocale; // eslint-disable-line deprecation/deprecation
 
-      this._localizationHelper = new LocalizationHelper({ getLocalizedString: props.getLocalizedString ?? getLocalizedStringEN });
+    this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
   }
-
-  /**
-   *Get / set active locale used for localizing presentation data
-   * @deprecated
-   */
-  public get activeLocale(): string | undefined { return this._detail.activeLocale; }
-  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; }
 
   /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined { return this._detail.activeUnitSystem; }
@@ -394,14 +393,7 @@ export class PresentationManager {
    * @public
    */
   public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
-    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      nodeKey: parentKey,
-    };
-    return JSON.parse(await this._detail.request(params));
+    return this._detail.getNodesCount(requestOptions);
   }
 
   /**
@@ -410,14 +402,7 @@ export class PresentationManager {
    * @public
    */
   public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    const { rulesetOrId, instancePaths, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetNodePaths,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      paths: instancePaths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
-    };
-    return JSON.parse(await this._detail.request(params), NodePathElement.listReviver);
+    return this._detail.getNodePaths(requestOptions);
   }
 
   /**
@@ -426,26 +411,12 @@ export class PresentationManager {
    * @public
    */
   public async getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    const { rulesetOrId, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-    };
-    return JSON.parse(await this._detail.request(params), NodePathElement.listReviver);
+    return this._detail.getFilteredNodePaths(requestOptions);
   }
 
   /** @beta */
   public async getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContentSources,
-      rulesetId: "ElementProperties",
-      ...requestOptions,
-    };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
-    };
-    return JSON.parse(await this._detail.request(params), reviver);
+    return this._detail.getContentSources(requestOptions);
   }
 
   /**
@@ -463,15 +434,7 @@ export class PresentationManager {
    * @public
    */
   public async getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
-    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContentSetSize,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    return JSON.parse(await this._detail.request(params));
+    return this._detail.getContentSetSize(requestOptions);
   }
 
   /**
@@ -492,22 +455,7 @@ export class PresentationManager {
    * @public
    */
   public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
-    const { rulesetOrId, ...strippedOptions } = requestOptions;
-    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptionsNoDescriptorAndKeys,
-      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? {
-        total: value.total,
-        items: value.items.map(DisplayValueGroup.fromJSON),
-      } : value;
-    };
-    return JSON.parse(await this._detail.request(params), reviver);
+    return this._detail.getPagedDistinctValues(requestOptions);
   }
 
   /**

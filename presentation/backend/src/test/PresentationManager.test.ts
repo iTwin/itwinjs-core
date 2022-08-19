@@ -1372,7 +1372,7 @@ describe("PresentationManager", () => {
         // what the addon receives
         const keys = new KeySet([createRandomECInstancesNodeKey(), createRandomECInstanceKey()]);
         const fieldName = faker.random.word();
-        const category = createTestCategoryDescription({label: "@RulesEngine:LABEL_General_NotSpecified@", description: "@ECPresentation:LABEL_Category_General@"});
+        const category = createTestCategoryDescription({ label: "@RulesEngine:LABEL_General_NotSpecified@", description: "@ECPresentation:LABEL_Category_General@" });
         const descriptor = createTestContentDescriptor({
           categories: [category],
           fields: [createTestSimpleContentField({

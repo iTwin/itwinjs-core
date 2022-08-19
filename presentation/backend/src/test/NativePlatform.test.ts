@@ -77,7 +77,7 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => {} }))
+        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
@@ -86,14 +86,14 @@ describe("default NativePlatform", () => {
     it("throws on cancellation response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
@@ -118,7 +118,7 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => {} }));
+      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });

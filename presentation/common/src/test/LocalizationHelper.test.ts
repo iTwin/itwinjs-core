@@ -8,7 +8,7 @@ import { createRandomECInstancesNode, createRandomLabelCompositeValue, createRan
 import { Content, getLocalizedStringEN, Item, LabelDefinition, LocalizationHelper } from "../presentation-common";
 
 function getTestLocalizedString(key: string) {
-  if(key.includes(":"))
+  if (key.includes(":"))
     key = key.split(":", 2)[1];
   return key;
 }
@@ -17,7 +17,7 @@ describe("LocalizationHelper", () => {
   let localizationHelper: LocalizationHelper;
 
   beforeEach(() => {
-    localizationHelper = new LocalizationHelper({ getLocalizedString: getTestLocalizedString});
+    localizationHelper = new LocalizationHelper({ getLocalizedString: getTestLocalizedString });
   });
 
   describe("translate", () => {
@@ -131,7 +131,7 @@ describe("LocalizationHelper", () => {
 
     it("translates content descriptor category label", () => {
       const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      const testCategory = createTestCategoryDescription({label: "@namespace:LocalizedLabel@"});
+      const testCategory = createTestCategoryDescription({ label: "@namespace:LocalizedLabel@" });
       const field = createTestSimpleContentField({ category: testCategory });
       const content = new Content(createTestContentDescriptor({ fields: [field], categories: [testCategory] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
@@ -140,7 +140,7 @@ describe("LocalizationHelper", () => {
 
     it("translates content descriptor category description", () => {
       const contentItem = new Item([], createRandomLabelDefinition(), "", undefined, {}, {}, []);
-      const testCategory = createTestCategoryDescription({description: "@namespace:LocalizedDescription@"});
+      const testCategory = createTestCategoryDescription({ description: "@namespace:LocalizedDescription@" });
       const field = createTestSimpleContentField({ category: testCategory });
       const content = new Content(createTestContentDescriptor({ fields: [field], categories: [testCategory] }), [contentItem]);
       localizationHelper.getLocalizedContent(content);
@@ -211,7 +211,7 @@ describe("getLocalizedStringEN", () => {
   let localizationHelper: LocalizationHelper;
 
   beforeEach(() => {
-    localizationHelper = new LocalizationHelper({ getLocalizedString: getLocalizedStringEN});
+    localizationHelper = new LocalizationHelper({ getLocalizedString: getLocalizedStringEN });
   });
 
   it("translates from RulesEngine", () => {

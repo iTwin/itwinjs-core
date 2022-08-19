@@ -11,7 +11,7 @@ const NAMESPACES = ["BisCore", "ECPresentation", "RulesEngine"];
 export class FrontendLocalizationHelper extends LocalizationHelper {
   private _lang: string | undefined;
   constructor(lang?: string) {
-    super({ getLocalizedString: (key) => Presentation.localization.getLocalizedString(key, { defaultValue: key , lng: this._lang}) });
+    super({ getLocalizedString: (key) => Presentation.localization.getLocalizedString(key, { defaultValue: key, lng: this._lang }) });
     this._lang = lang;
   }
 
