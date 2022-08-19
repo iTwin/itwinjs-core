@@ -8,20 +8,18 @@
 
 import "./ModelsTree.scss";
 import * as React from "react";
+import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@itwin/components-react";
 import { Id64Array } from "@itwin/core-bentley";
 import { IModelConnection, Viewport } from "@itwin/core-frontend";
-import { NodeKey, Ruleset } from "@itwin/presentation-common";
-import {
-  IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader,
-} from "@itwin/presentation-components";
-import { Presentation } from "@itwin/presentation-frontend";
-import { ControlledTree, SelectionMode, TreeNodeItem, useTreeModel } from "@itwin/components-react";
 import { useDisposable, useOptionalDisposable } from "@itwin/core-react";
+import { NodeKey, Ruleset } from "@itwin/presentation-common";
+import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider, usePresentationTreeNodeLoader } from "@itwin/presentation-components";
+import { Presentation } from "@itwin/presentation-frontend";
 import { UiFramework } from "../../../appui-react/UiFramework";
 import { ClassGroupingOption, VisibilityTreeFilterInfo } from "../Common";
 import { VisibilityTreeEventHandler } from "../VisibilityTreeEventHandler";
 import { useVisibilityTreeFiltering, useVisibilityTreeRenderer, VisibilityTreeNoFilteredData } from "../VisibilityTreeRenderer";
-import { ModelsTreeSelectionPredicate, ModelsVisibilityHandler } from "./ModelsVisibilityHandler";
+import { ModelsTreeSelectionPredicate, ModelsVisibilityHandler, SubjectModelIdsCache } from "./ModelsVisibilityHandler";
 
 const PAGING_SIZE = 20;
 
@@ -206,9 +204,13 @@ function useVisibilityHandler(
   filteredDataProvider?: IFilteredPresentationTreeDataProvider,
   hierarchyAutoUpdateEnabled?: boolean,
 ) {
+  const iModel = activeView?.iModel;
+  const subjectModelIdsCache = React.useMemo(() => iModel ? new SubjectModelIdsCache(iModel) : undefined, [iModel]);
   const defaultVisibilityHandler = useOptionalDisposable(React.useCallback(() => {
-    return visibilityHandler ? undefined : createVisibilityHandler(rulesetId, activeView, hierarchyAutoUpdateEnabled);
-  }, [visibilityHandler, rulesetId, activeView, hierarchyAutoUpdateEnabled]));
+    if (activeView && subjectModelIdsCache)
+      return createVisibilityHandler(rulesetId, activeView, subjectModelIdsCache, hierarchyAutoUpdateEnabled);
+    return undefined;
+  }, [rulesetId, activeView, subjectModelIdsCache, hierarchyAutoUpdateEnabled]));
 
   const handler = visibilityHandler ?? defaultVisibilityHandler;
 
@@ -219,9 +221,9 @@ function useVisibilityHandler(
   return handler;
 }
 
-const createVisibilityHandler = (rulesetId: string, activeView?: Viewport, hierarchyAutoUpdateEnabled?: boolean): ModelsVisibilityHandler | undefined => {
+const createVisibilityHandler = (rulesetId: string, activeView: Viewport, subjectModelIdsCache: SubjectModelIdsCache, hierarchyAutoUpdateEnabled?: boolean): ModelsVisibilityHandler | undefined => {
   // istanbul ignore next
-  return activeView ? new ModelsVisibilityHandler({ rulesetId, viewport: activeView, hierarchyAutoUpdateEnabled }) : undefined;
+  return new ModelsVisibilityHandler({ rulesetId, viewport: activeView, hierarchyAutoUpdateEnabled, subjectModelIdsCache });
 };
 
 const isFilteredDataProvider = (dataProvider: IPresentationTreeDataProvider | IFilteredPresentationTreeDataProvider): dataProvider is IFilteredPresentationTreeDataProvider => {
