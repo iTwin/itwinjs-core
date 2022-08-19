@@ -45,7 +45,6 @@ beta;EnumerationProps
 beta;EnumeratorProps
 beta;Format 
 beta;FormatProps 
-alpha;GetSchemaJson = (schemaName: string) => string | undefined
 beta;InvertedUnit 
 beta;InvertedUnitProps 
 beta;ISchemaItemLocater
@@ -127,6 +126,7 @@ beta;SchemaMap
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
+alpha;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
 alpha;SchemaUnitProvider 

@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ISchemaLocater, SchemaContext } from "./Context";
+import { SchemaProps } from "./Deserialization/JsonProps";
 import { SchemaMatchType } from "./ECObjects";
 import { Schema } from "./Metadata/Schema";
 import { SchemaKey } from "./SchemaKey";
 
 /**
- * Gets schema Json for the input schema name or undefined if not found
+ * Gets the full schema Json for the input schema name or undefined if not found
  * @throws [Error] if the schema is found but json cannot be returned
  * @alpha
  */
-export type GetSchemaJson = (schemaName: string) => string | undefined;
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 /**
  * A  ISchemaLocater implementation for locating and retrieving EC Schema objects using a function
@@ -21,7 +22,7 @@ export type GetSchemaJson = (schemaName: string) => string | undefined;
  * @alpha
  */
 export class SchemaJsonLocater implements ISchemaLocater {
-  public constructor(private _getSchema: GetSchemaJson) { }
+  public constructor(private _getSchema: SchemaPropsGetter) { }
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.

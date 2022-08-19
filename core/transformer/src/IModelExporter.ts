@@ -12,8 +12,8 @@ import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
-  ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, getSchemaJsonFromIModel,
-  IModelDb, IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
+  IModelHost, IModelJsNative, makeSchemaPropsGetterFromIModel, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -317,7 +317,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new SchemaLoader(getSchemaJsonFromIModel(this.sourceDb));
+    const schemaLoader = new SchemaLoader(makeSchemaPropsGetterFromIModel(this.sourceDb));
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);

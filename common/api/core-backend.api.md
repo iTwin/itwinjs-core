@@ -2359,9 +2359,6 @@ export class GeometryPart extends DefinitionElement {
     toJSON(): GeometryPartProps;
 }
 
-// @alpha
-export const getSchemaJsonFromIModel: (iModel: IModelDb) => (schemaName: string) => string | undefined;
-
 // @public
 export class Graphic3d extends GraphicalElement3d {
     constructor(props: GeometricElement3dProps, iModel: IModelDb);
@@ -3592,6 +3589,9 @@ export interface LockStatusShared {
     // (undocumented)
     state: LockState.Shared;
 }
+
+// @alpha
+export const makeSchemaPropsGetterFromIModel: (iModel: IModelDb) => (schemaName: string) => IModelJsNative;
 
 // @internal
 export class MetaDataRegistry {

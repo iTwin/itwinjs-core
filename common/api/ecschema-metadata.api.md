@@ -722,9 +722,6 @@ export interface FormatProps extends SchemaItemProps {
     readonly uomSeparator?: string;
 }
 
-// @alpha
-export type GetSchemaJson = (schemaName: string) => string | undefined;
-
 // @beta
 export class InvertedUnit extends SchemaItem {
     constructor(schema: Schema, name: string);
@@ -1834,7 +1831,7 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
 // @alpha
 export class SchemaJsonLocater implements ISchemaLocater {
-    constructor(_getSchema: GetSchemaJson);
+    constructor(_getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
 }
@@ -1876,7 +1873,7 @@ export interface SchemaKeyProps {
 
 // @alpha
 export class SchemaLoader {
-    constructor(getSchema: GetSchemaJson);
+    constructor(getSchema: SchemaPropsGetter);
     getSchema<T extends Schema>(schemaName: string): T;
     tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
@@ -1933,6 +1930,9 @@ export interface SchemaProps {
     // (undocumented)
     readonly version: string;
 }
+
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal
 export class SchemaReadHelper<T = unknown> {

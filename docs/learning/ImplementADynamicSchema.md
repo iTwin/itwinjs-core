@@ -26,7 +26,7 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { IModelDb, getSchemaJsonFromIModel } from "@itwin/core-backend";
+import { IModelDb, makeSchemaPropsGetterFromIModel } from "@itwin/core-backend";
 import {
   Schema,
   PrimitiveType,
@@ -172,7 +172,7 @@ export class DynamicSchemaGenerator {
       return newSchema;
     };
 
-    const loader = new SchemaLoader(getSchemaJsonFromIModel(imodel));
+    const loader = new SchemaLoader(makeSchemaPropsGetterFromIModel(imodel));
     const existingSchema = loader.tryGetSchema("COBieConnectorDynamic");
     const latestSchema = await createSchema(false);
 

@@ -7,7 +7,7 @@ import { SchemaContext } from "./Context";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { Schema } from "./Metadata/Schema";
-import { GetSchemaJson, SchemaJsonLocater } from "./SchemaJsonLocater";
+import { SchemaJsonLocater, SchemaPropsGetter } from "./SchemaJsonLocater";
 import { ECVersion, SchemaKey } from "./SchemaKey";
 
 /**
@@ -20,7 +20,7 @@ import { ECVersion, SchemaKey } from "./SchemaKey";
 export class SchemaLoader {
   private _context: SchemaContext;
 
-  public constructor(getSchema: GetSchemaJson) {
+  public constructor(getSchema: SchemaPropsGetter) {
     this._context = new SchemaContext();
     const locater = new SchemaJsonLocater(getSchema);
     this._context.addLocater(locater);

@@ -178,7 +178,6 @@ public;GeometricModel
 public;class GeometricModel2d 
 public;class GeometricModel3d 
 public;GeometryPart 
-alpha;getSchemaJsonFromIModel: (iModel: IModelDb) => (schemaName: string) => string | undefined
 public;Graphic3d 
 public;class GraphicalElement2d 
 public;GraphicalElement2dIsOfType 
@@ -240,6 +239,7 @@ beta;LockProps
 public;LockState
 internal;LockStatusExclusive
 internal;LockStatusShared
+alpha;makeSchemaPropsGetterFromIModel: (iModel: IModelDb) => (schemaName: string) => IModelJsNative
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
