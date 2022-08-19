@@ -116,6 +116,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
 
   const presentationTestingInitProps: PresentationTestingInitProps = {
     backendProps: backendInitProps,
+    backendHostProps: { cacheDir: path.join(__dirname, ".cache") },
     frontendProps: frontendInitProps,
     frontendApp: IntegrationTestsApp,
     frontendAppOptions,

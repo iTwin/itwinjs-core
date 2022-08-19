@@ -6,11 +6,13 @@
  * @module RpcInterface
  */
 
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Readable, Writable } from "stream";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-import { RpcProtocol } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
@@ -64,7 +66,16 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 
   /** Convenience handler for an RPC operation post request for an HTTP server. */
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
-    const request = await WebAppRpcRequest.parseRequest(this, req);
+    let request: SerializedRpcRequest;
+    try {
+      request = await WebAppRpcRequest.parseRequest(this, req);
+    } catch (error) {
+      const message = BentleyError.getErrorMessage(error);
+      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Failed to parse request: ${message}`, BentleyError.getErrorMetadata(error));
+      res.status(400);
+      res.send(JSON.stringify({ message, isError: true }));
+      return;
+    }
     const fulfillment = await this.fulfill(request);
     await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }

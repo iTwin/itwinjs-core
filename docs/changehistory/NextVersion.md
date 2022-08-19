@@ -30,6 +30,22 @@ It will still perform the old behavior synchronously until it is removed. It wil
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
 
+## Presentation
+
+## Restoring Presentation tree state
+
+It is now possible to restore previously saved Presentation tree state on component mount.
+
+```ts
+// Save current tree state
+const { nodeLoader } = usePresentationTreeNodeLoader(args);
+useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
+
+// Restore tree state on component mount
+const seedTreeModel = exampleRetrieveStoredTreeModel();
+const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
+```
+
 ## IModelSchemaLoader replaced with SchemaLoader
 
 Replaced IModelSchemaLoader with generic SchemaLoader class and function to get schemas from an iModel.  This allows us to remove the ecschema-metadata dependency in core-backend.
