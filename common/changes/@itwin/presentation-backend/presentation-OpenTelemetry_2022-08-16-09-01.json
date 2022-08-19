@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "convert diagnostics logs to a format which can be passed to OpenTelemetry exporter",
+      "comment": "",
       "type": "none"
     }
   ],
