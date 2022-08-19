@@ -3,28 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { convertToReadableSpans, Resource, SpanContext, SpanKind, SpanStatusCode } from "../presentation-opentelemetry";
-
-describe("Resource", () => {
-
-  it("creates resource with attributes", () => {
-    const attributes = { a: "value" };
-    const resource = new Resource(attributes);
-    expect(resource.attributes).to.eq(attributes);
-  });
-
-  it("merges with null resource", () => {
-    const resource = new Resource({ a: "value" });
-    expect(resource.merge(null).attributes).to.deep.eq({ a: "value" });
-  });
-
-  it("merges resources", () => {
-    const resource1 = new Resource({ a: "value1", b: "value2" });
-    const resource2 = new Resource({ b: "value3", c: "value4" });
-    expect(resource1.merge(resource2).attributes).to.deep.eq({ a: "value1", b: "value3", c: "value4" });
-  });
-
-});
+import { convertToReadableSpans } from "../presentation-opentelemetry";
+import { SpanContext, SpanKind, SpanStatusCode, TraceFlags } from "@opentelemetry/api";
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
 describe("convertToReadableSpans", () => {
 
@@ -35,7 +16,7 @@ describe("convertToReadableSpans", () => {
     instrumentationLibrary: { name: "" },
     kind: SpanKind.INTERNAL,
     links: [],
-    resource: { attributes: { "service.name": "iTwin.js Presentation" } },
+    resource: { attributes: { [SemanticResourceAttributes.SERVICE_NAME]: "iTwin.js Presentation" } },
     status: { code: SpanStatusCode.UNSET },
   };
 
@@ -98,7 +79,7 @@ describe("convertToReadableSpans", () => {
   });
 
   it("converts logs to readable spans when parent span id is provided", () => {
-    const parentSpanContext: SpanContext = { traceId: "testTraceId", spanId: "testSpanId", traceFlags: 0 };
+    const parentSpanContext: SpanContext = { traceId: "testTraceId", spanId: "testSpanId", traceFlags: TraceFlags.NONE };
     const actualSpans = convertToReadableSpans({
       logs: [
         { scope: "test scope 1", scopeCreateTimestamp: 12345, duration: 1111 },

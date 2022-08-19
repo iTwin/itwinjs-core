@@ -5,107 +5,11 @@
 ```ts
 
 import { Diagnostics } from '@itwin/presentation-common';
-
-// @public (undocumented)
-export interface Attributes {
-    // (undocumented)
-    [attributeKey: string]: string | string[];
-}
+import { ReadableSpan } from '@opentelemetry/sdk-trace-base';
+import { SpanContext } from '@opentelemetry/api';
 
 // @public (undocumented)
 export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[];
-
-// @public (undocumented)
-export type HrTime = [number, number];
-
-// @public
-export interface ReadableSpan {
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    duration: HrTime;
-    // (undocumented)
-    ended: boolean;
-    // (undocumented)
-    endTime: HrTime;
-    // (undocumented)
-    events: TimedEvent[];
-    // (undocumented)
-    instrumentationLibrary: {
-        name: string;
-    };
-    // (undocumented)
-    kind: SpanKind;
-    // (undocumented)
-    links: [];
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    parentSpanId?: string;
-    // (undocumented)
-    resource: Resource;
-    // (undocumented)
-    spanContext: () => SpanContext;
-    // (undocumented)
-    startTime: HrTime;
-    // (undocumented)
-    status: {
-        code: SpanStatusCode;
-    };
-}
-
-// @public (undocumented)
-export class Resource {
-    constructor(attributes: Attributes);
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    merge(other: Resource | null): Resource;
-}
-
-// @public (undocumented)
-export interface SpanContext {
-    // (undocumented)
-    spanId: string;
-    // (undocumented)
-    traceFlags: number;
-    // (undocumented)
-    traceId: string;
-}
-
-// @public
-export enum SpanKind {
-    // (undocumented)
-    CLIENT = 2,
-    // (undocumented)
-    CONSUMER = 4,
-    // (undocumented)
-    INTERNAL = 0,
-    // (undocumented)
-    PRODUCER = 3,
-    // (undocumented)
-    SERVER = 1
-}
-
-// @public (undocumented)
-export enum SpanStatusCode {
-    // (undocumented)
-    ERROR = 2,
-    // (undocumented)
-    OK = 1,
-    // (undocumented)
-    UNSET = 0
-}
-
-// @public (undocumented)
-export interface TimedEvent {
-    // (undocumented)
-    attributes: Attributes;
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    time: HrTime;
-}
 
 // (No @packageDocumentation comment for this package)
 

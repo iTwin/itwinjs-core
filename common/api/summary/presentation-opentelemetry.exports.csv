@@ -1,11 +1,3 @@
 sep=;
 Release Tag;API Item
-public;Attributes
 public;convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[]
-public;HrTime = [number, number]
-public;ReadableSpan
-public;Resource
-public;SpanContext
-public;SpanKind
-public;SpanStatusCode
-public;TimedEvent

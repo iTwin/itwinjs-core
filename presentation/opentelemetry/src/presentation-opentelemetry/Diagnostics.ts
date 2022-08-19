@@ -7,82 +7,10 @@
  */
 import { Diagnostics, DiagnosticsLogEntry, DiagnosticsScopeLogs } from "@itwin/presentation-common";
 import { randomBytes } from "crypto";
-
-/**
- * Mirrors the ReadableSpan interface from [opentelemetry-js](https://github.com/open-telemetry/opentelemetry-js).
- * ReadableSpan[] can be passed to OpenTelemetry exporters.
- * @public
- */
-export interface ReadableSpan {
-  name: string;
-  kind: SpanKind;
-  spanContext: () => SpanContext;
-  parentSpanId?: string;
-  startTime: HrTime;
-  endTime: HrTime;
-  status: { code: SpanStatusCode };
-  attributes: Attributes;
-  links: [];
-  events: TimedEvent[];
-  duration: HrTime;
-  ended: boolean;
-  resource: Resource;
-  instrumentationLibrary: { name: string };
-}
-
-/**
- * Mirrors the SpanKind enum from [@opentelemetry/api](https://open-telemetry.github.io/opentelemetry-js-api/enums/spankind)
- * @public
- */
-export enum SpanKind {
-  INTERNAL = 0,
-  SERVER = 1,
-  CLIENT = 2,
-  PRODUCER = 3,
-  CONSUMER = 4
-}
-
-/** @public */
-export interface SpanContext {
-  traceId: string;
-  spanId: string;
-  traceFlags: number;
-}
-
-/** @public */
-export type HrTime = [number, number];
-
-/** @public */
-export enum SpanStatusCode {
-  UNSET = 0,
-  OK = 1,
-  ERROR = 2
-}
-
-/** @public */
-export interface Attributes {
-  [attributeKey: string]: string | string[];
-}
-
-/** @public */
-export interface TimedEvent {
-  time: HrTime;
-  name: string;
-  attributes: Attributes;
-}
-
-/** @public */
-export class Resource {
-  public attributes: Attributes;
-
-  constructor(attributes: Attributes) {
-    this.attributes = attributes;
-  }
-
-  public merge(other: Resource | null): Resource {
-    return new Resource({ ...this.attributes, ...other?.attributes });
-  }
-}
+import { HrTime, SpanContext, SpanKind, SpanStatusCode, TraceFlags } from "@opentelemetry/api";
+import { ReadableSpan, TimedEvent } from "@opentelemetry/sdk-trace-base";
+import { Resource } from "@opentelemetry/resources";
+import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
 /** @public */
 export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[] {
@@ -122,7 +50,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     name: logs.scope,
     kind: SpanKind.INTERNAL,
     spanContext: () => {
-      return { traceId, spanId, traceFlags: 0 };
+      return { traceId, spanId, traceFlags: TraceFlags.NONE };
     },
     ...(parentSpanId ? { parentSpanId } : undefined),
     startTime: millisToHrTime(logs.scopeCreateTimestamp),
@@ -133,7 +61,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     events,
     duration: millisToHrTime(logs.duration),
     ended: true,
-    resource: new Resource({ "service.name": "iTwin.js Presentation" }),
+    resource: new Resource({ [SemanticResourceAttributes.SERVICE_NAME]: "iTwin.js Presentation" }),
     instrumentationLibrary: { name: "" },
   };
   spans.push(span);

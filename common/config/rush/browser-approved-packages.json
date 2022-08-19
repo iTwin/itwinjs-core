@@ -371,6 +371,18 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@opentelemetry/resources",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace-base",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/semantic-conventions",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@playwright/test",
       "allowedCategories": [ "internal" ]
     },
