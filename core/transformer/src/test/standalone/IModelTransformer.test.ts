@@ -10,8 +10,8 @@ import * as sinon from "sinon";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, makeSchemaPropsGetterFromIModel, IModelCloneContext, IModelDb, IModelHost,
-  IModelJsFs, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
+  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelCloneContext, IModelDb, IModelHost, IModelJsFs,
+  InformationRecordModel, InformationRecordPartition, LinkElement, makeSchemaPropsGetterFromIModel, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
   SubCategory, Subject,
 } from "@itwin/core-backend";
