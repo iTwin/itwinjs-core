@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Elements
  */
-import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { assert, DbResult, Id64Array, Id64Set, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
@@ -17,20 +17,21 @@ const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 /** @beta */
 export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
 
-function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64Array> {
-  const children: Id64Array = [];
-  const parents: Id64Array = [];
+function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Set): Id64Set[] {
+  const children: Id64Set = new Set();
+  const parents: Id64Set = new Set();
   for (const eid of ids) {
     const parentId = iModel.elements.queryParent(eid);
-    if (parentId !== undefined && ids.includes(parentId))
-      children.push(eid);
-    else
-      parents.push(eid);
+    if (parentId !== undefined && ids.has(parentId)) {
+      children.add(eid);
+    } else {
+      parents.add(eid);
+    }
+
+    if (children.size === 0) {
+      return [parents];
+    }
   }
-
-  if (children.length === 0)
-    return [parents];
-
   return [...sortChildrenBeforeParents(iModel, children), parents];
 }
 
@@ -263,10 +264,13 @@ class SpecialElements {
     // A similar problem occurs when you pass other kinds of elements to deleteDefinitionElements, where some are
     // children and others are parents. deleteDefinitionElements does not preserve the order that you specify,
     // and it does not process children before parents.
-    for (const definitions of sortChildrenBeforeParents(iModel, this.definitions)) {
-      if (isTraceEnabled()) definitions.forEach((e) => logElement("try delete", iModel, e));
-      iModel.elements.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
-    }
+    const arranged = sortChildrenBeforeParents(iModel, new Set(this.definitions));
+    arranged.forEach((depth) => {
+      if (isTraceEnabled()) {
+        depth.forEach((definition) => logElement("try delete", iModel, definition));
+      }
+      iModel.elements.deleteDefinitionElements([...depth]); // will not delete definitions that are still in use.
+    });
 
     for (const m of this.definitionModels) {
       if (!isModelEmpty(iModel, m)) {
