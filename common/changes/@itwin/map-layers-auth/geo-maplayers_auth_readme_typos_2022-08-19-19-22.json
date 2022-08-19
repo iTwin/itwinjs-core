@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "comment": "Fixed typos in map-layers-auth's README.md",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-auth"
+}
