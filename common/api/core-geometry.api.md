@@ -5161,6 +5161,7 @@ export class Sample {
     static createBspline3dHArcs(): BSplineCurve3dH[];
     static createBspline3dHCurves(): BSplineCurve3dH[];
     static createBsplineArc90SectionToXYZWArrays(center: Point3d, axes: Matrix3d, radius0: number, radius90: number, applyWeightsToXYZ: boolean): number[][];
+    static createBsplineCurveHelices(radius: number, height: number, numTurns: number, numSamplesPerTurn: number): BSplineCurve3d[];
     static createBsplineCurves(includeMultipleKnots?: boolean): BSplineCurve3d[];
     static createCappedArcLoop(radius: number, startDegrees: number, endDegrees: number): Loop;
     static createCappedArcPath(radius: number, startDegrees: number, endDegrees: number): Path;
