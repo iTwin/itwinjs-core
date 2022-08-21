@@ -297,8 +297,6 @@ describe("ConvexClipPlaneSet", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // ---------------------------------------------------------------------------------------------------
-
   it("ClipPointsOnOrInside", () => {
     for (let i = -50; i < 50; i += 15) {
       const clip1 = ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, 0), Vector3d.create(i, -i, i))!);
@@ -319,6 +317,16 @@ describe("ConvexClipPlaneSet", () => {
     }
 
     ck.checkpoint("IsPointOn&IsPointOnOrInside");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("CreateFromConvexPolyface", () => {
+    // START HERE:
+    // read convex mesh from file
+    // call ConvexClipPlaneSet.createConvexPolyface
+    // test all mesh vertices on the clipper:
+    //    iterate over clipper planes:
+    //      plane.isPointOn(vertex)
     expect(ck.getNumErrors()).equals(0);
   });
 });

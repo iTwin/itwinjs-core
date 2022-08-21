@@ -24,6 +24,8 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { ClipPlane, ClipPlaneProps } from "./ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipUtilities, PolygonClipper } from "./ClipUtils";
+import { Polyface, PolyfaceVisitor } from "../polyface/Polyface";
+import { PolyfaceQuery } from "../polyface/PolyfaceQuery";
 
 /** Wire format describing a [[ConvexClipPlaneSet]].
  * @public
@@ -738,6 +740,44 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     const newInside = this.clipInsidePushOutside(xyz, outsideFragments, arrayCache);
     if (newInside)
       insideFragments.push(newInside);
+  }
+  /** Create a convex clip set from a convex mesh.
+   * * Create a plane for each facet.
+   * * Assemble the planes as a single clip plane set.
+   * * If the facets are closed by edge pairing, use the computed volume to control plane orientation.
+   * * If the facets are not closed, the facet orientation determines plane orientation.
+   * * The implication of this is that if the facets are a convex volume, the returned clip plane set is convex.
+   * @param convexMesh input mesh. For best results, the mesh should be closed and convex.
+   * @param result optional preallocated result to reuse and return
+   * @return clipper and volume (zero if mesh is not closed)
+  */
+  public static createConvexPolyface(convexMesh: Polyface | PolyfaceVisitor, result?: ConvexClipPlaneSet): {clipper: ConvexClipPlaneSet, volume: number } {
+    result = this.createEmpty(result);
+    let vol = 0;
+    let myMesh: Polyface | undefined;
+    let myVisitor: PolyfaceVisitor;
+    if (convexMesh instanceof Polyface) {
+      myMesh = convexMesh;
+      myVisitor = convexMesh.createVisitor(0);
+    } else {
+      myMesh = convexMesh.clientPolyface();
+      myVisitor = convexMesh;
+    }
+    if (myMesh && myVisitor) {
+      if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
+        vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
+      const scale = vol < 0.0 ? -1.0 : 1.0;
+      const normal = Vector3d.create();
+      const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
+      myVisitor.reset();
+      while (myVisitor.moveToNextFacet()) {
+        PolygonOps.areaNormal(myVisitor.point.getPoint3dArray()).scale(scale, normal);
+        if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane)) {
+          result.addPlaneToConvexSet(plane);
+        }
+      }
+    }
+    return {clipper: result, volume: vol};
   }
 
   // FUNCTIONS SKIPPED DUE TO BSPLINES, VU, OR NON-USAGE IN NATIVE CODE----------------------------------------------------------------
