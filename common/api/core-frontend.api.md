@@ -1201,8 +1201,6 @@ export class ArcGisUtilities {
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
-    static getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
-    // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;

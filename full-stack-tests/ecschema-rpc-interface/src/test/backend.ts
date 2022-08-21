@@ -38,7 +38,7 @@ void (async () => {
   // Start the backend
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
-  await IModelHost.startup({ hubAccess });
+  await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
   RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);

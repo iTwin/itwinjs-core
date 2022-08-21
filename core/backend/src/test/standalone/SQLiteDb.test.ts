@@ -39,24 +39,27 @@ describe("SQLiteDb", () => {
     expect(db.isOpen).false;
     expect(() => db.vacuum()).throws("not open");
 
-    let val = SQLiteDb.withOpenDb({ dbName: fileName, openMode: { openMode: OpenMode.ReadWrite, rawSQLite: true } }, (vdb) => {
-      expect(vdb.isOpen);
-      vdb.vacuum();
+    let val = db.withOpenDb({ dbName: fileName, openMode: { openMode: OpenMode.ReadWrite, rawSQLite: true } }, () => {
+      expect(db.isOpen);
+      db.vacuum();
       return 22;
     });
     expect(val).equal(22);
+    expect(db.isOpen).false;
 
-    val = await SQLiteDb.withOpenDb({ dbName: fileName, openMode: { openMode: OpenMode.ReadWrite, rawSQLite: true } }, async (vdb) => {
-      expect(vdb.isOpen);
+    val = await db.withOpenDb({ dbName: fileName, openMode: { openMode: OpenMode.ReadWrite, rawSQLite: true } }, async () => {
+      expect(db.isOpen);
       await BeDuration.fromMilliseconds(10).wait();
       return 100;
     });
     expect(val).equal(100);
+    expect(db.isOpen).false;
   });
 
   it("should be able to open existing .bim file with SQLiteDb", () => {
     const testFileName = IModelTestUtils.resolveAssetFile("test.bim");
-    SQLiteDb.withOpenDb({ dbName: testFileName }, (db) => {
+    const db = new SQLiteDb();
+    db.withOpenDb({ dbName: testFileName }, () => {
       db.withSqliteStatement(`SELECT StrData FROM be_Prop WHERE Namespace="ec_Db" AND Name="SchemaVersion"`, (stmt) => {
         expect(stmt.step()).equal(DbResult.BE_SQLITE_ROW);
         const val = JSON.parse(stmt.getValue(0).getString());
