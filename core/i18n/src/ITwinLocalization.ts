@@ -67,10 +67,15 @@ export class ITwinLocalization implements Localization {
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
+    // In case defaultNS is passed into the constructor, make sure it's in the namespaces list
+    if (this._initOptions.defaultNS && namespaces.indexOf(this._initOptions.defaultNS) == -1) {
+      namespaces.push(this._initOptions.defaultNS);
+    }
+
     const initOptions: InitOptions = {
-      ... this._initOptions,
       ns: namespaces,
       defaultNS: namespaces[0],
+      ...this._initOptions
     };
 
     // if in a development environment, set debugging
@@ -119,9 +124,19 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
-    const value = this.i18next.t(key, options);
-    if (typeof value !== "string")
-      throw new Error("Translation key(s) not found");
+    let value: string | { [key: string]: string } = this.i18next.t(key, options);
+
+    if (typeof value !== "string") {
+      if (options?.returnDetails || options?.returnObjects) {
+        try {
+          value = value.res;
+        } catch (error) {
+          throw new Error("Translation key(s) not found with given options");
+        }
+      } else {
+        throw new Error("Translation key(s) not found");
+      }
+    }
 
     return value;
   }
