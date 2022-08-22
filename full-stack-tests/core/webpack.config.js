@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const glob = require("glob");
@@ -10,8 +10,7 @@ const fs = require("fs");
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -39,10 +38,13 @@ function createConfig(shouldInstrument) {
       mainFields: ["main", "module"],
       fallback: {
         assert: require.resolve("assert"),
+        crypto: require.resolve("crypto-browserify"),
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
+        os: require.resolve("os-browserify/browser"),
         path: require.resolve("path-browserify"),
         stream: require.resolve("stream-browserify"),
+        timers: require.resolve("timers-browserify"),
         zlib: require.resolve("browserify-zlib"),
       },
     },
@@ -81,6 +83,7 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
+      fs,
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -111,7 +114,7 @@ function createConfig(shouldInstrument) {
       ],
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
-        debug: true
+        debug: true,
       },
       enforce: "post",
     });
@@ -125,5 +128,5 @@ module.exports = [
   // FIXME: Temporarily disabling instrumented bundle, because this webpack run is taking too long.
   // Also hoping this fixes our source-map-loader out of memory issue for now...
   // createConfig(true),
-  createConfig(false)
-]
+  createConfig(false),
+];
