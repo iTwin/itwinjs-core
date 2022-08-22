@@ -17,9 +17,20 @@ steps:
       scriptPath: common/scripts/run_rush_change.py
       arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
       failOnStderr: true
+  - task: Cache@2
+    inputs:
+      key: '"rush" | "$(Agent.OS)" | **/pnpm-lock.yaml'
+      restoreKeys: |
+        rush | "$(Agent.OS)"
+        rush
+      path: common/temp/node_modules
+      cacheHitVar: CACHE_RESTORED
+    workingDirectory: ${{ parameters.workingDir }}
+    displayName: node_modules cache
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
+    condition: ne(variables.CACHE_RESTORED, 'true')
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
