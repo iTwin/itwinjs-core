@@ -718,7 +718,7 @@ describe("GrowablePoint3dArray", () => {
 });
 
 describe("GrowableArray", () => {
-  it.only("growthFactor", () => {
+  it("growthFactor", () => {
     const ck = new Checker();
 
     // extend array types so we can cover protected copyData()
