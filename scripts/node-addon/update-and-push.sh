@@ -39,12 +39,6 @@ then
   exit 1
 fi
 
-# Purge node_modules
-rm $RepoRoot/common/config/rush/browser-approved-packages.json
-rm $RepoRoot/common/config/rush/pnpm-lock.yaml
-rm -rf $RepoRoot/common/temp
-
-# Update dependents.
 updatePackageJson() {
   packageJson="$RepoRoot/$1/package.json"
   packageTmp="$RepoRoot/package.json.tmp"
@@ -54,8 +48,20 @@ updatePackageJson() {
   checkfail
 }
 
+# Update package.json files
 updatePackageJson "core/backend"
 updatePackageJson "full-stack-tests/backend"
+
+# Update XCode project. This relies on the "version = " string occurring exactly once, specifying the imodeljs-native version.
+PbxProj="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"
+sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+
+exit 1 ###TODO remove
+
+# Purge node_modules
+rm $RepoRoot/common/config/rush/browser-approved-packages.json
+rm $RepoRoot/common/config/rush/pnpm-lock.yaml
+rm -rf $RepoRoot/common/temp
 
 # Update to new @bentley/imodeljs-native package.
 rush update
