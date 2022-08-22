@@ -42,6 +42,7 @@ Example usage:
 import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
 import { context, trace } from "@opentelemetry/api";
 import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
+import { Presentation } from "@itwin/presentation-backend";
 
 const traceExporter = new OTLPTraceExporter({
   url: "<OpenTelemetry collector's url>",
