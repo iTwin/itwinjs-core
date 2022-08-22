@@ -73,4 +73,6 @@ git commit -m"rush change"
 
 # Push PR branch
 ###TODO git push -u origin HEAD
+checkfail
 
+echo "PR branch pushed."
