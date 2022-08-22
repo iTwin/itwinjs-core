@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-opentelemetry",
-      "comment": "convert diagnostics logs to a format which can be passed to OpenTelemetry exporter",
+      "comment": "The package contains functions for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
       "type": "none"
     }
   ],

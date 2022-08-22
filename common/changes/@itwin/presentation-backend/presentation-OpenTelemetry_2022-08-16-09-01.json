@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-backend",
-      "comment": "",
+      "comment": "Added `PresentationManagerProps.diagnosticsCallback` property for setting up OpenTelemetry reporting.",
       "type": "none"
     }
   ],

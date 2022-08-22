@@ -8,7 +8,7 @@ import { Diagnostics } from '@itwin/presentation-common';
 import { ReadableSpan } from '@opentelemetry/sdk-trace-base';
 import { SpanContext } from '@opentelemetry/api';
 
-// @public (undocumented)
+// @public
 export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[];
 
 // (No @packageDocumentation comment for this package)

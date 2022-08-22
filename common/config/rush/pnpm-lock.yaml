@@ -2622,15 +2622,14 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
-    dependencies:
-      '@opentelemetry/api': 1.1.0
-      '@opentelemetry/resources': 1.5.0_@opentelemetry+api@1.1.0
-      '@opentelemetry/sdk-trace-base': 1.5.0_@opentelemetry+api@1.1.0
-      '@opentelemetry/semantic-conventions': 1.5.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
+      '@opentelemetry/api': 1.1.0
+      '@opentelemetry/resources': 1.5.0_@opentelemetry+api@1.1.0
+      '@opentelemetry/sdk-trace-base': 1.5.0_@opentelemetry+api@1.1.0
+      '@opentelemetry/semantic-conventions': 1.5.0
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
       cpx2: 3.0.2
@@ -7920,7 +7919,7 @@ packages:
     dependencies:
       '@opentelemetry/api': 1.1.0
       '@opentelemetry/semantic-conventions': 1.5.0
-    dev: false
+    dev: true
 
   /@opentelemetry/resources/1.5.0_@opentelemetry+api@1.1.0:
     resolution: {integrity: sha512-YeEfC6IY54U3xL3P2+UAiom+r50ZF2jM0J47RV5uTFGF19Xjd5zazSwDPgmxtAd6DwLX0/5S5iqrsH4nEXMYoA==}
@@ -7931,7 +7930,7 @@ packages:
       '@opentelemetry/api': 1.1.0
       '@opentelemetry/core': 1.5.0_@opentelemetry+api@1.1.0
       '@opentelemetry/semantic-conventions': 1.5.0
-    dev: false
+    dev: true
 
   /@opentelemetry/sdk-trace-base/1.5.0_@opentelemetry+api@1.1.0:
     resolution: {integrity: sha512-6lx7YDf67HSQYuWnvq3XgSrWikDJLiGCbrpUP6UWJ5Z47HLcJvwZPRH+cQGJu1DFS3dT2cV3GpAR75/OofPNHQ==}
@@ -7943,12 +7942,12 @@ packages:
       '@opentelemetry/core': 1.5.0_@opentelemetry+api@1.1.0
       '@opentelemetry/resources': 1.5.0_@opentelemetry+api@1.1.0
       '@opentelemetry/semantic-conventions': 1.5.0
-    dev: false
+    dev: true
 
   /@opentelemetry/semantic-conventions/1.5.0:
     resolution: {integrity: sha512-wlYG/U6ddW1ilXslnDLLQYJ8nd97W8JJTTfwkGhubx6dzW6SUkd+N4/MzTjjyZlrHQunxHtkHFvVpUKiROvFDw==}
     engines: {node: '>=14'}
-    dev: false
+    dev: true
 
   /@panva/asn1.js/1.0.0:
     resolution: {integrity: sha512-UdkG3mLEqXgnlKsWanWcgb6dOjUzJ+XC5f+aWw30qrtjxeNUSfKX1cd5FBzOaXQumoe9nIqeZUvrRJS03HCCtw==}

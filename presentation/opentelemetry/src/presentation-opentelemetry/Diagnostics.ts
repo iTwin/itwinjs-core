@@ -12,12 +12,15 @@ import { ReadableSpan, TimedEvent } from "@opentelemetry/sdk-trace-base";
 import { Resource } from "@opentelemetry/resources";
 import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions";
 
-/** @public */
+/**
+ * Convert diagnostics to readable span format that can be passed to OpenTelemetry exporter.
+ * @public
+ */
 export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[] {
-  let spans: ReadableSpan[] = [];
+  const spans: ReadableSpan[] = [];
   for (const logs of diagnostics.logs ?? []) {
     const nestedSpans = convertScopeToReadableSpans(logs, parentSpanContext ? parentSpanContext.traceId : generateTraceId(), parentSpanContext?.spanId);
-    spans = spans.concat(nestedSpans);
+    spans.push(...nestedSpans);
   }
   return spans;
 }
@@ -27,7 +30,7 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
     return [];
 
   const spanId = generateSpanId();
-  let spans: ReadableSpan[] = [];
+  const spans: ReadableSpan[] = [];
   const events: TimedEvent[] = [];
 
   for (const entry of logs.logs ?? []) {
@@ -42,8 +45,9 @@ function convertScopeToReadableSpans(logs: DiagnosticsScopeLogs, traceId: string
         },
       };
       events.push(event);
-    } else
-      spans = spans.concat(convertScopeToReadableSpans(entry, traceId, spanId));
+    } else {
+      spans.push(...convertScopeToReadableSpans(entry, traceId, spanId));
+    }
   }
 
   const span: ReadableSpan = {

@@ -29,3 +29,27 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
+
+## Presentation
+
+### OpenTelemetry
+
+It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
+
+Example usage:
+
+```ts
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
+import { context, trace } from "@opentelemetry/api";
+import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
+
+const traceExporter = new OTLPTraceExporter({
+  url: "<OpenTelemetry collector's url>",
+});
+
+Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
+  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
+  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
+  traceExporter.export(spans, () => {});
+} });
+```
