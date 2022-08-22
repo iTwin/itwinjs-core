@@ -3,6 +3,9 @@
   "version": "3.4.0-dev.14",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
+  "engines": {
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/opentelemetry"
@@ -54,6 +57,7 @@
     "@opentelemetry/semantic-conventions": "^1.5.0",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.7",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",
