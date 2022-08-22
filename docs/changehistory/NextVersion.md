@@ -32,7 +32,7 @@ changes instead of the full source contents.
 
 ## Presentation
 
-## Restoring Presentation tree state
+### Restoring Presentation tree state
 
 It is now possible to restore previously saved Presentation tree state on component mount.
 
