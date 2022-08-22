@@ -4,6 +4,14 @@ usage() {
   >&2 echo "Usage: $0 -v NewNativePackageVersion" 1>&2
 }
 
+checkfail() {
+  if [ $? -ne 0 ]
+  then
+    >&2 echo "Error - aborting."
+    exit 1
+  fi
+}
+
 AddonVersion=""
 while getopts "v:" options; do
   case "${options}" in
@@ -25,20 +33,9 @@ then
   exit 1
 fi
 
-checkfail() {
-  if [ $? -ne 0 ]
-  then
-    >&2 echo "Error - aborting."
-    exit 1
-  fi
-}
-
 rm $RepoRoot/common/config/rush/browser-approved-packages.json
-checkfail
 rm $RepoRoot/common/config/rush/pnpm-lock.yaml
-checkfail
 rm -rf $RepoRoot/common/temp
-checkfail
 
 ###TODO update package version
 
