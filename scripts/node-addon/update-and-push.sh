@@ -5,14 +5,12 @@ usage() {
 }
 
 checkfail() {
-  if [ $? -ne 0 ]
-  then
+  if [ $? -ne 0 ]; then
     >&2 echo "Error - aborting."
     exit 1
   fi
 }
 
-AddonVersion=""
 while getopts "v:" options; do
   case "${options}" in
     v) AddonVersion=${OPTARG} ;;
@@ -20,8 +18,7 @@ while getopts "v:" options; do
   esac
 done
 
-if [ "$AddonVersion" = "" ]
-then
+if [ "$AddonVersion" = "" ]; then
   usage
   exit 1
 fi
@@ -31,12 +28,6 @@ RepoRoot=`git rev-parse --show-toplevel`
 if [[ $? -ne 0 || ! -f "$RepoRoot/core/backend/package.json" ]]; then
   >&2 echo "This script must be executed from within itwinjs-core repo."
   exit 1;
-fi
-
-if [ $? -ne 0 ]
-then
-  >&2 echo "This script must be executed from within itwinjs-core repo."
-  exit 1
 fi
 
 updatePackageJson() {
