@@ -1473,7 +1473,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -2420,7 +2420,7 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@testing-library/react': ^12.0.0
@@ -2704,7 +2704,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2798,7 +2798,7 @@ importers:
       '@itwin/imodels-client-management': ^2.0.0
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/presentation-backend': workspace:*
@@ -2970,7 +2970,7 @@ importers:
       '@itwin/imodels-client-management': ^2.0.0
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/presentation-backend': workspace:*
@@ -3539,7 +3539,7 @@ importers:
       '@itwin/express-server': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3628,7 +3628,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -3714,7 +3714,7 @@ importers:
       '@itwin/imodels-client-management': ^2.0.0
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
       '@itwin/presentation-backend': workspace:*
@@ -4231,7 +4231,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
       '@types/chai': 4.3.1
@@ -4350,7 +4350,7 @@ importers:
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -4497,7 +4497,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -4666,7 +4666,7 @@ importers:
       '@itwin/core-i18n': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -4795,7 +4795,7 @@ importers:
       '@itwin/core-react': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/itwinui-css': 0.x
-      '@itwin/itwinui-react': ~1.42.0
+      '@itwin/itwinui-react': ^1.42.0
       '@testing-library/dom': ^8.11.2
       '@testing-library/react': ^12.0.0
       '@testing-library/react-hooks': ^7.0.2
@@ -7562,9 +7562,8 @@ packages:
 
   /@itwin/service-authorization/0.6.2:
     resolution: {integrity: sha512-4zFhPwskE7rd6mlNPvzDLyfRR2EE2+dzknD7IAXSF+we+l5clLyGmsCV0Z5moFgPE0wa1TCXpkxKklQmhrzuCA==}
-    peerDependencies:
-      '@itwin/core-bentley': ^3.0.0
     dependencies:
+      '@itwin/core-bentley': link:../../core/bentley
       jsonwebtoken: 8.5.1
       jwks-rsa: 2.1.4
       openid-client: 4.9.1
