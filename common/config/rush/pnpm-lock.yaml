@@ -4126,7 +4126,6 @@ importers:
       source-map-loader: ^4.0.0
       typescript: ~4.4.0
       webpack: ^5.64.4
-      webpack-filter-warnings-plugin: ^1.2.1
     dependencies:
       chalk: 3.0.0
       copy-webpack-plugin: 11.0.0_webpack@5.74.0
@@ -4137,7 +4136,6 @@ importers:
       lodash: 4.17.21
       resolve: 1.19.0
       source-map-loader: 4.0.0_webpack@5.74.0
-      webpack-filter-warnings-plugin: 1.2.1_webpack@5.74.0
     devDependencies:
       '@itwin/build-tools': link:../build
       '@itwin/eslint-plugin': link:../eslint-plugin
@@ -21835,6 +21833,7 @@ packages:
       webpack: ^2.0.0 || ^3.0.0 || ^4.0.0
     dependencies:
       webpack: 5.74.0
+    dev: true
 
   /webpack-manifest-plugin/4.1.1_webpack@5.74.0:
     resolution: {integrity: sha512-YXUAwxtfKIJIKkhg03MKuiFAD72PlrqCiwdwO4VEXdRO5V0ORCNwaOwAZawPZalCbmH9kBDmXnNeQOw+BIEiow==}
