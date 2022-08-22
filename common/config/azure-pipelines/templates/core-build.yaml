@@ -21,14 +21,14 @@ steps:
       failOnStderr: true
   - task: Cache@2
     inputs:
-      key: '"rush" | "$(Agent.OS)" | "${{ parameters.NodeVersion }}" | common/config/rush/pnpm-lock.yaml'
-      path: common/temp/node_modules
+      key: '"itwinjs-core" | "pnpm-store" | "$(Agent.OS)" | "${{ parameters.NodeVersion }}" | common/config/rush/pnpm-lock.yaml'
+      path: common/temp/pnpm-store
       cacheHitVar: CACHE_RESTORED
     displayName: node_modules cache
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-    condition: ne(variables.CACHE_RESTORED, 'true')
+    # condition: ne(variables.CACHE_RESTORED, 'true')
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
