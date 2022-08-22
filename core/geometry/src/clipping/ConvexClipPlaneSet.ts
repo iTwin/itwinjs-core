@@ -332,7 +332,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   }
 
   /** Return true if `point` satisfies `point.isPointOnOrInside` for all planes */
-  public isPointOnOrInside(point: Point3d, tolerance: number): boolean {
+  public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
     const interiorTolerance = Math.abs(tolerance);   // Interior tolerance should always be positive. (TFS# 246598).
     for (const plane of this._planes) {
       if (!plane.isPointOnOrInside(point, (plane.interior ? interiorTolerance : tolerance)))
@@ -766,7 +766,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     if (myMesh && myVisitor) {
       if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
         vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
-      const scale = vol < 0.0 ? -1.0 : 1.0;
+      const scale = vol > 0.0 ? -1.0 : 1.0; // convex clip plane set normals are reverse of mesh facet normals!
       const normal = Vector3d.create();
       const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
       myVisitor.reset();

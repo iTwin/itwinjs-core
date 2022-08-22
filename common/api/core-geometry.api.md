@@ -1378,6 +1378,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     computePlanePlanePlaneIntersections(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
+    static createConvexPolyface(convexMesh: Polyface | PolyfaceVisitor, result?: ConvexClipPlaneSet): {
+        clipper: ConvexClipPlaneSet;
+        volume: number;
+    };
     static createEmpty(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createPlanes(planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createRange3dPlanes(range: Range3d, lowX?: boolean, highX?: boolean, lowY?: boolean, highY?: boolean, lowZ?: boolean, highZ?: boolean): ConvexClipPlaneSet;
