@@ -4,6 +4,7 @@ public;BackendDiagnosticsAttribute
 alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
 alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
+public;DiagnosticsCallback = (diagnostics: Diagnostics) => void
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
 internal;getLocalesDirectory: (assetsDirectory: string) => string

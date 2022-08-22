@@ -45,3 +45,26 @@ useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
 const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
+
+### OpenTelemetry
+
+It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
+
+Example usage:
+
+```ts
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
+import { context, trace } from "@opentelemetry/api";
+import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
+import { Presentation } from "@itwin/presentation-backend";
+
+const traceExporter = new OTLPTraceExporter({
+  url: "<OpenTelemetry collector's url>",
+});
+
+Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
+  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
+  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
+  traceExporter.export(spans, () => {});
+} });
+```

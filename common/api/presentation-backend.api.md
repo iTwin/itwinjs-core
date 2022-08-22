@@ -74,6 +74,9 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
+// @public (undocumented)
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
@@ -250,6 +253,8 @@ export interface PresentationManagerProps {
     };
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
+    // (undocumented)
+    diagnosticsCallback?: DiagnosticsCallback;
     // @deprecated
     enableSchemasPreload?: boolean;
     // @internal

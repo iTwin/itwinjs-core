@@ -53,3 +53,6 @@ export interface BackendDiagnosticsAttribute {
   /** @alpha */
   diagnostics?: BackendDiagnosticsOptions;
 }
+
+/** @public */
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
