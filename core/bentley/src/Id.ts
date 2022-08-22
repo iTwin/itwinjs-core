@@ -12,9 +12,6 @@
  */
 export type Id64String = string;
 
-
-
-
 /** A string containing a well-formed string representation of a [Guid]($core-bentley).
  * @public
  */
