@@ -1,10 +1,10 @@
-# iTwin.js Valgrind Testing
+# iTwin.js Helgrind Testing
 
 trigger: none
 pr: none
 schedules:
   - cron: "0 5 * * Sat"
-    displayName: Weekly Saturday Valgrind Testing
+    displayName: Weekly Saturday Helgrind Testing
     branches:
       include:
         - master
@@ -18,7 +18,7 @@ jobs:
       demands:
       - Agent.OS -equals Linux
     variables:
-      VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
+      HELGRIND_RESULTS: $(Build.StagingDirectory)/helgrind-results/
     workspace:
       clean: all
 
@@ -50,20 +50,20 @@ jobs:
         displayName: rush rebuild
         condition: succeeded()
 
-      - script: mkdir $(VALGRIND_RESULTS)
+      - script: mkdir $(HELGRIND_RESULTS)
 
-      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
-        displayName: 'Run Valgrind on rush cover'
+      - script: 'valgrind --tool=helgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/helgrind.supp --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
+        displayName: "Run Valgrind's datarace detector (helgrind) on rush cover"
         failOnStderr: false
 
       - task: archiveandpublishartifact@0
         inputs:
-          rootFolderOrFile: '$(VALGRIND_RESULTS)'
+          rootFolderOrFile: '$(HELGRIND_RESULTS)'
           archiveFolder: '$(Build.ArtifactStagingDirectory)'
-          artifactName: 'ValgrindReport-$(Build.BuildId)'
+          artifactName: 'HelgrindReport-$(Build.BuildId)'
 
       - task: PythonScript@0
         inputs:
           scriptSource: filepath
           scriptPath: common/config/azure-pipelines/utils/log_valgrind_errors.py
-          arguments: '$(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
+          arguments: '$(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
