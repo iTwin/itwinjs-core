@@ -299,7 +299,7 @@ export interface PresentationManagerProps {
 
   /*
    * A function that will be called after receiving diagnostics.
-   * @alpha
+   * @beta
    */
   diagnosticsCallback?: DiagnosticsCallback;
 }
