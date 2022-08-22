@@ -14,7 +14,7 @@ import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
   ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, getLocalizedStringEN, HierarchyCompareInfo, HierarchyCompareInfoJSON,
+  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
   LabelDefinitionJSON,
   MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
@@ -123,7 +123,6 @@ describe("PresentationManager", () => {
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
-          getLocalizedString: getLocalizedStringEN,
           workerThreadsCount: testThreadsCount,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
@@ -2309,6 +2308,35 @@ describe("PresentationManager", () => {
       return expect(manager.getNodesCount(options)).to.eventually.be.rejectedWith(Error);
     });
 
+    describe("getLocalizedString", () => {
+
+      it("Passes getLocalizedString to manager and uses it", async () => {
+        const getLocalizedStringSpy = sinon.spy();
+        manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
+        sinon.stub(manager.getDetail(), "rulesets").value(sinon.createStubInstance(RulesetManagerImpl, {
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
+        }));
+        // what the addon returns
+        const addonResponse: NodeJSON[] = [{
+          key: {
+            type: "type1",
+            pathFromRoot: ["p1", "p2", "p3"],
+          },
+          labelDefinition: LabelDefinition.fromLabelString("@RulesEngine:LABEL_General_NotSpecified@"),
+        }];
+        setup(addonResponse);
+
+        // test
+        const options: Paged<HierarchyRequestOptions<IModelDb, NodeKey>> = {
+          imodel: imodelMock.object,
+          rulesetOrId: testData.rulesetOrId,
+          paging: testData.pageOptions,
+        };
+
+        await manager.getNodes(options);
+        sinon.assert.calledTwice(getLocalizedStringSpy);
+      });
+    });
   });
 
   describe("getSelectionScopes", () => {
@@ -2372,5 +2400,4 @@ describe("PresentationManager", () => {
     });
 
   });
-
 });
