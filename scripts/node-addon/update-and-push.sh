@@ -56,8 +56,6 @@ updatePackageJson "full-stack-tests/backend"
 PbxProj="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"
 sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
 
-exit 1 ###TODO remove
-
 # Purge node_modules
 rm $RepoRoot/common/config/rush/browser-approved-packages.json
 rm $RepoRoot/common/config/rush/pnpm-lock.yaml
@@ -78,7 +76,7 @@ git add $RepoRoot/common/changes
 git commit -m"rush change"
 
 # Push PR branch
-###TODO git push -u origin HEAD
+git push -u origin HEAD
 checkfail
 
 echo "PR branch pushed."
