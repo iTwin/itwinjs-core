@@ -19,5 +19,8 @@
   },
   "tree": {
     "presentation-components-muted-node": "Too many child nodes."
+  },
+  "navigation-property-editor": {
+    "choose-value": "Choose value"
   }
 }
