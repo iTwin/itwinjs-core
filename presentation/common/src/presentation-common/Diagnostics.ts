@@ -63,6 +63,7 @@ export interface DiagnosticsScopeLogs {
   scope: string;
   duration?: number;
   logs?: DiagnosticsLogEntry[];
+  attributes?: { [attributeKey: string]: string | string[] };
 }
 
 /** @alpha */
