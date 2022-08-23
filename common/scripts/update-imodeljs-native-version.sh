@@ -52,9 +52,9 @@ PbxProj="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodepro
 sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
 
 # Purge node_modules
-rm $RepoRoot/common/config/rush/browser-approved-packages.json
-rm $RepoRoot/common/config/rush/pnpm-lock.yaml
-rm -rf $RepoRoot/common/temp
+rm "$RepoRoot/common/config/rush/browser-approved-packages.json"
+rm "$RepoRoot/common/config/rush/pnpm-lock.yaml"
+rm -rf "$RepoRoot/common/temp"
 
 # Update to new @bentley/imodeljs-native package.
 rush update
@@ -67,7 +67,7 @@ checkfail
 yes "" | rush change
 checkfail
 
-git add $RepoRoot/common/changes
+git add "$RepoRoot/common/changes"
 git commit -m"rush change"
 
 echo "Update complete."
