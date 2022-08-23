@@ -300,15 +300,17 @@ export namespace CodeService {
    * @see CodeService.verifyCode
    */
   export interface ElementCodeProps {
+    /** iModel from which the code is being inserted/updated. */
     readonly iModel: IModelDb;
+    /** Properties of the code */
     readonly props: {
       /** The imodel-specific code properties. */
       readonly code: CodeProps;
       /**
-     * The federationGuid of the element being inserted or updated.
-     * If federationGuid is defined, it is must match the value in the code index or an error is thrown.
-     * If it is undefined, the value from the code index is returned here.
-     */
+       * The federationGuid of the element being inserted or updated.
+       * If federationGuid is defined, it is must match the value in the code index or an error is thrown.
+       * If it is undefined, the value from the code index is returned here.
+       */
       federationGuid?: GuidString;
     };
   }

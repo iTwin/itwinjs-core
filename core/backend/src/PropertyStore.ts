@@ -66,7 +66,7 @@ export interface PropertyStore {
 /** @alpha */
 export namespace PropertyStore {
   /** @internal */
-  export let openPropertyStore: undefined | ((props: CloudSqlite.ContainerAccessProps) => PropertyStore);
+  export let openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
 
   /** The set of valid types for properties in a PropertyStore. */
   export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
