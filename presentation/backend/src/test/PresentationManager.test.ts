@@ -45,7 +45,7 @@ describe("PresentationManager", () => {
 
   before(async () => {
     try {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     } catch (e) {
       let isLoaded = false;
       try {

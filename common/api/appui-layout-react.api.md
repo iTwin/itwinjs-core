@@ -471,6 +471,8 @@ export interface DragHandleProps extends CommonProps {
 // @internal (undocumented)
 export class DragManager {
     // (undocumented)
+    get draggedItem(): Dragged | undefined;
+    // (undocumented)
     getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined;
     // (undocumented)
     handleDrag(x: number, y: number): void;
@@ -2964,7 +2966,7 @@ export function useCursor(): void;
 export function useDoubleClick(onDoubleClick?: () => void): () => void;
 
 // @internal
-export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void, onDoubleClick?: () => void): (instance: T | null) => void;
+export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point, pointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void, onDoubleClick?: () => void): (instance: T | null) => void;
 
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
@@ -3035,16 +3037,16 @@ export interface UseDragToolSettingsArgs {
 }
 
 // @internal (undocumented)
-export function useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition }: DragStartArgs) => void;
+export function useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => void;
 
 // @internal (undocumented)
 export interface UseDragWidgetArgs {
     // (undocumented)
-    onDrag?: (dragBy: PointProps) => void;
+    onDrag?: (dragBy: Point) => void;
     // (undocumented)
     onDragEnd?: (target: WidgetDragDropTargetState) => void;
     // (undocumented)
-    onDragStart?: (updateWidget: UpdateWidgetDragItemFn, initialPointerPosition: PointProps) => void;
+    onDragStart?: (updateWidget: UpdateWidgetDragItemFn, initialPointerPosition: Point, pointerPosition: Point) => void;
     // (undocumented)
     widgetId: WidgetState["id"];
 }
@@ -3197,7 +3199,7 @@ export const Widget: React_2.MemoExoticComponent<React_2.ForwardRefExoticCompone
 // @internal (undocumented)
 export interface WidgetComponent {
     // (undocumented)
-    measure: () => SizeProps;
+    measure: () => Rectangle;
 }
 
 // @alpha @deprecated
@@ -3264,7 +3266,7 @@ export const WidgetContext: React_2.Context<WidgetContextArgs>;
 // @internal (undocumented)
 export interface WidgetContextArgs {
     // (undocumented)
-    measure: () => SizeProps;
+    measure: () => Rectangle;
 }
 
 // @internal (undocumented)
@@ -3288,6 +3290,12 @@ export interface WidgetDragEndAction {
     readonly target: WidgetDragDropTargetState;
     // (undocumented)
     readonly type: "WIDGET_DRAG_END";
+}
+
+// @internal (undocumented)
+export interface WidgetDragStartArgs extends DragStartArgs {
+    // (undocumented)
+    pointerPosition: Point;
 }
 
 // @internal (undocumented)

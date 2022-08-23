@@ -11,6 +11,7 @@ import { createDefaultNativePlatform, NativePlatformDefinition } from "../presen
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { BeEvent } from "@itwin/core-bentley";
 import sinon from "sinon";
+import { join } from "path";
 
 describe("default NativePlatform", () => {
 
@@ -19,7 +20,7 @@ describe("default NativePlatform", () => {
 
   beforeEach(async () => {
     try {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
     } catch (e) {
       let isLoaded = false;
       try {

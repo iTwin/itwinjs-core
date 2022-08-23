@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Upgrade puppeteer to 15.5.0",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

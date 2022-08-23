@@ -371,6 +371,10 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
+      "name": "@playwright/test",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@reduxjs/toolkit",
       "allowedCategories": [ "internal" ]
     },
@@ -423,6 +427,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "assert",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "autoprefixer",
       "allowedCategories": [ "internal" ]
     },
@@ -439,8 +447,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "browserify-zlib",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
       "name": "buffer",
-      "allowedCategories": [ "common", "internal" ]
+      "allowedCategories": [ "common", "integration-testing", "internal" ]
     },
     {
       "name": "cache-require-paths",
@@ -671,6 +683,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "https-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "i18next",
       "allowedCategories": [ "frontend" ]
     },
@@ -792,7 +808,7 @@
     },
     {
       "name": "null-loader",
-      "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "integration-testing", "internal" ]
     },
     {
       "name": "nyc",
@@ -809,6 +825,10 @@
     {
       "name": "openid-client",
       "allowedCategories": [ "integration-testing" ]
+    },
+    {
+      "name": "path-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "postcss-flexbugs-fixes",
@@ -915,10 +935,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "readline",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "recursive-readdir",
       "allowedCategories": [ "tools" ]
     },
@@ -972,6 +988,14 @@
     },
     {
       "name": "spdy",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "stream-browserify",
+      "allowedCategories": [ "integration-testing", "internal" ]
+    },
+    {
+      "name": "stream-http",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -1043,15 +1067,7 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "webpack-core",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "webpack-sources",
       "allowedCategories": [ "tools" ]
     },
     {

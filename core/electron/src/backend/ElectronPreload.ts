@@ -2,16 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { contextBridge, ipcRenderer, IpcRendererEvent } from "electron";
-
-/** These methods are stored on `window.itwinjs` */
-export interface ITwinElectronApi {
-  addListener: (channel: string, listener: ElectronListener) => void;
-  removeListener: (channel: string, listener: ElectronListener) => void;
-  invoke: (channel: string, ...data: any[]) => Promise<any>;
-  once: (channel: string, listener: (event: any, ...args: any[]) => void) => void;
-  send: (channel: string, ...data: any[]) => void; // only valid for render -> main
-}
+import { contextBridge, ipcRenderer } from "electron";
+import type { ElectronListener, ITwinElectronApi } from "../common/ITwinElectronApi";
 
 /**
  * This file is loaded as an Electron preload script
@@ -22,8 +14,6 @@ function checkPrefix(channel: string) {
   if (!channel.startsWith("itwin."))
     throw new Error(`illegal channel name '${channel}'`);
 }
-
-type ElectronListener = (event: IpcRendererEvent, ...args: any[]) => void;
 
 /** the implementation of the private api between the frontend (renderer) and backend (main) iTwin.js processes in Electron. */
 const frontendApi: ITwinElectronApi = {

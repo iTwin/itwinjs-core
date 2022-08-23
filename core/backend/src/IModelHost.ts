@@ -501,8 +501,9 @@ export class IModelHost {
     IModelHost.configuration = undefined;
     IModelHost.tileCacheService = undefined;
     IModelHost.tileUploader = undefined;
-    IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
+    ITwinWorkspace.finalize();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
