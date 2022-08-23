@@ -11,7 +11,7 @@ import {
 } from "@itwin/presentation-common";
 
 /**
- * @alpha
+ * @beta
  */
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
   // eslint-disable-next-line no-console
@@ -27,7 +27,7 @@ export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
 }
 
 /**
- * @alpha
+ * @beta
  */
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
   return (diagnostics: ClientDiagnostics) => {

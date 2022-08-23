@@ -14,7 +14,7 @@ import { SemanticResourceAttributes } from "@opentelemetry/semantic-conventions"
 
 /**
  * Convert diagnostics to readable span format that can be passed to OpenTelemetry exporter.
- * @public
+ * @beta
  */
 export function convertToReadableSpans(diagnostics: Diagnostics, parentSpanContext?: SpanContext): ReadableSpan[] {
   const spans: ReadableSpan[] = [];

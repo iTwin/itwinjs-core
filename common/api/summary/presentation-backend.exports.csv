@@ -1,8 +1,8 @@
 sep=;
 Release Tag;API Item
 public;BackendDiagnosticsAttribute
-alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
-alpha;BackendDiagnosticsOptions 
+beta;BackendDiagnosticsHandler = (logs: Diagnostics) => void
+beta;BackendDiagnosticsOptions 
 public;ContentCacheConfig
 public;DiagnosticsCallback = (diagnostics: Diagnostics) => void
 beta;DiskHierarchyCacheConfig 

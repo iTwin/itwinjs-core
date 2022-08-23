@@ -220,7 +220,7 @@ export interface ClassInfoJSON {
     name: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ClientDiagnostics extends Diagnostics {
     // (undocumented)
     backendVersion?: string;
@@ -228,14 +228,14 @@ export interface ClientDiagnostics extends Diagnostics {
 
 // @public (undocumented)
 export interface ClientDiagnosticsAttribute {
-    // @alpha (undocumented)
+    // @beta (undocumented)
     diagnostics?: ClientDiagnosticsOptions;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
     // (undocumented)
     backendVersion?: boolean;
@@ -556,16 +556,16 @@ export interface DescriptorSource {
     readonly sortingField?: Field;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface Diagnostics {
     // (undocumented)
     logs?: DiagnosticsScopeLogs[];
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export namespace DiagnosticsLogEntry {
     // (undocumented)
     export function isMessage(entry: DiagnosticsLogEntry): entry is DiagnosticsLogMessage;
@@ -573,10 +573,10 @@ export namespace DiagnosticsLogEntry {
     export function isScope(entry: DiagnosticsLogEntry): entry is DiagnosticsScopeLogs;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface DiagnosticsLogMessage {
     // (undocumented)
     category: string;
@@ -591,7 +591,7 @@ export interface DiagnosticsLogMessage {
     timestamp: number;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
@@ -600,7 +600,7 @@ export interface DiagnosticsOptions {
     };
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface DiagnosticsScopeLogs {
     // (undocumented)
     attributes?: {
@@ -2032,7 +2032,7 @@ export type PresentationRpcResponse<TResult = undefined> = Promise<PresentationR
 
 // @public
 export interface PresentationRpcResponseData<TResult = undefined> {
-    // @alpha (undocumented)
+    // @beta (undocumented)
     diagnostics?: ClientDiagnostics;
     errorMessage?: string;
     result?: TResult;
@@ -2523,7 +2523,7 @@ export interface RootNodeRule extends NavigationRuleBase {
     ruleType: RuleTypes.RootNodes;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type RpcDiagnosticsOptions = Omit_2<ClientDiagnosticsOptions, "handler">;
 
 // @internal

@@ -40,17 +40,17 @@ export function normalizeVersion(version?: string) {
 // istanbul ignore next
 export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
 
-/** @alpha */
+/** @beta */
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-/** @alpha */
+/** @beta */
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
   handler: BackendDiagnosticsHandler;
 }
 
 /** @public */
 export interface BackendDiagnosticsAttribute {
-  /** @alpha */
+  /** @beta */
   diagnostics?: BackendDiagnosticsOptions;
 }
 

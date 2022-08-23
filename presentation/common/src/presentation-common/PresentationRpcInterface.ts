@@ -37,7 +37,7 @@ import { Omit, PagedResponse } from "./Utils";
 export type PresentationRpcRequestOptions<TManagerRequestOptions> = Omit<TManagerRequestOptions, "imodel" | "diagnostics"> & {
   /** @internal ID of the client requesting data */
   clientId?: string;
-  /** @alpha */
+  /** @beta */
   diagnostics?: RpcDiagnosticsOptions;
 };
 
@@ -52,11 +52,11 @@ export interface PresentationRpcResponseData<TResult = undefined> {
   errorMessage?: string;
   /** In case of a success response, the result */
   result?: TResult;
-  /** @alpha */
+  /** @beta */
   diagnostics?: ClientDiagnostics;
 }
 
-/** @alpha */
+/** @beta */
 export type RpcDiagnosticsOptions = Omit<ClientDiagnosticsOptions, "handler">;
 
 /**

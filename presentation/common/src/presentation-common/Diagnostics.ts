@@ -6,20 +6,20 @@
  * @module Core
  */
 
-/** @alpha */
+/** @beta */
 export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace";
 
-/** @alpha */
+/** @beta */
 export interface Diagnostics {
   logs?: DiagnosticsScopeLogs[];
 }
 
-/** @alpha */
+/** @beta */
 export interface ClientDiagnostics extends Diagnostics {
   backendVersion?: string;
 }
 
-/** @alpha */
+/** @beta */
 export interface DiagnosticsOptions {
   /**
    * Flag specifying that performance should be measured, or
@@ -32,10 +32,10 @@ export interface DiagnosticsOptions {
   editor?: boolean | DiagnosticsLoggerSeverity;
 }
 
-/** @alpha */
+/** @beta */
 export type ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void;
 
-/** @alpha */
+/** @beta */
 export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
   backendVersion?: boolean;
   handler: ClientDiagnosticsHandler;
@@ -43,11 +43,11 @@ export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
 
 /** @public */
 export interface ClientDiagnosticsAttribute {
-  /** @alpha */
+  /** @beta */
   diagnostics?: ClientDiagnosticsOptions;
 }
 
-/** @alpha */
+/** @beta */
 export interface DiagnosticsLogMessage {
   severity: {
     dev?: DiagnosticsLoggerSeverity;
@@ -58,7 +58,7 @@ export interface DiagnosticsLogMessage {
   timestamp: number;
 }
 
-/** @alpha */
+/** @beta */
 export interface DiagnosticsScopeLogs {
   scope: string;
   scopeCreateTimestamp?: number;
@@ -67,10 +67,10 @@ export interface DiagnosticsScopeLogs {
   attributes?: { [attributeKey: string]: string | string[] };
 }
 
-/** @alpha */
+/** @beta */
 export type DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs;
 
-/** @alpha */
+/** @beta */
 export namespace DiagnosticsLogEntry { // eslint-disable-line @typescript-eslint/no-redeclare
   export function isMessage(entry: DiagnosticsLogEntry): entry is DiagnosticsLogMessage {
     return !!(entry as any).message;

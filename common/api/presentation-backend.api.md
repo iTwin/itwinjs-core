@@ -55,14 +55,14 @@ import { WithCancelEvent } from '@itwin/presentation-common';
 
 // @public (undocumented)
 export interface BackendDiagnosticsAttribute {
-    // @alpha (undocumented)
+    // @beta (undocumented)
     diagnostics?: BackendDiagnosticsOptions;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
     // (undocumented)
     handler: BackendDiagnosticsHandler;
