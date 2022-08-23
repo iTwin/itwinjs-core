@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/core-webpack-tools"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools",
+  "email": "aruniverse@users.noreply.github.com"
+}
