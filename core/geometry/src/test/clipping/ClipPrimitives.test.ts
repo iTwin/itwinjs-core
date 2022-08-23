@@ -733,7 +733,7 @@ describe("ClipPrimitive", () => {
 //   The native side expects the "hole" to provide its own mask planes, in the manner of a ClipShape.
 //   There are no persistent clip plane sets constructed with this sense of the invisible bit in mind.
 // So this test has been rewritten with ClipShapes, testing holes with the mask bit instead of the invisible bit.
-  it.only("ClipVectorWithHole", () => {
+  it("ClipVectorWithHole", () => {
     const ck = new Checker();
     const outerRange = Range3d.createXYZXYZ(-1,-2,-10, 8,10,10);
     const convexClip = ConvexClipPlaneSet.createRange3dPlanes(outerRange, true, true, true, true, false, false);
