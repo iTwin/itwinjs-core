@@ -31,8 +31,14 @@ fi
 # Create PR branch.
 ScriptsDir="$RepoRoot/common/scripts"
 "$ScriptsDir/create-imodeljs-native-pr-branch.sh" -v "$AddonVersion" -s "$CommitHash"
-if [ $? -ne 0 ]; then
+BranchStatus=$?
+if [ $BranchStatus -ne 0 ]; then
   >&2 echo "PR branch creation failed - aborting."
+
+  if [ $BranchStatus -eq 2 ]; then
+    >&2 echo "If conflicts were reported, use `git mergetool` to fix them, then run `update-imodeljs-native-version.sh` to continue."
+  fi
+
   exit 1
 fi
 

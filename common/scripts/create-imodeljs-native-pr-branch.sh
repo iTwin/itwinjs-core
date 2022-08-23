@@ -50,7 +50,7 @@ git merge --no-edit $CommitHash
 
 if [ $? -ne 0 ]; then
   >&2 echo "Merge failed. If conflicts were reported, fix them."
-  exit 1
+  exit 2
 fi
 
 echo "PR branch created."
