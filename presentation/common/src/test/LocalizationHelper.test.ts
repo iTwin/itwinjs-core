@@ -216,8 +216,7 @@ describe("getLocalizedStringEN", () => {
 
   it("translates from RulesEngine", () => {
     const key = "@RulesEngine:LABEL_General_NotSpecified@";
-    const translated = localizationHelper.getLocalizedString(key);
-    expect(translated).to.be.eq("Not specified");
+    expect(getLocalizedStringEN(@RulesEngine:LABEL_General_NotSpecified@)).to.be.eq("Not specified");
   });
 
   it("translates from ECPresentation", () => {
