@@ -7,10 +7,6 @@ import { assert } from "chai";
 import { Localization } from "@itwin/core-common";
 import { ITwinLocalization } from "../ITwinLocalization"
 
-const NAMESPACES = [
-  "Test"
-];
-
 describe("ITwinLocalization", () => {
 
   var localization: Localization;
@@ -20,9 +16,63 @@ describe("ITwinLocalization", () => {
   // after(async () => {});
   // afterEach(async () => {});
 
-  before(async () => {
-    localization = new ITwinLocalization();
-    await localization.initialize(["Default", "Test"]);
+  // describe("#constructor", () => {
+  //   it("empty", () => {
+  //     localization = new ITwinLocalization();
+  //     assert.isTrue(localization instanceof ITwinLocalization);
+  //   });
+  // });
+
+  describe("#initialize", () => {
+
+    describe("with no options", () => {
+      before(() => {
+        localization = new ITwinLocalization();
+      });
+
+      /*** TODO ***/
+      // it("", () => {
+      // });
+    });
+
+    describe("with default namespace provided in constructor", () => {
+      let itwinLocalization: ITwinLocalization;
+      before(() => {
+        itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default" } });
+      });
+
+      it("default namespace set when initialized with empty array", async () => {
+        await itwinLocalization.initialize([]);
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+      });
+
+      it("default namespace not overridden by one namespace", async () => {
+        await itwinLocalization.initialize(["Test"]);
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+      });
+
+      it("default namespace not overridden by two namespaces", async () => {
+        await itwinLocalization.initialize(["NotExist", "Test"]);
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+      });
+
+      it("duplicate namespace value does not break default namespace", async () => {
+        await itwinLocalization.initialize(["Default"]);
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+      });
+
+      it("default namespace is in list of all namespaces initalized with empty array", async () => {
+        await itwinLocalization.initialize([]);
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
+      });
+
+      it("default namespace is in list of all namespaces", async () => {
+        await itwinLocalization.initialize(["Test"]);
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
+      });
+
+
+    });
   });
 
   // The goal is not to test i18next's interpolation,
@@ -30,6 +80,11 @@ describe("ITwinLocalization", () => {
   // basics work through the ITwinLocalization class.
   // For interpolation options, see: https://www.i18next.com/translation-function/interpolation
   describe("#getLocalizedString", () => {
+
+    before(async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize(["Default", "Test"]);
+    });
 
     describe("Default Namespace", () => {
 
@@ -162,3 +217,31 @@ describe("ITwinLocalization", () => {
 
 /* localizedstirng options throws error vs doesnt */
 // options = { ...options, returnDetails: true };
+
+
+// constructor
+//  awaiting
+//  options
+// initialize
+//  namespaces
+//  awaiting
+// getLocalizedKeys
+//  ...
+// getlocalizedString
+//  errors / string only
+// getLocalizedStringWithNamespace
+//  same as getLocalizedString
+// getEnglishString
+//  ...
+// getNamespacePromise
+//  ...?
+// getLanguageList
+//  simple test
+// changeLanguage
+//  ...
+// registerNamespace
+//  ...
+// unregisterNamespace
+//  ...
+// TranslationLogger
+//  ...?
