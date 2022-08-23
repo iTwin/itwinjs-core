@@ -66,6 +66,6 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/ui"
   }
 }

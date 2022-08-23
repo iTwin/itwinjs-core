@@ -10,7 +10,6 @@ module.exports = {
   extends: [
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:react/recommended"
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
@@ -19,11 +18,9 @@ module.exports = {
   },
   plugins: [
     "@typescript-eslint",
-    "react-hooks",
     "import",
     "prefer-arrow",
-    "deprecation",
-    "react"
+    "deprecation"
   ],
   rules: {
     "@typescript-eslint/adjacent-overload-signatures": "error",
@@ -333,7 +330,6 @@ module.exports = {
     ],
     "quotes": "off", // Using @typescript-eslint/quotes instead
     "radix": "error",
-    "react/prop-types": "off",
     "sort-imports": [
       "error",
       {
@@ -357,8 +353,6 @@ module.exports = {
     ],
     "use-isnan": "error",
     "valid-typeof": "off",
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "error",
     "@itwin/import-spacing": ["error", {
       "allow-line-breaks": false, // line breaks not allowed
       "allow-line-breaks-inside-brackets": true, // except inside brackets
@@ -374,7 +368,6 @@ module.exports = {
     }],
     "@itwin/import-within-package": "error",
     "@itwin/prefer-get": "error",
-    "@itwin/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@itwin/require-basic-rpc-values": "off",
     "@itwin/no-internal-barrel-imports": "error",
   },
@@ -386,9 +379,4 @@ module.exports = {
       }
     }
   ],
-  settings: {
-    "react": {
-      "version": "16.8"
-    }
-  },
 }
