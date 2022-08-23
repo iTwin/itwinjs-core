@@ -53,16 +53,16 @@ import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
 
-// @public (undocumented)
+// @public
 export interface BackendDiagnosticsAttribute {
-    // @beta (undocumented)
+    // @beta
     diagnostics?: BackendDiagnosticsOptions;
 }
 
-// @beta (undocumented)
+// @beta
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-// @beta (undocumented)
+// @beta
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
     // (undocumented)
     handler: BackendDiagnosticsHandler;
@@ -74,7 +74,7 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
-// @public (undocumented)
+// @public
 export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta

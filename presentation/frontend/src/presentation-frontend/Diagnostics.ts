@@ -11,6 +11,7 @@ import {
 } from "@itwin/presentation-common";
 
 /**
+ * A function which logs messages to the console.
  * @beta
  */
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
@@ -27,6 +28,7 @@ export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
 }
 
 /**
+ * A function which calls all diagnostics handlers passed to it.
  * @beta
  */
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
