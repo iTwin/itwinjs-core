@@ -835,9 +835,7 @@ export namespace CodeService {
     export type CodeState = number;
     export type CodeValue = string;
     export interface ElementCodeProps {
-        // (undocumented)
         readonly iModel: IModelDb;
-        // (undocumented)
         readonly props: {
             readonly code: CodeProps;
             federationGuid?: GuidString;
@@ -3975,7 +3973,7 @@ export interface PropertyStore {
 // @alpha (undocumented)
 export namespace PropertyStore {
     let // @internal (undocumented)
-    openPropertyStore: undefined | ((props: CloudSqlite.ContainerAccessProps) => PropertyStore);
+    openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
     export type IterationReturn = void | "stop";
     export type PropertyArray = {
         name: PropertyName;
