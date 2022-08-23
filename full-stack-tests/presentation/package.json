@@ -98,7 +98,8 @@
       "scripts/copy-test-setup.js",
       "source-map-support/register",
       "jsdom-global/register",
-      "ignore-styles"
+      "ignore-styles",
+      "@itwin/build-tools/mocha-hooks"
     ],
     "checkLeaks": true,
     "globals": [
@@ -108,9 +109,7 @@
     "file": [
       "lib/setup.js"
     ],
-    "reporter": [
-      "node_modules/@itwin/build-tools/mocha-reporter"
-    ],
+    "reporter": "@itwin/build-tools/mocha-reporter",
     "reporterOptions": [
       "mochaFile=lib/test/junit_results.xml"
     ],

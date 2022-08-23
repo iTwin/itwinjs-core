@@ -4,7 +4,8 @@
     "raf/polyfill",
     "source-map-support/register",
     "jsdom-global/register",
-    "ignore-styles"
+    "ignore-styles",
+    "@itwin/build-tools/mocha-hooks"
   ],
   "checkLeaks": true,
   "timeout": 60000,
@@ -15,7 +16,7 @@
     "lib/cjs/test/coverage/**/*"
   ],
   "reporter": [
-    "node_modules/@itwin/build-tools/mocha-reporter"
+    "@itwin/build-tools/mocha-reporter"
   ],
   "reporterOptions": [
     "mochaFile=lib/test/junit_results.xml"

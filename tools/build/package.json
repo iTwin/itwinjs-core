@@ -49,6 +49,7 @@
   "devDependencies": {
     "@itwin/eslint-plugin": "workspace:*",
     "@types/node": "16.11.7",
+    "@types/mocha": "^8.2.2",
     "eslint": "^7.11.0"
   },
   "eslintConfig": {

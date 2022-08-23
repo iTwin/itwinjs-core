@@ -3,6 +3,7 @@
 !scripts/**/*.js
 !bin/**/*.js
 !mocha-reporter/**/*.js
+!mocha-hooks/**/*.js
 !*.md
 !tsconfig.json
 !tsconfig-base.json
