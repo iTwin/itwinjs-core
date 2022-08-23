@@ -38,7 +38,7 @@ export interface PropertyStore {
    * @note There is no guarantee that the Values are up-to-date even immediately after calling this method, since others
    * may be modifying them at any time.
    */
-  synchronizeWithCloud: () => void;
+  synchronizeWithCloud(): void;
 
   /** initiate a prefetch operation on this PropertyStore
    * @internal

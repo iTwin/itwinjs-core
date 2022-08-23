@@ -61,11 +61,11 @@ One tradeoff comes from access control. Each user may be granted either read or 
 
 A `PropertyStore` may hold values of type:
 
-- string: saved from and loaded into JavaScript `string` primitives.
-- number:  saved from and loaded into JavaScript `number` primitives. As in JavaScript, there is no distinction between integers and real numbers.
-- boolean:  saved from and loaded into JavaScript `boolean` primitives
-- blob: binary data, saved from and loaded into JavaScript `Uint8Array` objects.
-- object: comprised of JavaScript `objects` with named members of type `string`, `number`, `boolean`, nested objects, or arrays of the same. Objects are saved with `JSON.serialize` and loaded with `JSON.parse`. They may not contain blobs or instances of classes.
+- `string`: saved from and loaded into JavaScript `string` primitives.
+- `number`:  saved from and loaded into JavaScript `number` primitives. As in JavaScript, there is no distinction between integers and real numbers.
+- `boolean`:  saved from and loaded into JavaScript `boolean` primitives
+- `blob`: binary data, saved from and loaded into JavaScript `Uint8Array` objects.
+- `object`: comprised of JavaScript `objects` with named members of type `string`, `number`, `boolean`, nested objects, or arrays of the same. Objects are saved with [JSON.stringify](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify) and loaded with [JSON.parse](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse). They may not contain blobs or instances of classes.
 
 ## PropertyNames
 
@@ -98,5 +98,14 @@ The PropertyStore api has two interfaces:
 
 ## PropertyStore vs. Settings vs. Workspaces
 
-There can be some confusion about the roles of PropertyStore vs. Settings vs. Workspaces, since each deal with name/value pairs in some way.
+There can be some confusion about the roles of `PropertyStore`, `Settings`, and `WorkspaceDb`, since each deal with name/value pairs in some way.
 
+These facts may help:
+
+- `Settings` *exist only in memory* and must be stored and loaded using some other technique. `Settings` map a name (a [SettingName]($backend)) to a JavaScript object (a [SettingObject]($backend)). They exist for applications to quickly get a *current value* for a concept that may be supplied externally. The [Settings]($backend) api provides ways to *load* `Settings`from JSON files, JSON strings, or simply from JavaScript objects created by programs. Importantly, the api provides a hierarchical way to predictably *override* a value. That is, if the same `SettingName` has multiple possible values supplied, the *highest priority* value is used.
+
+- A `PropertyStore` is a cloud based persistent storage for name/value pairs. Given a [PropertyStore]($backend), there will be 0 or 1 `Property` value for a given `PropertyName` (i.e. it either exists or it doesn't). The value of a `Property` is not cached in memory, but is instead (re-)read "from the cloud"* every time it is accessed. `PropertyStores` are modified using *serialized transactions*, wherein there can only be one writer at a time and all changes "overwrite" previous values. One potential use of a `PropertyStore` is to save and load `Settings`.
+
+- A `WorkspaceDb` is a versioned, "write once," cloud based persistent store for name/value pairs. Multiple versions of the same `WorkspaceDb` may be held in the same `WorkspaceContainer`, and once a version is created it is *immutable* (may never be changed again). In this manner "all versions" of a `WorkspaceDb` are available indefinitely, and applications (and users) may decide whether to access the *most recent* version or some older version, as appropriate. It is generally expected that `WorkspaceDb`s have a small number of *trusted* (but infrequent) writers and a much larger number of readers. Like `PropertyStore` values, `WorkspaceResource`s are never cached in memory, but (re-)read "from the cloud"* every time they're accessed. One potential use of a `WorkspaceResources` is to save and load `Settings`.
+
+* in reality values are read from a local cache. There is only network activity on the first access or if the value has been changed in the cloud since it was last read.
