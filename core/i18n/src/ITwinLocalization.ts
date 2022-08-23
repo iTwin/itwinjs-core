@@ -6,16 +6,16 @@
  * @module Localization
  */
 
-import i18next, { i18n, InitOptions, Module, TFunctionResult, TOptionsBase } from "i18next";
+import i18next, { i18n, InitOptions, Module } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
-import type { Localization } from "@itwin/core-common";
+import type { Localization, TranslationOptions } from "@itwin/core-common";
 
 /** Options for ITwinLocalization
  *  @public
  */
-export interface LocalizationOptions {
+export interface ITwinLocalizationOptions {
   urlTemplate?: string;
   backendPlugin?: Module;
   detectorPlugin?: Module;
@@ -35,7 +35,7 @@ export class ITwinLocalization implements Localization {
   private readonly _detectionOptions: DetectorOptions;
   private readonly _namespaces = new Map<string, Promise<void>>();
 
-  public constructor(options?: LocalizationOptions) {
+  public constructor(options?: ITwinLocalizationOptions) {
     this.i18next = i18next.createInstance();
 
     this._backendOptions = {
@@ -123,7 +123,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
+  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
     if (options?.returnDetails || options?.returnObjects) {
       throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
@@ -135,37 +135,7 @@ export class ITwinLocalization implements Localization {
     }
 
     return value;
-
-    // let value: string | { [key: string]: string } = this.i18next.t(key, options);
-
-    // if (typeof value !== "string") {
-    //   if (options?.returnDetails || options?.returnObjects) {
-    //     // "res" is the default key for strings.
-    //     // If returnObjects=true when an object is requested,
-    //     // the key(s) will come from the object in the namespace JSON.
-    //     value = value.res;  // returns undefined if res does not exist
-    //     if (typeof value !== "string") {
-    //       throw new Error("Translation key(s) not found with given options");
-    //     }
-    //   } else {
-    //     throw new Error("Translation key(s) not found");
-    //   }
-    // }
-
-    // return value;
   }
-
-  /** Return the translated value of a key as is.
-   * @param key - the key that matches a property in the JSON localization file.
-   * @param options - optional i18next options for how to perform translation.
-   * @note See https://www.i18next.com/translation-function/essentials#overview-options and
-   * https://www.i18next.com/translation-function/interpolation#all-interpolation-options for explanation of options.
-   * @returns The direct result of translation from i18next; not guranteed to be a string or otherwise.
-   * @public
-   */
-  // public getLocalizedValue(key: string | string[], options?: TOptionsBase): TFunctionResult {
-  //   return this.i18next.t(key, options);
-  // }
 
   /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
@@ -174,7 +144,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -195,7 +165,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
