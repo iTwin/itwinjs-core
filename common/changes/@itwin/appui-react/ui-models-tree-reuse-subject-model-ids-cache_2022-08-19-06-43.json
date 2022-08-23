@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Models Tree: Do not recreate subject model ids cache unless iModel changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
