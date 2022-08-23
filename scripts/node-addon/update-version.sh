@@ -39,6 +39,8 @@ updatePackageJson() {
   checkfail
 }
 
+echo "Updating @bentley/imodeljs-native to $AddonVersion..."
+
 # Update package.json files
 updatePackageJson "core/backend"
 updatePackageJson "full-stack-tests/backend"
@@ -66,8 +68,4 @@ checkfail
 git add $RepoRoot/common/changes
 git commit -m"rush change"
 
-# Push PR branch
-git push -u origin HEAD
-checkfail
-
-echo "PR branch pushed."
+echo "Update complete."
