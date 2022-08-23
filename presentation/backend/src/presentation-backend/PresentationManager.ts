@@ -317,7 +317,7 @@ export class PresentationManager {
   private _localizationHelper: LocalizationHelper;
 
   /**
-   *set active locale used for localizing presentation data
+   * Get / set active locale used for localizing presentation data
    * @deprecated use getLocalizedString
    */
   public activeLocale: string | undefined;
