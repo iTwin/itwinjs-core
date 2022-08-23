@@ -147,7 +147,7 @@ export class Element extends Entity {
     iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
-    iModel.codeService?.verifyCode(props);
+    iModel.codeService?.verifyCode(arg);
   }
 
   /** Called after a new Element was inserted.
@@ -167,7 +167,7 @@ export class Element extends Entity {
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
     arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
-    arg.iModel.codeService?.verifyCode(arg.props);
+    arg.iModel.codeService?.verifyCode(arg);
   }
 
   /** Called after an Element was updated.
