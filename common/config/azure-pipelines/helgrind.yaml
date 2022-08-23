@@ -52,9 +52,10 @@ jobs:
 
       - script: mkdir $(HELGRIND_RESULTS)
 
-      - script: 'valgrind --tool=helgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/helgrind.supp --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
-        displayName: "Run Valgrind's datarace detector (helgrind) on rush cover"
+      - script: 'valgrind --tool=helgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/helgrind.supp --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
+        displayName: "Run Valgrind's datarace detector (helgrind) on core-backend tests"
         failOnStderr: false
+        workingDirectory: $(Agent.BuildDirectory)/s/core/backend
 
       - task: archiveandpublishartifact@0
         inputs:

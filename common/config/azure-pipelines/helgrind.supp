@@ -117,8 +117,10 @@
    obj:*
 }
 {
+   # this frame should only occur in v8 gc code and should be ok to wildcard suppress both ways
    <insert_a_suppression_name_here>
    Helgrind:Race
+   ...
    fun:_ZN2v88internal9Scavenger7ProcessEPNS_11JobDelegateE
    ...
 }
@@ -413,12 +415,7 @@
    fun:_ZN2v88internal8WorklistISt4pairINS0_10HeapObjectEiELi256EE4PushEiS4_
    ...
 }
-{
-   <insert_a_suppression_name_here>
-   Helgrind:Race
-   fun:_ZN2v88internal9Scavenger7ProcessEPNS_11JobDelegateE
-   ...
-}
+
 {
    <insert_a_suppression_name_here>
    Helgrind:Race
