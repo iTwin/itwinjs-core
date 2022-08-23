@@ -13,7 +13,7 @@ import userEvent from "@testing-library/user-event";
 
 function blockClasses(titleElement: Element) {
   expect(titleElement.parentElement?.parentElement, "Block class was not found for element").to.exist;
-  return classesFromElement(titleElement.parentElement!.parentElement!);
+  return classesFromElement(titleElement.parentElement?.parentElement);
 }
 
 describe("ExpandableList", () => {

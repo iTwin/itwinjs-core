@@ -13,6 +13,6 @@ describe("<SvgSprite />", () => {
   it("should render className and src", () => {
     const {container: {firstElementChild}} = render(<SvgSprite src="#test-sprite" />);
 
-    expect(classesFromElement(firstElementChild!)).to.include("core-icons-svgSprite");
+    expect(classesFromElement(firstElementChild)).to.include("core-icons-svgSprite");
   });
 });

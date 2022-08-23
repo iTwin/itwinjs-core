@@ -387,15 +387,6 @@ describe("ContextMenu", () => {
         expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
         expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
       });
-      it.skip("should support changing direction", () => {
-        // This is not actually supported on update, the render direction will only be updated if there is no
-        // parentMenu, however, the direction prop is only checked if there is a parentMenu...
-        const {rerender} = render(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
-        expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-right");
-
-        rerender(<ContextMenu opened={true} direction={ContextMenuDirection.Left} />);
-        expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-left");
-      });
     });
   });
 
@@ -635,20 +626,6 @@ describe("ContextMenu", () => {
       const item = component.getByTestId("core-context-menu-item");
       item.focus();
       expect(document.activeElement).to.eq(item);
-    });
-    it.skip("should support changing direction", () => {
-      // This is not actually supported by the component, checkRenderDirection is never looking at the props.
-      // Nor the inner ContextMenu component...
-      const {rerender} = render(
-        <ContextSubMenu label="test" autoflip={true} direction={ContextMenuDirection.Right}>
-          <ContextMenuItem>Test</ContextMenuItem>
-        </ContextSubMenu>);
-      expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-right");
-
-      rerender(<ContextSubMenu label="test" autoflip={true} direction={ContextMenuDirection.Left}>
-        <ContextMenuItem>Test</ContextMenuItem>
-      </ContextSubMenu>);
-      expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-left");
     });
     it("should support changing direction (COVERAGE ONLY)", () => {
       // THIS TEST IS ONLY ADDING COVERAGE, AS STATED ABOVE, THE DIRECTION DO NOT CHANGE HERE!

@@ -14,6 +14,6 @@ describe("<HorizontalTabs />", () => {
   it("should render", () => {
     const {container} = render(<HorizontalTabs labels={[]} />);
 
-    expect(classesFromElement(container.firstElementChild!)).to.include("uicore-tabs-horizontal");
+    expect(classesFromElement(container.firstElementChild)).to.include("uicore-tabs-horizontal");
   });
 });

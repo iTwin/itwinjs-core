@@ -6,7 +6,6 @@
  * @module Utilities
  */
 
-/* istanbul ignore next */
 /** Get CSS variable
  * @public
  */
@@ -17,7 +16,6 @@ export function getCssVariable(variableName: string, htmlElement?: HTMLElement):
   return cssVal;
 }
 
-/* istanbul ignore next */
 /** Get CSS variable as number
  * @public
  */

@@ -56,6 +56,14 @@ describe("WithOnOutsideClick", async () => {
     expect(spyOnClose.calledOnce).to.be.true;
   });
 
+  it("should handle empty onOutsideClick (Coverage only)", async () => {
+    render(<WithOnOutsidePointerDiv />);
+
+    // Although there is an await, error in eventhandlers do not trigger errors.
+    // This is only adding coverage but we cant really test "nothing" to happen...
+    await theUserTo.pointer("[MouseLeft]");
+  });
+
   it("should handle document pointer events in default", async () => {
     defaultOnClose.resetHistory();
     render(<WithOnOutsidePointerAndDefaultDiv />);

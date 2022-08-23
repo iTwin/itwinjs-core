@@ -11,6 +11,6 @@ import { classesFromElement } from "../TestUtils";
 describe("<VerticalTabs />", () => {
   it("should render", () => {
     const {container} = render(<VerticalTabs labels={[]} />);
-    expect(classesFromElement(container.firstElementChild!)).to.include("uicore-tabs-vertical");
+    expect(classesFromElement(container.firstElementChild)).to.include("uicore-tabs-vertical");
   });
 });

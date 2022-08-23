@@ -27,7 +27,7 @@ describe("<CheckListBox />", () => {
 
     expect(screen.getByLabelText("label")).to.exist;
 
-    const separatorClasses = classesFromElement(screen.getByRole("list").lastElementChild!);
+    const separatorClasses = classesFromElement(screen.getByRole("list").lastElementChild);
     expect(separatorClasses).to.include("core-chk-listbox-separator");
   });
 

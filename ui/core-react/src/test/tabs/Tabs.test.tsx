@@ -8,7 +8,6 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../core-react";
-import { findInstance } from "../ReactInstance";
 import { classesFromElement } from "../TestUtils";
 
 describe("<Tabs />", () => {
@@ -202,28 +201,23 @@ describe("<Tabs />", () => {
   });
 
   it("Supports updating activeIndex", async () => {
-    const { container, getByText, getAllByRole, rerender } = render(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
-    const tabsInstance = findInstance(container.firstChild);
-    expect(tabsInstance.state.activeIndex).to.eq(0);
+    const { getByText, rerender } = render(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
 
     const label = getByText("label 1");
     await theUserTo.type(label, "{home}");
-    const tabButtons = getAllByRole("button");
-    expect(document.activeElement).to.eq(tabButtons[0]);
+    expect(document.activeElement).to.eq(screen.getByRole("button", {name: "label 1"}));
 
     rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    expect(tabsInstance.state.activeIndex).to.eq(1);
-    expect(document.activeElement).to.eq(tabButtons[1]);
+    expect(document.activeElement).to.eq(screen.getByRole("button", {name: "label 2"}));
 
     rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} />);
-    expect(document.activeElement).to.eq(tabButtons[0]);
+    expect(document.activeElement).to.eq(screen.getByRole("button", {name: "label 1"}));
 
-    document.documentElement.focus();
     rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
-    expect(tabsInstance.state.activeIndex).to.eq(2);
+    expect(document.activeElement).to.eq(screen.getByRole("button", {name: "label 3"}));
 
     rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={3} />);
-    expect(tabsInstance.state.activeIndex).to.eq(0);
+    expect(document.activeElement).to.eq(screen.getByRole("button", {name: "label 1"}));
   });
 
 });

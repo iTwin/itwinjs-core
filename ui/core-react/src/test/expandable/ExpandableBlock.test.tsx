@@ -28,7 +28,7 @@ describe("ExpandableBlock", () => {
         <ExpandableBlock title="Test" isExpanded={false} onClick={sinon.spy()}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(classesFromElement(screen.getByRole("button").parentElement!)).to.include("is-collapsed");
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("is-collapsed");
     });
 
     it("should render expanded", () => {
@@ -36,7 +36,7 @@ describe("ExpandableBlock", () => {
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(classesFromElement(screen.getByRole("button").parentElement!)).to.include("is-expanded");
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("is-expanded");
     });
 
     it("should render with caption", () => {
@@ -44,7 +44,7 @@ describe("ExpandableBlock", () => {
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} caption="Test Caption">
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(classesFromElement(screen.getByRole("button").parentElement!)).to.include("with-caption");
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("with-caption");
       expect(screen.getByText("Test Caption")).to.exist;
     });
 
