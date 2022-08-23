@@ -135,7 +135,9 @@ export class Tracing {
 
   private static withOpenTelemetry(base: LogFunction, isError: boolean = false): LogFunction {
     return (category, message, metaData) => {
-      Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
+      try {
+        Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.addEvent(message, { ...flattenObject(Logger.getMetaData(metaData)), error: isError });
+      } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
       base(category, message, metaData);
     };
   }
