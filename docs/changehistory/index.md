@@ -1,450 +1,147 @@
-# 3.2.0 Change Notes
+
+# 3.3.0 Change Notes
 
 Table of contents:
 
-- [Display](#display)
-  - [Multi-way viewport sync](#multi-way-viewport-sync)
-  - [Batching of pickable graphics](#batching-of-pickable-graphics)
-  - [Detecting integrated graphics](#detecting-integrated-graphics)
-  - [Improved polyface edges](#improved-polyface-edges)
-  - [ArcGIS OAuth2 support](#arcgis-oauth2-support)
-  - [Reality model enhancements](#reality-model-enhancements)
-  - [readPixels enhancements](#readpixels-enhancements)
+- [Display system](#display-system)
+  - [Dynamic schedule scripts](#dynamic-schedule-scripts)
+  - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
+  - [Improved appearance overrides for animated views](#improved-appearance-overrides-for-animated-views)
+- [AppUi](#appui)
+  - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
+  - [Tool Settings title](#tool-settings-title)
+- [ElectronApp changes](#electronapp-changes)
+- [Frontend category APIs](#frontend-category-apis)
+- [IModelHostOptions](#imodelhostoptions)
+- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
+- [RPC over IPC](#rpc-over-ipc)
 - [Presentation](#presentation)
-  - [Filtering related property instances](#filtering-related-property-instances)
-  - [ECExpressions for property overrides](#ecexpressions-for-property-overrides)
-  - [Fixed nested hierarchy rules handling](#fixed-nested-hierarchy-rules-handling)
-  - [Fixed inconsistent property grid representation](#fixed-inconsistent-property-grid-representation)
-  - [Fixed relatedProperties specification bug](#fixed-relatedproperties-specification-bug)
-  - [Property override enhancements](#property-override-enhancements)
-  - [Fixed incorrect property field categories](#fixed-incorrect-property-field-categories)
-- [UI](#ui)
-  - [Default tool for standard frontstage](#default-tool-for-standard-frontstage)
-  - [UiItemsManager changes](#uiitemsmanager-changes)
-  - [Widget panel changes](#widget-panel-changes)
-  - [React icons support](#react-icons-support)
-- [iModel transformations](#imodel-transformations)
-  - [Geometry optimization](#geometry-optimization)
-  - [Resuming transformations](#resuming-transformations)
-- [Batched mass properties requests](#batched-mass-properties-requests)
-- [Rpc response compression](#rpc-response-compression)
-- [ColorDef validation](#colordef-validation)
-- [ColorByName changes](#colorbyname-changes)
+  - [Relationship properties](#relationship-properties)
+- [Webpack 5](#webpack-5)
 - [Deprecations](#deprecations)
+  - [@itwin/core-bentley](#itwincore-bentley)
+  - [@itwin/core-geometry](#itwincore-geometry)
+  - [@itwin/core-mobile](#itwincore-mobile)
 
-## Display
+## Display system
 
-### Multi-way viewport sync
+### Dynamic schedule scripts
 
-[TwoWayViewportSync]($frontend) is useful for synchronizing the states of two or more [Viewport]($frontend)s such that navigations made in one viewport are reflected in the other viewport. But what if you want to synchronize more than two viewports? iTwin.js 3.2 introduces [connectViewports]($frontend) to establish a connection between any number of viewports. You supply the set of viewports to be connected and a function that implements the logic for synchronizing the viewports when any of their states change. You can sever the connection by invoking the function returned by `connectViewports`. [connectViewportViews]($frontend) and [connectViewportFrusta]($frontend) are supplied as alternatives to [TwoWayViewportSync]($frontend) and [TwoWayViewportFrustumSync]($frontend), respectively, that can operate on any number of viewports.
+[Timeline animation](../learning/display/TimelineAnimation.md) enables the visualization of change within an iModel over a period of time. This can be a valuable tool for, among other things, animating the contents of a viewport to show the progress of an asset through the phases of its construction. However, one constraint has always limited the utility of this feature: the instructions for animating the view were required to be stored on a persistent element - either a [DisplayStyle]($backend) or a [RenderTimeline]($backend) - in the [IModel]($common).
 
-Here's a simple example that keeps the viewports' [ViewFlags]($common) in sync:
-
-```ts
-  // Establish the connection.
-  const disconnect = connectViewports([viewport1, viewport2, viewport3], (changedViewport: Viewport) => {
-    // Supply a function that will synchronize the state of the other viewports with that of the changed viewport.
-    return (source: Viewport, target: Viewport) => {
-      target.viewFlags = source.viewFlags;
-    };
-  };
-
-  // Some time later, sever the connection.
-  disconnect();
-```
-
-### Batching of pickable graphics
-
-[Pickable decorations](../learning/frontend/ViewDecorations#pickable-view-graphic-decorations) associate an [Id64String]($bentley) with a [RenderGraphic]($frontend), enabling the graphic to be interacted with using mouse or touch inputs and to have its [appearance overridden](../learning/display/SymbologyOverrides.md). Previously, a [GraphicBuilder]($frontend) accepted only a single pickable Id. [Decorator]($frontend)s that produce many pickable objects were therefore required to create a separate graphic for each pickable Id. This can negatively impact display performance by increasing the number of draw calls.
-
-Now, [GraphicBuilder.activatePickableId]($frontend) and [GraphicBuilder.activateFeature]($frontend) enable any number of pickable objects can be batched together into one graphic, improving performance. The following simple example illustrates how to batch a pickable sphere and a pickable box into one graphic.
+That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
 
 ```ts
-  class MyDecorator implements Decorator {
-    boxId: Id64String;
-    sphereId: Id64String;
-
-    public constructor(iModel: IModelConnection) {
-      // reserve pickable Ids for each of our features.
-      this.boxId = iModel.transientIds.next;
-      this.sphereId = iModel.transientIds.next;
-    }
-
-    public decorate(context: DecorateContext): void {
-      // We must supply a PickableGraphicOptions when creating the GraphicBuilder.
-      // Any geometry added to the builder will use this.boxId as its pickable Id.
-      const builder = context.createGraphic({
-        type: GraphicType.Scene,
-        pickable: { id: boxId },
-      };
-
-      // Add a box.
-      const box = Box.createRange(new Range3d(0, 0, 0, 1, 1, 1))!;
-      builder.addSolidPrimitive(box);
-
-      // Change the pickable Id. Any subsequently-added geometry will use this.sphereId as its pickable Id.
-      builder.activatePickableId(this.sphereId);
-
-      // Add a sphere.
-      const sphere = Sphere.createCenterRadius(new Point3d(0, 0, 0), 1)!;
-      builder.addSolidPrimitive(sphere);
-
-      // Add the finished graphic to the viewport.
-      context.addDecorationFromBuilder(builder);
-    }
-  }
+await IModelApp.startup({
+  tileAdmin: {
+    enableFrontendScheduleScripts: true,
+  },
+});
 ```
 
-### Detecting integrated graphics
-
-Many computers - especially laptops - contain two graphics processing units: a low-powered "integrated" GPU such as those manufactured by Intel, and a more powerful "discrete" GPU typically manufactured by NVidia or AMD. Operating systems and web browsers often default to using the integrated GPU to reduce power consumption, but this can produce poor performance in graphics-heavy applications like those built with iTwin.js.  We recommend that users adjust their settings to use the discrete GPU if one is available.
-
-iTwin.js applications can now check [WebGLRenderCompatibilityInfo.usingIntegratedGraphics]($webgl-compatibility) to see if the user might experience degraded performance due to the use of integrated graphics. Because WebGL does not provide access to information about specific graphics hardware, this property is only a heuristic. But it will accurately identify integrated Intel chips manufactured within the past 10 years or so, and allow the application to suggest that the user verify whether a discrete GPU is available to use instead. As a simple example:
+Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
 
 ```ts
-  const compatibility = IModelApp.queryRenderCompatibility();
-  if (compatibility.usingIntegratedGraphics)
-    alert("Integrated graphics are in use. If a discrete GPU is available, consider switching your device or browser to use it.");
+function updateScheduleScript(
+  viewport: Viewport,
+  props: RenderSchedule.ScriptProps
+): void {
+  viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
+}
 ```
 
-### Improved polyface edges
+### Hiliting models and subcategories
 
-A [Polyface]($geometry) can optionally specify the visibility of the edges of each of its faces. If present, this edge visibility information - accessed via [PolyfaceData.edgeVisible]($geometry) - is used when producing graphics from the polyface to determine which edges should be drawn. If the edge visibility information is not present, however, then the display system must try to decide which edges should be drawn.
+Support for hiliting models and subcategories using [HiliteSet]($frontend) has been promoted from `@beta` to `@public`. This allows applications to toggle hiliting of all elements belonging to a set of [Model]($backend)s and/or [SubCategory]($backend)'s. This feature can work in one of two modes, specified by [HiliteSet.modelSubCategoryMode]($frontend):
 
-Previously, the display system would attempt to infer the visibility of each interior edge based on the angle between its two adjacent faces. For example, an edge between two faces of a cube would be visible, whereas an edge between two nearly-coplanar faces would be invisible. However, this inference does not work well for polyfaces with smoother topology. Now, instead of attempting to infer edge visibility, the display system will simply render the edges of all faces visible.
+- Union - an element will be hilited if either its model or its subcategory is hilited; or
+- Intersection - an element will be hilited if both its model and its subcategory are hilited.
 
-The images below illustrate the improvement. Note that edge inference is inconsistent - small variations in angles between faces produce discontinuities where continuous edges are expected. By drawing all edges, the topology of the mesh is readily apparent. Of course, the ideal results are achieved by explicitly specifying the visibility of each edge in the [Polyface]($geometry).
+Applications often work with [Category]($backend)'s instead of subcategories. You can use the new [Categories API](#frontend-category-apis) to obtain the Ids of the subcategories belonging to one or more categories.
 
-| Inferred edges (previous behavior) | All edges (new behavior) |
-| ---------------------------------- | ------------------------ |
-| ![Edge visibility is inferred](./assets/infer-polyface-edges.jpg) | ![All edges are visible](./assets/all-polyface-edges.jpg) |
+### Improved appearance overrides for animated views
 
-If for some reason you wish to revert to the previous behavior, you can set [TileAdmin.Props.generateAllPolyfaceEdges]($frontend) to `false` when calling [IModelApp.startup]($frontend).
+The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
 
-### ArcGIS OAuth2 support
+- If any aspect of the element's appearance was overridden by a [FeatureOverrideProvider]($frontend), then **none** of the schedule script's appearance overrides would be applied to that element.
+- If some elements were being emphasized in the view (e.g., via [EmphasizeElements.emphasizeElements]($frontend)), any non-emphasized elements whose appearance was modified by the schedule script would not be drawn using the de-emphasized (typically, light transparent grey) appearance, making it difficult for the emphasized elements to stand out.
 
-It's now possible to connect to an ArcGIS MapService protected by OAuth2 authentication.  To enable this feature, the new `@itwin/map-layers-auth` package must be loaded by the hosting application, and an `ArcGgisAccessClient` must be created and configured properly.
+Both of these problems are addressed in iTwin.js 3.3.0.
 
-For example:
+- The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
+- [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
+
+## AppUi
+
+### Auto-hiding floating widgets
+
+When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop [AbstractWidgetProps.hideWithUiWhenFloating]($appui-abstract) to `true` in your UiProvider.
+
+Auto-hide UI feature will ignore dragged floating widgets and keep them visible until drag interaction is complete. Floating widgets are also animated correctly when hiding.
+
+### Tool Settings title
+
+By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
+
 ```ts
-  const enterpriseClientIds = [{
-      serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
-      clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
-    }];
-  const accessClient = new ArcGisAccessClient();
-  const initStatus = accessClient.initialize({
-    redirectUri: "http://localhost:3000/esri-oauth2-callback",
-    clientIds: {
-      arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
-      enterpriseClientIds,
-    }});
-  IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+UiFramework.setUseToolAsToolSettingsLabel(true);
 ```
-The hosting application must be registered in either the ArcGIS Online server (cloud offering) or an ArcGIS enterprise server (on-premise). The registered application must then provide it's associated clientID and redirectUri to the `ArcGgisAccessClient` object.  The ui-test-app application provides a complete sample configuration. 
 
-The maplayers widget has also been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process with the remote ArcGIS server. When the process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+## ElectronApp changes
 
-More details on how to configure the ArcGis Server can be found in the [ESRI documentation](https://developers.arcgis.com/documentation/mapping-apis-and-services/security/tutorials/register-your-application/)
+Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
 
-### Reality model enhancements
+## Frontend category APIs
 
-Displaying a reality model involves streaming a large number of 3d tiles. As the user navigates the view, new tiles are constantly requested to display the model at an appropriate level of detail. Ideally, the highest level of detail tiles will load most quickly in the area of the user's interest. To achieve this, the determination of which tiles to load first was tweaked. If the user is zooming in or out on a particular area of the viewport, tiles closer to that area will be prioritized for loading. Otherwise, tiles closer to the center of the screen are prioritized. Despite the number of tiles downloaded and the time required to do so remaining unchanged, the change in **prioritization** of those tiles produces a user experience that appears more responsive.
+A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
 
-### readPixels enhancements
+[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
 
-[Viewport.readPixels]($frontend) is a potentially expensive operation that must re-render a portion of the view to determine what elements are currently under the cursor. Previously this function was invoked on every single mouse motion, which could cause up to 60 calls per second. It is not useful to call it so frequently when the mouse cursor is moving so rapidly.
+- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
+- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
 
-Now, a limit is imposed upon the frequency with which `readPixels` is invoked, improving performance and user experience.
+## IModelHostOptions
+
+The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
+
+## Progress API for downloading changesets
+
+[BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
+
+## RPC over IPC
+
+When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
+After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
+This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
 
 ## Presentation
 
-### Filtering related property instances
+### Relationship properties
 
-The [related properties specification](../presentation/Content/RelatedPropertiesSpecification.md) allows including properties of related instances when requesting content  for the primary instance. However, sometimes there's a need show properties of only a few related instances rather than all of them. That can now be done by supplying an instance filter - see the [`instanceFilter` attribute section](../presentation/Content/RelatedPropertiesSpecification.md#attribute-instancefilter) for more details.
+Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
 
-### ECExpressions for property overrides
+When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
 
-It is now possible to set property specification [`isDisplayed` attribute](../presentation/Content/PropertySpecification.md#attribute-isdisplayed) value using [ECExpressions](../presentation/Content/ECExpressions.md#property-overrides).
+## Webpack 5
 
-### Fixed nested hierarchy rules handling
-
-There was a bug with how [nested child node rules](../presentation/Hierarchies/Terminology.md#nested-rule) were handled. When creating children for a node created by a nested child node rule, the bug caused the library to only look for child node rules that are nested under the rule that created the parent node. The issue is now fixed and the library looks for child node rules nested under the parent node rule and at the root level of the ruleset.
-
-Example:
-
-```jsonc
-{
-  "id": "example",
-  "rules": [{
-    "ruleType": "RootNodes",
-    "specifications": [{
-      "specType": "CustomNode",
-      "type": "child-1",
-      "label": "Child 1",
-      "nestedRules": [{
-        "ruleType": "ChildNodes",
-        "specifications": [{
-          "specType": "CustomNode",
-          "type": "child-1.1",
-          "label": "Child 1.1"
-        }, {
-          "specType": "CustomNode",
-          "type": "child-1.2",
-          "label": "Child 1.2",
-          "nestedRules": [{
-            "ruleType": "ChildNodes",
-            "specifications": [{
-              "specType": "CustomNode",
-              "type": "child-1.2.1",
-              "label": "Child 1.2.1"
-            }]
-          }]
-        }]
-      }]
-    }]
-  }, {
-    "ruleType": "ChildNodes", // this rule now also returns children for `Child 1.2.1`
-    "specifications": [{
-      "specType": "CustomNode",
-      "type": "child-2",
-      "label": "Child 2"
-    }]
-  }]
-}
-```
-
-With the above ruleset, when creating children for `Child 1.2.1` node, the library would've found no child node rules, because there are no nested rules for its specification. After the change, the library also looks at child node rules at the root level of the ruleset. The rules that are now handled are marked with a comment in the above example. If the effect is not desirable, rules should have [conditions](../presentation/Hierarchies/ChildNodeRule.md#attribute-condition) that specify what parent node they return children for.
-
-### Fixed inconsistent property grid representation
-
-Previously, when using [RelatedPropertiesSpecification.nestedRelatedProperties]($presentation-common) attribute, the properties were loaded differently based on whether parent specification included any properties or not. Now the behavior is consistent.
-
-```json
-{
-  "id": "example",
-  "rules": [{
-      "ruleType": "Content",
-      "specifications": [{
-          "specType": "ContentInstancesOfSpecificClasses",
-          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
-        }]
-    }, {
-      "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "Model"
-      },
-      "relatedProperties": [{
-          "propertiesSource": {
-            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
-            "direction": "Forward",
-            "targetClass": { "schemaName": "Generic", "className": "PhysicalObject" }
-          },
-          "properties": "_none_",
-          "nestedRelatedProperties": [{
-              "propertiesSource": {
-                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
-                "direction": "Forward"
-              }
-            }]
-        }]
-    }]
-}
-```
-
-| Value of `"properties"` attribute | before                                                                                                                            | after                                                                                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `"_none_"`                        | ![Properties of Spatial Category are merged](./media/SpatialCategoryPropertiesMerged.png)                                         | ![Properties of Spatial Category not merged](./media/SpatialCategoryPropertiesNotMerged.png)                                      |
-| `["UserLabel"]`                   | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) | ![Properties of Physical Object and Spatial Category not merged](./media/PhysicalObjectAndSpatialCategoryPropertiesNotMerged.png) |
-
-### Fixed relatedProperties specification bug
-
-The bug made it impossible to remove related properties if a lower priority rule specified that the property should be included.
-
-For example, the [default BisCore supplemental ruleset](https://github.com/iTwin/itwinjs-core/blob/504a7b88e9ade29cc306bd55d093be1d76ddad43/presentation/backend/assets/supplemental-presentation-rules/BisCore.PresentationRuleSet.json#L372-L419) automatically includes `ExternalSourceAspect.Identifier` property to all Elements' content when they have such aspect. It's now possible to disable that rule using one of these approaches:
-
-- Set `"properties"` to `"_none_"` or `[]`:
-
-  ```json
-  {
-    "ruleType": "ContentModifier",
-    "class": { "schemaName": "BisCore", "className": "Element" },
-    "relatedProperties": [{
-        "propertiesSource": {
-          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
-          "direction": "Forward",
-          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
-        },
-        "properties": "_none_"
-      }
-    ]
-  }
-  ```
-
-- Disable property display:
-
-  ```json
-  {
-    "ruleType": "ContentModifier",
-    "class": { "schemaName": "BisCore", "className": "Element" },
-    "relatedProperties": [{
-        "propertiesSource": {
-          "relationship": { "schemaName": "BisCore", "className": "ElementOwnsMultiAspects" },
-          "direction": "Forward",
-          "targetClass": { "schemaName": "BisCore", "className": "ExternalSourceAspect" }
-        },
-        "properties": [{
-          "name": "Identifier",
-          "isDisplayed": false
-        }]
-      }
-    ]
-  }
-  ```
-
-### Property override enhancements
-
-It is now possible to override values of [`isReadOnly`](../presentation/Content/PropertySpecification.md#attribute-isreadonly) and [`priority`](../presentation/Content/PropertySpecification.md#attribute-priority) property attributes.
-
-### Fixed incorrect property field categories
-
-Previously, nested related properties of different intermediate classes were all categorized under the first intermediate class. Now the properties are categorized under the intermediate classes to which they belong.
-
-```json
-{
-  "id": "example",
-  "rules": [{
-      "ruleType": "Content",
-      "specifications": [{
-          "specType": "ContentInstancesOfSpecificClasses",
-          "classes": { "schemaName": "BisCore", "classNames": ["GeometricModel3d"], "arePolymorphic": true }
-        }]
-    }, {
-      "ruleType": "ContentModifier",
-      "class": { "schemaName": "BisCore", "className": "Model" },
-      "relatedProperties": [{
-          "propertiesSource": {
-            "relationship": { "schemaName": "BisCore", "className": "ModelContainsElements" },
-            "direction": "Forward",
-            "targetClass": { "schemaName": "BisCore", "className": "GeometricElement3d" }
-          },
-          "properties": "_none_",
-          "nestedRelatedProperties": [{
-              "propertiesSource": {
-                "relationship": { "schemaName": "BisCore", "className": "GeometricElement3dIsInCategory" },
-                "direction": "Forward"
-              }
-            }],
-          "handleTargetClassPolymorphically": true
-        }]
-    }]
-}
-```
-
-| before                                                                                         | after                                                                                                       |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| ![All properties fall under one category](./media/AllSpatialCategoriesUnderPhysicalObject.png) | ![Properties fall under different categories](./media/SpatialCategoriesUnderPhysicalObjectAndTestClass.png) |
-
-## UI
-
-### Default tool for standard frontstage
-
-The [StandardFrontstageProvider]($appui-react) gives apps an easy way to create a custom frontstage, but overriding the default [Tool]($frontend) was more complicated. Now, a default tool can easily configured by setting [StandardFrontstageProps.defaultTool]($appui-react).
-
-### UiItemsManager changes
-
-When registering a UiItemsProvider with the [UiItemsManager]($appui-abstract) it is now possible to pass an additional argument to limit when the provider is called to provide its items. The interface [UiItemProviderOverrides]($appui-abstract) define the parameters that can be used to limit the provider. The example registration below will limit a provider to only be used if the active stage has an Id of "redlining".
-
-```ts
-    UiItemsManager.register(commonToolProvider, {stageIds: ["redlining"]});
-```
-
-### Widget panel changes
-
-Based on usability testing, the following changes to widget panels have been implemented.
-
-1. Only two widget panel sections will be shown in any widget panel.
-2. A splitter is now provided that allows user to set the size of the widget panel sections.
-3. There is no special processing of double clicks on widget tabs when the widget tab is shown in a widget panel.
-4. The Widget Panel Unpin icon has been updated to make it more clear the action to be performed when the toggle is clicked.
-
-The API impact of these updates are listed below.
-
-1. The [UiItemsManager]($appui-abstract) will still query the [UiItemsProvider]($appui-abstract)s for widgets for the [StagePanelSection]($appui-abstract).Center but the returned widgets will be shown in the bottom panel sections. The StagePanelSection.Center enum entry has been deprecated and UiItemProviders should start using only `StagePanelSection.Start` and `StagePanelSection.End`.
-2. Widgets in panels only support the [WidgetState]($appui-abstract)s WidgetState.Open or WidgetState.Hidden.
-3. The UiItemProviders `provideWidgets` call can now return [AbstractWidgetProps]($appui-abstract) that specify a `defaultFloatingSize` that can be used for Widgets that use components that do not have an intrinsic size. For more details see [WidgetItem](../learning/ui/AugmentingUI.md).
-
-### React icons support
-
-In addition to toolbar buttons, React icons are now supported for use in [Widget]($appui-react) tabs, [Backstage]($appui-react) items, and [StatusBar]($appui-react) items.
-
-## iModel transformations
-
-### Geometry optimization
-
-The geometry produced by [connectors](https://www.itwinjs.org/learning/imodel-connectors/) and [transformation workflows](../learning/transformer/index.md) is not always ideal. One common issue is a proliferation of [GeometryPart]($backend)s to which only one reference exists. In most cases, it would be more efficient to embed the part's geometry directly into the referencing element's [geometry stream](https://www.itwinjs.org/learning/common/geometrystream/).
-
-[IModelImporter.optimizeGeometry]($transformer) has been introduced to enable this kind of optimization. It takes an [OptimizeGeometryOptions]($transformer) object specifying which optimizations to apply, and applies them to all of the 3d geometry in the iModel. Currently, only the optimization described above is supported, but more are expected to be added in the future.
-
-If you are using [IModelImporter]($transformer) directly, you can call `optimizeGeometry` directly. Typically you would want to do so as a post-processing step. It's simple:
-
-```ts
-  // Import all of your geometry, then:
-  importer.optimizeGeometry({ inlineUniqueGeometryParts: true });
-```
-
-If you are using [IModelTransformer]($transformer), you can configure automatic geometry optimization via [IModelTransformOptions.optimizeGeometry]($transformer). If this property is defined, then [IModelTransformer.processAll]($transformer) and [IModelTransformer.processChanges]($transformer) will apply the specified optimizations after the transformation process completes. For example:
-
-```ts
-  const options = { inlineUniqueGeometryParts: true };
-  const transformer = new IModelTransformer(sourceIModel, targetIModel, options);
-  transformer.processAll();
-```
-
-### Resuming transformations
-
-The functions [IModelTransformer.saveStateToFile]($transformer) and [IModelTransformer.resumeTransformation]($transformer) have been
-added to the transformer, and can be used to save the transformer internal state to a file. This can then be used, in combination with a
-target at the same state as it was when the transformer state file was made, to "resume" a transformation.
-[IModelTransformer.resumeTransformation]($transformer) will create a new transformer instance upon which calling
-[IModelTransformer.processAll]($transformer) or [IModelTransformer.processChanges]($transformer) will start the transformation but not re-export
-already inserted entities. This can be useful in some cases where a transformation is a long running process and may need to be paused and resumed.
-
-## Batched mass properties requests
-
-[IModelConnection.getMassProperties]($frontend) provides useful geometry information about an element, like area, volume, and length. When requesting such information for many elements, however, calling this function repeatedly can be inefficient. Now, [IModelConnection.getMassPropertiesPerCandidate]($frontend) can be used instead to request mass properties for multiple elements simultaneously, producing results more quickly.
-
-## Rpc response compression
-
-Some [RpcInterfaces](https://www.itwinjs.org/learning/rpcinterface/) define operations that may return so much data, that downloading it becomes a significant part of a Web request duration. Such operations can now utilize `gzip` compression to cut download time by an order of magnitude on large JSON responses.
-
-This enhancement relies on request's `Accept-Encoding` header not gettting stripped before it reaches the backend server.
-
-## ColorDef validation
-
-[ColorDef.fromString]($common) returns [ColorDef.black]($common) if the input is not a valid color string. [ColorDef.create]($common) coerces the input numeric representation into a 32-bit unsigned integer. In either case, this occurs silently. Now, you can use [ColorDef.isValidColor]($common) to determine if your input is valid.
-
-## ColorByName changes
-
-Enums in TypeScript have some shortcomings, one of which resulted in a bug that caused [ColorDef.fromString]($common) to return [ColorDef.black]($common) for some valid color strings like "aqua". This is due to several standard color names ("aqua" and "cyan", "magenta" and "fuschia", and several "grey" vs "gray" variations) having the same numeric values. To address this, [ColorByName]($common) has been converted from an `enum` to a `namespace`. Code that accesses `ColorByName` members by name will continue to compile with no change.
+The `@itwin/core-webpack-tools` and `@itwin/backend-webpack-tools` packages have been updated to support [Webpack 5](https://webpack.js.org/) and now require a peer dependency of _webpack@^5_. Please refer to their [changelog](https://github.com/webpack/changelog-v5/blob/master/README.md) and [migration guide](https://github.com/webpack/changelog-v5/blob/master/MIGRATION%20GUIDE.md) as you update.
 
 ## Deprecations
 
-### @itwin/components-react
+### @itwin/core-bentley
 
-The interfaces and components [ShowHideMenuProps]($components-react), [ShowHideMenu]($components-react), [ShowHideItem]($components-react)[ShowHideID]($components-react), [ShowHideDialogProps]($components-react), and [ShowHideDialog]($components-react) are all being deprecated because they were supporting components for the now deprecated [Table]($components-react) component. This `Table` component used an Open Source component that is not being maintained so it was determined to drop it from the API. The @itwin/itwinui-react package now delivers a Table component which should be used in place of the deprecated Table.
+The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
+
+The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.getPredecessorIds]($core-backend) have been deprecated and replaced with [Element.collectReferenceIds]($core-backend) and [Element.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
 
 ### @itwin/core-geometry
 
-The low-level [PolyfaceBuilder]($core-geometry) methods `findOrAddPoint`, `findOrAddPointXYZ`, `findOrAddParamXY`, and `findOrAddParamInGrowableXYArray` are deprecated in favor of the more appropriately named new methods `addPoint`, `addPointXYZ`, `addParamXY` and `addParamInGrowableXYArray`. These methods always add their inputs to the relevant builder array, rather than searching it and returning the index of a duplicate. The intent is to enable efficient `IndexedPolyface` construction by allowing duplicate data to be accumulated as facets are added, and to compress the data when done with `claimPolyface`.
+Growable array constructors now take an optional growth factor to control additional capacity during memory reallocations (default 1.5). This can make repeated additions to these arrays more efficient. Affected classes are [GrowableBlockedArray]($core-geometry), [GrowableFloat64Array]($core-geometry), [GrowableXYArray]($core-geometry), and [GrowableXYZArray]($core-geometry). In addition, loops in `ensureCapacity`, `pushBlockCopy`, `resize`, `clone`, etc. have been replaced with more efficient calls to typed array `set`, `copyWithin`, `fill`.
 
-### @itwin/core-react
+The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is deprecated in favor of the more appropriately named new method `setXYAtCheckedPointIndex`.
 
-Using the sprite loader for SVG icons is deprecated. This includes [SvgSprite]($core-react) and the methods getSvgIconSpec() and getSvgIconSource() methods on [IconSpecUtilities]($appui-abstract). The sprite loader has been replaced with a web component [IconWebComponent]($core-react) used by [Icon]($core-react) to load SVGs onto icons.
+### @itwin/core-mobile
 
-### @itwin/core-transformer
+IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
 
-The beta transformer API functions [IModelTransformer.skipElement]($transformer) and [IModelTransformer.processDeferredElements]($transformer)
-have been deprecated, as the transformer no longer "defers" elements until all of its references have been transformed. These now have no effect,
-since no elements will be deferred, and elements will always be transformed, so skipping them to transform them later is not necessary.
-
+IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
