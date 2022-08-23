@@ -760,43 +760,42 @@ export interface CloudStorageUploadOptions {
 
 // @alpha
 export interface CodeIndex {
-    findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
-    findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
-    findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
-    forAllCodes: (iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter) => void;
-    forAllCodeSpecs: (iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter) => void;
-    getCode: (guid: CodeService.CodeGuid) => CodeService.CodeEntry | undefined;
-    getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
-    isCodePresent: (guid: CodeService.CodeGuid) => boolean;
+    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+    isCodePresent(guid: CodeService.CodeGuid): boolean;
 }
 
 // @alpha
 export interface CodeService {
-    addAllCodes: () => Promise<number>;
+    addAllCodes(iModel: IModelDb): Promise<number>;
     // @internal (undocumented)
-    addAllCodeSpecs: () => Promise<void>;
-    addCodeSpec: (val: CodeService.NameAndJson) => Promise<void>;
+    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
     readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
-    readonly briefcase: BriefcaseDb;
     // @internal (undocumented)
     close: () => void;
     readonly codeIndex: CodeIndex;
-    deleteCodes: (guid: CodeService.CodeGuid[]) => Promise<void>;
-    reserveCode: (code: CodeService.ProposedCode) => Promise<void>;
-    reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<number>;
-    reserveNextAvailableCode: (arg: CodeService.ReserveNextArgs) => Promise<void>;
-    reserveNextAvailableCodes: (arg: CodeService.ReserveNextArrayArgs) => Promise<number>;
+    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+    reserveCode(code: CodeService.ProposedCode): Promise<void>;
+    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
+    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
+    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
     sasToken: AccessToken;
-    synchronizeWithCloud: () => void;
-    updateCode: (props: CodeService.UpdatedCode) => Promise<void>;
-    updateCodes: (arg: CodeService.UpdateCodesArgs) => Promise<number>;
-    verifyCode: (props: CodeService.ElementCodeProps) => void;
+    synchronizeWithCloud(): void;
+    updateCode(props: CodeService.UpdatedCode): Promise<void>;
+    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    verifyCode(props: CodeService.ElementCodeProps): void;
 }
 
 // @alpha (undocumented)
 export namespace CodeService {
     let // @internal (undocumented)
-    createForBriefcase: undefined | ((db: BriefcaseDb) => CodeService);
+    createForIModel: ((db: IModelDb) => CodeService) | undefined;
     export interface AuthorAndOrigin {
         readonly author: Mutable<NameAndJson>;
         readonly origin: Mutable<NameAndJson>;
@@ -836,8 +835,13 @@ export namespace CodeService {
     export type CodeState = number;
     export type CodeValue = string;
     export interface ElementCodeProps {
-        readonly code: CodeProps;
-        federationGuid?: GuidString;
+        // (undocumented)
+        readonly iModel: IModelDb;
+        // (undocumented)
+        readonly props: {
+            readonly code: CodeProps;
+            federationGuid?: GuidString;
+        };
     }
     export class Error extends BentleyError {
         // @internal
@@ -851,13 +855,13 @@ export namespace CodeService {
     export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
     export interface MakeProposedCodeArgs {
         // (undocumented)
-        readonly briefcase: BriefcaseDb;
-        // (undocumented)
         readonly code: Required<CodeProps>;
+        // (undocumented)
+        readonly iModel: IModelDb;
         // (undocumented)
         readonly props: CodeService.CodeGuidStateJson;
     }
-    export function makeScopeAndSpec(briefcase: BriefcaseDb, code: CodeProps): CodeService.ScopeAndSpec;
+    export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec;
     export interface NameAndJson {
         // (undocumented)
         readonly json?: SettingObject;
@@ -3964,7 +3968,7 @@ export interface PropertyStore {
     saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
     // @internal
     startPrefetch(): SQLiteDb.CloudPrefetch;
-    synchronizeWithCloud: () => void;
+    synchronizeWithCloud(): void;
     readonly values: PropertyStore.Values;
 }
 
