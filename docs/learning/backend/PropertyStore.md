@@ -89,7 +89,7 @@ Other than enforcing uniqueness, `PropertyStore`s never "interpret" `PropertyNam
 
 ## The PropertyStore API
 
-The PropertyStore API runs
+The PropertyStore API runs only on the backend. If property values are needed in frontend code (i.e. in a browser), applications will need to create custom IPC, RPC, or REST apis to supply them.
 
 The PropertyStore api has two interfaces:
 
