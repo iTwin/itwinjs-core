@@ -19,16 +19,28 @@ steps:
       scriptPath: common/scripts/run_rush_change.py
       arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
       failOnStderr: true
+
+  - task: Cache@2
+    inputs:
+      key: '"itwinjs-core" | "pnpm-local" | "$(Agent.OS)" | "${{ parameters.NodeVersion }}"'
+      path: common/temp/pnpm-local
+      cacheHitVar: PNPM_LOCAL_RESTORED
+    displayName: pnpm-local cache
+  # don't do a full install yet, just whats needed to run custom rush commands
+  - script: node common/scripts/install-run-rush.js install --check-only
+    displayName: rush install
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: ne(variables.PNPM_LOCAL_RESTORED, 'true')
   - task: Cache@2
     inputs:
       key: '"itwinjs-core" | "pnpm-store" | "$(Agent.OS)" | "${{ parameters.NodeVersion }}" | common/config/rush/pnpm-lock.yaml'
       path: common/temp/pnpm-store
-      cacheHitVar: CACHE_RESTORED
-    displayName: node_modules cache
+      cacheHitVar: PNPM_STORE_RESTORED
+    displayName: pnpm node_modules cache
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-    # condition: ne(variables.CACHE_RESTORED, 'true')
+    condition: ne(variables.PNPM_STORE_RESTORED, 'true')
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
