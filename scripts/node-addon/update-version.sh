@@ -1,7 +1,9 @@
 #!/bin/bash
 
 usage() {
-  >&2 echo "Usage: $0 -v NewNativePackageVersion" 1>&2
+  echo "Updates the itwinjs-core repository to use a new version of the @bentley/imodeljs-native package."
+  echo "Usage: $0 -v VERSION"
+  echo "  -v VERSION: The semantic version (e.g., 3.2.7) of the @bentley/imodeljs-native package to which to update."
 }
 
 checkfail() {
