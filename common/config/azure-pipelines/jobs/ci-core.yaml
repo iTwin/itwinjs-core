@@ -18,7 +18,7 @@ jobs:
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
-        name: $(mac_pool)
+        name: iModelTechMacArm
 
   timeoutInMinutes: 120
 
