@@ -6,7 +6,7 @@
  * @module Localization
  */
 
-import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
+import i18next, { i18n, InitOptions, Module, TFunctionResult, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
@@ -124,22 +124,48 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
-    let value: string | { [key: string]: string } = this.i18next.t(key, options);
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
+    let value = this.i18next.t(key, options);
 
     if (typeof value !== "string") {
-      if (options?.returnDetails || options?.returnObjects) {
-        try {
-          value = value.res;
-        } catch (error) {
-          throw new Error("Translation key(s) not found with given options");
-        }
-      } else {
-        throw new Error("Translation key(s) not found");
-      }
+      throw new Error("Translation key(s) string not found");
     }
 
     return value;
+
+    // let value: string | { [key: string]: string } = this.i18next.t(key, options);
+
+    // if (typeof value !== "string") {
+    //   if (options?.returnDetails || options?.returnObjects) {
+    //     // "res" is the default key for strings.
+    //     // If returnObjects=true when an object is requested,
+    //     // the key(s) will come from the object in the namespace JSON.
+    //     value = value.res;  // returns undefined if res does not exist
+    //     if (typeof value !== "string") {
+    //       throw new Error("Translation key(s) not found with given options");
+    //     }
+    //   } else {
+    //     throw new Error("Translation key(s) not found");
+    //   }
+    // }
+
+    // return value;
   }
+
+  /** Return the translated value of a key as is.
+   * @param key - the key that matches a property in the JSON localization file.
+   * @param options - optional i18next options for how to perform translation.
+   * @note See https://www.i18next.com/translation-function/essentials#overview-options and
+   * https://www.i18next.com/translation-function/interpolation#all-interpolation-options for explanation of options.
+   * @returns The direct result of translation from i18next; not guranteed to be a string or otherwise.
+   * @public
+   */
+  // public getLocalizedValue(key: string | string[], options?: TOptionsBase): TFunctionResult {
+  //   return this.i18next.t(key, options);
+  // }
 
   /** Similar to `getLocalizedString` but the namespace is a separate param and the key does not include the namespace.
    * @param namespace - the namespace that identifies the particular localization file that contains the property.

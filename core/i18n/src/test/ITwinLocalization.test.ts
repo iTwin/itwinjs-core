@@ -53,8 +53,13 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getLocalizedString("SecondSubstitution.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1 (default)");
       });
 
-      it("missing key doesn't find a value", () => {
+      it("first level missing key doesn't find a value", () => {
         assert.equal(localization.getLocalizedString("MissingKeyString"), "MissingKeyString");
+      });
+
+      it("second level missing key doesn't find a value", () => {
+        assert.equal(localization.getLocalizedString("SecondTrivial.MissingString"), "SecondTrivial.MissingString");
+        assert.equal(localization.getLocalizedString("MissingKeyObject.MissingString"), "MissingKeyObject.MissingString");
       });
     });
 
@@ -88,10 +93,40 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getLocalizedString("Test:SecondSubstitution.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1 (test)");
       });
 
-      it("missing key doesn't find a value", () => {
+      it("first level missing key doesn't find a value", () => {
         assert.equal(localization.getLocalizedString("Default:MissingKeyString"), "MissingKeyString");
         assert.equal(localization.getLocalizedString("Test:MissingKeyString"), "MissingKeyString");
       });
+
+      it("second level missing key doesn't find a value", () => {
+        assert.equal(localization.getLocalizedString("Test:SecondTrivial.MissingString"), "SecondTrivial.MissingString");
+        assert.equal(localization.getLocalizedString("Test:MissingKeyObject.MissingString"), "MissingKeyObject.MissingString");
+      });
+
+      // it.only("returnObjects on string", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyObject.ObjectKey1", { returnObjects: true }), "ObjectValue1");
+      // });
+      // it.only("returnObjects on object", () => {
+      //   assert.throws(() => localization.getLocalizedString("Test:MyObject", { returnObjects: true }), Error)
+      // });
+      // it.only("returnObjects on missing object", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyMissingObject", { returnObjects: true }), "MyMissingObject");
+      // });
+      // it.only("returnObjects on missing string", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyMissingObject.MissingObjectValue", { returnObjects: true }), "MyMissingObject.MissingObjectValue");
+      // });
+      // it.only("returnDetails on string", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyObject.ObjectKey1", { returnDetails: true }), "ObjectValue1");
+      // });
+      // it.only("returnDetails on object", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyObject", { returnDetails: true }), "not sure");
+      // });
+      // it.only("returnDetails on missing object", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyObject", { returnDetails: true }), "MyObject");
+      // });
+      // it.only("returnDetails on missing string", () => {
+      //   assert.equal(localization.getLocalizedString("Test:MyObject.MissingObjectValue", { returnDetails: true }), "MissingObjectValue");
+      // });
     });
 
     describe("Nonexisting Namespace", () => {
@@ -111,6 +146,7 @@ describe("ITwinLocalization", () => {
 });
 
 /*** TODO ***/
+
 /* different ways of setting/adding namespaces */
 // localization = new ITwinLocalization({
 //   initOptions: {
@@ -123,5 +159,6 @@ describe("ITwinLocalization", () => {
 // // await localization.initialize(["Default"]);
 // await localization.initialize(["DontExist"]);
 // await localization.registerNamespace("Test");
+
 /* localizedstirng options throws error vs doesnt */
 // options = { ...options, returnDetails: true };
