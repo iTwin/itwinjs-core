@@ -7,13 +7,6 @@ usage() {
   echo "  -s SHA: The SHA hash of the commit on the imodel02 branch to merge into the PR branch."
 }
 
-checkfail() {
-  if [ $? -ne 0 ]; then
-    >&2 echo "Error - aborting."
-    exit 1
-  fi
-}
-
 # Find repo root and verify it's an itwinjs-core repo.
 RepoRoot=`git rev-parse --show-toplevel`
 if [[ $? -ne 0 || ! -f "$RepoRoot/core/backend/package.json" ]]; then
@@ -53,6 +46,9 @@ fi
 
 # Push PR branch
 git push -u origin HEAD
-checkfail
+if [ $? -ne 0 ]; then
+  >&2 echo "Failed to push PR branch - aborting"
+  exit 1
+fi
 
 echo "PR branch pushed."
