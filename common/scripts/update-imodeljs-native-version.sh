@@ -68,6 +68,6 @@ yes "" | rush change
 checkfail
 
 git add "$RepoRoot/common/changes"
-git commit -m"rush change"
+git commit --amend --no-edit
 
 echo "Update complete."
