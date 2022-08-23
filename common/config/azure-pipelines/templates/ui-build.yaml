@@ -1,0 +1,56 @@
+# This defines the core steps for building and validating iTwin.js Core
+
+parameters:
+  - name: workingDir
+    type: string
+    default: $(System.DefaultWorkingDirectory)
+
+steps:
+  - script: node common/scripts/install-run-rush.js check
+    displayName: rush check
+    workingDirectory: ${{ parameters.workingDir }}
+  - task: PythonScript@0
+    displayName: "rush change -v"
+    inputs:
+      workingDirectory: ${{ parameters.workingDir }}
+      scriptSource: filepath
+      scriptPath: common/scripts/run_rush_change.py
+      arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
+      failOnStderr: true
+  - script: node common/scripts/install-run-rush.js install
+    displayName: rush install
+    workingDirectory: ${{ parameters.workingDir }}
+  - script: node common/scripts/install-run-rush.js audit
+    displayName: rush audit
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+  - script: node common/scripts/install-run-rush.js build:ci -v -p max
+    displayName: rush build:ci
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
+  - script: node common/scripts/install-run-rush.js build -v -p max
+    displayName: rush build
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
+  - script: node common/scripts/install-run-rush.js lint -f core-react
+    displayName: rush lint
+    workingDirectory: ${{ parameters.workingDir }}
+
+  - script: node ./common/scripts/install-run-rush webpack:test -v
+    displayName: "rush webpack:test (for rush cover)"
+
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' node common/scripts/install-run-rush.js cover --verbose
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: node common/scripts/install-run-rush.js cover --verbose -f core-react
+    displayName: rush cover
+    workingDirectory: ${{ parameters.workingDir }}
+    condition: and(succeeded(), ne(variables['Agent.OS'], 'Linux'))
+
+  - script: node common/scripts/install-run-rush.js docs
+    displayName: rush docs
+    workingDirectory: ${{ parameters.workingDir }}

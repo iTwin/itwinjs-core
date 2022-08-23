@@ -1,0 +1,31 @@
+# iTwin.js Core CI Build
+
+trigger:
+  branches:
+#    - master
+#    - release/*
+    - ui/new-ci-job
+  paths:
+    - ui
+
+pr:
+  autoCancel: true
+  drafts: false
+  branches:
+    include:
+#      - master
+#      - release/*
+      - ui/new-ci-job
+  paths:
+    include:
+      - ui
+
+jobs:
+  - template: ci-uipkgs.yaml
+    parameters:
+      name: Node_16
+      nodeVersion: 16.13.0
+      pool:
+        name: $(name)
+        demands:
+          - Agent.OS -equals $(platform)
