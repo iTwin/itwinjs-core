@@ -4,34 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { WebFontIcon } from "../../core-react/icons/WebFontIcon";
+import { classesFromElement } from "../TestUtils";
 
 describe("WebFontIcon", () => {
-  it("renders", () => {
-    const icon = render(<WebFontIcon iconName="icon-test" title="test icon" style={{ color: "red" }} />);
-
-    expect(icon.container.innerHTML).to.matchSnapshot();
-  });
   it("renders with custom font class", () => {
-    const icon = render(<WebFontIcon iconClassName="fas" iconName="fas-test" title="fas test icon" style={{ color: "green" }} />);
+    render(<WebFontIcon iconClassName="fas" iconName="fas-test" title="fas test icon" style={{ color: "green" }} />);
 
-    expect(icon.container.innerHTML).to.matchSnapshot();
+    expect(classesFromElement(screen.getByRole("presentation"))).to.include.members(["fas", "fas-test"]).and.not.include("bui-webfont-icon");
   });
-  it("renders specified size", () => {
-    const icon = render(<WebFontIcon iconName="icon-test" iconSize="medium" />);
+  it("renders specified size and default class name", () => {
+    render(<WebFontIcon iconName="icon-test" iconSize="medium" />);
 
-    expect(icon.container.getElementsByClassName("uicore-icons-medium")).to.not.be.empty;
+    expect(classesFromElement(screen.getByRole("presentation"))).to.include.members(["uicore-icons-medium", "bui-webfont-icon"]);
   });
   it("renders specified size with custom font class", () => {
-    const icon = render(<WebFontIcon iconClassName="fas" iconName="fas-test" iconSize="medium" />);
+    render(<WebFontIcon iconClassName="fas" iconName="fas-test" iconSize="medium" />);
 
-    expect(icon.container.getElementsByClassName("uicore-icons-medium")).to.not.be.empty;
+    expect(classesFromElement(screen.getByRole("presentation"))).to.include.members(["uicore-icons-medium", "fas", "fas-test"]);
   });
   it("renders specified size", () => {
-    const icon = render(<WebFontIcon iconName="icon-test" iconSize="x-small" />);
+    render(<WebFontIcon iconName="icon-test" iconSize="x-small" />);
 
-    expect(icon.container.getElementsByClassName("uicore-icons-x-small")).to.not.be.empty;
+    expect(classesFromElement(screen.getByRole("presentation"))).to.include("uicore-icons-x-small");
   });
 
 });

@@ -75,6 +75,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     /** @internal */
     public handleDocumentPointerDown = (e: PointerEvent) => {
       this.isDownOutside = true;
+      // istanbul ignore else
       if (this.outsideClickContainerDiv) {
         // typically e.target test for instance of Node, but this is not working from pop out windows
         this.isDownOutside = !!e.target && !this.outsideClickContainerDiv.contains(e.target as any);
@@ -84,6 +85,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     /** @internal */
     public handleDocumentPointerUp = (e: PointerEvent) => {
       let isUpOutside = true;
+      // istanbul ignore else
       if (this.outsideClickContainerDiv) {
         // typically e.target test for instance of Node, but this is not working from pop out windows
         isUpOutside = !!e.target && !this.outsideClickContainerDiv.contains(e.target as any);
@@ -99,6 +101,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
     };
 
     public getParentDocument() {
+      // istanbul ignore next
       return this.outsideClickContainerDiv?.ownerDocument ?? document;
     }
 
