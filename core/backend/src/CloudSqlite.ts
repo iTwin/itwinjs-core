@@ -16,15 +16,12 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
  * @beta
  */
 export namespace CloudSqlite {
-  /** @internal */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
     return new NativeLibrary.nativeLib.CloudContainer(args);
   }
-  /** @internal */
   export function createCloudCache(args: CloudSqlite.CacheProps): CloudSqlite.CloudCache {
     return new NativeLibrary.nativeLib.CloudCache(args);
   }
-  /** @internal */
   export function startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch {
     return new NativeLibrary.nativeLib.CloudPrefetch(container, dbName, args);
   }
@@ -167,8 +164,7 @@ export namespace CloudSqlite {
     destroy(): void;
   }
 
-  /** A CloudSqlite container that may be connected to a CloudCache.
-   */
+  /** A CloudSqlite container that may be connected to a CloudCache. */
   export interface CloudContainer {
     readonly cache?: CloudCache;
     /** The ContainerId. */

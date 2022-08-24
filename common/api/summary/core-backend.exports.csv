@@ -41,11 +41,8 @@ public;ClassRegistry
 public;CloudContainerArgs
 beta;CloudSqlite
 internal;CloudPrefetch
-internal;createCloudCache(args: CloudSqlite.CacheProps): CloudSqlite.CloudCache
-internal;createCloudContainer(args: ContainerAccessProps): CloudContainer
 internal;LockAndOpenArgs
 internal;ObtainLockParams
-internal;startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch
 internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 beta;class CloudStorageService
 internal;CloudStorageTileUploader

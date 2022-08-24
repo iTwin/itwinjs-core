@@ -802,9 +802,9 @@ export namespace CloudSqlite {
         secure?: boolean;
         writeable?: boolean;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export function createCloudCache(args: CloudSqlite.CacheProps): CloudSqlite.CloudCache;
-    // @internal (undocumented)
+    // (undocumented)
     export function createCloudContainer(args: ContainerAccessProps): CloudContainer;
     export interface DbNameProp {
         dbName: string;
@@ -832,7 +832,7 @@ export namespace CloudSqlite {
         minRequests?: number;
         timeout?: number;
     }
-    // @internal (undocumented)
+    // (undocumented)
     export function startCloudPrefetch(container: CloudSqlite.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
     // @internal (undocumented)
     export function transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise<void>;
