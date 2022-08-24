@@ -18,13 +18,9 @@ The localization function should translate:
   * @RulesEngine:LABEL_General_Other@,
   * @RulesEngine:LABEL_General_Varies@,
   * @RulesEngine:LABEL_General_MultipleInstances@,
-  * @ECPresentation:LABEL_General_DisplayLabel@,
-  * @ECPresentation:LABEL_Category_General@,
-  * @ECPresentation:LABEL_Category_Favorite@,
   * @ECPresentation:FIELD_LABEL_DisplayLabel@,
   * @ECPresentation:CATEGORY_LABEL_SelectedItems@,
   * @ECPresentation:CATEGORY_DESCRIPTION_SelectedItems@,
-  * @ECPresentation:ERROR_General_Unknown@
 
 </details>
 
