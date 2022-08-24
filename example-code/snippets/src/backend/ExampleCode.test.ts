@@ -197,7 +197,9 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
+  // This test will fail because the class "SomeDomain:SomeAspectClass" does not exist.
+  // We skip it to make sure it continues to compile.
+  it.skip("ElementAspects", () => {
     const elementId = Id64.invalid;
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
