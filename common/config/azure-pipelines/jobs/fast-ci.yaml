@@ -13,7 +13,7 @@ pr:
       - release/*
   paths:
     exclude:
-      - *.md
+      - "**.md"
       - docs/*
 
 jobs:
