@@ -1,33 +1,33 @@
-# iTwin.js Core CI Build
+# # iTwin.js Core CI Build
 
-trigger:
-  branches:
-    include:
-      - master
-      - release/*
-  paths:
-    exclude:
-      - '**.md'
-      - docs/**
+# trigger:
+#   branches:
+#     include:
+#       - master
+#       - release/*
+#   paths:
+#     exclude:
+#       - '**.md'
+#       - docs/**
 
-pr:
-  autoCancel: true
-  drafts: false
-  branches:
-    include:
-      - master
-      - release/*
-  paths:
-    exclude:
-      - '**.md'
-      - docs/**
+# pr:
+#   autoCancel: true
+#   drafts: false
+#   branches:
+#     include:
+#       - master
+#       - release/*
+#   paths:
+#     exclude:
+#       - '**.md'
+#       - docs/**
 
-jobs:
-  - template: ci-core.yaml
-    parameters:
-      name: Node_16
-      nodeVersion: 16.13.0
-      pool:
-        name: $(name)
-        demands:
-          - Agent.OS -equals $(platform)
+# jobs:
+#   - template: ci-core.yaml
+#     parameters:
+#       name: Node_16
+#       nodeVersion: 16.13.0
+#       pool:
+#         name: $(name)
+#         demands:
+#           - Agent.OS -equals $(platform)
