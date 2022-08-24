@@ -106,19 +106,19 @@ export const createRandomGroupingNodeKey = (groupedInstancesCount?: number): Gro
 /**
  * @internal Used for testing only.
  */
-export const createRandomECInstancesNode = (): Node => {
+export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
   return {
-    key: createRandomECInstancesNodeKey(),
-    label: createRandomLabelDefinition(),
-    description: nullable<string>(() => faker.lorem.sentence()),
+    key: props?.key ?? createRandomECInstancesNodeKey(),
+    label: props?.label ?? createRandomLabelDefinition(),
+    description: props?.description ?? nullable<string>(() => faker.lorem.sentence()),
     imageId: nullable<string>(() => faker.random.word()),
     foreColor: nullable<string>(createRandomHexColor),
     backColor: nullable<string>(createRandomRgbColor),
-    hasChildren: faker.random.boolean(),
-    isSelectionDisabled: faker.random.boolean(),
-    isEditable: faker.random.boolean(),
+    hasChildren: props?.hasChildren ?? faker.random.boolean(),
+    isSelectionDisabled: props?.isSelectionDisabled ?? faker.random.boolean(),
+    isEditable: props?.isEditable ?? faker.random.boolean(),
     isChecked: faker.random.boolean(),
-    isExpanded: faker.random.boolean(),
+    isExpanded: props?.isExpanded ?? faker.random.boolean(),
     isCheckboxVisible: faker.random.boolean(),
     isCheckboxEnabled: faker.random.boolean(),
   };

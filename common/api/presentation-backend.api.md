@@ -74,6 +74,9 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
+// @internal (undocumented)
+export const createContentDescriptorOverrides: (descriptorOrOverrides: Descriptor | DescriptorOverrides) => DescriptorOverrides;
+
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
@@ -83,9 +86,6 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
-
-// @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -189,6 +189,7 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
+    // @deprecated
     get activeLocale(): string | undefined;
     set activeLocale(value: string | undefined);
     get activeUnitSystem(): UnitSystemKey | undefined;
@@ -248,12 +249,16 @@ export interface PresentationManagerProps {
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
     // @deprecated
     enableSchemasPreload?: boolean;
+    // @internal (undocumented)
+    getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
+    // @deprecated
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | {

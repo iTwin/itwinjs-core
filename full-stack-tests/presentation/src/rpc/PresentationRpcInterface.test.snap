@@ -6,7 +6,7 @@ Object {
     "class": "Subject",
     "id": "0x1",
     "items": Object {
-      "$élêçtèd Ítêm(s)": Object {
+      "@ECPresentation:CATEGORY_LABEL_SelectedItems@": Object {
         "items": Object {
           "Code": Object {
             "type": "primitive",

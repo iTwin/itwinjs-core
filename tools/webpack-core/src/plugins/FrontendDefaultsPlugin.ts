@@ -5,10 +5,6 @@
 import * as path from "path";
 import { Compiler, Configuration, DefinePlugin, ExternalsPlugin, RuleSetRule, WebpackOptionsNormalized } from "webpack";
 
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-const FilterWarningsPlugin = require("webpack-filter-warnings-plugin");
-/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-
 const isProductionLikeMode = (
   options: Configuration | WebpackOptionsNormalized
 ) => {
@@ -60,13 +56,14 @@ export class FrontendDefaultsPlugin {
       };
     }
 
+    if (compiler.options.ignoreWarnings === undefined)
+      compiler.options.ignoreWarnings = [];
+    compiler.options.ignoreWarnings.push((warn) => /Failed to parse source map/.test(warn.message));
+
     // Add default plugins
     new DefinePlugin({
       "global.GENTLY": false,
     }).apply(compiler);
-    new FilterWarningsPlugin({ exclude: /Failed to parse source map/ }).apply(
-      compiler
-    );
     new ExternalsPlugin("commonjs", ["electron"]).apply(compiler);
   }
 }
