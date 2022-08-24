@@ -15,7 +15,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
-        let client = MobileAuthorizationClient(viewController: self);
+        let client:AuthorizationClient? = nil;
         host.loadBackend(main, withAuthClient: client,withInspect: true)
     }
     
@@ -47,7 +47,13 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
 
         var queryParam = String(format: "#port=%u&platform=ios", host.getPort());
         if (bimFile != nil) {
-            let encodedPath = bimFile?.path.replacingOccurrences(of: "/", with: "%2F");
+            // Note: URL strings probably allow other characters, but we know for sure that these all work.
+            // Also, we can't use `CharacterSet.alphanumerics` as a base, because that includes all Unicode
+            // upper case and lower case letters, and we only want ASCII upper case and lower case letters.
+            // Similarly, `CharacterSet.decimalDigits` includes the Unicode category Number, Decimal Digit,
+            // which contains 660 characters.
+            let allowedCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
+            let encodedPath = bimFile?.path.addingPercentEncoding(withAllowedCharacters: allowedCharacters)!
             queryParam.append("&standalone=true");
             queryParam.append("&iModelName=" + encodedPath!);
         }

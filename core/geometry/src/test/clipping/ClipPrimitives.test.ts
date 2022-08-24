@@ -725,21 +725,25 @@ describe("ClipPrimitive", () => {
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
   });
+
 // EDL Sept 2021
-// This tests a ClipPrimitive which is defined ONLY by caller-provided clip planes -- no ClipShape polygon involved.
-// This set on a sense reversal bit in the ClipPrimitive to make one of the clippers act like a hole.
-// But that reversal has been declared a porting mistake -- the native side doesn't support that.
-//   But the native side expects the "hole" to provide its own mask planes, in the manner of the ClipShape.
-//   But there have not been persistent clip plane sets that call for this.
-// Soo .. This test is being marked skip.
-  it.skip("ClipVectorWithHole", () => {
+// This test previously constructed two ClipPrimitives from caller-provided clip planes -- no ClipShape polygon involved.
+//   It then set the invisible bit in one of the ClipPrimitives, to test implied intent to make the clipper act like a hole.
+//   But this sense of the flag has been declared a porting mistake -- the native side doesn't support this.
+//   The native side expects the "hole" to provide its own mask planes, in the manner of a ClipShape.
+//   There are no persistent clip plane sets constructed with this sense of the invisible bit in mind.
+// So this test has been rewritten with ClipShapes, testing holes with the mask bit instead of the invisible bit.
+  it("ClipVectorWithHole", () => {
     const ck = new Checker();
-    const convexClip = ConvexClipPlaneSet.createXYBox(-1, -2, 8, 10);
-    const outerClip = ClipPrimitive.createCapture(convexClip.clone());
-    ck.testFalse(outerClip.invisible);
-    const rangeB = Range3d.createXYZXYZ(2000, 2000, 2000, 2001, 2001, 2001);
-    const holeClip = ClipPrimitive.createCapture(convexClip.clone (),  true);
-    ck.testTrue(holeClip.invisible);
+    const outerRange = Range3d.createXYZXYZ(-1,-2,-10, 8,10,10);
+    const convexClip = ConvexClipPlaneSet.createRange3dPlanes(outerRange, true, true, true, true, false, false);
+    const outerClip = ClipShape.createBlock(outerRange, ClipMaskXYZRangePlanes.XAndY);
+    ck.testFalse(outerClip.isMask);
+    const holeRange = outerRange.clone();
+    holeRange.expandInPlace(-4);  // hole xy range corners (3,2), (4,6)
+    const holeClip = ClipShape.createBlock(holeRange, ClipMaskXYZRangePlanes.XAndY, true);
+    ck.testTrue(holeClip.isMask);
+
     const clipVector0 = ClipVector.create([outerClip, holeClip]);
     const clipVector1 = clipVector0.clone();
     const json0 = clipVector0.toJSON();
@@ -748,16 +752,18 @@ describe("ClipPrimitive", () => {
     // const json2 = clipVector2.toJSON();
     // console.log(prettyPrint(json2));
     for (const cv of [clipVector0, clipVector1, clipVector2]) {
-      ck.testTrue(cv.pointInside(Point3d.create(7, 2)));
+      ck.testTrue(cv.pointInside(Point3d.create(-1, 10)));
       ck.testTrue(cv.pointInside(Point3d.create(0, 0)));
-      ck.testFalse(cv.pointInside(Point3d.create(20, 2)));
-      ck.testFalse(cv.pointInside(Point3d.create(-1.1, 0)));
-      ck.testFalse(cv.pointInside(Point3d.create(2, 2)));
+      ck.testTrue(cv.pointInside(Point3d.create(3, 2)));
+      ck.testFalse(cv.pointInside(Point3d.create(20, 0)));
+      ck.testFalse(cv.pointInside(Point3d.create(0, 11)));
+      ck.testFalse(cv.pointInside(Point3d.create(3.5, 3.5)));
     }
-    const bigQ = 1000.0;
-    const outerRange = Range3d.createXYZXYZ(-bigQ, -bigQ, -bigQ, bigQ, bigQ, bigQ);
 
-    for (const range of [outerRange, rangeB]) {
+    const bigQ = 1000.0;
+    const bigRange = Range3d.createXYZXYZ(-bigQ, -bigQ, -bigQ, bigQ, bigQ, bigQ);
+    const rangeB = Range3d.createXYZXYZ(2000, 2000, 2000, 2001, 2001, 2001);
+    for (const range of [bigRange, rangeB]) {
       const rangeOfUndefinedClipper = ClipUtilities.rangeOfClipperIntersectionWithRange(undefined, range);
       ck.testRange3d(rangeOfUndefinedClipper, range, "undefined clipper");
       ck.testBoolean(ClipUtilities.doesClipperIntersectRange(undefined, range), !rangeOfUndefinedClipper.isNull);
@@ -774,10 +780,10 @@ describe("ClipPrimitive", () => {
       const convexClipRange = ClipUtilities.rangeOfClipperIntersectionWithRange(convexClip, range);
       ck.testBoolean(ClipUtilities.doesClipperIntersectRange(convexClip, range), !convexClipRange.isNull, "convex clipper");
 
-      console.log("outerRange", outerRange);
-      console.log("outerClipRange", outerClipRange);
-      console.log("holeClipRange", holeClipRange);
-      console.log("clippedRange", clippedRange);
+      // console.log("outerRange", outerRange);
+      // console.log("outerClipRange", outerClipRange);
+      // console.log("holeClipRange", holeClipRange);
+      // console.log("clippedRange", clippedRange);
     }
     ck.checkpoint();
     expect(ck.getNumErrors()).equals(0);
@@ -791,9 +797,9 @@ it("ClipPrimitiveMasking", () => {
   const allGeometry: GeometryQuery[] = [];
   const clipRange = Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1);
   const uncappedBoxSetA = ConvexClipPlaneSet.createRange3dPlanes (clipRange, true, true, true, true, false, false);
-  const uncappedBoxSetB = ConvexClipPlaneSet.createRange3dPlanes (clipRange);
+  const uncappedBoxSetB = ConvexClipPlaneSet.createRange3dPlanes (clipRange); // clip all sides
   const boxPrimitiveA = ClipPrimitive.createCapture(uncappedBoxSetA, false);
-  const boxPrimitiveB = ClipPrimitive.createCapture(uncappedBoxSetB, true);
+  const boxPrimitiveB = ClipPrimitive.createCapture(uncappedBoxSetB, true);   // invisible flag does nothing
   const builder = PolyfaceBuilder.create();
   const mesh = builder.claimPolyface();
   {
