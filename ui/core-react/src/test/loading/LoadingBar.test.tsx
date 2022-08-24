@@ -2,34 +2,38 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { LoadingBar } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 describe("<LoadingBar />", () => {
-  it("should render", () => {
-    const wrapper = mount(
+  it("renders correctly", () => {
+    const {container} = render(
       <LoadingBar />,
     );
-    wrapper.unmount();
-  });
 
-  it("renders correctly", () => {
-    shallow(
-      <LoadingBar />,
-    ).should.matchSnapshot();
+    expect(classesFromElement(container.firstElementChild)).to.include("core-lb");
+    expect(container.querySelector<HTMLDivElement>(".lb-container")?.style).to.include({height: "4px"});
   });
 
   it("renders with percent correctly", () => {
-    shallow(<LoadingBar percent={50} />).should.matchSnapshot();
+    const {container} = render (<LoadingBar percent={50} />);
+
+    expect(container.querySelector<HTMLDivElement>(".fill")?.style).to.include({width: "50%"});
   });
 
   it("renders with percent and show correctly", () => {
-    shallow(<LoadingBar percent={50} showPercentage={true} />).should.matchSnapshot();
+    render(<LoadingBar percent={50} showPercentage={true} />);
+
+    expect(screen.getByText("50%")).to.exist;
   });
 
   it("renders with percent, show and bar height correctly", () => {
-    shallow(<LoadingBar percent={50} showPercentage={true} barHeight={10} />).should.matchSnapshot();
+    const {container} = render(<LoadingBar percent={50} showPercentage={true} barHeight={10} />);
+
+    expect(container.querySelector<HTMLDivElement>(".lb-container")?.style).to.include({height: "10px"});
   });
 
 });
