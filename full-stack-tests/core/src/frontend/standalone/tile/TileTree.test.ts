@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
-import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
+import { ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
   TileRequest, TileRequestChannel, TileTree,

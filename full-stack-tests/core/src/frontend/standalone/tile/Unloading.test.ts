@@ -9,7 +9,7 @@ import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
+import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;
