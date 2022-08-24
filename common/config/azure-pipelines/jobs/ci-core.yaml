@@ -7,14 +7,14 @@ jobs:
 - job:
   strategy:
     matrix:
-      "Windows_${{ parameters.name }}":
-        OS: windows-latest
-        platform: Windows_NT
-        name: $(win_pool)
-      "Linux_${{ parameters.name }}":
-        OS: ubuntu-latest
-        platform: Linux
-        name: $(linux_pool)
+      # "Windows_${{ parameters.name }}":
+      #   OS: windows-latest
+      #   platform: Windows_NT
+      #   name: $(win_pool)
+      # "Linux_${{ parameters.name }}":
+      #   OS: ubuntu-latest
+      #   platform: Linux
+      #   name: $(linux_pool)
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
@@ -51,6 +51,11 @@ jobs:
         Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
       displayName: Set build number
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+
+    - script: |
+        arch -xarm64
+      displayName: force arm arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - template: ../templates/core-build.yaml
 
