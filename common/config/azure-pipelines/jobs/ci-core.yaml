@@ -32,20 +32,24 @@ jobs:
       clean: true
       fetchDepth: 0
 
-    - bash: arch
-      displayName: get current arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    # - bash: node -p process.arch
+    #   displayName: get current arch
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    - bash: |
-        arch -arm64
-      displayName: force arm arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    # - bash: |
+    #     arch -arm64
+    #   displayName: force arm arch
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
         versionSpec: ${{ parameters.nodeVersion }}
         checkLatest: true
+
+    - bash: node -p process.arch
+      displayName: get current arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - script: |
         git config --local user.email imodeljs-admin@users.noreply.github.com
