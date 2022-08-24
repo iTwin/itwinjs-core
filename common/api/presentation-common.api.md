@@ -603,6 +603,10 @@ export interface DiagnosticsOptions {
 // @alpha (undocumented)
 export interface DiagnosticsScopeLogs {
     // (undocumented)
+    attributes?: {
+        [attributeKey: string]: string | string[];
+    };
+    // (undocumented)
     duration?: number;
     // (undocumented)
     logs?: DiagnosticsLogEntry[];
