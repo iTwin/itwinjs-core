@@ -52,6 +52,8 @@ import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./Vi
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
 
+// spell:ignore fontid fontmap
+
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
 /** Options for [[IModelDb.Models.updateModel]]
@@ -238,7 +240,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+      this._workspace = new ITwinWorkspace(new IModelSettings());
     return this._workspace;
   }
 
@@ -2287,9 +2289,9 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.ReadWrite && CodeService.createForBriefcase) {
+    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = CodeService.createForBriefcase(briefcaseDb);
+        const codeService = CodeService.createForIModel(briefcaseDb);
         briefcaseDb._codeService = codeService;
         this.onCodeServiceCreated.raiseEvent(codeService);
       } catch (e: any) {

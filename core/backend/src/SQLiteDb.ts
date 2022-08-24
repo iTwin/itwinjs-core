@@ -290,6 +290,24 @@ export namespace SQLiteDb {
   /** Parameters for creating a new SQLiteDb */
   export type CreateParams = OpenOrCreateParams & PageSize;
 
+  /** Parameters used to obtain the write lock on a cloud container
+   * @internal
+   */
+  export interface ObtainLockParams {
+    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
+    user?: string;
+    /** number of times to retry in the event the lock currently held by someone else.
+   * After this number of attempts, `onFailure` is called. Default is 20.
+   */
+    nRetries: number;
+    /** Delay between retries, in milliseconds. Default is 100. */
+    retryDelayMs: number;
+    /** function called if lock cannot be obtained after all retries. It is called with the name of the user currently holding the lock and
+   * generally is expected that the user will be consulted whether to wait further.
+   * If this function returns "stop", an exception will be thrown. Otherwise the retry cycle is restarted. */
+    onFailure?: CloudSqlite.WriteLockBusyHandler;
+  }
+
   /** @internal */
   export interface LockAndOpenArgs {
     /** the name to be displayed in the event of lock collisions */

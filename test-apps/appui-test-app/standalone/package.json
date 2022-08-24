@@ -106,7 +106,7 @@
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/imodels-client-management": "^1.0.1",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/map-layers": "workspace:*",

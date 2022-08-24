@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, QueryBinder, QueryOptionsBuilder, QueryRowFormat, QueryStats } from "@itwin/core-common";
 import { expect } from "chai";
+import * as path from "path";
 import { ECSqlStatement } from "../../ECSqlStatement";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
@@ -13,7 +14,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 describe.skip("Properties loading", () => {
   let imodel: SnapshotDb;
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
   });
   after(async () => {
     await IModelHost.shutdown();
