@@ -3,29 +3,37 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { ExpandableList } from "../../core-react";
-import TestUtils from "../TestUtils";
+import TestUtils, { classesFromElement } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+
+function blockClasses(titleElement: Element) {
+  expect(titleElement.parentElement?.parentElement, "Block class was not found for element").to.exist;
+  return classesFromElement(titleElement.parentElement?.parentElement);
+}
 
 describe("ExpandableList", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiCore();
   });
 
-  it("should render", () => {
-    mount(<ExpandableList />);
-  });
-
   it("renders correctly", () => {
-    shallow(<ExpandableList />).should.matchSnapshot();
+    const {container} = render(<ExpandableList />);
+
+    expect(container.querySelector(".uicore-expandable-blocks-list")).to.exist;
   });
 
   it("should support singleExpandOnly & defaultActiveBlock props", () => {
-    const wrapper = mount(
+    render(
       <ExpandableList singleExpandOnly={true} defaultActiveBlock={1}>
         <ExpandableBlock title="Test0" isExpanded={true} >
           Hello0
@@ -35,33 +43,25 @@ describe("ExpandableList", () => {
         </ExpandableBlock>
       </ExpandableList>);
 
-    const blocks = wrapper.find("div.iui-expandable-block");
-    const expanded = wrapper.find("div.iui-expanded");
-
-    expect(expanded.length).to.eq(1);
-    expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
-
-    wrapper.unmount();
+    expect(screen.queryByText("Hello0")).to.be.null;
+    expect(blockClasses(screen.getByText("Hello1"))).to.contain("iui-expanded");
   });
 
-  it("should handle block click", () => {
+  it("should handle block click", async () => {
     const toggleSpy = sinon.spy();
-    const wrapper = mount(
+    render(
       <ExpandableList>
         <ExpandableBlock title="Test" isExpanded={true} onToggle={toggleSpy}>
           <div>Hello</div>
         </ExpandableBlock>
       </ExpandableList>);
 
-    wrapper.find("div.iui-expandable-block > .iui-header").simulate("click");
+    await theUserTo.click(screen.getByText("Test"));
     expect(toggleSpy.calledOnce).to.be.true;
-
-    wrapper.unmount();
   });
 
-  it("should support singleExpandOnly & singleIsCollapsible props", () => {
-    const wrapper = mount(
+  it("should support singleExpandOnly & singleIsCollapsible props", async () => {
+    render(
       <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={1}>
         <ExpandableBlock title="Test0" isExpanded={true} >
           Hello0
@@ -71,30 +71,22 @@ describe("ExpandableList", () => {
         </ExpandableBlock>
       </ExpandableList>);
 
-    let blocks = wrapper.find("div.iui-expandable-block");
-    let expanded = wrapper.find("div.iui-expanded");
+    expect(screen.queryByText("Hello0")).to.be.null;
+    expect(blockClasses(screen.getByText("Hello1"))).to.contain("iui-expanded");
 
-    expect(expanded.length).to.eq(1);
-    expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
+    await theUserTo.click(screen.getByText("Test0"));
 
-    blocks.at(0).find(".iui-header").simulate("click");
-    wrapper.update();
-    expanded = wrapper.find("div.iui-expanded");
-    expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello0");
+    expect(blockClasses(screen.getByText("Hello0"))).to.contain("iui-expanded");
+    expect(blockClasses(screen.getByText("Hello1"))).not.to.contain("iui-expanded");
 
-    blocks = wrapper.find("div.iui-expandable-block");
-    blocks.at(0).find(".iui-header").simulate("click");
-    wrapper.update();
-    expanded = wrapper.find("div.iui-expanded");
-    expect(expanded.length).to.eq(0);
+    await theUserTo.click(screen.getByText("Test0"));
 
-    wrapper.unmount();
+    expect(blockClasses(screen.getByText("Hello0"))).not.to.contain("iui-expanded");
+    expect(blockClasses(screen.getByText("Hello1"))).not.to.contain("iui-expanded");
   });
 
   it("should support changing defaultActiveBlock in update", () => {
-    const wrapper = mount(
+    const {rerender} = render(
       <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={1}>
         <ExpandableBlock title="Test0" isExpanded={true} >
           Hello0
@@ -104,26 +96,34 @@ describe("ExpandableList", () => {
         </ExpandableBlock>
       </ExpandableList>);
 
-    const blocks = wrapper.find("div.iui-expandable-block");
-    let expanded = wrapper.find("div.iui-expanded");
+    expect(screen.queryByText("Hello0")).to.be.null;
+    expect(blockClasses(screen.getByText("Hello1"))).to.contain("iui-expanded");
 
-    expect(expanded.length).to.eq(1);
-    expect(blocks.length).to.eq(2);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
+    rerender(
+      <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={0}>
+        <ExpandableBlock title="Test0" isExpanded={true} >
+          Hello0
+        </ExpandableBlock>
+        <ExpandableBlock title="Test1" isExpanded={true} >
+          Hello1
+        </ExpandableBlock>
+      </ExpandableList>);
 
-    wrapper.setProps({ defaultActiveBlock: 0 });
-    wrapper.update();
-    expanded = wrapper.find("div.iui-expanded");
-    expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello0");
+    expect(blockClasses(screen.getByText("Hello0"))).to.contain("iui-expanded");
+    expect(blockClasses(screen.getByText("Hello1"))).not.to.contain("iui-expanded");
 
-    wrapper.setProps({ defaultActiveBlock: 1 });
-    wrapper.update();
-    expanded = wrapper.find("div.iui-expanded");
-    expect(expanded.length).to.eq(1);
-    expect(expanded.find("div.iui-expandable-content").text()).to.eq("Hello1");
+    rerender(
+      <ExpandableList singleExpandOnly={true} singleIsCollapsible={true} defaultActiveBlock={1}>
+        <ExpandableBlock title="Test0" isExpanded={true} >
+          Hello0
+        </ExpandableBlock>
+        <ExpandableBlock title="Test1" isExpanded={true} >
+          Hello1
+        </ExpandableBlock>
+      </ExpandableList>);
 
-    wrapper.unmount();
+    expect(blockClasses(screen.getByText("Hello0"))).not.to.contain("iui-expanded");
+    expect(blockClasses(screen.getByText("Hello1"))).to.contain("iui-expanded");
   });
 
 });
