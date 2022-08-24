@@ -37,12 +37,12 @@ jobs:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - bash: uname -m
-      displayName: get current arch
+      displayName: get current arch using uname
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    # - bash: node -p process.arch
-    #   displayName: get current arch
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    - bash: node -p process.arch
+      displayName: get current arch using node
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - bash: |
         arch -arm64 /bin/zsh
