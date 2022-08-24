@@ -41,10 +41,10 @@ jobs:
     #   displayName: force arm arch
     #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    - task: NodeTool@0
+    - task: UseNode@1
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
-        versionSpec: ${{ parameters.nodeVersion }}
+        version: ${{ parameters.nodeVersion }}
         checkLatest: true
     # Write the installed version to the command line
     - script: which node
