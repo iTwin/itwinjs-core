@@ -2,25 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Textarea } from "../../core-react";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<Textarea />", () => {
-  it("should render", () => {
-    mount(<Textarea />);
-  });
-
   it("renders correctly", () => {
-    shallow(<Textarea />).should.matchSnapshot();
+    render(<Textarea />);
+
+    expect(classesFromElement(screen.getByRole("textbox"))).to.include("uicore-inputs-textarea");
   });
 
   it("renders rows correctly", () => {
-    shallow(<Textarea rows={30} />).should.matchSnapshot();
+    render(<Textarea rows={30} />);
+
+    expect(screen.getByRole<HTMLTextAreaElement>("textbox").rows).to.eq(30);
   });
 
   it("focus into textarea with setFocus prop", () => {
