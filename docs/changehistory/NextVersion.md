@@ -30,12 +30,17 @@ It will still perform the old behavior synchronously until it is removed. It wil
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
 
-# Presentation localization changes
+# Presentation
 
-Previosly localization of data produced using Presentation Rules was done on backend and on frontend. Localization on backend was dropped in favor of localization on frontend. This removes requirement to supply localization assets with backend. In case only backend is used and localization is required it can be setup by providing [localization implemenation during presentation backend initialization](../presentation/advanced/Localization.md)
+## Localization Changes
 
-Deprecated APIs:
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
 
-  - PresentationManagerProps.localeDirectories
-  - PresentationManagerProps.defaultLocale
-  - PresentationManager.activeLocale
+In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
+
+**Deprecated APIs:**
+
+- PresentationManagerProps.localeDirectories
+- PresentationManagerProps.defaultLocale
+- PresentationManager.activeLocale
+
