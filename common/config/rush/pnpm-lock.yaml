@@ -464,9 +464,13 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@openid/appauth': ^1.2.6
+      '@types/chai': 4.3.1
+      '@types/mocha': ^8.2.2
       '@types/node': 16.11.7
+      chai: ^4.1.2
       electron: ^14.0.0
       eslint: ^7.11.0
+      mocha: ^10.0.0
       open: ^7.0.0
       rimraf: ^3.0.2
       typescript: ~4.4.0
@@ -483,9 +487,13 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../../presentation/common
+      '@types/chai': 4.3.1
+      '@types/mocha': 8.2.3
       '@types/node': 16.11.7
+      chai: 4.3.6
       electron: 14.2.9
       eslint: 7.32.0
+      mocha: 10.0.0
       rimraf: 3.0.2
       typescript: 4.4.4
 
@@ -8469,7 +8477,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 16.11.7
+      '@types/node': 14.14.31
     dev: false
 
   /@types/debug/4.1.7:
@@ -8716,6 +8724,10 @@ packages:
 
   /@types/node/12.20.24:
     resolution: {integrity: sha512-yxDeaQIAJlMav7fH5AQqPH1u8YIuhYJXYBzxaQ4PifsU0GDO38MSdmEDeRlIxrKbC6NbEaaEHDanWb+y30U8SQ==}
+    dev: false
+
+  /@types/node/14.14.31:
+    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.24:
