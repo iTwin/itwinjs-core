@@ -2,6 +2,21 @@
   "name": "@itwin/ecschema-locaters",
   "entries": [
     {
+      "version": "3.3.0",
+      "tag": "@itwin/ecschema-locaters_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "The new utility method SchemaFileUtility.writeSchemaXmlFile writes an EC Schema to an xml file on the file system."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.8",
       "tag": "@itwin/ecschema-locaters_v3.2.8",
       "date": "Tue, 09 Aug 2022 15:52:41 GMT",
