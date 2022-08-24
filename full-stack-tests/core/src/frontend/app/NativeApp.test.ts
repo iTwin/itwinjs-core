@@ -12,7 +12,7 @@ import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
-  describe("NativeApp startup", () => {
+  describe.skip("NativeApp startup", () => {
     before(async () => {
       await TestUtility.startFrontend();
     });
