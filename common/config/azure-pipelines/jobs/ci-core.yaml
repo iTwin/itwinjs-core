@@ -36,15 +36,15 @@ jobs:
     #   displayName: get current arch
     #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    # - bash: |
-    #     arch -arm64
-    #   displayName: force arm arch
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    - bash: |
+        arch -arm64 /bin/bash
+      displayName: force arm arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: UseNode@1
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
-        version: ${{ parameters.nodeVersion }}
+        version: 16.17.0
         checkLatest: true
     # Write the installed version to the command line
     - script: which node
