@@ -2,21 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { Gap } from "../../core-react";
 
 describe("<Gap />", () => {
-  it("should render", () => {
-    const wrapper = mount(<Gap />);
-    wrapper.unmount();
-  });
 
   it("renders correctly", () => {
-    shallow(<Gap />).should.matchSnapshot();
+    render(<Gap data-testid="tested" />);
+    expect(screen.getByTestId("tested").style).to.include({paddingLeft: "10px"});
   });
 
   it("renders correctly with size", () => {
-    shallow(<Gap size="20px" />).should.matchSnapshot();
+    render(<Gap  size="20px" data-testid="tested" />);
+    expect(screen.getByTestId("tested").style).to.include({paddingLeft: "20px"});
   });
 });
