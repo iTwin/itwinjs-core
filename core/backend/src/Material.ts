@@ -139,7 +139,9 @@ export class RenderMaterialElement extends DefinitionElement {
   }
 }
 
-/** @public */
+/** @public
+ * @note color, specularColor and reflectColor are stored as [R,G,B] where each value is between 0 and 1
+*/
 export namespace RenderMaterialElement { // eslint-disable-line no-redeclare
   /** Parameters used to construct a [[RenderMaterial]]. */
   export class Params {
