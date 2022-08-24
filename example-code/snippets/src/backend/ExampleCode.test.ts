@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
