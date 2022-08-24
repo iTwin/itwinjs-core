@@ -12,7 +12,8 @@ on:
     paths-ignore:
       # - "**.md"
       # - "**/*.md"
-      - docs
+      # - docs
+      - docs/docs_temp.md
 
 jobs:
   extract-api:

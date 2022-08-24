@@ -10,7 +10,8 @@ trigger:
     exclude:
       # - "**.md"
       # - "**/*.md"
-      - docs
+      # - docs
+      - docs/docs_temp.md
 
 pr:
   autoCancel: true
@@ -24,7 +25,8 @@ pr:
     exclude:
       # - "**.md"
       # - "**/*.md"
-      - docs
+      # - docs
+      - docs/docs_temp.md
 
 jobs:
   - template: ci-core.yaml
