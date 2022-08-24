@@ -77,6 +77,7 @@ Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
   const spans = convertToReadableSpans(diagnostics, parentSpanContext);
   traceExporter.export(spans, () => {});
 } });
+```
 
 ## Electron versions support
 
