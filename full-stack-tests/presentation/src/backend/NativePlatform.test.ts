@@ -28,7 +28,6 @@ describe("NativePlatform", () => {
     expect(imodel).is.not.null;
     const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
-      localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,
