@@ -197,13 +197,16 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  // This test will fail because the class "SomeDomain:SomeAspectClass" does not exist.
-  // We skip it to make sure it continues to compile.
-  it.skip("ElementAspects", () => {
+});
+
+namespace Snippets {
+  // this snippet isn't a test because it uses a fake ElementAspect class "SomeDomain:SomeAspectClass" that doesn't exist
+  export function elementAspectSnippet() {
+    const iModel = IModelTestUtils.openIModelForWrite("test.bim");
     const elementId = Id64.invalid;
-    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
-    const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
+    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
+    const elementAspects = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
 
@@ -216,6 +219,6 @@ describe("Example Code", () => {
     };
     iModel.elements.insertAspect(aspectProps);
     // __PUBLISH_EXTRACT_END__
-  });
-
-});
+  }
+}
+Snippets.elementAspectSnippet;
