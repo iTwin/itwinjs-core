@@ -838,67 +838,6 @@ describe("IModelTransformer", () => {
     sourceDb.close();
   });
 
-  // WIP: Included as skipped until test file management strategy can be refined.
-  it("Merge test", async () => {
-    const mergedIModelFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "MergeTest.bim");
-    const mergedDb = SnapshotDb.createEmpty(mergedIModelFileName, { rootSubject: { name: "Merge Test" } });
-    const campusSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Campus");
-    assert.isTrue(Id64.isValidId64(campusSubjectId));
-    const garageSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Garage");
-    assert.isTrue(Id64.isValidId64(garageSubjectId));
-    const buildingSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Building");
-    assert.isTrue(Id64.isValidId64(buildingSubjectId));
-    mergedDb.saveChanges("Create Subject hierarchy");
-    IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-
-    // Import campus
-    if (true) {
-      const campusIModelFileName = "D:/data/bim/MergeTest/Campus.bim";
-      const campusDb = SnapshotDb.openFile(campusIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(campusDb);
-      const transformer = new IModelTransformer(campusDb, mergedDb, { targetScopeElementId: campusSubjectId });
-      await transformer.processSchemas();
-      transformer.context.remapElement(IModel.rootSubjectId, campusSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Campus");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      campusDb.close();
-    }
-
-    // Import garage
-    if (true) {
-      const garageIModelFileName = "D:/data/bim/MergeTest/Garage.bim";
-      const garageDb = SnapshotDb.openFile(garageIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(garageDb);
-      const transformer = new IModelTransformer(garageDb, mergedDb, { targetScopeElementId: garageSubjectId });
-      transformer.context.remapElement(IModel.rootSubjectId, garageSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Garage");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      garageDb.close();
-    }
-
-    // Import building
-    if (true) {
-      const buildingIModelFileName = "D:/data/bim/MergeTest/Building.bim";
-      const buildingDb = SnapshotDb.openFile(buildingIModelFileName);
-      IModelTransformerTestUtils.dumpIModelInfo(buildingDb);
-      const transformer = new IModelTransformer(buildingDb, mergedDb, { targetScopeElementId: buildingSubjectId });
-      await transformer.processSchemas();
-      transformer.context.remapElement(IModel.rootSubjectId, buildingSubjectId);
-      await transformer.processAll();
-      transformer.dispose();
-      mergedDb.saveChanges("Imported Building");
-      IModelTransformerTestUtils.flushTxns(mergedDb); // subsequent calls to importSchemas will fail if this is not called to flush local changes
-      buildingDb.close();
-    }
-
-    IModelTransformerTestUtils.dumpIModelInfo(mergedDb);
-    mergedDb.close();
-  });
-
   it("processSchemas should handle out-of-order exported schemas", async () => {
     const testSchema1Path = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
     IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
