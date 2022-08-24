@@ -2230,6 +2230,17 @@ export class GenericSchema extends Schema {
     static get schemaName(): string;
 }
 
+// @internal
+export class GeoCoordConfig {
+    // (undocumented)
+    static loadDefaultDatabases(): void;
+    // (undocumented)
+    static loadForImodel(settings: Settings): void;
+    // (undocumented)
+    static onStartup(): void;
+    static readonly prefetches: SQLiteDb.CloudPrefetch[];
+}
+
 // @public
 export abstract class GeometricElement extends Element_2 {
     // @internal

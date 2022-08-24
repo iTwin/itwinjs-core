@@ -50,7 +50,7 @@ The following rules may be helpful:
 
 ## CodeService API
 
-The `CodeService.\1` interface in iTwin.js provides an api to integrate the Code system for elements in an iModel, with a `CodeService` that can:
+The `CodeService` interface in iTwin.js provides an api to integrate the Code system for elements in an iModel, with a `CodeService` that can:
 
 - be queried to find the properties of existing codes
 - reserve one or more codes*
@@ -61,7 +61,7 @@ The `CodeService.\1` interface in iTwin.js provides an api to integrate the Code
 
 ### IModel Codes vs. CodeService
 
-The [Code]($common) api in iTwin.js deals with `Codes` on [Element]($backend)s. For efficiency, the [Code.spec]($common) member holds a local Id into the [CodeSpecs]($backend) table in the iModel. Likewise, the [Code.scope]($common) member contains the element Id of the code scope element. Both of these values are *iModel local* identifiers, and are not appropriate for the iTwin `CodeService` api. The `codeService` api deals with code specs by their name, and code scopes by [Guid]($bentley).
+The [Code]($common) api in iTwin.js deals with `Codes` on [Element]($backend)s. For efficiency, the [Code.spec]($common) member holds a local Id into the [CodeSpecs]($backend) table in the iModel. Likewise, the [Code.scope]($common) member contains the element Id of the code scope element. Both of these values are *iModel local* identifiers, and are not appropriate for the iTwin `CodeService` api. The `CodeService` api deals with code specs by their name, and code scopes by [Guid]($bentley).
 
 The helper function `CodeService.makeScopeAndSpec` converts an iModel-specific [CodeProps]($common) object into a `CodeService.ScopeAndSpec` object. To do this, it:
 
@@ -77,7 +77,7 @@ To improve performance and convenience of checking the set of existing codes, th
 - `CodeIndex.isCodePresent` to check if a code exists
 - `CodeIndex.getCode` to get the properties of a code, given its Guid
 - `CodeIndex.findCode` to look up a code by value/scope
-- `CodeIndex.forAllCodes` to iterate of a set of codes
+- `CodeIndex.forAllCodes` to iterate over a set of codes
 - `CodeIndex.getCodeSpec` to get the properties of a code spec
 - `CodeIndex.forAllCodeSpecs` to iterate over a set of code specs
 
