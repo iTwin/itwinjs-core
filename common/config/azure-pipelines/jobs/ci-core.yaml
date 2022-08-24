@@ -30,6 +30,18 @@ jobs:
   steps:
     - checkout: self
       clean: true
+      fetchDepth: 0
+
+    - script: |
+        arch
+      displayName: get current arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
+    - script: |
+        arch -arm64
+      displayName: force arm arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
@@ -51,11 +63,6 @@ jobs:
         Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
       displayName: Set build number
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
-
-    - script: |
-        arch -xarm64
-      displayName: force arm arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - template: ../templates/core-build.yaml
 
