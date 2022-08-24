@@ -8,7 +8,7 @@ import { DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
 import { DevTools, PingTestResult } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 
-describe.skip("DevTools", () => {
+describe("DevTools", () => {
   let devTools: DevTools;
 
   before(async () => {
@@ -39,7 +39,7 @@ describe.skip("DevTools", () => {
     assert.isTrue((formattedStats.os.cpus[0].times.user as string).endsWith("%"));
   });
 
-  it.skip("can ping backend", async () => {
+  it("can ping backend", async () => {
     const pingSummary: PingTestResult = await devTools.ping(10);
     assert.isDefined(pingSummary);
     assert.isDefined(pingSummary.min);

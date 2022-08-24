@@ -209,7 +209,7 @@ describe("requestTileTreeProps", () => {
     expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
   });
 
-  it.skip("should throttle requests", async () => {
+  it("should throttle requests", async () => {
     const numRequests = 10;
     const getProps = async (index: number) => {
       await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
@@ -232,7 +232,7 @@ describe("requestTileTreeProps", () => {
     await Promise.all(promises);
   });
 
-  it.skip("should reject when iModel closed", async () => {
+  it("should reject when iModel closed", async () => {
     overrideRequestTileTreeProps(async (iModel, _treeId) => {
       return new Promise((resolve, _reject) => {
         iModel.onClose.addOnce((_) => {
@@ -269,7 +269,7 @@ describe("requestTileTreeProps", () => {
   });
 
   // ###TODO This occassionally times out, possibly due to sporadic failures in previous tests
-  it.skip("should fulfill requests for other iModels after a different iModel is closed", async () => {
+  it("should fulfill requests for other iModels after a different iModel is closed", async () => {
     imodel2 = await SnapshotConnection.openFile("test.bim");
 
     overrideRequestTileTreeProps(async (iModel, treeId) => {

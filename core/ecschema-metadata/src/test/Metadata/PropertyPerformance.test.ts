@@ -11,6 +11,7 @@ interface TestTime {
   time: number;
 }
 
+// ###TODO Move to a performance testing directory?
 describe("measuring deserialization performance with hundreds of properties", () => {
   const TEST_COUNT = 10;
   const STARTING_PROP_COUNT = 5;

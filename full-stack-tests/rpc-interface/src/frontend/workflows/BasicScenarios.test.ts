@@ -42,7 +42,7 @@ describe("Basic Scenarios", async () => {
   });
 
   // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
-  it.skip("should successfully open a new IModel without changesets for read and Get Properties for an Element TestCase:872675", async () => {
+  it("should successfully open a new IModel without changesets for read and Get Properties for an Element TestCase:872675", async () => {
     const iTwinId = testContext.iTwinId;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;

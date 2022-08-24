@@ -132,7 +132,7 @@ describe("Tile unloading", async () => {
   });
 
   // This test sporadically fails on Linux during CI job, with no useful output.
-  it.skip("should dispose of undisplayed tiles", async () => {
+  it("should dispose of undisplayed tiles", async () => {
     await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
       await vp.waitForAllTilesToRender();
 

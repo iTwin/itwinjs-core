@@ -11,6 +11,8 @@ import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 
 /* eslint-disable no-console */
+
+// ###TODO move these to a performance test directory?
 describe.skip("Properties loading", () => {
   let imodel: SnapshotDb;
   before(async () => {

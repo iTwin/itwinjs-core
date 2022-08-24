@@ -96,7 +96,7 @@ describe("PushChangesTest (#integration)", () => {
     HubMock.shutdown();
   });
 
-  it.skip("Push changes while refreshing token", async () => {
+  it("Push changes while refreshing token", async () => {
     const iModelName = IModelTestUtils.generateUniqueName("PushChangesTest");
     const iModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName, noLocks: true });
 

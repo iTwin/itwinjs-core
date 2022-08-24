@@ -282,7 +282,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it.skip("should clone Model within same iModel", async () => {
+  it("should clone Model within same iModel", async () => {
     // Set up the IModelDb with a populated source Subject and an "empty" target Subject
     const iModelFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
@@ -839,7 +839,7 @@ describe("IModelTransformer", () => {
   });
 
   // WIP: Included as skipped until test file management strategy can be refined.
-  it.skip("Merge test", async () => {
+  it("Merge test", async () => {
     const mergedIModelFileName: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "MergeTest.bim");
     const mergedDb = SnapshotDb.createEmpty(mergedIModelFileName, { rootSubject: { name: "Merge Test" } });
     const campusSubjectId: Id64String = Subject.insert(mergedDb, IModel.rootSubjectId, "Campus");

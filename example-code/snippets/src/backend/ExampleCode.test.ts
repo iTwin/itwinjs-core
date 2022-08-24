@@ -197,7 +197,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
+  it("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
     const elementId = Id64.invalid;
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
