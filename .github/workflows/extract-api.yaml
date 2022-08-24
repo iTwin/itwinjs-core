@@ -8,6 +8,7 @@ on:
     branches:
       - master
       - release/*
+      - ignore-building-doc-only-changes
     paths-ignore:
       # - "**.md"
       # - "**/*.md"
