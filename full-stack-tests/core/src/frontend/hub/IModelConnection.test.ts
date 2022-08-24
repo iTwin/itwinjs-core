@@ -114,7 +114,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
-  it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
+  it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
     assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
