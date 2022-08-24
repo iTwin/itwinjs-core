@@ -39,7 +39,6 @@ import rpcs from "../common/Rpcs";
   // set up props for the presentation backend
   const presentationBackendProps: PresentationProps = {
     rulesetDirectories: [path.join("assets", "presentation_rules")],
-    localeDirectories: [path.join("assets", "locales")],
   };
   // __PUBLISH_EXTRACT_END__
 

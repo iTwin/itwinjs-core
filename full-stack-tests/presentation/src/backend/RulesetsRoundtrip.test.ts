@@ -21,7 +21,6 @@ describe("Rulesets roundtrip", () => {
 
     const TNativePlatform = createDefaultNativePlatform({ // eslint-disable-line @typescript-eslint/naming-convention
       id: "",
-      localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadWrite,
       isChangeTrackingEnabled: false,

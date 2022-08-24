@@ -453,6 +453,29 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
+    it("requests localized root nodes from proxy", async () => {
+      i18nMock.reset();
+      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() => { return "LocalizedString"; });
+      const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@EN:LocalizableString@", displayValue: "@EN:LocalizableString@", typeName: "string" } })];
+      const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        parentKey: undefined,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedNodes(prepareOptions(options)))
+        .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
+        .verifiable();
+
+      const actualResult = await manager.getNodes(options);
+      const expectedResult = prelocalizedNode;
+      expectedResult[0].label.rawValue = "LocalizedString";
+      expectedResult[0].label.displayValue = "LocalizedString";
+      expect(actualResult).to.deep.eq(expectedResult);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
     it("requests child nodes from proxy", async () => {
       const parentNodeKey = createRandomECInstancesNodeKey();
       const result = [createRandomECInstancesNode(), createRandomECInstancesNode()];

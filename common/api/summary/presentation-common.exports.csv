@@ -137,6 +137,7 @@ public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
+alpha;getLocalizedStringEN(key: string): any
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
 public;GroupingRule 
@@ -209,6 +210,8 @@ public;LabelOverride
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+internal;LocalizationHelper
+internal;LocalizationHelperProps
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 

@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
@@ -35,10 +34,6 @@ export function normalizeVersion(version?: string) {
   }
   return "0.0.0";
 }
-
-/** @internal */
-// istanbul ignore next
-export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
 
 /** @alpha */
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
