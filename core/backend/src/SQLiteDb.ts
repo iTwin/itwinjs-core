@@ -37,6 +37,10 @@ export class SQLiteDb implements IDisposable {
   /** Create a SQLiteDb
    * @param dbName The path to the SQLiteDb file to create.
    */
+  public createDb(dbName: string): void;
+  /** @internal */
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+  /** @internal */
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
     this.nativeDb.createDb(dbName, container, params);
   }

@@ -12,7 +12,9 @@ import { NativeLibrary } from "@bentley/imodeljs-native";
 import { GuidString } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
-/** Types for using SQLite files stored in cloud containers. */
+/** Types for using SQLite files stored in cloud containers.
+ * @beta
+ */
 export namespace CloudSqlite {
   /** @internal */
   export function createCloudContainer(args: ContainerAccessProps): CloudContainer {
@@ -150,7 +152,6 @@ export namespace CloudSqlite {
    * and is used to **connect** CloudContainers so they may be accessed. The contents of the cache directory are entirely
    * controlled by CloudSqlite and should be empty when the cache is first created and never modified directly. It maintains
    * the state of the local data across sessions.
-   * @internal
    */
   export interface CloudCache {
     /** `true` if this CloudCache is connected to a daemon process */
@@ -167,7 +168,6 @@ export namespace CloudSqlite {
   }
 
   /** A CloudSqlite container that may be connected to a CloudCache.
-   * @internal
    */
   export interface CloudContainer {
     readonly cache?: CloudCache;
