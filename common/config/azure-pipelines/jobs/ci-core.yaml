@@ -46,6 +46,8 @@ jobs:
       inputs:
         versionSpec: ${{ parameters.nodeVersion }}
         checkLatest: true
+    # Write the installed version to the command line
+    - script: which node
 
     - bash: node -p process.arch
       displayName: get current arch
