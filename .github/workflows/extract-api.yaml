@@ -9,8 +9,8 @@ on:
       - master
       - release/*
     paths-ignore:
-      - "**/*.md"
-      - docs/*
+      - '**.md'
+      - docs/**
 
 jobs:
   extract-api:

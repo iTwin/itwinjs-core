@@ -7,8 +7,8 @@ trigger:
       - release/*
   paths:
     exclude:
-      - "**/*.md"
-      - docs/*
+      - '**.md'
+      - docs/**
 
 pr:
   autoCancel: true
@@ -19,8 +19,8 @@ pr:
       - release/*
   paths:
     exclude:
-      - "**/*.md"
-      - docs/*
+      - '**.md'
+      - docs/**
 
 jobs:
   - template: ci-core.yaml
