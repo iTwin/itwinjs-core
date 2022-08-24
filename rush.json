@@ -3,6 +3,7 @@
   "rushVersion": "5.58.0",
   "pnpmVersion": "6.24.4",
   "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
+  "suppressNodeLtsWarning": true,
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
