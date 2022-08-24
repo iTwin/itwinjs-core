@@ -44,26 +44,24 @@ jobs:
       displayName: get current arch using node
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    - bash: |
-        arch -arm64 /bin/zsh
-      displayName: force arm arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    # - bash: |
+    #     arch -arm64 /bin/zsh
+    #   displayName: force arm arch
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    - bash: uname -m
-      displayName: get current arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    # - bash: uname -m
+    #   displayName: get current arch
+    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: UseNode@1
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
         version: 16.17.0
         checkLatest: true
+      condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+
     # Write the installed version to the command line
     - script: which node
-
-    - bash: node -p process.arch
-      displayName: get current arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - script: |
         git config --local user.email imodeljs-admin@users.noreply.github.com
