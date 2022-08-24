@@ -280,6 +280,8 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
+alpha;PropertyStore
+alpha;PropertyStore
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -339,6 +341,7 @@ internal;CloudCache = IModelJsNative.CloudCache
 internal;CloudContainer = IModelJsNative.CloudContainer
 internal;CloudPrefetch = IModelJsNative.CloudPrefetch
 internal;LockAndOpenArgs
+internal;ObtainLockParams
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType
