@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -26,6 +26,7 @@ export class PresentationManagerDetail implements IDisposable {
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _updatesTracker: UpdatesTracker | undefined;
   private _onManagerUsed: (() => void) | undefined;
+  private _diagnosticsCallback: DiagnosticsCallback | undefined;
 
   public rulesets: RulesetManager;
   public activeLocale: string | undefined;
@@ -73,6 +74,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     this._onManagerUsed = undefined;
     this.rulesets = new RulesetManagerImpl(getNativePlatform);
+    this._diagnosticsCallback = params.diagnosticsCallback;
   }
 
   public dispose(): void {
@@ -153,7 +155,12 @@ export class PresentationManagerDetail implements IDisposable {
     }
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
-    diagnosticsListener && response.diagnostics && diagnosticsListener({ logs: [response.diagnostics] });
+    if (response.diagnostics) {
+      const logs = { logs: [response.diagnostics] };
+      diagnosticsListener && diagnosticsListener(logs);
+      this._diagnosticsCallback && this._diagnosticsCallback(logs);
+    }
+
     return response.result;
   }
 }

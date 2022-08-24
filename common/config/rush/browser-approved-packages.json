@@ -316,7 +316,7 @@
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/presentation-components",
@@ -369,6 +369,18 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "@opentelemetry/resources",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace-base",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/semantic-conventions",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@playwright/test",
