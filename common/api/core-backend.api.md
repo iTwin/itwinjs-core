@@ -4662,7 +4662,7 @@ export class SQLiteDb implements IDisposable {
     // @internal (undocumented)
     static createBlobIO(): SQLiteDb.BlobIO;
     createDb(dbName: string): void;
-    // @internal (undocumented)
+    // @beta (undocumented)
     createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
     dispose(): void;
     executeSQL(sql: string): DbResult;
@@ -4671,7 +4671,7 @@ export class SQLiteDb implements IDisposable {
     // @internal (undocumented)
     readonly nativeDb: IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
-    // @internal (undocumented)
+    // @beta (undocumented)
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
     // @internal
     prepareSqliteStatement(sql: string, logErrors?: boolean): SqliteStatement;

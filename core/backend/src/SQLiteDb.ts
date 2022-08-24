@@ -38,7 +38,7 @@ export class SQLiteDb implements IDisposable {
    * @param dbName The path to the SQLiteDb file to create.
    */
   public createDb(dbName: string): void;
-  /** @internal */
+  /** @beta */
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
   /** @internal */
   public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
@@ -51,7 +51,7 @@ export class SQLiteDb implements IDisposable {
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
   /**
    * @param container optional CloudContainer holding database
-   * @internal
+   * @beta
    */
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
 
