@@ -282,25 +282,6 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("should clone Model within same iModel", async () => {
-    // Set up the IModelDb with a populated source Subject and an "empty" target Subject
-    const iModelFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
-    const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
-    await BackendTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
-    BackendTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
-    const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
-    assert.isTrue(Id64.isValidId64(sourceSubjectId));
-    const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
-    assert.isTrue(Id64.isValidId64(targetSubjectId));
-    iModelDb.saveChanges();
-    // Import from beneath source Subject into target Subject
-    const transformer = new IModelTransformer(iModelDb, iModelDb);
-    await transformer.processSubject(sourceSubjectId, targetSubjectId);
-    transformer.dispose();
-    iModelDb.saveChanges();
-    iModelDb.close();
-  });
-
   /** @note For debugging/testing purposes, you can use `it.only` and hard-code `sourceFileName` to test cloning of a particular iModel. */
   it("should clone test file", async () => {
     // open source iModel
