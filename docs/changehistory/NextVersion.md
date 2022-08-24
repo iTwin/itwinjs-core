@@ -44,3 +44,16 @@ In case of a backend-only application, localization may be setup by providing a 
 - PresentationManagerProps.defaultLocale
 - PresentationManager.activeLocale
 
+## Restoring Presentation tree state
+
+It is now possible to restore previously saved Presentation tree state on component mount.
+
+```ts
+// Save current tree state
+const { nodeLoader } = usePresentationTreeNodeLoader(args);
+useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
+
+// Restore tree state on component mount
+const seedTreeModel = exampleRetrieveStoredTreeModel();
+const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
+```
