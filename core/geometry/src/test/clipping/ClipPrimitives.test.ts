@@ -748,6 +748,9 @@ describe("ClipPrimitive", () => {
     const clipVector1 = clipVector0.clone();
     const json0 = clipVector0.toJSON();
     const clipVector2 = ClipVector.fromJSON(json0);
+    // console.log(prettyPrint(json0));
+    // const json2 = clipVector2.toJSON();
+    // console.log(prettyPrint(json2));
     for (const cv of [clipVector0, clipVector1, clipVector2]) {
       ck.testTrue(cv.pointInside(Point3d.create(-1, 10)));
       ck.testTrue(cv.pointInside(Point3d.create(0, 0)));
