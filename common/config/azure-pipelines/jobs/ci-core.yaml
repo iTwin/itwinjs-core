@@ -44,10 +44,14 @@ jobs:
     #   displayName: get current arch
     #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    # - bash: |
-    #     arch -arm64 /bin/bash
-    #   displayName: force arm arch
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+    - bash: |
+        arch -arm64 /bin/zsh
+      displayName: force arm arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
+    - bash: uname -m
+      displayName: get current arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: UseNode@1
       displayName: "Use Node ${{ parameters.nodeVersion }}"
