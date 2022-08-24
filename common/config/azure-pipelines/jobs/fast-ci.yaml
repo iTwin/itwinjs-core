@@ -1,8 +1,14 @@
 # iTwin.js Core CI Build
 
 trigger:
-  - master
-  - release/*
+  branches:
+    include:
+      - master
+      - release/*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/*
 
 pr:
   autoCancel: true
