@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
-import { IconInput, WebFontIcon } from "../../../core-react";
+import { IconInput } from "../../../core-react";
+import { classesFromElement } from "../../TestUtils";
 
 describe("IconInput", () => {
-  it("should render", () => {
-    mount(<IconInput icon={<WebFontIcon iconName="icon-placeholder" />} />);
-  });
-
   it("renders correctly", () => {
-    shallow(<IconInput icon={<WebFontIcon iconName="icon-placeholder" />} />).should.matchSnapshot();
+    render(<IconInput icon={<div data-testid="tested" />} />);
+
+    expect(classesFromElement(screen.getByTestId("tested").parentElement)).to.include("core-iconInput-icon");
   });
 });
