@@ -32,8 +32,7 @@ jobs:
       clean: true
       fetchDepth: 0
 
-    - bash: |
-        arch
+    - bash: arch
       displayName: get current arch
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
