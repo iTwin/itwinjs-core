@@ -15,7 +15,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 export namespace CloudSqliteTest {
-  export type TestContainer = SQLiteDb.CloudContainer & { isPublic: boolean };
+  export type TestContainer = CloudSqlite.CloudContainer & { isPublic: boolean };
   export const httpAddr = "127.0.0.1:10000";
   export const storage: CloudSqlite.AccountAccessProps = {
     accessName: "devstoreaccount1",
@@ -45,7 +45,7 @@ export namespace CloudSqliteTest {
   }
 
   export function makeCloudSqliteContainer(containerId: string, isPublic: boolean): TestContainer {
-    const cont = SQLiteDb.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
+    const cont = CloudSqlite.createCloudContainer({ ...storage, containerId, writeable: true, accessToken: "" }) as TestContainer;
     cont.isPublic = isPublic;
     return cont;
   }
@@ -60,7 +60,7 @@ export namespace CloudSqliteTest {
   export function makeCache(name: string) {
     const rootDir = join(IModelHost.cacheDir, name);
     makeEmptyDir(rootDir);
-    return SQLiteDb.createCloudCache({ name, rootDir });
+    return CloudSqlite.createCloudCache({ name, rootDir });
 
   }
   export function makeCaches(names: string[]) {
@@ -79,10 +79,10 @@ export namespace CloudSqliteTest {
       version: "2018-03-28", // note: fails without this value
     }, credential).toString();
   }
-  export function setSasToken(container: SQLiteDb.CloudContainer, permissionFlags: string) {
+  export function setSasToken(container: CloudSqlite.CloudContainer, permissionFlags: string) {
     container.accessToken = makeSasToken(container.containerId, permissionFlags);
   }
-  export async function uploadFile(container: SQLiteDb.CloudContainer, cache: SQLiteDb.CloudCache, dbName: string, localFileName: LocalFileName) {
+  export async function uploadFile(container: CloudSqlite.CloudContainer, cache: CloudSqlite.CloudCache, dbName: string, localFileName: LocalFileName) {
     expect(container.isConnected).false;
     container.connect(cache);
     expect(container.isConnected);
@@ -95,7 +95,7 @@ export namespace CloudSqliteTest {
 }
 
 describe("CloudSqlite", () => {
-  let caches: SQLiteDb.CloudCache[];
+  let caches: CloudSqlite.CloudCache[];
   let testContainers: CloudSqliteTest.TestContainer[];
   let testBimGuid: GuidString;
   const user = "CloudSqlite test";
@@ -305,8 +305,8 @@ describe("CloudSqlite", () => {
     caches[1].destroy();
 
     // closing and then reopening (usually in another session) a cache should preserve its guid (via localstore.itwindb)
-    const newCache1 = SQLiteDb.createCloudCache(wasCache1);
-    const newCache2 = SQLiteDb.createCloudCache(wasCache2);
+    const newCache1 = CloudSqlite.createCloudCache(wasCache1);
+    const newCache2 = CloudSqlite.createCloudCache(wasCache2);
     expect(newCache1.guid).equals(wasCache1.guid);
     expect(newCache2.guid).equals(wasCache2.guid);
     expect(newCache1.guid).not.equals(newCache2.guid);

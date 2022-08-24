@@ -6,9 +6,10 @@
  * @module SQLiteDb
  */
 
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
+import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
@@ -24,18 +25,6 @@ export class SQLiteDb implements IDisposable {
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
   /** @internal */
-  public static createCloudContainer(args: CloudSqlite.ContainerAccessProps): SQLiteDb.CloudContainer {
-    return new IModelHost.platform.CloudContainer(args);
-  }
-  /** @internal */
-  public static createCloudCache(args: CloudSqlite.CacheProps): SQLiteDb.CloudCache {
-    return new IModelHost.platform.CloudCache(args);
-  }
-  /** @internal */
-  public static startCloudPrefetch(container: SQLiteDb.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch {
-    return new IModelHost.platform.CloudPrefetch(container, dbName, args);
-  }
-  /** @internal */
   public static createBlobIO(): SQLiteDb.BlobIO {
     return new IModelHost.platform.BlobIO();
   }
@@ -48,7 +37,11 @@ export class SQLiteDb implements IDisposable {
   /** Create a SQLiteDb
    * @param dbName The path to the SQLiteDb file to create.
    */
-  public createDb(dbName: string, container?: SQLiteDb.CloudContainer, params?: SQLiteDb.CreateParams): void {
+  public createDb(dbName: string): void;
+  /** @beta */
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+  /** @internal */
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
     this.nativeDb.createDb(dbName, container, params);
   }
 
@@ -58,12 +51,12 @@ export class SQLiteDb implements IDisposable {
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
   /**
    * @param container optional CloudContainer holding database
-   * @internal
+   * @beta
    */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
 
   /** @internal */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void {
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void {
     this.nativeDb.openDb(dbName, openMode, container);
   }
 
@@ -124,7 +117,7 @@ export class SQLiteDb implements IDisposable {
    * @return value from operation
    * @internal
    */
-  public async withLockedContainer<T>(args: SQLiteDb.LockAndOpenArgs, operation: () => T) {
+  public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => T) {
     return CloudSqlite.withWriteLock(args.user, args.container, () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
   }
 
@@ -232,22 +225,61 @@ export class SQLiteDb implements IDisposable {
 
 /** @public */
 export namespace SQLiteDb {
-  /** A CloudSqlite container that may be connected to a CloudCache.
+  /** interface for reading and writing to a blob in a SQLiteDb
    * @internal
    */
-  export type CloudContainer = IModelJsNative.CloudContainer;
-  /** @internal */
-  export type CloudCache = IModelJsNative.CloudCache;
-  /** @internal */
-  export type CloudPrefetch = IModelJsNative.CloudPrefetch;
-  /** Incremental IO for blobs
-   * @internal
-   */
-  export type BlobIO = IModelJsNative.BlobIO;
+  export interface BlobIO {
+    /** Close this BlobIO if it is opened.
+       * @note this BlobIO *may* be reused after this call by calling `open` again.
+      */
+    close(): void;
+    /** get the total number of bytes in the blob */
+    getNumBytes(): number;
+    /** @return true if this BlobIO was successfully opened and may be use to read or write the blob */
+    isValid(): boolean;
+    /** Open this BlobIO against a table/row/column in a Db */
+    open(
+      /** The database for the blob */
+      db: IModelJsNative.AnyDb,
+      args: {
+        /** the name of the table for the blob*/
+        tableName: string;
+        /** the name of the column for the blob */
+        columnName: string;
+        /** The rowId of the blob */
+        row: number;
+        /** If true, open this BlobIO for write access */
+        writeable?: boolean;
+      }): void;
+    /** Read from a blob
+       * @returns the contents of the requested byte range
+       */
+    read(args: {
+      /** The number of bytes to read */
+      numBytes: number;
+      /** starting offset within the blob to read */
+      offset: number;
+      /** If present and of sufficient size, use this ArrayBuffer for the value. */
+      blob?: ArrayBuffer;
+    }): Uint8Array;
+    /** Reposition this BlobIO to a new rowId
+       * @note this BlobIO must be valid when this methods is called.
+       */
+    changeRow(row: number): void;
+    /** Write to a blob */
+    write(args: {
+      /** The number of bytes to write  */
+      numBytes: number;
+      /** starting offset within the blob to write */
+      offset: number;
+      /** the value to write */
+      blob: ArrayBuffer;
+    }): void;
+  }
 
   /** Default transaction mode for SQLiteDbs.
-     * @see https://www.sqlite.org/lang_transaction.html
-    */
+   * @see https://www.sqlite.org/lang_transaction.html
+   */
   export enum DefaultTxnMode {
     /** no default transaction is started. You must use BEGIN/COMMIT or SQLite will use implicit transactions */
     None = 0,
@@ -268,8 +300,8 @@ export namespace SQLiteDb {
     /** Do not attempt to verify that the file is a valid sQLite file before opening. */
     skipFileCheck?: boolean;
     /** the default transaction mode
-     * @see [[SQLiteDb.DefaultTxnMode]]
-    */
+   * @see [[SQLiteDb.DefaultTxnMode]]
+  */
     defaultTxn?: 0 | 1 | 2 | 3;
     /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */
     queryParam?: string;
@@ -290,36 +322,6 @@ export namespace SQLiteDb {
   /** Parameters for creating a new SQLiteDb */
   export type CreateParams = OpenOrCreateParams & PageSize;
 
-  /** Parameters used to obtain the write lock on a cloud container
-   * @internal
-   */
-  export interface ObtainLockParams {
-    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
-    user?: string;
-    /** number of times to retry in the event the lock currently held by someone else.
-   * After this number of attempts, `onFailure` is called. Default is 20.
-   */
-    nRetries: number;
-    /** Delay between retries, in milliseconds. Default is 100. */
-    retryDelayMs: number;
-    /** function called if lock cannot be obtained after all retries. It is called with the name of the user currently holding the lock and
-   * generally is expected that the user will be consulted whether to wait further.
-   * If this function returns "stop", an exception will be thrown. Otherwise the retry cycle is restarted. */
-    onFailure?: CloudSqlite.WriteLockBusyHandler;
-  }
-
-  /** @internal */
-  export interface LockAndOpenArgs {
-    /** the name to be displayed in the event of lock collisions */
-    user: string;
-    /** the name of the database within the container */
-    dbName: string;
-    /** the CloudContainer on which the operation will be performed */
-    container: SQLiteDb.CloudContainer;
-    /** if present, function called when the write lock is currently held by another user. */
-    busyHandler?: CloudSqlite.WriteLockBusyHandler;
-  }
-
   /** Arguments for `SqliteDb.withOpenDb` */
   export interface WithOpenDbArgs {
     /** The name of the database to open */
@@ -327,7 +329,7 @@ export namespace SQLiteDb {
     /** either an object with the open parameters or just OpenMode value. */
     openMode?: OpenMode | SQLiteDb.OpenParams;
     /** @internal */
-    container?: SQLiteDb.CloudContainer;
+    container?: CloudSqlite.CloudContainer;
   }
 
   /** Arguments for `SQLiteDb.vacuum` */
