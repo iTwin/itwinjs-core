@@ -19,12 +19,9 @@ const ecPresentation = require("../assets/locales/en/ECPresentation.json"); // e
 const rulesEngine = require("../assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
 
-/**
- * @alpha
- */
+/** @internal */
 export function getLocalizedStringEN(key: string) {
-  const namespace = key.split(":", 2)[0];
-  const identifier = key.split(":", 2)[1];
+  const [namespace, identifier] = key.split(":", 2);
   if (namespace === "ECPresentation") {
     return ecPresentation[identifier];
   }
