@@ -3,122 +3,75 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as ReactAutosuggest from "react-autosuggest";
-import { fireEvent, render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Logger } from "@itwin/core-bentley";
-import { SpecialKey } from "@itwin/appui-abstract";
 import { AutoSuggest, AutoSuggestData } from "../../core-react";
-import TestUtils from "../TestUtils";
 
 describe("AutoSuggest", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
+
   const options: AutoSuggestData[] = [
     { value: "abc", label: "label" },
     { value: "def", label: "label2" },
     { value: "ghi", label: "label3" },
   ];
 
-  const getInputElement = (wrapper: ReactWrapper): HTMLInputElement => {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    return wrapper.getDOMNode() as HTMLInputElement;
-  };
-
-  it("renders", () => {
-    const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />);
-
-    expect(wrapper.find("input[type='text']").length).to.eq(1);
-    wrapper.unmount();
-  });
-
   it("should update the input value when props change", () => {
-    const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />);
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { rerender} = render(<AutoSuggest options={options} onSuggestionSelected={()=>{}} />);
 
-    wrapper.setProps({ value: "abc" });
-    expect(autoSuggest.state().inputValue).to.eq("label");
-
-    wrapper.unmount();
+    rerender(<AutoSuggest options={options} onSuggestionSelected={()=>{}} value={"abc"}/>);
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("label");
   });
 
-  it("should update the input value when input changes", () => {
-    const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />);
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+  it("should update the input value when input changes", async () => {
+    render(<AutoSuggest options={options} onSuggestionSelected={()=>{}} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    const value = "label";
-    input.simulate("change", { target: { value } });
-    expect(autoSuggest.state().inputValue).to.eq(value);
-
-    wrapper.unmount();
+    await theUserTo.type(screen.getByRole("textbox"), "label");
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("label");
   });
 
   it("should open suggestions when typing", async () => {
-    const spyMethod = sinon.spy();
-    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} /></div>);
+    render(<div><AutoSuggest options={options} onSuggestionSelected={()=>{}} /></div>);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
+    await theUserTo.type(screen.getByRole("textbox"), "abc");
+    expect(screen.getByRole("option", {name:"label"})).to.exist;
 
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
+    await theUserTo.type(screen.getByRole("textbox"), "[Backspace>3/]lab");
+    expect(screen.getByRole("option", {name:"label"})).to.exist;
+    expect(screen.getByRole("option", {name:"label2"})).to.exist;
+    expect(screen.getByRole("option", {name:"label3"})).to.exist;
 
-    let li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(1);
-
-    fireEvent.change(inputNode, { target: { value: "lab" } });
-    await TestUtils.flushAsyncOperations();
-
-    li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(3);
-
-    fireEvent.change(inputNode, { target: { value: "" } });
-    await TestUtils.flushAsyncOperations();
-
-    li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(0);
+    await theUserTo.clear(screen.getByRole("textbox"));
+    expect(screen.queryAllByRole("option")).to.be.empty;
   });
 
   it("should call onSuggestionSelected with clicked suggestion", async () => {
     const spyMethod = sinon.spy();
-    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} /></div>);
+    render(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
-
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-
-    const li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(1);
-
-    fireEvent.click(li[0]);
+    await theUserTo.type(screen.getByRole("textbox"), "abc");
+    await theUserTo.click(screen.getByRole("option", {name: "label"}));
     spyMethod.calledOnce.should.true;
   });
 
-  const getSuggestions = (value: string): AutoSuggestData[] => {
-    const inputValue = value.trim().toLowerCase();
+  const getSuggestions = (input: string): AutoSuggestData[] => {
+    const inputValue = input.trim().toLowerCase();
     const inputLength = inputValue.length;
 
-    return inputLength === 0 ? [] : options.filter((data: AutoSuggestData) => {
-      return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
-    });
+    return inputLength === 0 ? [] : options
+      .map(({value, label}) => ({
+        value: value.split("").reverse().join(""),
+        label: label.toUpperCase(),
+      })).filter((data: AutoSuggestData) => {
+        return data.label.toLowerCase().includes(inputValue) || data.value.toLowerCase().includes(inputValue);
+      });
   };
 
   const getSuggestionsAsync = async (value: string): Promise<AutoSuggestData[]> => {
@@ -134,212 +87,116 @@ describe("AutoSuggest", () => {
   };
 
   it("should support options function and getLabel", async () => {
-    const spyMethod = sinon.spy();
-    const { container } = render(<div><AutoSuggest options={getSuggestions} getLabel={getLabel} onSuggestionSelected={spyMethod} /></div>);
+    render(<AutoSuggest options={getSuggestions} getLabel={getLabel} onSuggestionSelected={()=>{}} />);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
+    await theUserTo.type(screen.getByRole("textbox"), "cba");
 
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-
-    const li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(1);
+    expect(screen.getByRole("option", {name: "LABEL"})).to.exist;
   });
 
   it("should support getSuggestions prop", async () => {
-    const spyMethod = sinon.spy();
-    const { container } = render(<div><AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} /></div>);
+    render(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={()=>{}} />);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
+    await theUserTo.type(screen.getByRole("textbox"), "cba");
 
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-
-    const li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(1);
+    expect(screen.getByRole("option", {name: "LABEL"})).to.exist;
   });
 
   it("should support renderInputComponent prop", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyInput = sinon.spy();
     const renderInput = (inputProps: ReactAutosuggest.InputProps<AutoSuggestData>): React.ReactNode => {
       const { onChange, ...otherProps } = inputProps;
       return (
-        <input type="text"
+        <input type="text" role="searchbox"
           onChange={(event) => { onChange(event, { newValue: event.target.value, method: "type" }); spyInput(); }}
           {...otherProps}
         />
       );
     };
 
-    const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} renderInputComponent={renderInput} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={()=>{}} renderInputComponent={renderInput} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
+    await theUserTo.type(screen.getByRole("searchbox"), "cba");
     expect(spyInput.called).to.be.true;
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
   });
 
   it("should support onSuggestionsClearRequested prop", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
-    const spyMethod = sinon.spy();
     const spyClear = sinon.spy();
-    const wrapper = mount(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} onSuggestionsClearRequested={spyClear} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={()=>{}} onSuggestionsClearRequested={spyClear} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-
-    input.simulate("change", { target: { value: "" } });
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
+    await theUserTo.type(screen.getByRole("textbox"), "cba");
+    await theUserTo.type(screen.getByRole("textbox"), "[Backspace>3/]");
     expect(spyClear.called).to.be.true;
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
   });
 
   it("should log Error when options function provided but not getLabel", async () => {
-    const spyMethod = sinon.spy();
     const spyLogger = sinon.spy(Logger, "logError");
-    const { container } = render(<div><AutoSuggest options={getSuggestions} onSuggestionSelected={spyMethod} /></div>);
+    render(<AutoSuggest options={getSuggestions} onSuggestionSelected={() => {}} />);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
-
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-
-    const li = container.querySelectorAll("li");
-    expect(li).not.to.be.null;
-    expect(li?.length).to.eq(1);
-
+    await theUserTo.type(screen.getByRole("textbox"), "cba");
+    expect(screen.getByRole("option", {name: "LABEL"}));
     spyLogger.called.should.true;
+
     (Logger.logError as any).restore();
   });
 
   it("should log Error when no options or getSuggestions provided", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
-    const spyMethod = sinon.spy();
     const spyLogger = sinon.spy(Logger, "logError");
-    const wrapper = mount(<AutoSuggest onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest onSuggestionSelected={()=>{}} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
-
+    await theUserTo.type(screen.getByRole("textbox"), "abc");
+    expect(screen.queryByRole("option")).to.be.null;
     spyLogger.called.should.true;
     (Logger.logError as any).restore();
   });
 
-  it("should invoke onPressEnter", () => {
-    const spyMethod = sinon.spy();
+  it("should invoke onPressEnter", async () => {
     const spyEnter = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} onPressEnter={spyEnter} />);
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest options={options} onSuggestionSelected={()=>{}} onPressEnter={spyEnter} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    input.simulate("keydown", { key: SpecialKey.Enter });
+    await theUserTo.type(screen.getByRole("textbox"), "[Enter]");
     expect(spyEnter.called).to.be.true;
-
-    wrapper.unmount();
   });
 
-  it("should invoke onPressEscape", () => {
-    const spyMethod = sinon.spy();
+  it("should invoke onPressEscape", async () => {
     const spyEscape = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} onPressEscape={spyEscape} />);
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest options={options} onSuggestionSelected={() => {}} onPressEscape={spyEscape} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    input.simulate("keydown", { key: SpecialKey.Escape });
+    await theUserTo.type(screen.getByRole("textbox"), "[Escape]");
     expect(spyEscape.called).to.be.true;
-
-    wrapper.unmount();
   });
 
-  it("should invoke onPressTab", () => {
-    const spyMethod = sinon.spy();
+  it("should invoke onPressTab", async () => {
     const spyTab = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} onPressTab={spyTab} />);
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    render(<AutoSuggest options={options} onSuggestionSelected={() =>{}} onPressTab={spyTab} />);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
-
-    input.simulate("keydown", { key: SpecialKey.Tab });
+    await theUserTo.type(screen.getByRole("textbox"), "[Tab]");
     expect(spyTab.called).to.be.true;
-
-    wrapper.unmount();
   });
 
   it("should invoke onInputFocus", async () => {
-
-    const spyMethod = sinon.spy();
     const spyFocus = sinon.spy();
-    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} onInputFocus={spyFocus} /></div>);
+    render(<AutoSuggest options={options} onSuggestionSelected={()=>{}} onInputFocus={spyFocus} />);
 
-    const input = container.querySelector("input");
-    expect(input).not.to.be.null;
-
-    const inputNode: HTMLElement = input!;
-    fireEvent.focusIn(inputNode);
-
+    await theUserTo.click(screen.getByRole("textbox"));
     expect(spyFocus.called).to.be.true;
   });
 
+  it("should handle unmounting before end of request", async () => {
+    const spyMethod = sinon.spy();
+    let resolver = (_: AutoSuggestData[] | PromiseLike<AutoSuggestData[]>) => {};
+    const suggestion = new Promise<AutoSuggestData[]>((resolve) => {
+      resolver = resolve;
+    });
+    const spySuggester = sinon.fake(async () => suggestion);
+
+    const {unmount} = render(<AutoSuggest getSuggestions={spySuggester} onSuggestionSelected={spyMethod} />);
+
+    await theUserTo.type(screen.getByRole("textbox"), "abc");
+
+    unmount();
+    resolver([]);
+    expect(spySuggester).to.have.been.called;
+    expect(spyMethod).not.to.have.been.called;
+  });
 });

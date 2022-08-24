@@ -2,32 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+/* eslint-disable deprecation/deprecation */
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { LeadingText2 } from "../../core-react";
 
-/* eslint-disable deprecation/deprecation */
-
 describe("<LeadingText2 />", () => {
-  it("should render", () => {
-    mount(<LeadingText2 />);
-  });
   it("renders correctly", () => {
-    shallow(<LeadingText2 />).should.matchSnapshot();
-  });
+    render(<LeadingText2>Tested content</LeadingText2>);
 
-  it("content renders correctly", () => {
-    shallow(<LeadingText2>Test content</LeadingText2>).should.matchSnapshot();
-  });
-
-  it("has correct className", () => {
-    const wrapper = mount(<LeadingText2 />);
-    wrapper.find(".uicore-text-leading-2").length.should.eq(1);
-  });
-
-  it("has correct text", () => {
-    const wrapper = mount(<LeadingText2>Test Content</LeadingText2>);
-    wrapper.find(".uicore-text-leading-2").text().should.equal("Test Content");
-    wrapper.unmount();
+    expect(screen.getByText("Tested content", {selector: "span.uicore-text-leading-2"})).to.exist;
   });
 });

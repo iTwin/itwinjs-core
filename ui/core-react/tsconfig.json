@@ -3,7 +3,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "jsx": "react",
-    "types": ["sinon-chai", "chai-as-promised", "mocha", "chai-jest-snapshot"]
+    "types": ["sinon-chai", "chai-as-promised", "mocha"]
   },
-  "include": ["./src/**/*.ts*", "src/test/ReactInstance.js"]
+  "include": ["./src/**/*.ts*"]
 }

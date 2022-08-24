@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { findInstance } from "../ReactInstance";
 import * as sinon from "sinon";
 import { SearchBox } from "../../core-react";
 import TestUtils from "../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 describe("SearchBox", () => {
   let fakeTimers: sinon.SinonFakeTimers;
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  const throttleMs = 16;
 
   before(async () => {
     await TestUtils.initializeUiCore();
@@ -20,6 +21,12 @@ describe("SearchBox", () => {
 
   beforeEach(() => {
     fakeTimers = sinon.useFakeTimers();
+    theUserTo = userEvent.setup({
+      advanceTimers:(delay) => {
+        fakeTimers.tick(delay);
+      },
+      delay: throttleMs,
+    });
   });
 
   afterEach(() => {
@@ -27,101 +34,71 @@ describe("SearchBox", () => {
   });
 
   describe("renders", () => {
-    it("should render", () => {
-      const wrapper = mount(<SearchBox onValueChanged={() => { }} placeholder="Search" />);
-      wrapper.unmount();
-    });
-
     it("renders correctly", () => {
-      shallow(<SearchBox onValueChanged={() => { }} />).should.matchSnapshot();
+      render(<SearchBox onValueChanged={() => { }} />);
+
+      expect(screen.getByRole("searchbox")).to.exist;
+      expect(screen.getByRole("button")).to.exist;
     });
   });
 
   describe("track change", () => {
-    it("should call onValueChanged", () => {
+    it("should call onValueChanged", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={spyMethod} />);
-      const inputNode = component.container.querySelector("input") as HTMLElement;
+      render(<SearchBox onValueChanged={spyMethod} />);
 
-      expect(inputNode).not.to.be.null;
-      if (inputNode) {
-        const testValue = "Test";
-        fireEvent.change(inputNode, { target: { value: testValue } });
-        expect(spyMethod.calledOnce).to.be.true;
-      }
+      await theUserTo.type(screen.getByRole("searchbox"), "T");
+      expect(spyMethod).to.be.calledOnce;
     });
 
     it("should ignore if value specified is not different", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
-      const inputNode = component.container.querySelector("input") as HTMLElement;
+      render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={throttleMs*2} />);
 
-      expect(inputNode).not.to.be.null;
-      if (inputNode) {
-        const testValue = "Test";
-        fireEvent.change(inputNode, { target: { value: testValue } });
-        fireEvent.change(inputNode, { target: { value: "" } });
-        await fakeTimers.tickAsync(100);
-        expect(spyMethod.called).to.be.false;
-      }
+      await theUserTo.type(screen.getByRole("searchbox"), "T[Backspace]");
+      fakeTimers.tick(throttleMs*3);
+      expect(spyMethod).not.to.be.called;
     });
 
     it("should honor valueChangedDelay", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
-      const inputNode = component.container.querySelector("input") as HTMLElement;
+      render(<SearchBox onValueChanged={spyMethod} valueChangedDelay={100} />);
 
-      expect(inputNode).not.to.be.null;
-      if (inputNode) {
-        const testValue = "Test";
-        fireEvent.change(inputNode, { target: { value: testValue } });
-
-        await fakeTimers.tickAsync(1);
-        expect(spyMethod.called).to.be.false;
-        await fakeTimers.tickAsync(100);
-        expect(spyMethod.calledOnce).to.be.true;
-      }
+      await theUserTo.type(screen.getByRole("searchbox"), "Test"); // 16ms / letter => 64ms
+      expect(spyMethod.called).to.be.false;
+      await fakeTimers.tickAsync(100);
+      expect(spyMethod.calledOnce).to.be.true;
     });
 
-    it("should call onEscPressed", () => {
+    it("should call onEscPressed", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={() => { }} onEscPressed={spyMethod} />);
-      const inputNode = component.container.querySelector("input") as HTMLElement;
+      render(<SearchBox onValueChanged={() => { }} onEscPressed={spyMethod} />);
 
-      expect(inputNode).not.to.be.null;
-      if (inputNode) {
-        fireEvent.keyDown(inputNode, { key: "Escape" });
-        expect(spyMethod.calledOnce).to.be.true;
-      }
+      await theUserTo.type(screen.getByRole("searchbox"), "[Escape]");
+      expect(spyMethod.calledOnce).to.be.true;
     });
 
-    it("should call onEnterPressed", () => {
+    it("should call onEnterPressed", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={() => { }} onEnterPressed={spyMethod} />);
-      const inputNode = component.container.querySelector("input") as HTMLElement;
+      render(<SearchBox onValueChanged={() => { }} onEnterPressed={spyMethod} />);
 
-      expect(inputNode).not.to.be.null;
-      if (inputNode) {
-        fireEvent.keyDown(inputNode, { key: "Enter" });
-        expect(spyMethod.calledOnce).to.be.true;
-      }
+      await theUserTo.type(screen.getByRole("searchbox"), "[Enter]");
+      expect(spyMethod.calledOnce).to.be.true;
     });
 
-    it("should call onClear", () => {
+    it("should call onClear", async () => {
       const spyMethod = sinon.spy();
-      const component = render(<SearchBox onValueChanged={() => { }} onClear={spyMethod} initialValue="Test" />);
+      render(<SearchBox onValueChanged={() => { }} onClear={spyMethod} initialValue="Test" />);
 
-      const buttonNode = component.container.querySelector("div.core-searchbox-button") as HTMLElement;
-      expect(buttonNode).not.to.be.null;
-
-      fireEvent.click(buttonNode);
+      await theUserTo.click(screen.getByRole("button"));
       expect(spyMethod.calledOnce).to.be.true;
     });
 
     it("should set focus to input", () => {
-      const { getByTestId } = render(<SearchBox onValueChanged={() => { }} placeholder="Search" />);
-      findInstance(getByTestId("core-searchbox-instance")).focus();
-      const inputElement = getByTestId("core-searchbox-input");
+      const searchBox = React.createRef<SearchBox>();
+      render(<SearchBox ref={searchBox} onValueChanged={() => { }} placeholder="Search" />);
+      searchBox.current?.focus();
+      const inputElement = screen.getByRole("searchbox");
       const focusedElement = document.activeElement;
       expect(inputElement).to.eq(focusedElement);
     });
