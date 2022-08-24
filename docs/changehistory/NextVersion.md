@@ -30,9 +30,9 @@ It will still perform the old behavior synchronously until it is removed. It wil
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
 
-# Presentation
+## Presentation
 
-## Localization Changes
+### Localization Changes
 
 Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
 
