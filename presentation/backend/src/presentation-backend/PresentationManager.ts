@@ -209,7 +209,7 @@ export interface PresentationManagerProps {
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
    *
-   * @deprecated use getLocalizedString to localize data returned by PresentationManager
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   localeDirectories?: string[];
 
@@ -217,7 +217,7 @@ export interface PresentationManagerProps {
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
    *
-   * @deprecated use getLocalizedString to localize data returned by PresentationManager
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   defaultLocale?: string;
 
@@ -301,7 +301,11 @@ export interface PresentationManagerProps {
   /** @internal */
   addon?: NativePlatformDefinition;
 
-  /** @alpha */
+  /**
+   * Localization function when only backend is used.
+   *
+   * @beta
+  */
   getLocalizedString?: (key: string) => string;
 }
 
@@ -318,7 +322,7 @@ export class PresentationManager {
 
   /**
    * Get / set active locale used for localizing presentation data
-   * @deprecated use getLocalizedString
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   public activeLocale: string | undefined;
 
@@ -590,13 +594,6 @@ export class PresentationManager {
     return JSON.parse(await this._detail.request(params), reviver);
   }
 }
-
-/** @internal */
-export const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
-  if (descriptorOrOverrides instanceof Descriptor)
-    return descriptorOrOverrides.createDescriptorOverrides();
-  return descriptorOrOverrides;
-};
 
 const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
 async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {

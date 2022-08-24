@@ -31,7 +31,7 @@ export function getLocalizedStringEN(key: string) {
   if (namespace === "RulesEngine") {
     return rulesEngine[identifier];
   }
-  return `@${key}@`;
+  return key;
 }
 
 /** @internal */

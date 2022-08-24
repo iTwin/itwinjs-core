@@ -208,27 +208,26 @@ describe("LocalizationHelper", () => {
 });
 
 describe("getLocalizedStringEN", () => {
-  let localizationHelper: LocalizationHelper;
-
-  beforeEach(() => {
-    localizationHelper = new LocalizationHelper({ getLocalizedString: getLocalizedStringEN });
-  });
 
   it("translates from RulesEngine", () => {
-    const key = "@RulesEngine:LABEL_General_NotSpecified@";
-    expect(getLocalizedStringEN(@RulesEngine:LABEL_General_NotSpecified@)).to.be.eq("Not specified");
+    expect(getLocalizedStringEN("RulesEngine:LABEL_General_NotSpecified")).to.be.eq("Not specified");
+    expect(getLocalizedStringEN("RulesEngine:LABEL_General_Other")).to.be.eq("Other");
+    expect(getLocalizedStringEN("RulesEngine:LABEL_General_Varies")).to.be.eq("Varies");
+    expect(getLocalizedStringEN("RulesEngine:LABEL_General_MultipleInstances")).to.be.eq("Multiple items");
   });
 
   it("translates from ECPresentation", () => {
-    const key = "@ECPresentation:LABEL_Category_General@";
-    const translated = localizationHelper.getLocalizedString(key);
-    expect(translated).to.be.eq("General");
+    expect(getLocalizedStringEN("ECPresentation:LABEL_General_DisplayLabel")).to.be.eq("Label");
+    expect(getLocalizedStringEN("ECPresentation:LABEL_Category_General")).to.be.eq("General");
+    expect(getLocalizedStringEN("ECPresentation:LABEL_Category_Favorite")).to.be.eq("Favorite");
+    expect(getLocalizedStringEN("ECPresentation:FIELD_LABEL_DisplayLabel")).to.be.eq("Label");
+    expect(getLocalizedStringEN("ECPresentation:CATEGORY_LABEL_SelectedItems")).to.be.eq("Selected Item(s)");
+    expect(getLocalizedStringEN("ECPresentation:CATEGORY_DESCRIPTION_SelectedItems")).to.be.eq("Contains properties of selected item(s)");
+    expect(getLocalizedStringEN("ECPresentation:ERROR_General_Unknown")).to.be.eq("Unknown error");
   });
 
   it("does not translate if key not found", () => {
-    const key = "@wrong:Label@";
-    const translated = localizationHelper.getLocalizedString(key);
-    expect(translated).to.be.eq("@wrong:Label@");
+    expect(getLocalizedStringEN("wrong:Label")).to.be.eq("wrong:Label");
   });
 
 });

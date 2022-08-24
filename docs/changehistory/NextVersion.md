@@ -29,3 +29,13 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
+
+# Presentation localization changes
+
+Previosly localization of data produced using Presentation Rules was done on backend and on frontend. Localization on backend was dropped in favor of localization on frontend. This removes requirement to supply localization assets with backend. In case only backend is used and localization is required it can be setup by providing [localization implemenation during presentation backend initialization](../presentation/advanced/Localization.md)
+
+Deprecated APIs:
+
+  - PresentationManagerProps.localeDirectories
+  - PresentationManagerProps.defaultLocale
+  - PresentationManager.activeLocale

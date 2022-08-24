@@ -17,7 +17,7 @@ import {
   createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
-import { createContentDescriptorOverrides, HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
+import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsHandler, BackendDiagnosticsOptions, getElementKey } from "./Utils";
@@ -131,7 +131,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, cancelEvent, ...strippedParams } = params;
+    const { requestId, imodel, unitSystem, diagnostics, cancelEvent, ...strippedParams } = params;
     this._onManagerUsed?.();
 
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
@@ -505,3 +505,9 @@ function toNativeUnitSystem(unitSystem: UnitSystemKey): NativePresentationUnitSy
 function collateAssetDirectories(mainDirectory: string, additionalDirectories: string[]): string[] {
   return [...new Set([mainDirectory, ...additionalDirectories])];
 }
+
+const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
+  if (descriptorOrOverrides instanceof Descriptor)
+    return descriptorOrOverrides.createDescriptorOverrides();
+  return descriptorOrOverrides;
+};
