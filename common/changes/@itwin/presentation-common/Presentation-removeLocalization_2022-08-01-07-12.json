@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Added 'getLocalizedStringEN' function for localizing common Presentation strings to english",
+      "comment": "",
       "type": "none"
     }
   ],
