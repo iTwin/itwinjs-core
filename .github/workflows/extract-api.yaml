@@ -8,6 +8,9 @@ on:
     branches:
       - master
       - release/*
+    paths-ignore:
+      - "**/*.md"
+      - docs/*
 
 jobs:
   extract-api:
