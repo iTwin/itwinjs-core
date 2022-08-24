@@ -32,12 +32,12 @@ jobs:
       clean: true
       fetchDepth: 0
 
-    - script: |
+    - bash: |
         arch
       displayName: get current arch
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
-    - script: |
+    - bash: |
         arch -arm64
       displayName: force arm arch
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
