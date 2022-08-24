@@ -30,7 +30,11 @@ jobs:
   steps:
     - checkout: self
       clean: true
-      fetchDepth: 0
+      fetchDepth: 1
+
+    - bash: /usr/bin/arch
+      displayName: get current arch
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     # - bash: node -p process.arch
     #   displayName: get current arch
