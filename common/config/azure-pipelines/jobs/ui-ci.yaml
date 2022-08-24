@@ -5,7 +5,7 @@ trigger:
     include:
       - ui/new-ci-job
   paths:
-    include
+    include:
       - ui
 
 pr:
