@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import UIKit
+import IModelJsNative
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
