@@ -113,7 +113,6 @@
 				415D587D23E37F5200907B7B /* Frameworks */,
 				415D587E23E37F5200907B7B /* Resources */,
 				415D58A023E38DCB00907B7B /* Embed Libraries */,
-				415D58A323E38E1900907B7B /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -177,26 +176,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		415D58A323E38E1900907B7B /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\nProjectDir=\"$PROJECT_DIR\";\n\n# iModelJsNative Assets folder\nrm -rf $AppBundleRoot/iModelJsNative\nmkdir $AppBundleRoot/iModelJsNative\ncp -L -R $OutRoot$BuildArchitecture/Product/iModelJsHost/Assets $AppBundleRoot/iModelJsNative\n# cp $AssetRoot/backend/assets/test.bim $AppBundleRoot/iModelJsNative/Assets/\n\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		415D587C23E37F5200907B7B /* Sources */ = {
@@ -355,18 +334,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
@@ -385,18 +357,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
