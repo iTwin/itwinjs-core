@@ -9,6 +9,10 @@ steps:
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
+  - bash: |
+      where node
+      where python
+    displayName: get paths
   - task: PythonScript@0
     displayName: "rush change -v"
     inputs:
