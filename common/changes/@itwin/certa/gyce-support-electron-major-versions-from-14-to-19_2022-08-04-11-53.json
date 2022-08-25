@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "Add support for Electron versions 15, 16, and 17.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

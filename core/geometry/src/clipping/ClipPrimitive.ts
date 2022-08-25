@@ -106,8 +106,8 @@ export type ClipPrimitiveProps = ClipPrimitivePlanesProps | ClipPrimitiveShapePr
  *       * isMask === true means the plane sets should cover the outside of its polygon.
  *  * Note that the ClipShape's `isMask` property and the ClipPrimitive's `isInvisible` property are distinct controls.
  *     * In normal usage, callers get "outside" clip behavior using ONLY the ClipShape isMask property.
- *     * The ClipShape happens to pass the _invisible bit down to ClipPlane's that it creates.
- *         * At that level, it controls whether the cut edges are produce on the plane
+ *     * The ClipShape happens to pass the _invisible bit down to ClipPlanes that it creates.
+ *         * At that level, the flag controls whether the cut edges are produced on the plane
  *         * This seems like an confused overloading of the meaning.
  * @public
  */
@@ -131,7 +131,7 @@ export class ClipPrimitive implements Clipper{
   /**
    * Create a ClipPrimitive, capturing the supplied plane set as the clip planes.
    * @param planes clipper
-   * @param isInvisible true to invert sense of the test
+   * @param isInvisible set the invisible flag on the ClipPrimitive
    */
   public static createCapture(planes: UnionOfConvexClipPlaneSets | ConvexClipPlaneSet | undefined, isInvisible: boolean = false): ClipPrimitive {
     let planeData;
