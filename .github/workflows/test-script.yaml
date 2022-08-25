@@ -17,7 +17,7 @@ on:
       - docs/docs_temp.md
 
 jobs:
-  extract-api:
+  echo-test:
     runs-on: ubuntu-latest
     steps:
       - name: Echo test
