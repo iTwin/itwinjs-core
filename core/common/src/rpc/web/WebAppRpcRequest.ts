@@ -91,7 +91,7 @@ export class WebAppRpcRequest extends RpcRequest {
     }
 
     if (!request.id) {
-      throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
+      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Missing required activity ID.`);
     }
 
     return request;
