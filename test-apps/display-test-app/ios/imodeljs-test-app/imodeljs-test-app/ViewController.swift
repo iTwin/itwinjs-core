@@ -5,13 +5,14 @@
 
 import UIKit
 import WebKit
+import IModelJsNative
 
 class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDocumentPickerDelegate {
     private var webView : WKWebView? = nil
 
 
     func setupBackend () {
-        let host = IModelJsHost.sharedInstance() as! IModelJsHost
+        let host = IModelJsHost.sharedInstance()
         let bundlePath = Bundle.main.bundlePath;
         let mainPath = bundlePath.appending ("/Assets/main.js");
         let main = URL(fileURLWithPath: mainPath);
