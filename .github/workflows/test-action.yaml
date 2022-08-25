@@ -9,10 +9,8 @@ on:
     branches:
       - actions-pipeline-test
     paths-ignore:
-      # - "**.md"
-      # - "**/*.md"
-      # - docs
-      - docs/docs_temp.md
+      - "**.md"
+      - docs
 
 jobs:
   action-echo-test:
