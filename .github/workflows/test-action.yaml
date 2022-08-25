@@ -10,7 +10,7 @@ on:
       - actions-pipeline-test
     paths-ignore:
       - "**.md"
-      - docs
+      - docs/**
 
 jobs:
   action-echo-test:
