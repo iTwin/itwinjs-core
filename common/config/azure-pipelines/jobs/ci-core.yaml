@@ -7,14 +7,14 @@ jobs:
 - job:
   strategy:
     matrix:
-      # "Windows_${{ parameters.name }}":
-      #   OS: windows-latest
-      #   platform: Windows_NT
-      #   name: $(win_pool)
-      # "Linux_${{ parameters.name }}":
-      #   OS: ubuntu-latest
-      #   platform: Linux
-      #   name: $(linux_pool)
+      "Windows_${{ parameters.name }}":
+        OS: windows-latest
+        platform: Windows_NT
+        name: $(win_pool)
+      "Linux_${{ parameters.name }}":
+        OS: ubuntu-latest
+        platform: Linux
+        name: $(linux_pool)
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
@@ -32,40 +32,19 @@ jobs:
       clean: true
       fetchDepth: 1
 
-    - bash: /usr/bin/arch
-      displayName: get current arch
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
-    - bash: uname -m
-      displayName: get current arch using uname
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
-    - bash: printenv
-      displayName: printenv
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
-    - bash: node -p process.arch
+    - bash: |
+        node -p process.arch
+        node -v
       displayName: get current arch using node
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
-    # - bash: |
-    #     arch -arm64 /bin/zsh
-    #   displayName: force arm arch
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
-
-    # - bash: uname -m
-    #   displayName: get current arch
-    #   condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: UseNode@1
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
-        version: 16.17.0
+        versionSpec: ${{ parameters.nodeVersion }}
         checkLatest: true
+      # We install node16 on our hosted macs so no need to install it
       condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
-
-    # Write the installed version to the command line
-    - script: which node
 
     - script: |
         git config --local user.email imodeljs-admin@users.noreply.github.com
