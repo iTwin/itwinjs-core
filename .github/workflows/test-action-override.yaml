@@ -1,26 +1,22 @@
 # iTwin.js Github Actions Test - if you see this in master... delete it
 
-name: Actions Test
+name: Extract API
 
 on:
   pull_request:
-   branches:
-      - actions-pipeline-test
-    paths-ignore:
-      - "**.md"
-      - docs/**
-  push:
     branches:
-      - actions-pipeline-test
+      - master
+      - release/*
     paths-ignore:
       - "**.md"
       - docs/**
-      - .github/workflows/**
+      - .github/workflows/test-action.yaml
+      - .github/workflows/test-action-override.yaml
 
 jobs:
-  action-echo-test:
+  extract-api:
     runs-on: ubuntu-latest
     steps:
-      - name: Action Echo Test
+      - name: Override extract-api Test
         run: |
           echo this is a test
