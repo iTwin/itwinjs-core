@@ -11,7 +11,6 @@ import {
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -111,28 +110,6 @@ describe("IModelConnection (#integration)", () => {
     assert.instanceOf(viewState.displayStyle, DisplayStyle2dState);
     assert.exists(iModel.projectExtents);
 
-  });
-
-  // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
-  it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
-    let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
-    assert.equal(elementProps.length, 1);
-    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
-    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
-
-    let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.size, 1);
-
-    // Restart Backend!!!
-    await TestRpcInterface.getClient().restartIModelHost();
-
-    elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
-    assert.equal(elementProps.length, 1);
-    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
-    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
-
-    queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.size, 1);
   });
 
   it("should be able to open an IModel with no versions", async () => {
