@@ -48,7 +48,10 @@ steps:
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
-    # condition: ne(variables.PNPM_STORE_RESTORED, 'true')
+    env:
+      RUSH_PNPM_STORE_PATH: common/temp/pnpm-store
+    condition: ne(variables.PNPM_STORE_RESTORED, 'true')
+
   - script: node common/scripts/install-run-rush.js audit
     displayName: rush audit
     workingDirectory: ${{ parameters.workingDir }}
