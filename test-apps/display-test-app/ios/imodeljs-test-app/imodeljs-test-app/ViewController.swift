@@ -65,7 +65,7 @@ class ViewController: UIViewController, WKUIDelegate, WKNavigationDelegate, UIDo
         pickSnapshot()
     }
     
-    func pickSnapshot(){
+    func pickSnapshot() {
         let picker = UIDocumentPickerViewController(documentTypes: ["public.data"], in: .open)
         picker.modalPresentationStyle = .fullScreen
         picker.allowsMultipleSelection = false
