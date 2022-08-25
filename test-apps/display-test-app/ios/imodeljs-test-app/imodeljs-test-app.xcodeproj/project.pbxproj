@@ -112,6 +112,7 @@
 				415D587D23E37F5200907B7B /* Frameworks */,
 				415D587E23E37F5200907B7B /* Resources */,
 				415D58A023E38DCB00907B7B /* Embed Libraries */,
+				5F367F8C28B724C400DED71B /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -174,6 +175,27 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		5F367F8C28B724C400DED71B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		415D587C23E37F5200907B7B /* Sources */ = {
