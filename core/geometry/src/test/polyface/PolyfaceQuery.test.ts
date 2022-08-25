@@ -22,7 +22,12 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-
+import { Transform } from "../../geometry3d/Transform";
+import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
+import { FrameBuilder } from "../../core-geometry";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import {  HalfEdgeMask } from "../../topology/Graph";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -108,7 +113,9 @@ it("PartitionFacetsByConnectivity", () => {
     }
     const polyface = builder.claimPolyface();
     polyface.twoSided = true;
-    const partitionArray = [PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface), PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
+    const partitionArray = [
+      PolyfaceQuery.partitionFacetIndicesByVertexConnectedComponent(polyface),
+      PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent(polyface)];
     const expectedComponentCountArray = [numVertexConnectedComponents, numEdgeConnectedComponents];
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
     y0 = - 2 * numVertexConnectedComponents * a;
@@ -133,6 +140,94 @@ it("PartitionFacetsByConnectivity", () => {
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "PartitionFacetsByConnectivity");
   expect(ck.getNumErrors()).equals(0);
+});
+
+it("ExpandToMaximalPlanarFacetsA", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const builder = PolyfaceBuilder.create();
+  const linestringA = LineString3d.create (
+    [0,0,0],[1,0,0],[2,0,0], [3,0,1],[4,0,0]
+  );
+  const dx = 0;
+  let dy = 1;
+  const linestringB = linestringA.cloneTransformed (Transform.createTranslationXYZ (0,2,0));
+  builder.addGreedyTriangulationBetweenLineStrings (linestringA, linestringB);
+  const polyface = builder.claimPolyface (true);
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+
+  const partitions1 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (polyface, false);
+  PolyfaceQuery.markPairedEdgesInvisible (polyface, Angle.createDegrees (1.0));
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy += 3, 0);
+  const partitions2 = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (polyface, true);
+  ck.testExactNumber (1, partitions1.length, "Simple partitions");
+  ck.testExactNumber (3, partitions2.length, "Planar partitions");
+  dy += 3;
+  for (const partition of [partitions1, partitions2]) {
+    const fragmentPolyfaces = PolyfaceQuery.clonePartitions(polyface, partition);
+    const dzBoundary = 0.25;
+    dy += 3;
+    const ax = 0.0;
+    for (const fragment of fragmentPolyfaces){
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, fragment, ax, dy, 0);
+      const boundary = PolyfaceQuery.boundaryEdges (fragment);
+      GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary, dx, dy, dzBoundary);
+      dy += 2;
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
+    expect(ck.getNumErrors()).equals(0);
+});
+
+it.only("ExpandToMaximalPlanarFacetsWithHole", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const builder = PolyfaceBuilder.create();
+  const zScale = 0.25;
+  let x1Final = 0;
+  let z1Final = 0;
+  for (const x0 of [0,1,2,3,4, 5]){
+    for (const y0 of [0,1,2,3,4]){
+      if (x0 === 1 && y0 === 1){
+      } else if (x0 === 3 && y0 === 2){
+      } else {
+        const x1 = x0 + 1;
+        const y1 = y0 + 1;
+        const z0 = zScale * x0;
+        const z1 = zScale * x1;
+        builder.addPolygon ([Point3d.create (x0, y0, z0), Point3d.create (x1, y0, z1), Point3d.create (x1, y1, z1), Point3d.create (x0, y1, z0)]);
+        x1Final = x1;
+        z1Final = z1;
+      }
+    }
+  }
+  for (const x0 of [x1Final, x1Final + 1]){
+    for (const y0 of [0,1,2,3,4]){
+        const x1 = x0 + 1;
+        const y1 = y0 + 1;
+        builder.addPolygon ([Point3d.create (x0, y0, z1Final),
+          Point3d.create (x1, y0, z1Final),
+          Point3d.create (x1, y1, z1Final),
+          Point3d.create (x0, y1, z1Final)]);
+        x1Final = x1;
+      }
+    }
+
+  const polyface = builder.claimPolyface (true);
+  let dx = 0;
+  let dy = 0;
+  const yStep = 10.0;
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+  const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets (polyface);
+  if (maximalPolyface){
+    PolyfaceQuery.markAllEdgeVisibility(maximalPolyface, true);
+    GeometryCoreTestIO.captureCloneGeometry (allGeometry, maximalPolyface, dx, dy += yStep, 0);
+    dx += 20;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
+    expect(ck.getNumErrors()).equals(0);
 });
 
 it("cloneWithTVertexFixup", () => {

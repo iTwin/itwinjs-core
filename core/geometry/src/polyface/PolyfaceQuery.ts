@@ -11,12 +11,14 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -26,6 +28,9 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { MomentData } from "../geometry4d/MomentData";
 import { UnionFindContext } from "../numerics/UnionFind";
 import { ChainMergeContext } from "../topology/ChainMerge";
+import { HalfEdgeMask } from "../topology/Graph";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../topology/HalfEdgeGraphSearch";
+import { HalfEdgeGraphMerge } from "../topology/Merging";
 import { FacetOrientationFixup } from "./FacetOrientation";
 import { IndexedEdgeMatcher, SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
@@ -278,13 +283,24 @@ export class PolyfaceQuery {
     return badClusters.length === 0;
   }
 
-  /**
+  public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
+    includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
+    const result = new BagOfCurves();
+    const announceEdge = (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number) => {
+       result.tryAddChild (LineSegment3d.create (pointA, pointB));
+};
+    PolyfaceQuery.announceBoundaryEdges (source, announceEdge, includeDanglers, includeMismatch, includeNull);
+    return result;
+  }
+    /**
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
   * @param source
   */
-  public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
-    if (source === undefined)
+    public static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
+      announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number) => void,
+      includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): void{
+      if (source === undefined)
       return undefined;
     const edges = new IndexedEdgeMatcher();
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
@@ -309,7 +325,6 @@ export class PolyfaceQuery {
     if (badList.length === 0)
       return undefined;
     const sourcePolyface = visitor.clientPolyface()!;
-    const result = new BagOfCurves();
     for (const list of badList) {
       for (const e of list) {
         const e1 = e instanceof SortableEdge ? e : e[0];
@@ -318,10 +333,9 @@ export class PolyfaceQuery {
         const pointA = sourcePolyface.data.getPoint(indexA);
         const pointB = sourcePolyface.data.getPoint(indexB);
         if (pointA && pointB)
-          result.tryAddChild(LineSegment3d.create(pointA, pointB));
+        announceEdge (pointA, pointB, indexA, indexB);
+        }
       }
-    }
-    return result;
   }
 
   /** Find segments (within the linestring) which project to facets.
@@ -476,7 +490,62 @@ export class PolyfaceQuery {
     const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, partitionedIndices[visibilitySelect], 1);
     return this.boundaryEdges(visitor, true, false, false);
   }
-
+/**
+ * Return a mesh with
+ *  * clusters of adjacent, coplanar facets merged into larger facets.
+ *  * other facets included unchanged.
+ * @param mesh existing mesh
+ * @returns
+ */
+public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyface | undefined {
+  PolyfaceQuery.markPairedEdgesInvisible (mesh, Angle.createRadians (Geometry.smallAngleRadians));
+  const partitions = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (mesh, true);
+  const builder = PolyfaceBuilder.create ();
+  const visitor = mesh.createVisitor (0);
+  const planarPartitions: number[][] = [];
+  for (const partition of partitions) {
+    if (partition.length === 1){
+      if (visitor.moveToReadIndex (partition[0]))
+        builder.addFacetFromVisitor (visitor);
+      } else {
+      // This is a non-trivial set of contiguous coplanar facets
+        planarPartitions.push (partition);
+      }
+    }
+    const fragmentPolyfaces = PolyfaceQuery.clonePartitions(mesh, planarPartitions);
+    const gapTolerance = 1.0e-4;
+    const planarityTolerance = 1.0e-4;
+    for (const fragment of fragmentPolyfaces){
+      const edges: LineSegment3d[] = [];
+      const edgeStrings: Point3d[][] = [];
+      PolyfaceQuery.announceBoundaryEdges (fragment,
+        (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number)=>{
+          edges.push (LineSegment3d.create (pointA, pointB));
+          edgeStrings.push([pointA.clone (), pointB.clone()]);
+        });
+        const chains = OffsetHelpers.collectChains (edges, gapTolerance, planarityTolerance);
+        if (chains){
+        const frameBuilder = new FrameBuilder ();
+        frameBuilder.announce (chains);
+        const frame = frameBuilder.getValidatedFrame (false);
+        if (frame !== undefined) {
+          const inverseFrame = frame.inverse ();
+          if (inverseFrame !== undefined){
+            inverseFrame.multiplyPoint3dArrayArrayInPlace (edgeStrings);
+              const graph = HalfEdgeGraphMerge.formGraphFromChains (edgeStrings, true, HalfEdgeMask.BOUNDARY_EDGE);
+              if (graph){
+                HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
+                  new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+                // this.purgeNullFaces(HalfEdgeMask.EXTERIOR);
+                const polyface1 = PolyfaceBuilder.graphToPolyface(graph);
+                builder.addIndexedPolyface (polyface1, false, frame);
+                }
+            }
+          }
+        }
+      }
+    return builder.claimPolyface (true);
+    }
   /** Clone the facets in each partition to a separate polyface.
    *
    */
@@ -543,9 +612,9 @@ export class PolyfaceQuery {
   /** Search the facets for facet subsets that are connected with at least edge contact.
    * * Return array of arrays of facet indices.
    */
-  public static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][] {
+  public static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges: boolean = false): number[][] {
     if (polyface instanceof Polyface) {
-      return this.partitionFacetIndicesByEdgeConnectedComponent(polyface.createVisitor(0));
+      return this.partitionFacetIndicesByEdgeConnectedComponent(polyface.createVisitor(0), stopAtVisibleEdges);
     }
     polyface.setNumWrap(1);
     const matcher = new IndexedEdgeMatcher();
@@ -555,7 +624,11 @@ export class PolyfaceQuery {
       const numEdges = polyface.pointCount - 1;
       numFacets++;
       for (let i = 0; i < numEdges; i++) {
-        matcher.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
+        if (stopAtVisibleEdges && polyface.edgeVisible[i]){
+
+        } else {
+          matcher.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
+        }
       }
     }
     const allEdges: SortableEdgeCluster[] = [];
@@ -715,7 +788,7 @@ export class PolyfaceQuery {
           }
         }
       }
-      builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+      builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color, newFacetVisitor.edgeVisible);
     }
 
     return builder.claimPolyface();
@@ -870,7 +943,7 @@ export class PolyfaceQuery {
         }
       }
       if (newFacetVisitor.point.length > 2)
-        builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color);
+        builder.addFacetFromGrowableArrays(newFacetVisitor.point, newFacetVisitor.normal, newFacetVisitor.param, newFacetVisitor.color, newFacetVisitor.edgeVisible);
     }
     return builder.claimPolyface();
   }

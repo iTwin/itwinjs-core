@@ -1428,7 +1428,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * @param normals array of points.  This may contain extra points not to be used in the polygon
    * @param numPointsToUse number of points to use.
    */
-  public addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined, params: GrowableXYArray | undefined, colors: number[] | undefined) {
+  public addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined,
+    params: GrowableXYArray | undefined, colors: number[] | undefined, edgeVisible?: boolean[]) {
     // don't use trailing points that match start point.
     let numPointsToUse = points.length;
     while (numPointsToUse > 1 && Geometry.isSmallMetricDistance(points.distanceIndexIndex(0, numPointsToUse - 1)!))
@@ -1440,10 +1441,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       params = undefined;
     if (colors && colors.length < numPointsToUse)
       colors = undefined;
+    if (edgeVisible && edgeVisible.length < numPointsToUse)
+      edgeVisible = undefined;
     if (!this._reversed) {
       for (let i = 0; i < numPointsToUse; i++) {
         index = this.findOrAddPointInGrowableXYZArray(points, i)!;
-        this._polyface.addPointIndex(index);
+        this._polyface.addPointIndex(index, edgeVisible ? edgeVisible[i] : true);
 
         if (normals) {
           index = this.findOrAddNormalInGrowableXYZArray(normals, i)!;
@@ -1486,7 +1489,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * indices are added (in reverse order if indicated by the builder state)
    */
   public addFacetFromVisitor(visitor: PolyfaceVisitor) {
-    this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color);
+    this.addFacetFromGrowableArrays(visitor.point, visitor.normal, visitor.param, visitor.color, visitor.edgeVisible);
   }
 
   /** Add a polyface, with optional reverse and transform. */

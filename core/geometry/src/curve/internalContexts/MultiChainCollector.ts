@@ -348,7 +348,6 @@ export class OffsetHelpers {
   }
   /**
    * * Restructure curve fragments as chains and offsets
-   * * Return object with named chains, insideOffsets, outsideOffsets
    * * BEWARE that if the input is not a loop the classification of outputs is suspect.
    * @param fragments fragments to be chained
    * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail.
