@@ -10,7 +10,7 @@ import {
   ChangedValueState, ChangeOpCode, ColorDef, IModel, IModelError, IModelVersion, QueryBinder, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement, ElementOwnsChildElements, HubMock, IModelHost, IModelJsFs,
   SpatialCategory,
 } from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
@@ -73,6 +73,7 @@ describe("ChangeSummary", () => {
   let iModelId: GuidString;
 
   before(async () => {
+    HubMock.startup("ChangeSummaryTest", KnownTestLocations.outputDir);
     accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
 
     iTwinId = await HubUtility.getTestITwinId(accessToken);
@@ -83,6 +84,10 @@ describe("ChangeSummary", () => {
     // Purge briefcases that are close to reaching the acquire limit
     const managerRequestContext = await HubUtility.getAccessToken(TestUserType.Manager);
     await HubWrappers.purgeAcquiredBriefcasesById(managerRequestContext, iModelId);
+  });
+
+  after(async () => {
+    HubMock.shutdown();
   });
 
   it("Attach / Detach ChangeCache file to closed imodel", async () => {
