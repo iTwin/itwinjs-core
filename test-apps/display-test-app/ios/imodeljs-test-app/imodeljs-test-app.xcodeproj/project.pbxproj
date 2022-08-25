@@ -13,7 +13,6 @@
 		415D588B23E37F5200907B7B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588923E37F5200907B7B /* Main.storyboard */; };
 		415D588D23E37F5300907B7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 415D588C23E37F5300907B7B /* Assets.xcassets */; };
 		415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588E23E37F5300907B7B /* LaunchScreen.storyboard */; };
-		415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 415D589B23E38D0C00907B7B /* Config.xcconfig */; };
 		415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 415D589923E38CCF00907B7B /* WebKit.framework */; };
 		415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D58B623E4ACAA00907B7B /* AssetHandler.swift */; };
 		F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */ = {isa = PBXBuildFile; productRef = F4A4D85F28A599050015ED63 /* IModelJsNative */; };
@@ -133,7 +132,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Affan Khan";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
@@ -168,7 +167,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */,
 				415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */,
 				415D588D23E37F5300907B7B /* Assets.xcassets in Resources */,
 				415D588B23E37F5200907B7B /* Main.storyboard in Resources */,
@@ -237,6 +235,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -297,6 +296,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -334,6 +334,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -357,6 +358,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
+				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
