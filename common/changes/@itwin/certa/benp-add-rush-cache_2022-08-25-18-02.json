@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/certa",
+      "comment": "add rush-project.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/certa"
+}

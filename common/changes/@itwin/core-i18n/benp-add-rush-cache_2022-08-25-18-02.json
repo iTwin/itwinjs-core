@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-i18n",
+      "comment": "add rush-project.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-i18n"
+}

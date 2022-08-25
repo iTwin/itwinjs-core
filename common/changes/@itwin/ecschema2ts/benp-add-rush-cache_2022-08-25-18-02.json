@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema2ts",
+      "comment": "add rush-project.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema2ts"
+}

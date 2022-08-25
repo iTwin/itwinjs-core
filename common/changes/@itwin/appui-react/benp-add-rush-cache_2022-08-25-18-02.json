@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "add rush-project.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
