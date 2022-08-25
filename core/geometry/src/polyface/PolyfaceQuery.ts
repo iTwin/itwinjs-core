@@ -282,7 +282,14 @@ export class PolyfaceQuery {
     edges.sortAndCollectClusters(undefined, allowSimpleBoundaries ? undefined : badClusters, undefined, badClusters);
     return badClusters.length === 0;
   }
-
+/**
+ * construct a CurveCollection containing boundary edges.
+ * @param source mesh to search
+ * @param includeDanglers
+ * @param includeMismatch
+ * @param includeNull
+ * @returns
+ */
   public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
     includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
     const result = new BagOfCurves();
@@ -295,7 +302,11 @@ export class PolyfaceQuery {
     /**
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
-  * @param source
+  * @param source polyface or visitor
+  * @param announceEdge function to be called with each boundary edge. The annoucement is start and end points and start and end indices.
+  * @param includeDanglers true to in include typical boundary edges with a single incident facet
+  * @param includeMismatch true to include edges with more than 2 incident facets
+  * @param includeNull true to include edges with identical start and end vertex indices.
   */
     public static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
       announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number) => void,

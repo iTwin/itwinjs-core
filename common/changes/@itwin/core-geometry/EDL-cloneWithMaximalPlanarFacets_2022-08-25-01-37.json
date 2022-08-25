@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "New method PolyfaceQuery.cloneWithMaximalPlanarFacets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
