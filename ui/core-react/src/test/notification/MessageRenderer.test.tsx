@@ -2,48 +2,61 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
 import * as React from "react";
 import { MessageRenderer } from "../../core-react/notification/MessageRenderer";
 import { UnderlinedButton } from "../../core-react/button/UnderlinedButton";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 
 describe("MessageRenderer", () => {
 
   describe("Span", () => {
     it("with message text", () => {
-      shallow(<MessageRenderer message="Test" useSpan />).should.matchSnapshot();
+      render(<MessageRenderer message="Test" useSpan />);
+
+      expect(screen.getByText("Test", {selector: "span"})).to.exist;
     });
 
     it("with message HTMLElement", () => {
       const newSpan = document.createElement("span");
       const newContent = document.createTextNode("Test");
       newSpan.appendChild(newContent);
-      shallow(<MessageRenderer message={newSpan} useSpan />).should.matchSnapshot();
+      render(<MessageRenderer message={newSpan} useSpan />);
+
+      expect(screen.getByText("Test", {selector: "span > span"})).to.exist;
     });
 
     it("with React node", () => {
       const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
       const reactMessage = { reactNode };
-      shallow(<MessageRenderer message={reactMessage} useSpan />).should.matchSnapshot();
+      render(<MessageRenderer message={reactMessage} useSpan />);
+
+      expect(screen.getByText(/For more details,.*/, {selector: "span > span"})).to.exist;
     });
   });
 
   describe("Div", () => {
     it("with message text", () => {
-      shallow(<MessageRenderer message="Test" />).should.matchSnapshot();
+      render(<MessageRenderer message="Test" />);
+
+      expect(screen.getByText("Test", {selector: "div"})).to.exist;
     });
 
     it("with message HTMLElement", () => {
       const newSpan = document.createElement("span");
       const newContent = document.createTextNode("Test");
       newSpan.appendChild(newContent);
-      shallow(<MessageRenderer message={newSpan} />).should.matchSnapshot();
+      render(<MessageRenderer message={newSpan} />);
+
+      expect(screen.getByText("Test", {selector: "div > span"})).to.exist;
     });
 
     it("with React node", () => {
       const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
       const reactMessage = { reactNode };
-      shallow(<MessageRenderer message={reactMessage} />).should.matchSnapshot();
+      render(<MessageRenderer message={reactMessage} />);
+
+      expect(screen.getByText(/For more details,.*/, {selector: "div > span"})).to.exist;
     });
   });
 
@@ -53,7 +66,10 @@ describe("MessageRenderer", () => {
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
       anchor.rel = "noopener";
-      shallow(<MessageRenderer message={anchor} />).should.matchSnapshot();
+      anchor.text = "Test";
+      render(<MessageRenderer message={anchor} />);
+
+      expect(screen.getByText("Test", {selector: "a[target=_blank]"})).to.exist;
     });
 
     it("allows target _blank if it has a noreferrer rel", () => {
@@ -61,14 +77,20 @@ describe("MessageRenderer", () => {
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
       anchor.rel = "noreferrer";
-      shallow(<MessageRenderer message={anchor} />).should.matchSnapshot();
+      anchor.text = "Test";
+      render(<MessageRenderer message={anchor} />);
+
+      expect(screen.getByText("Test", {selector: "a[target=_blank]"})).to.exist;
     });
 
     it("does not allow target _blank if it does have proper relationships", () => {
       const anchor = document.createElement("a");
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
-      shallow(<MessageRenderer message={anchor} />).should.matchSnapshot();
+      anchor.text = "Test";
+      render(<MessageRenderer message={anchor} />);
+
+      expect(screen.getByText("Test", {selector: "a:not([target=_blank])"})).to.exist;
     });
 
     it("allows target _blank in child nodes if they proper relationships", () => {
@@ -78,9 +100,12 @@ describe("MessageRenderer", () => {
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
       anchor.rel = "noopener noreferrer";
+      anchor.text = "Test";
       innerContainer.appendChild(anchor);
       outerContainer.appendChild(innerContainer);
-      shallow(<MessageRenderer message={outerContainer} />).should.matchSnapshot();
+      render(<MessageRenderer message={outerContainer} />);
+
+      expect(screen.getByText("Test", {selector: "div > div > div > a[target=_blank]"})).to.exist;
     });
 
     it("does not allow target _blank in child nodes if they do not have proper relationships", () => {
@@ -89,9 +114,12 @@ describe("MessageRenderer", () => {
       const anchor = document.createElement("a");
       anchor.href = "https://itwinjs.org";
       anchor.target = "_blank";
+      anchor.text = "Test";
       innerContainer.appendChild(anchor);
       outerContainer.appendChild(innerContainer);
-      shallow(<MessageRenderer message={outerContainer} />).should.matchSnapshot();
+      render(<MessageRenderer message={outerContainer} />);
+
+      expect(screen.getByText("Test", { selector: "div > div > div > a:not([target=_blank])"})).to.exist;
     });
   });
 });
