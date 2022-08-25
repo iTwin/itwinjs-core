@@ -30,13 +30,6 @@ jobs:
   steps:
     - checkout: self
       clean: true
-    - bash: |
-        # set sas token for rush build cache storage in azure
-        echo "##vso[task.setvariable variable=RUSH_BUILD_CACHE_CREDENTIAL]$temp_rush_blob_sas"
-
-      displayName: 'Add azure sas token for rush build cache'
-      env:
-        temp_rush_blob_sas: $(temp_rush_blob_sas)
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
