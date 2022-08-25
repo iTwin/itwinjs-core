@@ -12,7 +12,7 @@ import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
-  describe.skip("NativeApp startup", () => {
+  describe("NativeApp startup", () => {
     before(async () => {
       await TestUtility.startFrontend();
     });
@@ -23,7 +23,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
     // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
     // is a missing Ipc method.
-    it("should startup offline without errors", async () => {
+    it.skip("should startup offline without errors", async () => {
       await usingOfflineScope(async () => {
         await ElectronApp.shutdown();
         await ElectronApp.startup(); // restart with no network available
