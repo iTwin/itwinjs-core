@@ -31,7 +31,8 @@
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
-    "url": "https://github.com/iTwin/itwinjs-core"
+    "url": "https://github.com/iTwin/itwinjs-core",
+    "defaultBranch": "master"
   },
   "projects": [
     {
