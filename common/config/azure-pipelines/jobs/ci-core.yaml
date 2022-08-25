@@ -30,13 +30,6 @@ jobs:
   steps:
     - checkout: self
       clean: true
-      fetchDepth: 1
-
-    - bash: |
-        node -p process.arch
-        node -v
-      displayName: get current arch using node
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"

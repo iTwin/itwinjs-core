@@ -17,7 +17,7 @@ steps:
       scriptPath: common/scripts/run_rush_change.py
       arguments: $(Build.SourceBranch) $(Build.Reason) $(System.PullRequest.TargetBranch)
       failOnStderr: true
-    condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
+    # condition: and(succeeded(), ne(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js install
     displayName: rush install
     workingDirectory: ${{ parameters.workingDir }}
