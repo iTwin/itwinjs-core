@@ -41,14 +41,6 @@ describe("Basic Scenarios", async () => {
     await openIModelAndQueryPage(iTwinId!, iModelId);
   });
 
-  // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
-  it.skip("should successfully open a new IModel without changesets for read and Get Properties for an Element TestCase:872675", async () => {
-    const iTwinId = testContext.iTwinId;
-
-    const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndQueryPage(iTwinId!, iModelId);
-  });
-
   it("should open iModel and Execute Query TestCase:819343", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
@@ -59,50 +51,4 @@ describe("Basic Scenarios", async () => {
     expect(rows).not.to.be.empty;
   });
 
-  /* This test is wrong. If two users open the same imodel using the same mode in the same backend, then they
-        will share a single briefcase in the backend. When either user closes the imodel, then the briefcase will
-        be closed. The backend does not maintain some kind of ref count that would keep the briefcase open
-        for the second connection.
-  it("should not affect other users when iModel is closed TestCase:819344 #orchestrator", async () => {
-    const iModelId = testContext.iModelWithChangesets.iModelId;
-    const iTwinId = testContext.iModelWithChangesets.iTwinId;
-    const openMode = OpenMode.Readonly;
-
-    const originalAppAuth = TestRpcClientManager.configuration.applicationAuthorizationValue;
-
-    try {
-      // Get access token of user that does not have permission to read given iModel
-      const user1accessToken = await testContext.regularUser1.getAccessToken();
-      const user1accessTokenString = user1accessToken.toTokenString() || "";
-
-      TestRpcClientManager.configuration.applicationAuthorizationValue = user1accessTokenString;
-      const iModel1 = await IModelConnection.open(user1accessToken, iTwinId, iModelId, openMode);
-
-      // Open the same imodel for another user
-      const user2accessToken = await testContext.regularUser2.getAccessToken();
-      const user2accessTokenString = user2accessToken.toTokenString() || "";
-
-      TestRpcClientManager.configuration.applicationAuthorizationValue = user2accessTokenString;
-      const iModel2 = await IModelConnection.open(user2accessToken, iTwinId, iModelId, openMode);
-      const query = "SELECT ECInstanceId AS id FROM BisCore.Element";
-
-      // Act: Close the iModel for the same user
-      {
-          TestRpcClientManager.configuration.applicationAuthorizationValue = user1accessTokenString;
-          const rows = await iModel1.queryPage(query);
-          expect(rows).to.exist.and.be.not.empty;
-          await iModel1.close(user1accessToken);
-      }
-
-      // Assert: Previous session close should not affect other users
-      {
-          TestRpcClientManager.configuration.applicationAuthorizationValue = user2accessTokenString;
-          const rows = await iModel2.queryPage(query);
-          expect(rows).to.exist.and.be.not.empty;
-      }
-    } finally {
-      TestRpcClientManager.configuration.applicationAuthorizationValue = originalAppAuth;
-    }
-  });
- */
 });
