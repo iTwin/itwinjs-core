@@ -365,7 +365,8 @@ describe("ChangeSummary", () => {
     }
   });
 
-  it("Create ChangeSummaries for changes to parent elements", async () => {
+  // FIXME: "Must use HubMock for tests that modify iModels".
+  it.skip("Create ChangeSummaries for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = IModelTestUtils.generateUniqueName("ParentElementChangeTest");
 
@@ -443,7 +444,8 @@ describe("ChangeSummary", () => {
     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
-  it("should be able to extract the last change summary right after applying a change set", async () => {
+  // FIXME: Failed OIDC signin for TestUserType.SuperManager.
+  it.skip("should be able to extract the last change summary right after applying a change set", async () => {
     const userContext1 = await HubUtility.getAccessToken(TestUserType.Manager);
     const userContext2 = await HubUtility.getAccessToken(TestUserType.SuperManager);
 
