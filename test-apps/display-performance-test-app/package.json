@@ -71,7 +71,7 @@
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^14.0.0",
+    "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",
     "internal-tools": "workspace:*",

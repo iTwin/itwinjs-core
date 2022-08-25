@@ -189,11 +189,6 @@ describe("IModelHost", () => {
     assert.isUndefined(IModelHost.tileUploader);
   });
 
-  // TODO:
-  it.skip("should cleanup everything on shutdown", () => {
-
-  });
-
   it("should throw if hubAccess is undefined and getter is called", async () => {
     await IModelHost.startup(opts);
     expect(IModelHost.getHubAccess()).undefined;
