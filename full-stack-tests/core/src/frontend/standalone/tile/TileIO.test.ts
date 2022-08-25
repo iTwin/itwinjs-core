@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
+  BatchType, CurrentImdlVersion, EdgeOptions, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId, iModelTileTreeIdToString,
   ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -713,7 +713,7 @@ describe("mirukuru TileTree", () => {
 });
 
 // Temporarily skipped while we investigate sporadic apparent crash during Linux CI jobs. Occurs in Electron only, not Chrome.
-describe.skip("TileAdmin", () => {
+describe("TileAdmin", () => {
   let theIModel: IModelConnection | undefined;
 
   const cleanup = async () => {
@@ -759,56 +759,6 @@ describe.skip("TileAdmin", () => {
 
   it("should omit or load edges based on configuration and view flags", async () => {
     class App extends TileAdminApp {
-      private static async testPrimaryTree(imodel: IModelConnection, expectedTreeIdStr: string, animationId?: Id64String) {
-        // Test without edges
-        const requestWithoutEdges = true;
-        let expectedTreeIdStrNoEdges = expectedTreeIdStr;
-        if (requestWithoutEdges) {
-          // "0xabc" => E:0_0xabc"
-          // "A:0x123_0xabc" => "A:0x123_E:0_0xabc"
-          const lastIndex = expectedTreeIdStr.lastIndexOf("0x");
-          expectedTreeIdStrNoEdges = `${expectedTreeIdStr.substring(0, lastIndex)}E:0_${expectedTreeIdStr.substring(lastIndex)}`;
-        }
-
-        const treeId: IModelTileTreeId = { type: BatchType.Primary, edges: false, animationId };
-        let actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStrNoEdges);
-
-        const treePropsNoEdges = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treePropsNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges.id).to.equal(actualTreeIdStr);
-
-        const treeNoEdges2 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges2).to.equal(treeNoEdges);
-
-        expect(await this.rootTileHasEdges(treeNoEdges, imodel)).to.equal(!requestWithoutEdges);
-
-        // Test with edges
-        treeId.edges = { indexed: false, smooth: false };
-        actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
-        expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
-
-        const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
-        expect(treeProps.id).to.equal(actualTreeIdStr);
-
-        const tree = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree.id).to.equal(actualTreeIdStr);
-        expect(tree).not.to.equal(treeNoEdges);
-
-        const tree2 = await getTileTree(imodel, "0x1c", true, animationId);
-        expect(tree2).to.equal(tree);
-
-        expect(await this.rootTileHasEdges(tree, imodel)).to.be.true;
-
-        // Request without edges again.
-        // We used to keep the old tree with edges around if you later requested it without - but that wastes memory.
-        // Change in behavior potentially wastes time instead by reloading a tree without edges.
-        const treeNoEdges3 = await getTileTree(imodel, "0x1c", false, animationId);
-        expect(treeNoEdges3).not.to.equal(tree);
-      }
-
       private static async rootTileHasEdges(tree: IModelTileTree, imodel: IModelConnection): Promise<boolean> {
         const response = await tree.staticBranch.requestContent() as Uint8Array;
         expect(response).not.to.be.undefined;
@@ -838,8 +788,26 @@ describe.skip("TileAdmin", () => {
       }
 
       public static async test(imodel: IModelConnection) {
+        const expectTreeId = async (edges: EdgeOptions | false, expectedTreeIdStr: string) => {
+          const treeId: IModelTileTreeId = { type: BatchType.Primary, edges };
+          const actualTreeIdStr = iModelTileTreeIdToString("0x1c", treeId, IModelApp.tileAdmin);
+          expect(actualTreeIdStr).to.equal(expectedTreeIdStr);
+
+          const treeProps = await IModelApp.tileAdmin.requestTileTreeProps(imodel, actualTreeIdStr);
+          expect(treeProps.id).to.equal(actualTreeIdStr);
+
+          const tree = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree.id).to.equal(actualTreeIdStr);
+
+          const tree2 = await getTileTree(imodel, "0x1c", false !== edges);
+          expect(tree2).to.equal(tree);
+
+          expect(await this.rootTileHasEdges(tree, imodel)).to.equal(false !== edges);
+        };
+
         const version = CurrentImdlVersion.Major.toString(16);
-        await this.testPrimaryTree(imodel, `${version}_1-0x1c`);
+        await expectTreeId(false, `${version}_d-E:0_0x1c`);
+        await expectTreeId({ indexed: true, smooth: true }, `${version}_d-E:4_0x1c`);
       }
     }
 
