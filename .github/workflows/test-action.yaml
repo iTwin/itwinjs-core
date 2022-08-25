@@ -4,12 +4,18 @@ name: Actions Test
 
 on:
   pull_request:
+   branches:
+      - actions-pipeline-test
+    paths-ignore:
+      - "**.md"
+      - docs/**
   push:
     branches:
       - actions-pipeline-test
     paths-ignore:
       - "**.md"
       - docs/**
+      - .github/workflows/test-action.yaml
 
 jobs:
   action-echo-test:
