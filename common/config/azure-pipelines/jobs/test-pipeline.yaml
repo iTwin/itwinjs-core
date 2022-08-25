@@ -1,0 +1,38 @@
+# iTwin.js Test CI Build - if you see this in master... delete it
+# common/config/azure-pipelines/jobs/test-ci.yaml
+
+trigger:
+  branches:
+    include:
+      - actions-pipeline-test
+  paths:
+    exclude:
+      - "**.md"
+      # - "**/*.md"
+      # - docs
+      - docs/docs_temp.md
+
+pr:
+  drafts: true
+  branches:
+    include:
+      - actions-pipeline-test
+  paths:
+    exclude:
+      # - "**.md"
+      # - "**/*.md"
+      # - docs
+      - docs/docs_temp.md
+
+jobs:
+  - job:
+    workspace:
+      clean: all
+    pool:
+      name: TestCI
+      demands: Agent.OS -equals Windows_NT
+
+    steps:
+      - script: |
+         echo this is a test
+        displayName: Pipeline Echo Test

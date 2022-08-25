@@ -1,0 +1,23 @@
+# iTwin.js Github Actions Test - if you see this in master... delete it
+
+name: Actions Test
+
+on:
+  # workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - actions-pipeline-test
+    paths-ignore:
+      # - "**.md"
+      # - "**/*.md"
+      # - docs
+      - docs/docs_temp.md
+
+jobs:
+  action-echo-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Action Echo Test
+        run: |
+          echo this is a test
