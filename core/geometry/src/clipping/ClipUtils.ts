@@ -362,7 +362,7 @@ export class ClipUtilities {
    * * `ClipVector` -- intersection of the ranges of its `ClipPrimitive`.
    * * `undefined` -- entire input range.
    * * If `observeInvisibleFlag` is false, the "invisible" properties are ignored, and this effectively returns the range of the edge work of the members
-   * * If `observeInvisibleFlag` is false, the "invisible" properties are observed, and "invisible" parts do not restrict the range.
+   * * If `observeInvisibleFlag` is true, the "invisible" properties are observed, and "invisible" parts do not restrict the range.
    * @param clipper
    * @param range non-null range.
    * @param observeInvisibleFlag indicates how "invisible" bit is applied for ClipPrimitive.

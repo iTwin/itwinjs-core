@@ -721,7 +721,7 @@ describe("GrowableArray", () => {
   it("growthFactor", () => {
     const ck = new Checker();
 
-    // extend array types so we can call protected copyData()
+    // extend array types so we can cover protected copyData()
     class MyGrowableBlockedArray extends GrowableBlockedArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
     class MyGrowableFloat64Array extends GrowableFloat64Array { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
     class MyGrowableXYZArray extends GrowableXYZArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
@@ -731,18 +731,18 @@ describe("GrowableArray", () => {
     const coverCopyData = (array: MyGrowableBlockedArray | MyGrowableFloat64Array | MyGrowableXYZArray | MyGrowableXYArray) => {
       const copyValues: number[] = [1,2,3,4,5,6,7,8,9,10,11];
       const a1 = new Float64Array(copyValues);
-      const args: ((number | undefined)[])[] = [[undefined, undefined], [100, -1], [0, 100], [5, 58], [100, 7]];
+      const args: ((number | undefined)[])[] = [[undefined, undefined], [100, -1], [0, 100], [5, 58], [100, 7]];  // sourceCount, destOffset
       for (let i = 0; i < args.length; ++i) {
         const myCopyValues = copyValues.map((val) => (i + 1) * val);  // copy different values each iteration
         let out = array.callCopyData(myCopyValues, args[i][0], args[i][1]);
-        compareContents(array, myCopyValues, out.count, out.offset);
+        compareContents(array, out.offset, myCopyValues, 0, out.count);
         out = array.callCopyData(a1, args[i][0], args[i][1]);
-        compareContents(array, copyValues, out.count, out.offset);
+        compareContents(array, out.offset, copyValues, 0, out.count);
       }
     };
 
-    // Units of count and block are blocks/floats/points
-    const compareContents = (a0: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, a1: number[] | GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, count: number, offset: number = 0): boolean => {
+    // Units of count and offsets are blocks/floats/points
+    const compareContents = (a0: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, offset0: number, a1: number[] | GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, offset1: number, count: number): boolean => {
       if (count <= 0)
         return true;
       // handle a1:number[] by constructing a growable array of same type as a0, and recursing
@@ -769,7 +769,7 @@ describe("GrowableArray", () => {
           ck.testTrue(false, "Shouldn't get here");
           return false;
         }
-        return compareContents(a0, a2, count, offset);
+        return compareContents(a0, offset0, a2, offset1, count);
       }
       // handle arrays of same type
       if (!ck.testTrue(count <= getCapacity(a0) && count <= getCapacity(a1)))
@@ -777,23 +777,23 @@ describe("GrowableArray", () => {
       if (a0 instanceof GrowableBlockedArray && a1 instanceof GrowableBlockedArray) {
         if (!ck.testTrue(a0.numPerBlock === a1.numPerBlock))
           return false;
-        for (let iBlock = offset; iBlock < count; ++iBlock)
+        for (let iBlock = 0; iBlock < count ; ++iBlock)
           for (let iComponent = 0; iComponent < a0.numPerBlock; ++iComponent)
-            if (!ck.testExactNumber(a0.component(iBlock, iComponent), a1.component(iBlock, iComponent), "Original array contents preserved"))
+            if (!ck.testExactNumber(a0.component(offset0 + iBlock, iComponent), a1.component(offset1 + iBlock, iComponent), "Original array contents preserved"))
               return false;
       } else if (a0 instanceof GrowableFloat64Array && a1 instanceof GrowableFloat64Array) {
-        for (let i = offset; i < count; ++i)
-          if (!ck.testExactNumber(a0.atUncheckedIndex(i), a1.atUncheckedIndex(i), "Original array contents preserved"))
+        for (let i = 0; i < count; ++i)
+          if (!ck.testExactNumber(a0.atUncheckedIndex(offset0 + i), a1.atUncheckedIndex(offset1 + i), "Original array contents preserved"))
             return false;
       } else if (a0 instanceof GrowableXYArray && a1 instanceof GrowableXYArray) {
-        for (let iPoint = offset; iPoint < count; ++iPoint)
+        for (let iPoint = 0; iPoint < count; ++iPoint)
           for(let iComponent = 0; iComponent < 2; ++iComponent)
-            if (!ck.testExactNumber(a0.component(iPoint, iComponent), a1.component(iPoint, iComponent), "Original array contents preserved"))
+            if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
               return false;
       } else if (a0 instanceof GrowableXYZArray && a1 instanceof GrowableXYZArray) {
-        for (let iPoint = offset; iPoint < count; ++iPoint)
+        for (let iPoint = 0; iPoint < count; ++iPoint)
           for(let iComponent = 0; iComponent < 3; ++iComponent)
-            if (!ck.testExactNumber(a0.component(iPoint, iComponent), a1.component(iPoint, iComponent), "Original array contents preserved"))
+            if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
               return false;
       } else {
         ck.testTrue(false, "Shouldn't get here");
@@ -833,6 +833,7 @@ describe("GrowableArray", () => {
         array.ensureCapacity(newCapacity, applyGrowthFactor);
     };
 
+    /** ASSUME: array was constructed with growthFactor */
     const testGrowthFactor = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, growthFactor: number | undefined) => {
       const caps1: number[] = [4,7,15,33];
       for (const newCap of caps1) {
@@ -840,7 +841,7 @@ describe("GrowableArray", () => {
         const oldCap = getCapacity(array);
         ensureCapacity(array, newCap, false);
         if (ck.testExactNumber(Math.max(oldCap, newCap), getCapacity(array), "ensureCapacity without growthFactor yields expected capacity")) {
-          if (!compareContents(oldArray, array, oldArray.length))
+          if (!compareContents(oldArray, 0, array, 0, oldArray.length))
             return;
         }
       }
@@ -853,7 +854,7 @@ describe("GrowableArray", () => {
         const oldCap = getCapacity(array);
         ensureCapacity(array, newCap, true);
         if (ck.testExactNumber(newCap <= oldCap ? oldCap : Math.trunc(growthFactor * newCap), getCapacity(array), "ensureCapacity with growthFactor yields expected capacity")) {
-          if (!compareContents(oldArray, array, oldArray.length))
+          if (!compareContents(oldArray, 0, array, 0, oldArray.length))
             return;
         }
       }
@@ -889,5 +890,7 @@ describe("GrowableArray", () => {
       a3.resize(a3.length + 1, true);
       ck.testPoint3d(a3.back()!, Point3d.createZero(), "Resize > length fills with zero");
     }
+
+    expect(ck.getNumErrors()).equals(0);
   });
 });
