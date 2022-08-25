@@ -40,6 +40,10 @@ jobs:
       displayName: get current arch using uname
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
 
+    - bash: printenv
+      displayName: printenv
+      condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
+
     - bash: node -p process.arch
       displayName: get current arch using node
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Darwin'))
