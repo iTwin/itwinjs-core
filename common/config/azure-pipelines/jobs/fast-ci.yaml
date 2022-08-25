@@ -5,7 +5,6 @@ trigger:
     include:
       - master
       - release/*
-      - ignore-building-doc-only-changes
   paths:
     exclude:
       # - "**.md"
@@ -20,7 +19,6 @@ pr:
     include:
       - master
       - release/*
-      - ignore-building-doc-only-changes
   paths:
     exclude:
       # - "**.md"

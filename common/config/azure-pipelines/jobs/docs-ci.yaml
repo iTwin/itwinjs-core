@@ -18,6 +18,12 @@ pr:
     exclude:
       - release/2*
       - release/1*
+  paths:
+    exclude:
+      # - "**.md"
+      # - "**/*.md"
+      # - docs
+      - docs/docs_temp.md
 
 jobs:
   - job:
