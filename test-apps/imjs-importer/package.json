@@ -1,6 +1,7 @@
 {
   "name": "imjs-importer",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "description": "Converter to import IModelJson files into bim files.",
