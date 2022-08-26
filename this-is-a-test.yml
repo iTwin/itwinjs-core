@@ -16,6 +16,7 @@ trigger:
     exclude:
       - "**.md"
       - docs/**
+      - common/config/azure-pipelines/jobs/**
 
 pr:
   drafts: true
@@ -29,6 +30,7 @@ pr:
     exclude:
       - "**.md"
       - docs/**
+      - common/config/azure-pipelines/jobs/**
 
 jobs:
   - job:
