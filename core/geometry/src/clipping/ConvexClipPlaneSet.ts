@@ -744,7 +744,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   /** Create a convex clip set from a convex mesh.
    * * Create a plane for each facet.
    * * Assemble the planes as a single clip plane set.
-   * * If the facets are closed by edge pairing, use the computed volume to control plane orientation.
+   * * If the facets are closed by edge pairing, use the sign of the computed volume to point the plane normals inward.
    * * If the facets are not closed, the facet orientation determines plane orientation.
    * * The implication of this is that if the facets are a convex volume, the returned clip plane set is convex.
    * @param convexMesh input mesh. For best results, the mesh should be closed and convex.
@@ -766,14 +766,15 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     if (myMesh && myVisitor) {
       if (PolyfaceQuery.isPolyfaceClosedByEdgePairing(myMesh))
         vol = PolyfaceQuery.sumTetrahedralVolumes(myVisitor);
-      const scale = vol > 0.0 ? -1.0 : 1.0; // convex clip plane set normals are reverse of mesh facet normals!
+      const scale = vol > 0.0 ? -1.0 : 1.0; // point clipper normals inward if mesh normals point outward
       const normal = Vector3d.create();
       const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
       myVisitor.reset();
       while (myVisitor.moveToNextFacet()) {
-        PolygonOps.areaNormal(myVisitor.point.getPoint3dArray()).scale(scale, normal);
-        if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane)) {
-          result.addPlaneToConvexSet(plane);
+        if (undefined !== PolygonOps.areaNormalGo(myVisitor.point, normal)) {
+          normal.scaleInPlace(scale);
+          if (undefined !== Plane3dByOriginAndUnitNormal.create(myVisitor.point.front()!, normal, plane))
+            result.addPlaneToConvexSet(plane);
         }
       }
     }

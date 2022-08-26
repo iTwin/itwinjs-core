@@ -324,7 +324,6 @@ describe("ConvexClipPlaneSet", () => {
   });
 
   function testConvertMeshToClipper(mesh: IndexedPolyface) {
-    // mesh normals are opposite direction of clipper normals...
     const result = ConvexClipPlaneSet.createConvexPolyface(mesh);
     if (ck.testDefined(result.clipper)) {
       if (ck.testExactNumber(mesh.facetCount, result.clipper.planes.length, "# facets === # planes")) {
@@ -347,11 +346,12 @@ describe("ConvexClipPlaneSet", () => {
 
   // cspell:word rhombicosidodecahedron
   it("CreateFromConvexPolyface", () => {
-    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron_reversed.imjs", "utf8");
+    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
     const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
     for (const mesh of inputs) {
       if (ck.testDefined(mesh) && mesh instanceof IndexedPolyface) {
         testConvertMeshToClipper(mesh);
+        // verify that the reversed closed mesh produces same clipper with inward plane normals
         mesh.reverseIndices();
         mesh.reverseNormals();
         testConvertMeshToClipper(mesh);

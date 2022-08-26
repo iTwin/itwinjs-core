@@ -1394,7 +1394,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     static readonly hugeVal = 1e+37;
     isAlmostEqual(other: ConvexClipPlaneSet): boolean;
     isPointInside(point: Point3d): boolean;
-    isPointOnOrInside(point: Point3d, tolerance: number): boolean;
+    isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
     isSphereInside(centerPoint: Point3d, radius: number): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateAllPlanes(): void;
@@ -6100,6 +6100,7 @@ export class XYZ implements XYAndZ {
     isExactEqual(other: XYAndZ): boolean;
     static isXAndY(arg: any): arg is XAndY;
     static isXYAndZ(arg: any): arg is XYAndZ;
+    get isZero(): boolean;
     magnitude(): number;
     magnitudeSquared(): number;
     magnitudeSquaredXY(): number;
