@@ -1,9 +1,9 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 14:21:40 GMT and should not be manually modified.
 
-## 3.3.0
-Thu, 18 Aug 2022 19:08:02 GMT
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
 
 _Version update only_
 

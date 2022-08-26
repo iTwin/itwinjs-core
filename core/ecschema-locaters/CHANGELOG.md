@@ -1,14 +1,11 @@
 # Change Log - @itwin/ecschema-locaters
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 14:21:40 GMT and should not be manually modified.
 
-## 3.3.0
-Thu, 18 Aug 2022 19:08:02 GMT
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
 
-### Updates
-
-- upgrade mocha to version 10.0.0
-- The new utility method SchemaFileUtility.writeSchemaXmlFile writes an EC Schema to an xml file on the file system.
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT
