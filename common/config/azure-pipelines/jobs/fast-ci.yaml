@@ -5,7 +5,7 @@ trigger:
   - release/*
 
 variables:
-  isReleaseBranch: ${{ and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
+  isReleaseBuild: ${{ and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}
   - group: Rush Build Cache SAS Token
 
 pr:

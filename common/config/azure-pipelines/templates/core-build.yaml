@@ -9,7 +9,7 @@ parameters:
     default: 1
   - name: rushBuildCacheWriteAllowed
     type: number
-    ${{ if eq(variables.isReleaseBranch, true) }}:
+    ${{ if eq(variables.isReleaseBuild, true) }}:
       default: 1
     ${{ else }}:
       default: 0
