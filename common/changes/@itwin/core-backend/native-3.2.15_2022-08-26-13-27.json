@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update to @bentley/imodeljs-native@3.2.15",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
