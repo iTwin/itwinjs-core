@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-rpcinterface-impl",
-      "comment": "add rush-project.json",
+      "comment": "",
       "type": "none"
     }
   ],

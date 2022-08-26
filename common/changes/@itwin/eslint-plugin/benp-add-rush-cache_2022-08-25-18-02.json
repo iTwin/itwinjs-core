@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/eslint-plugin",
-      "comment": "add rush-project.json",
+      "comment": "",
       "type": "none"
     }
   ],

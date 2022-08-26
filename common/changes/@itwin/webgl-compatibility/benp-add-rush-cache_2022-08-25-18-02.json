@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/webgl-compatibility",
-      "comment": "add rush-project.json",
+      "comment": "",
       "type": "none"
     }
   ],
