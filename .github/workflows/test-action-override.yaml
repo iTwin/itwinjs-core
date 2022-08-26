@@ -12,6 +12,7 @@ on:
       - docs/**
       - .github/workflows/test-action.yaml
       - .github/workflows/test-action-override.yaml
+      - common/config/azure-pipelines/jobs/test-pipeline.yaml
 
 jobs:
   extract-api:
