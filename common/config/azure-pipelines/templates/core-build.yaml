@@ -9,7 +9,10 @@ parameters:
     default: 1
   - name: rushBuildCacheWriteAllowed
     type: number
-    default: 0
+    ${{ if eq(variables.isReleaseBranch, true) }}:
+      default: 1
+    ${{ else }}:
+      default: 0
 
 steps:
   - script: node common/scripts/install-run-rush.js check
