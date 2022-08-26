@@ -5,6 +5,6 @@
   "azureBlobStorageConfiguration": {
     "storageAccountName": "itwintestrushcache",
     "storageContainerName": "itwincache2",
-    "isCacheWriteAllowed": true
+    "isCacheWriteAllowed": false
   }
 }
