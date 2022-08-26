@@ -11,13 +11,13 @@ pr:
     include:
       - master
       - release/*
-    # paths-ignore:
-    #   - "**.md"
-    #   - docs/**
-    #   - common/config/azure-pipelines/jobs/**
-    #   - this-is-a-test2.yml
-    #   - .github/workflows/**
-    #   - temp.js
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - common/config/azure-pipelines/jobs/**
+      - this-is-a-test2.yml
+      - .github/workflows/**
+      - temp.js
 
 jobs:
   - template: ci-core.yaml
