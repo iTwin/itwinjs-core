@@ -3,6 +3,9 @@ parameters:
   pool: ''
   nodeVersion: ''
 
+variables:
+  - group: Rush Build Cache SAS Token
+
 jobs:
 - job:
   strategy:

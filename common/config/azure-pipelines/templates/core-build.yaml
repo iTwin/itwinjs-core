@@ -5,9 +5,6 @@ parameters:
     type: string
     default: $(System.DefaultWorkingDirectory)
 
-variables:
-  - group: Rush Build Cache SAS Token
-
 steps:
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
