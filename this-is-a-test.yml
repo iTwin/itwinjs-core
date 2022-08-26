@@ -37,7 +37,7 @@ jobs:
     workspace:
       clean: all
     pool:
-      name: Pipeline_CI_Test
+      name: iModelTechCI
       demands: Agent.OS -equals Windows_NT
 
     steps:
