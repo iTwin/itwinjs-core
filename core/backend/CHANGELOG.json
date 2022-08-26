@@ -56,6 +56,18 @@
       }
     },
     {
+      "version": "3.2.9",
+      "tag": "@itwin/core-backend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@3.2.15"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.2.8",
       "tag": "@itwin/core-backend_v3.2.8",
       "date": "Tue, 09 Aug 2022 15:52:41 GMT",
