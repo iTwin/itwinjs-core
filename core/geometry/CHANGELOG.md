@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Fri, 26 Aug 2022 14:21:40 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 15:25:37 GMT and should not be manually modified.
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- stroke centerline in addMiteredPipes
+- upgrade mocha to version 10.0.0
+- sort non-horizontal loops in polyface clipper
+- Speedup CurveChainWithDistanceIndex.closestPoint
+- growable array improvements
+- Fix bug in range.extendWhenLarger
+- prevent Delaunay flipper from removing hole edges
+- Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>.
 
 ## 3.2.9
 Fri, 26 Aug 2022 14:21:40 GMT

@@ -1,6 +1,15 @@
 # Change Log - @itwin/appui-abstract
 
-This log was last generated on Fri, 26 Aug 2022 14:21:40 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 15:25:37 GMT and should not be manually modified.
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:01 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Do not filter calls to provideBackstageItems by stage criteria set when provider is registered.
+- Add hideWithUiWhenFloating prop to widgets so that an app can opt into hiding specific floating widgets when the UI automatically hides.
 
 ## 3.2.9
 Fri, 26 Aug 2022 14:21:40 GMT
