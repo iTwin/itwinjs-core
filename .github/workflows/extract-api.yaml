@@ -8,6 +8,12 @@ on:
     branches:
       - master
       - release/*
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - common/config/azure-pipelines/jobs/**
+      - this-is-a-test2.yml
+      - .github/workflows/**
 
 jobs:
   extract-api:
