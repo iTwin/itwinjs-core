@@ -10,9 +10,9 @@ on:
     paths-ignore:
       - "**.md"
       - docs/**
-      - .github/workflows/test-action.yaml
-      - .github/workflows/test-action-override.yaml
-      - common/config/azure-pipelines/jobs/test-pipeline.yaml
+      - common/config/azure-pipelines/jobs/**
+      - this-is-a-test2.yml
+      - .github/workflows/**
 
 jobs:
   extract-api:
