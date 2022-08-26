@@ -83,12 +83,12 @@
 				415D588323E37F5200907B7B /* AppDelegate.swift */,
 				415D588523E37F5200907B7B /* SceneDelegate.swift */,
 				415D588723E37F5200907B7B /* ViewController.swift */,
+				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 				415D588923E37F5200907B7B /* Main.storyboard */,
 				415D588C23E37F5300907B7B /* Assets.xcassets */,
 				415D588E23E37F5300907B7B /* LaunchScreen.storyboard */,
 				415D589123E37F5300907B7B /* Info.plist */,
 				415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */,
-				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 			);
 			path = "imodeljs-test-app";
 			sourceTree = "<group>";
@@ -356,7 +356,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -380,7 +379,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
