@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64String, JsonUtils, Mutable, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
@@ -16,7 +16,7 @@ import {
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { AnimationNodeId, GraphicBranch } from "../render/GraphicBranch";
-import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { InstancedGraphicParams, PatternGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -867,7 +867,7 @@ export class ImdlReader {
       return undefined;
 
     const viewIndependentOrigin = json.viewIndependentOrigin ? Point3d.fromJSON(json.viewIndependentOrigin) : undefined;
-    const pattern = this._system.createAreaPattern({
+    const patternParams: Mutable<PatternGraphicParams> = {
       xyOffsets: new Float32Array(xyOffsets.buffer, xyOffsets.byteOffset, xyOffsets.byteLength / 4),
       featureId: json.featureId,
       orgTransform: Transform.fromJSON(json.orgTransform),
@@ -878,8 +878,9 @@ export class ImdlReader {
       range: Range3d.fromJSON(json.range),
       symbolTranslation: Point3d.fromJSON(json.symbolTranslation),
       viewIndependentOrigin,
-    });
+    };
 
+    const pattern = this._system.createAreaPattern(patternParams);
     if (!pattern)
       return undefined;
 
@@ -893,7 +894,27 @@ export class ImdlReader {
     if (branch.isEmpty)
       return undefined;
 
-    return this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
+    const clipped = this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
+
+    const unclippedOffsets = json.unclippedXYOffsets ? this.findBuffer(json.unclippedXYOffsets) : undefined;
+    if (!unclippedOffsets)
+      return clipped;
+
+    console.log(`clipped ${xyOffsets.byteLength} unclipped ${unclippedOffsets.byteLength} u/c ${unclippedOffsets.byteLength / xyOffsets.byteLength}`);
+
+    patternParams.xyOffsets = new Float32Array(unclippedOffsets.buffer, unclippedOffsets.byteOffset, unclippedOffsets.byteLength / 4);
+    const unclippedPattern = this._system.createAreaPattern(patternParams);
+    if (!pattern)
+      return clipped;
+
+    const graphics = [clipped];
+    for (const geom of geometry) {
+      const graphic = this._system.createRenderGraphic(geom, unclippedPattern);
+      if (graphic)
+        graphics.push(graphic);
+    }
+
+    return this._system.createGraphicList(graphics);
   }
 
   private readMeshGeometry(primitive: AnyImdlPrimitive): { geometry: RenderGeometry, instances?: InstancedGraphicParams } | undefined {
