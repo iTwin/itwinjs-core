@@ -1,0 +1,45 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# iTwin.js Test CI Build - if you see this in master... delete it
+
+trigger:
+  branches:
+    include:
+      - master
+      - release/*
+      - actions-pipeline-test
+      - actions-pipeline-test-from-azure
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
+
+pr:
+  drafts: true
+  branches:
+    include:
+      - master
+      - release/*
+      - actions-pipeline-test
+      - actions-pipeline-test-from-azure
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
+
+jobs:
+  - job:
+    workspace:
+      clean: all
+    pool:
+      name: Pipeline_CI_Test
+      demands: Agent.OS -equals Windows_NT
+
+    steps:
+      - script: |
+         echo this is a test
+        displayName: Pipeline Echo Test
+
