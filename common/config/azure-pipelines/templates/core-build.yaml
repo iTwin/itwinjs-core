@@ -5,8 +5,8 @@ parameters:
     type: string
     default: $(System.DefaultWorkingDirectory)
   - name: rushBuildCacheEnabled
-    type: boolean
-    default: True
+    type: number
+    default: 1
 
 steps:
   - script: node common/scripts/install-run-rush.js check
