@@ -17,6 +17,7 @@ trigger:
       - "**.md"
       - docs/**
       - common/config/azure-pipelines/jobs/**
+      - this-is-a-test.yml
 
 pr:
   drafts: true
@@ -31,6 +32,7 @@ pr:
       - "**.md"
       - docs/**
       - common/config/azure-pipelines/jobs/**
+      - this-is-a-test.yml
 
 jobs:
   - job:
