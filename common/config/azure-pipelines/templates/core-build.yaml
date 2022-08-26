@@ -4,6 +4,9 @@ parameters:
   - name: workingDir
     type: string
     default: $(System.DefaultWorkingDirectory)
+  - name: rushBuildCacheEnabled
+    type: boolean
+    default: True
 
 steps:
   - script: node common/scripts/install-run-rush.js check
@@ -30,7 +33,7 @@ steps:
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
-      RUSH_BUILD_CACHE_ENABLED: true
+      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
