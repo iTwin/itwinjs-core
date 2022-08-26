@@ -8,8 +8,6 @@
 
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
-FRAMEWORK_SEARCH_PATHS = $(PROJECT_DIR)/../../node_modules/@itwin/core-backend/node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64/
 AssetRoot = $(PROJECT_DIR)/../../lib/ios/
 BuildArchitecture = iOSARM64
 IOSARCH = arm64
-//node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64/IModelJsNative.framework

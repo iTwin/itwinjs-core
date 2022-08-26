@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 15:40:02 GMT and should not be manually modified.
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
 
 ## 3.3.0
 Thu, 18 Aug 2022 19:08:02 GMT
@@ -18,6 +23,11 @@ Thu, 18 Aug 2022 19:08:02 GMT
 - Add option to quantize positions in GraphicsRequestProps.
 - FeatureOverrides now merges element overrides with script overrides and allows callers to specify criteria under which script overrides should be ignored.
 - DisplayStyleSettings.scheduleScriptProps is no longer deprecated. Add comparison methods for types in the RenderSchedule namespace.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "revisit skipped geomlibs tests",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
