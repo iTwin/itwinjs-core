@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 14:21:40 GMT and should not be manually modified.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@3.2.15
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT
