@@ -345,6 +345,10 @@ interface ImdlAreaPattern {
   readonly origin: XYProps;
   /** Id of the [[ImdlBufferView]] containing the offset of each occurrence of the symbol in pattern-space. */
   readonly xyOffsets: string;
+  /** Id of the [[ImdlBufferView]] containing the offset of each occurrence of the symbol in pattern-space, that is fully contained
+   * within the boundary therefore requiring no clipping.
+   */
+  readonly unclippedXYOffsets?: string;
   readonly featureId: number;
   readonly modelTransform: TransformProps;
   readonly range: Range3dProps;
