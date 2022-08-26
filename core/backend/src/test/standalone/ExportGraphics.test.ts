@@ -4,25 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as fs from "fs";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel,
-  PhysicalElementProps,
+  Code, ColorDef, DbResult, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
+  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps,
 } from "@itwin/core-common";
-import { Box, LineString3d, Loop, Point3d, Range3d, Sphere, Vector3d } from "@itwin/core-geometry";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, PhysicalObject, RenderMaterialElement,
-  SnapshotDb,
+  Angle, Box, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+} from "@itwin/core-geometry";
+import {
+  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, LineStyleDefinition, PhysicalObject,
+  RenderMaterialElement, SnapshotDb, Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
 import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-// Created in MicroStation, then dumped for use here.
-// This is a slab with two different face symbologies: one assigned to 2 faces, the other assigned to 4 faces
-const BREP_WITH_FACE_ATTACHMENT = "encoding=base64;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";
-
-describe.only("exportGraphics", () => {
+describe("exportGraphics", () => {
   let iModel: SnapshotDb;
   let seedModel: Id64String;
   let seedCategory: Id64String;
@@ -35,9 +34,16 @@ describe.only("exportGraphics", () => {
       code: Code.createEmpty(),
       geom: geometryStream,
     };
-    const newId = iModel.elements.insertElement(elementProps);
-    iModel.saveChanges();
-    return newId;
+    return iModel.elements.insertElement(elementProps);
+  }
+
+  function insertRenderMaterialWithTexture(name: string, textureId: Id64String): Id64String {
+    const matParams: RenderMaterialElement.Params = {
+      paletteName: "test-palette",
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      patternMap: { TextureId: textureId },
+    };
+    return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, matParams);
   }
 
   function insertRenderMaterial(name: string, colorDef: ColorDef): Id64String {
@@ -47,7 +53,6 @@ describe.only("exportGraphics", () => {
       color: [colors.r / 255, colors.g / 255, colors.b / 255],
       transmit: colors.t / 255,
     };
-
     return RenderMaterialElement.insert(iModel, IModel.dictionaryId, name, matParams);
   }
 
@@ -126,9 +131,12 @@ describe.only("exportGraphics", () => {
     const geometryParams = new GeometryParams(seedCategory);
     geometryParams.lineColor = ColorDef.fromString("peachPuff"); // line color should be superceded by face color
     builder.appendGeometryParamsChange(geometryParams);
+    // Cube with one material attached to two faces and another material attached to other four faces
+    const testBrepData: string = JSON.parse(
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+    ).data;
     builder.appendBRepData({
-      // Cube with one material attached to two faces and another material attached to other four faces
-      data: BREP_WITH_FACE_ATTACHMENT,
+      data: testBrepData,
       faceSymbology: [
         { color: color0.toJSON() },
         { color: color1.toJSON() },
@@ -167,9 +175,12 @@ describe.only("exportGraphics", () => {
     const geometryParams = new GeometryParams(seedCategory);
     geometryParams.lineColor = ColorDef.fromString("peachPuff"); // line color should be superceded by material color
     builder.appendGeometryParamsChange(geometryParams);
+    const testBrepData: string = JSON.parse(
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-face-symb.json"), { encoding: "utf8" })
+    ).data;
     builder.appendBRepData({
       // Cube with one material attached to two faces and another material attached to other four faces
-      data: BREP_WITH_FACE_ATTACHMENT,
+      data: testBrepData,
       faceSymbology: [
         { materialId: materialId0 },
         { materialId: materialId1 },
@@ -195,6 +206,43 @@ describe.only("exportGraphics", () => {
     assert.strictEqual(infos[1].elementId, geometricElementId);
     assert.strictEqual(infos[1].mesh.indices.length, 12);
     assert.strictEqual(infos[1].color, materialColor0.tbgr);
+  });
+
+  it("handles materials with textures", () => {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData = new Uint8Array([
+      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
+      74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
+      97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
+      84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
+      0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+    ]);
+    const textureId = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
+    const materialId = insertRenderMaterialWithTexture("test-material-two", textureId);
+    const elementColor = ColorDef.fromString("aquamarine");
+
+    const builder = new GeometryStreamBuilder();
+    const geometryParams = new GeometryParams(seedCategory);
+    geometryParams.materialId = materialId;
+    geometryParams.lineColor = elementColor; // element color should still come through with no material color set
+    builder.appendGeometryParamsChange(geometryParams);
+    builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
+    const geometricElementId = insertPhysicalElement(builder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [geometricElementId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+    };
+
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+    assert.strictEqual(infos[0].elementId, geometricElementId);
+    assert.strictEqual(infos[0].materialId, materialId);
+    assert.strictEqual(infos[0].textureId, textureId);
+    assert.strictEqual(infos[0].color, elementColor.tbgr);
   });
 
   it("creates meshes with vertices shared as expected", () => {
@@ -223,6 +271,33 @@ describe.only("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.points.length, numUniqueVertices * 3);
     assert.strictEqual(infos[0].mesh.normals.length, numUniqueVertices * 3);
     assert.strictEqual(infos[0].mesh.params.length, numUniqueVertices * 2);
+  });
+
+  it("creates line graphics as expected", () => {
+    const elementColor = ColorDef.fromString("blanchedAlmond");
+    const builder = new GeometryStreamBuilder();
+    const geometryParams = new GeometryParams(seedCategory);
+    geometryParams.lineColor = elementColor;
+    builder.appendGeometryParamsChange(geometryParams);
+    builder.appendGeometry(LineString3d.createPoints([Point3d.createZero(), Point3d.create(1, 0, 0)]));
+
+    const newId = insertPhysicalElement(builder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const lineInfos: ExportLinesInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      onLineGraphics: (lineInfo: ExportLinesInfo) => lineInfos.push(lineInfo),
+    };
+
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 0);
+    assert.strictEqual(lineInfos.length, 1);
+    assert.strictEqual(lineInfos[0].color, elementColor.tbgr);
+    assert.deepStrictEqual(Array.from(lineInfos[0].lines.indices), [0, 1]);
+    assert.deepStrictEqual(Array.from(lineInfos[0].lines.points), [0, 0, 0, 1, 0, 0]);
   });
 
   it("process multiple elements in one call", () => {
@@ -271,9 +346,9 @@ describe.only("exportGraphics", () => {
     assert.strictEqual(infos[0].mesh.normals.length, 12);
     assert.strictEqual(infos[0].mesh.params.length, 8);
 
-    assert.deepStrictEqual(Array.from(infos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
     assert.deepStrictEqual(Array.from(infos[0].mesh.indices), [0, 1, 2, 1, 0, 3]);
     assert.deepStrictEqual(Array.from(infos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(infos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
     assert.deepStrictEqual(Array.from(infos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
   });
 
@@ -314,6 +389,85 @@ describe.only("exportGraphics", () => {
     assert.isTrue(infos[0].mesh.isTwoSided);
   });
 
+  it("applies chordTol", () => {
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
+    const newId = insertPhysicalElement(builder.geometryStream);
+
+    const coarseInfos: ExportGraphicsInfo[] = [];
+    iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => coarseInfos.push(info),
+      chordTol: 1,
+    });
+
+    const fineInfos: ExportGraphicsInfo[] = [];
+    iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => fineInfos.push(info),
+      chordTol: 0.001,
+    });
+
+    assert.strictEqual(coarseInfos.length, 1);
+    assert.strictEqual(fineInfos.length, 1);
+    assert.isTrue(coarseInfos[0].mesh.indices.length < fineInfos[0].mesh.indices.length);
+  });
+
+  it("applies angleTol", () => {
+    const builder = new GeometryStreamBuilder();
+    builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), 1));
+    const newId = insertPhysicalElement(builder.geometryStream);
+
+    const coarseInfos: ExportGraphicsInfo[] = [];
+    iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => coarseInfos.push(info),
+      angleTol: 30 * Angle.radiansPerDegree,
+    });
+
+    const fineInfos: ExportGraphicsInfo[] = [];
+    iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => fineInfos.push(info),
+      angleTol: 15 * Angle.radiansPerDegree,
+    });
+
+    assert.strictEqual(coarseInfos.length, 1);
+    assert.strictEqual(fineInfos.length, 1);
+    assert.isTrue(coarseInfos[0].mesh.indices.length < fineInfos[0].mesh.indices.length);
+  });
+
+  it("applies decimationTol", () => {
+    const strokeOptions = StrokeOptions.createForCurves();
+    strokeOptions.chordTol = 0.001;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.addSphere(Sphere.createCenterRadius(Point3d.createZero(), 1));
+
+    const gsBuilder = new GeometryStreamBuilder();
+    gsBuilder.appendGeometry(polyfaceBuilder.claimPolyface());
+    const newId = insertPhysicalElement(gsBuilder.geometryStream);
+
+    const noDecimationInfos: ExportGraphicsInfo[] = [];
+    const noDecimationStatus = iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => noDecimationInfos.push(info),
+    });
+
+    assert.strictEqual(noDecimationStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(noDecimationInfos.length, 1);
+
+    const decimationInfos: ExportGraphicsInfo[] = [];
+    const decimationStatus = iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => decimationInfos.push(info),
+      decimationTol: 0.1,
+    });
+
+    assert.strictEqual(decimationStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(decimationInfos.length, 1);
+    assert.isTrue(decimationInfos[0].mesh.indices < noDecimationInfos[0].mesh.indices);
+  });
+
   it("applies maxEdgeLength", () => {
     const builder = new GeometryStreamBuilder();
     const quad = Loop.createPolygon([Point3d.createZero(), Point3d.create(2, 0, 0), Point3d.create(2, 2, 0), Point3d.create(0, 2, 0)]);
@@ -331,6 +485,213 @@ describe.only("exportGraphics", () => {
     assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
     assert.strictEqual(infos.length, 1);
     assert.isTrue(infos[0].mesh.indices.length > 6); // not validating particulars of subdivision, just that the option is applied
+  });
+
+  it("applies minBRepFeatureSize", () => {
+    const builder = new GeometryStreamBuilder();
+    // 4x4x4m slab with a ~1x1x1cm slab cut out of it.
+    const testBrep: { data: string } = JSON.parse(
+      fs.readFileSync(IModelTestUtils.resolveAssetFile("brep-small-feature.json"), { encoding: "utf8" })
+    );
+    builder.appendBRepData(testBrep);
+    const newId = insertPhysicalElement(builder.geometryStream);
+
+    const noMinSizeInfos: ExportGraphicsInfo[] = [];
+    const noMinSizeStatus = iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => noMinSizeInfos.push(info),
+    });
+    assert.strictEqual(noMinSizeStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(noMinSizeInfos.length, 1);
+
+    const minSizeInfos: ExportGraphicsInfo[] = [];
+    const minSizeStatus = iModel.exportGraphics({
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => minSizeInfos.push(info),
+      minBRepFeatureSize: 0.1,
+    });
+    assert.strictEqual(minSizeStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(minSizeInfos.length, 1);
+
+    assert.strictEqual(minSizeInfos[0].mesh.indices.length, 36); // should be a simple cube
+    assert.isTrue(minSizeInfos[0].mesh.indices.length < noMinSizeInfos[0].mesh.indices.length);
+  });
+
+  it("applies minLineStyleComponentSize", () => {
+    const partBuilder = new GeometryStreamBuilder();
+    const partParams = new GeometryParams(Id64.invalid); // category won't be used
+
+    // Create line style with small component - logic copied from line style tests in GeometryStream.test.ts
+    partParams.fillDisplay = FillDisplay.Always;
+    partBuilder.appendGeometryParamsChange(partParams);
+    partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+    const geomPartId = iModel.elements.insertElement(partProps);
+
+    const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(iModel, { geomPartId }); // base and size will be set automatically...
+    assert.isTrue(undefined !== pointSymbolData);
+
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(iModel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+    assert.isTrue(undefined !== strokePointData);
+
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(iModel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    assert.isTrue(undefined !== compoundData);
+
+    const styleId = LineStyleDefinition.Utils.createStyle(iModel, IModel.dictionaryId, "TestArrowStyle", compoundData);
+    assert.isTrue(Id64.isValidId64(styleId));
+
+    const builder = new GeometryStreamBuilder();
+    const geometryParams = new GeometryParams(seedCategory);
+    geometryParams.styleInfo = new LineStyle.Info(styleId);
+    builder.appendGeometryParamsChange(geometryParams);
+    builder.appendGeometry(LineSegment3d.create(Point3d.createZero(), Point3d.create(10, 10, 0)));
+    const elementId = insertPhysicalElement(builder.geometryStream);
+
+    // Should include everything with no minimum component size
+    const noMinInfos: ExportGraphicsInfo[] = [];
+    const noMinLineInfos: ExportLinesInfo[] = [];
+    let exportStatus = iModel.exportGraphics({
+      elementIdArray: [elementId],
+      onGraphics: (info: ExportGraphicsInfo) => noMinInfos.push(info),
+      onLineGraphics: (lineInfo: ExportLinesInfo) => noMinLineInfos.push(lineInfo),
+    });
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(noMinInfos.length, 1);
+    assert.strictEqual(noMinLineInfos.length, 1);
+    assert.strictEqual(noMinInfos[0].mesh.indices.length, 3);
+    assert.strictEqual(noMinLineInfos[0].lines.indices.length, 2);
+
+    // Should filter out arrow shape with large minimum component size
+    const largeMinInfos: ExportGraphicsInfo[] = [];
+    const largeMinLineInfos: ExportLinesInfo[] = [];
+    exportStatus = iModel.exportGraphics({
+      elementIdArray: [elementId],
+      onGraphics: (info: ExportGraphicsInfo) => largeMinInfos.push(info),
+      onLineGraphics: (lineInfo: ExportLinesInfo) => largeMinLineInfos.push(lineInfo),
+      minLineStyleComponentSize: 0.5,
+    });
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(largeMinInfos.length, 0);
+    assert.strictEqual(largeMinLineInfos.length, 1);
+    assert.strictEqual(largeMinLineInfos[0].lines.indices.length, 2);
+
+    // Should include arrow shape with small minimum component size
+    const smallMinInfos: ExportGraphicsInfo[] = [];
+    const smallMinLineInfos: ExportLinesInfo[] = [];
+    exportStatus = iModel.exportGraphics({
+      elementIdArray: [elementId],
+      onGraphics: (info: ExportGraphicsInfo) => smallMinInfos.push(info),
+      onLineGraphics: (lineInfo: ExportLinesInfo) => smallMinLineInfos.push(lineInfo),
+      minLineStyleComponentSize: 0.01,
+    });
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(smallMinInfos.length, 1);
+    assert.strictEqual(smallMinLineInfos.length, 1);
+    assert.strictEqual(smallMinInfos[0].mesh.indices.length, 3);
+    assert.strictEqual(smallMinLineInfos[0].lines.indices.length, 2);
+  });
+
+  it("applies GeometryPart transforms as expected", () => {
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+    const partId = iModel.elements.insertElement(partProps);
+
+    const partInstanceBuilder = new GeometryStreamBuilder();
+    partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
+    const partInstanceId = insertPhysicalElement(partInstanceBuilder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [partInstanceId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+    };
+
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+
+    // The ordering of these values is arbitrary, but should be consistent between runs.
+    // Baselines may need to be updated if native GeomLibs is refactored, but:
+    //   * Lengths of all fields should remain the same
+    //   * Actual point, normal and param values should remain the same
+    assert.strictEqual(infos[0].mesh.indices.length, 6);
+    assert.strictEqual(infos[0].mesh.points.length, 12);
+    assert.strictEqual(infos[0].mesh.normals.length, 12);
+    assert.strictEqual(infos[0].mesh.params.length, 8);
+
+    assert.deepStrictEqual(Array.from(infos[0].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(infos[0].mesh.points), [8, 8, 9, 7, 9, 9, 7, 8, 9, 8, 9, 9]);
+    assert.deepStrictEqual(Array.from(infos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(infos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
+  });
+
+  it("exposes instances through partInstanceArray and exportPartGraphics", () => {
+    const partBuilder = new GeometryStreamBuilder();
+    partBuilder.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0)]));
+    const partProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+      geom: partBuilder.geometryStream,
+    };
+    const partId = iModel.elements.insertElement(partProps);
+
+    const partInstanceBuilder = new GeometryStreamBuilder();
+    partInstanceBuilder.appendGeometryPart3d(partId, Point3d.create(7, 8, 9));
+    const partInstanceId = insertPhysicalElement(partInstanceBuilder.geometryStream);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const partInstanceArray: ExportPartInstanceInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [partInstanceId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+      partInstanceArray,
+    };
+
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 0);
+    assert.strictEqual(partInstanceArray.length, 1);
+
+    assert.strictEqual(partInstanceArray[0].partId, partId);
+    assert.strictEqual(partInstanceArray[0].partInstanceId, partInstanceId);
+    assert.isDefined(partInstanceArray[0].transform);
+    assert.deepStrictEqual(Array.from(partInstanceArray[0].transform!), [1, 0, 0, 7, 0, 1, 0, 8, 0, 0, 1, 9]);
+
+    const partInfos: ExportPartInfo[] = [];
+    const exportPartStatus = iModel.exportPartGraphics({
+      elementId: partInstanceArray[0].partId,
+      displayProps: partInstanceArray[0].displayProps,
+      onPartGraphics: (partInfo) => partInfos.push(partInfo),
+    });
+
+    assert.strictEqual(exportPartStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(partInfos.length, 1);
+
+    // The ordering of these values is arbitrary, but should be consistent between runs.
+    // Baselines may need to be updated if native GeomLibs is refactored, but:
+    //   * Lengths of all fields should remain the same
+    //   * Actual point, normal and param values should remain the same
+    assert.strictEqual(partInfos[0].mesh.indices.length, 6);
+    assert.strictEqual(partInfos[0].mesh.points.length, 12);
+    assert.strictEqual(partInfos[0].mesh.normals.length, 12);
+    assert.strictEqual(partInfos[0].mesh.params.length, 8);
+
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.indices), [0, 1, 2, 1, 0, 3]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.points), [1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.normals), [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]);
+    assert.deepStrictEqual(Array.from(partInfos[0].mesh.params), [1, 0, 0, 1, 0, 0, 1, 1]);
   });
 
   it("handles single geometryClass in GeometryStream", () => {
@@ -428,7 +789,6 @@ describe.only("exportGraphics", () => {
       geom: partBuilder.geometryStream,
     };
     const partId = iModel.elements.insertElement(partProps);
-    iModel.saveChanges();
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);
@@ -468,7 +828,6 @@ describe.only("exportGraphics", () => {
       geom: partBuilder.geometryStream,
     };
     const partId = iModel.elements.insertElement(partProps);
-    iModel.saveChanges();
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     const partInstanceGeometryParams = new GeometryParams(seedCategory);
@@ -516,7 +875,6 @@ describe.only("exportGraphics", () => {
       geom: partBuilder.geometryStream,
     };
     const partId = iModel.elements.insertElement(partProps);
-    iModel.saveChanges();
 
     const partInstanceBuilder = new GeometryStreamBuilder();
     partInstanceBuilder.appendGeometryPart3d(partId);
