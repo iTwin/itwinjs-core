@@ -4,6 +4,9 @@ trigger:
   - master
   - release/*
 
+variables:
+  - group: Rush Build Cache SAS Token
+
 pr:
   autoCancel: true
   drafts: false
