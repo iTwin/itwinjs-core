@@ -2,32 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { ExpansionToggle } from "../../core-react";
+import TestUtils, { classesFromElement } from "../TestUtils";
 
 describe("<ExpansionToggle />", () => {
-  it("should render", () => {
-    mount(<ExpansionToggle />);
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
 
-  it("renders correctly", () => {
-    shallow(<ExpansionToggle />).should.matchSnapshot();
+  before(async () => {
+    await TestUtils.initializeUiCore();
   });
 
-  it("should set is-focused class", () => {
-    shallow(<ExpansionToggle isExpanded />).should.matchSnapshot();
+  it("renders collapsed correctly", () => {
+    render(<ExpansionToggle />);
+
+    expect(classesFromElement(screen.getByRole("button"))).to.include("core-tree-expansionToggle");
+    expect(screen.getByLabelText("tree.expand")).to.exist;
   });
 
-  it("should handle click events", () => {
+  it("should render expanded", () => {
+    render(<ExpansionToggle isExpanded />);
+
+    expect(classesFromElement(screen.getByRole("button"))).to.include("is-expanded");
+    expect(screen.getByLabelText("tree.collapse")).to.exist;
+  });
+
+  it("should handle click events", async () => {
     const handler = sinon.spy();
-    const wrapper = shallow(<ExpansionToggle onClick={handler} />);
-    wrapper.should.exist;
+    render(<ExpansionToggle onClick={handler} />);
 
-    const event = new MouseEvent("click");
-    wrapper.simulate("click", event);
+    await theUserTo.click(screen.getByRole("button"));
     handler.calledOnce.should.true;
-    handler.should.have.been.calledWith(event);
   });
 });

@@ -246,10 +246,12 @@ export class XYZ implements XYAndZ {
     }
     return index;
   }
-  /** Return true if the if x,y,z components are all nearly zero to tolerance Geometry.smallMetricDistance */
+  /** Return true if the x,y,z components are all nearly zero to tolerance Geometry.smallMetricDistance */
   public get isAlmostZero(): boolean {
     return Geometry.isSmallMetricDistance(this.x) && Geometry.isSmallMetricDistance(this.y) && Geometry.isSmallMetricDistance(this.z);
   }
+  /** Return true if the x,y,z components are all exactly zero */
+  public get isZero(): boolean { return this.x === 0.0 && this.y === 0.0 && this.z === 0.0; }
   /** Return the largest absolute value of any component */
   public maxAbs(): number { return Math.max(Math.abs(this.x), Math.abs(this.y), Math.abs(this.z)); }
   /** Return the sqrt of the sum of squared x,y,z parts */

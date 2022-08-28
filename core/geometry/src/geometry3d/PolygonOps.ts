@@ -295,11 +295,12 @@ export class PolygonOps {
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
     if (!result)
       result = new Vector3d();
+    else
+      result.setZero();
     const n = points.length;
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
-    } else if (n >= 3) {
-      result.setZero();
+    } else if (n > 3) {
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, result);
@@ -307,7 +308,7 @@ export class PolygonOps {
     }
     // ALL BRANCHES SUM FULL CROSS PRODUCTS AND EXPECT SCALE HERE
     result.scaleInPlace(0.5);
-    return result;
+    return result.isZero ? undefined : result;
   }
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
@@ -448,8 +449,10 @@ export class PolygonOps {
    * Return a unit normal to the plane of the polygon.
    * @param points array of points around the polygon.
    * @param result caller-allocated result vector.
+   * @return true if and only if result has unit length
    */
   public static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean {
+    result.setZero();
     let n = points.length;
     if (n > 1 && points.getPoint3dAtUncheckedPointIndex(0).isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1)))
       --n;  // ignore closure point

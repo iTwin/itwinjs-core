@@ -44,6 +44,8 @@ export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
   hierarchyAutoUpdateEnabled?: boolean;
+  /** @internal */
+  subjectModelIdsCache?: SubjectModelIdsCache;
 }
 
 /**
@@ -60,7 +62,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
-    this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
+    this._subjectModelIdsCache = props.subjectModelIdsCache ?? new SubjectModelIdsCache(this._props.viewport.iModel);
     this._elementIdsCache = new ElementIdsCache(this._props.viewport.iModel, this._props.rulesetId);
     this._listeners.push(this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged));
     this._listeners.push(this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged));
@@ -406,7 +408,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 }
 
-class SubjectModelIdsCache {
+/** @internal */
+export class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
   private _subjectModels: Map<Id64String, Id64String[]> | undefined;
