@@ -11,7 +11,7 @@ import * as React from "react";
 import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, SetupWalkCameraTool, ViewClipByElementTool,
   ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
-  WalkViewTool, WindowAreaTool, ZoomViewTool
+  WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
 import { ToolbarPopupContext } from "@itwin/components-react";
