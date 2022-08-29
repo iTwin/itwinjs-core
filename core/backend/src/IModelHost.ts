@@ -612,7 +612,7 @@ export class Platform {
 
   /** @internal */
   public static load(): typeof IModelJsNative {
-    return ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") : NativeLibrary.load();
+    return NativeLibrary.load();
   }
 }
 
