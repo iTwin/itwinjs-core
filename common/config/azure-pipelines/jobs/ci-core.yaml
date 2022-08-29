@@ -2,6 +2,7 @@ parameters:
   name: ''
   pool: ''
   nodeVersion: ''
+  useLocalAddon: 'false'
   
 resources: #Refernce nick's template from azure repo
   repositories:
@@ -42,7 +43,8 @@ jobs:
     clean: all
 
   steps:
-    - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
+    ${{ if eq(parameters.useLocalAddon, true) }}:
+      - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
     - checkout: self
       clean: true
     - task: NodeTool@0
