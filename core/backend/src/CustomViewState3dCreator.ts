@@ -57,6 +57,7 @@ export class CustomViewState3dCreator {
     const modelIds = new Set(modelIdsList);
     for (const id of modelIds) {
       try {
+        await new Promise((resolve) => setImmediate(resolve)); // Free up main thread temporarily. Ideally we get queryModelExtents off the main thread and do not need to do this.
         const props = this._imodel.nativeDb.queryModelExtents({ id }).modelExtents;
         modelExtents.union(Range3d.fromJSON(props), modelExtents);
       } catch (err: any) {
