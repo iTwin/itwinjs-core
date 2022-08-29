@@ -11,7 +11,7 @@ import * as React from "react";
 import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
   ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
-  WalkViewTool, WindowAreaTool, ZoomViewTool,
+  WalkViewTool, WindowAreaTool, ZoomViewTool, SetupWalkCameraTool
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
 import { ToolbarPopupContext } from "@itwin/components-react";
@@ -149,6 +149,16 @@ export class CoreTools {
       label: SelectionTool.flyover,
       description: SelectionTool.description,
       execute: async () => IModelApp.tools.run(SelectionTool.toolId),
+    });
+  }
+
+  public static get setupCameraWalkTool() {
+    return new ToolItemDef({
+      toolId: SetupWalkCameraTool.toolId,
+      iconSpec: SetupWalkCameraTool.iconSpec,
+      label: SetupWalkCameraTool.flyover,
+      description: SetupWalkCameraTool.description,
+      execute: async () => IModelApp.tools.run(SetupWalkCameraTool.toolId),
     });
   }
 

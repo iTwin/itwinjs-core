@@ -28,6 +28,7 @@ export interface DefaultNavigationTools {
   vertical?: {
     walk?: boolean;
     toggleCamera?: boolean;
+    setUpWalkCamera?: boolean;
   };
 }
 
@@ -70,6 +71,9 @@ export class StandardNavigationToolsUiItemsProvider implements UiItemsProvider {
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.toggleCamera)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.toggleCameraViewCommand));
+
+      if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.setUpWalkCamera)
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.setupCameraWalkTool));
     }
     return items;
   }
