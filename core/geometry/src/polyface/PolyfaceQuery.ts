@@ -11,7 +11,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
-import { OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
+import { MultiChainCollector, OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -284,10 +284,11 @@ export class PolyfaceQuery {
   }
 /**
  * construct a CurveCollection containing boundary edges.
- * @param source mesh to search
- * @param includeDanglers
- * @param includeMismatch
- * @param includeNull
+ *   * each edge is a LineSegment3d
+ * @param source polyface or visitor
+ * @param includeDanglers true to in include typical boundary edges with a single incident facet
+ * @param includeMismatch true to include edges with more than 2 incident facets
+ * @param includeNull true to include edges with identical start and end vertex indices.
  * @returns
  */
   public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
@@ -303,7 +304,7 @@ export class PolyfaceQuery {
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
   * @param source polyface or visitor
-  * @param announceEdge function to be called with each boundary edge. The annoucement is start and end points and start and end indices.
+  * @param announceEdge function to be called with each boundary edge. The announcement is start and end points and start and end indices.
   * @param includeDanglers true to in include typical boundary edges with a single incident facet
   * @param includeMismatch true to include edges with more than 2 incident facets
   * @param includeNull true to include edges with identical start and end vertex indices.
@@ -501,6 +502,21 @@ export class PolyfaceQuery {
     const visitor = IndexedPolyfaceSubsetVisitor.createSubsetVisitor(polyface, partitionedIndices[visibilitySelect], 1);
     return this.boundaryEdges(visitor, true, false, false);
   }
+  /**
+   * Search for edges with only 1 incident facet.
+   * * chain them into loops
+   * * emit the loops to the announceLoop function
+   * @param mesh
+   */
+  public static announceBoundaryChainsLineString3d(mesh: Polyface,
+    announceLoop: (points: LineString3d) => void){
+      const collector = new MultiChainCollector(Geometry.smallMetricDistance, 1000);
+      PolyfaceQuery.announceBoundaryEdges (mesh,
+          (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number)=> collector.captureCurve (LineSegment3d.create (pointA, pointB)),
+          true, false, false);
+      collector.announceChainsAsLineString3d (announceLoop);
+      }
+
 /**
  * Return a mesh with
  *  * clusters of adjacent, coplanar facets merged into larger facets.

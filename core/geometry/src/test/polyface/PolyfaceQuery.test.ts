@@ -23,11 +23,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { RegionBinaryOpType, RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Transform } from "../../geometry3d/Transform";
-import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
-import { FrameBuilder } from "../../core-geometry";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import {  HalfEdgeMask } from "../../topology/Graph";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -183,38 +178,16 @@ it("ExpandToMaximalPlanarFacetsA", () => {
 it.only("ExpandToMaximalPlanarFacetsWithHole", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
-  const builder = PolyfaceBuilder.create();
-  const zScale = 0.25;
-  let x1Final = 0;
-  let z1Final = 0;
-  for (const x0 of [0,1,2,3,4, 5]){
-    for (const y0 of [0,1,2,3,4]){
-      if (x0 === 1 && y0 === 1){
-      } else if (x0 === 3 && y0 === 2){
-      } else {
-        const x1 = x0 + 1;
-        const y1 = y0 + 1;
-        const z0 = zScale * x0;
-        const z1 = zScale * x1;
-        builder.addPolygon ([Point3d.create (x0, y0, z0), Point3d.create (x1, y0, z1), Point3d.create (x1, y1, z1), Point3d.create (x0, y1, z0)]);
-        x1Final = x1;
-        z1Final = z1;
-      }
+  const polyface = Sample.sweepXZLineStringToMeshWithHoles (
+    [[0,0],[5,1], [7,1]],
+    5,
+    (x: number, y: number)=>{
+      if (x === 1 && y === 1) return false;
+      if (x === 3 && y === 2) return false;
+      if (x === 5 && y === 2) return false;
+      return true;
     }
-  }
-  for (const x0 of [x1Final, x1Final + 1]){
-    for (const y0 of [0,1,2,3,4]){
-        const x1 = x0 + 1;
-        const y1 = y0 + 1;
-        builder.addPolygon ([Point3d.create (x0, y0, z1Final),
-          Point3d.create (x1, y0, z1Final),
-          Point3d.create (x1, y1, z1Final),
-          Point3d.create (x0, y1, z1Final)]);
-        x1Final = x1;
-      }
-    }
-
-  const polyface = builder.claimPolyface (true);
+  );
   let dx = 0;
   let dy = 0;
   const yStep = 10.0;
@@ -228,6 +201,30 @@ it.only("ExpandToMaximalPlanarFacetsWithHole", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
     expect(ck.getNumErrors()).equals(0);
+});
+
+it.only("FillHoles", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const polyface = Sample.sweepXZLineStringToMeshWithHoles (
+    [[0,0],[5,1], [7,1]],
+    5,
+    (x: number, y: number)=>{
+      if (x === 1 && y === 1) return false;
+      if (x === 3 && y === 2) return false;
+      return true;
+    }
+  );
+
+  const dx = 0;
+  let dy = 0;
+  const yStep = 10.0;
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy += yStep, 0);
+  dy += yStep;
+  PolyfaceQuery.announceBoundaryChainsLineString3d (polyface,
+      (ls: LineString3d)=> GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, dx, dy));
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
+  expect(ck.getNumErrors()).equals(0);
 });
 
 it("cloneWithTVertexFixup", () => {
