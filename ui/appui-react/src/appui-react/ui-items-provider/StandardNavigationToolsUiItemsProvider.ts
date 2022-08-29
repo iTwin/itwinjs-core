@@ -28,7 +28,7 @@ export interface DefaultNavigationTools {
   vertical?: {
     walk?: boolean;
     toggleCamera?: boolean;
-    setUpWalkCamera?: boolean;
+    setupWalkCamera?: boolean;
   };
 }
 
