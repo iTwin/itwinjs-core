@@ -2,7 +2,7 @@ parameters:
   name: ''
   pool: ''
   nodeVersion: ''
-  useLocalAddon: 'false'
+  useLocalAddon: false
   
 resources: #Refernce nick's template from azure repo
   repositories:
