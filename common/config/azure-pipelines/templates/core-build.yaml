@@ -48,7 +48,7 @@ steps:
   #     certPwd: '$(CertificatePassword)'
   #     setUpPartitionIdACLForPrivateKey: false
   #   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  - script: echo CertificateSecureFile: $(CertificateSecureFile), ProvisioningProfileSecureFile: $(ProvisioningProfileSecureFile)
+  - script: echo CertificateSecureFile $(CertificateSecureFile), ProvisioningProfileSecureFile $(ProvisioningProfileSecureFile)
     workingDirectory: "test-apps/display-test-app"
     displayName: "Variables check"
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
