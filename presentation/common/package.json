@@ -26,7 +26,7 @@
     "build:cjs": "tsc -p tsconfig.cjs.json",
     "build:esm": "npm run -s build:assets:esm && tsc -p tsconfig.esm.json",
     "build:assets": "cpx \"./assets/**/*\" ./lib/cjs/assets && npm run -s pseudolocalize:assets",
-    "build:assets:esm": "cpx \"./assets/**/*\" ./lib/esm/assets && npm run -s pseudolocalize:assets",
+    "build:assets:esm": "cpx \"./assets/**/*\" ./lib/esm/assets",
     "build:public": "cpx \"./assets/**/*\" ./lib/public && npm run -s pseudolocalize:public",
     "build:watch": "npm run -s ruleset-json-schema && npm run -s watch",
     "watch": "npm run -s build:cjs -- -w",
