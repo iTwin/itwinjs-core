@@ -11,10 +11,10 @@ jobs:
         OS: windows-latest
         platform: Windows_NT
         name: $(win_pool)
-      "Linux_${{ parameters.name }}":
-        OS: ubuntu-latest
-        platform: Linux
-        name: $(linux_pool)
+      # "Linux_${{ parameters.name }}":
+      #   OS: ubuntu-latest
+      #   platform: Linux
+      #   name: $(linux_pool)
       "MacOS_${{ parameters.name }}":
         OS: macOS-latest
         platform: Darwin
@@ -22,7 +22,7 @@ jobs:
 
   timeoutInMinutes: 120
 
-  pool: ${{ parameters.pool }}
+  pool: iModelTechCI
 
   workspace:
     clean: all
