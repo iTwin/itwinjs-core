@@ -8,7 +8,7 @@
 import * as path from "path";
 import * as Semver from "semver";
 import {
-  AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
+  AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
   OpenMode, YieldManager,
 } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
@@ -637,8 +637,8 @@ export class IModelTransformer extends IModelExportHandler {
       if (alreadyImported)
         continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
-      const exists = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
-      if (!exists) {
+      const referencedExistsInSource = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
+      if (!referencedExistsInSource) {
         Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);
         switch (this._options.danglingReferencesBehavior) {
           case "ignore":
@@ -703,6 +703,10 @@ export class IModelTransformer extends IModelExportHandler {
     const unresolvedReferences = elemClass.requiredReferenceKeys
       .map((referenceKey) => {
         const idContainer = sourceElement[referenceKey as keyof Element];
+        const referenceType = elemClass.requiredReferenceKeyTypeMap[referenceKey];
+        // For now we just consider all required references to be elements (as they are in biscore), and do not support
+        // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
+        assert(referenceType === ConcreteEntityTypes.Element || referenceType === ConcreteEntityTypes.Model);
         return mapId64(idContainer, (id) => {
           if (id === Id64.invalid || id === IModel.rootSubjectId)
             return undefined; // not allowed to directly export the root subject
@@ -715,15 +719,12 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
-          // FIXME: bad
-          // For now we just consider all required references to be elements (as they are in biscore), and do not support
-          // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
-          return `${elemClass.requiredReferenceKeyTypeMap[referenceKey]}${id}` as ConcreteEntityId;
+          return `${elemClass.requiredReferenceKeyTypeMap[referenceKey]}${id}`;
         })
-          .filter((sourceReferenceId: ConcreteEntityId | undefined): sourceReferenceId is ConcreteEntityId => {
+          .filter((sourceReferenceId: Id64String | undefined): sourceReferenceId is Id64String => {
             if (sourceReferenceId === undefined) return false;
-            const referenceInTargetId = this.context.findTargetEntityId(sourceReferenceId);
-            const isInTarget = ConcreteEntityIds.isValid(referenceInTargetId);
+            const referenceInTargetId = this.context.findTargetElementId(sourceReferenceId);
+            const isInTarget = Id64.isValid(referenceInTargetId);
             return !isInTarget;
           });
       })
@@ -731,17 +732,19 @@ export class IModelTransformer extends IModelExportHandler {
 
     if (unresolvedReferences.length > 0) {
       for (const reference of unresolvedReferences) {
-        const rawId = ConcreteEntityIds.toId64(reference);
-        // must export element first if not done so
-        if (ConcreteEntityIds.isModel(reference))
-          await this.exporter.exportModel(rawId);
-        // FIXME: if it's a model, doesn't its element have to be imported first?
-        else if (ConcreteEntityIds.isElement(reference))
-          await this.exporter.exportElement(rawId);
-        else
-          assert(false, "unsupported reference type: ${}, only model and element references are supported");
+        // must export element first
+        if (processState.needsElemImport)
+          await this.exporter.exportElement(reference);
+        if (processState.needsModelImport)
+          await this.exporter.exportModel(reference);
       }
     }
+  }
+
+  private getElemTransformState(elementId: Id64String) {
+    const dbHasModel = (db: IModelDb, id: Id64String) => {
+    const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(this.targetDb, idOfElemInTarget));
+    return { needsElemImport: !isElemInTarget, needsModelImport };
   }
 
   /** Override of [IModelExportHandler.onExportElement]($transformer) that imports an element into the target iModel when it is exported from the source iModel.
