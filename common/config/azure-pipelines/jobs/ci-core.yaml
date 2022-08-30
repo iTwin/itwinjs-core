@@ -2,50 +2,49 @@ parameters:
   name: ''
   pool: ''
   nodeVersion: ''
-  useLocalAddon: false
   
-resources: #Refernce nick's template from azure repo
-  repositories:
-    - repository: imodel02_templates
-      type: git
-      name: imodel02
-      endpoint: iModelTechnologies
+# resources: #Refernce nick's template from azure repo
+#   repositories:
+#     - repository: imodel02_templates
+#       type: git
+#       name: imodel02
+#       endpoint: iModelTechnologies
 
-jobs:
-- job:
-  strategy:
-    matrix:
-      "Windows_${{ parameters.name }}":
-        OS: windows-latest
-        platform: Windows_NT
-        name: $(win_pool)
-        VAR_GROUP: 'WindowsCheck' #Set correct var goup name
-      "Linux_${{ parameters.name }}":
-        OS: ubuntu-latest
-        platform: Linux
-        name: $(linux_pool)
-        VAR_GROUP: 'LinuxCheck'
-      "MacOS_${{ parameters.name }}":
-        OS: macOS-latest
-        platform: Darwin
-        name: $(mac_pool)
-        VAR_GROUP: 'MacOSCheck'
+# jobs:
+# - job:
+#   strategy:
+#     matrix:
+#       "Windows_${{ parameters.name }}":
+#         OS: windows-latest
+#         platform: Windows_NT
+#         name: $(win_pool)
+#         VAR_GROUP: 'WindowsCheck' #Set correct var goup name
+#       "Linux_${{ parameters.name }}":
+#         OS: ubuntu-latest
+#         platform: Linux
+#         name: $(linux_pool)
+#         VAR_GROUP: 'LinuxCheck'
+#       "MacOS_${{ parameters.name }}":
+#         OS: macOS-latest
+#         platform: Darwin
+#         name: $(mac_pool)
+#         VAR_GROUP: 'MacOSCheck'
 
-  timeoutInMinutes: 120
+#   timeoutInMinutes: 120
 
-  pool: ${{ parameters.pool }}
+#   pool: ${{ parameters.pool }}
   
-  ${{ if eq(parameters.useLocalAddon, true) }}:
-    variables:
-      - group: $(VAR_GROUP)
+#   ${{ if eq(parameters.useLocalAddon, true) }}:
+#     variables:
+#       - group: $(VAR_GROUP)
 
-  workspace:
-    clean: all
+#   workspace:
+#     clean: all
 
   steps:
-    ${{ if eq(parameters.useLocalAddon, true) }}:
-      - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
-    - checkout: self
+#     ${{ if eq(parameters.useLocalAddon, true) }}:
+#       - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
+    - checkout: iTwin/itwinjs-core/Build.SourceBranchName #Temp fix, branch name must be the same on both native and TS side
       clean: true
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
