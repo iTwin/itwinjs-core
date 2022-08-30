@@ -233,6 +233,12 @@ $default-icon-height: 20px;
     overflow: hidden;
     margin-left: 2px;
   }
+
+  .map-manager-item-label-disabled {
+    @extend .map-manager-item-label;
+    color: $buic-foreground-muted;
+  }
+
   .map-manager-item-transparency {
     margin-right: 6px;
   }

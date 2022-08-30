@@ -1,6 +1,11 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Thu, 18 Aug 2022 19:08:01 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 15:40:02 GMT and should not be manually modified.
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
 
 ## 3.3.0
 Thu, 18 Aug 2022 19:08:01 GMT
@@ -19,6 +24,11 @@ Thu, 18 Aug 2022 19:08:01 GMT
 - Add updated widget targets.
 - Update iTwinUI-react to 1.38.1
 - Allow tippy.js to close when tab is clicked.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

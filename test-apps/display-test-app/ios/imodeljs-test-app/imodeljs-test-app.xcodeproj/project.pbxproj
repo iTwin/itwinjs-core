@@ -13,7 +13,6 @@
 		415D588B23E37F5200907B7B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588923E37F5200907B7B /* Main.storyboard */; };
 		415D588D23E37F5300907B7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 415D588C23E37F5300907B7B /* Assets.xcassets */; };
 		415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588E23E37F5300907B7B /* LaunchScreen.storyboard */; };
-		415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 415D589B23E38D0C00907B7B /* Config.xcconfig */; };
 		415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 415D589923E38CCF00907B7B /* WebKit.framework */; };
 		415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D58B623E4ACAA00907B7B /* AssetHandler.swift */; };
 		F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */ = {isa = PBXBuildFile; productRef = F4A4D85F28A599050015ED63 /* IModelJsNative */; };
@@ -84,12 +83,12 @@
 				415D588323E37F5200907B7B /* AppDelegate.swift */,
 				415D588523E37F5200907B7B /* SceneDelegate.swift */,
 				415D588723E37F5200907B7B /* ViewController.swift */,
+				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 				415D588923E37F5200907B7B /* Main.storyboard */,
 				415D588C23E37F5300907B7B /* Assets.xcassets */,
 				415D588E23E37F5300907B7B /* LaunchScreen.storyboard */,
 				415D589123E37F5300907B7B /* Info.plist */,
 				415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */,
-				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 			);
 			path = "imodeljs-test-app";
 			sourceTree = "<group>";
@@ -113,7 +112,7 @@
 				415D587D23E37F5200907B7B /* Frameworks */,
 				415D587E23E37F5200907B7B /* Resources */,
 				415D58A023E38DCB00907B7B /* Embed Libraries */,
-				415D58A323E38E1900907B7B /* ShellScript */,
+				5F367F8C28B724C400DED71B /* ShellScript */,
 			);
 			buildRules = (
 			);
@@ -134,7 +133,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Affan Khan";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
@@ -169,7 +168,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */,
 				415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */,
 				415D588D23E37F5300907B7B /* Assets.xcassets in Resources */,
 				415D588B23E37F5200907B7B /* Main.storyboard in Resources */,
@@ -179,7 +177,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		415D58A323E38E1900907B7B /* ShellScript */ = {
+		5F367F8C28B724C400DED71B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -194,7 +192,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\nProjectDir=\"$PROJECT_DIR\";\n\n# iModelJsNative Assets folder\nrm -rf $AppBundleRoot/iModelJsNative\nmkdir $AppBundleRoot/iModelJsNative\ncp -L -R $OutRoot$BuildArchitecture/Product/iModelJsHost/Assets $AppBundleRoot/iModelJsNative\n# cp $AssetRoot/backend/assets/test.bim $AppBundleRoot/iModelJsNative/Assets/\n\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n\n";
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -258,6 +257,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -318,6 +318,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -355,18 +356,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
@@ -385,18 +379,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
