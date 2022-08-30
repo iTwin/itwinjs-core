@@ -24,7 +24,7 @@ import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
  *
  * @param numA first candidate -- presumed 0 or positive
  * @param numB second candidate -- may be undefined, invalid if outside closed interval 0..numA
- * @param multiplyBy second candidate mulitpler (applied only if candidate is defined)
+ * @param multiplyBy second candidate multiplier (applied only if candidate is defined)
  */
 function selectOptionalClampedMin(numA: number, numB: number | undefined, multiplyBy: number): number {
 

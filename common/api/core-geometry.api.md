@@ -4119,6 +4119,7 @@ export class Point3dArray {
     static cloneXYZPropsAsNumberArray(data: XYZProps[]): number[][];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
+    static countNonDuplicates(points: Point3d[], tolerance?: number): number;
     static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
@@ -4135,7 +4136,7 @@ export class Point3dArray {
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[]): Float64Array;
-    static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean): number;
+    static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedZ(weights: Float64Array, points: Point3d[]): number;
@@ -4483,6 +4484,7 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
+    static announceBoundaryChainsLineString3d(mesh: Polyface, announceLoop: (points: LineString3d) => void): void;
     static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number) => void, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
@@ -4493,7 +4495,6 @@ export class PolyfaceQuery {
     static get asyncWorkLimit(): number;
     // @internal
     static awaitBlockCount: number;
-    // (undocumented)
     static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): CurveCollection | undefined;
     static boundaryOfVisibleSubset(polyface: IndexedPolyface, visibilitySelect: 0 | 1 | 2, vectorToEye: Vector3d, sideAngleTolerance?: Angle): CurveCollection | undefined;
     static buildAverageNormals(polyface: IndexedPolyface, toleranceAngle?: Angle): void;
@@ -5248,6 +5249,7 @@ export class Sample {
     static readonly range2d: Range2d[];
     static readonly range3d: Range3d[];
     static readonly ray3d: Ray3d[];
+    static sweepXZLineStringToMeshWithHoles(xzPoints: number[][], ySweep: number, acceptFunction: (x0: number, y0: number) => boolean): IndexedPolyface;
     static readonly vector2d: Vector2d[];
 }
 
