@@ -44,6 +44,11 @@ export interface SavedFrontstageState {
     popoutWidgets: {
       allIds: string[];
     };
+    widgets: {
+      [id in string]: {
+        activeTabId: string;
+      };
+    }
   };
   widgets: {
     allIds: string[];

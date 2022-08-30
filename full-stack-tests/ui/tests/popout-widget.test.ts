@@ -63,4 +63,43 @@ test.describe("popout widget", () => {
       width: 300,
     });
   });
+
+  test("should maintain popout widget bounds (after reload)", async ({ context, page }) => {
+    const tab = tabLocator(page, "View Attributes");
+    const widget = widgetLocator(page, { tab });
+    const popoutButton = widget.locator('[title="Pop out active widget tab"]');
+
+    // Popout the widget w/ default size.
+    let [popoutPage] = await Promise.all([
+      context.waitForEvent("page"),
+      popoutButton.click(),
+    ]);
+
+    // Update widget size and close the popout.
+    await popoutPage.setViewportSize({
+      height: 400,
+      width: 300,
+    });
+    await popoutPage.close({ runBeforeUnload: true });
+
+    // TODO: ATM need to activate the tab, since the widget is not floating after window is closed
+    await tab.click();
+    await expect(tab).toHaveClass(/nz-active/);
+
+    await expectSavedFrontstageState(context, (state) => {
+      return state.nineZone.widgets["leftStart"].activeTabId === "appui-test-providers:ViewAttributesWidget";
+    });
+
+    await page.reload();
+
+    // Popout the widget.
+    [popoutPage] = await Promise.all([
+      context.waitForEvent("page"),
+      popoutButton.click(),
+    ]);
+    expect(popoutPage.viewportSize()).toEqual({
+      height: 400,
+      width: 300,
+    });
+  });
 });

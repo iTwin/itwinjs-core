@@ -15,7 +15,7 @@ import produce, { Draft } from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
-import { Rectangle, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
+import { Rectangle, RectangleProps, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
   addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab,
@@ -848,19 +848,29 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
 }
 
 function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageDef): SavedWidgets {
-  return produce(savedWidgets, (draft) => {
-    for (const widgetDef of frontstageDef.widgetDefs) {
-      if (!widgetDef.tabLocation.floatingWidget)
-        continue;
+  for (const widgetDef of frontstageDef.widgetDefs) {
+    const id = widgetDef.id;
+    const initialWidget: SavedWidget = {
+      id,
+    };
+    const widget = produce(initialWidget, (draft) => {
+      if (widgetDef.tabLocation.floatingWidget) {
+        draft.tabLocation = { ...widgetDef.tabLocation };
+      }
+      if (widgetDef.popoutBounds) {
+        draft.popoutBounds = widgetDef.popoutBounds.toProps();
+      }
+    });
+    if (widget === initialWidget)
+      continue;
 
-      const id = widgetDef.id;
+    savedWidgets = produce(savedWidgets, (draft) => {
       draft.allIds.push(id);
-      draft.byId[id] = {
-        id,
-        tabLocation: { ...widgetDef.tabLocation },
-      };
-    }
-  });
+      draft.byId[id] = widget;
+    });
+  }
+
+  return savedWidgets;
 }
 
 function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageDef) {
@@ -872,7 +882,12 @@ function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageD
       continue;
 
     const savedWidget = savedWidgets.byId[widgetId];
-    widget.tabLocation = { ...savedWidget.tabLocation };
+    if (savedWidget.tabLocation) {
+      widget.tabLocation = { ...savedWidget.tabLocation };
+    }
+    if (savedWidget.popoutBounds) {
+      widget.popoutBounds = Rectangle.create(savedWidget.popoutBounds);
+    }
 
     savedWidgets = produce(savedWidgets, (draft) => {
       draft.allIds.splice(i, 1);
@@ -908,7 +923,8 @@ export interface WidgetPanelsFrontstageState {
  */
 export interface SavedWidget {
   readonly id: WidgetDef["id"];
-  readonly tabLocation: TabLocation;
+  readonly tabLocation?: TabLocation;
+  readonly popoutBounds?: RectangleProps;
 }
 
 /** @internal */
