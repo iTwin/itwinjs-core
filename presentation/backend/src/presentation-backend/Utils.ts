@@ -11,8 +11,8 @@ import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Diagnostics, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
 
-const ecPresentation = require("@itwin/presentation-common/assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
-const rulesEngine = require("@itwin/presentation-common/assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const ecPresentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const rulesEngine = require("@itwin/presentation-common/lib/cjs/assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
 /** @internal */
 export function getLocalizedStringEN(key: string) {
