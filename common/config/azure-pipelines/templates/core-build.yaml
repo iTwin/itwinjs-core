@@ -6,7 +6,7 @@ parameters:
     default: $(System.DefaultWorkingDirectory)
   - name: rushBuildCacheEnabled
     type: number
-    default: 1
+    default: 0
   - name: rushBuildCacheWriteAllowed
     type: number
     default: 0
