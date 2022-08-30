@@ -980,9 +980,6 @@ export const getFieldByName: (fields: Field[], name: string | undefined, recurse
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
 
-// @alpha (undocumented)
-export function getLocalizedStringEN(key: string): any;
-
 // @public
 export interface GroupingNodeKey extends BaseNodeKey {
     groupedInstancesCount: number;

@@ -137,7 +137,6 @@ public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
-alpha;getLocalizedStringEN(key: string): any
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
 public;GroupingRule 

@@ -15,21 +15,7 @@ import { Field } from "./content/Fields";
 import { CategoryDescription } from "./content/Category";
 import { ElementProperties } from "./ElementProperties";
 
-const ecPresentation = require("../assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
-const rulesEngine = require("../assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 const KEY_PATTERN = /@[\w\d\-_]+:[\w\d\-\._]+?@/g;
-
-/** @internal */
-export function getLocalizedStringEN(key: string) {
-  const [namespace, identifier] = key.split(":", 2);
-  if (namespace === "ECPresentation") {
-    return ecPresentation[identifier];
-  }
-  if (namespace === "RulesEngine") {
-    return rulesEngine[identifier];
-  }
-  return key;
-}
 
 /** @internal */
 export interface LocalizationHelperProps {

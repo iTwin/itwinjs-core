@@ -4,9 +4,9 @@ public;BackendDiagnosticsAttribute
 alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
 alpha;BackendDiagnosticsOptions 
 public;ContentCacheConfig
-internal;createContentDescriptorOverrides: (descriptorOrOverrides: Descriptor | DescriptorOverrides) => DescriptorOverrides
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
+internal;getLocalizedStringEN(key: string): any
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode
