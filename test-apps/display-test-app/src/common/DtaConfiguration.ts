@@ -46,7 +46,7 @@ export interface DtaConfiguration {
   alwaysSubdivideIncompleteTiles?: boolean; // default OFF
   antialiasSamples?: number; // default 1 (No antialiasing)
   openReadWrite?: boolean; // default false
-  iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share
+  iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined
   cesiumIonKey?: string; // default undefined
@@ -54,6 +54,12 @@ export interface DtaConfiguration {
   windowSize?: string; // default undefined
   devTools?: boolean; // default true
   cacheTileMetadata?: boolean; // default false
+  iModelId?: GuidString; // default is undefined, the ID of the iModel to download and open from the hub
+  urlPrefix?: string; // default is undefined, used to override the default URL prefix for iModel Hub access
+  headless?: boolean; // default false
+  oidcClientId?: string; // default is undefined, used for auth setup
+  oidcScope?: string; // default is undefined, used for auth setup
+  oidcRedirectUri?: string; // default is undefined, used for auth setup
 }
 
 let configuration: DtaConfiguration | undefined;
@@ -211,6 +217,13 @@ export const getConfig = (): DtaConfiguration => {
   configuration.alwaysSubdivideIncompleteTiles = undefined !== process.env.IMJS_SUBDIVIDE_INCOMPLETE;
 
   configuration.iTwinId = process.env.IMJS_ITWIN_ID;
+
+  configuration.iModelId = process.env.IMJS_IMODEL_ID;
+  configuration.urlPrefix = process.env.IMJS_URL_PREFIX;
+  configuration.headless = undefined !== process.env.IMJS_OIDC_HEADLESS;
+  configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
+  configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
+  configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;
 
   return configuration;
 };

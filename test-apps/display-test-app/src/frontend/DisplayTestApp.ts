@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { GuidString, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { openIModel } from "./openIModel";
-import { signIn } from "./signIn";
+import { openIModel, OpenIModelProps } from "./openIModel";
+import { setSignInConfiguration, signIn } from "./signIn";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
@@ -44,11 +44,12 @@ const getFrontendConfig = async (useRPC = false) => {
   Object.assign(configuration, configurationOverrides);
 
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+  setSignInConfiguration(configuration);
 };
 
-async function openFile(filename: string, writable: boolean): Promise<IModelConnection> {
+async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await openIModel(filename, writable);
+  const iModelConnection = await openIModel(props);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
@@ -179,8 +180,21 @@ const dtaFrontendMain = async () => {
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
-      iModel = await openFile(iModelName, writable);
+      iModel = await openFile({ fileName: iModelName, writable });
       setTitle(iModel);
+    }
+    const origStandalone = configuration.standalone;
+    try {
+      const iModelId = configuration.iModelId;
+      const iTwinId = configuration.iTwinId;
+      if (undefined !== iModelId && undefined !== iTwinId) {
+        const writable = configuration.openReadWrite ?? false;
+        iModel = await openFile({ iModelId, iTwinId, writable });
+        setTitle(iModel);
+      }
+    } catch (error) {
+      configuration.standalone = origStandalone;
+      alert(`Error getting hub iModel: ${error}`);
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.
