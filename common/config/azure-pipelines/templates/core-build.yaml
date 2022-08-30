@@ -6,7 +6,7 @@ parameters:
     default: $(System.DefaultWorkingDirectory)
   - name: rushBuildCacheEnabled
     type: number
-    default: 0
+    default: 1
   - name: rushBuildCacheWriteAllowed
     type: number
     default: 0
@@ -37,10 +37,10 @@ steps:
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
-      ${{ if eq(variables.isReleaseBuild, false) }}:
-        RUSH_BUILD_CACHE_WRITE_ALLOWED: ${{parameters.rushBuildCacheWriteAllowed}}
-      ${{ else }}:
+      ${{ if eq(variables.shouldWriteToCache, true) }}:
         RUSH_BUILD_CACHE_WRITE_ALLOWED: 1
+      ${{ else }}:
+        RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
