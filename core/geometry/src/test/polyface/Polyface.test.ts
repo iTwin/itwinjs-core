@@ -1012,6 +1012,7 @@ it("SolidPrimitiveBoundary", () => {
   let x0 = 0;
   const y0 = 0;
   const delta = 10;
+  const z1 = 10.0;
   for (const capped of [true, false]) {
     for (const solid of
       [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
@@ -1034,11 +1035,14 @@ it("SolidPrimitiveBoundary", () => {
         Angle.createDegrees(30),
         Angle.createDegrees(50)]) {
         PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
+        const boundary1 = PolyfaceQuery.boundaryEdges(mesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
-        if (capped)
-          ck.testUndefined(boundary, "no boundary for capped solid");
-        else
-          ck.testDefined(boundary, "uncapped solid has boundary");
+        if (capped) {
+          if (!ck.testUndefined(boundary1, "capped solid should have no boundary"))
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary1, x0, y1, z1);
+        } else {
+          ck.testDefined(boundary1, "uncapped solid should have boundary");
+        }
         y1 += 2 * delta;
       }
       x0 += delta;

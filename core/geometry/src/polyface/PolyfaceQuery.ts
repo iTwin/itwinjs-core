@@ -298,6 +298,8 @@ export class PolyfaceQuery {
        result.tryAddChild (LineSegment3d.create (pointA, pointB));
 };
     PolyfaceQuery.announceBoundaryEdges (source, announceEdge, includeDanglers, includeMismatch, includeNull);
+    if (result.children.length === 0)
+      return undefined;
     return result;
   }
     /**
@@ -349,7 +351,6 @@ export class PolyfaceQuery {
         }
       }
   }
-
   /** Find segments (within the linestring) which project to facets.
    * * Announce each pair of linestring segment and on-facet segment through a callback.
    * * Facets are ASSUMED to be convex and planar.
