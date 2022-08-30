@@ -7,9 +7,6 @@ parameters:
   - name: rushBuildCacheEnabled
     type: number
     default: 1
-  - name: rushBuildCacheWriteAllowed
-    type: number
-    default: 0
 
 steps:
   - script: node common/scripts/install-run-rush.js check
