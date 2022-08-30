@@ -27,9 +27,13 @@ function getBaseMapFromStyle(displayStyle: DisplayStyleState | undefined) {
   return undefined;
 }
 
+interface BasemapPanelProps {
+  disabled?: boolean;
+}
+
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function BasemapPanel() {
+export function BasemapPanel(props: BasemapPanelProps) {
   const [useColorLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Basemap.ColorFill"));
   const { activeViewport, bases } = useSourceMapContext();
 
@@ -152,16 +156,22 @@ export function BasemapPanel() {
   return (
     <>
       <div className="map-manager-base-item" >
-        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange}>
+        <Button size="small" styleType="borderless"  title={toggleVisibility} onClick={handleVisibilityChange} disabled={props.disabled}>
           <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
-        <Select className="map-manager-base-item-select" options={baseMapOptions} placeholder={selectBaseMapLabel} value={selectedBaseMapValue.value} onChange={handleBaseMapSelection} size="small" />
+        <Select className="map-manager-base-item-select"
+          options={baseMapOptions}
+          placeholder={selectBaseMapLabel}
+          value={selectedBaseMapValue.value}
+          onChange={handleBaseMapSelection} size="small"
+          disabled={props.disabled}
+        />
         {
           baseIsColor &&
           <ColorSwatch className="map-manager-base-item-color" colorDef={ColorDef.fromJSON(bgColor)} round={false} onColorPick={handleBgColorClick} />
         }
-        <TransparencyPopupButton transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange} />
+        <TransparencyPopupButton disabled={props.disabled} transparency={baseMapTransparencyValue} onTransparencyChange={handleBasemapTransparencyChange}/>
       </div>
     </>
   );

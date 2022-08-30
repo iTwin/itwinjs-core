@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel } from "@itwin/core-bentley";
-import { BisCodeSpec, CodeSpec, IModelVersion, NavigationValue, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
+import { BisCodeSpec, CodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
   CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
   ModelSelectorState, OrthographicViewState, ViewState,
 } from "@itwin/core-frontend";
-import { Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
-import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {
@@ -113,28 +112,6 @@ describe("IModelConnection (#integration)", () => {
 
   });
 
-  // TODO: This test currently causes other tests to fail due to how it restarts IModelHost
-  it.skip("should be able to re-establish IModelConnection if the backend is shut down", async () => {
-    let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
-    assert.equal(elementProps.length, 1);
-    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
-    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
-
-    let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.size, 1);
-
-    // Restart Backend!!!
-    await TestRpcInterface.getClient().restartIModelHost();
-
-    elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
-    assert.equal(elementProps.length, 1);
-    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
-    assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
-
-    queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
-    assert.isAtLeast(queryElementIds.size, 1);
-  });
-
   it("should be able to open an IModel with no versions", async () => {
     const iTwinId = await TestUtility.queryITwinIdByName(TestUtility.testITwinName);
     const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.noVersions);
@@ -216,52 +193,6 @@ describe("IModelConnection (#integration)", () => {
     rows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
   });
-
-  // This require new build of Addon
-  it.skip("Parameterized ECSQL", async () => {
-    assert.exists(iModel);
-    let rows = await executeQuery(iModel, "SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
-    assert.equal(rows.length, 1);
-    let expectedRow = rows[0];
-    const expectedId = Id64.fromJSON(expectedRow.id);
-    assert.isTrue(Id64.isValid(expectedId));
-    const expectedModel: NavigationValue = expectedRow.model;
-    assert.isTrue(Id64.isValidId64(expectedModel.id));
-    const expectedLastMod: string = expectedRow.lastMod;
-    const expectedFedGuid: string | undefined = !!expectedRow.federationGuid ? expectedRow.federationGuid : undefined;
-    const expectedOrigin: XYAndZ = expectedRow.origin;
-
-    let actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
-      [expectedId, expectedModel, expectedLastMod, expectedRow.codeValue, expectedFedGuid, expectedOrigin]);
-    assert.equal(actualRows.length, 1);
-
-    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=:id AND Model=:model OR (LastMod=:lastmod AND CodeValue=:codevalue AND FederationGuid=:fedguid AND Origin=:origin)",
-      {
-        id: expectedId, model: expectedModel, lastmod: expectedLastMod,
-        codevalue: expectedRow.codeValue, fedguid: expectedFedGuid, origin: expectedOrigin,
-      });
-    assert.equal(actualRows.length, 1);
-
-    // single parameter query
-    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.Element WHERE LastMod=?", [expectedLastMod]);
-    assert.isTrue(actualRows.length >= 1);
-
-    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.Element WHERE LastMod=:lastmod", { lastmod: expectedLastMod });
-    assert.isTrue(actualRows.length >= 1);
-
-    // New query with point2d parameter
-    rows = await executeQuery(iModel, "SELECT ECInstanceId,Origin FROM bis.GeometricElement2d LIMIT 1");
-    assert.equal(rows.length, 1);
-
-    expectedRow = rows[0];
-    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
-      [Id64.fromJSON(expectedRow.id), expectedRow.origin]);
-    assert.equal(actualRows.length, 1);
-
-    actualRows = await executeQuery(iModel, "SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: expectedRow.id, origin: expectedRow.origin });
-    assert.equal(actualRows.length, 1);
-  }).timeout(99999);
 
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {

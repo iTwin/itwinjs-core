@@ -210,8 +210,7 @@ describe("RegionOps", () => {
     context.saveAndReset("RegionOps", "BooleanDisjointRectangles");
     expect(context.getNumErrors()).equals(0);
   });
-  it.skip("BooleanFractalAB", () => {
-    // EDL July 15 2019 This triggers euler problem
+  it("BooleanFractalAB", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
     const fractalA = Sample.createFractalLMildConcavePatter(2, 1.0);
@@ -221,7 +220,7 @@ describe("RegionOps", () => {
     expect(context.getNumErrors()).equals(0);
   });
 
-  it.skip("BooleanFractalABRotated", () => {
+  it("BooleanFractalABRotated", () => {
     const context = new PolygonBooleanTests();
     context.setDebugControls(10, 1);
     const fractalA = Sample.createFractalLMildConcavePatter(2, 1.0);

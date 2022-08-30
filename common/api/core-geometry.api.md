@@ -1378,6 +1378,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     clipUnboundedSegment(pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber): boolean;
     clone(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     computePlanePlanePlaneIntersections(points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment?: boolean): number;
+    static createConvexPolyface(convexMesh: Polyface | PolyfaceVisitor, result?: ConvexClipPlaneSet): {
+        clipper: ConvexClipPlaneSet;
+        volume: number;
+    };
     static createEmpty(result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createPlanes(planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[], result?: ConvexClipPlaneSet): ConvexClipPlaneSet;
     static createRange3dPlanes(range: Range3d, lowX?: boolean, highX?: boolean, lowY?: boolean, highY?: boolean, lowZ?: boolean, highZ?: boolean): ConvexClipPlaneSet;
@@ -1390,7 +1394,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     static readonly hugeVal = 1e+37;
     isAlmostEqual(other: ConvexClipPlaneSet): boolean;
     isPointInside(point: Point3d): boolean;
-    isPointOnOrInside(point: Point3d, tolerance: number): boolean;
+    isPointOnOrInside(point: Point3d, tolerance?: number): boolean;
     isSphereInside(centerPoint: Point3d, radius: number): boolean;
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     negateAllPlanes(): void;
@@ -6096,6 +6100,7 @@ export class XYZ implements XYAndZ {
     isExactEqual(other: XYAndZ): boolean;
     static isXAndY(arg: any): arg is XAndY;
     static isXYAndZ(arg: any): arg is XYAndZ;
+    get isZero(): boolean;
     magnitude(): number;
     magnitudeSquared(): number;
     magnitudeSquaredXY(): number;

@@ -2,32 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+/* eslint-disable deprecation/deprecation */
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { Headline } from "../../core-react";
 
-/* eslint-disable deprecation/deprecation */
-
 describe("<Headline />", () => {
-  it("should render", () => {
-    mount(<Headline />);
-  });
   it("renders correctly", () => {
-    shallow(<Headline />).should.matchSnapshot();
-  });
+    render(<Headline>Tested content</Headline>);
 
-  it("content renders correctly", () => {
-    shallow(<Headline>Test content</Headline>).should.matchSnapshot();
-  });
-
-  it("has correct className", () => {
-    const wrapper = mount(<Headline />);
-    wrapper.find(".uicore-text-headline").length.should.eq(1);
-  });
-
-  it("has correct text", () => {
-    const wrapper = mount(<Headline>Test Content</Headline>);
-    wrapper.find(".uicore-text-headline").text().should.equal("Test Content");
-    wrapper.unmount();
+    expect(screen.getByText("Tested content", {selector: "span.uicore-text-headline"})).to.exist;
   });
 });

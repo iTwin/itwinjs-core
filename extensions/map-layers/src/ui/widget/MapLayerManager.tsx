@@ -424,22 +424,23 @@ export function MapLayerManager(props: MapLayerManagerProps) {
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>
         <div className="map-manager-header-buttons-group">
           <ToggleSwitch className="map-manager-toggle" checked={backgroundMapVisible} onChange={handleMapLayersToggle} />
-          <MapLayerSettingsPopupButton />
+          <MapLayerSettingsPopupButton disabled={!backgroundMapVisible}/>
         </div>
       </div>
 
       <div className="map-manager-container">
 
         <div className="map-manager-basemap">
-          <BasemapPanel />
+          <BasemapPanel disabled={!backgroundMapVisible} />
         </div>
         {!hideExternalMapLayersSection &&
           <DragDropContext onDragEnd={handleOnMapLayerDragEnd}>
             <div className="map-manager-layer-wrapper">
               <div className="map-manager-underlays" >
-                <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton isOverlay={false} />
+                <span className="map-manager-underlays-label">{underlaysLabel}</span><AttachLayerPopupButton disabled={!backgroundMapVisible} isOverlay={false} />
               </div>
               <MapLayerDroppable
+                disabled={!backgroundMapVisible}
                 isOverlay={false}
                 layersList={backgroundMapLayers}
                 mapTypesOptions={props.mapLayerOptions?.mapTypeOptions}
@@ -452,9 +453,10 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
             <div className="map-manager-layer-wrapper">
               <div className="map-manager-overlays" >
-                <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton isOverlay={true} />
+                <span className="map-manager-overlays-label">{overlaysLabel}</span><AttachLayerPopupButton disabled={!backgroundMapVisible} isOverlay={true} />
               </div>
               <MapLayerDroppable
+                disabled={!backgroundMapVisible}
                 isOverlay={true}
                 layersList={overlayMapLayers}
                 mapTypesOptions={props.mapLayerOptions?.mapTypeOptions}
