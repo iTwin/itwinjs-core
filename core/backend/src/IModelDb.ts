@@ -29,6 +29,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -45,12 +46,13 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { ServerBasedLocks } from "./ServerBasedLocks";
-import { SQLiteDb } from "./SQLiteDb";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
+
+// spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -238,7 +240,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+      this._workspace = new ITwinWorkspace(new IModelSettings());
     return this._workspace;
   }
 
@@ -2151,7 +2153,7 @@ export interface TokenArg {
  */
 export interface CloudContainerArgs {
   /** @internal */
-  container?: SQLiteDb.CloudContainer;
+  container?: CloudSqlite.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).
@@ -2287,9 +2289,9 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.ReadWrite && CodeService.createForBriefcase) {
+    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = CodeService.createForBriefcase(briefcaseDb);
+        const codeService = CodeService.createForIModel(briefcaseDb);
         briefcaseDb._codeService = codeService;
         this.onCodeServiceCreated.raiseEvent(codeService);
       } catch (e: any) {

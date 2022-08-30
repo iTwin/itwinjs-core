@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { AccessToken, BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@itwin/core-bentley";
 import { CodeProps } from "@itwin/core-common";
-import { BriefcaseDb } from "./IModelDb";
+import { CloudSqlite } from "./CloudSqlite";
+import { IModelDb } from "./IModelDb";
 import { SettingObject } from "./workspace/Settings";
 
 /**
@@ -22,38 +22,38 @@ export interface CodeIndex {
    * @param from the sequence and scope to search
    * @returns the next available CodeValue in the sequence.
    */
-  findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
+  findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
 
   /**
    * Find the highest currently used value for the supplied `SequenceScope`
    * @param from the sequence and scope to search
    * @returns the highest used value, or undefined if no values have been used.
    */
-  findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
+  findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
 
   /** Determine whether a code is present in this CodeIndex by its Guid. */
-  isCodePresent: (guid: CodeService.CodeGuid) => boolean;
+  isCodePresent(guid: CodeService.CodeGuid): boolean;
 
   /** Get the data for a code in this CodeIndex by its Guid.
    * @returns the data for the code or undefined if no code is present for the supplied Guid.
    */
-  getCode: (guid: CodeService.CodeGuid) => CodeService.CodeEntry | undefined;
+  getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
 
   /** Look up a code by its Scope, Spec, and Value.
    * @returns the Guid of the code, or undefined if not present.
    */
-  findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
+  findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
 
   /** Look up a code spec by its name
    * @throws if the spec is not present.
    */
-  getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
+  getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
 
   /** Call a `CodeIteration` function for all codes in this index, optionally filtered by a `CodeFilter ` */
-  forAllCodes: (iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter) => void;
+  forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
 
   /** Call an iteration function for all code specs in this index, optionally filtered by a `ValueFilter ` */
-  forAllCodeSpecs: (iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter) => void;
+  forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
 }
 
 /**
@@ -65,10 +65,7 @@ export interface CodeService {
   close: () => void;
 
   /** @internal */
-  addAllCodeSpecs: () => Promise<void>;
-
-  /** the BriefcaseDb of this CodeService */
-  readonly briefcase: BriefcaseDb;
+  addAllCodeSpecs(iModel: IModelDb): Promise<void>;
 
   /** the code index for this CodeService */
   readonly codeIndex: CodeIndex;
@@ -78,7 +75,7 @@ export interface CodeService {
    * Applications should set these parameters by adding a listener for `BriefcaseDb.onCodeServiceCreated`
    * that is called every time a BriefcaseDb that uses code services is opened for write access.
    */
-  readonly appParams: CodeService.ObtainLockParams & CodeService.AuthorAndOrigin;
+  readonly appParams: CloudSqlite.ObtainLockParams & CodeService.AuthorAndOrigin;
 
   /**
    * The token that grants access to the cloud container for this CodeService.
@@ -95,7 +92,7 @@ export interface CodeService {
    * @note There is no guarantee that a readonly index is up-to-date even immediately after calling this method, since others
    * may be modifying it at any time.
    */
-  synchronizeWithCloud: () => void;
+  synchronizeWithCloud(): void;
 
   /**
    * Verify that the Code of a to-be-inserted or to-be-updated Element:
@@ -106,12 +103,12 @@ export interface CodeService {
    * If not, throw an exception. Elements with no CodeValue are ignored.
    * @note this method is automatically called whenever elements are added or updated by a BriefcaseDb with a CodeService.
    */
-  verifyCode: (props: CodeService.ElementCodeProps) => void;
+  verifyCode(props: CodeService.ElementCodeProps): void;
 
   /** Add a new code spec to this code service.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  addCodeSpec: (val: CodeService.NameAndJson) => Promise<void>;
+  addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
 
   /**
    * Add all of the codes and code specs from this CodeService's BriefcaseDb into the code index.
@@ -121,14 +118,14 @@ export interface CodeService {
    * any codes or code specs that are already in the index are ignored.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  addAllCodes: () => Promise<number>;
+  addAllCodes(iModel: IModelDb): Promise<number>;
 
   /**
    * Attempt to reserve a single proposed code.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    * @throws `CodeService.Error` if the proposed code cannot be reserved.
    */
-  reserveCode: (code: CodeService.ProposedCode) => Promise<void>;
+  reserveCode(code: CodeService.ProposedCode): Promise<void>;
 
   /**
    * Attempt to reserve an array of proposed codes.
@@ -138,13 +135,13 @@ export interface CodeService {
    * @note If you have a set of codes to reserve, it is considerably more efficient to do them as an array rather than one at a time.
    * @throws `CodeService.Error` if any of the proposed code cannot be reserved. The details for each failed code are in the `problems` member.
    */
-  reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<number>;
+  reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
 
   /**
    * Attempt to reserve the next available code for a code sequence and scope.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  reserveNextAvailableCode: (arg: CodeService.ReserveNextArgs) => Promise<void>;
+  reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
 
   /**
    * Attempt to reserve an array of the next available codes for a code sequence and scope.
@@ -153,13 +150,13 @@ export interface CodeService {
    * @returns number of codes actually reserved.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  reserveNextAvailableCodes: (arg: CodeService.ReserveNextArrayArgs) => Promise<number>;
+  reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
 
   /**
    * Update the properties of a single code.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  updateCode: (props: CodeService.UpdatedCode) => Promise<void>;
+  updateCode(props: CodeService.UpdatedCode): Promise<void>;
 
   /**
    * Update the properties of an array codes.
@@ -167,12 +164,12 @@ export interface CodeService {
    * @note If you have a set of codes to update, it is considerably more efficient to do them as an array rather than one at a time.
    * @returns number of codes actually updated.
    */
-  updateCodes: (arg: CodeService.UpdateCodesArgs) => Promise<number>;
+  updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
 
   /** Delete an array of codes by their guids.
    * @note This will automatically attempt to obtain, perform the operation, and then release the write lock.
    */
-  deleteCodes: (guid: CodeService.CodeGuid[]) => Promise<void>;
+  deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
 }
 
 /** @alpha */
@@ -181,7 +178,7 @@ export namespace CodeService {
   const codeSequences = new Map<string, CodeSequence>();
 
   /** @internal */
-  export let createForBriefcase: undefined | ((db: BriefcaseDb) => CodeService);
+  export let createForIModel: ((db: IModelDb) => CodeService) | undefined;
 
   /** Register an instance of a`CodeSequence` so it can be looked up by name. */
   export function registerSequence(seq: CodeSequence) { codeSequences.set(seq.sequenceName, seq); }
@@ -202,12 +199,12 @@ export namespace CodeService {
    * the `scope` member refers to the element Id of the scope element in the iModel. This helper function
    * converts the spec Id to the spec name and looks up the `FederationGuid` of the scope element.
    */
-  export function makeScopeAndSpec(briefcase: BriefcaseDb, code: CodeProps): CodeService.ScopeAndSpec {
-    const scope = briefcase.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
+  export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec {
+    const scope = iModel.elements.getElementProps({ id: code.scope, onlyBaseProperties: true }).federationGuid;
     if (undefined === scope)
       throw new CodeService.Error("MissingGuid", IModelStatus.InvalidCode, "code scope element has no federationGuid");
 
-    return { scope, spec: briefcase.codeSpecs.getById(code.spec).name };
+    return { scope, spec: iModel.codeSpecs.getById(code.spec).name };
   }
 
   /** Turn a `CodeProps` and  `ProposedCodeProps` into a `ProposedCode` for use with a CodeService.
@@ -217,7 +214,7 @@ export namespace CodeService {
     return {
       ...arg.props,
       value: arg.code.value,
-      ...makeScopeAndSpec(arg.briefcase, arg.code),
+      ...makeScopeAndSpec(arg.iModel, arg.code),
     };
   }
 
@@ -251,22 +248,6 @@ export namespace CodeService {
 
   /** An iteration function over code specs in a code index. It is called with the name and json of a each code spec. */
   export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
-
-  /** Parameters used to obtain the write lock on a cloud container */
-  export interface ObtainLockParams {
-    /** The name of the user attempting to acquire the write lock. This name will be shown to other users while the lock is held. */
-    user?: string;
-    /** number of times to retry in the event the lock currently held by someone else.
-     * After this number of attempts, `onFailure` is called. Default is 20.
-     */
-    nRetries: number;
-    /** Delay between retries, in milliseconds. Default is 100. */
-    retryDelayMs: number;
-    /** function called if lock cannot be obtained after all retries. It is called with the name of the user currently holding the lock and
-     * generally is expected that the user will be consulted whether to wait further.
-     * If this function returns "stop", an exception will be thrown. Otherwise the retry cycle is restarted. */
-    onFailure?: CloudSqlite.WriteLockBusyHandler;
-  }
 
   /** Argument for reserving an array of new codes. */
   export interface ReserveCodesArgs {
@@ -310,7 +291,7 @@ export namespace CodeService {
 
   /** Arguments for CodeService.makeProposedCode  */
   export interface MakeProposedCodeArgs {
-    readonly briefcase: BriefcaseDb;
+    readonly iModel: IModelDb;
     readonly code: Required<CodeProps>;
     readonly props: CodeService.CodeGuidStateJson;
   }
@@ -319,14 +300,19 @@ export namespace CodeService {
    * @see CodeService.verifyCode
    */
   export interface ElementCodeProps {
-    /** The imodel-specific code properties. */
-    readonly code: CodeProps;
-    /**
-     * The federationGuid of the element being inserted or updated.
-     * If federationGuid is defined, it is must match the value in the code index or an error is thrown.
-     * If it is undefined, the value from the code index is returned here.
-     */
-    federationGuid?: GuidString;
+    /** iModel from which the code is being inserted/updated. */
+    readonly iModel: IModelDb;
+    /** Properties of the code */
+    readonly props: {
+      /** The imodel-specific code properties. */
+      readonly code: CodeProps;
+      /**
+       * The federationGuid of the element being inserted or updated.
+       * If federationGuid is defined, it is must match the value in the code index or an error is thrown.
+       * If it is undefined, the value from the code index is returned here.
+       */
+      federationGuid?: GuidString;
+    };
   }
 
   /** a name and a json object. Used for code specs, authors and origins. */

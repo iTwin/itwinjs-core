@@ -10,9 +10,9 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -190,11 +190,13 @@ export interface WorkspaceOpts {
    */
   containerDir?: LocalDirName;
 
-  /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
-  cloudCacheProps?: WorkspaceCloudCacheProps;
-
   /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
   settingsFiles?: LocalFileName | [LocalFileName];
+
+  /**
+   * only for tests
+   * @internal */
+  testCloudCache?: CloudSqlite.CloudCache;
 }
 
 /**
@@ -208,7 +210,7 @@ export interface Workspace {
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
   /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: SQLiteDb.CloudCache;
+  readonly cloudCache?: CloudSqlite.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -269,7 +271,7 @@ export interface WorkspaceContainer {
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)
    * @internal
   */
-  readonly cloudContainer?: SQLiteDb.CloudContainer;
+  readonly cloudContainer?: CloudSqlite.CloudContainer;
 
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
@@ -289,29 +291,32 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-
-  private _cloudCacheProps?: WorkspaceCloudCacheProps;
-  private _cloudCache?: SQLiteDb.CloudCache;
-  public get cloudCache(): SQLiteDb.CloudCache {
-    if (undefined === this._cloudCache) {
-      const cacheProps = {
-        ...this._cloudCacheProps,
-        rootDir: this._cloudCacheProps?.rootDir ?? join(this.containerDir, "cloud"),
-        cacheSize: this._cloudCacheProps?.cacheSize ?? "20G",
-        name: this._cloudCacheProps?.name ?? "workspace",
-      };
-      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
-      if (cacheProps.clearContents)
-        fs.emptyDirSync(cacheProps.rootDir);
-      this._cloudCache = SQLiteDb.createCloudCache(cacheProps);
-    }
+  private static _sharedCloudCache?: CloudSqlite.CloudCache;
+  private _cloudCache?: CloudSqlite.CloudCache;
+  public get cloudCache(): CloudSqlite.CloudCache {
+    if (undefined === this._cloudCache)
+      this._cloudCache = ITwinWorkspace.getSharedCloudCache();
     return this._cloudCache;
+  }
+  private static getSharedCloudCache(): CloudSqlite.CloudCache {
+    if (undefined === this._sharedCloudCache) {
+      const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
+      IModelJsFs.recursiveMkDirSync(rootDir);
+      this._sharedCloudCache = CloudSqlite.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
+    }
+    return this._sharedCloudCache;
+  }
+  public static finalize() {
+    if (this._sharedCloudCache) {
+      this._sharedCloudCache.destroy();
+      this._sharedCloudCache = undefined;
+    }
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
-    this._cloudCacheProps = opts?.cloudCacheProps;
+    this._cloudCache = opts?.testCloudCache;
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
@@ -362,10 +367,6 @@ export class ITwinWorkspace implements Workspace {
     for (const [_id, container] of this._containers)
       container.close();
     this._containers.clear();
-    if (this._cloudCache) {
-      this._cloudCache.destroy();
-      this._cloudCache = undefined;
-    }
   }
 
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
@@ -424,7 +425,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
-  public readonly cloudContainer?: SQLiteDb.CloudContainer | undefined;
+  public readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
   private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -455,7 +456,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (account?.accessName && account.storageType)
-      this.cloudContainer = SQLiteDb.createCloudContainer({ accessToken: "", ...props, ...account });
+      this.cloudContainer = CloudSqlite.createCloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -496,7 +497,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return `${dbName}:${this.validateVersion(version)}`;
   }
 
-  public static resolveCloudFileName(cloudContainer: SQLiteDb.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+  public static resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const dbName = props.dbName;
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
@@ -528,7 +529,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
    * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
    * new content before the write lock is released, and thereafter should never be modified again.
    */
-  public static async makeNewVersion(cloudContainer: SQLiteDb.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
+  public static async makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
     const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
     const oldDb = this.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, versionType);
@@ -691,9 +692,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public prefetch(opts?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch | undefined {
+  public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined {
     const cloudContainer = this.container.cloudContainer;
-    return (cloudContainer !== undefined) ? SQLiteDb.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
+    return (cloudContainer !== undefined) ? CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
   }
 }
 
@@ -760,8 +761,14 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     const db = new SQLiteDb();
     IModelJsFs.recursiveMkDirSync(dirname(fileName));
     db.createDb(fileName);
-    db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
-    db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
+    const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
+    db.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
+    db.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
+    const createTrigger = (tableName: string) => {
+      db.executeSQL(`CREATE TRIGGER ${tableName}_timeStamp AFTER UPDATE ON ${tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${tableName} SET lastMod=julianday('now') WHERE id=new.id; END`);
+    };
+    createTrigger("strings");
+    createTrigger("blobs");
     db.closeDb(true);
   }
 

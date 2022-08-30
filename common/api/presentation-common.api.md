@@ -595,11 +595,17 @@ export interface DiagnosticsLogMessage {
 export interface DiagnosticsOptions {
     dev?: boolean | DiagnosticsLoggerSeverity;
     editor?: boolean | DiagnosticsLoggerSeverity;
-    perf?: boolean;
+    perf?: boolean | {
+        minimumDuration: number;
+    };
 }
 
 // @alpha (undocumented)
 export interface DiagnosticsScopeLogs {
+    // (undocumented)
+    attributes?: {
+        [attributeKey: string]: string | string[];
+    };
     // (undocumented)
     duration?: number;
     // (undocumented)
@@ -1533,6 +1539,29 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
 // @public
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+
+// @internal (undocumented)
+export class LocalizationHelper {
+    constructor(props: LocalizationHelperProps);
+    // (undocumented)
+    getLocalizedContent(content: Content): Content;
+    // (undocumented)
+    getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
+    // (undocumented)
+    getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
+    // (undocumented)
+    getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodes(nodes: Node_2[]): Node_2[];
+    // (undocumented)
+    getLocalizedString(text: string): string;
+}
+
+// @internal (undocumented)
+export interface LocalizationHelperProps {
+    // (undocumented)
+    getLocalizedString: (key: string) => string;
+}
 
 // @beta
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
@@ -3085,7 +3114,6 @@ export enum VariableValueTypes {
 export type WithCancelEvent<TOptions extends {}> = TOptions & {
     cancelEvent?: BeEvent<() => void>;
 };
-
 
 // (No @packageDocumentation comment for this package)
 

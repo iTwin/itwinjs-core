@@ -290,6 +290,82 @@ Object {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects getContent returns localized content 1`] = `
+Object {
+  "contentSet": Array [
+    Object {
+      "classInfo": Object {
+        "id": "0xd7cd000000a73e",
+        "label": "orchestrate TCP Auto Loan Account",
+        "name": "Nepalese Rupee",
+      },
+      "displayValues": Object {
+        "Legacy": "Not specified",
+      },
+      "imageId": "f4ef32e7-726b-4d52-88e8-f4565aafb241",
+      "labelDefinition": Object {
+        "displayValue": "Not specified",
+        "rawValue": "Not specified",
+        "typeName": "string",
+      },
+      "mergedFieldNames": Array [],
+      "primaryKeys": Array [
+        Object {
+          "className": "programming",
+          "id": "0xcd1c000000953e",
+        },
+      ],
+      "values": Object {
+        "Legacy": "Not specified",
+      },
+    },
+  ],
+  "descriptor": Object {
+    "categories": Array [
+      Object {
+        "description": "General",
+        "expand": false,
+        "label": "Not specified",
+        "name": "test-category",
+        "priority": 0,
+      },
+    ],
+    "classesMap": Object {
+      "0x1": Object {
+        "label": "Class Label",
+        "name": "SchemaName:ClassName",
+      },
+    },
+    "connectionId": "",
+    "contentFlags": 0,
+    "contentOptions": undefined,
+    "displayType": "",
+    "fields": Array [
+      Object {
+        "category": "test-category",
+        "editor": undefined,
+        "isReadonly": false,
+        "label": "Not specified",
+        "name": "Legacy",
+        "priority": 0,
+        "renderer": undefined,
+        "type": Object {
+          "typeName": "string",
+          "valueFormat": "Primitive",
+        },
+      },
+    ],
+    "inputKeysHash": undefined,
+    "selectClasses": Array [
+      Object {
+        "isSelectPolymorphic": false,
+        "selectClassInfo": "0x1",
+      },
+    ],
+  },
+}
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects getContentDescriptor returns content descriptor 1`] = `
 Object {
   "categories": Array [
@@ -769,6 +845,39 @@ Array [
     "label": Object {
       "displayValue": "test3",
       "rawValue": "test3",
+      "typeName": "string",
+    },
+  },
+]
+`;
+
+exports[`PresentationManager addon results conversion to Presentation objects getNodes returns localized nodes 1`] = `
+Array [
+  Object {
+    "backColor": "backColor1",
+    "description": "description1",
+    "fontStyle": "fontStyle1",
+    "foreColor": "foreColor1",
+    "hasChildren": true,
+    "imageId": "img_1",
+    "isCheckboxEnabled": true,
+    "isCheckboxVisible": true,
+    "isChecked": true,
+    "isEditable": true,
+    "isExpanded": true,
+    "isSelectionDisabled": true,
+    "key": Object {
+      "pathFromRoot": Array [
+        "p1",
+        "p2",
+        "p3",
+      ],
+      "type": "type1",
+      "version": 1,
+    },
+    "label": Object {
+      "displayValue": "Not specified",
+      "rawValue": "Not specified",
       "typeName": "string",
     },
   },

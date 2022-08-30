@@ -6,7 +6,7 @@ alpha;BackendDiagnosticsOptions
 public;ContentCacheConfig
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
-internal;getLocalesDirectory: (assetsDirectory: string) => string
+internal;getLocalizedStringEN(key: string): any
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode

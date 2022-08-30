@@ -37,9 +37,9 @@ export interface CodeProps {
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec) of the Element */
   public spec: Id64String;
-  /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
+  /** The [CodeScope]($docs/bis/guide/fundamentals/codes.md#codescope-property) of the Element */
   public scope: Id64String;
-  /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
+  /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
   public get value() { return this._value ?? ""; }

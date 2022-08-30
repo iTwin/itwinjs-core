@@ -1067,10 +1067,6 @@
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
-      "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "wms-capabilities",
       "allowedCategories": [ "frontend" ]
     },

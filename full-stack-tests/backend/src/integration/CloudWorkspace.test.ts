@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
@@ -25,8 +26,19 @@ describe("Cloud workspace containers", () => {
       "cloudSqlite/containerId": containerId,
     };
 
-    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), cloudCacheProps: { name: "test1", clearContents: true } });
-    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), cloudCacheProps: { name: "test2", clearContents: true } });
+    const makeCloudCache = (name: string) => {
+      const cacheProps = {
+        rootDir: join(IModelHost.cacheDir, "cloud", name),
+        cacheSize: "20G",
+        name,
+      };
+      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
+      fs.emptyDirSync(cacheProps.rootDir);
+      return CloudSqlite.createCloudCache(cacheProps);
+    };
+
+    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
+    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
     const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 

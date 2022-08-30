@@ -11,6 +11,7 @@ import { createDefaultNativePlatform, NativePlatformDefinition } from "../presen
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
 import { BeEvent } from "@itwin/core-bentley";
 import sinon from "sinon";
+import { join } from "path";
 
 describe("default NativePlatform", () => {
 
@@ -19,7 +20,7 @@ describe("default NativePlatform", () => {
 
   beforeEach(async () => {
     try {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
     } catch (e) {
       let isLoaded = false;
       try {
@@ -33,7 +34,6 @@ describe("default NativePlatform", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
-      localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
@@ -78,7 +78,7 @@ describe("default NativePlatform", () => {
     it("calls addon", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => {} }))
+        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
@@ -87,14 +87,14 @@ describe("default NativePlatform", () => {
     it("throws on cancellation response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
@@ -119,7 +119,7 @@ describe("default NativePlatform", () => {
     };
     addonMock
       .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => {} }));
+      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });
