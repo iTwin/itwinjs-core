@@ -40,6 +40,11 @@ export function panelLocator(page: Page, side: PanelSide) {
 }
 
 export interface SavedFrontstageState {
+  nineZone: {
+    popoutWidgets: {
+      allIds: string[];
+    };
+  };
   widgets: {
     allIds: string[];
   };

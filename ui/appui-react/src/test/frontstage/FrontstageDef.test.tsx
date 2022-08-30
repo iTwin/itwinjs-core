@@ -12,7 +12,7 @@ import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, Fr
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { Rectangle, UiStateStorageStatus } from "@itwin/core-react";
+import { UiStateStorageStatus } from "@itwin/core-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
@@ -260,7 +260,7 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerWidth").get(() => 999);
     sinon.stub(window, "innerHeight").get(() => 999);
 
-    await frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
+    frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
 
     const uiSettingsStorage = UiFramework.getUiStateStorage();
     const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
@@ -294,7 +294,7 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerHeight").get(() => 999);
 
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => true);
-    await frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
+    frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => false);
 
     const uiSettingsStorage = UiFramework.getUiStateStorage();

@@ -57,9 +57,9 @@ export interface FloatingWidgetState {
 
 /** @internal */
 export interface PopoutWidgetState {
-  // TODO: rename to preferred bounds.
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
+  // TODO: popout widget home could also be a floating widget.
   readonly home: FloatingWidgetHomeState;
 }
 
@@ -1221,7 +1221,7 @@ export function insertTabToWidget(state: NineZoneState, tabId: TabState["id"], w
     throw new UiError(category, "Tab not found", undefined, () => ({ tabId }));
   if (!(widgetId in state.widgets))
     throw new UiError(category, "Widget not found", undefined, () => ({ widgetId }));
-  const location = findTab(state, tabId)
+  const location = findTab(state, tabId);
   if (location)
     throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
 

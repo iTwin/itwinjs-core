@@ -35,8 +35,8 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { SavedWidgets, saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
-import { BentleyStatus } from "@itwin/core-bentley";
+import { SavedWidgets } from "../widget-panels/Frontstage";
+import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** @internal */
@@ -854,7 +854,6 @@ export class FrontstageDef {
     if (!widgetDef)
       return;
 
-    const tab = state.tabs[widgetDef.id];
     const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
     const bounds = Rectangle.create(popoutWidget.bounds);
 
@@ -881,35 +880,30 @@ export class FrontstageDef {
       return;
 
     let location = findTab(this.nineZoneState, widgetId);
-    if (!location)
-      return;
-    if (isPopoutTabLocation(location))
-      return;
-
-    // get the state to apply that will pop-out the specified WidgetTab to child window.
-    let preferredBounds = Rectangle.createFromSize({ height: 800, width: 600 });
-    if (size)
-      preferredBounds = preferredBounds.setSize(size);
-    if (point)
-      preferredBounds = preferredBounds.setPosition(point);
-
-    const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, preferredBounds);
-    if (!state)
-      return;
-
-    // now that the state is updated get the id of the container that houses the widgetTab/widgetId
-    location = findTab(state, widgetId);
-    if (!location || !isPopoutTabLocation(location))
+    if (!location || isPopoutTabLocation(location))
       return;
 
     const widgetDef = this.findWidgetDef(widgetId);
     if (!widgetDef)
       return;
 
+    // get the state to apply that will pop-out the specified WidgetTab to child window.
+    let preferredBounds = Rectangle.createFromSize({ height: 800, width: 600 });
+    if (widgetDef.popoutBounds)
+      preferredBounds = widgetDef.popoutBounds;
+    if (size)
+      preferredBounds = preferredBounds.setSize(size);
+    if (point)
+      preferredBounds = preferredBounds.setPosition(point);
+
+    const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, preferredBounds);
     this.nineZoneState = state;
 
+    // now that the state is updated get the id of the container that houses the widgetTab/widgetId
+    location = findTab(state, widgetId);
+    assert(!!location && isPopoutTabLocation(location));
+
     const widgetContainerId = location.widgetId;
-    const tab = state.tabs[widgetId];
     const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
     const bounds = Rectangle.create(popoutWidget.bounds);
 
@@ -938,12 +932,27 @@ export class FrontstageDef {
   }
 
   /** @internal */
-  public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
+  public saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
     if (!this.nineZoneState)
       return;
 
-    const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
-    this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
+    const location = findWidget(this.nineZoneState, childWindowId);
+    if (!location || !isPopoutWidgetLocation(location))
+      return;
+
+    const widget = this.nineZoneState.widgets[location.popoutWidgetId];
+    const tabId = widget.tabs[0];
+    const widgetDef = this.findWidgetDef(tabId);
+    if (!widgetDef)
+      return;
+
+    const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+    const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
+
+    const width = childWindow.innerWidth + adjustmentWidth;
+    const height = childWindow.innerHeight + adjustmentHeight;
+    const bounds = Rectangle.createFromSize({ width, height }).offset({ x: childWindow.screenX, y: childWindow.screenY });
+    widgetDef.popoutBounds = bounds;
   }
 
   /** @internal */
@@ -963,16 +972,18 @@ export class FrontstageDef {
    *  @internal
    */
   public dockPopoutWidgetContainer(widgetContainerId: string) {
-    if (this.nineZoneState) {
-      const location = findWidget(this.nineZoneState, widgetContainerId);
-      // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
-      // an API call has moved the widget from a popout state to a floating state.
-      // istanbul ignore else
-      if (location && isPopoutWidgetLocation(location)) {
-        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-        state && (this.nineZoneState = state);
-      }
-    }
+    if (!this.nineZoneState)
+      return;
+
+    // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
+    // an API call has moved the widget from a popout state to a floating state.
+    // istanbul ignore else
+    const location = findWidget(this.nineZoneState, widgetContainerId);
+    if (!location || !isPopoutWidgetLocation(location))
+      return;
+
+    const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+    this.nineZoneState = state;
   }
 
   /** Finds the container with the specified widget and re-docks all widgets
@@ -1064,7 +1075,7 @@ export class FrontstageDef {
     return {
       [Symbol.iterator]() {
         return defs;
-      }
+      },
     };
   }
 }

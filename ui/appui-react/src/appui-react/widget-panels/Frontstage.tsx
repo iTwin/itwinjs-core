@@ -18,9 +18,9 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Rectangle, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab, findWidget,
+  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab,
   floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
-  isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
+  isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTabFromWidget, removeTabState, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -348,7 +348,6 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const widgetContainerId = getWidgetId(side, panelZoneKeys[preferredWidgetIndex]);
       const home: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
       const preferredPosition = widgetDef.defaultFloatingPosition;
-
 
       if (floatingContainerId in state.widgets) {
         state = addTabToWidget(state, widgetDef.id, floatingContainerId);
@@ -865,7 +864,7 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
 }
 
 function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageDef) {
-  var i = savedWidgets.allIds.length;
+  let i = savedWidgets.allIds.length;
   while (i--) {
     const widgetId = savedWidgets.allIds[i];
     const widget = frontstage.findWidgetDef(widgetId);
@@ -940,7 +939,6 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
 function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneState {
   const tabLocation = widgetDef.tabLocation;
   const tabId = widgetDef.id;
-  const tab = state.tabs[tabId];
   const widgetId = tabLocation.widgetId;
 
   if (widgetId in state.widgets) {
@@ -1160,17 +1158,19 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
   const uiSettingsStorage = useUiStateStorageHandler();
-  const saveSetting = React.useCallback(debounce(async (frontstage: FrontstageDef, state: NineZoneState, savedWidgets: SavedWidgets) => {
-    const id = frontstage.id;
-    const setting: WidgetPanelsFrontstageState = {
-      id,
-      version: frontstage.version,
-      stateVersion,
-      nineZone: packNineZoneState(state),
-      widgets: packSavedWidgets(savedWidgets, frontstage),
-    };
-    await uiSettingsStorage.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
-  }, 1000), [uiSettingsStorage]);
+  const saveSetting = React.useMemo(() => {
+    return debounce(async (frontstage: FrontstageDef, state: NineZoneState, savedWidgets: SavedWidgets) => {
+      const id = frontstage.id;
+      const setting: WidgetPanelsFrontstageState = {
+        id,
+        version: frontstage.version,
+        stateVersion,
+        nineZone: packNineZoneState(state),
+        widgets: packSavedWidgets(savedWidgets, frontstage),
+      };
+      await uiSettingsStorage.saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(id), setting);
+    }, 1000);
+  }, [uiSettingsStorage]);
   React.useEffect(() => {
     return () => {
       saveSetting.cancel();
@@ -1187,7 +1187,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
       };
     }
     saveSetting(frontstageDef, nineZone, savedWidgets);
-  }, [frontstageDef, nineZone, saveSetting, frontstageDef]);
+  }, [frontstageDef, nineZone, saveSetting]);
 }
 
 /** @internal */
@@ -1345,41 +1345,4 @@ export function useItemsManager(frontstageDef: FrontstageDef) {
 // istanbul ignore next
 function determineNewWidgets(defs: readonly WidgetDef[] | undefined, state: NineZoneState) {
   return (defs || []).filter((def) => !(def.id in state.tabs));
-}
-
-/** @internal */
-export async function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window) {
-  const location = findWidget(state, childWindowId);
-  if (!location)
-    return state;
-  if (!isPopoutWidgetLocation(location))
-    return state;
-
-  const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
-  const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
-  const newState = produce(state, (draft) => {
-    const popoutWidget = draft.popoutWidgets.byId[location.popoutWidgetId];
-
-    const width = childWindow.innerWidth + adjustmentWidth;
-    const height = childWindow.innerHeight + adjustmentHeight;
-    const bounds = Rectangle.createFromSize({ width, height }).offset({ x: childWindow.screenX, y: childWindow.screenY });
-
-    popoutWidget.bounds.left = bounds.left;
-    popoutWidget.bounds.top = bounds.top;
-    popoutWidget.bounds.right = bounds.right;
-    popoutWidget.bounds.bottom = bounds.bottom;
-  });
-
-  const setting: WidgetPanelsFrontstageState = {
-    id: stageId,
-    nineZone: packNineZoneState(newState),
-    widgets: {
-      allIds: [],
-      byId: {},
-    },
-    stateVersion,
-    version: stageVersion,
-  };
-  await UiFramework.getUiStateStorage().saveSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(stageId), setting);
-  return newState;
 }

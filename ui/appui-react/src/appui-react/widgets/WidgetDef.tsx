@@ -20,7 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
-import { IconHelper, IconSpec, RectangleProps, SizeProps } from "@itwin/core-react";
+import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -147,6 +147,7 @@ export class WidgetDef {
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
+  private _popoutBounds?: Rectangle;
 
   private _hideWithUiWhenFloating?: boolean;
   private _initialProps?: WidgetProps;
@@ -208,6 +209,10 @@ export class WidgetDef {
 
   /** @internal */
   public get defaultState() { return this._defaultState; }
+
+  /** @internal */
+  public get popoutBounds() { return this._popoutBounds; }
+  public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
@@ -458,6 +463,7 @@ export class WidgetDef {
   public get hideWithUiWhenFloating(): boolean {
     return !!this._hideWithUiWhenFloating;
   }
+
   public onWidgetStateChanged(): void {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this.state)}`, "35402486-9839-441E-A5C7-46D546142D11");

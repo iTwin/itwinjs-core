@@ -127,9 +127,8 @@ export class ChildWindowManager {
         const frontStageDef = FrontstageManager.activeFrontstageDef;
         if (!frontStageDef)
           return;
-        void frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow).then(() => {
-          this.closeChildWindow(childWindowId, false);
-        });
+        frontStageDef.saveChildWindowSizeAndPosition(childWindowId, childWindow);
+        this.closeChildWindow(childWindowId, false);
       };
     }
   }

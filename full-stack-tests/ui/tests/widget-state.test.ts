@@ -124,8 +124,8 @@ test.describe("widget state", () => {
     await expect(widget).not.toBeVisible();
 
     // Wait for "FW-1" state to be saved before reloading.
-    await expectSavedFrontstageState(context, (setting) => {
-      return setting.widgets.allIds.includes("FW-1");
+    await expectSavedFrontstageState(context, (state) => {
+      return state.widgets.allIds.includes("FW-1");
     });
 
     await page.reload();
