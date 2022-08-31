@@ -9,17 +9,15 @@
 import { castDraft, Draft, produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
 import {
-  addFloatingWidget,
-  addPopoutWidget,
-  DraggedTabState, findTab, findWidget, FloatingWidgetHomeState, FloatingWidgetState, HorizontalPanelState, isFloatingTabLocation, isFloatingWidgetLocation, isPanelTabLocation,
-  isPanelWidgetLocation, isPopoutTabLocation, isPopoutWidgetLocation, NineZoneState, NineZoneStateReducer, PanelsState, PanelState, PanelWidgetLocation, PopoutWidgetState, removeTabFromWidget, TabsState,
-  toolSettingsTabId,
-  VerticalPanelState, WidgetState,
+  addFloatingWidget, addPopoutWidget, DraggedTabState, FloatingWidgetHomeState, FloatingWidgetState, HorizontalPanelState, NineZoneState, NineZoneStateReducer, PanelsState,
+  PopoutWidgetState, removeTabFromWidget, TabsState, toolSettingsTabId, VerticalPanelState, WidgetState,
 } from "./NineZoneState";
 import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { HorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
 import { getUniqueId } from "../base/NineZone";
 import { TabState } from "./TabState";
+import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "./TabLocation";
+import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "./WidgetLocation";
 
 /** @internal */
 export const category = "appui-layout-react:layout";

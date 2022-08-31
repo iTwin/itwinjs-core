@@ -10,10 +10,12 @@
 import { produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
 import { Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
-import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
+import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
-import { addWidgetState, category, createDraggedTabState, createFloatingWidgetState, createPanelsState, createPopoutWidgetState, createTabsState, createTabState, floatingWidgetBringToFront, floatingWidgetClearUserSizedFlag, initSizeProps, isToolSettingsFloatingWidget, removeFloatingWidget, removePanelWidget, removeWidget, setPointProps, setRectangleProps, setSizeProps, setWidgetActiveTabId, updateFloatingWidgetState, updateHomeOfToolSettingsWidget, updatePanelState, updateTabState, updateWidgetState } from "./InternalStateHelpers";
+import { addWidgetState, category, createDraggedTabState, createFloatingWidgetState, createPanelsState, createPopoutWidgetState, createTabsState, createTabState, floatingWidgetBringToFront, floatingWidgetClearUserSizedFlag, initSizeProps, isToolSettingsFloatingWidget, removeFloatingWidget, removePanelWidget, removeWidget, setPointProps, setRectangleProps, setSizeProps, setWidgetActiveTabId, updateFloatingWidgetState, updateHomeOfToolSettingsWidget, updatePanelState, updateWidgetState } from "./InternalStateHelpers";
 import { TabState } from "./TabState";
+import { findTab } from "./TabLocation";
+import { findWidget, isPanelWidgetLocation } from "./WidgetLocation";
 
 /** @internal */
 export const toolSettingsTabId = "nz-tool-settings-tab";
@@ -983,123 +985,6 @@ export function isTabDragDropTargetState(state: DropTargetState): state is TabDr
 }
 
 /** @internal */
-export interface PanelTabLocation {
-  widgetId: WidgetState["id"];
-  side: PanelSide;
-}
-
-/** @internal */
-export interface FloatingTabLocation {
-  widgetId: WidgetState["id"];
-  floatingWidgetId: FloatingWidgetState["id"];
-}
-
-/** @internal */
-export interface PopoutTabLocation {
-  widgetId: WidgetState["id"];
-  popoutWidgetId: PopoutWidgetState["id"];
-}
-
-/** @internal */
-export type TabLocation = PanelTabLocation | FloatingTabLocation | PopoutTabLocation;
-
-/** @internal */
-export function isFloatingTabLocation(location: TabLocation): location is FloatingTabLocation {
-  return "floatingWidgetId" in location;
-}
-
-/** @internal */
-export function isPopoutTabLocation(location: TabLocation): location is PopoutTabLocation {
-  return "popoutWidgetId" in location;
-}
-
-/** @internal */
-export function isPanelTabLocation(location: TabLocation): location is PanelTabLocation {
-  return "side" in location;
-}
-
-/** @internal */
-export function isFloatingWidgetLocation(location: WidgetLocation): location is FloatingWidgetLocation {
-  return "floatingWidgetId" in location;
-}
-
-/** @internal */
-export function isPopoutWidgetLocation(location: WidgetLocation): location is PopoutWidgetLocation {
-  return "popoutWidgetId" in location;
-}
-
-/** @internal */
-export function isPanelWidgetLocation(location: WidgetLocation): location is PanelWidgetLocation {
-  return "side" in location;
-}
-
-/** @internal */
 export function isHorizontalPanelState(state: PanelState): state is HorizontalPanelState {
   return isHorizontalPanelSide(state.side);
-}
-
-/** @internal */
-export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
-  let widgetId;
-  for (const [, widget] of Object.entries(state.widgets)) {
-    const index = widget.tabs.indexOf(id);
-    if (index >= 0) {
-      widgetId = widget.id;
-      break;
-    }
-  }
-  if (!widgetId)
-    return undefined;
-  const widgetLocation = findWidget(state, widgetId);
-  return widgetLocation ? {
-    ...widgetLocation,
-    widgetId,
-  } : undefined;
-}
-
-/** @internal */
-export interface PanelWidgetLocation {
-  side: PanelSide;
-  index: number;
-}
-
-/** @internal */
-export interface FloatingWidgetLocation {
-  floatingWidgetId: FloatingWidgetState["id"];
-}
-
-/** @internal */
-export interface PopoutWidgetLocation {
-  popoutWidgetId: PopoutWidgetState["id"];
-}
-
-/** @internal */
-export type WidgetLocation = PanelWidgetLocation | FloatingWidgetLocation | PopoutWidgetLocation;
-
-/** @internal */
-export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
-  if (id in state.floatingWidgets.byId) {
-    return {
-      floatingWidgetId: id,
-    };
-  }
-  // istanbul ignore else
-  if (state.popoutWidgets) {
-    if (id in state.popoutWidgets.byId) {
-      return {
-        popoutWidgetId: id,
-      };
-    }
-  }
-  for (const side of panelSides) {
-    const panel = state.panels[side];
-    const index = panel.widgets.indexOf(id);
-    if (index >= 0) {
-      return {
-        side,
-        index,
-      };
-    }
-  }
-  return undefined;
 }

@@ -64,7 +64,9 @@ export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 
 export * from "./appui-layout-react/state/NineZoneState";
+export * from "./appui-layout-react/state/TabLocation";
 export * from "./appui-layout-react/state/TabState";
+export * from "./appui-layout-react/state/WidgetLocation";
 
 export * from "./appui-layout-react/tool-settings/Docked";
 export * from "./appui-layout-react/tool-settings/Handle";
