@@ -7,13 +7,13 @@
  * @module Tools
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, LineSegment3d, LineString3d } from "@itwin/core-geometry";
 import {
   GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
 } from "@itwin/core-common";
 import {
-  Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicPrimitive, IModelApp, Tool, Viewport,
+  Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicPrimitive, HitDetail, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 
 interface GraphicInfo {
@@ -67,6 +67,16 @@ class GeometryStreamDecorator implements Decorator, FeatureOverrideProvider {
 
     vp.addFeatureOverrideProvider(this);
     this._dispose = () => vp.dropFeatureOverrideProvider(this);
+  }
+
+  public testDecorationHit(id: string): boolean {
+    return this._graphics.some((x) => x.transientId === id);
+  }
+
+  public async getDecorationTooltip(hit: HitDetail): Promise<string> {
+    const info = this._graphics.find((x) => x.transientId === hit.sourceId);
+    assert(undefined !== info);
+    return `[${info.geometryStreamIndex}] ${info.primitive.type} ${info.transientId}`;
   }
 
   public decorate(): void {
