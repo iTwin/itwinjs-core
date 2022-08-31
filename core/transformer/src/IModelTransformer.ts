@@ -707,7 +707,7 @@ export class IModelTransformer extends IModelExportHandler {
               this.context.remapElement(id, id);
             }
           }
-          return `${elemClass.requiredReferenceKeyTypeMap[referenceKey]}${id}` ;
+          return id;
         })
           .filter((sourceReferenceId: Id64String | undefined): sourceReferenceId is Id64String => {
             if (sourceReferenceId === undefined) return false;
@@ -733,7 +733,7 @@ export class IModelTransformer extends IModelExportHandler {
       const maybeModelId = ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Model);
       return EntityUnifier.exists(db, { concreteEntityId: maybeModelId });
     };
-    const isSubModeled = (this.sourceDb, elementId);
+    const isSubModeled = dbHasModel(this.sourceDb, elementId);
     const idOfElemInTarget = this.context.findTargetElementId(elementId);
     const isElemInTarget = Id64.invalid !== idOfElemInTarget;
     const needsModelImport = isSubModeled && (!isElemInTarget || !dbHasModel(this.targetDb, idOfElemInTarget));
