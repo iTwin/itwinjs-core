@@ -10,10 +10,10 @@
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, LineSegment3d, LineString3d } from "@itwin/core-geometry";
 import {
-  GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
+  ColorByName, ColorDef, Feature, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
 } from "@itwin/core-common";
 import {
-  Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicPrimitive, HitDetail, IModelApp, Tool, Viewport,
+  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicPrimitive, GraphicType, HitDetail, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 
 interface GraphicInfo {
@@ -53,6 +53,24 @@ function graphicPrimitiveFromGeometryStreamPrimitive(geom: GeometryStreamPrimiti
   }
 }
 
+function getColors(): ColorDef[] {
+  return [
+    ColorDef.red,
+    ColorDef.green,
+    ColorDef.blue,
+    ColorDef.fromTbgr(ColorByName.yellow),
+    ColorDef.fromTbgr(ColorByName.orange),
+    ColorDef.fromTbgr(ColorByName.purple),
+    ColorDef.fromTbgr(ColorByName.brown),
+    ColorDef.fromTbgr(ColorByName.hotPink),
+    ColorDef.fromTbgr(ColorByName.olive),
+    ColorDef.fromTbgr(ColorByName.teal),
+    ColorDef.fromTbgr(ColorByName.wheat),
+    ColorDef.fromTbgr(ColorByName.magenta),
+    ColorDef.fromTbgr(ColorByName.lightBlue),
+  ];
+}
+
 class GeometryStreamDecorator implements Decorator, FeatureOverrideProvider {
   private static _instance?: GeometryStreamDecorator;
 
@@ -67,20 +85,39 @@ class GeometryStreamDecorator implements Decorator, FeatureOverrideProvider {
 
     vp.addFeatureOverrideProvider(this);
     this._dispose = () => vp.dropFeatureOverrideProvider(this);
+
+    // TODO better cleanup, e.g. remove when iModel is closed.
   }
 
   public testDecorationHit(id: string): boolean {
     return this._graphics.some((x) => x.transientId === id);
   }
 
-  public async getDecorationTooltip(hit: HitDetail): Promise<string> {
+  public async getDecorationToolTip(hit: HitDetail): Promise<string> {
     const info = this._graphics.find((x) => x.transientId === hit.sourceId);
     assert(undefined !== info);
-    return `[${info.geometryStreamIndex}] ${info.primitive.type} ${info.transientId}`;
+    return `${info.primitive.type}\n${info.transientId}\n$index: ${info.geometryStreamIndex}`;
   }
 
-  public decorate(): void {
-    // ###TODO
+  public decorate(context: DecorateContext): void {
+    if (!context.viewport.view.is3d())
+      return;
+
+    const builder = context.createGraphic({
+      type: GraphicType.Scene,
+      pickable: { id: "" },
+    });
+
+    for (const info of this._graphics) {
+      // ###TODO We have GeometryParams. We want GraphicParams. We can't cook them without talking to the backend...
+      builder.activateFeature(new Feature(info.transientId, info.params.subCategoryId, info.params.geometryClass));
+      const colors = getColors();
+      const color = colors[info.geometryStreamIndex % colors.length];
+      builder.setSymbology(color, color, 1);
+      builder.addPrimitive(info.primitive);
+    }
+
+    context.addDecorationFromBuilder(builder);
   }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
