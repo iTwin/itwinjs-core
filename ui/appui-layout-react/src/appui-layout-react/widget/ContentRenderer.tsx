@@ -10,7 +10,8 @@ import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
-import { TabState, toolSettingsTabId } from "../base/NineZoneState";
+import { toolSettingsTabId } from "../state/NineZoneState";
+import { TabState } from "../state/TabState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
 
 /** @internal */

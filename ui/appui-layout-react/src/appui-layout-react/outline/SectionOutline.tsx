@@ -12,7 +12,7 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { CommonProps } from "@itwin/core-react";
 import { useTargeted } from "../base/DragManager";
-import { isHorizontalPanelState, isSectionDropTargetState } from "../base/NineZoneState";
+import { isHorizontalPanelState, isSectionDropTargetState } from "../state/NineZoneState";
 import { PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
 import { useTargetDirection } from "../target/SectionTarget";
 import { withTargetVersion } from "../target/TargetOptions";

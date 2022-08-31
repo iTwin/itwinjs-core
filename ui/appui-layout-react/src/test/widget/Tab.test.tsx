@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  ActiveTabIdContext, addPanelWidget, addTab, createNineZoneState, createTabState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext,
+  ActiveTabIdContext, addPanelWidget, addTab, createNineZoneState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext,
   WidgetContext, WidgetOverflowContext, WidgetStateContext, WidgetTab, WidgetTabProvider, WidgetTabsEntryContext,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
@@ -339,12 +339,5 @@ describe("WidgetTab", () => {
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
       id: "fw1",
     }));
-  });
-  it("should create tab states with hideWithUiWhenFloating properly set", () => {
-    const firstTab = createTabState("firstTab");
-    firstTab?.hideWithUiWhenFloating?.should.false;
-
-    const secondTab = createTabState("secondTab", { hideWithUiWhenFloating: true });
-    secondTab?.hideWithUiWhenFloating?.should.true;
   });
 });

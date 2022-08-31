@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { useTargeted } from "../base/DragManager";
-import { isHorizontalPanelState, isPanelDropTargetState } from "../base/NineZoneState";
+import { isHorizontalPanelState, isPanelDropTargetState } from "../state/NineZoneState";
 import { isHorizontalPanelSide, PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
 import { withTargetVersion } from "../target/TargetOptions";
 

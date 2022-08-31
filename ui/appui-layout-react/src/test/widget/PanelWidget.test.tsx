@@ -8,11 +8,12 @@ import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
+  addPanelWidget, addTab, createNineZoneState, EventEmitter, HorizontalPanelSide, NineZoneState, PanelSide, PanelStateContext, PanelWidget,
   TabState, useBorders, useMode, VerticalPanelSide, WidgetContentManagerContext, WidgetContentManagerContextArgs,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
+import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 /* eslint-disable jsdoc/require-jsdoc */
 
@@ -223,13 +224,8 @@ describe("PanelWidget", () => {
 
 describe("useMode", () => {
   it("should force fill", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"], { preferredPanelWidgetSize: "fit-content" });
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -241,13 +237,8 @@ describe("useMode", () => {
   });
 
   it("should only force fill last widget", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"], { preferredPanelWidgetSize: "fit-content" });
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -331,11 +322,8 @@ describe("useBorders", () => {
       });
 
       it("should render w/o left border if there is left panel to the left", () => {
-        let state = createNineZoneState({
-          panels: createPanelsState({
-            [side]: createHorizontalPanelState(side, { span: false }),
-          }),
-        });
+        let state = createNineZoneState();
+        state = updatePanelState(state, side, { span: false });
         state = addTabs(state, ["t1", "t2"]);
         state = addPanelWidget(state, side, "w1", ["t1"]);
         state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -350,11 +338,8 @@ describe("useBorders", () => {
       });
 
       it("should render w/o right border if there is right panel to the right", () => {
-        let state = createNineZoneState({
-          panels: createPanelsState({
-            [side]: createHorizontalPanelState(side, { span: false }),
-          }),
-        });
+        let state = createNineZoneState();
+        state = updatePanelState(state, side, { span: false });
         state = addTabs(state, ["t1", "t2"]);
         state = addPanelWidget(state, side, "w1", ["t1"]);
         state = addPanelWidget(state, "right", "w2", ["t2"]);

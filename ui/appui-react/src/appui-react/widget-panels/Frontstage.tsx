@@ -18,11 +18,12 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Rectangle, RectangleProps, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, createTabsState, findTab,
-  floatingWidgetBringToFront, FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
+  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, createNineZoneState, findTab,
+  FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
   isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
-  panelSides, removeTabFromWidget, removeTabState, TabState, toolSettingsTabId, WidgetPanels,
+  panelSides, removeTabFromWidget, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
+import { convertAllPopupWidgetContainersToFloating, floatingWidgetBringToFront } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/InternalStateHelpers";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -457,7 +458,7 @@ export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState:
       const widgetDef = frontstageDef.findWidgetDef(tab.id);
       if (widgetDef)
         continue;
-      removeTabState(draft, tab.id);
+      removeTab(draft, tab.id);
     }
   });
   return state;
@@ -725,9 +726,10 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
  * @internal
  */
 export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState {
+  initializeNineZoneState
   let restored: NineZoneState = {
     ...saved,
-    tabs: createTabsState(),
+    tabs: defaultNineZone.tabs,
   };
   restored = produce(restored, (draft) => {
     for (const [, tab] of Object.entries(saved.tabs)) {
@@ -737,7 +739,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
           frontstageId: frontstageDef.id,
           tabId: tab.id,
         }));
-        removeTabState(draft, tab.id);
+        removeTab(draft, tab.id);
         return;
       }
       draft.tabs[tab.id] = {

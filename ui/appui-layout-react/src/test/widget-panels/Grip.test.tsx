@@ -9,10 +9,11 @@ import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
+  addPanelWidget, addTab, createNineZoneState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../appui-layout-react";
 import { createDragInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
+import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider
@@ -77,13 +78,8 @@ describe("WidgetPanelGrip", () => {
   it("should start resize via timer and dispatch PANEL_SET_SIZE", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          size: 200,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { size: 200 });
     state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     render(
@@ -158,13 +154,10 @@ describe("WidgetPanelGrip", () => {
 
   it("should auto-open collapsed unpinned panel", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          pinned: false,
-          collapsed: true,
-        }),
-      }),
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", {
+      pinned: false,
+      collapsed: true,
     });
     state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);

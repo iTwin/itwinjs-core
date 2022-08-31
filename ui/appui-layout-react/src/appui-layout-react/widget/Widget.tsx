@@ -13,7 +13,8 @@ import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/NineZoneState";
+import { TabState } from "../state/TabState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 

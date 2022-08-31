@@ -5,8 +5,10 @@
 import * as React from "react";
 import { expect } from "chai";
 import { render } from "@testing-library/react";
-import { ActiveTabIdContext, addPanelWidget, addTab, createFloatingWidgetState, createNineZoneState, FloatingWidgetContext, FloatingWidgetIdContext, PanelSideContext, PanelStateContext, TabBarButtons, TabsStateContext, WidgetIdContext, WidgetStateContext } from "../../appui-layout-react";
-import { addFloatingWidget, toolSettingsTabId } from "../../appui-layout-react/base/NineZoneState";
+import {
+  ActiveTabIdContext, addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidgetContext, FloatingWidgetIdContext, PanelSideContext,
+  PanelStateContext, TabBarButtons, TabsStateContext, toolSettingsTabId, WidgetIdContext, WidgetStateContext,
+} from "../../appui-layout-react";
 
 describe("TabBarButtons", () => {
   it("Floating widget should render Sendback button", () => {
@@ -19,7 +21,7 @@ describe("TabBarButtons", () => {
           <TabsStateContext.Provider value={state.tabs}>
             <WidgetStateContext.Provider value={state.widgets.fw1}>
               <FloatingWidgetIdContext.Provider value="fw1">
-                <FloatingWidgetContext.Provider value={createFloatingWidgetState("fw1")}>
+                <FloatingWidgetContext.Provider value={state.floatingWidgets.byId.fw1}>
                   <TabBarButtons />
                 </FloatingWidgetContext.Provider>
               </FloatingWidgetIdContext.Provider>,
@@ -41,7 +43,7 @@ describe("TabBarButtons", () => {
           <TabsStateContext.Provider value={state.tabs}>
             <WidgetStateContext.Provider value={state.widgets.fw1}>
               <FloatingWidgetIdContext.Provider value="fw1">
-                <FloatingWidgetContext.Provider value={createFloatingWidgetState("fw1")}>
+                <FloatingWidgetContext.Provider value={state.floatingWidgets.byId.fw1}>
                   <ActiveTabIdContext.Provider value="t1">
                     <TabBarButtons />
                   </ActiveTabIdContext.Provider>
@@ -58,14 +60,14 @@ describe("TabBarButtons", () => {
 
   it("Floating ToolSettings should not render Popout if no active tab set", () => {
     let state = createNineZoneState();
-    state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
+    state = addFloatingWidget(state, "fw1", [toolSettingsTabId]);
     const wrapper = render(
       <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
           <TabsStateContext.Provider value={state.tabs}>
-            <WidgetStateContext.Provider value={state.widgets.tsw}>
-              <FloatingWidgetIdContext.Provider value="tsw">
-                <FloatingWidgetContext.Provider value={createFloatingWidgetState("tsw")}>
+            <WidgetStateContext.Provider value={state.widgets.fw1}>
+              <FloatingWidgetIdContext.Provider value="fw1">
+                <FloatingWidgetContext.Provider value={state.floatingWidgets.byId.fw1}>
                   <TabBarButtons />
                 </FloatingWidgetContext.Provider>
               </FloatingWidgetIdContext.Provider>,
@@ -79,14 +81,14 @@ describe("TabBarButtons", () => {
 
   it("Floating ToolSettings should render Dock button", () => {
     let state = createNineZoneState();
-    state = addFloatingWidget(state, "tsw", [toolSettingsTabId]);
+    state = addFloatingWidget(state, "fw1", [toolSettingsTabId]);
     const wrapper = render(
       <PanelStateContext.Provider value={state.panels.left}>
         <PanelSideContext.Provider value="left">
           <TabsStateContext.Provider value={state.tabs}>
-            <WidgetStateContext.Provider value={state.widgets.tsw}>
-              <FloatingWidgetIdContext.Provider value="tsw">
-                <FloatingWidgetContext.Provider value={createFloatingWidgetState("tsw")}>
+            <WidgetStateContext.Provider value={state.widgets.fw1}>
+              <FloatingWidgetIdContext.Provider value="fw1">
+                <FloatingWidgetContext.Provider value={state.floatingWidgets.byId.fw1}>
                   <ActiveTabIdContext.Provider value={toolSettingsTabId}>
                     <TabBarButtons />
                   </ActiveTabIdContext.Provider>

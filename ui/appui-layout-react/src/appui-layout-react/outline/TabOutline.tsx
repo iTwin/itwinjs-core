@@ -10,7 +10,7 @@ import "./TabOutline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useTargeted } from "../base/DragManager";
-import { isWidgetDropTargetState } from "../base/NineZoneState";
+import { isWidgetDropTargetState } from "../state/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
 import { withTargetVersion } from "../target/TargetOptions";
 
@@ -43,5 +43,5 @@ function useHidden() {
       return true;
 
     return false;
-  }, [targeted,  widgetId]);
+  }, [targeted, widgetId]);
 }

@@ -8,10 +8,11 @@ import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
+  addPanelWidget, addTab, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
 } from "../../appui-layout-react";
 import { createDragInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
+import { createDraggedTabState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {

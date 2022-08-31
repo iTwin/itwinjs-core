@@ -3,10 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DraggedTabStateContext, DraggedWidgetIdContext, PanelSideContext } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, DraggedTabStateContext, DraggedWidgetIdContext, PanelSideContext } from "../../appui-layout-react";
 import { renderHook } from "@testing-library/react-hooks";
 import { useAllowedPanelTarget } from "../../appui-layout-react/target/PanelTarget";
 import { TestNineZoneProvider } from "../Providers";
+import { createDraggedTabState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 describe("useAllowedPanelTarget", () => {
   it("should return `true`", () => {

@@ -13,7 +13,7 @@ import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useResizeObserver 
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";
-import { TabState } from "../base/NineZoneState";
+import { TabState } from "../state/TabState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";

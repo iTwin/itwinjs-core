@@ -12,7 +12,7 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
-import { isHorizontalPanelState } from "../base/NineZoneState";
+import { isHorizontalPanelState } from "../state/NineZoneState";
 import { PanelTarget } from "./PanelTarget";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";

@@ -14,7 +14,7 @@ import { RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
+import { isHorizontalPanelState, PanelState, WidgetState } from "../state/NineZoneState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
 import { WidgetComponent } from "../widget/Widget";

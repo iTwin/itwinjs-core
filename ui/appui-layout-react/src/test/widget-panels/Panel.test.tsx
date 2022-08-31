@@ -10,11 +10,12 @@ import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
+  addPanelWidget, addTab, createNineZoneState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
 } from "../../appui-layout-react";
 import { createDragInfo, setRefValue, TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
+import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {
@@ -112,13 +113,8 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render with top spanned", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        top: createHorizontalPanelState("top", {
-          span: true,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "top", { span: true });
     state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
@@ -134,13 +130,8 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render with span bottom", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        bottom: createHorizontalPanelState("bottom", {
-          span: true,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "bottom", { span: true });
     state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
@@ -643,13 +634,8 @@ describe("useAnimatePanelWidgets", () => {
   });
 
   it("should transition when widget is removed", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
@@ -694,13 +680,8 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should transition when first widget is removed", () => {
     const side = "top" as const;
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        [side]: createHorizontalPanelState(side, {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, side, { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, side, "w1", ["t1"]);
     state = addPanelWidget(state, side, "w2", ["t2"]);
@@ -748,13 +729,8 @@ describe("useAnimatePanelWidgets", () => {
   });
 
   it("should fill upper not minimized widget when widget is removed", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
@@ -798,13 +774,8 @@ describe("useAnimatePanelWidgets", () => {
   });
 
   it("should fill lower not minimized widget when widget is removed", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
@@ -873,13 +844,8 @@ describe("useAnimatePanelWidgets", () => {
   });
 
   it("should not transition when from and to sizes are equal", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          maxWidgetCount: 3,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
     state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);

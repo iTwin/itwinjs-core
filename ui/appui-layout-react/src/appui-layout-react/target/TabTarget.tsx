@@ -12,7 +12,7 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { TabDropTargetState, WidgetState } from "../base/NineZoneState";
+import { TabDropTargetState, WidgetState } from "../state/NineZoneState";
 import { WidgetIdContext, WidgetStateContext } from "../widget/Widget";
 import { TabIdContext } from "../widget/ContentRenderer";
 import { assert } from "@itwin/core-bentley";

@@ -16,7 +16,7 @@ import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneAction, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
-} from "./NineZoneState";
+} from "../state/NineZoneState";
 import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
 

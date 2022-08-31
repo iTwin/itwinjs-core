@@ -8,9 +8,10 @@ import * as sinon from "sinon";
 import { Point } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
+  addPanelWidget, addTab, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
 } from "../../appui-layout-react";
 import { createDragInfo, TestNineZoneProvider } from "../Providers";
+import { createDraggedTabState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 describe("FloatingTab", () => {
   it("should render", async () => {

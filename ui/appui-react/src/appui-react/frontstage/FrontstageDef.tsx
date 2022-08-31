@@ -14,9 +14,12 @@ import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
 import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import {
-  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+  findTab, findWidget, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
+  NineZoneManagerProps, NineZoneState, PanelSide, panelSides,
 } from "@itwin/appui-layout-react";
+import {
+  dockWidgetContainer, floatWidget, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+} from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/InternalStateHelpers";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";

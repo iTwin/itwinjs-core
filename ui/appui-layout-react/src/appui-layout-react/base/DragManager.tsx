@@ -12,7 +12,8 @@ import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";
-import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, TabState, WidgetDragDropTargetState, WidgetState } from "./NineZoneState";
+import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, WidgetDragDropTargetState, WidgetState } from "../state/NineZoneState";
+import { TabState } from "../state/TabState";
 import { getUniqueId } from "./NineZone";
 
 /** @internal */

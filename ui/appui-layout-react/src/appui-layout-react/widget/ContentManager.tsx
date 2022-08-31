@@ -9,7 +9,7 @@
 import produce, { castDraft } from "immer";
 import * as React from "react";
 import { EventEmitter } from "../base/Event";
-import { TabState } from "../base/NineZoneState";
+import { TabState } from "../state/TabState";
 
 /** @internal */
 export interface WidgetContentManagerProps {

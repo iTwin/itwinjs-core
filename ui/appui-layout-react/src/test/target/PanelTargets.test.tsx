@@ -4,11 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelStateContext } from "../../appui-layout-react";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { PanelTargets } from "../../appui-layout-react/target/PanelTargets";
 import { TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
+import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
 
 interface WrapperProps {
   state: NineZoneState;
@@ -42,13 +43,8 @@ describe("PanelTargets", () => {
   });
 
   it("should render 3 targets in a single section", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          collapsed: true,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { collapsed: true });
     state = addTab(state, "t1");
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
@@ -62,13 +58,8 @@ describe("PanelTargets", () => {
   });
 
   it("should render one target in each section (2 sections)", () => {
-    let state = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          collapsed: true,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { collapsed: true });
     state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);

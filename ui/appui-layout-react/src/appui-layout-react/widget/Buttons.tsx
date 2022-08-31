@@ -9,7 +9,7 @@
 import * as React from "react";
 import { SendBack } from "./SendBack";
 import { ActiveTabIdContext, useActiveTab, WidgetIdContext } from "./Widget";
-import { toolSettingsTabId } from "../base/NineZoneState";
+import { toolSettingsTabId } from "../state/NineZoneState";
 import { Dock } from "./Dock";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";

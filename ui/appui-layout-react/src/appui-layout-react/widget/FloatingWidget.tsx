@@ -14,7 +14,7 @@ import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
-import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../state/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
