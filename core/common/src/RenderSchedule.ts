@@ -1142,16 +1142,17 @@ export namespace RenderSchedule {
         timeline.addSymbologyOverrides(overrides, time);
     }
 
+    // FIXME: check this is tested
+
     /** Used by the [Element.collectReferenceIds]($backend) method overrides in RenderTimeline and DisplayStyle.
      * @internal
      */
-    public discloseIds(ids: ConcreteEntityIdSet | Set<Id64String>) {
-      const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(ids);
+    public discloseIds(ids: ConcreteEntityIdSet) {
       for (const model of this.modelTimelines) {
-        entitySet.addModel(model.modelId);
+        ids.addModel(model.modelId);
         for (const element of model.elementTimelines)
           for (const id of element.elementIds)
-            entitySet.addElement(id);
+            ids.addElement(id);
       }
     }
 

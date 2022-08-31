@@ -6,7 +6,7 @@
  * @module ViewDefinitions
  */
 
-import { ConcreteEntityIdSet, ConcreteEntityTypes, Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, ConcreteEntityTypes, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
@@ -45,10 +45,9 @@ export class ModelSelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    this.models.forEach((modelId: Id64String) => unifiedIds.addModel(modelId));
+    this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
   }
 
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -119,10 +118,9 @@ export class CategorySelector extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    this.categories.forEach((categoryId: Id64String) => unifiedIds.addElement(categoryId));
+    this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
   }
 
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
@@ -214,14 +212,13 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.categorySelectorId);
-    unifiedIds.addElement(this.displayStyleId);
+    referenceIds.addElement(this.categorySelectorId);
+    referenceIds.addElement(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValidId64(acsId)) {
-      unifiedIds.addElement(acsId);
+      referenceIds.addElement(acsId);
     }
   }
 
@@ -367,10 +364,9 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.modelSelectorId);
+    referenceIds.addElement(this.modelSelectorId);
   }
 
   /** @beta */
@@ -548,10 +544,9 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.baseModelId);
+    referenceIds.addElement(this.baseModelId);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -723,10 +718,9 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.view.id);
+    referenceIds.addElement(this.view.id);
   }
 }
 

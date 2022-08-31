@@ -42,18 +42,17 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
-    const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      entitySet.addElement(id);
+      referenceIds.addElement(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      entitySet.addElement(excludedElementId);
+      referenceIds.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      entitySet.addElement(this.settings.renderTimeline);
+      referenceIds.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
@@ -214,15 +213,14 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const entitySet = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      entitySet.addElement(textureId);
+      referenceIds.addElement(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        entitySet.addElement(planProjectionSetting[0]);
+        referenceIds.addElement(planProjectionSetting[0]);
   }
 
   /** @alpha */

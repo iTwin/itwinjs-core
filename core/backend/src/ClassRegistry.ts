@@ -12,7 +12,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
 import { ConcreteEntityIds } from "./ConcreteEntityId";
-import assert = require("assert");
+import * as assert from "assert";
 import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");

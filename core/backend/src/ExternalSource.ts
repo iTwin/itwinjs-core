@@ -58,11 +58,9 @@ export class ExternalSource extends InformationReferenceElement {
     const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
     return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
   }
-  protected override collectReferenceConcreteIds(referenceIds: Set<string> | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    // disable-eslint-next-line deprecation/deprecation
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    if (this.repository) unifiedIds.addElement(this.repository.id);
+    if (this.repository) referenceIds.addElement(this.repository.id);
   }
 }
 

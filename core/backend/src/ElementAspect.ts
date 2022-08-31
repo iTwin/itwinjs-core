@@ -218,14 +218,12 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 
   // FIXME: start using generated collectReferences everywhere and use a separate collectJsonPropertyReferenceIds
-  protected override collectReferenceConcreteIds(referenceIds: Set<string> | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    // disable-eslint-next-line deprecation/deprecation
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.scope.id);
-    unifiedIds.addElement(this.element.id);
-    unifiedIds.addElement(this.element.id);
-    if (this.source) unifiedIds.addElement(this.source.id);
+    referenceIds.addElement(this.scope.id);
+    referenceIds.addElement(this.element.id);
+    referenceIds.addElement(this.element.id);
+    if (this.source) referenceIds.addElement(this.source.id);
   }
 }
 

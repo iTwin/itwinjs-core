@@ -55,8 +55,8 @@ module.exports = {
       {
         // not the above documented default (0) but seems to be the default in our version of @typescript-eslint/indent
         SwitchCase: 1,
-        // intended non default:
-        flatTernaryExpressions: true,
+        // intended non default arguments:
+        ignoredNodes: ["ConditionalExpression"],
       },
     ],
     "@typescript-eslint/interface-name-prefix": "off",
