@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { ConcreteEntityIdSet, DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -153,7 +153,7 @@ export class ClassRegistry {
         generatedClass.prototype,
         "collectReferenceConcreteIds",
         {
-          value(this: typeof generatedClass, referenceIds: Id64Set | ConcreteEntityIdSet) {
+          value(this: typeof generatedClass, referenceIds: ConcreteEntityIdSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
             const superImpl = superclass.prototype["collectReferenceConcreteIds"];
             superImpl.call(this, referenceIds);

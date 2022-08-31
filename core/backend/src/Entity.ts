@@ -141,8 +141,8 @@ export class Entity {
   protected collectReferenceIds(referenceIds: Set<Id64String>): void {
     const concreteEntityIds = this.getReferenceConcreteIds();
     for (const entity of concreteEntityIds) {
-      // the old [[collectReferenceIds]] only supported elements, and the id spaces can overlap so dont include anything else
-      if (ConcreteEntityIds.isElement(entity)) {
+      // the old [[collectReferenceIds]] only supported elements/models, and the id spaces can overlap so dont include anything else
+      if (ConcreteEntityIds.isElement(entity) || ConcreteEntityIds.isModel(entity)) {
         referenceIds.add(ConcreteEntityIds.toId64(entity));
       }
     }

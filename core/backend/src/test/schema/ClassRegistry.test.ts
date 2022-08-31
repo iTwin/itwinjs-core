@@ -7,14 +7,14 @@ import * as sinon from "sinon";
 import * as path from "path";
 import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import {
-  DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  ConcreteEntityIds, DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
-import { Id64Set } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, ConcreteEntityTypes } from "@itwin/core-bentley";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -216,13 +216,11 @@ describe("Class Registry - generated classes", () => {
     assert.isDefined(GeneratedTestElementWithNavProp.prototype.getReferenceIds);
     expect(
       [...elemWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      [elemWithNavProp.model, elemWithNavProp.code.scope, testEntityId]
-    );
+    ).to.have.members([elemWithNavProp.model, elemWithNavProp.code.scope, testEntityId]);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestNonElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestNonElementWithNavProp");
-    assert.isFalse(GeneratedTestNonElementWithNavProp.prototype.hasOwnProperty("collectReferenceConcreteIds"));
+    assert.isTrue(GeneratedTestNonElementWithNavProp.prototype.hasOwnProperty("collectReferenceConcreteIds"));
   });
 
   it("should not override collectReferenceConcreteIds for BisCore schema classes", async () => {
@@ -274,9 +272,9 @@ describe("Class Registry - generated classes", () => {
   it("should not override custom registered schema class implementations of collectReferenceConcreteIds", async () => {
     const testImplReferenceId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
-      public override collectReferenceConcreteIds(referenceIds: Id64Set) {
+      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
         super.collectReferenceConcreteIds(referenceIds);
-        referenceIds.add(testImplReferenceId);
+        referenceIds.addElement(testImplReferenceId);
       }
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
@@ -357,15 +355,15 @@ describe("Class Registry - generated classes", () => {
 
   it("should work along a complex chain of overrides", async () => {
     class MyDerived2 extends Derived2 {
-      public override collectReferenceConcreteIds(referenceIds: Id64Set) {
+      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
         super.collectReferenceConcreteIds(referenceIds);
-        referenceIds.add("derived-2");
+        referenceIds.addElement("derived-2");
       }
     }
     class MyDerived4 extends Derived4 {
-      public override collectReferenceConcreteIds(referenceIds: Id64Set) {
+      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
         super.collectReferenceConcreteIds(referenceIds);
-        referenceIds.add("derived-4");
+        referenceIds.addElement("derived-4");
       }
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
