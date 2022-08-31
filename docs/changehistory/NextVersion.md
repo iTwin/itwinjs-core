@@ -6,17 +6,23 @@ publish: false
 
 Table of contents:
 
+- [Electron 17 support](#electron-versions-support)
 - [Display](#display)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Wait for tiles API](#wait-for-tiles-api)
 - [Presentation](#presentation)
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [OpenTelemetry](#opentelemetry)
-- [Electron 17 support](#electron-versions-support)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
-  
-## Ambient Occlusion Improvements
+
+## Electron 17 support
+
+In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
+
+## Display
+
+### Ambient Occlusion Improvements
 
 The ambient occlusion effect has undergone some quality improvements.
 
@@ -79,10 +85,6 @@ Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
 } });
 ```
 
-## Electron versions support
-
-In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
-
 ## Deprecations
 
 ### @itwin/core-transformer
@@ -91,3 +93,4 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
+
