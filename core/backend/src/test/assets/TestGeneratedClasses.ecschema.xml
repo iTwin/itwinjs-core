@@ -3,12 +3,16 @@
     xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
 
-    <ECEntityClass typeName="TestModel" description="a sample model for the end of the test relationships">
+    <ECEntityClass typeName="TestModelWithNavProp" description="a sample model with nav properties">
         <BaseClass>bis:DefinitionModel</BaseClass>
-        <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+        <ECNavigationProperty propertyName="elemNavProp" relationshipName="ModelToElemNavRel" direction="Forward"/>
+        <ECNavigationProperty propertyName="aspectNavProp" relationshipName="ModelToAspectNavRel" direction="Forward"/>
+        <!--
+        <ECNavigationProperty propertyName="relNavProp" relationshipName="ModelToRelNavRel" direction="Forward"/>
+        -->
     </ECEntityClass>
 
-    <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
+    <ECEntityClass typeName="TestEntity" description="a sample (element) entity for the end of the test relationships">
         <BaseClass>bis:DefinitionElement</BaseClass>
         <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
     </ECEntityClass>
@@ -24,7 +28,7 @@
 
     <ECRelationshipClass typeName="NonElemRel" strength="referencing" description="non elem rel 2" modifier="sealed">
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="TestNonElementWithNavProp"/>
+            <Class class="TestAspectWithNavProp"/>
         </Source>
         <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
             <Class class="TestEntity"/>
@@ -49,6 +53,35 @@
         </Target>
     </ECRelationshipClass>
 
+    <ECRelationshipClass typeName="ModelToElemNavRel" strength="referencing" description="model nav rel pointing to element" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestModelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="ModelToAspectNavRel" strength="referencing" description="model nav rel pointing to aspect" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestModelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestAspectWithNavProp"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <!--
+    <ECRelationshipClass typeName="ModelToRelNavRel" strength="referencing" description="model nav rel pointing to rel" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="TestModelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="LinkTableRelWithNavProp"/>
+        </Target>
+    </ECRelationshipClass>
+    -->
+
     <ECRelationshipClass typeName="LinkTableRelWithNavProp" strength="referencing" description="link table rel" modifier="sealed">
         <BaseClass>bis:ElementRefersToElements</BaseClass>
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
@@ -60,7 +93,7 @@
         <ECNavigationProperty propertyName="navProp" relationshipName="LinkTableRelNavRel" direction="Forward"/>
     </ECRelationshipClass>
 
-    <ECEntityClass typeName="TestNonElementWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
+    <ECEntityClass typeName="TestAspectWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
         <BaseClass>bis:ElementMultiAspect</BaseClass>
         <ECNavigationProperty propertyName="navProp" relationshipName="NonElemRel" direction="Forward"/>
     </ECEntityClass>
