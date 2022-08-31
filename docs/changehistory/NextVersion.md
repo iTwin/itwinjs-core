@@ -6,7 +6,7 @@ publish: false
 
 Table of contents:
 
-- [Electron 17 support](#electron-17-support)
+- [Electron 17 support](#electron-versions-support)
 - [Display](#display)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Wait for tiles API](#wait-for-tiles-api)
