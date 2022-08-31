@@ -8,6 +8,7 @@
  */
 
 import { Id64, Id64String } from "@itwin/core-bentley";
+import { Arc3d, LineSegment3d, LineString3d } from "@itwin/core-geometry";
 import {
   GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
 } from "@itwin/core-common";
@@ -29,9 +30,27 @@ function graphicPrimitiveFromGeometryStreamPrimitive(geom: GeometryStreamPrimiti
   switch (geom.geometry.geometryCategory) {
     case "polyface":
       return { polyface: geom.geometry, type: "polyface" };
+    case "solid":
+      return { solidPrimitive: geom.geometry, type: "solidPrimitive" };
+    case "point":
+      return { points: [ geom.geometry.point ], type: "pointstring" };
+    case "pointCollection":
+      return { points: geom.geometry.points, type: "pointstring" };
+    case "curvePrimitive":
+      if (geom.geometry instanceof Arc3d)
+        return { arc: geom.geometry, type: "arc" };
+      else if (geom.geometry instanceof LineSegment3d)
+        return { points: [ geom.geometry.point0Ref, geom.geometry.point1Ref ], type: "linestring" };
+      else if (geom.geometry instanceof LineString3d)
+        return { points: geom.geometry.points, type: "linestring" };
+      else // ###TODO support the rest...
+        return undefined;
+    case "curveCollection":
+    case "bsurf":
+    default:
+      // TODO support these
+      return undefined;
   }
-
-  return undefined;
 }
 
 class GeometryStreamDecorator implements Decorator /* ###TODO FeatureOverrideProvider */ {
@@ -57,7 +76,7 @@ class GeometryStreamDecorator implements Decorator /* ###TODO FeatureOverridePro
 
   public static async visualizeElement(vp: Viewport, _elementId: Id64String): Promise<boolean> {
     this.clear();
-    if (!vp.view.is3d())
+    if (!vp.view.is3d()) // TODO support 2d.
       return false;
 
     try {
