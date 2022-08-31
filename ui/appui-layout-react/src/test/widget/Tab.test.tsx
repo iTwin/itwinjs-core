@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget, addTab, createNineZoneState, createTabState, FloatingWidgetIdContext, NineZoneDispatch, PanelSideContext, ShowWidgetIconContext, WidgetContext, WidgetOverflowContext, WidgetStateContext,
@@ -267,7 +268,7 @@ describe("WidgetTab", () => {
         state={nineZone}
         dispatch={dispatch}
       >
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+        <WidgetContext.Provider value={{ measure: () => new Rectangle() }}>
           <WidgetStateContext.Provider value={nineZone.widgets.w1}>
             <WidgetTabProvider tab={nineZone.tabs.t1} />
           </WidgetStateContext.Provider>

@@ -255,7 +255,7 @@ describe("AzureFileHandler", async () => {
   }).timeout("30s");
 
   // ###TODO khanaffan This tends to hang on linux.
-  it.skip("should throw when tempfile is deleted", async () => {
+  it("should throw when tempfile is deleted", async () => {
     const handler = new AzureFileHandler();
     const promise = handler.downloadFile("", testValidUrl, targetFile, blobSizeInBytes);
     await onDataReceived();
@@ -271,7 +271,7 @@ describe("AzureFileHandler", async () => {
     assert.fail("Expected an error to be thrown!");
   });
 
-  it.skip("should return false for cancel request after disk error", async () => {
+  it("should return false for cancel request after disk error", async () => {
     const handler = new AzureFileHandler();
     const signal = createCancellation();
     const promise = handler.downloadFile("", testValidUrl, targetFile, blobSizeInBytes, undefined, signal);

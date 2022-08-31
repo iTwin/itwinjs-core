@@ -190,11 +190,13 @@ export interface WorkspaceOpts {
    */
   containerDir?: LocalDirName;
 
-  /** Properties for the cloud cache for the `WorkspaceContainers` of the Workspace. */
-  cloudCacheProps?: WorkspaceCloudCacheProps;
-
   /** the local fileName(s) of one or more settings files to load after the Workspace is first created. */
   settingsFiles?: LocalFileName | [LocalFileName];
+
+  /**
+   * only for tests
+   * @internal */
+  testCloudCache?: SQLiteDb.CloudCache;
 }
 
 /**
@@ -289,29 +291,32 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-
-  private _cloudCacheProps?: WorkspaceCloudCacheProps;
+  private static _sharedCloudCache?: SQLiteDb.CloudCache;
   private _cloudCache?: SQLiteDb.CloudCache;
   public get cloudCache(): SQLiteDb.CloudCache {
-    if (undefined === this._cloudCache) {
-      const cacheProps = {
-        ...this._cloudCacheProps,
-        rootDir: this._cloudCacheProps?.rootDir ?? join(this.containerDir, "cloud"),
-        cacheSize: this._cloudCacheProps?.cacheSize ?? "20G",
-        name: this._cloudCacheProps?.name ?? "workspace",
-      };
-      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
-      if (cacheProps.clearContents)
-        fs.emptyDirSync(cacheProps.rootDir);
-      this._cloudCache = SQLiteDb.createCloudCache(cacheProps);
-    }
+    if (undefined === this._cloudCache)
+      this._cloudCache = ITwinWorkspace.getSharedCloudCache();
     return this._cloudCache;
+  }
+  private static getSharedCloudCache(): SQLiteDb.CloudCache {
+    if (undefined === this._sharedCloudCache) {
+      const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
+      IModelJsFs.recursiveMkDirSync(rootDir);
+      this._sharedCloudCache = SQLiteDb.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
+    }
+    return this._sharedCloudCache;
+  }
+  public static finalize() {
+    if (this._sharedCloudCache) {
+      this._sharedCloudCache.destroy();
+      this._sharedCloudCache = undefined;
+    }
   }
 
   public constructor(settings: Settings, opts?: WorkspaceOpts) {
     this.settings = settings;
     this.containerDir = opts?.containerDir ?? join(IModelHost.cacheDir, "Workspace");
-    this._cloudCacheProps = opts?.cloudCacheProps;
+    this._cloudCache = opts?.testCloudCache;
     let settingsFiles = opts?.settingsFiles;
     if (settingsFiles) {
       if (typeof settingsFiles === "string")
@@ -362,10 +367,6 @@ export class ITwinWorkspace implements Workspace {
     for (const [_id, container] of this._containers)
       container.close();
     this._containers.clear();
-    if (this._cloudCache) {
-      this._cloudCache.destroy();
-      this._cloudCache = undefined;
-    }
   }
 
   public resolveAccount(accountName: string): WorkspaceAccount.Props {
@@ -760,8 +761,14 @@ export class EditableWorkspaceDb extends ITwinWorkspaceDb {
     const db = new SQLiteDb();
     IModelJsFs.recursiveMkDirSync(dirname(fileName));
     db.createDb(fileName);
-    db.executeSQL("CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT)");
-    db.executeSQL("CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB)");
+    const timeStampCol = "lastMod TIMESTAMP NOT NULL DEFAULT(julianday('now'))";
+    db.executeSQL(`CREATE TABLE strings(id TEXT PRIMARY KEY NOT NULL,value TEXT,${timeStampCol})`);
+    db.executeSQL(`CREATE TABLE blobs(id TEXT PRIMARY KEY NOT NULL,value BLOB,${timeStampCol})`);
+    const createTrigger = (tableName: string) => {
+      db.executeSQL(`CREATE TRIGGER ${tableName}_timeStamp AFTER UPDATE ON ${tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${tableName} SET lastMod=julianday('now') WHERE id=new.id; END`);
+    };
+    createTrigger("strings");
+    createTrigger("blobs");
     db.closeDb(true);
   }
 

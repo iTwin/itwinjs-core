@@ -370,6 +370,7 @@ export enum AttachLayerButtonType {
 export interface AttachLayerPopupButtonProps {
   isOverlay: boolean;
   buttonType?: AttachLayerButtonType;
+  disabled?: boolean;
 }
 
 /** @internal */
@@ -441,7 +442,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
 
     if (props.buttonType === undefined || props.buttonType === AttachLayerButtonType.Icon) {
       button = (
-        <Button size="small" styleType="borderless" ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+        <Button disabled={props.disabled} size="small" styleType="borderless" ref={buttonRef} className="map-manager-attach-layer-button" title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>
           <UiCore.WebFontIcon iconName="icon-add" />
         </Button>
@@ -458,7 +459,7 @@ export function AttachLayerPopupButton(props: AttachLayerPopupButtonProps) {
       };
       const styleType = determineStyleType();
       button = (
-        <Button ref={buttonRef} styleType={styleType} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
+        <Button disabled={props.disabled} ref={buttonRef} styleType={styleType} title={popupOpen ? hideAttachLayerLabel : showAttachLayerLabel}
           onClick={togglePopup}>{addCustomLayerButtonLabel}</Button>
       );
     }

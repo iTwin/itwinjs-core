@@ -1824,7 +1824,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
    *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
    *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe
+   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d
    * @param numFacetAround how many equal parameter-space chords around each section
    */
@@ -1839,7 +1839,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
     } else if (centerline instanceof GeometryQuery) {
       const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring);
+      centerline.emitStrokes(linestring, this._options);
       this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
     }
   }
