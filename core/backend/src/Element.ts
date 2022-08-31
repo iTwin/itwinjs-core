@@ -346,14 +346,13 @@ export class Element extends Entity {
     return this.collectReferenceIds(predecessorIds);
   }
 
-  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addModel(this.model); // The modeledElement is a reference
+    referenceIds.addModel(this.model); // The modeledElement is a reference
     if (this.code.scope && Id64.isValidId64(this.code.scope))
-      unifiedIds.addElement(this.code.scope); // The element that scopes the code is a reference
+      referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
-      unifiedIds.addElement(this.parent.id); // A parent element is a reference
+      referenceIds.addElement(this.parent.id); // A parent element is a reference
   }
 
   /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
@@ -470,10 +469,9 @@ export abstract class GeometricElement extends Element {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    unifiedIds.addElement(this.category);
+    referenceIds.addElement(this.category);
     // TODO: GeometryPartIds?
   }
 
@@ -513,10 +511,9 @@ export abstract class GeometricElement3d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: Set<Id64String> | ConcreteEntityIdSet): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition) { unifiedIds.addElement(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition) { referenceIds.addElement(this.typeDefinition.id); }
   }
 }
 
@@ -556,10 +553,9 @@ export abstract class GeometricElement2d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet | Id64Set): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition) { unifiedIds.addElement(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition) { referenceIds.addElement(this.typeDefinition.id); }
   }
 }
 
@@ -923,10 +919,9 @@ export class SheetTemplate extends Document {
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet | Id64Set): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.border) { unifiedIds.addElement(this.border); }
+    if (undefined !== this.border) { referenceIds.addElement(this.border); }
   }
 }
 
@@ -949,10 +944,9 @@ export class Sheet extends Document {
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet | Id64Set): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.sheetTemplate) { unifiedIds.addElement(this.sheetTemplate); }
+    if (undefined !== this.sheetTemplate) { referenceIds.addElement(this.sheetTemplate); }
   }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
@@ -1087,10 +1081,9 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet | Id64Set): void {
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.recipe) { unifiedIds.addElement(this.recipe.id); }
+    if (undefined !== this.recipe) { referenceIds.addElement(this.recipe.id); }
   }
 }
 
@@ -1594,7 +1587,7 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected override collectReferenceConcreteIds(ids: Id64Set): void {
+  protected override collectReferenceConcreteIds(ids: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids); // eslint-disable-line deprecation/deprecation

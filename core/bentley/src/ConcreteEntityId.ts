@@ -104,24 +104,4 @@ export class ConcreteEntityIdSet extends Set<ConcreteEntityId> {
   public addModel(id: Id64String) { this.add(`m${id}`); }
   public addAspect(id: Id64String) { this.add(`a${id}`); }
   public addRelationship(id: Id64String) { this.add(`r${id}`); }
-
-  /** Wrap a set with methods from [[ConcreteEntityIdSet]] to more literately add entities where you have the raw id and know what type it is.
-   * This is so transitionary consumers can still iterate over purely raw valid element ids.
-   * @deprecated use [[ConcreteEntityIdSet]] instead, this exists as a transitionary measure and will be removed in the future.
-   */
-  public static unifyWithRawIdsSet(set: ConcreteEntityIdSet | Set<Id64String>): ConcreteEntityIdSet | RawEntityIdSet {
-    if (set instanceof ConcreteEntityIdSet) return set;
-    else return new RawEntityIdSet(set);
-  }
-}
-
-/** A wrapper around a set of raw Id64s for interop with the deprecated API that allowed raw Id64s
- * @internal
- */
-class RawEntityIdSet {
-  public constructor(private _set: Set<Id64String>) {}
-  public addElement(id: Id64String) { this._set.add(id); }
-  public addModel(id: Id64String) { this.addElement(id); }
-  public addAspect(_id: Id64String) {}
-  public addRelationship(_id: Id64String) {}
 }

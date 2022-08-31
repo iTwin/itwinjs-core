@@ -6,7 +6,7 @@
  * @module Relationships
  */
 
-import { ConcreteEntityIdSet, DbResult, Id64, Id64Set, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityIdSet, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
@@ -65,11 +65,10 @@ export class Relationship extends Entity {
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
   // TODO: what about required references? aren't these required?
-  protected override collectReferenceConcreteIds(referenceIds: Id64Set | ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    const unifiedIds = ConcreteEntityIdSet.unifyWithRawIdsSet(referenceIds);
-    unifiedIds.addElement(this.sourceId);
-    unifiedIds.addElement(this.targetId);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addElement(this.targetId);
   }
 }
 
