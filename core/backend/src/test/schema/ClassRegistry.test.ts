@@ -5,9 +5,9 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
-import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, ModelProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import {
-  ConcreteEntityIds, DefinitionElement, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  ConcreteEntityIds, DefinitionElement, DefinitionModel, IModelDb, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -120,6 +120,10 @@ describe("Class Registry - generated classes", () => {
     prop: string;
   }
 
+  interface LinkTableRelWithNavPropProps extends ModelProps {
+    navProp: RelatedElementProps;
+  }
+
   interface TestElementWithNavPropProps extends DefinitionElementProps {
     navProp: RelatedElementProps;
   }
@@ -159,6 +163,16 @@ describe("Class Registry - generated classes", () => {
     public static override schema = TestGeneratedClasses;
     public navProp: RelatedElement;
     public constructor(props: TestElementWithNavPropProps, inIModel: IModelDb) {
+      super(props, inIModel);
+      this.navProp = new RelatedElement(props.navProp);
+    }
+  }
+
+  class LinkTableRelWithNavProp extends DefinitionModel {
+    public static override get className() { return "TestElementWithNavProp"; }
+    public static override schema = TestGeneratedClasses;
+    public navProp: RelatedElement;
+    public constructor(props: LinkTableRelWithNavPropProps, inIModel: IModelDb) {
       super(props, inIModel);
       this.navProp = new RelatedElement(props.navProp);
     }
@@ -212,11 +226,18 @@ describe("Class Registry - generated classes", () => {
       },
     } as TestElementWithNavPropProps, imodel);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(GeneratedTestElementWithNavProp.prototype.getReferenceIds);
+    // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/dot-notation
+    assert.isDefined(GeneratedTestElementWithNavProp.prototype["collectReferenceConcreteIds"]);
     expect(
       [...elemWithNavProp.getReferenceIds()],
     ).to.have.members([elemWithNavProp.model, elemWithNavProp.code.scope, testEntityId]);
+    expect(
+      [...elemWithNavProp.getReferenceConcreteIds()],
+    ).to.have.members([
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
+    ]);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestNonElementWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestNonElementWithNavProp");
@@ -229,7 +250,7 @@ describe("Class Registry - generated classes", () => {
     assert.isTrue(imodel.getJsClass("BisCore:AnnotationFrameStyle").prototype.hasOwnProperty("collectReferenceConcreteIds"));
   });
 
-  it("should get references from its bis superclass", async () => {
+  it.only("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -261,15 +282,50 @@ describe("Class Registry - generated classes", () => {
       }),
     } as TestElementWithNavPropProps, imodel);
 
+    const elemWithNavPropId = elemWithNavProp.insert();
+
     // super class here is Element so we should get the code.scope, model and parent as references
     expect(
       [...elemWithNavProp.getReferenceIds()],
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testEntityId].filter((x) => x !== undefined)
     );
+    expect(
+      [...elemWithNavProp.getReferenceConcreteIds()],
+    ).to.have.members([
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
+    ].filter((x) => x !== undefined));
+
+    const relWithNavProp = new LinkTableRelWithNavProp({
+      classFullName: LinkTableRelWithNavProp.classFullName,
+      modeledElement: { id: elemWithNavPropId },
+      navProp: {
+        id: testEntityId,
+        relClassName: "TestGeneratedClasses:LinkTableRelNavRel",
+      },
+      parentModel: IModelDb.dictionaryId,
+    } as LinkTableRelWithNavPropProps, imodel);
+
+    expect(
+      [...relWithNavProp.getReferenceIds()],
+    ).to.have.members(
+      [relWithNavProp.modeledElement.id, relWithNavProp.parentModel, testEntityId].filter((x) => x !== undefined)
+    );
+    expect(
+      [...relWithNavProp.getReferenceConcreteIds()],
+    ).to.have.members([
+      ConcreteEntityIds.fromEntityType(relWithNavProp.modeledElement.id, ConcreteEntityTypes.Element),
+      ConcreteEntityIds.fromEntityType(relWithNavProp.parentModel, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
+    ].filter((x) => x !== undefined));
+
+    // FIXME: also test the TestModel
   });
 
-  it("should not override custom registered schema class implementations of collectReferenceConcreteIds", async () => {
+  it.only("should not override custom registered schema class implementations of collectReferenceConcreteIds", async () => {
     const testImplReferenceId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
       public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
@@ -315,12 +371,20 @@ describe("Class Registry - generated classes", () => {
     } as TestElementWithNavPropProps, imodel);
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(ActualTestElementWithNavProp.prototype.getReferenceIds);
+    assert.isDefined(ActualTestElementWithNavProp.prototype.collectReferenceConcreteIds);
     expect(
       [...elemWithNavProp.getReferenceIds()],
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
     );
+    expect(
+      [...elemWithNavProp.getReferenceConcreteIds()],
+    ).to.have.members([
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      ConcreteEntityIds.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
+    ].filter((x) => x !== undefined));
 
     expect(testElementWithNavPropCollectReferencesSpy.called).to.be.true;
     testElementWithNavPropCollectReferencesSpy.resetHistory();
@@ -337,14 +401,22 @@ describe("Class Registry - generated classes", () => {
       },
     } as DerivedWithNavPropProps, imodel);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    assert.isDefined(ActualDerivedWithNavProp.prototype.getReferenceIds);
+    // eslint-disable-next-line @typescript-eslint/unbound-method, @typescript-eslint/dot-notation
+    assert.isDefined(ActualDerivedWithNavProp.prototype["collectReferenceConcreteIds"]);
     // This demonstrates that if a non-generated class has a registered non-biscore base, it will not get a generated impl,
     expect(
       [...derivedElemWithNavProp.getReferenceIds()]
     ).to.have.members(
       [elemWithNavProp.model, elemWithNavProp.code.scope, elemWithNavProp.parent?.id, testImplReferenceId].filter((x) => x !== undefined)
     );
+    expect(
+      [...derivedElemWithNavProp.getReferenceConcreteIds()]
+    ).to.have.members([
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      ConcreteEntityIds.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
+    ].filter((x) => x !== undefined));
     // explicitly check we called the super function
     // (we already know its implementation was called, because testImplReferenceId is in the derived call's result)
     expect(testElementWithNavPropCollectReferencesSpy.called).to.be.true;

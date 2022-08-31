@@ -3,6 +3,11 @@
     xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
 
+    <ECEntityClass typeName="TestModel" description="a sample model for the end of the test relationships">
+        <BaseClass>bis:DefinitionModel</BaseClass>
+        <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
+    </ECEntityClass>
+
     <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
         <BaseClass>bis:DefinitionElement</BaseClass>
         <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
@@ -33,6 +38,26 @@
         <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
             <Class class="TestEntity"/>
         </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="LinkTableRelNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="LinkTableRelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="LinkTableRelWithNavProp" strength="referencing" description="link table rel" modifier="sealed">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="TestEntity"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="TestEntity"/>
+        </Target>
+        <ECNavigationProperty propertyName="navProp" relationshipName="LinkTableRelNavRel" direction="Forward"/>
     </ECRelationshipClass>
 
     <ECEntityClass typeName="TestNonElementWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
