@@ -847,6 +847,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
   return packed;
 }
 
+// TODO: clean-up of saved widgets.
 function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageDef): SavedWidgets {
   for (const widgetDef of frontstageDef.widgetDefs) {
     const id = widgetDef.id;
@@ -854,7 +855,7 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
       id,
     };
     const widget = produce(initialWidget, (draft) => {
-      if (widgetDef.tabLocation.floatingWidget) {
+      if (widgetDef.tabLocation) {
         draft.tabLocation = { ...widgetDef.tabLocation };
       }
       if (widgetDef.popoutBounds) {
@@ -865,8 +866,7 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
       continue;
 
     savedWidgets = produce(savedWidgets, (draft) => {
-      draft.allIds.push(id);
-      draft.byId[id] = widget;
+      draft.push(widget);
     });
   }
 
@@ -874,24 +874,23 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
 }
 
 function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageDef) {
-  let i = savedWidgets.allIds.length;
+  let i = savedWidgets.length;
   while (i--) {
-    const widgetId = savedWidgets.allIds[i];
-    const widget = frontstage.findWidgetDef(widgetId);
-    if (!widget)
+    const savedWidget = savedWidgets[i];
+    const widgetId = savedWidget.id;
+    const widgetDef = frontstage.findWidgetDef(widgetId);
+    if (!widgetDef)
       continue;
 
-    const savedWidget = savedWidgets.byId[widgetId];
     if (savedWidget.tabLocation) {
-      widget.tabLocation = { ...savedWidget.tabLocation };
+      widgetDef.tabLocation = { ...savedWidget.tabLocation };
     }
     if (savedWidget.popoutBounds) {
-      widget.popoutBounds = Rectangle.create(savedWidget.popoutBounds);
+      widgetDef.popoutBounds = Rectangle.create(savedWidget.popoutBounds);
     }
 
     savedWidgets = produce(savedWidgets, (draft) => {
-      draft.allIds.splice(i, 1);
-      delete draft.byId[widgetId];
+      draft.splice(i, 1);
     });
   }
 
@@ -928,10 +927,7 @@ export interface SavedWidget {
 }
 
 /** @internal */
-export interface SavedWidgets {
-  readonly byId: { readonly [id: SavedWidget["id"]]: SavedWidget };
-  readonly allIds: ReadonlyArray<SavedWidget["id"]>;
-}
+export type SavedWidgets = ReadonlyArray<SavedWidget>;
 
 // We don't save tab labels or if widget is allowed to "pop-out".
 type SavedTabState = Omit<TabState, "label" | "canPopout" | "isFloatingStateWindowResizable" | "iconSpec">;
@@ -953,7 +949,7 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
 }
 
 function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneState {
-  const tabLocation = widgetDef.tabLocation;
+  const tabLocation = widgetDef.tabLocation || widgetDef.defaultTabLocation;
   const tabId = widgetDef.id;
   const widgetId = tabLocation.widgetId;
 
@@ -1195,13 +1191,7 @@ export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   React.useEffect(() => {
     if (!nineZone || nineZone.draggedTab)
       return;
-    let savedWidgets = frontstageDef.savedWidgetDefs;
-    if (!savedWidgets) {
-      savedWidgets = {
-        allIds: [],
-        byId: {},
-      };
-    }
+    const savedWidgets = frontstageDef.savedWidgetDefs || [];
     saveSetting(frontstageDef, nineZone, savedWidgets);
   }, [frontstageDef, nineZone, saveSetting]);
 }

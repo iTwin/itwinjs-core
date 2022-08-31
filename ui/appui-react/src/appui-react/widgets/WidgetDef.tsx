@@ -147,17 +147,18 @@ export class WidgetDef {
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
-  private _popoutBounds?: Rectangle;
 
   private _hideWithUiWhenFloating?: boolean;
   private _initialProps?: WidgetProps;
 
-  private _tabLocation: TabLocation = {
+  private _tabLocation?: TabLocation;
+  private _defaultTabLocation: TabLocation = {
     side: "left",
     tabIndex: 0,
     widgetId: "",
     widgetIndex: 0,
   };
+  private _popoutBounds?: Rectangle;
 
   public get state(): WidgetState {
     if ("1" === UiFramework.uiVersion)
@@ -197,7 +198,10 @@ export class WidgetDef {
 
   /** @internal */
   public get tabLocation() { return this._tabLocation; }
-  public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
+  public set tabLocation(tabLocation: TabLocation | undefined) { this._tabLocation = tabLocation; }
+
+  /** @internal */
+  public get defaultTabLocation() { return this._defaultTabLocation; }
 
   /** @internal */
   public get defaultFloatingPosition() { return this._defaultFloatingPosition; }

@@ -17,7 +17,7 @@ test.describe("widget auto size", () => {
 
     // Widget from end section of a bottom panel.
     const tab = tabLocator(page, "Layout Controls");
-    const widget = widgetLocator(page, { tab });
+    const widget = widgetLocator({ tab });
     const titleBarHandle = widget.locator(".nz-handle");
 
     const boundingBox = await titleBarHandle.boundingBox();

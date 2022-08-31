@@ -29,7 +29,7 @@ test.describe("popout widget", () => {
 
   test("should maintain popout widget bounds", async ({ context, page }) => {
     const tab = tabLocator(page, "View Attributes");
-    const widget = widgetLocator(page, { tab });
+    const widget = widgetLocator({ tab });
     const popoutButton = widget.locator('[title="Pop out active widget tab"]');
 
     // Popout the widget w/ default size.
@@ -66,7 +66,7 @@ test.describe("popout widget", () => {
 
   test("should maintain popout widget bounds (after reload)", async ({ context, page }) => {
     const tab = tabLocator(page, "View Attributes");
-    const widget = widgetLocator(page, { tab });
+    const widget = widgetLocator({ tab });
     const popoutButton = widget.locator('[title="Pop out active widget tab"]');
 
     // Popout the widget w/ default size.

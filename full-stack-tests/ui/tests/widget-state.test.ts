@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect, Page } from '@playwright/test';
 import assert from 'assert';
-import { activeTabLocator, expectSavedFrontstageState, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
+import { activeTabLocator, expectSavedFrontstageState, expectTabInPanelSection, floatingWidgetLocator, panelLocator, runKeyin, tabLocator, widgetLocator } from './Utils';
 
 enum WidgetState {
   Open = 0,
@@ -138,32 +138,30 @@ test.describe("widget state", () => {
   test("should maintain location of a panel widget (after reload)", async ({ context, page }) => {
     const tab1 = tabLocator(page, "WT-A");
     const tab2 = tabLocator(page, "WT-2");
-    const widget = widgetLocator(page, { tab: tab1 });
     const body = page.locator("body");
+    await expectTabInPanelSection(tab1, "top", 0);
 
-    await expect(widget).toHaveClass(/nz-panel-section-0/);
-
-    // Move from top start widget to top end widget.
+    // Drag from top start to top end.
     const bounds2 = (await tab2.boundingBox())!;
     await tab1.dispatchEvent("mousedown", { clientX: 0, clientY: 0 });
     await tab1.dispatchEvent("mousemove", { clientX: 20, clientY: 20 });
     await body.dispatchEvent("mousemove", { clientX: bounds2.x, clientY: bounds2.y });
     await body.dispatchEvent("mouseup");
+    await expectTabInPanelSection(tab1, "top", 1);
 
     await setWidgetState(page, "WT-A", WidgetState.Hidden);
-
     await expectSavedFrontstageState(context, (state) => {
       return state.widgets.allIds.includes("WT-A");
     });
     await page.reload();
 
     await setWidgetState(page, "WT-A", WidgetState.Open);
-    await expect(widget).toHaveClass(/nz-panel-section-1/);
+    await expectTabInPanelSection(tab1, "top", 1);
   });
 
   test("should hide a panel section", async ({ page }) => {
-    const panel = panelLocator(page, "left");
-    const widget = widgetLocator(page, { panel });
+    const panel = panelLocator({ page, side: "left" });
+    const widget = widgetLocator({ panel });
     const tab = tabLocator(page, "WL-A");
     await expect(tab).toBeVisible();
     await expect(widget).toHaveCount(2);
@@ -174,8 +172,8 @@ test.describe("widget state", () => {
   });
 
   test("should hide a panel section (multiple tabs)", async ({ page }) => {
-    const panel = panelLocator(page, "left");
-    const widget = widgetLocator(page, { panel });
+    const panel = panelLocator({ page, side: "left" });
+    const widget = widgetLocator({ panel });
     const tab1 = tabLocator(page, "WL-1");
     const tab2 = tabLocator(page, "WL-2");
     const tab3 = tabLocator(page, "WL-3");
@@ -210,8 +208,8 @@ test.describe("widget state", () => {
   });
 
   test("should hide a panel", async ({ page }) => {
-    const panel = panelLocator(page, "left");
-    const widget = widgetLocator(page, { panel });
+    const panel = panelLocator({ page, side: "left" });
+    const widget = widgetLocator({ panel });
     await expect(panel).toBeVisible();
     await expect(widget).toHaveCount(2);
 

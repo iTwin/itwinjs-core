@@ -48,10 +48,7 @@ function createFrontstageState(nineZone = createSavedNineZoneState()): WidgetPan
   return {
     id: "frontstage1",
     nineZone,
-    widgets: {
-      allIds: [],
-      byId: {},
-    },
+    widgets: [],
     stateVersion: 100,
     version: 100,
   };
@@ -1504,7 +1501,7 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "t2");
           const widgetDef = new WidgetDef({ id: "t3" });
           widgetDef.tabLocation = {
-            ...widgetDef.tabLocation,
+            ...widgetDef.defaultTabLocation,
             widgetId: "w2",
           };
           const sut = setWidgetState(nineZone, widgetDef, WidgetState.Open);
@@ -1522,7 +1519,7 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "t2_3");
           const widgetDef = new WidgetDef({ id: "t4" });
           widgetDef.tabLocation = {
-            ...widgetDef.tabLocation,
+            ...widgetDef.defaultTabLocation,
             widgetIndex: 1,
             tabIndex: 2,
           };
@@ -1637,8 +1634,8 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addTab(nineZone, "t1");
           const widgetDef = new WidgetDef({ id: "t1" });
           setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          widgetDef.tabLocation.side.should.eq("left");
-          widgetDef.tabLocation.widgetIndex.should.eq(0);
+          widgetDef.tabLocation!.side.should.eq("left");
+          widgetDef.tabLocation!.widgetIndex.should.eq(0);
         });
       });
 
