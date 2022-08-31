@@ -8,7 +8,7 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, LineSegment3d, LineString3d } from "@itwin/core-geometry";
+import { Arc3d, LineSegment3d, LineString3d, Loop, Path } from "@itwin/core-geometry";
 import {
   ColorByName, ColorDef, Feature, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
 } from "@itwin/core-common";
@@ -46,8 +46,13 @@ function graphicPrimitiveFromGeometryStreamPrimitive(geom: GeometryStreamPrimiti
       else // ###TODO support the rest...
         return undefined;
     case "curveCollection":
+      if (geom.geometry instanceof Loop)
+        return { loop: geom.geometry, type: "loop" };
+      else if (geom.geometry instanceof Path)
+        return { path: geom.geometry, type: "path" };
+      else
+        return undefined; // TODO support parity/union regions and bags of curves.
     case "bsurf":
-    default:
       // TODO support these
       return undefined;
   }
