@@ -5,87 +5,6 @@ importers:
   .:
     specifiers: {}
 
-  ../../clients/imodelhub:
-    specifiers:
-      '@itwin/build-tools': workspace:*
-      '@itwin/core-backend': workspace:*
-      '@itwin/core-bentley': workspace:*
-      '@itwin/core-common': workspace:*
-      '@itwin/core-frontend': workspace:*
-      '@itwin/eslint-plugin': workspace:*
-      '@itwin/projects-client': ^0.6.0
-      '@types/chai': 4.3.1
-      '@types/deep-assign': ^0.1.0
-      '@types/fs-extra': ^4.0.7
-      '@types/jsonwebtoken': ^8.5.0
-      '@types/lodash': ^4.14.0
-      '@types/mocha': ^8.2.2
-      '@types/node': 16.11.7
-      '@types/proper-lockfile': ^4.1.1
-      '@types/qs': ^6.5.0
-      '@types/semver': 7.3.10
-      '@types/sinon': ^9.0.0
-      '@types/stream-buffers': ~3.0.2
-      '@types/superagent': ^4.1.14
-      agentkeepalive: ^4.1.4
-      chai: ^4.1.2
-      deep-assign: ^2.0.0
-      eslint: ^7.11.0
-      fs-extra: ^8.1.0
-      fs-write-stream-atomic: ^1.0.10
-      got: ~11.8.2
-      js-base64: ^3.6.1
-      lodash: ^4.17.10
-      mocha: ^10.0.0
-      nock: ^12.0.3
-      proper-lockfile: ^4.1.2
-      qs: ^6.5.1
-      rimraf: ^3.0.2
-      semver: ^7.3.5
-      sinon: ^9.0.2
-      superagent: 7.1.3
-      typescript: ~4.4.0
-    dependencies:
-      agentkeepalive: 4.2.1
-      deep-assign: 2.0.0
-      fs-write-stream-atomic: 1.0.10
-      got: 11.8.5
-      js-base64: 3.7.2
-      lodash: 4.17.21
-      proper-lockfile: 4.1.2
-      qs: 6.11.0
-      semver: 7.3.7
-      superagent: 7.1.3
-    devDependencies:
-      '@itwin/build-tools': link:../../tools/build
-      '@itwin/core-backend': link:../../core/backend
-      '@itwin/core-bentley': link:../../core/bentley
-      '@itwin/core-common': link:../../core/common
-      '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/projects-client': 0.6.0
-      '@types/chai': 4.3.1
-      '@types/deep-assign': 0.1.1
-      '@types/fs-extra': 4.0.12
-      '@types/jsonwebtoken': 8.5.8
-      '@types/lodash': 4.14.184
-      '@types/mocha': 8.2.3
-      '@types/node': 16.11.7
-      '@types/proper-lockfile': 4.1.2
-      '@types/qs': 6.9.7
-      '@types/semver': 7.3.10
-      '@types/sinon': 9.0.11
-      '@types/stream-buffers': 3.0.4
-      '@types/superagent': 4.1.15
-      chai: 4.3.6
-      eslint: 7.32.0
-      fs-extra: 8.1.0
-      mocha: 10.0.0
-      nock: 12.0.3
-      rimraf: 3.0.2
-      sinon: 9.2.4
-      typescript: 4.4.4
-
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
@@ -1736,7 +1655,6 @@ importers:
 
   ../../full-stack-tests/core:
     specifiers:
-      '@bentley/imodelbank-client': workspace:*
       '@itwin/browser-authorization': ^0.5.1
       '@itwin/build-tools': workspace:*
       '@itwin/certa': workspace:*
@@ -1794,7 +1712,6 @@ importers:
       webpack: ^5.64.4
       webpack-cli: ^4.10.0
     dependencies:
-      '@bentley/imodelbank-client': link:../../clients/imodelhub
       '@itwin/browser-authorization': 0.5.1
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
@@ -3226,7 +3143,6 @@ importers:
     specifiers:
       '@bentley/icons-generic': ^1.0.15
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/imodelbank-client': workspace:*
       '@bentley/react-scripts': 5.0.0-dev.4
       '@itwin/appui-abstract': workspace:*
       '@itwin/backend-webpack-tools': workspace:*
@@ -3278,7 +3194,6 @@ importers:
     dependencies:
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
-      '@bentley/imodelbank-client': link:../../clients/imodelhub
       '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/browser-authorization': 0.5.1
       '@itwin/core-backend': link:../../core/backend
@@ -8725,6 +8640,7 @@ packages:
     resolution: {integrity: sha512-zm6xBQpFDIDM6o9r6HSgDeIcLy82TKWctCXEPbJJcXb5AKmi5BNNdLXneixK4lplX3PqIVcwLBCGE/kAGnlD4A==}
     dependencies:
       '@types/node': 16.11.7
+    dev: false
 
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
@@ -8800,12 +8716,6 @@ packages:
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
-
-  /@types/proper-lockfile/4.1.2:
-    resolution: {integrity: sha512-kd4LMvcnpYkspDcp7rmXKedn8iJSCoa331zRRamUp5oanKt/CefbEGPQP7G89enz7sKD4bvsr8mHSsC8j5WOvA==}
-    dependencies:
-      '@types/retry': 0.12.2
-    dev: true
 
   /@types/q/1.5.5:
     resolution: {integrity: sha512-L28j2FcJfSZOnL1WBjDYp2vUHCeIFlyYI/53EwD/rKUBQ7MtUUfbQWiyKJGpcnv4/WgrhWsFKrcPstcAt/J0tQ==}
@@ -8925,10 +8835,6 @@ packages:
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
     dev: true
 
-  /@types/retry/0.12.2:
-    resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
-    dev: true
-
   /@types/rimraf/2.0.5:
     resolution: {integrity: sha512-YyP+VfeaqAyFmXoTh3HChxOQMyjByRMsHU7kc5KOJkSlXudhMhQIALbYV7rHh/l8d2lX3VUQzprrcAgWdRuU8g==}
     dependencies:
@@ -8996,12 +8902,6 @@ packages:
 
   /@types/stack-utils/2.0.1:
     resolution: {integrity: sha512-Hl219/BT5fLAaz6NDkSuhzasy49dwQS/DSdu4MdggFB8zcXv7vflBI3xp7FEmkmdDkBUI2bPUNeMttp2knYdxw==}
-    dev: true
-
-  /@types/stream-buffers/3.0.4:
-    resolution: {integrity: sha512-qU/K1tb2yUdhXkLIATzsIPwbtX6BpZk0l3dPW6xqWyhfzzM1ECaQ/8faEnu3CNraLiQ9LHyQQPBGp7N9Fbs25w==}
-    dependencies:
-      '@types/node': 16.11.7
     dev: true
 
   /@types/superagent/4.1.15:
@@ -9623,17 +9523,6 @@ packages:
       debug: 4.3.4
     transitivePeerDependencies:
       - supports-color
-
-  /agentkeepalive/4.2.1:
-    resolution: {integrity: sha512-Zn4cw2NEqd+9fiSVWMscnjyQ1a8Yfoc5oBajLeo5w+YBHgDUcEBY2hS4YpTz6iN5f/2zQiktcuM6tS8x1p9dpA==}
-    engines: {node: '>= 8.0.0'}
-    dependencies:
-      debug: 4.3.4
-      depd: 1.1.2
-      humanize-ms: 1.2.1
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /aggregate-error/3.1.0:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
@@ -13697,15 +13586,6 @@ packages:
     resolution: {integrity: sha512-cybjIfiiE+pTWicSCLFHSrXZ6EilF30oh91FDP9S2B051prEa7QWfrVTQm10/dDpswBDXZugPa1Ogu8Yh+HV0Q==}
     dev: true
 
-  /fs-write-stream-atomic/1.0.10:
-    resolution: {integrity: sha512-gehEzmPn2nAwr39eay+x3X34Ra+M2QlVUTLhkXPjWdeO8RF9kszk116avgBJM3ZyNHgHXBNx+VmPaFC36k0PzA==}
-    dependencies:
-      graceful-fs: 4.2.10
-      iferr: 0.1.5
-      imurmurhash: 0.1.4
-      readable-stream: 2.3.7
-    dev: false
-
   /fs.realpath/1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
@@ -14371,12 +14251,6 @@ packages:
     engines: {node: '>=10.17.0'}
     dev: true
 
-  /humanize-ms/1.2.1:
-    resolution: {integrity: sha512-Fl70vYtsAFb/C06PTS9dZBo7ihau+Tu/DNCk/OyHhea07S+aeMWpFFkUaXRa8fI+ScZbEI8dfSxwY7gxZ9SAVQ==}
-    dependencies:
-      ms: 2.1.3
-    dev: false
-
   /i18next-browser-languagedetector/6.1.5:
     resolution: {integrity: sha512-11t7b39oKeZe4uyMxLSPnfw28BCPNLZgUk7zyufex0zKXZ+Bv+JnmJgoB+IfQLZwDt1d71PM8vwBX1NCgliY3g==}
     dependencies:
@@ -14438,10 +14312,6 @@ packages:
 
   /ieee754/1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
-
-  /iferr/0.1.5:
-    resolution: {integrity: sha512-DUNFN5j7Tln0D+TxzloUjKB+CtVu6myn0JEFak6dG18mNt9YkQ6lzGCdafwofISZ1lLF3xRHJ98VKy9ynkcFaA==}
-    dev: false
 
   /ignore-by-default/1.0.1:
     resolution: {integrity: sha512-Ius2VYcGNk7T90CppJqcIkS5ooHUZyIQK+ClZfMfMNFEF9VSE73Fq+906u/CWu92x4gzZMWOwfFYckPObzdEbA==}
@@ -18528,14 +18398,6 @@ packages:
     engines: {node: '>= 8'}
     dev: true
 
-  /proper-lockfile/4.1.2:
-    resolution: {integrity: sha512-TjNPblN4BwAWMXU8s9AEz4JmQxnD1NNL7bNOY/AKUzyamc379FWASUhc/K1pL2noVb+XmZKLL68cjzLsiOAMaA==}
-    dependencies:
-      graceful-fs: 4.2.10
-      retry: 0.12.0
-      signal-exit: 3.0.7
-    dev: false
-
   /proto-list/1.2.4:
     resolution: {integrity: sha512-vtK/94akxsTMhe0/cbfpR+syPuszcuwhqVjJq26CuNDgFGj682oRBXOP5MJpv2r7JtE8MsiepGIqvvOTBwn2vA==}
     optional: true
@@ -19431,11 +19293,6 @@ packages:
 
   /retry-as-promised/5.0.0:
     resolution: {integrity: sha512-6S+5LvtTl2ggBumk04hBo/4Uf6fRJUwIgunGZ7CYEBCeufGFW1Pu6ucUf/UskHeWOIsUcLOGLFXPig5tR5V1nA==}
-    dev: false
-
-  /retry/0.12.0:
-    resolution: {integrity: sha512-9LkiTwjUh6rT555DtE9rTX+BKByPfrMzEAtnlEtdEwr3Nkffwiihqe2bWADg+OQRjt9gl6ICdmB/ZFDCGAtSow==}
-    engines: {node: '>= 4'}
     dev: false
 
   /retry/0.13.1:
