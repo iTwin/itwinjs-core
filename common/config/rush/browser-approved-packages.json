@@ -1036,7 +1036,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "typedoc",

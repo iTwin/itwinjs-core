@@ -267,7 +267,6 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
   if (process.env.IMJS_OIDC_HEADLESS) {
     if (checkEnvVars(
       "IMJS_OIDC_CLIENT_ID",
-      "IMJS_OIDC_REDIRECT_URI",
       "IMJS_OIDC_SCOPE",
       "IMJS_OIDC_EMAIL",
       "IMJS_OIDC_PASSWORD"
@@ -275,7 +274,7 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       // test-only authorization client with credentials from the environment.
       return new TestBrowserAuthorizationClient({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
         scope: process.env.IMJS_OIDC_SCOPE!,
         clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
       }, {
@@ -302,7 +301,7 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       return new ElectronMainAuthorization({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,
         scope: process.env.IMJS_OIDC_SCOPE!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI,
+        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
       });
     }
   }

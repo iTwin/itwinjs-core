@@ -3276,6 +3276,7 @@ importers:
       null-loader: ^4.0.1
       rimraf: ^3.0.2
       semver: ^7.3.5
+      ts-node: ^10.8.2
       typescript: ~4.4.0
       webpack: ^5.64.4
     dependencies:
@@ -3309,7 +3310,7 @@ importers:
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.0
     devDependencies:
-      '@bentley/react-scripts': 5.0.0-dev.4_typescript@4.4.4
+      '@bentley/react-scripts': 5.0.0-dev.4_ts-node@10.9.1+typescript@4.4.4
       '@itwin/backend-webpack-tools': link:../../tools/backend-webpack
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
@@ -3332,6 +3333,7 @@ importers:
       null-loader: 4.0.1_webpack@5.74.0
       rimraf: 3.0.2
       semver: 7.3.7
+      ts-node: 10.9.1_typescript@4.4.4
       typescript: 4.4.4
       webpack: 5.74.0
 
@@ -6764,6 +6766,107 @@ packages:
       - webpack-plugin-serve
     dev: true
 
+  /@bentley/react-scripts/5.0.0-dev.4_ts-node@10.9.1+typescript@4.4.4:
+    resolution: {integrity: sha512-2jkL8kvzAbYvBGMlw1pT1XRNUutWvSUd/XYDO98R7QZnyvb4p70Erk0blqwZQCug9a6yCwASXXA0H4Nhgn41Rw==}
+    engines: {node: '>=14.0.0'}
+    hasBin: true
+    peerDependencies:
+      react: '>= 16'
+      typescript: ^3.2.1 || ^4
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+    dependencies:
+      '@babel/core': 7.18.13
+      '@itwin/core-webpack-tools': 3.3.0_webpack@5.74.0
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.7_1e5167d300f354f21b44cc34def71332
+      '@svgr/webpack': 5.5.0
+      babel-jest: 27.5.1_@babel+core@7.18.13
+      babel-loader: 8.2.5_987cc70bded3fa81b046dafa8784ef98
+      babel-plugin-import-remove-resource-query: 1.0.0
+      babel-plugin-named-asset-import: 0.3.8_@babel+core@7.18.13
+      babel-preset-react-app: 10.0.1
+      bfj: 7.0.2
+      browserslist: 4.21.3
+      camelcase: 6.3.0
+      case-sensitive-paths-webpack-plugin: 2.4.0
+      copy-webpack-plugin: 10.2.4_webpack@5.74.0
+      css-loader: 6.7.1_webpack@5.74.0
+      css-minimizer-webpack-plugin: 3.4.1_webpack@5.74.0
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      eslint: 8.22.0
+      eslint-config-react-app: 7.0.1_ca3243fac82741b8194dd27b97cf4fbf
+      eslint-webpack-plugin: 3.2.0_eslint@8.22.0+webpack@5.74.0
+      fast-sass-loader: 2.0.1_sass@1.54.5+webpack@5.74.0
+      file-loader: 6.2.0_webpack@5.74.0
+      fs-extra: 10.1.0
+      html-webpack-plugin: 5.5.0_webpack@5.74.0
+      identity-obj-proxy: 3.0.0
+      jest: 27.5.1_ts-node@10.9.1
+      jest-resolve: 27.5.1
+      jest-watch-typeahead: 1.1.0_jest@27.5.1
+      mini-css-extract-plugin: 2.6.1_webpack@5.74.0
+      postcss: 8.4.16
+      postcss-flexbugs-fixes: 5.0.2_postcss@8.4.16
+      postcss-loader: 6.2.1_postcss@8.4.16+webpack@5.74.0
+      postcss-normalize: 10.0.1_6534acbd532436a24d5e7a0a55900c54
+      postcss-preset-env: 7.8.0_postcss@8.4.16
+      prompts: 2.4.2
+      react-app-polyfill: 3.0.0
+      react-dev-utils: 12.0.1_c9e91398555da55fa50dc80f670d34ad
+      react-refresh: 0.11.0
+      resolve: 1.22.1
+      resolve-url-loader: 4.0.0
+      sass: 1.54.5
+      sass-loader: 12.6.0_sass@1.54.5+webpack@5.74.0
+      semver: 7.3.7
+      source-map-loader: 3.0.1_webpack@5.74.0
+      style-loader: 3.3.1_webpack@5.74.0
+      svg-sprite-loader: 4.2.1_webpack@5.74.0
+      tailwindcss: 3.1.8_ts-node@10.9.1
+      terser-webpack-plugin: 5.3.5_webpack@5.74.0
+      ts-jest: 27.1.5_bbb977fcca186f3b6107e9e4da96fdfd
+      typescript: 4.4.4
+      webpack: 5.74.0
+      webpack-dev-server: 4.10.0_webpack@5.74.0
+      webpack-filter-warnings-plugin: 1.2.1_webpack@5.74.0
+      webpack-manifest-plugin: 4.1.1_webpack@5.74.0
+      workbox-webpack-plugin: 6.5.4_webpack@5.74.0
+    optionalDependencies:
+      fsevents: 2.3.2
+    transitivePeerDependencies:
+      - '@babel/plugin-syntax-flow'
+      - '@babel/plugin-transform-react-jsx'
+      - '@parcel/css'
+      - '@swc/core'
+      - '@types/babel__core'
+      - '@types/jest'
+      - '@types/webpack'
+      - bufferutil
+      - canvas
+      - clean-css
+      - csso
+      - debug
+      - esbuild
+      - fibers
+      - node-notifier
+      - node-sass
+      - rework
+      - rework-visit
+      - sass-embedded
+      - sockjs-client
+      - supports-color
+      - ts-node
+      - type-fest
+      - uglify-js
+      - utf-8-validate
+      - vue-template-compiler
+      - webpack-cli
+      - webpack-hot-middleware
+      - webpack-plugin-serve
+    dev: true
+
   /@bentley/react-scripts/5.0.0-dev.4_typescript@4.4.4:
     resolution: {integrity: sha512-2jkL8kvzAbYvBGMlw1pT1XRNUutWvSUd/XYDO98R7QZnyvb4p70Erk0blqwZQCug9a6yCwASXXA0H4Nhgn41Rw==}
     engines: {node: '>=14.0.0'}
@@ -7529,6 +7632,51 @@ packages:
       graceful-fs: 4.2.10
       jest-changed-files: 27.5.1
       jest-config: 27.5.1
+      jest-haste-map: 27.5.1
+      jest-message-util: 27.5.1
+      jest-regex-util: 27.5.1
+      jest-resolve: 27.5.1
+      jest-resolve-dependencies: 27.5.1
+      jest-runner: 27.5.1
+      jest-runtime: 27.5.1
+      jest-snapshot: 27.5.1
+      jest-util: 27.5.1
+      jest-validate: 27.5.1
+      jest-watcher: 27.5.1
+      micromatch: 4.0.5
+      rimraf: 3.0.2
+      slash: 3.0.0
+      strip-ansi: 6.0.1
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - supports-color
+      - ts-node
+      - utf-8-validate
+    dev: true
+
+  /@jest/core/27.5.1_ts-node@10.9.1:
+    resolution: {integrity: sha512-AK6/UTrvQD0Cd24NSqmIA6rKsu0tKIxfiCducZvqxYdmMisOYAsdItspT+fQDQYARPf8XgjAFZi0ogW2agH5nQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/console': 27.5.1
+      '@jest/reporters': 27.5.1
+      '@jest/test-result': 27.5.1
+      '@jest/transform': 27.5.1
+      '@jest/types': 27.5.1
+      '@types/node': 16.11.7
+      ansi-escapes: 4.3.2
+      chalk: 4.1.2
+      emittery: 0.8.1
+      exit: 0.1.2
+      graceful-fs: 4.2.10
+      jest-changed-files: 27.5.1
+      jest-config: 27.5.1_ts-node@10.9.1
       jest-haste-map: 27.5.1
       jest-message-util: 27.5.1
       jest-regex-util: 27.5.1
@@ -15082,6 +15230,36 @@ packages:
       - utf-8-validate
     dev: true
 
+  /jest-cli/27.5.1_ts-node@10.9.1:
+    resolution: {integrity: sha512-Hc6HOOwYq4/74/c62dEE3r5elx8wjYqxY0r0G/nFrLDPMFRu6RA/u8qINOIkvhxG7mMQ5EJsOGfRpI8L6eFUVw==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 27.5.1_ts-node@10.9.1
+      '@jest/test-result': 27.5.1
+      '@jest/types': 27.5.1
+      chalk: 4.1.2
+      exit: 0.1.2
+      graceful-fs: 4.2.10
+      import-local: 3.1.0
+      jest-config: 27.5.1_ts-node@10.9.1
+      jest-util: 27.5.1
+      jest-validate: 27.5.1
+      prompts: 2.4.2
+      yargs: 16.2.0
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - supports-color
+      - ts-node
+      - utf-8-validate
+    dev: true
+
   /jest-config/27.5.1:
     resolution: {integrity: sha512-5sAsjm6tGdsVbW9ahcChPAFCk4IlkQUknH5AvKjuLTSlcO/wCZKyFdn7Rg0EkC+OGgWODEy2hDpWB1PgzH0JNA==}
     engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
@@ -15115,6 +15293,47 @@ packages:
       pretty-format: 27.5.1
       slash: 3.0.0
       strip-json-comments: 3.1.1
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - supports-color
+      - utf-8-validate
+    dev: true
+
+  /jest-config/27.5.1_ts-node@10.9.1:
+    resolution: {integrity: sha512-5sAsjm6tGdsVbW9ahcChPAFCk4IlkQUknH5AvKjuLTSlcO/wCZKyFdn7Rg0EkC+OGgWODEy2hDpWB1PgzH0JNA==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    peerDependencies:
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      ts-node:
+        optional: true
+    dependencies:
+      '@babel/core': 7.18.13
+      '@jest/test-sequencer': 27.5.1
+      '@jest/types': 27.5.1
+      babel-jest: 27.5.1_@babel+core@7.18.13
+      chalk: 4.1.2
+      ci-info: 3.3.2
+      deepmerge: 4.2.2
+      glob: 7.2.3
+      graceful-fs: 4.2.10
+      jest-circus: 27.5.1
+      jest-environment-jsdom: 27.5.1
+      jest-environment-node: 27.5.1
+      jest-get-type: 27.5.1
+      jest-jasmine2: 27.5.1
+      jest-regex-util: 27.5.1
+      jest-resolve: 27.5.1
+      jest-runner: 27.5.1
+      jest-util: 27.5.1
+      jest-validate: 27.5.1
+      micromatch: 4.0.5
+      parse-json: 5.2.0
+      pretty-format: 27.5.1
+      slash: 3.0.0
+      strip-json-comments: 3.1.1
+      ts-node: 10.9.1_typescript@4.4.4
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -15581,6 +15800,27 @@ packages:
       '@jest/core': 27.5.1
       import-local: 3.1.0
       jest-cli: 27.5.1
+    transitivePeerDependencies:
+      - bufferutil
+      - canvas
+      - supports-color
+      - ts-node
+      - utf-8-validate
+    dev: true
+
+  /jest/27.5.1_ts-node@10.9.1:
+    resolution: {integrity: sha512-Yn0mADZB89zTtjkPJEXwrac3LHudkQMR+Paqa8uxJHCBr9agxztUifWCyiYrjhMPBoUVBjyny0I7XH6ozDr7QQ==}
+    engines: {node: ^10.13.0 || ^12.13.0 || ^14.15.0 || >=15.0.0}
+    hasBin: true
+    peerDependencies:
+      node-notifier: ^8.0.1 || ^9.0.0 || ^10.0.0
+    peerDependenciesMeta:
+      node-notifier:
+        optional: true
+    dependencies:
+      '@jest/core': 27.5.1_ts-node@10.9.1
+      import-local: 3.1.0
+      jest-cli: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - bufferutil
       - canvas
@@ -17851,6 +18091,24 @@ packages:
     dependencies:
       lilconfig: 2.0.6
       postcss: 8.4.16
+      yaml: 1.10.2
+    dev: true
+
+  /postcss-load-config/3.1.4_postcss@8.4.16+ts-node@10.9.1:
+    resolution: {integrity: sha512-6DiM4E7v4coTE4uzA8U//WhtPwyhiim3eyjEMFCnUpzbrkK9wJHgKDT2mR+HbtSrd/NubVaYTOpSpjUl8NQeRg==}
+    engines: {node: '>= 10'}
+    peerDependencies:
+      postcss: '>=8.0.9'
+      ts-node: '>=9.0.0'
+    peerDependenciesMeta:
+      postcss:
+        optional: true
+      ts-node:
+        optional: true
+    dependencies:
+      lilconfig: 2.0.6
+      postcss: 8.4.16
+      ts-node: 10.9.1_typescript@4.4.4
       yaml: 1.10.2
     dev: true
 
@@ -20600,6 +20858,37 @@ packages:
       - ts-node
     dev: true
 
+  /tailwindcss/3.1.8_ts-node@10.9.1:
+    resolution: {integrity: sha512-YSneUCZSFDYMwk+TGq8qYFdCA3yfBRdBlS7txSq0LUmzyeqRe3a8fBQzbz9M3WS/iFT4BNf/nmw9mEzrnSaC0g==}
+    engines: {node: '>=12.13.0'}
+    hasBin: true
+    dependencies:
+      arg: 5.0.2
+      chokidar: 3.5.3
+      color-name: 1.1.4
+      detective: 5.2.1
+      didyoumean: 1.2.2
+      dlv: 1.1.3
+      fast-glob: 3.2.11
+      glob-parent: 6.0.2
+      is-glob: 4.0.3
+      lilconfig: 2.0.6
+      normalize-path: 3.0.0
+      object-hash: 3.0.0
+      picocolors: 1.0.0
+      postcss: 8.4.16
+      postcss-import: 14.1.0_postcss@8.4.16
+      postcss-js: 4.0.0_postcss@8.4.16
+      postcss-load-config: 3.1.4_postcss@8.4.16+ts-node@10.9.1
+      postcss-nested: 5.0.6_postcss@8.4.16
+      postcss-selector-parser: 6.0.10
+      postcss-value-parser: 4.2.0
+      quick-lru: 5.1.1
+      resolve: 1.22.1
+    transitivePeerDependencies:
+      - ts-node
+    dev: true
+
   /tapable/1.1.3:
     resolution: {integrity: sha512-4WK/bYZmj8xLr+HUCODHGF1ZFzsYffasLUgEiMBY4fgtltdO6B4WJtlSbPaDTLpYTcGVwM2qLnFTICEcNxs3kA==}
     engines: {node: '>=6'}
@@ -20943,6 +21232,36 @@ packages:
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.3
       '@types/node': 16.11.7
+      acorn: 8.8.0
+      acorn-walk: 8.2.0
+      arg: 4.1.3
+      create-require: 1.1.1
+      diff: 4.0.2
+      make-error: 1.3.6
+      typescript: 4.4.4
+      v8-compile-cache-lib: 3.0.1
+      yn: 3.1.1
+    dev: true
+
+  /ts-node/10.9.1_typescript@4.4.4:
+    resolution: {integrity: sha512-NtVysVPkxxrwFGUUxGYhfux8k78pQB3JqYBXlLRZgdGUqTO5wU/UyHop5p70iEbGhB7q5KmiZiU0Y3KlJrScEw==}
+    hasBin: true
+    peerDependencies:
+      '@swc/core': '>=1.2.50'
+      '@swc/wasm': '>=1.2.50'
+      '@types/node': '*'
+      typescript: '>=2.7'
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      '@swc/wasm':
+        optional: true
+    dependencies:
+      '@cspotcode/source-map-support': 0.8.1
+      '@tsconfig/node10': 1.0.9
+      '@tsconfig/node12': 1.0.11
+      '@tsconfig/node14': 1.0.3
+      '@tsconfig/node16': 1.0.3
       acorn: 8.8.0
       acorn-walk: 8.2.0
       arg: 4.1.3
