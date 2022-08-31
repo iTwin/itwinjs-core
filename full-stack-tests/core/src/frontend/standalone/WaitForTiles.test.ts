@@ -8,7 +8,7 @@ import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-fron
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
-describe.only("Wait for tiles", () => {
+describe("Wait for tiles", () => {
   let imodel: IModelConnection;
 
   before(async () => {
