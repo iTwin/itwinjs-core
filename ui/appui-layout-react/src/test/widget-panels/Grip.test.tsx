@@ -13,7 +13,7 @@ import {
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../appui-layout-react";
 import { createDragInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
-import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { updatePanelState } from "../../appui-layout-react/state/internal";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider

@@ -9,7 +9,7 @@ import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOpti
 import { createDragInfo, TestNineZoneProvider } from "../Providers";
 import { SectionOutline } from "../../appui-layout-react/outline/SectionOutline";
 import { expect } from "chai";
-import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { updatePanelState } from "../../appui-layout-react/state/internal";
 
 interface WrapperProps {
   state?: NineZoneState;

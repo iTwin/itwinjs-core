@@ -9,7 +9,7 @@ import {
   createNineZoneState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
-import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { updatePanelState } from "../../appui-layout-react/state/internal";
 
 describe("WidgetPanelExpanders", () => {
   it("should render", () => {

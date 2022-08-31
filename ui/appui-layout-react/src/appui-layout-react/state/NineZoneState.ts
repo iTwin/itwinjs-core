@@ -12,27 +12,21 @@ import { PointProps, UiError } from "@itwin/appui-abstract";
 import { Point, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@itwin/core-bentley";
-import { addWidgetState, category, createDraggedTabState, createFloatingWidgetState, createPanelsState, createPopoutWidgetState, createTabsState, createTabState, floatingWidgetBringToFront, floatingWidgetClearUserSizedFlag, initSizeProps, isToolSettingsFloatingWidget, removeFloatingWidget, removePanelWidget, removeWidget, setPointProps, setRectangleProps, setSizeProps, setWidgetActiveTabId, updateFloatingWidgetState, updateHomeOfToolSettingsWidget, updatePanelState, updateWidgetState } from "./InternalStateHelpers";
+import {
+  addWidgetState, category, createDraggedTabState, createFloatingWidgetState, createPanelsState, createPopoutWidgetState, createTabsState, floatingWidgetBringToFront,
+  floatingWidgetClearUserSizedFlag, initSizeProps, isToolSettingsFloatingWidget, removeFloatingWidget, removePanelWidget, removeWidget, setPointProps, setRectangleProps,
+  setSizeProps, setWidgetActiveTabId, updateFloatingWidgetState, updateHomeOfToolSettingsWidget, updatePanelState, updateWidgetState,
+} from "./internal";
 import { TabState } from "./TabState";
 import { findTab } from "./TabLocation";
 import { findWidget, isPanelWidgetLocation } from "./WidgetLocation";
+import { WidgetState } from "./WidgetState";
 
 /** @internal */
 export const toolSettingsTabId = "nz-tool-settings-tab";
 
 /** @internal */
 export interface TabsState { readonly [id: string]: TabState }
-
-/** State of a stacked widget, which can contain multiple tabs. I.e. in a panel section or a floating widget.
- * @internal
- */
-export interface WidgetState {
-  readonly activeTabId: TabState["id"];
-  readonly id: string;
-  readonly minimized: boolean;
-  readonly tabs: ReadonlyArray<TabState["id"]>;
-  readonly isFloatingStateWindowResizable?: boolean;
-}
 
 /** @internal */
 export interface FloatingWidgetState {
@@ -837,27 +831,6 @@ export function insertPanelWidget(state: NineZoneState, side: PanelSide, id: Wid
 }
 
 /** @internal */
-export function addTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"]): NineZoneState {
-  return insertTabToWidget(state, tabId, widgetId, Infinity);
-}
-
-/** @internal */
-export function insertTabToWidget(state: NineZoneState, tabId: TabState["id"], widgetId: WidgetState["id"], tabIndex: number): NineZoneState {
-  if (!(tabId in state.tabs))
-    throw new UiError(category, "Tab not found", undefined, () => ({ tabId }));
-  if (!(widgetId in state.widgets))
-    throw new UiError(category, "Widget not found", undefined, () => ({ widgetId }));
-  const location = findTab(state, tabId);
-  if (location)
-    throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
-
-  return produce(state, (draft) => {
-    const widget = draft.widgets[widgetId];
-    widget.tabs.splice(tabIndex, 0, tabId);
-  });
-}
-
-/** @internal */
 export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"], tabs: WidgetState["tabs"], floatingWidgetArgs?: Partial<FloatingWidgetState>,
   widgetArgs?: Partial<WidgetState>,
 ): NineZoneState {
@@ -884,19 +857,6 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
   return produce(state, (stateDraft) => {
     stateDraft.popoutWidgets.byId[id] = popoutWidget;
     stateDraft.popoutWidgets.allIds.push(id);
-  });
-}
-
-/** @internal */
-export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState {
-  if (id in state.tabs)
-    throw new UiError(category, "Tab already exists");
-  const tab = {
-    ...createTabState(id),
-    ...tabArgs,
-  };
-  return produce(state, (stateDraft) => {
-    stateDraft.tabs[id] = tab;
   });
 }
 

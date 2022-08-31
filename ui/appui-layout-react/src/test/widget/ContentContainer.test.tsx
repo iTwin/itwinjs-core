@@ -8,7 +8,7 @@ import {
   EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
   WidgetStateContext,
 } from "../../appui-layout-react";
-import { createWidgetState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { createWidgetState } from "../../appui-layout-react/state/internal";
 
 describe("WidgetContentContainer ", () => {
   it("should render minimized", () => {

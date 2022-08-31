@@ -6,18 +6,19 @@
  * @module Base
  */
 
-import { castDraft, Draft, produce } from "immer";
+import { Draft, produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
 import {
   addFloatingWidget, addPopoutWidget, DraggedTabState, FloatingWidgetHomeState, FloatingWidgetState, HorizontalPanelState, NineZoneState, NineZoneStateReducer, PanelsState,
-  PopoutWidgetState, removeTabFromWidget, TabsState, toolSettingsTabId, VerticalPanelState, WidgetState,
-} from "./NineZoneState";
+  PopoutWidgetState, removeTabFromWidget, TabsState, toolSettingsTabId, VerticalPanelState,
+} from "../NineZoneState";
+import { WidgetState } from "../WidgetState";
 import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
-import { HorizontalPanelSide, PanelSide, VerticalPanelSide } from "../widget-panels/Panel";
-import { getUniqueId } from "../base/NineZone";
-import { TabState } from "./TabState";
-import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "./TabLocation";
-import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "./WidgetLocation";
+import { HorizontalPanelSide, PanelSide, VerticalPanelSide } from "../../widget-panels/Panel";
+import { getUniqueId } from "../../base/NineZone";
+import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "../TabLocation";
+import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
+import { createTabState, removeWidgetState, updateTabState, updateWidgetState } from "../internal";
 
 /** @internal */
 export const category = "appui-layout-react:layout";
@@ -81,19 +82,6 @@ export function createTabsState(args?: Partial<TabsState>): TabsState {
 }
 
 /** @internal */
-export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState {
-  if (tabs.length === 0)
-    throw new UiError(category, "Widget must contain tabs");
-  return {
-    activeTabId: tabs[0],
-    minimized: false,
-    ...args,
-    id,
-    tabs,
-  };
-}
-
-/** @internal */
 export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
   return {
     bounds: new Rectangle().toProps(),
@@ -123,16 +111,6 @@ export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Part
 }
 
 /** @internal */
-export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
-  return {
-    allowedPanelTargets: undefined,
-    label: "",
-    ...args,
-    id,
-  };
-}
-
-/** @internal */
 export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState {
   return {
     home: {
@@ -144,34 +122,6 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
     ...args,
     tabId,
   };
-}
-
-/** @internal */
-export function updateTabState(state: NineZoneState, id: TabState["id"], args: Partial<TabState>) {
-  if (!(id in state.tabs))
-    throw new UiError(category, "Tab not found");
-
-  return produce(state, (draft) => {
-    const tab = draft.tabs[id];
-    draft.tabs[id] = {
-      ...tab,
-      ...args,
-    };
-  });
-}
-
-/** @internal */
-export function updateWidgetState(state: NineZoneState, id: WidgetState["id"], args: Partial<WidgetState>) {
-  if (!(id in state.widgets))
-    throw new UiError(category, "Widget not found");
-
-  return produce(state, (draft) => {
-    const widget = draft.widgets[id];
-    draft.widgets[id] = {
-      ...widget,
-      ...castDraft(args),
-    };
-  });
 }
 
 /** @internal */
@@ -211,24 +161,7 @@ export function setSizeProps(props: Draft<SizeProps>, size: SizeProps) {
   props.width = size.width;
 }
 
-/** @internal */
-export function addWidgetState(state: NineZoneState, id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>) {
-  if (id in state.widgets)
-    throw new UiError(category, "Widget already exists");
 
-  const widget = createWidgetState(id, tabs, args);
-  for (const tabId of widget.tabs) {
-    if (!(tabId in state.tabs))
-      throw new UiError(category, "Tab does not exist", undefined, () => ({ tabId }));
-
-    const location = findTab(state, tabId);
-    if (location)
-      throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
-  }
-  return produce(state, (draft) => {
-    draft.widgets[id] = castDraft(widget);
-  });
-}
 
 /** @internal */
 export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
@@ -252,19 +185,6 @@ export function updatePanelState<K extends keyof PanelsState>(state: NineZoneSta
   });
 }
 
-/** @internal */
-export function removeWidget(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
-  const location = findWidget(state, id);
-  if (!location)
-    throw new UiError(category, "Widget not found");
-
-  if (isFloatingWidgetLocation(location))
-    return removeFloatingWidget(state, id);
-  if (isPopoutWidgetLocation(location))
-    return removePopoutWidget(state, id);
-  return removePanelWidget(state, id, location);
-}
-
 /** Removes floating widget from the UI and deletes the widget state.
  * @internal
  */
@@ -280,8 +200,10 @@ export function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetSta
   return removeWidgetState(state, id);
 }
 
-/** Removes floating widget from the UI and deletes the widget state. */
-function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
+/** Removes floating widget from the UI and deletes the widget state.
+ * @internal
+ */
+export function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
   if (!(id in state.popoutWidgets.byId))
     throw new UiError(category, "Popout widget not found");
 
@@ -291,14 +213,6 @@ function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
     draft.popoutWidgets.allIds.splice(index, 1);
   });
   return removeWidgetState(state, id);
-}
-
-function removeWidgetState(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
-  if (!(id in state.widgets))
-    throw new UiError(category, "Widget not found");
-  return produce(state, (draft) => {
-    delete draft.widgets[id];
-  });
 }
 
 function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {

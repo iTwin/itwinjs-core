@@ -13,7 +13,7 @@ import {
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
-import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { updatePanelState } from "../../appui-layout-react/state/internal";
 
 /* eslint-disable jsdoc/require-jsdoc */
 

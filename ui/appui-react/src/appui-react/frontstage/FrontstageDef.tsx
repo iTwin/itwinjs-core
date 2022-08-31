@@ -19,7 +19,7 @@ import {
 } from "@itwin/appui-layout-react";
 import {
   dockWidgetContainer, floatWidget, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
-} from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/InternalStateHelpers";
+} from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupProvider } from "../content/ContentGroup";
 import { ContentLayoutDef } from "../content/ContentLayout";

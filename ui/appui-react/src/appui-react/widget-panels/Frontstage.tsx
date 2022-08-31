@@ -23,7 +23,7 @@ import {
   isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTabFromWidget, removeTab, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
-import { convertAllPopupWidgetContainersToFloating, floatingWidgetBringToFront } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/InternalStateHelpers";
+import { convertAllPopupWidgetContainersToFloating, floatingWidgetBringToFront } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

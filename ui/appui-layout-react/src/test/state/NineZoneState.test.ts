@@ -14,7 +14,7 @@ import {
   removeTabFromWidget,
 } from "../../appui-layout-react";
 import { addTabs } from "../Utils";
-import { convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating, createDraggedTabState, createHorizontalPanelState, createVerticalPanelState, dockWidgetContainer, floatWidget, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds } from "../../appui-layout-react/state/InternalStateHelpers";
+import { convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating, createDraggedTabState, createHorizontalPanelState, createVerticalPanelState, dockWidgetContainer, floatWidget, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds } from "../../appui-layout-react/state/internal";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {

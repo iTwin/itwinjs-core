@@ -8,7 +8,7 @@ import { fireEvent } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { createNineZoneState, NineZoneDispatch, usePanelsAutoCollapse } from "../../appui-layout-react";
 import { setRefValue, TestNineZoneProvider } from "../Providers";
-import { updatePanelState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { updatePanelState } from "../../appui-layout-react/state/internal";
 
 describe("usePanelsAutoCollapse", () => {
   it("should collapse unpinned panels", () => {

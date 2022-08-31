@@ -11,7 +11,7 @@ import * as React from "react";
 import { TargetContainer } from "./TargetContainer";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";
-import { WidgetState } from "../state/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { MergeTarget } from "./MergeTarget";
 
 /** @internal */

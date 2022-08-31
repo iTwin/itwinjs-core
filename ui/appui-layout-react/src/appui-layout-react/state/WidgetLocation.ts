@@ -7,7 +7,8 @@
  */
 
 import { PanelSide, panelSides } from "../widget-panels/Panel";
-import { FloatingWidgetState, NineZoneState, PopoutWidgetState, WidgetState } from "./NineZoneState";
+import { FloatingWidgetState, NineZoneState, PopoutWidgetState } from "./NineZoneState";
+import { WidgetState } from "./WidgetState";
 
 /** @internal */
 export interface PanelWidgetLocation {
@@ -43,7 +44,9 @@ export function isPanelWidgetLocation(location: WidgetLocation): location is Pan
   return "side" in location;
 }
 
-/** @internal */
+/** Returns a widget location or `undefined` if widget is not found.
+ * @internal
+ */
 export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
   if (id in state.floatingWidgets.byId) {
     return {

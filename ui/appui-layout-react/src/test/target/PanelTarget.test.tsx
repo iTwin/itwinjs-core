@@ -7,7 +7,7 @@ import { addPanelWidget, addTab, createNineZoneState, DraggedTabStateContext, Dr
 import { renderHook } from "@testing-library/react-hooks";
 import { useAllowedPanelTarget } from "../../appui-layout-react/target/PanelTarget";
 import { TestNineZoneProvider } from "../Providers";
-import { createDraggedTabState } from "../../appui-layout-react/state/InternalStateHelpers";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal";
 
 describe("useAllowedPanelTarget", () => {
   it("should return `true`", () => {
