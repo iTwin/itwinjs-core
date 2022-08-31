@@ -386,17 +386,17 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...modelWithNavProp.getReferenceIds()],
     ).to.have.members(
+      // note that the non element references are not here! This is the currently preserved old behavior that will be replaced
       [...modelTestEntityIds, IModelDb.dictionaryId].filter((x) => x !== undefined)
     );
     expect(
       [...modelWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      modelTestEntityIds.map((id) => ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Element)),
+      ConcreteEntityIds.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
       ConcreteEntityIds.fromEntityType(modelTestEntityIds[0], ConcreteEntityTypes.Element),
       ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.ElementAspect),
-      ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Relationship),
+      ConcreteEntityIds.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
+      ConcreteEntityIds.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
   });
 
