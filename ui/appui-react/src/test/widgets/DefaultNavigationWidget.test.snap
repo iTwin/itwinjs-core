@@ -227,7 +227,15 @@ exports[`DefaultNavigationWidget DefaultNavigationWidget should render correctly
         },
         "_description": "",
         "_isActive": false,
-        "_label": "",
+        "_label": ConditionalStringValue {
+          "_value": undefined,
+          "stringGetter": [Function],
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+        },
         "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": undefined,
@@ -563,7 +571,15 @@ exports[`DefaultNavigationWidget DefaultNavigationWidget with suffix and prefix 
         },
         "_description": "",
         "_isActive": false,
-        "_label": "",
+        "_label": ConditionalStringValue {
+          "_value": undefined,
+          "stringGetter": [Function],
+          "syncEventIds": Array [
+            "activecontentchanged",
+            "activeviewportchanged",
+            "viewstatechanged",
+          ],
+        },
         "_onItemExecuted": undefined,
         "_tooltip": "",
         "badgeType": undefined,
