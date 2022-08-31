@@ -2,9 +2,21 @@
   "name": "@itwin/core-i18n",
   "entries": [
     {
+      "version": "3.3.1",
+      "tag": "@itwin/core-i18n_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.0",
       "tag": "@itwin/core-i18n_v3.3.0",
       "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-i18n_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
       "comments": {}
     },
     {
