@@ -9,6 +9,7 @@
 
 // import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { MultiChainCollector, OffsetHelpers } from "../curve/internalContexts/MultiChainCollector";
@@ -40,7 +41,22 @@ import { XYPointBuckets } from "./multiclip/XYPointBuckets";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceBuilder } from "./PolyfaceBuilder";
 import { RangeLengthData } from "./RangeLengthData";
-
+import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
+/**
+ * Options carrier for cloneWithHolesFilled
+ */
+export interface HoleFillOptions {
+  /** REJECT hole candidates if its boundary chain is longer than this limit. */
+  maxPerimeter?: number;
+  /** REJECT hole candidates if they have more than this number of edges */
+  maxEdgesAroundHole?: number;
+  /** REJECT hole candidates if their orientation is not COUNTERCLOCKWISE around this vector.
+   * * For instance, use an upward Z vector for a DTM whose facets face upward.  This suppresses incorrectly treating the outer boundary as a hole.
+   */
+  upVector?: Vector3d;
+  /** requests that all content from the original mesh be copied to the mesh with filled holes. */
+  includeOriginalMesh?: boolean;
+}
 /**
  * Structure to return multiple results from volume between facets and plane
  * @public
@@ -318,6 +334,7 @@ export class PolyfaceQuery {
       return undefined;
     const edges = new IndexedEdgeMatcher();
     const visitor = source instanceof Polyface ? source.createVisitor(1) : source;
+    visitor.setNumWrap (1);
     visitor.reset();
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount - 1;
@@ -509,7 +526,7 @@ export class PolyfaceQuery {
    * * emit the loops to the announceLoop function
    * @param mesh
    */
-  public static announceBoundaryChainsLineString3d(mesh: Polyface,
+  public static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor,
     announceLoop: (points: LineString3d) => void){
       const collector = new MultiChainCollector(Geometry.smallMetricDistance, 1000);
       PolyfaceQuery.announceBoundaryEdges (mesh,
@@ -574,7 +591,62 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
       }
     return builder.claimPolyface (true);
     }
-  /** Clone the facets in each partition to a separate polyface.
+
+/**
+ * Return a mesh with "some" holes filled in with new facets.
+ *  * The candidates to be filled are all loops returned by boundaryChainsAsLineString3d
+ *  * unclosed chains are rejected.
+ *  * optionally also copy the original mesh, so the composite is a clone with holes filled.
+ *  * The options structure enforces restrictions on how complicated the hole filling can be:
+ *     * maxEdgesAroundHole -- holes with more edges are skipped
+ *     * maxPerimeter -- holes with larger summed edge lengths are skipped.
+ *     * upVector -- holes that do not have positive area along this view are skipped.
+ *     * includeOriginalMesh -- includes the original mesh in the output mesh.
+ * @param mesh existing mesh
+ * @param options options controlling the hole fill.
+ * @param unfilledChains optional array to receive the points around holes that were not filled.
+ * @returns
+ */
+ public static fillSimpleHoles(mesh: IndexedPolyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined {
+  if (mesh instanceof IndexedPolyface)
+    return this.fillSimpleHoles (mesh.createVisitor (0), options, unfilledChains);
+  const builder = PolyfaceBuilder.create ();
+  const chains: LineString3d[] = [];
+  PolyfaceQuery.announceBoundaryChainsAsLineString3d (mesh,
+    (ls: LineString3d)=>{ls.reverseInPlace (); chains.push(ls);});
+
+  for (const c of chains){
+    const points = c.points;
+    let rejected = false;
+    if (!c.isPhysicallyClosed)
+      rejected = true;
+    else if (options.maxEdgesAroundHole !== undefined && points.length > options.maxEdgesAroundHole)
+      rejected = true;
+    else if (options.maxPerimeter !== undefined && Point3dArray.sumEdgeLengths (points, false) > options.maxPerimeter)
+      rejected = true;
+    else if (options.upVector !== undefined && PolygonOps.sumTriangleAreasPerpendicularToUpVector (points, options.upVector) <= 0.0)
+      rejected = true;
+
+    if (!rejected && SpacePolygonTriangulation.triangulateSimplestSpaceLoop (points,
+      (_loop: Point3d[], triangles: Point3d[][]) =>{
+        for (const t of triangles)
+        builder.addPolygon (t);
+      }
+      )){
+      } else {
+        rejected = true;
+      }
+    if (rejected && unfilledChains !== undefined)
+        unfilledChains.push (c);    // yes, capture it -- this scope owns the chains and has no further use for it.
+    }
+  if (options.includeOriginalMesh !== undefined && options.includeOriginalMesh){
+    for (mesh.reset ();mesh.moveToNextFacet ();)
+    builder.addFacetFromVisitor (mesh);
+  }
+
+  return builder.claimPolyface (true);
+  }
+    /** Clone the facets in each partition to a separate polyface.
    *
    */
   public static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[] {

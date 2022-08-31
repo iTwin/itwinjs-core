@@ -247,6 +247,7 @@ export * from "./polyface/PolyfaceClip";
 export * from "./polyface/TaggedNumericData";
 export * from "./topology/Graph";
 export * from "./topology/Triangulation";
+export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
 export * from "./serialization/GeometrySamples";

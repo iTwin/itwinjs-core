@@ -206,7 +206,7 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
     expect(ck.getNumErrors()).equals(0);
 });
 
-it("FillHoles", () => {
+it.only("FillHoles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const polyface = Sample.sweepXZLineStringToMeshWithHoles (
@@ -215,6 +215,7 @@ it("FillHoles", () => {
     (x: number, y: number)=>{
       if (x === 1 && y === 1) return false;
       if (x === 3 && y === 2) return false;
+      if (x === 3 && y === 3) return false;
       return true;
     }
   );
@@ -222,10 +223,31 @@ it("FillHoles", () => {
   const dx = 0;
   let dy = 0;
   const yStep = 10.0;
+  const zShift = 5.0;
   GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy += yStep, 0);
   dy += yStep;
-  PolyfaceQuery.announceBoundaryChainsLineString3d (polyface,
-      (ls: LineString3d)=> GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, dx, dy));
+  let numChains = 0;
+  PolyfaceQuery.announceBoundaryChainsAsLineString3d (polyface,
+      (ls: LineString3d)=> {GeometryCoreTestIO.captureCloneGeometry (allGeometry, ls, dx, dy); numChains++;});
+  ck.testExactNumber (3, numChains, "boundary chains");
+
+  const options = {includeOriginalMesh: false, upVector: Vector3d.unitZ(), maxPerimeter: 5};
+  const unfilledChains: LineString3d[] = [];
+
+  const filledHoles = PolyfaceQuery.fillSimpleHoles (polyface, options, unfilledChains);
+  ck.testExactNumber (2, unfilledChains.length, "outer and large hole via perimeter");
+  dy += yStep;
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, filledHoles, dx, dy, 0);
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, unfilledChains, dx, dy, zShift);
+
+  const optionsA = {includeOriginalMesh: true,  maxEdgesAroundHole: 9};
+  const unfilledChainsA: LineString3d[] = [];
+  const filledHolesA = PolyfaceQuery.fillSimpleHoles (polyface, optionsA, unfilledChainsA);
+  ck.testExactNumber (1, unfilledChainsA.length, "outer via count");
+  dy += yStep;
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, filledHolesA, dx, dy, 0);
+  GeometryCoreTestIO.captureCloneGeometry (allGeometry, unfilledChainsA, dx, dy, zShift);
+
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
   expect(ck.getNumErrors()).equals(0);
 });

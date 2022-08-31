@@ -12,10 +12,12 @@ import { Geometry } from "../Geometry";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import {PolygonOps} from "../geometry3d/PolygonOps";
+import {PolylineOps} from "../geometry3d/PolylineOps";
 type AnnounceLoopAndTrianglesFunction = (loop: Point3d[], triangles: Point3d[][]) => void;
 
 /**
  * Class with static methods to triangulate various forms of possibly non-planar polygons.
+ * @public
  */
 export class SpacePolygonTriangulation {
 
@@ -54,6 +56,7 @@ export class SpacePolygonTriangulation {
     const normalA = PolygonOps.areaNormal (points);
     const triangles: Point3d[][] = [];
     const myPoints = points.slice ();
+    PolylineOps.removeClosurePoint (myPoints);
     // first pass deals with entire array.
     // each pass lops off one point.
     for (;myPoints.length > 2;){

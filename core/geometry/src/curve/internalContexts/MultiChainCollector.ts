@@ -257,6 +257,7 @@ export class MultiChainCollector {
     const linestring = LineString3d.create ();
     for (const curve of curves){
       curve.emitStrokes (linestring);
+      linestring.removeDuplicatePoints ();
     }
     return linestring;
   }
