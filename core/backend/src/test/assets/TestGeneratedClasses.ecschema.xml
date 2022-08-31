@@ -8,6 +8,7 @@
         <ECNavigationProperty propertyName="elemNavProp" relationshipName="ModelToElemNavRel" direction="Forward"/>
         <ECNavigationProperty propertyName="aspectNavProp" relationshipName="ModelToAspectNavRel" direction="Forward"/>
         <!--
+        # disabled for now due to a potential bug loading this nav prop
         <ECNavigationProperty propertyName="relNavProp" relationshipName="ModelToRelNavRel" direction="Forward"/>
         -->
     </ECEntityClass>
