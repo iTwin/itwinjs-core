@@ -38,6 +38,7 @@ import {
 } from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
+import { VisualizeGeometryStreamTool } from "./tools/VisualizeGeometryStreamTool";
 import {
   AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
   AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
@@ -230,6 +231,7 @@ export class FrontendDevTools {
       MaskRealityModelByElementTool,
       MaskRealityModelByExcludedElementTool,
       UnmaskRealityModelTool,
+      VisualizeGeometryStreamTool,
       MaskBackgroundMapByModelTool,
       MaskBackgroundMapBySubCategoryTool,
       MaskBackgroundMapByElementTool,

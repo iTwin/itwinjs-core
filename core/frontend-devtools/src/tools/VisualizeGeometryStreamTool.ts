@@ -13,7 +13,7 @@ import {
   GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometryStreamPrimitive,
 } from "@itwin/core-common";
 import {
-  Decorator, FeatureOverrideProvider, GraphicPrimitive, IModelApp, Tool, Viewport,
+  Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicPrimitive, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 
 interface GraphicInfo {
@@ -53,23 +53,34 @@ function graphicPrimitiveFromGeometryStreamPrimitive(geom: GeometryStreamPrimiti
   }
 }
 
-class GeometryStreamDecorator implements Decorator /* ###TODO FeatureOverrideProvider */ {
+class GeometryStreamDecorator implements Decorator, FeatureOverrideProvider {
   private static _instance?: GeometryStreamDecorator;
 
   public readonly useCachedDecorations = true;
   private readonly _graphics: GraphicInfo[];
+  private readonly _elementId: Id64String;
+  private readonly _dispose: () => void;
 
-  private constructor(graphics: GraphicInfo[]) {
+  private constructor(vp: Viewport, elementId: Id64String, graphics: GraphicInfo[]) {
     this._graphics = graphics;
+    this._elementId = elementId;
+
+    vp.addFeatureOverrideProvider(this);
+    this._dispose = () => vp.dropFeatureOverrideProvider(this);
   }
 
   public decorate(): void {
     // ###TODO
   }
 
+  public addFeatureOverrides(ovrs: FeatureSymbology.Overrides): void {
+    ovrs.setNeverDrawn(this._elementId);
+  }
+
   public static clear(): void {
     if (this._instance) {
       IModelApp.viewManager.dropDecorator(this._instance);
+      this._instance._dispose();
       this._instance = undefined;
     }
   }
@@ -97,7 +108,7 @@ class GeometryStreamDecorator implements Decorator /* ###TODO FeatureOverridePro
       if (0 === graphics.length)
         return false;
 
-      this._instance = new GeometryStreamDecorator(graphics);
+      this._instance = new GeometryStreamDecorator(vp, elementId, graphics);
       IModelApp.viewManager.addDecorator(this._instance);
       return true;
     } catch {

@@ -42,6 +42,9 @@
     "InspectElement": {
       "keyin": "fdt inspect element"
     },
+    "VisualizeGeometryStream": {
+      "keyin": "fdt visualize geometry"
+    },
     "ToggleSkybox": {
       "keyin": "fdt toggle skybox"
     },
