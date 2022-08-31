@@ -74,13 +74,31 @@ class GeometryStreamDecorator implements Decorator /* ###TODO FeatureOverridePro
     }
   }
 
-  public static async visualizeElement(vp: Viewport, _elementId: Id64String): Promise<boolean> {
+  public static async visualizeElement(vp: Viewport, elementId: Id64String): Promise<boolean> {
     this.clear();
     if (!vp.view.is3d()) // TODO support 2d.
       return false;
 
     try {
+      const props = await vp.iModel.elements.loadProps(elementId, {
+        wantGeometry: true,
+        wantBRepData: false, // TODO when supported
+      }) as GeometricElement3dProps;
 
+      let index = 0;
+      const graphics: GraphicInfo[] = [];
+      for (const entry of GeometryStreamIterator.fromGeometricElement3d(props)) {
+        const geometryStreamIndex = index++;
+        const primitive = graphicPrimitiveFromGeometryStreamPrimitive(entry.primitive);
+        if (primitive)
+          graphics.push({ primitive, params: entry.geomParams, geometryStreamIndex, transientId: vp.iModel.transientIds.next });
+      }
+
+      if (0 === graphics.length)
+        return false;
+
+      this._instance = new GeometryStreamDecorator(graphics);
+      IModelApp.viewManager.addDecorator(this._instance);
       return true;
     } catch {
       return false;
