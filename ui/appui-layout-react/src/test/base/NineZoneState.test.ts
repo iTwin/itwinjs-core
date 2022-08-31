@@ -1293,9 +1293,9 @@ describe("NineZoneStateReducer", () => {
 
     it("should send back to proper start panel section via index and merge widgetTabs", () => {
       let state = createNineZoneState();
-      state = addTabs(state, ["t1", "t2", "t3"]);
+      state = addTabs(state, ["t1", "t2"]);
       state = addPanelWidget(state, "left", "leftStart", ["t1"]);
-      state = addPopoutWidget(state, "fw1", ["t2", "t3"], {
+      state = addPopoutWidget(state, "fw1", ["t2"], {
         home: {
           side: "left",
           widgetId: undefined,
@@ -1308,16 +1308,16 @@ describe("NineZoneStateReducer", () => {
       });
 
       newState.panels.left.widgets.should.eql(["leftStart"]);
-      newState.widgets.leftStart.tabs.should.eql(["t1", "t2", "t3"]);
+      newState.widgets.leftStart.tabs.should.eql(["t1", "t2"]);
       should().not.exist(newState.popoutWidgets.byId.fw1);
       newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
 
     it("should send back to proper end panel section via index widgetId is undefined", () => {
       let state = createNineZoneState();
-      state = addTabs(state, ["t1", "t2", "t3"]);
+      state = addTabs(state, ["t1", "t2"]);
       state = addPanelWidget(state, "left", "leftStart", ["t1"]);
-      state = addPopoutWidget(state, "fw1", ["t2", "t3"], {
+      state = addPopoutWidget(state, "fw1", ["t2"], {
         home: {
           side: "left",
           widgetId: undefined,
@@ -1331,16 +1331,16 @@ describe("NineZoneStateReducer", () => {
 
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftStart.tabs.should.eql(["t1"]);
-      newState.widgets.leftEnd.tabs.should.eql(["t2", "t3"]);
+      newState.widgets.leftEnd.tabs.should.eql(["t2"]);
       should().not.exist(newState.popoutWidgets.byId.fw1);
       newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
 
     it("should send back to proper start panel section via index widgetId is undefined", () => {
       let state = createNineZoneState();
-      state = addTabs(state, ["t1", "t2", "t3"]);
+      state = addTabs(state, ["t1", "t2"]);
       state = addPanelWidget(state, "left", "leftEnd", ["t1"]);
-      state = addPopoutWidget(state, "fw1", ["t2", "t3"], {
+      state = addPopoutWidget(state, "fw1", ["t2"], {
         home: {
           side: "left",
           widgetId: undefined,
@@ -1354,7 +1354,7 @@ describe("NineZoneStateReducer", () => {
 
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftEnd.tabs.should.eql(["t1"]);
-      newState.widgets.leftStart.tabs.should.eql(["t2", "t3"]);
+      newState.widgets.leftStart.tabs.should.eql(["t2"]);
       should().not.exist(newState.popoutWidgets.byId.fw1);
       newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
     });
@@ -1385,9 +1385,9 @@ describe("NineZoneStateReducer", () => {
 
     it("should insert to provided widgetIndex when maxWidgetCount is reached", () => {
       let state = createNineZoneState();
-      state = addTabs(state, ["t1", "t2", "t3", "fwt1", "fwt2"]);
+      state = addTabs(state, ["t1", "t2", "t3", "fwt1"]);
       state = addPanelWidget(state, "left", "leftStart", ["t1", "t2", "t3"]);
-      state = addPopoutWidget(state, "fw1", ["fwt1", "fwt2"], {
+      state = addPopoutWidget(state, "fw1", ["fwt1"], {
         home: {
           side: "left",
           widgetId: undefined,
@@ -1401,7 +1401,7 @@ describe("NineZoneStateReducer", () => {
 
       newState.panels.left.widgets.should.eql(["leftStart", "leftEnd"]);
       newState.widgets.leftStart.tabs.should.eql(["t1", "t2", "t3"]);
-      newState.widgets.leftEnd.tabs.should.eql(["fwt1", "fwt2"]);
+      newState.widgets.leftEnd.tabs.should.eql(["fwt1"]);
       should().not.exist(newState.popoutWidgets.byId.fw1);
       newState.popoutWidgets.allIds.indexOf("fw1").should.eq(-1);
       should().not.exist(newState.widgets.fw1);

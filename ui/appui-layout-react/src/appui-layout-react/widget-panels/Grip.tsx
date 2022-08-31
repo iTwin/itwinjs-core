@@ -154,6 +154,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
         setResizing(true);
         handlePanelGripDragStart({
           initialPointerPosition: initialPointerPosition.current,
+          pointerPosition: initialPointerPosition.current,
         });
       }
       initialPointerPosition.current = undefined;
@@ -180,6 +181,7 @@ export const useResizeGrip = <T extends HTMLElement>(): [(instance: T | null) =>
     setResizing(true);
     handlePanelGripDragStart({
       initialPointerPosition: position,
+      pointerPosition: position,
     });
     onDrag(position, initialPointerPosition.current);
     initialPointerPosition.current = undefined;

@@ -18,10 +18,6 @@ import { getUniqueId } from "./NineZone";
 /** @internal */
 export interface DragStartArgs {
   initialPointerPosition: Point;
-}
-
-/** @internal */
-export interface WidgetDragStartArgs extends DragStartArgs {
   pointerPosition: Point;
 }
 
@@ -75,10 +71,10 @@ export function useDragTab(args: UseDragTabArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleDragStart = React.useCallback(({ initialPointerPosition, widgetSize }: TabDragStartArgs) => {
+  const handleDragStart = React.useCallback(({ initialPointerPosition, pointerPosition, widgetSize }: TabDragStartArgs) => {
     onDragStart({
       initialPointerPosition,
-      pointerPosition: initialPointerPosition,
+      pointerPosition,
       lastPointerPosition: initialPointerPosition,
       widgetSize,
     });
@@ -140,7 +136,7 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => {
+  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: DragStartArgs) => {
     onItemDragStart({
       initialPointerPosition,
       pointerPosition,

@@ -218,6 +218,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);
     handleDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",

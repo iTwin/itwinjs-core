@@ -112,7 +112,7 @@ test.describe("widget state", () => {
     expect(newWidgetBounds).toEqual(widgetBounds);
   });
 
-  test("should maintain bounds of a hidden floating widget after reload", async ({ context, page }) => {
+  test("should maintain bounds of a hidden floating widget (after reload)", async ({ context, page }) => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
@@ -133,6 +133,32 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-1", WidgetState.Open);
     const newWidgetBounds = await widget.boundingBox();
     expect(newWidgetBounds).toEqual(widgetBounds);
+  });
+
+  test("should maintain location of a panel widget (after reload)", async ({ context, page }) => {
+    const tab1 = tabLocator(page, "WT-A");
+    const tab2 = tabLocator(page, "WT-2");
+    const widget = widgetLocator(page, { tab: tab1 });
+    const body = page.locator("body");
+
+    await expect(widget).toHaveClass(/nz-panel-section-0/);
+
+    // Move from top start widget to top end widget.
+    const bounds2 = (await tab2.boundingBox())!;
+    await tab1.dispatchEvent("mousedown", { clientX: 0, clientY: 0 });
+    await tab1.dispatchEvent("mousemove", { clientX: 20, clientY: 20 });
+    await body.dispatchEvent("mousemove", { clientX: bounds2.x, clientY: bounds2.y });
+    await body.dispatchEvent("mouseup");
+
+    await setWidgetState(page, "WT-A", WidgetState.Hidden);
+
+    await expectSavedFrontstageState(context, (state) => {
+      return state.widgets.allIds.includes("WT-A");
+    });
+    await page.reload();
+
+    await setWidgetState(page, "WT-A", WidgetState.Open);
+    await expect(widget).toHaveClass(/nz-panel-section-1/);
   });
 
   test("should hide a panel section", async ({ page }) => {
