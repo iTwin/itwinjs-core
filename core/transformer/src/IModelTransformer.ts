@@ -1192,18 +1192,16 @@ export class IModelTransformer extends IModelExportHandler {
   private _initialized = false;
 
   /**
-   * Initialize prerequisites of processing.
+   * Initialize prerequisites of processing, you must initialize with an [[InitFromExternalSourceAspectsArgs]] if you
+   * are intending process changes, but prefer using [[processChanges]]
    * Called by all `process*` functions implicitly.
    * Overriders must call `super.initialize()` first
    */
-  public async initialize() {
-    // FIXME
-    // ^^ or just deprecate (externally) initFromExternalSourceAspects and suggest people use initialize instead
+  public async initialize(args?: InitFromExternalSourceAspectsArgs) {
     if (this._initialized) return;
-
     await this.context.initialize();
     // eslint-disable-next-line deprecation/deprecation
-    this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspects(args);
     this._initialized = true;
   }
 
@@ -1450,7 +1448,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    await this.initialize();
+    await this.initialize({ accessToken, startChangesetId });
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 
