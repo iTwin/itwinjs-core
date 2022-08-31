@@ -23,6 +23,7 @@ if (ProcessDetector.isElectronAppFrontend) {
     // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
     // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
     // is a missing Ipc method.
+    // Tracked in #4165
     it.skip("should startup offline without errors", async () => {
       await usingOfflineScope(async () => {
         await ElectronApp.shutdown();
