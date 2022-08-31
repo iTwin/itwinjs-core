@@ -6,8 +6,11 @@
  * @module Relationships
  */
 
+import * as assert from "assert";
 import { ConcreteEntityIdSet, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { ConcreteEntityIds } from "./ConcreteEntityId";
+import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -65,10 +68,25 @@ export class Relationship extends Entity {
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
   // TODO: what about required references? aren't these required?
+  /**
+   * For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
+   */
   protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+    // FIXME: test this
     super.collectReferenceConcreteIds(referenceIds);
-    referenceIds.addElement(this.sourceId);
-    referenceIds.addElement(this.targetId);
+    let relInfo: RelTypeInfo;
+    try {
+      const maybeRelInfo = ECReferenceTypesCache.globalCache.getRelationshipEndType(this.schemaName, this.className);
+      assert(maybeRelInfo !== undefined);
+      relInfo = maybeRelInfo;
+    } catch  {
+      throw Error([
+        "Either the relationship's reference type info was not cached, and you must initialize the `ECReferenceTypesCache` with the required schema;",
+        "or, the relationship's reference type info may be undefined if this link table relationship references a CodeSpec, which is not supported",
+      ].join("\n"));
+    }
+    referenceIds.add(ConcreteEntityIds.fromEntityType(this.sourceId, relInfo.source));
+    referenceIds.add(ConcreteEntityIds.fromEntityType(this.targetId, relInfo.target));
   }
 }
 
