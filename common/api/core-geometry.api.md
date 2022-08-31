@@ -2553,6 +2553,14 @@ export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 export type HasZ = Readonly<WriteableHasZ>;
 
 // @public
+export interface HoleFillOptions {
+    includeOriginalMesh?: boolean;
+    maxEdgesAroundHole?: number;
+    maxPerimeter?: number;
+    upVector?: Vector3d;
+}
+
+// @public
 export namespace IModelJson {
     export interface ArcByVectorProps {
         center: XYZProps;
@@ -3276,6 +3284,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
+    removeDuplicatePoints(tolerance?: number): void;
     reverseInPlace(): void;
     segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number;
     setFrom(other: LineString3d): void;
@@ -4484,7 +4493,7 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
-    static announceBoundaryChainsLineString3d(mesh: Polyface, announceLoop: (points: LineString3d) => void): void;
+    static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceLoop: (points: LineString3d) => void): void;
     static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number) => void, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
@@ -4511,6 +4520,7 @@ export class PolyfaceQuery {
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
+    static fillSimpleHoles(mesh: IndexedPolyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
@@ -4575,6 +4585,7 @@ export class PolygonOps {
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumAreaXY(polygons: Point3d[][]): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
+    static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
@@ -4595,6 +4606,7 @@ export class PolylineOps {
     static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static edgeLengthRange(points: Point3d[]): Range1d;
+    static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
 // @internal
@@ -5350,6 +5362,14 @@ export abstract class SolidPrimitive extends GeometryQuery {
 
 // @public
 export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe";
+
+// @public
+export class SpacePolygonTriangulation {
+    static spaceQuadDiagonalAspectRatio(point0: Point3d, point1: Point3d, point2: Point3d, point3: Point3d): number;
+    static spaceTriangleAspectRatio(point0: Point3d, point1: Point3d, point2: Point3d): number;
+    static triangulateGreedyEarCut(points: Point3d[], announceLoopAndTriangles: AnnounceLoopAndTrianglesFunction): boolean;
+    static triangulateSimplestSpaceLoop(loop: Point3d[] | LineString3d, announceLoopAndTriangles: AnnounceLoopAndTrianglesFunction, maxPerimeter?: number): boolean;
+}
 
 // @public
 export class Sphere extends SolidPrimitive implements UVSurface {

@@ -206,7 +206,7 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
     expect(ck.getNumErrors()).equals(0);
 });
 
-it.only("FillHoles", () => {
+it("FillHoles", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   const polyface = Sample.sweepXZLineStringToMeshWithHoles (

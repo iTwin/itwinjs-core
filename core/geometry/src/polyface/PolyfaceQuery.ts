@@ -44,6 +44,7 @@ import { RangeLengthData } from "./RangeLengthData";
 import { SpacePolygonTriangulation } from "../topology/SpaceTriangulation";
 /**
  * Options carrier for cloneWithHolesFilled
+ * @public
  */
 export interface HoleFillOptions {
   /** REJECT hole candidates if its boundary chain is longer than this limit. */

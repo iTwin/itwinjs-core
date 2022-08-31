@@ -252,9 +252,12 @@ export class PolygonOps {
    * @returns sum of absolute triangle areas.
    */
    public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
-    const scale = upVector.magnitude ();
-    if (scale < Geometry.smallMetricDistance)
+    let scale = upVector.magnitude ();
+    if (scale < Geometry.smallMetricDistance) {
       upVector = Vector3d.create (0,0,1);
+      scale = 1.0;
+      }
+
     let s = 0;
     const n = points.length;
     if (Array.isArray(points)) {
@@ -269,14 +272,14 @@ export class PolygonOps {
           vector0.setFrom(vector1);
         }
       }
-      return s * 0.5;
+      return s * 0.5 / scale;
     }
     const crossVector = Vector3d.create();
     for (let i = 2; i < n; i++) {
       points.crossProductIndexIndexIndex(0, i - 1, i, crossVector);
       s += crossVector.dotProduct(upVector);
     }
-    return s * 0.5;
+    return s * 0.5 / scale;
   }
 
   /** Sum areas of triangles from points[0] to each far edge.
