@@ -252,21 +252,33 @@ it("SimplestTriangulation", () => {
   };
   const doTest = (pointsA: Point3d[], expected: boolean, message: any) => {
     GeometryCoreTestIO.captureCloneGeometry (allGeometry, pointsA, dx, dy, dz);
-    if (ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (pointsA, announceTriangles), message))
+    // (  force the linestring branch selectively)
+    if (pointsA.length !== 4)
+      ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (
+          LineString3d.create (pointsA), announceTriangles), message);
+    else
+      ck.testBoolean (expected, SpacePolygonTriangulation.triangulateSimplestSpaceLoop (pointsA, announceTriangles), message);
     dx += xStep;
     };
 
+    const pointQ = points[0].interpolate (0.5, points[1]);
+    const pointR = points[0].interpolate (0.75,points[1]);
+
   doTest ( [points[0], points[1], points[3]], true, [0,1,3]);
   doTest ( [points[0], points[1], points[3],points[2]], true, "0,1,3,2");
+    // force both diagonal variants
+  doTest ( [points[0], pointR, points[3],points[2]], true, "0,R,3,2");
+  doTest ( [pointR, points[1], points[3],points[2]], true, "R,1,3,2");
+
   doTest ( [points[0], points[1], points[3],points[7]], true, "0,1,3,7");
   doTest ( [points[0], points[1], points[3],points[7].interpolate (0.5, points[4])], true, "0,1,3,<7,0.5,4>");
   dx += xStep;
   doTest ( [points[0], points[1], points[1]], false, [0,1,1]);
   doTest ( [points[0], points[1], points[1], points[2]], false, [0,1,1, 2]);
-  const pointQ = points[0].interpolate (0.5, points[1]);
-  const pointR = points[0].interpolate (0.75,points[1]);
   doTest ( [points[0], pointQ, pointR, points[1]], false, "4 colinear");
   doTest ( [points[0], pointQ, points[1]], false, "3 colinear");
+  ck.testFalse (SpacePolygonTriangulation.triangulateSimplestSpaceLoop ([points[0], points[1], points[3],points[2]], announceTriangles, 2.0), "perimeter trigger");
+
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
   expect(ck.getNumErrors()).equals(0);
 });

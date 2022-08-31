@@ -128,12 +128,10 @@ export class SpacePolygonTriangulation {
   public static triangulateSimplestSpaceLoop(loop: Point3d [] | LineString3d,
     announceLoopAndTriangles: AnnounceLoopAndTrianglesFunction,
     maxPerimeter?: number): boolean{
-    if (loop instanceof LineString3d){
+    if (loop instanceof LineString3d)
       return this.triangulateSimplestSpaceLoopGo (loop.points, announceLoopAndTriangles, maxPerimeter);
-    } else if (Array.isArray (loop)){
-      return this.triangulateSimplestSpaceLoopGo (loop, announceLoopAndTriangles, maxPerimeter);
-    }
-    return false;
+      // (array case by exhaustion)
+    return this.triangulateSimplestSpaceLoopGo (loop, announceLoopAndTriangles, maxPerimeter);
   }
 
 }
