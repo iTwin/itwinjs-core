@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "ConvexClipPlaneSet from convex Polyface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
