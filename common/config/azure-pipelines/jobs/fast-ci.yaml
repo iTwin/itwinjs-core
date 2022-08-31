@@ -1,8 +1,14 @@
 # iTwin.js Core CI Build
 
 trigger:
-  - master
-  - release/*
+  branches:
+    include:
+      - master
+      - release/*
+      - ui/new-ci-job
+  paths:
+    exclude:
+      - ui
 
 pr:
   autoCancel: true
@@ -11,6 +17,10 @@ pr:
     include:
       - master
       - release/*
+      - ui/new-ci-job
+  paths:
+    exclude:
+      - ui
 
 jobs:
   - template: ci-core.yaml
