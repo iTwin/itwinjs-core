@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as path from "path";
 import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, ModelProps, RelatedElement, RelatedElementProps, RelationshipProps } from "@itwin/core-common";
 import {
-  ConcreteEntityIds, DefinitionElement, DefinitionModel, ElementRefersToElements, IModelDb, Model, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  ConcreteEntityIds, DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, IModelDb, IModelSchemaLoader, Model, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -329,26 +329,31 @@ describe("Class Registry - generated classes", () => {
 
     const relWithNavProp = new GeneratedLinkTableRelWithNavProp({
       classFullName: GeneratedLinkTableRelWithNavProp.classFullName,
+      sourceId: relTestEntityIds[0],
+      targetId: relTestEntityIds[1],
       navProp: {
-        id: relTestEntityIds[0],
+        id: relTestEntityIds[2],
         relClassName: "TestGeneratedClasses:LinkTableRelNavRel",
       },
-      sourceId: relTestEntityIds[1],
-      targetId: relTestEntityIds[2],
     } as LinkTableRelWithNavPropProps, imodel);
 
     const relWithNavPropId = relWithNavProp.insert();
 
+    // must init the global reference cache
+    const schemaLoader = new IModelSchemaLoader(imodel);
+    const testGeneratedClassesSchema = schemaLoader.getSchema("TestGeneratedClasses");
+    await ECReferenceTypesCache.globalCache.initSchema(testGeneratedClassesSchema);
+
     expect(
       [...relWithNavProp.getReferenceIds()],
     ).to.have.members(
-      [...relTestEntityIds, IModelDb.dictionaryId].filter((x) => x !== undefined)
+      [...relTestEntityIds]
     );
     expect(
       [...relWithNavProp.getReferenceConcreteIds()],
-    ).to.have.members([
+    ).to.have.members(
       relTestEntityIds.map((id) => ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Element)),
-    ]);
+    );
 
     const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
@@ -362,11 +367,12 @@ describe("Class Registry - generated classes", () => {
 
     const aspectWithNavPropId = imodel.elements.insertAspect({
       classFullName: GeneratedTestAspectWithNavProp.classFullName,
-      navProp: { id: modelTestEntityIds[0], relClassName: "TestGeneratedClasses:ModelToElemNavRel" },
+      navProp: { id: modelTestEntityIds[0], relClassName: "TestGeneratedClasses:NonElemRel" },
+      element: { id: modelTestEntityIds[1] },
     } as TestAspectWithNavProp);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    const GeneratedTestModelWithNavProp = imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp ");
+    const GeneratedTestModelWithNavProp = imodel.getJsClass<typeof Model>("TestGeneratedClasses:TestModelWithNavProp");
 
     const modelWithNavProp = new GeneratedTestModelWithNavProp({
       classFullName: GeneratedTestModelWithNavProp.classFullName,

@@ -15,7 +15,7 @@ import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
-import { ECClassNavPropReferenceCache } from "./ECClassNavPropReferenceCache";
+import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { EntityUnifier } from "./EntityUnifier";
 
@@ -53,7 +53,7 @@ export class IModelCloneContext {
       while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
         const schemaName = stmt.getValue(0).getString();
         const schema = schemaLoader.getSchema(schemaName);
-        await ECClassNavPropReferenceCache.globalCache.initSchema(schema);
+        await ECReferenceTypesCache.globalCache.initSchema(schema);
       }
       if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
     });
@@ -307,7 +307,7 @@ export class IModelCloneContext {
       if (propertyMetaData.isNavigation) {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
-          const navPropRefType = ECClassNavPropReferenceCache.globalCache.getNavPropRefType(
+          const navPropRefType = ECReferenceTypesCache.globalCache.getNavPropRefType(
             sourceElementAspect.schemaName,
             sourceElementAspect.className,
             propertyName
