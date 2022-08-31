@@ -11,7 +11,7 @@
 // cSpell:ignore popout
 
 import "./Frontstage.scss";
-import produce, { Draft } from "immer";
+import produce from "immer";
 import * as React from "react";
 import { assert, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-abstract";
@@ -1063,8 +1063,8 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
     };
   } else if (!isPopoutTabLocation(location)) {
     const widgetId = location.widgetId;
-    const side = "side" in location ? location.side : "left";
-    const widgetIndex = "side" in location ? state.panels[side].widgets.indexOf(widgetId) : 0;
+    const side = isPanelTabLocation(location) ? location.side : "left";
+    const widgetIndex = isPanelTabLocation(location) ? state.panels[side].widgets.indexOf(widgetId) : 0;
     const tabIndex = state.widgets[location.widgetId].tabs.indexOf(widgetDef.id);
     widgetDef.tabLocation = {
       side,
@@ -1077,50 +1077,54 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
 }
 
 /** @internal */
-export const showWidget = produce((nineZone: Draft<NineZoneState>, id: TabState["id"]) => {
-  const location = findTab(nineZone, id);
+export function showWidget(state: NineZoneState, id: TabState["id"]) {
+  const location = findTab(state, id);
   if (!location)
-    return;
-  const widget = nineZone.widgets[location.widgetId];
-  if ("side" in location) {
-    const panel = nineZone.panels[location.side];
-    panel.collapsed = false;
-    widget.minimized = false;
+    return state;
+  state = produce(state, (draft) => {
+    const widget = draft.widgets[location.widgetId];
     widget.activeTabId = id;
-    return;
-  }
-  widget.activeTabId = id;
-  widget.minimized = false;
-  isFloatingTabLocation(location) && floatingWidgetBringToFront(nineZone, location.floatingWidgetId);
-});
-
-/** @internal */
-export const expandWidget = produce((nineZone: Draft<NineZoneState>, id: TabState["id"]) => {
-  const location = findTab(nineZone, id);
-  if (!location)
-    return;
-  const widget = nineZone.widgets[location.widgetId];
-  if ("side" in location) {
-    const panel = nineZone.panels[location.side];
-    panel.widgets.forEach((wId) => {
-      const w = nineZone.widgets[wId];
-      w.minimized = true;
-    });
     widget.minimized = false;
-    return;
+    if (isPanelTabLocation(location)) {
+      const panel = draft.panels[location.side];
+      panel.collapsed = false;
+    }
+  });
+  if (isFloatingTabLocation(location)) {
+    state = floatingWidgetBringToFront(state, location.floatingWidgetId);
   }
-  widget.minimized = false;
-  return;
-});
+  return state;
+}
 
 /** @internal */
-export const setWidgetLabel = produce((nineZone: Draft<NineZoneState>, id: TabState["id"], label: string) => {
-  if (!(id in nineZone.tabs))
-    return;
+export function expandWidget(state: NineZoneState, id: TabState["id"]) {
+  const location = findTab(state, id);
+  if (!location)
+    return state;
 
-  const tab = nineZone.tabs[id];
-  tab.label = label;
-});
+  return produce(state, (draft) => {
+    const widget = draft.widgets[location.widgetId];
+    widget.minimized = false;
+    if (isPanelTabLocation(location)) {
+      const panel = draft.panels[location.side];
+      panel.widgets.forEach((wId) => {
+        const w = draft.widgets[wId];
+        w.minimized = true;
+      });
+    }
+  });
+}
+
+/** @internal */
+export function setWidgetLabel(state: NineZoneState, id: TabState["id"], label: string) {
+  if (!(id in state.tabs))
+    return state;
+
+  return produce(state, (draft) => {
+    const tab = draft.tabs[id];
+    tab.label = label;
+  });
+}
 
 /** @internal */
 export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
