@@ -2494,6 +2494,51 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.readImageToCanvas();
   }
 
+  /** Waits for all tiles to load and render for this viewport.
+   * @returns A promise which will resolve when all tiles finish loading and are rendered for this viewport.
+   * @param options The options governing how this method behaves. Particularly, if the `isAddedToViewManager` property is false (defaults to true), this method will pump the tile request scheduler itself.
+   */
+  public async waitForTilesToLoad(options: {isAddedToViewManager: boolean} = {isAddedToViewManager: true}): Promise<void> {
+    let haveNewTiles = true;
+    while (haveNewTiles) {
+      this.requestRedraw();
+      this.invalidateScene();
+      this.renderFrame();
+
+      // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
+      const context = this.createSceneContext();
+      this.createScene(context);
+      context.requestMissingTiles();
+
+      haveNewTiles = !this.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
+      if (!haveNewTiles) {
+        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+        for (const vp of this.view.secondaryViewports) {
+          if (vp.numRequestedTiles > 0) {
+            haveNewTiles = true;
+            break;
+          }
+
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+          if (tiles && tiles.external.requested > 0) {
+            haveNewTiles = true;
+            break;
+          }
+        }
+      }
+
+      // NB: If the viewport is NOT added to the ViewManager's render loop, then we must manually pump the tile request scheduler.
+      if (!options.isAddedToViewManager && haveNewTiles)
+        IModelApp.tileAdmin.process();
+
+      await BeDuration.wait(100);
+    }
+
+    await IModelApp.renderSystem.waitForAllExternalTextures();
+
+    this.renderFrame();
+  }
+
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
    * @see [[getPixelDataWorldPoint]] to obtain the point in [[CoordSystem.World]].
    */

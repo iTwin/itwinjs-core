@@ -29,3 +29,7 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
+
+## Wait for Tiles API
+
+[Viewport]($frontend) now has a [Viewport.waitForTilesToLoad]($frontend) method. This method returns a promise which will resolve when all tiles finish loading and are rendered for this viewport. Awaiting on this method before attempting to read an image out of the viewport will ensure that a complete rendering of the current scene is retrieved.
