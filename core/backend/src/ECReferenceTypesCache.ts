@@ -8,7 +8,7 @@
 
 import { ConcreteEntityTypes, DbResult, Logger } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { ECClass, LazyLoadedRelationshipConstraintClass, Mixin, RelationshipClass, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
+import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
 import { IModelDb } from "./IModelDb";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
@@ -55,14 +55,13 @@ export class ECReferenceTypesCache {
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
 
-  private async getRootBisClass(constraints: LazyLoadedRelationshipConstraintClass[]) {
-    const constraint = await constraints[0];
-    let bisRootForConstraint: ECClass = constraint;
-    await constraint.traverseBaseClasses((baseClass) => {
+  private async getRootBisClass(ecclass: ECClass) {
+    let bisRootForConstraint: ECClass = ecclass;
+    await ecclass.traverseBaseClasses((baseClass) => {
       // The depth first traversal will descend all the way to the root class before making any lateral traversal
       // of mixin hierarchies, (or if the constraint is a mixin, it will traverse to the root of the mixin hierarch)
       // Once we see that we've moved laterally, we can terminate early
-      const isFirstTest = bisRootForConstraint === constraint;
+      const isFirstTest = bisRootForConstraint === ecclass;
       const traversalSwitchedRootPath = baseClass.name !== bisRootForConstraint.baseClass?.name;
       const stillTraversingRootPath = isFirstTest || !traversalSwitchedRootPath;
       if (!stillTraversingRootPath)
@@ -76,6 +75,13 @@ export class ECReferenceTypesCache {
       bisRootForConstraint = await bisRootForConstraint.appliesTo;
     }
     return bisRootForConstraint;
+  }
+
+  private async getRootBisClassForConstraint(constraint: RelationshipConstraint) {
+    // constraint classes must share a base so we can get the root from any of them, just use the first
+    const ecclass = await (constraint.constraintClasses?.[0] || constraint.abstractConstraint);
+    assert(ecclass !== undefined, "At least one constraint class or an abstract constraint must have been defined, the constraint is not valid");
+    return this.getRootBisClass(ecclass as ECClass);
   }
 
   /** initialize from an imodel with metadata */
@@ -141,15 +147,14 @@ export class ECReferenceTypesCache {
   private async relInfoFromRelClass(ecclass: RelationshipClass): Promise<RelTypeInfo | undefined> {
     assert(ecclass.source.constraintClasses !== undefined);
     assert(ecclass.target.constraintClasses !== undefined);
+    // constraint classes must share a base so we can get the root from any of them
     const [source, target] = await Promise.all([
-      this.getRootBisClass(ecclass.source.constraintClasses),
-      this.getRootBisClass(ecclass.target.constraintClasses),
+      this.getRootBisClassForConstraint(ecclass.source),
+      this.getRootBisClassForConstraint(ecclass.target),
     ]);
     if (source.name === "CodeSpec" || target.name === "CodeSpec") return undefined;
     const sourceType = ECReferenceTypesCache.bisRootClassToRefType[source.name];
     const targetType = ECReferenceTypesCache.bisRootClassToRefType[target.name];
-    // FIXME: write a test on this assumption by iterating through biscore schema metadata and ensuring all classes have one of
-    // the above bases
     const makeAssertMsg = (cls: ECClass) => `An unknown root class '${cls.name}' was encountered while populating the nav prop reference type cache. This is a bug.`;
     assert(sourceType !== undefined, makeAssertMsg(source));
     assert(targetType !== undefined, makeAssertMsg(target));
