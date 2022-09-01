@@ -37,7 +37,7 @@ describe.only("ECReferenceTypesCache", () => {
       const rootBisClass = await testFixtureRefCache["getRootBisClass"](ecclass);
       // eslint-disable-next-line @typescript-eslint/dot-notation
       const type = ECReferenceTypesCache["bisRootClassToRefType"][rootBisClass.name];
-      expect(type).not.to.be.undefined;
+      expect(type, `${ecclass.name} in BisCore did not derive from the assumed roots`).not.to.be.undefined;
     }
   });
 
