@@ -279,10 +279,8 @@ describe("Class Registry - generated classes", () => {
   it("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
-    // must init the global reference cache
-    const schemaLoader = new IModelSchemaLoader(imodel);
-    const testGeneratedClassesSchema = schemaLoader.getSchema("TestGeneratedClasses");
-    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(testGeneratedClassesSchema);
+    // must init the global reference cache to call `getReferenceConcreteIds` on a relationship entity instance
+    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(imodel);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");
