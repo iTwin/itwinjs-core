@@ -9,7 +9,7 @@ import * as Semver from "semver";
 import * as sinon from "sinon";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
-  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelCloneContext, IModelDb, IModelHost, IModelJsFs,
   InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
@@ -18,15 +18,17 @@ import {
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementProps,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ElementAspectProps, ElementProps,
   ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d, QueryRowFormat, RelatedElement, RelationshipProps,
 } from "@itwin/core-common";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelExportHandler, IModelTransformer, IModelTransformOptions, TransformerLoggerCategory } from "../../core-transformer";
 import {
+  AspectTrackingImporter,
+  AspectTrackingTransformer,
   assertIdentityTransformation, AssertOrderTransformer,
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, runWithCpuProfiler, TestIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
+  RecordingIModelImporter, runWithCpuProfiler, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -1859,33 +1861,78 @@ describe("IModelTransformer", () => {
 
   it("returns ids in order when exporting multiple ElementMultiAspect of multiple classes", async () => {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderSrc.bim");
-    const sourceDb  = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "AspectIdOrderSource" } });
+    await TransformerExtensiveTestScenario.prepareDb(sourceDb);
+
+    const spatialCategoryId = SpatialCategory.insert(sourceDb, IModel.dictionaryId, "SpatialCategory", { color: ColorDef.green.toJSON() });
+    const physicalModelId = PhysicalModel.insert(sourceDb, IModel.rootSubjectId, "phys-model");
+    const physicalObj1InSourceId = sourceDb.elements.insertElement({
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject1",
+      geom: BackendTestUtils.IModelTestUtils.createBox(Point3d.create(1, 1, 1), spatialCategoryId),
+      placement: {
+        origin: Point3d.create(1, 1, 1),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    } as PhysicalElementProps);
+
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:AdditionalMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      value: "1",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      commonDouble: 2.2,
+      commonString: "2",
+      commonLong: physicalObj1InSourceId,
+      sourceDouble: 22.2,
+      sourceString: "2",
+      sourceLong: physicalObj1InSourceId,
+      sourceGuid: Guid.createValue(),
+      extraString: "2",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "ExtensiveTestScenario:AdditionalMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObj1InSourceId),
+      value: "3",
+    } as ElementAspectProps);
+    sourceDb.saveChanges();
 
     const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderTarget.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "AspectIdOrderTarget" } });
-    await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
+    await TransformerExtensiveTestScenario.prepareDb(targetDb);
     targetDb.saveChanges();
 
-    const importer = new TestIModelImporter(targetDb);
-    const transformer = new TestIModelTransformer(sourceDb, importer);
+    const importer = new AspectTrackingImporter(targetDb);
+    const transformer = new AspectTrackingTransformer(sourceDb, importer);
     assert.isTrue(transformer.context.isBetweenIModels);
     await transformer.processAll();
     transformer.dispose();
 
-    // FIXME: confirm the assumption that there are multiple aspect classes
-    const physicalObj1InSourceId = IModelTransformerTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
     const physicalObj1InTargetId = IModelTransformerTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
     assert(physicalObj1InSourceId !== Id64.invalid);
     assert(physicalObj1InTargetId !== Id64.invalid);
 
-    const exportedAspectSourceIds = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
+    const exportedAspectSources = transformer.exportedAspectIdsByElement.get(physicalObj1InSourceId);
     const importedAspectTargetIds = importer.importedAspectIdsByElement.get(physicalObj1InTargetId);
-    assert(exportedAspectSourceIds !== undefined);
+    assert(exportedAspectSources !== undefined);
     assert(importedAspectTargetIds !== undefined);
-    assert(exportedAspectSourceIds.length === importedAspectTargetIds.length);
+    assert(exportedAspectSources.length === importedAspectTargetIds.length);
 
-    for (let i = 0; i < exportedAspectSourceIds.length; ++i) {
-      const sourceId = exportedAspectSourceIds[i];
+    // confirm the assumption that there are multiple aspect classes and their instances are not consecutive
+    expect(
+      exportedAspectSources[0].classFullName !== exportedAspectSources[1].classFullName
+      && exportedAspectSources[1].classFullName !== exportedAspectSources[2].classFullName
+      && exportedAspectSources[0].classFullName === exportedAspectSources[2].classFullName
+    );
+
+    for (let i = 0; i < exportedAspectSources.length; ++i) {
+      const sourceId = exportedAspectSources[i].id;
       const targetId = importedAspectTargetIds[i];
       const mappedTarget = transformer.context.findTargetAspectId(sourceId);
       assert(mappedTarget !== Id64.invalid);

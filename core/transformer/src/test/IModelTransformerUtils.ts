@@ -892,7 +892,10 @@ export class FilterByViewTransformer extends IModelTransformer {
   }
 }
 
-/** Specialization of IModelTransformer for testing */
+/**
+ * Specialization of IModelTransformer for testing that remaps the extensive test scenario's comments
+ * and records transformation data in the iModel itself.
+ */
 export class TestIModelTransformer extends IModelTransformer {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter) {
     super(source, target);
@@ -1021,14 +1024,16 @@ export class TestIModelTransformer extends IModelTransformer {
     }
     return targetRelationshipProps;
   }
+}
 
-  public exportedAspectIdsByElement = new Map<Id64String, Id64String[]>();
+/** Specialization of IModelTransformer for testing */
+export class AspectTrackingTransformer extends IModelTransformer {
+  public exportedAspectIdsByElement = new Map<Id64String, ElementMultiAspect[]>();
 
   public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const elementId = sourceAspects[0].element.id;
     assert(!this.exportedAspectIdsByElement.has(elementId), "tried to export element multi aspects for an element more than once");
-    const sourceIds = sourceAspects.map((sourceAspect) => sourceAspect.id);
-    this.exportedAspectIdsByElement.set(elementId, sourceIds);
+    this.exportedAspectIdsByElement.set(elementId, sourceAspects);
     return super.onExportElementMultiAspects(sourceAspects);
   }
 }
@@ -1192,7 +1197,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
 /** In addition to recording transformation processes with information record elements, also collects
  * test-specific data for tests to analyze.
  */
-export class TestIModelImporter extends RecordingIModelImporter {
+export class AspectTrackingImporter extends IModelImporter {
   public importedAspectIdsByElement = new Map<Id64String, Id64String[]>();
   public override importElementMultiAspects(...args: Parameters<IModelImporter["importElementMultiAspects"]>) {
     const resultTargetIds = super.importElementMultiAspects(...args);
