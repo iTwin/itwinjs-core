@@ -1,0 +1,97 @@
+# For documentation changes only, set CI jobs as successful regardless whether or not they ran
+
+name: Skip Check
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  # workflow_dispatch:
+
+  pull_request:
+    branches:
+      - master
+      - release/*
+    paths:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
+
+  push:
+    branches:
+      - master
+      - release/*
+    paths:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
+
+env:
+  documentation_files: false
+  not_documentation_files: false
+  documentation_files_only: false
+
+jobs:
+  detect-if-skip:
+    name: Detect If Skip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Path filter
+        uses: dorny/paths-filter@v2
+        id: path_filter
+        with:
+          filters: |
+            documentation_files:
+              - "docs/**"
+              - "**.md"
+            not_md:
+              - "**/!(*.md)"
+            not_doc_folder:
+              - "!(docs/**)"
+
+      - name: Set variables
+        run: |
+          echo documentation_files=
+            ${{steps.path_filter.outputs.documentation_files == 'true'}} >> $GITHUB_ENV &
+          echo not_documentation_files=${{
+            steps.path_filter.outputs.not_md == 'true' &&
+            steps.path_filter.outputs.not_doc_folder == 'true'}} >> $GITHUB_ENV &
+          echo documentation_files_only=${{
+            steps.path_filter.outputs.documentation_files == 'true' &&
+            !(steps.path_filter.outputs.not_md == 'true' &&
+              steps.path_filter.outputs.not_doc_folder== 'true')}} >> $GITHUB_ENV
+
+      # For debugging
+      - name: Print variables
+        run: |
+          echo documentation_files=${{env.documentation_files}}
+          echo not_documentation_files=${{env.not_documentation_files}}
+          echo documentation_files_only=${{env.documentation_files_only}}
+
+      # Fake required checks if neccessary
+      - uses: LouisBrunner/checks-action@v1.3.0
+        if: ${{ env.documentation_files_only == 'true' }}
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: extract-api
+          conclusion: success
+      # - uses: LouisBrunner/checks-action@v1.3.0
+      #   if: ${{ env.documentation_files_only == 'true' }}
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: iTwin.js
+      #     conclusion: success
+      # - uses: LouisBrunner/checks-action@v1.3.0
+      #   if: ${{ env.documentation_files_only == 'true' }}
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: iTwin.js Docs - YAML
+      #     conclusion: success
+      # - uses: LouisBrunner/checks-action@v1.3.0
+      #   if: ${{ env.documentation_files_only == 'true' }}
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: iTwin.js Integration - GitHub
+      #     conclusion: success
