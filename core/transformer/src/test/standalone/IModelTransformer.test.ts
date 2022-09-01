@@ -1930,6 +1930,7 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
     const sourceDb = SnapshotDb.createFrom(await ReusedSnapshots.extensiveTestScenario, sourceDbFile);
@@ -1944,7 +1945,7 @@ describe("IModelTransformer", () => {
     }, {
       profileName: `newbranch_${this.test?.title.replace(/ /g, "_")}`,
       timestamp: true,
-      sampleIntervalMicroSec: 30, // this is a small space, let's get more resolution
+      sampleIntervalMicroSec: 30, // this is a quick transformation, let's get more resolution
     });
     transformer.dispose();
     sourceDb.close();
