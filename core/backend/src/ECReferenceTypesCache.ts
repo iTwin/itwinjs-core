@@ -6,9 +6,12 @@
  * @module iModels
  */
 
-import { ConcreteEntityTypes, Logger } from "@itwin/core-bentley";
-import { ECClass, LazyLoadedRelationshipConstraintClass, Mixin, RelationshipClass, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { ConcreteEntityTypes, DbResult, Logger } from "@itwin/core-bentley";
+import { IModelError } from "@itwin/core-common";
+import { ECClass, LazyLoadedRelationshipConstraintClass, Mixin, RelationshipClass, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
+import { IModelDb } from "./IModelDb";
+import { IModelSchemaLoader } from "./IModelSchemaLoader";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
 
@@ -35,8 +38,8 @@ export class ECReferenceTypesCache {
   public static globalCache = new ECReferenceTypesCache();
 
   /** nesting based tuple map keyed by qualified property path tuple [schemaName, className, propName] */
-  private _propQualifierToRefType = new Map<string, Map<string, Map<string, RelTypeInfo>>>();
-  private _relClassNameToRefType = new Map<string, Map<string, RelTypeInfo>>();
+  private _propQualifierToRefType = new Map<string, Map<string, Map<string, ConcreteEntityTypes>>>();
+  private _relClassNameEndToRefTypes = new Map<string, Map<string, RelTypeInfo>>();
   private _initedSchemas = new Map<string, SchemaKey>();
 
   private static bisRootClassToRefType: Record<string, ConcreteEntityTypes | undefined> = {
@@ -46,7 +49,8 @@ export class ECReferenceTypesCache {
     "ElementAspect": ConcreteEntityTypes.ElementAspect,
     "ElementRefersToElements": ConcreteEntityTypes.Relationship,
     "ElementDrivesElement": ConcreteEntityTypes.Relationship,
-    // code spec is technically a potential root class but it is sealed and not treated
+    // code spec is technically a potential root class but it is sealed and ignored currently
+    // FIXME: because...
     // "CodeSpec": ConcreteEntityTypes.CodeSpec,
     /* eslint-enable quote-props, @typescript-eslint/naming-convention */
   };
@@ -74,7 +78,27 @@ export class ECReferenceTypesCache {
     return bisRootForConstraint;
   }
 
-  public async initSchema(schema: Schema): Promise<void> {
+  /** initialize from an imodel with metadata */
+  public async initAllSchemasInIModel(imodel: IModelDb): Promise<void> {
+    const schemaLoader = new IModelSchemaLoader(imodel);
+    await imodel.withPreparedStatement(`
+      SELECT Name FROM ECDbMeta.ECSchemaDef
+      -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
+      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+      -- ensure schema dependency order
+      ORDER BY ECInstanceId
+    `, async (stmt) => {
+      let status: DbResult;
+      while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
+        const schemaName = stmt.getValue(0).getString();
+        const schema = schemaLoader.getSchema(schemaName);
+        await this.initSchema(schema);
+      }
+      if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
+    });
+  }
+
+  private async initSchema(schema: Schema): Promise<void> {
     if (this._initedSchemas.has(schema.name)) {
       const cachedSchemaKey = this._initedSchemas.get(schema.name);
       assert(cachedSchemaKey !== undefined);
@@ -86,14 +110,14 @@ export class ECReferenceTypesCache {
       }
     }
 
-    const classMap = new Map<string, Map<string, RelTypeInfo>>();
+    const classMap = new Map<string, Map<string, ConcreteEntityTypes>>();
     this._propQualifierToRefType.set(schema.name.toLowerCase(), classMap);
 
     const relClassesMap = new Map<string, RelTypeInfo>();
-    this._relClassNameToRefType.set(schema.name.toLowerCase(), relClassesMap);
+    this._relClassNameEndToRefTypes.set(schema.name.toLowerCase(), relClassesMap);
 
     for (const ecclass of schema.getClasses()) {
-      const propMap = new Map<string, RelTypeInfo>();
+      const propMap = new Map<string, ConcreteEntityTypes>();
       classMap.set(ecclass.name.toLowerCase(), propMap);
 
       for (const prop of await ecclass.getProperties()) {
@@ -101,7 +125,8 @@ export class ECReferenceTypesCache {
         const relClass = await prop.relationshipClass;
         const relInfo = await this.relInfoFromRelClass(relClass);
         if (relInfo === undefined) continue;
-        propMap.set(prop.name.toLowerCase(), relInfo);
+        const navPropRefType = prop.direction === StrengthDirection.Forward ? relInfo.target : relInfo.source;
+        propMap.set(prop.name.toLowerCase(), navPropRefType);
       }
 
       if (ecclass instanceof RelationshipClass) {
@@ -131,7 +156,7 @@ export class ECReferenceTypesCache {
     return { source: sourceType, target: targetType };
   }
 
-  public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | RelTypeInfo {
+  public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | ConcreteEntityTypes {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
     return this._propQualifierToRefType
       .get(schemaName.toLowerCase())
@@ -141,7 +166,7 @@ export class ECReferenceTypesCache {
 
   public getRelationshipEndType(schemaName: string, className: string): undefined | RelTypeInfo {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
-    return this._relClassNameToRefType
+    return this._relClassNameEndToRefTypes
       .get(schemaName.toLowerCase())
       ?.get(className.toLowerCase());
   }

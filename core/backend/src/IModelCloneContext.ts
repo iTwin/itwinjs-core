@@ -41,22 +41,7 @@ export class IModelCloneContext {
   }
 
   public async initialize() {
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
-    await this.sourceDb.withPreparedStatement(`
-      SELECT Name FROM ECDbMeta.ECSchemaDef
-      -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
-      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
-      -- ensure schema dependency order
-      ORDER BY ECInstanceId
-    `, async (stmt) => {
-      let status: DbResult;
-      while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
-        const schemaName = stmt.getValue(0).getString();
-        const schema = schemaLoader.getSchema(schemaName);
-        await ECReferenceTypesCache.globalCache.initSchema(schema);
-      }
-      if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
-    });
+    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(this.sourceDb);
   }
 
   public async create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext> {
@@ -311,7 +296,7 @@ export class IModelCloneContext {
             sourceElementAspect.schemaName,
             sourceElementAspect.className,
             propertyName
-          )?.[propertyMetaData.direction === "Forward" ? "target" : "source"];
+          );
           /* eslint-disable @typescript-eslint/indent */
           const targetEntityId // FIXME: use findTargetEntityId
             = navPropRefType === ConcreteEntityTypes.Element || navPropRefType === ConcreteEntityTypes.Model
