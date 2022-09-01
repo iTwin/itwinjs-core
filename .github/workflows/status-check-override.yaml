@@ -28,7 +28,7 @@ on:
 
 env:
   documentation_files: false
-  not_documentation_files: false
+  non_documentation_files: false
   documentation_files_only: false
 
 jobs:
@@ -46,9 +46,9 @@ jobs:
             documentation_files:
               - "docs/**"
               - "**.md"
-            not_md:
+            non_md:
               - "**/!(*.md)"
-            not_doc_folder:
+            non_doc_folder:
               - "!(docs/**)"
 
       - name: "Set Variable: documentation_files"
@@ -56,28 +56,28 @@ jobs:
           echo documentation_files=${{
             steps.path_filter.outputs.documentation_files == 'true' }} >> $GITHUB_ENV
 
-      - name: "Set Variable: not_documentation_files"
+      - name: "Set Variable: non_documentation_files"
         run: |
-          echo not_documentation_files=${{
-            steps.path_filter.outputs.not_md == 'true' &&
-            steps.path_filter.outputs.not_doc_folder == 'true' }} >> $GITHUB_ENV
+          echo non_documentation_files=${{
+            steps.path_filter.outputs.non_md == 'true' &&
+            steps.path_filter.outputs.non_doc_folder == 'true' }} >> $GITHUB_ENV
 
       - name: "Set Variable: documentation_files_only"
         run: |
           echo documentation_files_only=${{
-            env.documentation_files == 'true' && !(env.not_documentation_files == 'true') }} >> $GITHUB_ENV
+            env.documentation_files == 'true' && !(env.non_documentation_files == 'true') }} >> $GITHUB_ENV
 
       # For debugging
       - name: Print variables
         run: |
           echo documentation_files=${{env.documentation_files}}
-          echo not_documentation_files=${{env.not_documentation_files}}
+          echo non_documentation_files=${{env.non_documentation_files}}
           echo documentation_files_only=${{env.documentation_files_only}}
 
       # Fake required checks if neccessary
       - uses: LouisBrunner/checks-action@v1.3.0
-        # if: ${{ env.documentation_files == 'true' }}
-        if: ${{ env.documentation_files_only == 'true' }}
+        if: ${{ env.documentation_files == 'true' }}
+        # if: ${{ env.documentation_files_only == 'true' }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           name: extract-api
