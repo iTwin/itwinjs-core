@@ -805,7 +805,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const geom = [
       { header: { flags: 0 } },
-      { box: { origin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
+      { box: { baseOrigin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
     ];
 
     insertAndVerifyPlacement(
@@ -817,8 +817,8 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       {
         expectedPlacementOverrides: {
           bbox: {
-            low: { x: 0, y: 0, z: 0 },
-            high: { x: 10, y: 20, z: 0 },
+            low: { x: 0, y: 1, z: 2 },
+            high: { x: 10, y: 21, z: 12 },
           },
         },
       }

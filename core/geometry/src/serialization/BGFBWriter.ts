@@ -594,6 +594,7 @@ export class BGFBWriter {
       return offset;
     if (g instanceof PointString3d && (offset = this.writePointString3dAsFBVariantGeometry(g)) !== undefined)
       return offset;
+    // if (g instanceof CoordinateXYZ) // TODO
     return undefined;
   }
 
