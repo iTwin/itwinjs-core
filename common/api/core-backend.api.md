@@ -3671,6 +3671,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantChunkTraversal?: boolean;
+    // (undocumented)
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
