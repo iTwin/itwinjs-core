@@ -1,6 +1,6 @@
 parameters:
-  name: ''
-  pool: ''
+#   name: ''
+#   pool: ''
   nodeVersion: ''
   
 # resources: #Refernce nick's template from azure repo
