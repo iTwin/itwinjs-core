@@ -200,7 +200,7 @@ export class PolylineOps {
     if (Array.isArray(q0)) {
       for (const child of data) {
         if (Array.isArray(child))
-          this.addClosurePoint(child);
+          this.removeClosurePoint(child);
       }
       return;
     }
