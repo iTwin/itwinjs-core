@@ -51,12 +51,12 @@ export namespace ConcreteEntityTypes {
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
- * @public
+ * @alpha
  */
 export type ConcreteEntityId = `${ConcreteEntityTypes}${Id64String}`;
 
 /** Utility functions for ConcreteEntityId which is a subset of string
- * @public
+ * @alpha
  */
 export class ConcreteEntityIds {
   // for additional utilities that require runtime backend classes, see ConcreteEntityIds in `@itwin/core-backend`

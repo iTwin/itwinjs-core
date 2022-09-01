@@ -18,19 +18,24 @@ import * as assert from "assert";
 // re-export so consumers don't need to manually import the basic types we are extending
 export * from "@itwin/core-bentley/lib/cjs/ConcreteEntityId";
 
-// FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
-/** an entity that can be created, with the notable exception of CodeSpecs since those are not treated like other entities */
+/** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
+ * other entity classes. In the future if there is a need
+ * to manage them this way, it can be added
+ * @alpha
+ */
 export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
 
+/** Props for a [[ConcreteEntity]]
+ * @alpha
+ */
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 /**
  * Utility function namespace for the ConcreteEntityId type which is a string
- * @public
+ * @alpha
  */
 export class ConcreteEntityIds extends BentleyConcreteEntityIds {
 
-  // TODO: fix this horror somehow
   // necessary to prevent cyclic dependencies, the required modules will be in the require cache already so I don't store
   /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
   private static get _ElementClass() {
