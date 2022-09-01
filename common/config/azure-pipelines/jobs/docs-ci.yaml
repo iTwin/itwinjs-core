@@ -5,19 +5,33 @@ trigger:
     include:
       - master
       - release/*
+      - actions-filter
     exclude:
       - release/2*
       - release/1*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
 
 pr:
-  drafts: false
+  drafts: true
   branches:
     include:
       - master
       - release/*
+      - actions-filter
     exclude:
       - release/2*
       - release/1*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
 
 jobs:
   - job:
