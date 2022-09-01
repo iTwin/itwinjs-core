@@ -311,7 +311,7 @@ export class PolyfaceQuery {
   public static boundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
     includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): CurveCollection | undefined {
     const result = new BagOfCurves();
-    const announceEdge = (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number) => {
+    const announceEdge = (pointA: Point3d, pointB: Point3d, _indexA: number, _indexB: number, _readIndex: number) => {
        result.tryAddChild (LineSegment3d.create (pointA, pointB));
 };
     PolyfaceQuery.announceBoundaryEdges (source, announceEdge, includeDanglers, includeMismatch, includeNull);
@@ -323,13 +323,13 @@ export class PolyfaceQuery {
   * Test if the facets in `source` occur in perfectly mated pairs, as is required for a closed manifold volume.
   * If not, extract the boundary edges as lines.
   * @param source polyface or visitor
-  * @param announceEdge function to be called with each boundary edge. The announcement is start and end points and start and end indices.
+  * @param announceEdge function to be called with each boundary edge. The announcement is start and end points, start and end indices, and facet index.
   * @param includeDanglers true to in include typical boundary edges with a single incident facet
   * @param includeMismatch true to include edges with more than 2 incident facets
   * @param includeNull true to include edges with identical start and end vertex indices.
   */
     public static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined,
-      announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number) => void,
+      announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void,
       includeDanglers: boolean = true, includeMismatch: boolean = true, includeNull: boolean = true): void{
       if (source === undefined)
       return undefined;
@@ -365,7 +365,7 @@ export class PolyfaceQuery {
         const pointA = sourcePolyface.data.getPoint(indexA);
         const pointB = sourcePolyface.data.getPoint(indexB);
         if (pointA && pointB)
-        announceEdge (pointA, pointB, indexA, indexB);
+        announceEdge (pointA, pointB, indexA, indexB, visitor.currentReadIndex ());
         }
       }
   }
