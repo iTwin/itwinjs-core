@@ -8,9 +8,10 @@
 
 import produce from "immer";
 import { UiError } from "@itwin/appui-abstract";
-import { category } from "../internal";
 import { NineZoneState } from "../NineZoneState";
-import { TabState } from "../TabState";
+import { DraggedTabState, TabsState, TabState } from "../TabState";
+import { toolSettingsTabId } from "../ToolSettingsState";
+import { category } from "./NineZoneStateHelpers";
 
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
@@ -19,6 +20,31 @@ export function createTabState(id: TabState["id"], args?: Partial<TabState>): Ta
     label: "",
     ...args,
     id,
+  };
+}
+
+/** @internal */
+export function createTabsState(args?: Partial<TabsState>): TabsState {
+  return {
+    [toolSettingsTabId]: createTabState(toolSettingsTabId, {
+      label: "Tool Settings",
+      allowedPanelTargets: ["bottom", "left", "right"],
+    }),
+    ...args,
+  };
+}
+
+/** @internal */
+export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState {
+  return {
+    home: {
+      side: "left",
+      widgetId: undefined,
+      widgetIndex: 0,
+    },
+    position: { x: 0, y: 0 },
+    ...args,
+    tabId,
   };
 }
 

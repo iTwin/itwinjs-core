@@ -14,7 +14,6 @@ import { RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState } from "../state/NineZoneState";
 import { WidgetState } from "../state/WidgetState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
@@ -25,6 +24,7 @@ import { PanelOutline } from "../outline/PanelOutline";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { PanelTarget } from "./PanelTarget";
 import { SectionTargets } from "../target/SectionTargets";
+import { isHorizontalPanelState, PanelState } from "../state/PanelState";
 
 /** @internal */
 export type TopPanelSide = "top";

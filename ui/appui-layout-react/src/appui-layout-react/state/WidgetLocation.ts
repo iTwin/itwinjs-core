@@ -7,8 +7,8 @@
  */
 
 import { PanelSide, panelSides } from "../widget-panels/Panel";
-import { FloatingWidgetState, NineZoneState, PopoutWidgetState } from "./NineZoneState";
-import { WidgetState } from "./WidgetState";
+import { NineZoneState } from "./NineZoneState";
+import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "./WidgetState";
 
 /** @internal */
 export interface PanelWidgetLocation {

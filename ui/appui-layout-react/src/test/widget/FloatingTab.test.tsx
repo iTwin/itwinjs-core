@@ -11,7 +11,7 @@ import {
   addPanelWidget, addTab, createNineZoneState, DragManager, FloatingTab, NineZoneDispatch, ShowWidgetIconContext,
 } from "../../appui-layout-react";
 import { createDragInfo, TestNineZoneProvider } from "../Providers";
-import { createDraggedTabState } from "../../appui-layout-react/state/internal";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal/TabStateHelpers";
 
 describe("FloatingTab", () => {
   it("should render", async () => {

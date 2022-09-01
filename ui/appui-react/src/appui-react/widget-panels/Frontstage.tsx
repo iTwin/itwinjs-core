@@ -21,7 +21,7 @@ import {
   addFloatingWidget, addPanelWidget, addTab, addTabToWidget, createNineZoneState, findTab,
   FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
   isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
-  panelSides, removeTabFromWidget, removeTab, TabState, toolSettingsTabId, WidgetPanels,
+  panelSides, removeTab, removeTabFromWidget, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
 import { convertAllPopupWidgetContainersToFloating, floatingWidgetBringToFront } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
@@ -726,7 +726,6 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
  * @internal
  */
 export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState {
-  initializeNineZoneState
   let restored: NineZoneState = {
     ...saved,
     tabs: defaultNineZone.tabs,

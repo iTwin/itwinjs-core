@@ -12,7 +12,7 @@ import {
   PanelTarget, useAllowedPanelTarget,
 } from "../../appui-layout-react";
 import { createDragInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
-import { createDraggedTabState } from "../../appui-layout-react/state/internal";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal/TabStateHelpers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {

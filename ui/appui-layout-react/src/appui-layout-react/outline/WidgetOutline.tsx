@@ -10,9 +10,9 @@ import "./WidgetOutline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useTargeted } from "../base/DragManager";
-import { isTabDropTargetState, isWidgetDropTargetState } from "../state/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
 import { withTargetVersion } from "../target/TargetOptions";
+import { isTabDropTargetState, isWidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export const WidgetOutline = withTargetVersion("2", function WidgetOutline() {

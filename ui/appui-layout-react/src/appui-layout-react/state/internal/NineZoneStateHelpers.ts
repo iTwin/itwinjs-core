@@ -8,138 +8,20 @@
 
 import { Draft, produce } from "immer";
 import { PointProps, UiError } from "@itwin/appui-abstract";
-import {
-  addFloatingWidget, addPopoutWidget, DraggedTabState, FloatingWidgetHomeState, FloatingWidgetState, HorizontalPanelState, NineZoneState, NineZoneStateReducer, PanelsState,
-  PopoutWidgetState, removeTabFromWidget, TabsState, toolSettingsTabId, VerticalPanelState,
-} from "../NineZoneState";
-import { WidgetState } from "../WidgetState";
+import { NineZoneState } from "../NineZoneState";
+import { addFloatingWidget, addPopoutWidget, FloatingWidgetHomeState, FloatingWidgetState } from "../WidgetState";
 import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
-import { HorizontalPanelSide, PanelSide, VerticalPanelSide } from "../../widget-panels/Panel";
 import { getUniqueId } from "../../base/NineZone";
 import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "../TabLocation";
-import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
-import { createTabState, removeWidgetState, updateTabState, updateWidgetState } from "../internal";
+import { findWidget, isFloatingWidgetLocation, isPopoutWidgetLocation } from "../WidgetLocation";
+import { NineZoneStateReducer } from "../NineZoneStateReducer";
+import { removeTabFromWidget } from "../TabState";
+import { toolSettingsTabId } from "../ToolSettingsState";
+import { updateTabState } from "./TabStateHelpers";
+import { updateFloatingWidgetState } from "./WidgetStateHelpers";
 
 /** @internal */
 export const category = "appui-layout-react:layout";
-
-function createPanelState(side: PanelSide) {
-  return {
-    collapseOffset: 100,
-    collapsed: false,
-    maxSize: 600,
-    minSize: 200,
-    pinned: true,
-    resizable: true,
-    side,
-    size: undefined,
-    widgets: [],
-    maxWidgetCount: 2,
-    splitterPercent: 50,
-  };
-}
-
-/** @internal */
-export function createVerticalPanelState(side: VerticalPanelSide, args?: Partial<VerticalPanelState>): VerticalPanelState {
-  return {
-    ...createPanelState(side),
-    ...args,
-    side,
-  };
-}
-
-/** @internal */
-export function createHorizontalPanelState(side: HorizontalPanelSide, args?: Partial<HorizontalPanelState>): HorizontalPanelState {
-  return {
-    ...createPanelState(side),
-    minSize: 100,
-    span: true,
-    ...args,
-    side,
-  };
-}
-
-/** @internal */
-export function createPanelsState(args?: Partial<PanelsState>): PanelsState {
-  return {
-    bottom: createHorizontalPanelState("bottom"),
-    left: createVerticalPanelState("left"),
-    right: createVerticalPanelState("right"),
-    top: createHorizontalPanelState("top"),
-    ...args,
-  };
-}
-
-/** @internal */
-export function createTabsState(args?: Partial<TabsState>): TabsState {
-  return {
-    [toolSettingsTabId]: createTabState(toolSettingsTabId, {
-      label: "Tool Settings",
-      allowedPanelTargets: ["bottom", "left", "right"],
-    }),
-    ...args,
-  };
-}
-
-/** @internal */
-export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
-  return {
-    bounds: new Rectangle().toProps(),
-    home: {
-      side: "left",
-      widgetId: undefined,
-      widgetIndex: 0,
-    },
-    hidden: false,
-    ...args,
-    id,
-  };
-}
-
-/** @internal */
-export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial<PopoutWidgetState>): PopoutWidgetState {
-  return {
-    bounds: new Rectangle().toProps(),
-    home: {
-      side: "left",
-      widgetId: undefined,
-      widgetIndex: 0,
-    },
-    ...args,
-    id,
-  };
-}
-
-/** @internal */
-export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Partial<DraggedTabState>): DraggedTabState {
-  return {
-    home: {
-      side: "left",
-      widgetId: undefined,
-      widgetIndex: 0,
-    },
-    position: { x: 0, y: 0 },
-    ...args,
-    tabId,
-  };
-}
-
-/** @internal */
-export function updateFloatingWidgetState(state: NineZoneState, id: FloatingWidgetState["id"], args: Partial<FloatingWidgetState>) {
-  if (!(id in state.floatingWidgets.byId))
-    throw new UiError(category, "Floating widget not found");
-
-  return produce(state, (draft) => {
-    const floatingWidget = draft.floatingWidgets.byId[id];
-    const { bounds, ...other } = args;
-    draft.floatingWidgets.byId[id] = {
-      ...floatingWidget,
-      ...other,
-    };
-    if (bounds)
-      setRectangleProps(floatingWidget.bounds, bounds);
-  });
-}
 
 /** @internal */
 export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
@@ -161,134 +43,18 @@ export function setSizeProps(props: Draft<SizeProps>, size: SizeProps) {
   props.width = size.width;
 }
 
-
-
-/** @internal */
-export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
-  return produce(state, (draft) => {
-    const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
-    floatingWidget.userSized = false;
-    const widget = draft.widgets[floatingWidgetId];
-    const tab = draft.tabs[widget.activeTabId];
-    tab.userSized = false;
-  });
-}
-
-/** @internal */
-export function updatePanelState<K extends keyof PanelsState>(state: NineZoneState, side: K, args: Partial<PanelsState[K]>) {
-  return produce(state, (draft) => {
-    const panel = draft.panels[side];
-    draft.panels[side] = {
-      ...panel,
-      ...args,
-    };
-  });
-}
-
-/** Removes floating widget from the UI and deletes the widget state.
- * @internal
- */
-export function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"]): NineZoneState {
-  if (!(id in state.floatingWidgets.byId))
-    throw new UiError(category, "Floating widget not found");
-
-  state = produce(state, (draft) => {
-    delete draft.floatingWidgets.byId[id];
-    const idIndex = draft.floatingWidgets.allIds.indexOf(id);
-    draft.floatingWidgets.allIds.splice(idIndex, 1);
-  });
-  return removeWidgetState(state, id);
-}
-
-/** Removes floating widget from the UI and deletes the widget state.
- * @internal
- */
-export function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
-  if (!(id in state.popoutWidgets.byId))
-    throw new UiError(category, "Popout widget not found");
-
-  state = produce(state, (draft) => {
-    delete draft.popoutWidgets.byId[id];
-    const index = state.popoutWidgets.allIds.indexOf(id);
-    draft.popoutWidgets.allIds.splice(index, 1);
-  });
-  return removeWidgetState(state, id);
-}
-
-function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {
-  const location = findWidget(state, id);
-  if (location && isPanelWidgetLocation(location))
-    return location;
-  return undefined;
-}
-
-/** @internal */
-export function removePanelWidget(state: NineZoneState, id: WidgetState["id"], location?: PanelWidgetLocation): NineZoneState {
-  location = location || findPanelWidget(state, id);
-  if (!location)
-    throw new UiError(category, "Panel widget not found");
-
-  const panel = state.panels[location.side];
-  const widgets = [...panel.widgets];
-  widgets.splice(location.index, 1);
-  state = updatePanelState(state, panel.side, {
-    widgets,
-  });
-
-  const expandedWidget = widgets.find((widgetId) => {
-    return !state.widgets[widgetId].minimized;
-  });
-  if (!expandedWidget && widgets.length > 0) {
-    const firstWidgetId = widgets[0];
-    state = updateWidgetState(state, firstWidgetId, {
-      minimized: false,
-    });
-  }
-
-  return removeWidgetState(state, id);
-}
-
-/** @internal */
-export function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState["id"], tabId: WidgetState["activeTabId"]): NineZoneState {
-  if (!(tabId in state.tabs))
-    throw new UiError(category, "Tab not found");
-
-  state = updateWidgetState(state, widgetId, {
-    activeTabId: tabId,
-  });
-
-  const floatingWidget = state.floatingWidgets.byId[widgetId];
-  if (floatingWidget) {
-    const activeTab = state.tabs[tabId];
-    const preferredFloatingWidgetSize = Rectangle.create(floatingWidget.bounds).getSize();
-    state = updateTabState(state, activeTab.id, {
-      preferredFloatingWidgetSize,
-    });
-  }
-  return state;
-}
-
 type KeysOfType<T, Type> = { [K in keyof T]: T[K] extends Type ? K : never }[keyof T];
 
 /** @internal */
 export function initSizeProps<T, K extends KeysOfType<T, SizeProps | undefined>>(obj: T, key: K, size: SizeProps) {
   if (obj[key]) {
-    setSizeProps(obj[key], size);
+    setSizeProps(obj[key] as unknown as SizeProps, size);
     return;
   }
-  (obj[key] as SizeProps) = {
+  (obj[key] as unknown as SizeProps) = {
     height: size.height,
     width: size.width,
   };
-}
-
-/** @internal */
-export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState {
-  return produce(state, (draft) => {
-    const idIndex = draft.floatingWidgets.allIds.indexOf(floatingWidgetId);
-    const spliced = draft.floatingWidgets.allIds.splice(idIndex, 1);
-    draft.floatingWidgets.allIds.push(spliced[0]);
-  });
 }
 
 /** @internal */
@@ -300,9 +66,7 @@ export function isToolSettingsFloatingWidget(state: NineZoneState, id: FloatingW
   );
 }
 
-/** Updated home state of floating tool settings widget.
- * @internal
- */
+/** @internal */
 export function updateHomeOfToolSettingsWidget(state: NineZoneState, id: FloatingWidgetState["id"], home: FloatingWidgetHomeState): NineZoneState {
   if (!isToolSettingsFloatingWidget(state, id))
     return state;
@@ -322,8 +86,6 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
   }
   return state;
 }
-
-
 
 /** @internal */
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {

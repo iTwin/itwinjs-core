@@ -8,8 +8,8 @@
 
 import { PanelSide } from "../widget-panels/Panel";
 import { TabState } from "./TabState";
-import { FloatingWidgetState, NineZoneState, PopoutWidgetState } from "./NineZoneState";
-import { WidgetState } from "./WidgetState";
+import { NineZoneState } from "./NineZoneState";
+import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "./WidgetState";
 import { findWidget } from "./WidgetLocation";
 
 /** @internal */

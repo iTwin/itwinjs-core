@@ -15,7 +15,7 @@ import {
 } from "../../appui-layout-react";
 import { createDragInfo, setRefValue, TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
-import { updatePanelState } from "../../appui-layout-react/state/internal";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {

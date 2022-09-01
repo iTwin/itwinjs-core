@@ -9,10 +9,13 @@
 import { castDraft, produce } from "immer";
 import { UiError } from "@itwin/appui-abstract";
 import { NineZoneState } from "../NineZoneState";
-import { WidgetState } from "../WidgetState";
+import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "../WidgetState";
 import { findTab } from "../TabLocation";
-import { category, removeFloatingWidget, removePanelWidget, removePopoutWidget } from "../internal";
-import { findWidget, isFloatingWidgetLocation, isPopoutWidgetLocation } from "../WidgetLocation";
+import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
+import { Rectangle } from "@itwin/core-react";
+import { category, setRectangleProps } from "./NineZoneStateHelpers";
+import { updatePanelState } from "./PanelStateHelpers";
+import { updateTabState } from "./TabStateHelpers";
 
 /** @internal */
 export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs"], args?: Partial<WidgetState>): WidgetState {
@@ -79,5 +82,154 @@ export function removeWidgetState(state: NineZoneState, id: WidgetState["id"]): 
     throw new UiError(category, "Widget not found");
   return produce(state, (draft) => {
     delete draft.widgets[id];
+  });
+}
+
+/** @internal */
+export function createFloatingWidgetState(id: FloatingWidgetState["id"], args?: Partial<FloatingWidgetState>): FloatingWidgetState {
+  return {
+    bounds: new Rectangle().toProps(),
+    home: {
+      side: "left",
+      widgetId: undefined,
+      widgetIndex: 0,
+    },
+    hidden: false,
+    ...args,
+    id,
+  };
+}
+
+/** @internal */
+export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Partial<PopoutWidgetState>): PopoutWidgetState {
+  return {
+    bounds: new Rectangle().toProps(),
+    home: {
+      side: "left",
+      widgetId: undefined,
+      widgetIndex: 0,
+    },
+    ...args,
+    id,
+  };
+}
+
+/** @internal */
+export function updateFloatingWidgetState(state: NineZoneState, id: FloatingWidgetState["id"], args: Partial<FloatingWidgetState>) {
+  if (!(id in state.floatingWidgets.byId))
+    throw new UiError(category, "Floating widget not found");
+
+  return produce(state, (draft) => {
+    const floatingWidget = draft.floatingWidgets.byId[id];
+    const { bounds, ...other } = args;
+    draft.floatingWidgets.byId[id] = {
+      ...floatingWidget,
+      ...other,
+    };
+    if (bounds)
+      setRectangleProps(floatingWidget.bounds, bounds);
+  });
+}
+
+/** Removes floating widget from the UI and deletes the widget state.
+ * @internal
+ */
+export function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"]): NineZoneState {
+  if (!(id in state.floatingWidgets.byId))
+    throw new UiError(category, "Floating widget not found");
+
+  state = produce(state, (draft) => {
+    delete draft.floatingWidgets.byId[id];
+    const idIndex = draft.floatingWidgets.allIds.indexOf(id);
+    draft.floatingWidgets.allIds.splice(idIndex, 1);
+  });
+  return removeWidgetState(state, id);
+}
+
+/** Removes floating widget from the UI and deletes the widget state.
+ * @internal
+ */
+export function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
+  if (!(id in state.popoutWidgets.byId))
+    throw new UiError(category, "Popout widget not found");
+
+  state = produce(state, (draft) => {
+    delete draft.popoutWidgets.byId[id];
+    const index = state.popoutWidgets.allIds.indexOf(id);
+    draft.popoutWidgets.allIds.splice(index, 1);
+  });
+  return removeWidgetState(state, id);
+}
+
+/** @internal */
+export function removePanelWidget(state: NineZoneState, id: WidgetState["id"], location?: PanelWidgetLocation): NineZoneState {
+  location = location || findPanelWidget(state, id);
+  if (!location)
+    throw new UiError(category, "Panel widget not found");
+
+  const panel = state.panels[location.side];
+  const widgets = [...panel.widgets];
+  widgets.splice(location.index, 1);
+  state = updatePanelState(state, panel.side, {
+    widgets,
+  });
+
+  const expandedWidget = widgets.find((widgetId) => {
+    return !state.widgets[widgetId].minimized;
+  });
+  if (!expandedWidget && widgets.length > 0) {
+    const firstWidgetId = widgets[0];
+    state = updateWidgetState(state, firstWidgetId, {
+      minimized: false,
+    });
+  }
+
+  return removeWidgetState(state, id);
+}
+
+function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {
+  const location = findWidget(state, id);
+  if (location && isPanelWidgetLocation(location))
+    return location;
+  return undefined;
+}
+
+/** @internal */
+export function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState["id"], tabId: WidgetState["activeTabId"]): NineZoneState {
+  if (!(tabId in state.tabs))
+    throw new UiError(category, "Tab not found");
+
+  state = updateWidgetState(state, widgetId, {
+    activeTabId: tabId,
+  });
+
+  const floatingWidget = state.floatingWidgets.byId[widgetId];
+  if (floatingWidget) {
+    const activeTab = state.tabs[tabId];
+    const preferredFloatingWidgetSize = Rectangle.create(floatingWidget.bounds).getSize();
+    state = updateTabState(state, activeTab.id, {
+      preferredFloatingWidgetSize,
+    });
+  }
+  return state;
+}
+
+/** @internal */
+export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]) {
+  return produce(state, (draft) => {
+    const floatingWidget = draft.floatingWidgets.byId[floatingWidgetId];
+    floatingWidget.userSized = false;
+    const widget = draft.widgets[floatingWidgetId];
+    const tab = draft.tabs[widget.activeTabId];
+    tab.userSized = false;
+  });
+}
+
+/** @internal */
+export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState {
+  return produce(state, (draft) => {
+    const idIndex = draft.floatingWidgets.allIds.indexOf(floatingWidgetId);
+    const spliced = draft.floatingWidgets.allIds.splice(idIndex, 1);
+    draft.floatingWidgets.allIds.push(spliced[0]);
   });
 }

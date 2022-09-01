@@ -9,7 +9,7 @@ import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOpti
 import { PanelTargets } from "../../appui-layout-react/target/PanelTargets";
 import { TestNineZoneProvider } from "../Providers";
 import { addTabs } from "../Utils";
-import { updatePanelState } from "../../appui-layout-react/state/internal";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 interface WrapperProps {
   state: NineZoneState;

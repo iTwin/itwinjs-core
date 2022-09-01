@@ -7,14 +7,15 @@
  */
 
 import produce from "immer";
-import { UiError } from "@itwin/appui-abstract";
+import { PointProps, UiError } from "@itwin/appui-abstract";
 import { IconSpec, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
-import { category } from "./internal";
 import { NineZoneState } from "./NineZoneState";
-import { WidgetState } from "./WidgetState";
+import { FloatingWidgetHomeState, WidgetState } from "./WidgetState";
 import { findTab } from "./TabLocation";
-import { createTabState } from "./internal";
+import { category } from "./internal/NineZoneStateHelpers";
+import { createTabState } from "./internal/TabStateHelpers";
+import { removeWidget, setWidgetActiveTabId, updateWidgetState } from "./internal/WidgetStateHelpers";
 
 /** `WidgetDef` is equivalent structure in `appui-react`.
  * @internal
@@ -30,6 +31,16 @@ export interface TabState {
   readonly userSized?: boolean;
   readonly isFloatingStateWindowResizable?: boolean;
   readonly hideWithUiWhenFloating?: boolean;
+}
+
+/** @internal */
+export interface TabsState { readonly [id: string]: TabState }
+
+/** @internal */
+export interface DraggedTabState {
+  readonly tabId: TabState["id"];
+  readonly position: PointProps;
+  readonly home: FloatingWidgetHomeState;
 }
 
 /** Adds an existing `tab` to a specified `widget`.
@@ -69,5 +80,45 @@ export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Parti
   };
   return produce(state, (stateDraft) => {
     stateDraft.tabs[id] = tab;
+  });
+}
+
+/** Removes tab from the UI, but keeps the tab state.
+ * @internal
+ */
+export function removeTabFromWidget(state: NineZoneState, tabId: TabState["id"]): NineZoneState {
+  const location = findTab(state, tabId);
+  if (!location)
+    return state;
+
+  const widgetId = location.widgetId;
+  const widget = state.widgets[widgetId];
+  const tabs = [...widget.tabs];
+  const tabIndex = tabs.indexOf(tabId);
+  tabs.splice(tabIndex, 1);
+
+  if (tabs.length === 0) {
+    return removeWidget(state, widgetId);
+  }
+
+  if (tabId === widget.activeTabId) {
+    state = setWidgetActiveTabId(state, widget.id, tabs[0]);
+  }
+
+  return updateWidgetState(state, widgetId, {
+    tabs,
+  });
+}
+
+/** Removes tab from the UI and deletes the tab state.
+ * @internal
+ */
+export function removeTab(state: NineZoneState, tabId: TabState["id"]): NineZoneState {
+  if (!(tabId in state.tabs))
+    throw new UiError(category, "Tab not found");
+
+  state = removeTabFromWidget(state, tabId);
+  return produce(state, (draft) => {
+    delete draft.tabs[tabId];
   });
 }

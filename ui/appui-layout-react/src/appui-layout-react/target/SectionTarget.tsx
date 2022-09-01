@@ -14,7 +14,7 @@ import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
-import { SectionDropTargetState } from "../state/NineZoneState";
+import { SectionDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export interface SectionTargetProps {

@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import { createNineZoneState, NineZoneDispatch, PanelStateContext, PinToggle } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
-import { updatePanelState } from "../../appui-layout-react/state/internal";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("PinToggle", () => {
   it("should render", () => {

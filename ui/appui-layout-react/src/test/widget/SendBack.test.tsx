@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import { FloatingWidgetContext, NineZoneDispatch, NineZoneDispatchContext, SendBack } from "../../appui-layout-react";
-import { createFloatingWidgetState } from "../../appui-layout-react/state/internal";
+import { createFloatingWidgetState } from "../../appui-layout-react/state/internal/WidgetStateHelpers";
 
 describe("SendBack", () => {
   it("should render", () => {

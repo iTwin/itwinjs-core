@@ -10,7 +10,7 @@ import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOpti
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 import { renderHook } from "@testing-library/react-hooks";
 import { act } from "react-dom/test-utils";
-import { updatePanelState } from "../../appui-layout-react/state/internal";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("PanelOutline", () => {
   interface WrapperProps {

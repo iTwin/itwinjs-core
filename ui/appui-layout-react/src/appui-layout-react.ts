@@ -63,9 +63,14 @@ export * from "./appui-layout-react/stage-panels/manager/NestedStagePanels";
 export * from "./appui-layout-react/stage-panels/manager/StagePanel";
 export * from "./appui-layout-react/stage-panels/manager/StagePanels";
 
+export * from "./appui-layout-react/state/DropTargetState";
+export * from "./appui-layout-react/state/NineZoneAction";
 export * from "./appui-layout-react/state/NineZoneState";
+export * from "./appui-layout-react/state/NineZoneStateReducer";
+export * from "./appui-layout-react/state/PanelState";
 export * from "./appui-layout-react/state/TabLocation";
 export * from "./appui-layout-react/state/TabState";
+export * from "./appui-layout-react/state/ToolSettingsState";
 export * from "./appui-layout-react/state/WidgetLocation";
 export * from "./appui-layout-react/state/WidgetState";
 

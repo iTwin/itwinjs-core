@@ -6,15 +6,16 @@ import { expect, should } from "chai";
 import { produce } from "immer";
 import { Point, Rectangle } from "@itwin/core-react";
 import {
-  addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, isHorizontalPanelState, NineZoneStateReducer, removeTab, toolSettingsTabId,
-} from "../../appui-layout-react";
-import {
-  isTabDragDropTargetState,
-  isWidgetDragDropTargetState,
-  removeTabFromWidget,
+  addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, isHorizontalPanelState, isTabDragDropTargetState, isWidgetDragDropTargetState,
+  NineZoneStateReducer, removeTab, removeTabFromWidget, toolSettingsTabId,
 } from "../../appui-layout-react";
 import { addTabs } from "../Utils";
-import { convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating, createDraggedTabState, createHorizontalPanelState, createVerticalPanelState, dockWidgetContainer, floatWidget, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds } from "../../appui-layout-react/state/internal";
+import {
+  convertAllPopupWidgetContainersToFloating, convertFloatingWidgetContainerToPopout, convertPopoutWidgetContainerToFloating, dockWidgetContainer, floatWidget,
+  popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
+} from "../../appui-layout-react/state/internal/NineZoneStateHelpers";
+import { createHorizontalPanelState, createVerticalPanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal/TabStateHelpers";
 
 describe("isHorizontalPanelState", () => {
   it("returns true based on side property", () => {
@@ -697,7 +698,7 @@ describe("NineZoneStateReducer", () => {
           widgetIndex: 0,
         },
       });
-      let newState = NineZoneStateReducer(state, {
+      const newState = NineZoneStateReducer(state, {
         type: "FLOATING_WIDGET_SEND_BACK",
         id: "fw1",
       });
