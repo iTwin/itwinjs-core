@@ -282,7 +282,7 @@ describe("Class Registry - generated classes", () => {
     // must init the global reference cache
     const schemaLoader = new IModelSchemaLoader(imodel);
     const testGeneratedClassesSchema = schemaLoader.getSchema("TestGeneratedClasses");
-    await ECReferenceTypesCache.globalCache.initSchema(testGeneratedClassesSchema);
+    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(testGeneratedClassesSchema);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");
