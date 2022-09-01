@@ -49,6 +49,7 @@ import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { ColorDefProps } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -1854,7 +1855,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @public
 export interface ExportGraphicsInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     materialId?: Id64String;
@@ -1917,7 +1918,7 @@ export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 // @public
 export interface ExportLinesInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
@@ -1959,7 +1960,7 @@ export interface ExportPartGraphicsOptions {
 
 // @public
 export interface ExportPartInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
@@ -1979,7 +1980,7 @@ export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
 // @public
 export interface ExportPartLinesInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
 }
@@ -4022,7 +4023,7 @@ export class RenderMaterialElement extends DefinitionElement {
     toJSON(): RenderMaterialProps;
 }
 
-// @public (undocumented)
+// @public
 export namespace RenderMaterialElement {
     export class Params {
         constructor(paletteName: string);
