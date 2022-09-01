@@ -44,8 +44,9 @@ parameters:
   steps:
 #     ${{ if eq(parameters.useLocalAddon, true) }}:
 #       - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
-    - checkout: iTwin/itwinjs-core/Build.SourceBranchName #Temp fix, branch name must be the same on both native and TS side
-      clean: true
+#     - checkout: iTwin/itwinjs-core/Build.SourceBranchName #Temp fix, branch name must be the same on both native and TS side
+#       clean: true
+    - script: echo hi
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
