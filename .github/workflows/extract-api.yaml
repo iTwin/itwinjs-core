@@ -3,11 +3,27 @@
 name: Extract API
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Allows you to run this workflow manually from the Actions tab
   pull_request:
     branches:
       - master
       - release/*
+      - actions-filter
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
+  push:
+    branches:
+      - master
+      - release/*
+      - actions-filter
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - .github/workflows/**
+      - common/config/**
 
 jobs:
   extract-api:
