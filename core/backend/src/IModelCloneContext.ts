@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { ConcreteEntityId, ConcreteEntityIds, ConcreteEntityTypes, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityId, ConcreteEntityTypes, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
@@ -16,8 +16,8 @@ import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
 import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
-import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { EntityUnifier } from "./EntityUnifier";
+import { ConcreteEntityIds } from "./ConcreteEntityId";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -298,14 +298,8 @@ export class IModelCloneContext {
             propertyName
           );
           /* eslint-disable @typescript-eslint/indent */
-          const targetEntityId // FIXME: use findTargetEntityId
-            = navPropRefType === ConcreteEntityTypes.Element || navPropRefType === ConcreteEntityTypes.Model
-              ? this.findTargetElementId(sourceNavProp.id)
-            : navPropRefType === ConcreteEntityTypes.ElementAspect
-              ? this.findTargetAspectId(sourceNavProp.id)
-            : navPropRefType === undefined
-              ? assert(false,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`) as never
-            : assert(false, `unhandled navprop type '${ConcreteEntityTypes.toBisCoreRootClassFullName(navPropRefType)}`) as never;
+          assert(navPropRefType !== undefined,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`);
+          const targetEntityId = this.findTargetEntityId(ConcreteEntityIds.fromEntityType(sourceNavProp.id, navPropRefType));
           /* eslint-enable @typescript-eslint/indent */
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
