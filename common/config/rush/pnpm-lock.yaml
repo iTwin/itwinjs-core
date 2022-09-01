@@ -4300,6 +4300,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons': ^1.14.0
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ~1.42.0
       '@itwin/presentation-common': workspace:*
@@ -4363,6 +4364,7 @@ importers:
       '@bentley/icons-generic-webfont': 1.0.34
       '@itwin/core-telemetry': link:../../core/telemetry
       '@itwin/itwinui-css': 0.63.1
+      '@itwin/itwinui-icons': 1.14.0
       '@itwin/itwinui-icons-react': 1.14.0_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
       '@itwin/presentation-components': link:../../presentation/components
@@ -7291,6 +7293,10 @@ packages:
     dependencies:
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
+
+  /@itwin/itwinui-icons/1.14.0:
+    resolution: {integrity: sha512-bsJ7YFGwnN8DnOg9UFV9XPMRr616zQYaKx+m5J3njl393bdg3MwhmrrrAqj8xocKCXtLJE9tWeAFJqQwJwZCAw==}
+    dev: false
 
   /@itwin/itwinui-illustrations-react/1.3.1_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-hIZwYwd1qmyjt5yiL8Lg6E3CpgeLxGOnb4dVktoM+h3h5zSmgjhm2qFk+RqgsqV+dy0Fb2cs1jH4Jup9jWY9pA==}
