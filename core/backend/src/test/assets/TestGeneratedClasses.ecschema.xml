@@ -15,6 +15,7 @@
 
     <ECEntityClass typeName="TestEntity" description="a sample (element) entity for the end of the test relationships">
         <BaseClass>bis:DefinitionElement</BaseClass>
+        <BaseClass>bis:ISubModeledElement</BaseClass>
         <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
     </ECEntityClass>
 
@@ -45,12 +46,30 @@
         </Target>
     </ECRelationshipClass>
 
-    <ECRelationshipClass typeName="LinkTableRelNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
+    <ECRelationshipClass typeName="LinkTableRelToElemNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
             <Class class="LinkTableRelWithNavProp"/>
         </Source>
         <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
             <Class class="TestEntity"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="LinkTableRelToModelNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="LinkTableRelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestModelWithNavProp"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="LinkTableRelToAspectNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
+            <Class class="LinkTableRelWithNavProp"/>
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
+            <Class class="TestAspectWithNavProp"/>
         </Target>
     </ECRelationshipClass>
 
@@ -91,7 +110,10 @@
         <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
             <Class class="TestEntity"/>
         </Target>
-        <ECNavigationProperty propertyName="navProp" relationshipName="LinkTableRelNavRel" direction="Forward"/>
+        <ECNavigationProperty propertyName="elemNavProp" relationshipName="LinkTableRelToElemNavRel" direction="Forward"/>
+        <ECNavigationProperty propertyName="modelNavProp" relationshipName="LinkTableRelToModelNavRel" direction="Forward"/>
+        <ECNavigationProperty propertyName="aspectNavProp" relationshipName="LinkTableRelToAspectNavRel" direction="Forward"/>
+        <!-- awaiting a fix of a bug in mapping nav props to link table relationship instances to add a navprop to another linktable rel -->
     </ECRelationshipClass>
 
     <ECEntityClass typeName="TestAspectWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
