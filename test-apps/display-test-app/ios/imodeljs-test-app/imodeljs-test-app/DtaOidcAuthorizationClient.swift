@@ -36,8 +36,6 @@ class DtaOidcAuthorizationClient: NSObject, DtaAuthorizationClient, OIDAuthState
     let logger = PrintLogger()
     /// The AuthSettings object from imodeljs.
     var authSettings: DtaOidcAuthSettings?
-    /// The UIViewController into which to display the sign in Safari WebView.
-    let viewController: UIViewController?
     /// The OIDAuthState from the AppAuth library
     var authState: OIDAuthState? {
         willSet {
@@ -54,10 +52,8 @@ class DtaOidcAuthorizationClient: NSObject, DtaAuthorizationClient, OIDAuthState
     private var currentAuthorizationFlow: OIDExternalUserAgentSession?
 
     /// Initializes and returns a newly allocated authorization client object with the specified view controller.
-    /// - Parameter viewController: The view controller in which to display the sign in Safari WebView.
     /// - Parameter configData: A JSON object containing at least an `IMJS_OIDC_CLIENT_ID` value, and optionally `IMJS_OIDC_ISSUER_URL`, `IMJS_OIDC_REDIRECT_URI`, and/or `IMJS_OIDC_SCOPE` values. If `IMJS_OIDC_CLIENT_ID` is not present this initializer will fail.
-    init?(viewController: UIViewController? = nil, configData: JSON) {
-        self.viewController = viewController
+    init?(configData: JSON) {
         super.init()
         let issuerUrl = configData["IMJS_OIDC_ISSUER_URL"] as? String ?? "https://ims.bentley.com/"
         let clientId = configData["IMJS_OIDC_CLIENT_ID"] as? String ?? ""
@@ -207,7 +203,7 @@ class DtaOidcAuthorizationClient: NSObject, DtaAuthorizationClient, OIDAuthState
 
     /// Top view controller for presenting web app.
     /// - Returns: The top view controller.
-    var topViewController: UIViewController? {
+    static var topViewController: UIViewController? {
         let keyWindow = UIApplication
             .shared
             .connectedScenes
@@ -254,7 +250,7 @@ class DtaOidcAuthorizationClient: NSObject, DtaAuthorizationClient, OIDAuthState
                                               responseType: OIDResponseTypeCode,
                                               additionalParameters: nil)
         DispatchQueue.main.async {
-            if let viewController = self.topViewController {
+            if let viewController = DtaOidcAuthorizationClient.topViewController {
                 // Note: The return value below is only really used by AppAuth in versions of iOS prior to iOS 11.
                 // However, even though we require iOS 12.2, if we ignore the value, it gets deleted by the system,
                 // which prevents everything from working. So, store the value in our member variable.

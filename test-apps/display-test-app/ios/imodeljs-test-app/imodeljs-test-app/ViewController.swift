@@ -7,6 +7,27 @@ import UIKit
 import WebKit
 import IModelJsNative
 
+extension String {
+    /// Convert a String into BASE64-encoded UTF-8 data.
+    func toBase64() -> String {
+        return Data(utf8).base64EncodedString()
+    }
+
+    /// Encode the string such that it can be used in the query portion of a URL.
+    func encodedForURLQuery() -> String? {
+        // Note: URL strings probably allow other characters, but we know for sure that these all work.
+        // Also, we can't use `CharacterSet.alphanumerics` as a base, because that includes all Unicode
+        // upper case and lower case letters, and we only want ASCII upper case and lower case letters.
+        // Similarly, `CharacterSet.decimalDigits` includes the Unicode category Number, Decimal Digit,
+        // which contains 660 characters.
+        let allowedCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
+        if let encoded = addingPercentEncoding(withAllowedCharacters: allowedCharacters) {
+            return encoded
+        }
+        return nil
+    }
+}
+
 // MARK: - JSON Helpers
 
 // NOTE: This JSON code was copied from various places in iTwin/mobile-sdk-ios.
@@ -15,7 +36,7 @@ import IModelJsNative
 typealias JSON = [String: Any]
 
 /// Extension to create a dictionary from JSON text.
-public extension JSON {
+extension JSON {
     /// Deserializes passed String and returns Dictionary representing the JSON object encoded in the string
     /// - Parameters:
     ///   - jsonString: string to parse and convert to Dictionary
@@ -100,34 +121,21 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     private var configData: JSON = [:]
     private var authClient: AuthorizationClient? = nil
 
-    func setupBackend () {
+    func setupBackend() {
         let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/main.js"))
         if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets"),
            let envString = try? String(contentsOf: envUrl),
            let envData = JSON.fromString(envString) {
             configData = envData
         }
-        authClient = DtaOidcAuthorizationClient(viewController: self, configData: configData)
+        authClient = DtaServiceAuthorizationClient(configData: configData)
+        if authClient == nil {
+            authClient = DtaOidcAuthorizationClient(configData: configData)
+        }
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
     }
-    
-    func encodeHashParam(_ param: String?) -> String? {
-        guard let param = param else {
-            return nil
-        }
-        // Note: URL strings probably allow other characters, but we know for sure that these all work.
-        // Also, we can't use `CharacterSet.alphanumerics` as a base, because that includes all Unicode
-        // upper case and lower case letters, and we only want ASCII upper case and lower case letters.
-        // Similarly, `CharacterSet.decimalDigits` includes the Unicode category Number, Decimal Digit,
-        // which contains 660 characters.
-        let allowedCharacters = CharacterSet(charactersIn: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.")
-        if let encodedParam = param.addingPercentEncoding(withAllowedCharacters: allowedCharacters) {
-            return encodedParam
-        }
-        return nil
-    }
 
-    func setupFrontend (bimFile: URL?, iModelId: String? = nil, iTwinId: String? = nil) {
+    func setupFrontend(bimFile: URL?, iModelId: String? = nil, iTwinId: String? = nil) {
         let config = WKWebViewConfiguration()
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
@@ -147,11 +155,14 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         let host = IModelJsHost.sharedInstance()
         var hashParams = "#port=\(host.getPort())&platform=ios"
 
-        if let bimFilePath = encodeHashParam(bimFile?.path) {
+        if let bimFilePath = bimFile?.path.encodedForURLQuery() {
             hashParams.append("&standalone=true&iModelName=" + bimFilePath)
         }
-        if let iModelId = encodeHashParam(iModelId), let iTwinId = encodeHashParam(iTwinId) {
+        if let iModelId = iModelId?.encodedForURLQuery(), let iTwinId = iTwinId?.encodedForURLQuery() {
             hashParams.append("&standalone=true&iModelId=\(iModelId)&iTwinId=\(iTwinId)")
+        }
+        if configData["IMJS_IGNORE_CACHE"] != nil {
+            hashParams.append("&ignoreCache=true")
         }
 
         webView.load(URLRequest(url: URL(string: "imodeljs://app" + hashParams)!))

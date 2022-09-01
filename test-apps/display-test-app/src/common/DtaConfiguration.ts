@@ -60,6 +60,7 @@ export interface DtaConfiguration {
   oidcClientId?: string; // default is undefined, used for auth setup
   oidcScope?: string; // default is undefined, used for auth setup
   oidcRedirectUri?: string; // default is undefined, used for auth setup
+  ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
 }
 
 let configuration: DtaConfiguration | undefined;
@@ -224,6 +225,7 @@ export const getConfig = (): DtaConfiguration => {
   configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
   configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
   configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;
+  configuration.ignoreCache = undefined !== process.env.IMJS_IGNORE_CACHE;
 
   return configuration;
 };

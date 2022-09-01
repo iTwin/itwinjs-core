@@ -9,7 +9,7 @@ import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { openIModel, OpenIModelProps } from "./openIModel";
+import { openIModel, OpenIModelProps, setOpenIModelConfiguration } from "./openIModel";
 import { setSignInConfiguration, signIn } from "./signIn";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
@@ -45,6 +45,7 @@ const getFrontendConfig = async (useRPC = false) => {
 
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
   setSignInConfiguration(configuration);
+  setOpenIModelConfiguration(configuration);
 };
 
 async function openFile(props: OpenIModelProps): Promise<IModelConnection> {

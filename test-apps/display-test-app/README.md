@@ -223,6 +223,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, along with IMJS_OIDC_HEADLESS, the authority to use for service authorization.
 * IMJS_BRIEFCASE_CACHE_LOCATION
   * If defined, the full path to the directory in which to store cached briefcases.
+* IMJS_IGNORE_CACHE
+  * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 
 ## Key-ins
 
