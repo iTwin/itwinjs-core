@@ -127,7 +127,9 @@ describe("Class Registry - generated classes", () => {
   }
 
   interface LinkTableRelWithNavPropProps extends RelationshipProps {
-    navProp: RelatedElementProps;
+    elemNavProp: RelatedElementProps;
+    modelNavProp: RelatedElementProps;
+    aspectNavProp: RelatedElementProps;
   }
 
   interface TestElementWithNavPropProps extends DefinitionElementProps {
@@ -191,10 +193,14 @@ describe("Class Registry - generated classes", () => {
   class LinkTableRelWithNavProp extends ElementRefersToElements {
     public static override get className() { return "LinkTableRelWithNavProp"; }
     public static override schema = TestGeneratedClasses;
-    public navProp: RelatedElement;
+    public elemNavProp: RelatedElement;
+    public aspectNavProp: RelatedElement;
+    public modelNavProp: RelatedElement;
     public constructor(props: LinkTableRelWithNavPropProps, inIModel: IModelDb) {
       super(props, inIModel);
-      this.navProp = new RelatedElement(props.navProp);
+      this.elemNavProp = new RelatedElement(props.elemNavProp);
+      this.aspectNavProp = new RelatedElement(props.aspectNavProp);
+      this.modelNavProp = new RelatedElement(props.modelNavProp);
     }
   }
 
@@ -273,6 +279,11 @@ describe("Class Registry - generated classes", () => {
   it("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
 
+    // must init the global reference cache
+    const schemaLoader = new IModelSchemaLoader(imodel);
+    const testGeneratedClassesSchema = schemaLoader.getSchema("TestGeneratedClasses");
+    await ECReferenceTypesCache.globalCache.initSchema(testGeneratedClassesSchema);
+
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");
 
@@ -317,44 +328,6 @@ describe("Class Registry - generated classes", () => {
       ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
-    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
-      classFullName: "TestGeneratedClasses:TestEntity",
-      prop: `rel-value-${index}`,
-      model: IModelDb.dictionaryId,
-      code: Code.createEmpty(),
-    } as TestEntityProps));
-
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    const GeneratedLinkTableRelWithNavProp = imodel.getJsClass<typeof Relationship>("TestGeneratedClasses:LinkTableRelWithNavProp");
-
-    const relWithNavProp = new GeneratedLinkTableRelWithNavProp({
-      classFullName: GeneratedLinkTableRelWithNavProp.classFullName,
-      sourceId: relTestEntityIds[0],
-      targetId: relTestEntityIds[1],
-      navProp: {
-        id: relTestEntityIds[2],
-        relClassName: "TestGeneratedClasses:LinkTableRelNavRel",
-      },
-    } as LinkTableRelWithNavPropProps, imodel);
-
-    const relWithNavPropId = relWithNavProp.insert();
-
-    // must init the global reference cache
-    const schemaLoader = new IModelSchemaLoader(imodel);
-    const testGeneratedClassesSchema = schemaLoader.getSchema("TestGeneratedClasses");
-    await ECReferenceTypesCache.globalCache.initSchema(testGeneratedClassesSchema);
-
-    expect(
-      [...relWithNavProp.getReferenceIds()],
-    ).to.have.members(
-      [...relTestEntityIds]
-    );
-    expect(
-      [...relWithNavProp.getReferenceConcreteIds()],
-    ).to.have.members(
-      relTestEntityIds.map((id) => ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Element)),
-    );
-
     const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
       classFullName: "TestGeneratedClasses:TestEntity",
       prop: `model-value-${index}`,
@@ -380,25 +353,71 @@ describe("Class Registry - generated classes", () => {
       parentModel: IModelDb.dictionaryId,
       elemNavProp: { id: modelTestEntityIds[1], relClassName: "TestGeneratedClasses:ModelToElemNavRel" },
       aspectNavProp: { id: aspectWithNavPropId, relClassName: "TestGeneratedClasses:ModelToAspectNavRel" },
-      relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
+      // removed due to a bug
+      // relNavProp: { id: relWithNavPropId, relClassName: "TestGeneratedClasses:ModelToRelNavRel" },
     } as TestModelWithNavPropProps, imodel);
+
+    const modelWithNavPropId = modelWithNavProp.insert();
 
     expect(
       [...modelWithNavProp.getReferenceIds()],
     ).to.have.members(
       // note that the non element references are not here! This is the currently preserved old behavior that will be replaced
-      [...modelTestEntityIds, IModelDb.dictionaryId].filter((x) => x !== undefined)
+      [IModelDb.dictionaryId, modelTestEntityIds[0], modelTestEntityIds[1]]
     );
     expect(
       [...modelWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
+      ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
       ConcreteEntityIds.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
       ConcreteEntityIds.fromEntityType(modelTestEntityIds[0], ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
       ConcreteEntityIds.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
       // ignoring this one, because there seems to be a bug when specifying a relationship instance as a nav prop
       // ConcreteEntityIds.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
+
+    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
+      classFullName: "TestGeneratedClasses:TestEntity",
+      prop: `rel-value-${index}`,
+      model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
+    } as TestEntityProps));
+
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const GeneratedLinkTableRelWithNavProp = imodel.getJsClass<typeof LinkTableRelWithNavProp>("TestGeneratedClasses:LinkTableRelWithNavProp");
+
+    const relWithNavProp = new GeneratedLinkTableRelWithNavProp({
+      classFullName: GeneratedLinkTableRelWithNavProp.classFullName,
+      sourceId: relTestEntityIds[0],
+      targetId: relTestEntityIds[1],
+      elemNavProp: {
+        id: relTestEntityIds[2],
+        relClassName: "TestGeneratedClasses:LinkTableRelToElemNavRel",
+      },
+      modelNavProp: {
+        id: modelWithNavPropId,
+        relClassName: "TestGeneratedClasses:LinkTableRelToModelNavRel",
+      },
+      aspectNavProp: {
+        id: aspectWithNavPropId,
+        relClassName: "TestGeneratedClasses:LinkTableRelToAspectNavRel",
+      },
+    }, imodel);
+
+    const _relWithNavPropId = relWithNavProp.insert();
+
+    expect(
+      [...relWithNavProp.getReferenceIds()],
+    ).to.have.members(
+      [...relTestEntityIds, modelWithNavPropId]
+    );
+    expect(
+      [...relWithNavProp.getReferenceConcreteIds()],
+    ).to.have.members([
+      ...relTestEntityIds.map((id) => ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Element)),
+      ConcreteEntityIds.fromEntityType(modelWithNavPropId, ConcreteEntityTypes.Model),
+      ConcreteEntityIds.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
+    ]);
   });
 
   it("should not override custom registered schema class implementations of collectReferenceConcreteIds", async () => {
