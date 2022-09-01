@@ -757,6 +757,16 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
 
     return;
   });
+
+  // TODO: remove when isUUID check is refactored.
+  restored = produce(restored, (draft) => {
+    // Floating widget might have been removed when saving, dock tool settings if tab is not found.
+    const location = findTab(draft, toolSettingsTabId);
+    if (!location) {
+      draft.toolSettings.type = "docked";
+    }
+  });
+
   if (FrontstageManager.nineZoneSize && (0 !== FrontstageManager.nineZoneSize.height || 0 !== FrontstageManager.nineZoneSize.width)) {
     restored = FrameworkStateReducer(restored, {
       type: "RESIZE",

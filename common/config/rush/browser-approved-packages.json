@@ -67,10 +67,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelbank-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -277,6 +273,10 @@
     {
       "name": "@itwin/itwinui-css",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/itwinui-icons",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@itwin/itwinui-icons-react",
