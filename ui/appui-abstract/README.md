@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/appui-abstract__ package contains abstractions for UI controls, such as toolbars, buttons and menus. These abstractions are intended to give developers the skeleton of components that can be used in AppUi without forcing a dependency on React.js.
+The __@itwin/appui-abstract__ package contains abstractions for UI controls, such as toolbars, buttons and menus.
 
 ## Documentation
 
