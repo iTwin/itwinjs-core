@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="ExtensiveTestScenario" alias="source" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" description="Extensive schema items collection for testing various schema processing">
+<ECSchema schemaName="ExtensiveTestScenario" alias="source" version="01.00.00"
+    xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" description="Extensive schema items collection for testing various schema processing">
 
     <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
 
@@ -82,6 +83,11 @@
         <ECProperty propertyName="SourceLong" typeName="long" extendedTypeName="Id" description="A long property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="SourceGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that only exists in the source schema but should be remapped"/>
         <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be filtered out when transforming to the target schema"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="AdditionalMultiAspect" description="For testing of exporting multiple multi aspect classes at once">
+        <BaseClass>bis:ElementMultiAspect</BaseClass>
+        <ECProperty propertyName="Value" typeName="string" />
     </ECEntityClass>
 
     <ECEntityClass typeName="SourceUniqueAspectToExclude" description="For testing ElementUniqueAspect exclusion by class.">
