@@ -1,14 +1,5 @@
 parameters:
-#   name: ''
-#   pool: ''
   nodeVersion: ''
-  
-# resources: #Refernce nick's template from azure repo
-#   repositories:
-#     - repository: imodel02_templates
-#       type: git
-#       name: imodel02
-#       endpoint: iModelTechnologies
 
 # jobs:
 # - job:
@@ -42,11 +33,9 @@ parameters:
 #     clean: all
 
   steps:
-#     ${{ if eq(parameters.useLocalAddon, true) }}:
-#       - template: build/templates/install-node-addon-from-artifact.yaml@imodel02_templates #Download local artifact
-#     - checkout: iTwin/itwinjs-core/Build.SourceBranchName #Temp fix, branch name must be the same on both native and TS side
-#       clean: true
-    - script: echo hi
+    - checkout: iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
+      clean: true
+      
     - task: NodeTool@0
       displayName: "Use Node ${{ parameters.nodeVersion }}"
       inputs:
