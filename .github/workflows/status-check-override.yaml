@@ -51,17 +51,21 @@ jobs:
             not_doc_folder:
               - "!(docs/**)"
 
-      - name: Set variables
+      - name: "Set Variable: documentation_files"
         run: |
-          echo documentation_files=
-            ${{steps.path_filter.outputs.documentation_files == 'true'}} >> $GITHUB_ENV &
+          echo documentation_files=${{
+            steps.path_filter.outputs.documentation_files == 'true' }} >> $GITHUB_ENV
+
+      - name: "Set Variable: not_documentation_files"
+        run: |
           echo not_documentation_files=${{
             steps.path_filter.outputs.not_md == 'true' &&
-            steps.path_filter.outputs.not_doc_folder == 'true'}} >> $GITHUB_ENV &
+            steps.path_filter.outputs.not_doc_folder == 'true' }} >> $GITHUB_ENV
+
+      - name: "Set Variable: documentation_files_only"
+        run: |
           echo documentation_files_only=${{
-            steps.path_filter.outputs.documentation_files == 'true' &&
-            !(steps.path_filter.outputs.not_md == 'true' &&
-              steps.path_filter.outputs.not_doc_folder== 'true')}} >> $GITHUB_ENV
+            env.documentation_files == 'true' && !(env.not_documentation_files == 'true') }} >> $GITHUB_ENV
 
       # For debugging
       - name: Print variables
@@ -72,6 +76,7 @@ jobs:
 
       # Fake required checks if neccessary
       - uses: LouisBrunner/checks-action@v1.3.0
+        # if: ${{ env.documentation_files == 'true' }}
         if: ${{ env.documentation_files_only == 'true' }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
