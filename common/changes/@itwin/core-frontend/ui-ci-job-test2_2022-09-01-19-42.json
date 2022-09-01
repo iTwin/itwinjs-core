@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Test change to core/frontend README",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
