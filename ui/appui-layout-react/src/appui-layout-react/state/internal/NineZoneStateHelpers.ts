@@ -7,17 +7,11 @@
  */
 
 import { Draft, produce } from "immer";
-import { PointProps, UiError } from "@itwin/appui-abstract";
+import { PointProps } from "@itwin/appui-abstract";
 import { NineZoneState } from "../NineZoneState";
-import { addFloatingWidget, addPopoutWidget, FloatingWidgetHomeState, FloatingWidgetState } from "../WidgetState";
-import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
-import { getUniqueId } from "../../base/NineZone";
-import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "../TabLocation";
-import { findWidget, isFloatingWidgetLocation, isPopoutWidgetLocation } from "../WidgetLocation";
-import { NineZoneStateReducer } from "../NineZoneStateReducer";
-import { removeTabFromWidget } from "../TabState";
+import { FloatingWidgetHomeState, FloatingWidgetState } from "../WidgetState";
+import { RectangleProps, SizeProps } from "@itwin/core-react";
 import { toolSettingsTabId } from "../ToolSettingsState";
-import { updateTabState } from "./TabStateHelpers";
 import { updateFloatingWidgetState } from "./WidgetStateHelpers";
 
 /** @internal */

@@ -838,8 +838,10 @@ export class FrontstageDef {
    * @internal */
   public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
     const location = findWidget(state, widgetContainerId);
+    // istanbul ignore next
     if (!location)
       return;
+    // istanbul ignore next
     if (!isPopoutWidgetLocation(location))
       return;
 
@@ -847,11 +849,13 @@ export class FrontstageDef {
     const popoutWidget = state.popoutWidgets.byId[location.popoutWidgetId];
 
     // Popout widget should only contain a single tab.
+    // istanbul ignore next
     if (widget.tabs.length !== 1)
       return;
 
     const tabId = widget.tabs[0];
     const widgetDef = this.findWidgetDef(tabId);
+    // istanbul ignore next
     if (!widgetDef)
       return;
 
@@ -876,7 +880,7 @@ export class FrontstageDef {
    * @beta
    */
   public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    // istanbul ignore else
+    // istanbul ignore next
     if (!this.nineZoneState)
       return;
 
@@ -885,11 +889,13 @@ export class FrontstageDef {
       return;
 
     const widgetDef = this.findWidgetDef(widgetId);
+    // istanbul ignore next
     if (!widgetDef)
       return;
 
     // get the state to apply that will pop-out the specified WidgetTab to child window.
     let preferredBounds = Rectangle.createFromSize({ height: 800, width: 600 });
+    // istanbul ignore next
     if (widgetDef.popoutBounds)
       preferredBounds = widgetDef.popoutBounds;
     if (size)

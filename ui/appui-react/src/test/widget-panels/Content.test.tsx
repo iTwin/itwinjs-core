@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@itwin/appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, NineZoneProvider, WidgetStateContext } from "@itwin/appui-layout-react";
 import { Rectangle } from "@itwin/core-react";
 import { FrontstageDef, FrontstageManager, WidgetContent, WidgetDef } from "../../appui-react";
 import TestUtils from "../TestUtils";
@@ -21,6 +21,7 @@ describe("WidgetContent", () => {
 
   it("should render", () => {
     let nineZone = createNineZoneState();
+    nineZone = addTab(nineZone, "w1");
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
     const widget = new WidgetDef({
@@ -45,6 +46,7 @@ describe("WidgetContent", () => {
 
   it("should render w/o frontstage", () => {
     let nineZone = createNineZoneState();
+    nineZone = addTab(nineZone, "w1");
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => undefined);
     const { container } = render(
@@ -63,6 +65,7 @@ describe("WidgetContent", () => {
 
   it("should render w/o widgetDef", () => {
     let nineZone = createNineZoneState();
+    nineZone = addTab(nineZone, "w1");
     nineZone = addPanelWidget(nineZone, "left", "leftStart", ["w1"]);
     const frontstage = new FrontstageDef();
     sinon.stub(FrontstageManager, "activeFrontstageDef").get(() => frontstage);

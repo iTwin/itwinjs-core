@@ -15,7 +15,7 @@ import { FloatingWidgetHomeState, WidgetState } from "./WidgetState";
 import { findTab } from "./TabLocation";
 import { category } from "./internal/NineZoneStateHelpers";
 import { createTabState } from "./internal/TabStateHelpers";
-import { assertWidgetState, getWidgetState, removeWidget, setWidgetActiveTabId, updateWidgetState } from "./internal/WidgetStateHelpers";
+import { assertWidgetState, removeWidget, setWidgetActiveTabId, updateWidgetState } from "./internal/WidgetStateHelpers";
 
 /** `WidgetDef` is equivalent structure in `appui-react`.
  * @internal

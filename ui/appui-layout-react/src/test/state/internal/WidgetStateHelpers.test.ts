@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { addFloatingWidget, addPanelWidget, createNineZoneState } from "../../../appui-layout-react";
+import { addPanelWidget, createNineZoneState } from "../../../appui-layout-react";
 import { addWidgetState, createWidgetState, removeFloatingWidget, removePanelWidget, removePopoutWidget, removeWidget, removeWidgetState, setWidgetActiveTabId, updateFloatingWidgetState, updateWidgetState } from "../../../appui-layout-react/state/internal/WidgetStateHelpers";
 import { addTabs, handleMetaData } from "../../Utils";
 

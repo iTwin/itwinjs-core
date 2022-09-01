@@ -451,16 +451,15 @@ function hideWidgets(state: NineZoneState, frontstageDef: FrontstageDef): NineZo
  * @internal
  */
 export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState {
-  const state = produce(initialState, (draft) => {
-    for (const [, tab] of Object.entries(draft.tabs)) {
-      if (tab.id === toolSettingsTabId)
-        continue;
-      const widgetDef = frontstageDef.findWidgetDef(tab.id);
-      if (widgetDef)
-        continue;
-      removeTab(draft, tab.id);
-    }
-  });
+  let state = initialState;
+  for (const [, tab] of Object.entries(state.tabs)) {
+    if (tab.id === toolSettingsTabId)
+      continue;
+    const widgetDef = frontstageDef.findWidgetDef(tab.id);
+    if (widgetDef)
+      continue;
+    state = removeTab(state, tab.id);
+  }
   return state;
 }
 
@@ -730,27 +729,32 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     ...saved,
     tabs: defaultNineZone.tabs,
   };
-  restored = produce(restored, (draft) => {
-    for (const [, tab] of Object.entries(saved.tabs)) {
-      const widgetDef = frontstageDef.findWidgetDef(tab.id);
-      if (!widgetDef) {
-        Logger.logInfo(UiFramework.loggerCategory(restoreNineZoneState), "WidgetDef is not found for saved tab.", () => ({
-          frontstageId: frontstageDef.id,
-          tabId: tab.id,
-        }));
-        removeTab(draft, tab.id);
-        return;
-      }
+
+  for (const [, tab] of Object.entries(saved.tabs)) {
+    // Re-add the placeholder tab in order to correctly remove it from the state if WidgetDef is not found.
+    restored = addTab(restored, tab.id);
+
+    const widgetDef = frontstageDef.findWidgetDef(tab.id);
+    if (!widgetDef) {
+      Logger.logInfo(UiFramework.loggerCategory(restoreNineZoneState), "WidgetDef is not found for saved tab.", () => ({
+        frontstageId: frontstageDef.id,
+        tabId: tab.id,
+      }));
+      restored = removeTab(restored, tab.id);
+      continue;
+    }
+    restored = produce(restored, (draft) => {
       draft.tabs[tab.id] = {
         ...tab,
-        label: getWidgetLabel(widgetDef?.label ?? "undefined"),
-        hideWithUiWhenFloating: widgetDef?.hideWithUiWhenFloating,
-        iconSpec: widgetDef?.iconSpec,
-        canPopout: widgetDef?.canPopout,
-        isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
+        label: getWidgetLabel(widgetDef.label),
+        hideWithUiWhenFloating: widgetDef.hideWithUiWhenFloating,
+        iconSpec: widgetDef.iconSpec,
+        canPopout: widgetDef.canPopout,
+        isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
       };
-    }
-
+    });
+  }
+  restored = produce(restored, (draft) => {
     // remove center panel section if one is found in left or right panels
     const oldLeftMiddleIndex = saved.panels.left.widgets.findIndex((value) => value === "leftMiddle");
     // istanbul ignore next
@@ -838,6 +842,10 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
       const widgetId = floatingWidget.id;
       // istanbul ignore else
       if (isUUID(widgetId)) {
+        const widget = draft.widgets[widgetId];
+        for (const tabId of widget.tabs) {
+          delete draft.tabs[tabId];
+        }
         const idIndex = draft.floatingWidgets.allIds.indexOf(widgetId);
         draft.floatingWidgets.allIds.splice(idIndex, 1);
         delete draft.floatingWidgets.byId[widgetId];
@@ -849,6 +857,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
 }
 
 // TODO: clean-up of saved widgets.
+// istanbul ignore next
 function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageDef): SavedWidgets {
   for (const widgetDef of frontstageDef.widgetDefs) {
     const id = widgetDef.id;
@@ -874,6 +883,7 @@ function packSavedWidgets(savedWidgets: SavedWidgets, frontstageDef: FrontstageD
   return savedWidgets;
 }
 
+// istanbul ignore next
 function restoreSavedWidgets(savedWidgets: SavedWidgets, frontstage: FrontstageDef) {
   let i = savedWidgets.length;
   while (i--) {
@@ -1105,7 +1115,6 @@ export function expandWidget(state: NineZoneState, id: TabState["id"]) {
 
   return produce(state, (draft) => {
     const widget = draft.widgets[location.widgetId];
-    widget.minimized = false;
     if (isPanelTabLocation(location)) {
       const panel = draft.panels[location.side];
       panel.widgets.forEach((wId) => {
@@ -1113,6 +1122,7 @@ export function expandWidget(state: NineZoneState, id: TabState["id"]) {
         w.minimized = true;
       });
     }
+    widget.minimized = false;
   });
 }
 
@@ -1162,8 +1172,8 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 
           frontstageDef.nineZoneState = state;
           frontstageDef.savedWidgetDefs = savedWidgets;
+          return;
         }
-        return;
       }
       frontstageDef.nineZoneState = initializeNineZoneState(frontstageDef);
     }

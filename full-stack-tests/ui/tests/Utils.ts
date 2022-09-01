@@ -55,9 +55,7 @@ export interface SavedFrontstageState {
       };
     }
   };
-  widgets: {
-    allIds: string[];
-  };
+  widgets: { id: string }[];
 }
 
 /** Assertion helper that polls saved frontstage state from local storage until `conditionFn` is satisfied. */

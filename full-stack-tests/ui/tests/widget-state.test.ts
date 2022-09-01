@@ -125,7 +125,7 @@ test.describe("widget state", () => {
 
     // Wait for "FW-1" state to be saved before reloading.
     await expectSavedFrontstageState(context, (state) => {
-      return state.widgets.allIds.includes("FW-1");
+      return !!state.widgets.find((w) => w.id === "FW-1");
     });
 
     await page.reload();
@@ -151,7 +151,7 @@ test.describe("widget state", () => {
 
     await setWidgetState(page, "WT-A", WidgetState.Hidden);
     await expectSavedFrontstageState(context, (state) => {
-      return state.widgets.allIds.includes("WT-A");
+      return !!state.widgets.find((w) => w.id === "WT-A");
     });
     await page.reload();
 
