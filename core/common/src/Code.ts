@@ -324,12 +324,4 @@ export class CodeSpec {
 
     this.properties.spec.isManagedWithDgnDb = value;
   }
-
-  // implement part of Entity interface for when CodeSpec is used as an entity class, (such as in the transformer)
-  public static get schemaName(): string { return "BisCore"; }
-  public get schemaName(): string { return (this.constructor as typeof CodeSpec).schemaName; }
-  public static get className(): string { return "CodeSpec"; }
-  public get className(): string { return (this.constructor as typeof CodeSpec).className; }
-  public static get classFullName(): string { return `${this.schemaName}:${this.className}`; }
-  public get classFullName(): string { return (this.constructor as typeof CodeSpec).classFullName; }
 }
