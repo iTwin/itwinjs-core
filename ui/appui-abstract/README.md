@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/appui-abstract__ package contains abstractions for UI controls, such as toolbars, buttons and menus.
+The __@itwin/appui-abstract__ package contains abstractions for UI controls, such as toolbars, buttons and menus. You'll find Tools in the tool directory.
 
 ## Documentation
 
