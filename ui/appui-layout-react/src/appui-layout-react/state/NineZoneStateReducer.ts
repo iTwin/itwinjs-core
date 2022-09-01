@@ -15,12 +15,12 @@ import { NineZoneAction } from "./NineZoneAction";
 import { isPanelDropTargetState, isSectionDropTargetState, isTabDropTargetState, isWidgetDropTargetState, isWindowDropTargetState } from "./DropTargetState";
 import { getWidgetPanelSectionId, insertPanelWidget } from "./PanelState";
 import { NineZoneState } from "./NineZoneState";
-import { addFloatingWidget, FloatingWidgetHomeState } from "./WidgetState";
+import { addFloatingWidget, floatingWidgetBringToFront, FloatingWidgetHomeState } from "./WidgetState";
 import { isDockedToolSettingsState, toolSettingsTabId } from "./ToolSettingsState";
 import { updatePanelState } from "./internal/PanelStateHelpers";
 import { createDraggedTabState } from "./internal/TabStateHelpers";
 import { initSizeProps, isToolSettingsFloatingWidget, setPointProps, setRectangleProps, setSizeProps, updateHomeOfToolSettingsWidget } from "./internal/NineZoneStateHelpers";
-import { addWidgetState, floatingWidgetBringToFront, floatingWidgetClearUserSizedFlag, removeFloatingWidget, removePanelWidget, removeWidget, setWidgetActiveTabId, updateFloatingWidgetState, updateWidgetState } from "./internal/WidgetStateHelpers";
+import { addWidgetState, floatingWidgetClearUserSizedFlag, removeFloatingWidget, removePanelWidget, removeWidget, setWidgetActiveTabId, updateFloatingWidgetState, updateWidgetState } from "./internal/WidgetStateHelpers";
 
 /** @internal */
 export function NineZoneStateReducer(state: NineZoneState, action: NineZoneAction): NineZoneState {

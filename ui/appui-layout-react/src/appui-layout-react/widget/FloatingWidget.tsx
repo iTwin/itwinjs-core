@@ -50,6 +50,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
     const position = boundsRect.topLeft();
+    // istanbul ignore next
     return {
       ...CssProperties.transformFromPosition(position),
       height: minimized || autoSized ? undefined : height,

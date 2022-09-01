@@ -5,6 +5,7 @@
 import * as sinon from "sinon";
 import * as enzyme from "enzyme";
 import { addTab, NineZoneState, TabState } from "../appui-layout-react";
+import { BentleyError } from "@itwin/core-bentley";
 
 before(() => {
   window.requestAnimationFrame = (cb: FrameRequestCallback) => {
@@ -64,4 +65,19 @@ export function addTabs(state: NineZoneState, ids: string[], args?: Partial<TabS
     state = addTab(state, id, args);
   }
   return state;
+}
+
+/** Helper that invokes meta data handler of a thrown BentleyError.
+ * @internal
+ */
+export function handleMetaData(fn: Function) {
+  return () => {
+    try {
+      fn();
+    } catch (e) {
+      if (e instanceof BentleyError)
+        e.getMetaData();
+      throw e;
+    }
+  };
 }

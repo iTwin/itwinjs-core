@@ -51,7 +51,7 @@ export function createDraggedTabState(tabId: DraggedTabState["tabId"], args?: Pa
 /** @internal */
 export function updateTabState(state: NineZoneState, id: TabState["id"], args: Partial<TabState>) {
   if (!(id in state.tabs))
-    throw new UiError(category, "Tab not found");
+    throw new UiError(category, "Tab does not exist");
 
   return produce(state, (draft) => {
     const tab = draft.tabs[id];

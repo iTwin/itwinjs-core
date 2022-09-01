@@ -18,12 +18,12 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Rectangle, RectangleProps, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, createNineZoneState, findTab,
+  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, findTab,
+  floatingWidgetBringToFront,
   FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
   isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTab, removeTabFromWidget, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
-import { convertAllPopupWidgetContainersToFloating, floatingWidgetBringToFront } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { FrontstageDef, FrontstageEventArgs, FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

@@ -94,3 +94,12 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
     stateDraft.popoutWidgets.allIds.push(id);
   });
 }
+
+/** @internal */
+export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState {
+  return produce(state, (draft) => {
+    const idIndex = draft.floatingWidgets.allIds.indexOf(floatingWidgetId);
+    const spliced = draft.floatingWidgets.allIds.splice(idIndex, 1);
+    draft.floatingWidgets.allIds.push(spliced[0]);
+  });
+}

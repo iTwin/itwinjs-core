@@ -32,9 +32,7 @@ export function createWidgetState(id: WidgetState["id"], tabs: WidgetState["tabs
 
 /** @internal */
 export function updateWidgetState(state: NineZoneState, id: WidgetState["id"], args: Partial<WidgetState>) {
-  if (!(id in state.widgets))
-    throw new UiError(category, "Widget not found");
-
+  assertWidgetState(state, id);
   return produce(state, (draft) => {
     const widget = draft.widgets[id];
     draft.widgets[id] = {
@@ -78,8 +76,7 @@ export function removeWidget(state: NineZoneState, id: WidgetState["id"]): NineZ
 
 /** @internal */
 export function removeWidgetState(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
-  if (!(id in state.widgets))
-    throw new UiError(category, "Widget not found");
+  assertWidgetState(state, id);
   return produce(state, (draft) => {
     delete draft.widgets[id];
   });
@@ -117,7 +114,7 @@ export function createPopoutWidgetState(id: PopoutWidgetState["id"], args?: Part
 /** @internal */
 export function updateFloatingWidgetState(state: NineZoneState, id: FloatingWidgetState["id"], args: Partial<FloatingWidgetState>) {
   if (!(id in state.floatingWidgets.byId))
-    throw new UiError(category, "Floating widget not found");
+    throw new UiError(category, "Floating widget does not exist");
 
   return produce(state, (draft) => {
     const floatingWidget = draft.floatingWidgets.byId[id];
@@ -136,7 +133,7 @@ export function updateFloatingWidgetState(state: NineZoneState, id: FloatingWidg
  */
 export function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetState["id"]): NineZoneState {
   if (!(id in state.floatingWidgets.byId))
-    throw new UiError(category, "Floating widget not found");
+    throw new UiError(category, "Floating widget does not exist");
 
   state = produce(state, (draft) => {
     delete draft.floatingWidgets.byId[id];
@@ -151,7 +148,7 @@ export function removeFloatingWidget(state: NineZoneState, id: FloatingWidgetSta
  */
 export function removePopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"]) {
   if (!(id in state.popoutWidgets.byId))
-    throw new UiError(category, "Popout widget not found");
+    throw new UiError(category, "Popout widget does not exist");
 
   state = produce(state, (draft) => {
     delete draft.popoutWidgets.byId[id];
@@ -195,9 +192,22 @@ function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {
 }
 
 /** @internal */
+export function assertWidgetState(state: NineZoneState, id: WidgetState["id"]) {
+  if (!(id in state.widgets))
+    throw new UiError(category, "Widget does not exist", undefined, () => ({ id }));
+}
+
+/** @internal */
+export function getWidgetState(state: NineZoneState, id: WidgetState["id"]) {
+  assertWidgetState(state, id);
+  return state.widgets[id];
+}
+
+/** @internal */
 export function setWidgetActiveTabId(state: NineZoneState, widgetId: WidgetState["id"], tabId: WidgetState["activeTabId"]): NineZoneState {
-  if (!(tabId in state.tabs))
-    throw new UiError(category, "Tab not found");
+  const widget = getWidgetState(state, widgetId);
+  if (!widget.tabs.includes(tabId))
+    throw new UiError(category, "Tab is not in a widget");
 
   state = updateWidgetState(state, widgetId, {
     activeTabId: tabId,
@@ -222,14 +232,5 @@ export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingW
     const widget = draft.widgets[floatingWidgetId];
     const tab = draft.tabs[widget.activeTabId];
     tab.userSized = false;
-  });
-}
-
-/** @internal */
-export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState {
-  return produce(state, (draft) => {
-    const idIndex = draft.floatingWidgets.allIds.indexOf(floatingWidgetId);
-    const spliced = draft.floatingWidgets.allIds.splice(idIndex, 1);
-    draft.floatingWidgets.allIds.push(spliced[0]);
   });
 }
