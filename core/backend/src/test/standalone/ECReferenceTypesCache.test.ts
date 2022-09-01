@@ -12,8 +12,10 @@ import { IModelSchemaLoader } from "../../IModelSchemaLoader";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as Semver from "semver";
+import { Relationship } from "../../Relationship";
+import { SchemaItemType } from "@itwin/ecschema-metadata";
 
-describe.only("ECReferenceTypesCache", () => {
+describe("ECReferenceTypesCache", () => {
   let testIModel: SnapshotDb;
   const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
   const testFixtureRefCache = new ECReferenceTypesCache();
@@ -31,8 +33,12 @@ describe.only("ECReferenceTypesCache", () => {
     const schemaLoader = new IModelSchemaLoader(testIModel);
     const schema = schemaLoader.getSchema("BisCore");
     for (const ecclass of schema.getClasses()) {
-      // CodeSpec is ignored
-      if (ecclass.name === "CodeSpec") continue;
+      const unsupportedClassNames = ["CodeSpec", "ElementDrivesElement", "SpatialIndex"];
+      if (unsupportedClassNames.includes(ecclass.name)) continue;
+      const isEntityClass = ecclass.schemaItemType === SchemaItemType.EntityClass;
+      const isEntityRelationship = ecclass instanceof Relationship;
+      const isEntity = isEntityClass || isEntityRelationship;
+      if (!isEntity) continue;
       // eslint-disable-next-line @typescript-eslint/dot-notation
       const rootBisClass = await testFixtureRefCache["getRootBisClass"](ecclass);
       // eslint-disable-next-line @typescript-eslint/dot-notation
@@ -109,8 +115,8 @@ describe.only("ECReferenceTypesCache", () => {
     assert(bisVersionInSeed !== undefined);
 
     assert(Semver.gt(bisVersionInEmpty, bisVersionInSeed));
-    expect(testIModel.getMetaData("BisCore.RenderTimeline")).to.be.undefined;
-    expect(emptyWithBrandNewBiscore.getMetaData("BisCore.RenderTimeline")).not.to.be.undefined;
+    expect(() => testIModel.getMetaData("BisCore:RenderTimeline")).not.to.throw;
+    expect(() => emptyWithBrandNewBiscore.getMetaData("BisCore:RenderTimeline")).to.throw;
 
     await thisTestRefCache.initAllSchemasInIModel(testIModel);
     expect(thisTestRefCache.getNavPropRefType("BisCore", "PhysicalType", "PhysicalMaterial")).to.be.undefined;
