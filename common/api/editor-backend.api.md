@@ -68,6 +68,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
     // (undocumented)
     insertGeometryPart(props: GeometryPartProps, data?: ElementGeometryBuilderParamsForPart): Promise<Id64String>;
     // (undocumented)
+    onStart(): Promise<string>;
+    // (undocumented)
     requestElementGeometry(elementId: Id64String, filter?: FlatBufferGeometryFilter): Promise<ElementGeometryInfo | undefined>;
     // (undocumented)
     rotatePlacement(ids: CompressedId64Set, matrixProps: Matrix3dProps, aboutCenter: boolean): Promise<IModelStatus>;
@@ -197,6 +199,8 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     // (undocumented)
     offsetFaces(id: Id64String, params: OffsetFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
+    onStart(): Promise<string>;
+    // (undocumented)
     sewSheets(id: Id64String, params: SewSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     spinFaces(id: Id64String, params: SpinFacesProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
@@ -210,8 +214,7 @@ export class SolidModelingCommand extends BasicManipulationCommand implements So
     thickenSheets(id: Id64String, params: ThickenSheetProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
     // (undocumented)
     transformSubEntities(id: Id64String, params: TransformSubEntityProps, opts: ElementGeometryResultOptions): Promise<ElementGeometryResultProps | undefined>;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 
