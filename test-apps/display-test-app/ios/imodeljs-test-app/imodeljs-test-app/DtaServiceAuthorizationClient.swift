@@ -83,8 +83,7 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
         request.setValue("Basic \(encoded.toBase64())", forHTTPHeaderField: "Authorization")
         let task = session.dataTask(with: request) { (data, response, error) in
             if error == nil {
-                if let response = response as? HTTPURLResponse
-                {
+                if let response = response as? HTTPURLResponse {
                     if response.statusCode == 200 {
                         if let data = data,
                            let json = try? JSONSerialization.jsonObject(with: data) as? JSON {
