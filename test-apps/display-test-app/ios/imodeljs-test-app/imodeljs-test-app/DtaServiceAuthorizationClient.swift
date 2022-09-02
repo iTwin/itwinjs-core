@@ -37,19 +37,16 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
         if checkSettings() != nil {
             return nil
         }
-        var prefix = configData["IMJS_URL_PREFIX"] as? String
-        if let authorityURL = URL(string: authority) {
-            if var authorityURLComponents = URLComponents(url: authorityURL, resolvingAgainstBaseURL: false) {
-                if prefix != nil {
-                    prefix = prefix == "dev-" ? "qa-" : prefix
-                    authorityURLComponents.host = prefix! + authorityURLComponents.host!
-                    if authorityURLComponents.path.hasSuffix("/") {
-                        authorityURLComponents.path.removeLast()
-                    }
-                    if let url = authorityURLComponents.url {
-                        self.issuerURL = url
-                    }
-                }
+        if var prefix = configData["IMJS_URL_PREFIX"] as? String,
+           let authorityURL = URL(string: authority),
+           var authorityURLComponents = URLComponents(url: authorityURL, resolvingAgainstBaseURL: false) {
+            prefix = prefix == "dev-" ? "qa-" : prefix
+            authorityURLComponents.host = prefix + authorityURLComponents.host!
+            if authorityURLComponents.path.hasSuffix("/") {
+                authorityURLComponents.path.removeLast()
+            }
+            if let url = authorityURLComponents.url {
+                self.issuerURL = url
             }
         }
     }
