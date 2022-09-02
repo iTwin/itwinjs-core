@@ -8,7 +8,7 @@ import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-fron
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
-describe.only("Wait for scene completion", () => {
+describe("Wait for scene completion", () => {
   let imodel: IModelConnection;
 
   before(async () => {
