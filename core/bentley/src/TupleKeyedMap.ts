@@ -6,12 +6,12 @@
  * @module Collections
  */
 
-/** the set of Map interface functions supported by TupleKeyedMap */
-interface PartialMap<K, V> {
+/** @public the set of Map interface functions supported by TupleKeyedMap */
+export interface PartialMap<K, V> {
   get(k: K): V | undefined;
   set(k: K, v: V): PartialMap<K, V>;
   has(k: K): boolean;
-  size: number;
+  readonly size: number;
   [Symbol.iterator](): IterableIterator<[K, V]>;
 }
 

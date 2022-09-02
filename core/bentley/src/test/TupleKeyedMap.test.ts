@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { TupleKeyedMap } from "../core-bentley";
 
-describe.only("TupleKeyedMap", () => {
+describe("TupleKeyedMap", () => {
   it("should maintain mapping between keys and values", () => {
     const entries = ["a", "b", "c", "z", "y", "x", "p", "r", "q"];
     const map = new TupleKeyedMap<[string], string>();
