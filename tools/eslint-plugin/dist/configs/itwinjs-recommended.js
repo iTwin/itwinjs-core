@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 /** @type{import("eslint").Linter.BaseConfig} */
 module.exports = {
   env: {
-    browser: true,
+    "browser": true
   },
   extends: [
     "plugin:@typescript-eslint/recommended",
@@ -13,8 +13,8 @@ module.exports = {
   ],
   parser: "@typescript-eslint/parser",
   parserOptions: {
-    project: "tsconfig.json",
-    sourceType: "module",
+    "project": "tsconfig.json",
+    "sourceType": "module"
   },
   plugins: [
     "@typescript-eslint",
@@ -41,11 +41,11 @@ module.exports = {
     "@typescript-eslint/explicit-member-accessibility": [
       "error",
       {
-        accessibility: "explicit",
-        overrides: {
-          constructors: "off",
-        },
-      },
+        "accessibility": "explicit",
+        "overrides": {
+          "constructors": "off"
+        }
+      }
     ],
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/indent": [
@@ -63,80 +63,80 @@ module.exports = {
     "@typescript-eslint/member-delimiter-style": [
       "error",
       {
-        multiline: {
-          delimiter: "semi",
-          requireLast: true,
+        "multiline": {
+          "delimiter": "semi",
+          "requireLast": true
         },
-        singleline: {
-          delimiter: "comma",
-          requireLast: false,
-        },
-      },
+        "singleline": {
+          "delimiter": "comma",
+          "requireLast": false
+        }
+      }
     ],
     "@typescript-eslint/member-ordering": "off",
     "@typescript-eslint/naming-convention": [
       "error",
       {
-        selector: "default",
-        format: ["camelCase"],
-        leadingUnderscore: "allow",
-        trailingUnderscore: "allow",
+        "selector": "default",
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow",
+        "trailingUnderscore": "allow"
       },
       {
-        selector: "variable",
-        format: ["camelCase", "UPPER_CASE"],
-        leadingUnderscore: "allow",
+        "selector": "variable",
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
       },
       {
-        selector: "memberLike",
-        modifiers: ["static"],
-        format: ["camelCase", "UPPER_CASE"],
+        "selector": "memberLike",
+        "modifiers": ["static"],
+        "format": ["camelCase", "UPPER_CASE"],
       },
       {
-        selector: "memberLike",
-        modifiers: ["static", "public"],
-        format: ["camelCase", "UPPER_CASE"],
+        "selector": "memberLike",
+        "modifiers": ["static", "public"],
+        "format": ["camelCase", "UPPER_CASE"],
       },
       {
-        selector: "memberLike",
-        modifiers: ["private"],
-        format: ["camelCase"],
-        leadingUnderscore: "require",
+        "selector": "memberLike",
+        "modifiers": ["private"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "require"
       },
       {
-        selector: "memberLike",
-        modifiers: ["static", "private"],
-        format: ["camelCase", "UPPER_CASE"],
-        leadingUnderscore: "allow",
+        "selector": "memberLike",
+        "modifiers": ["static", "private"],
+        "format": ["camelCase", "UPPER_CASE"],
+        "leadingUnderscore": "allow"
       },
       {
-        selector: "method",
-        modifiers: ["private"],
-        format: ["camelCase"],
-        leadingUnderscore: "allow",
+        "selector": "method",
+        "modifiers": ["private"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
       },
       {
-        selector: "memberLike",
-        modifiers: ["protected"],
-        format: ["camelCase"],
-        leadingUnderscore: "allow",
+        "selector": "memberLike",
+        "modifiers": ["protected"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "allow"
       },
       {
-        selector: "memberLike",
-        modifiers: ["public"],
-        format: ["camelCase"],
-        leadingUnderscore: "forbid",
+        "selector": "memberLike",
+        "modifiers": ["public"],
+        "format": ["camelCase"],
+        "leadingUnderscore": "forbid"
       },
       {
-        selector: "typeLike",
-        format: ["PascalCase"],
-        leadingUnderscore: "forbid",
+        "selector": "typeLike",
+        "format": ["PascalCase"],
+        "leadingUnderscore": "forbid"
       },
       {
-        selector: "enumMember",
-        format: null,
-        leadingUnderscore: "allow",
-      },
+        "selector": "enumMember",
+        "format": null,
+        "leadingUnderscore": "allow"
+      }
     ],
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-empty-interface": "error",
@@ -148,8 +148,8 @@ module.exports = {
     "@typescript-eslint/no-misused-promises": [
       "error",
       {
-        checksVoidReturn: false,
-      },
+        "checksVoidReturn": false
+      }
     ],
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
@@ -157,15 +157,15 @@ module.exports = {
     "@typescript-eslint/no-redeclare": [
       "error",
       {
-        ignoreDeclarationMerge: true,
-      },
+        "ignoreDeclarationMerge": true,
+      }
     ],
     "@typescript-eslint/no-shadow": [
       "error",
       {
-        hoist: "all",
-        allow: ["T", "args"],
-      },
+        "hoist": "all",
+        "allow": ["T", "args"]
+      }
     ],
     "@typescript-eslint/return-await": "error",
     "@typescript-eslint/no-this-alias": "error",
@@ -179,10 +179,10 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
-        args: "after-used",
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_",
-      },
+        "args": "after-used",
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+      }
     ],
     "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
@@ -196,21 +196,24 @@ module.exports = {
       "error",
       "double",
       {
-        avoidEscape: true,
-        allowTemplateLiterals: true,
-      },
+        "avoidEscape": true,
+        "allowTemplateLiterals": true
+      }
     ],
     "@typescript-eslint/require-await": "off",
     "@typescript-eslint/restrict-plus-operands": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
-    "@typescript-eslint/semi": ["error", "always"],
+    "@typescript-eslint/semi": [
+      "error",
+      "always"
+    ],
     "@typescript-eslint/space-before-function-paren": [
       "error",
       {
-        anonymous: "always",
-        named: "never",
-        asyncArrow: "always",
-      },
+        "anonymous": "always",
+        "named": "never",
+        "asyncArrow": "always"
+      }
     ],
     "@typescript-eslint/triple-slash-reference": "error",
     "@typescript-eslint/type-annotation-spacing": "error",
@@ -219,8 +222,8 @@ module.exports = {
     "@typescript-eslint/unbound-method": [
       "error",
       {
-        ignoreStatic: true,
-      },
+        "ignoreStatic": true
+      }
     ],
     "@typescript-eslint/unified-signatures": "error",
     "arrow-body-style": "off",
@@ -229,19 +232,28 @@ module.exports = {
       "error",
       "1tbs",
       {
-        allowSingleLine: true,
-      },
+        "allowSingleLine": true
+      }
     ],
-    camelcase: "off", // Using @typescript-eslint/naming-convention instead
-    "comma-dangle": ["error", "always-multiline"],
-    complexity: "off",
+    "camelcase": "off", // Using @typescript-eslint/naming-convention instead
+    "comma-dangle": [
+      "error",
+      "always-multiline"
+    ],
+    "complexity": "off",
     "constructor-super": "error",
-    curly: ["off", "multi-line"],
+    "curly": [
+      "off",
+      "multi-line"
+    ],
     "deprecation/deprecation": "error",
     "dot-notation": "off",
     "@typescript-eslint/dot-notation": "error",
     "eol-last": "error",
-    eqeqeq: ["error", "smart"],
+    "eqeqeq": [
+      "error",
+      "smart"
+    ],
     "guard-for-in": "error",
     "id-blacklist": [
       "error",
@@ -249,13 +261,13 @@ module.exports = {
       "number",
       "string",
       "boolean",
-      "Undefined",
+      "Undefined"
     ],
     "id-match": "error",
     "import/no-deprecated": "off", // using deprecation/deprecation instead
     "import/no-duplicates": "off", // using no-duplicate-imports instead
     "import/order": "off",
-    indent: "off", // note you must disable the base rule as it can report incorrect errors
+    "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
     "max-statements-per-line": [
@@ -277,20 +289,13 @@ module.exports = {
     "no-new-wrappers": "error",
     "no-redeclare": "off", // using @typescript-eslint/no-redeclare instead
     "no-restricted-properties": [
-      "error",
-      {
-        object: "Math",
-        property: "hypot",
-        message: "Use Geometry.hypotenuse methods instead",
-      },
+      "error", {
+        "object": "Math",
+        "property": "hypot",
+        "message": "Use Geometry.hypotenuse methods instead",
+      }
     ],
-    "no-restricted-syntax": [
-      "error",
-      {
-        selector: "TSEnumDeclaration[const=true]",
-        message: "const enums are not allowed",
-      },
-    ],
+    "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
     "no-return-await": "off", // using @typescript-eslint/return-await instead
     "no-shadow": "off", // using @typescript-eslint/no-shadow instead
     "no-sparse-arrays": "error",
@@ -302,10 +307,10 @@ module.exports = {
     "no-underscore-dangle": [
       "off",
       {
-        allowAfterThis: true,
-        allowAfterThisConstructor: true,
-        enforceInMethodNames: true,
-      },
+        "allowAfterThis": true,
+        "allowAfterThisConstructor": true,
+        "enforceInMethodNames": true
+      }
     ],
     "no-unsafe-finally": "error",
     "no-unused-expressions": "off",
@@ -317,15 +322,18 @@ module.exports = {
       "below", // readability aside, you can't set breakpoint in debugger unless statement is on separate line.
     ],
     "object-shorthand": "error",
-    "one-var": ["off", "never"],
+    "one-var": [
+      "off",
+      "never"
+    ],
     // TODO: I'd like to enable this but will cause a lot of breaking changes
     "prefer-arrow/prefer-arrow-functions": [
       "off",
       {
-        disallowPrototype: true,
-        singleReturnOnly: false,
-        classPropertiesAllowed: false,
-      },
+        "disallowPrototype": true,
+        "singleReturnOnly": false,
+        "classPropertiesAllowed": false
+      }
     ],
     "prefer-const": "error",
     "prefer-rest-params": "off",
@@ -340,21 +348,23 @@ module.exports = {
     "sort-imports": [
       "error",
       {
-        ignoreDeclarationSort: true,
-        ignoreCase: true,
-      },
+        "ignoreDeclarationSort": true,
+        "ignoreCase": true,
+      }
     ],
     "spaced-comment": [
       "error",
       "always",
       {
-        exceptions: [
+        "exceptions": [
           "-", // Ignore a '-' immediately after '/*' to allow our copyright header standard
           "=",
           "*",
         ],
-        markers: ["/"],
-      },
+        "markers": [
+          "/",
+        ]
+      }
     ],
     "use-isnan": "error",
     "valid-typeof": "off",
@@ -381,7 +391,7 @@ module.exports = {
       files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
       rules: {
         "@itwin/no-internal-barrel-imports": "off",
-      },
-    },
+      }
+    }
   ],
 }
