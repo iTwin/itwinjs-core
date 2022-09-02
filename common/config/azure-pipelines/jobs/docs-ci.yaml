@@ -22,6 +22,7 @@ pr:
     exclude:
       - "**.md"
       - docs/**
+      - .github/CODEOWNERS
 
 jobs:
   - job:

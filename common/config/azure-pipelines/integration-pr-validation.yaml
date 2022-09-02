@@ -20,6 +20,7 @@ pr:
     exclude:
       - "**.md"
       - docs/**
+      - .github/CODEOWNERS
 
 variables:
   - group: iTwin.js non-secret config variables

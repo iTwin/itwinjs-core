@@ -15,6 +15,7 @@ pr:
     exclude:
       - "**.md"
       - docs/**
+      - .github/CODEOWNERS
 
 jobs:
   - template: ci-core.yaml

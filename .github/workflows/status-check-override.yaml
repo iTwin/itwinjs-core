@@ -17,6 +17,7 @@ on:
     paths:
       - "**.md"
       - docs/**
+      - .github/CODEOWNERS
 
 env:
   documentation_files: false
@@ -39,10 +40,13 @@ jobs:
             documentation_files:
               - "docs/**"
               - "**.md"
+              - ".github/CODEOWNERS"
             non_md:
               - "**/!(*.md)"
             non_doc_folder:
               - "!(docs/**)"
+            non_codeowners:
+              - "!(.github/CODEOWNERS)"
 
       # Set variables
       - name: "Set Variable: documentation_files"
@@ -54,7 +58,8 @@ jobs:
         run: |
           echo non_documentation_files=${{
             steps.path_filter.outputs.non_md == 'true' &&
-            steps.path_filter.outputs.non_doc_folder == 'true' }} >> $GITHUB_ENV
+            steps.path_filter.outputs.non_doc_folder == 'true' &&
+            steps.path_filter.outputs.non_codeowners == 'true' }} >> $GITHUB_ENV
 
       - name: "Set Variable: documentation_files_only"
         run: |
