@@ -11,6 +11,7 @@ export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./CloudSqlite";
 export * from "./ConcreteEntityId";
+export * from "./EntityReference";
 export * from "./ECReferenceTypesCache";
 export * from "./EntityKey";
 export * from "./EntityUnifier";

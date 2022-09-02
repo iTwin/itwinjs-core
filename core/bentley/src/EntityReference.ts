@@ -13,11 +13,9 @@ import { Id64, Id64String } from "./Id";
  * low-level entity information.
  * @note the values of this enum are unstable, do not depend upon their values between versions of iTwin.js
  *       (e.g. do not serialize them and load them in another version of iTwin.js and expect them to work)
- * // FIXME implement this test
- * // FIXME: Aspect needs to be split into Multi and Unique, and relationship into Drives, Refers, ModelSelectorRefersTo
- * CodeSpecs are excepted since those are not treated like other entities.
- * @note the string value of each variant is required/guaranteed to be 1 character, this is confirmed in tests
- * @see ConcreteEntityId
+ * CodeSpecs are excepted since their JavaScript representation does not derive from [Entity]($backend)
+ * @note the string value of each variant is required/guaranteed to be 1 character
+ * @see EntityReference
  * @alpha
  */
 export enum ConcreteEntityTypes {
@@ -47,51 +45,50 @@ export namespace ConcreteEntityTypes {
   }
 }
 
-// FIXME: probably rename this to entity reference because otherwise every `entityId` local name is now ambiguous
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
+ * @note for additional utilities that require runtime backend classes, see [EntityReferences]($backend)
  * @alpha
  */
-export type ConcreteEntityId = `${ConcreteEntityTypes}${Id64String}`;
+export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
 
-/** Utility functions for ConcreteEntityId which is a subset of string
+/** Utility functions for [[EntityReference]] which is a subset of string
  * @alpha
  */
-export class ConcreteEntityIds {
-  // for additional utilities that require runtime backend classes, see ConcreteEntityIds in `@itwin/core-backend`
-  public static isModel(id: ConcreteEntityId) {
+export class EntityReferences {
+  public static isModel(id: EntityReference) {
     return id[0] === ConcreteEntityTypes.Model;
   }
-  public static isElement(id: ConcreteEntityId) {
+  public static isElement(id: EntityReference) {
     return id[0] === ConcreteEntityTypes.Element;
   }
-  public static isElementAspect(id: ConcreteEntityId) {
+  public static isElementAspect(id: EntityReference) {
     return id[0] === ConcreteEntityTypes.ElementAspect;
   }
-  public static isRelationship(id: ConcreteEntityId) {
+  public static isRelationship(id: EntityReference) {
     return id[0] === ConcreteEntityTypes.Relationship;
   }
-  public static toId64(id: ConcreteEntityId) {
+  public static toId64(id: EntityReference) {
     return id.slice(1);
   }
 
   /** split a concrete entity id into its type and raw id */
-  public static split(id: ConcreteEntityId): [ConcreteEntityTypes, Id64String] {
+  public static split(id: EntityReference): [ConcreteEntityTypes, Id64String] {
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
   }
 
   /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
    * @internal
    */
-  public static isValid(id: ConcreteEntityId): boolean {
-    return Id64.isValid(ConcreteEntityIds.toId64(id));
+  public static isValid(id: EntityReference): boolean {
+    return Id64.isValid(EntityReferences.toId64(id));
   }
 
   /** create the invalid id for a concrete entity type
    * @internal
    */
-  public static makeInvalid(type: ConcreteEntityTypes): ConcreteEntityId {
+  public static makeInvalid(type: ConcreteEntityTypes): EntityReference {
     return `${type}${Id64.invalid}`;
   }
 }
@@ -99,7 +96,7 @@ export class ConcreteEntityIds {
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
  * @public
  */
-export class ConcreteEntityIdSet extends Set<ConcreteEntityId> {
+export class EntityReferenceSet extends Set<EntityReference> {
   public addElement(id: Id64String) { this.add(`e${id}`); }
   public addModel(id: Id64String) { this.add(`m${id}`); }
   public addAspect(id: Id64String) { this.add(`a${id}`); }

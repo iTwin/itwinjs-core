@@ -14,7 +14,7 @@ export * from "./ByteStream";
 export * from "./ClassUtils";
 export * from "./Compare";
 export * from "./CompressedId64Set";
-export * from "./ConcreteEntityId";
+export * from "./EntityReference";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";

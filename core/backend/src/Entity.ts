@@ -6,9 +6,9 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds, Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
+import { EntityReferences, Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
 import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
-import { ConcreteEntityIdSet } from "./ConcreteEntityId";
+import { EntityReferenceSet } from "./EntityReference";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -104,8 +104,8 @@ export class Entity {
 
   /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
    * This is important for cloning operations but can be useful in other situations as well.
-   * @note In the next breaking change, the behavior of this function will change to return a ConcreteEntityIdSet
-   *       which does not iterate plain Id64s, see [ConcreteEntityIdSet]($backend).
+   * @note In the next breaking change, the behavior of this function will change to return a EntityReferenceSet
+   *       which does not iterate plain Id64s, see [EntityReferenceSet]($backend).
    * @see collectReferenceIds
    * @beta
    */
@@ -119,8 +119,8 @@ export class Entity {
    * In the next breaking change it will replace getReferenceIds, and is already used by the transformer
    * @internal
    */
-  public getReferenceConcreteIds(): ConcreteEntityIdSet {
-    const referenceIds = new ConcreteEntityIdSet();
+  public getReferenceConcreteIds(): EntityReferenceSet {
+    const referenceIds = new EntityReferenceSet();
     this.collectReferenceConcreteIds(referenceIds);
     return referenceIds;
   }
@@ -131,8 +131,8 @@ export class Entity {
    * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.
    * @param _referenceIds The Id64Set to populate with reference Ids.
-   * @note In the next breaking change, the behavior of this function will change to require a ConcreteEntityIdSet argument,
-   *       which does not accept plain Id64s, see [ConcreteEntityIdSet]($backend).
+   * @note In the next breaking change, the behavior of this function will change to require a EntityReferenceSet argument,
+   *       which does not accept plain Id64s, see [EntityReferenceSet]($backend).
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
@@ -142,18 +142,17 @@ export class Entity {
     const concreteEntityIds = this.getReferenceConcreteIds();
     for (const entity of concreteEntityIds) {
       // the old [[collectReferenceIds]] only supported elements/models, and the id spaces can overlap so dont include anything else
-      if (ConcreteEntityIds.isElement(entity) || ConcreteEntityIds.isModel(entity)) {
-        referenceIds.add(ConcreteEntityIds.toId64(entity));
+      if (EntityReferences.isElement(entity) || EntityReferences.isModel(entity)) {
+        referenceIds.add(EntityReferences.toId64(entity));
       }
     }
   }
 
-  /** This is the intended and future behavior of [[getReferenceIds]], with additional interop with the old
-   * input of `Set<Id64String>` to reduce code duplication.
-   * In the next breaking change it will replace getReferenceIds (with option for a set parameter removed), and is already used by the transformer
+  /** This is the intended and future behavior of [[getReferenceIds]], and is used in the transformer already.
+   * In the next breaking change it will replace getReferenceIds
    * @internal
    */
-  protected collectReferenceConcreteIds(_referenceIds: ConcreteEntityIdSet): void {
+  protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void {
     return; // no references by default
   }
 }

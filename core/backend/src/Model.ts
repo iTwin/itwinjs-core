@@ -8,7 +8,7 @@
 
 // cspell:ignore elid
 
-import { ConcreteEntityIdSet, GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
+import { EntityReferenceSet, GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
   AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, InformationPartitionElementProps,
@@ -222,7 +222,7 @@ export class Model extends Entity {
   public delete() { this.iModel.models.deleteModel(this.id); }
 
   // TODO: what about required references? aren't these required?
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.parentModel) referenceIds.addModel(this.parentModel);
     referenceIds.addElement(this.modeledElement.id);

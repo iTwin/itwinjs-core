@@ -10,7 +10,7 @@ import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, 
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { ConcreteEntityIdSet, DbResult, Id64String } from "@itwin/core-bentley";
+import { EntityReferenceSet, DbResult, Id64String } from "@itwin/core-bentley";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -218,7 +218,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
   }
 
   // FIXME: start using generated collectReferences everywhere and use a separate collectJsonPropertyReferenceIds
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.scope.id);
     referenceIds.addElement(this.element.id);

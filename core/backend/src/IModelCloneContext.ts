@@ -6,7 +6,7 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { ConcreteEntityId, ConcreteEntityTypes, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityTypes, DbResult, EntityReference, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
@@ -17,7 +17,7 @@ import { SQLiteDb } from "./SQLiteDb";
 import { ElementAspect } from "./ElementAspect";
 import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
 import { EntityUnifier } from "./EntityUnifier";
-import { ConcreteEntityIds } from "./ConcreteEntityId";
+import { EntityReferences } from "./EntityReference";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -126,19 +126,19 @@ export class IModelCloneContext {
     return this._aspectRemapTable.get(sourceAspectId) ?? Id64.invalid;
   }
 
-  /** Look up a target [ConcreteEntityId]($bentley) from a source [ConcreteEntityId]($bentley)
-   * @returns the target CodeSpecId or a [ConcreteEntityId]($bentley) containing [Id64.invalid]($bentley) if a mapping is not found.
+  /** Look up a target [EntityReference]($bentley) from a source [EntityReference]($bentley)
+   * @returns the target CodeSpecId or a [EntityReference]($bentley) containing [Id64.invalid]($bentley) if a mapping is not found.
    */
-  public findTargetEntityId(sourceEntityId: ConcreteEntityId): ConcreteEntityId {
-    const [type, rawId] = ConcreteEntityIds.split(sourceEntityId);
+  public findTargetEntityId(sourceEntityId: EntityReference): EntityReference {
+    const [type, rawId] = EntityReferences.split(sourceEntityId);
     switch (type) {
       case ConcreteEntityTypes.Model: {
         const targetId = `m${this.findTargetElementId(rawId)}` as const;
         // Check if the model exists, `findTargetElementId` may have worked because the element exists when the model doesn't.
         // That can occur in the transformer since a submodeled element is imported before its submodel.
-        return EntityUnifier.exists(this.targetDb, { concreteEntityId: targetId })
+        return EntityUnifier.exists(this.targetDb, { entityReference: targetId })
           ? targetId
-          : ConcreteEntityIds.makeInvalid(ConcreteEntityTypes.Model);
+          : EntityReferences.makeInvalid(ConcreteEntityTypes.Model);
       }
       case ConcreteEntityTypes.Element:
         return `e${this.findTargetElementId(rawId)}`;
@@ -203,8 +203,8 @@ export class IModelCloneContext {
           WHERE SourceECInstanceId=?
             AND TargetECInstanceId=?
           `, (stmt) => {
-            stmt.bindId(1, ConcreteEntityIds.toId64(relInTarget.sourceId));
-            stmt.bindId(2, ConcreteEntityIds.toId64(relInTarget.targetId));
+            stmt.bindId(1, EntityReferences.toId64(relInTarget.sourceId));
+            stmt.bindId(2, EntityReferences.toId64(relInTarget.targetId));
             let status: DbResult;
             if ((status = stmt.step()) === DbResult.BE_SQLITE_ROW)
               return stmt.getValue(0).getId();
@@ -299,7 +299,7 @@ export class IModelCloneContext {
           );
           /* eslint-disable @typescript-eslint/indent */
           assert(navPropRefType !== undefined,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`);
-          const targetEntityId = this.findTargetEntityId(ConcreteEntityIds.fromEntityType(sourceNavProp.id, navPropRefType));
+          const targetEntityId = this.findTargetEntityId(EntityReferences.fromEntityType(sourceNavProp.id, navPropRefType));
           /* eslint-enable @typescript-eslint/indent */
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };

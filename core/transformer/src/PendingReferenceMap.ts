@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds } from "@itwin/core-backend";
+import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
 
 /**
@@ -14,14 +14,14 @@ import { EntityMap } from "./EntityMap";
  * @internal
  */
 export interface PendingReference {
-  referencer: ConcreteEntityId;
-  referenced: ConcreteEntityId;
+  referencer: EntityReference;
+  referenced: EntityReference;
 }
 
 export namespace PendingReference {
-  export function from(referencer: ConcreteEntity | ConcreteEntityId, referenced: ConcreteEntity | ConcreteEntityId): PendingReference {
-    if (typeof referencer !== "string") referencer = ConcreteEntityIds.from(referencer);
-    if (typeof referenced !== "string") referenced = ConcreteEntityIds.from(referenced);
+  export function from(referencer: ConcreteEntity | EntityReference, referenced: ConcreteEntity | EntityReference): PendingReference {
+    if (typeof referencer !== "string") referencer = EntityReferences.from(referencer);
+    if (typeof referenced !== "string") referenced = EntityReferences.from(referenced);
     return { referencer, referenced };
   }
 
@@ -30,7 +30,7 @@ export namespace PendingReference {
   }
 
   export function fromKey(key: string): PendingReference {
-    const [referencer, referenced] = key.split("\x00") as [ConcreteEntityId, ConcreteEntityId];
+    const [referencer, referenced] = key.split("\x00") as [EntityReference, EntityReference];
     return { referencer, referenced };
   }
 }
@@ -41,9 +41,9 @@ export namespace PendingReference {
  */
 export class PendingReferenceMap<T> {
   private _map = new Map<string, T>();
-  private _referencedToReferencers = new EntityMap<Set<ConcreteEntityId>>();
+  private _referencedToReferencers = new EntityMap<Set<EntityReference>>();
 
-  public getReferencers(referenced: ConcreteEntity): Set<ConcreteEntityId> {
+  public getReferencers(referenced: ConcreteEntity): Set<EntityReference> {
     let referencers = this._referencedToReferencers.get(referenced);
     if (referencers === undefined) {
       referencers = new Set();

@@ -6,12 +6,12 @@
  * @module Schema
  */
 
-import { ConcreteEntityIdSet, DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { DbResult, EntityReferenceSet, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
-import { ConcreteEntityIds } from "./ConcreteEntityId";
+import { EntityReferences } from "./EntityReference";
 import * as assert from "assert";
 import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
 
@@ -146,14 +146,14 @@ export class ClassRegistry {
           // generated implementation
           const rootClass = ClassRegistry.findRegisteredClass(rootClassMetaData.ecclass);
           assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
-          return { name, concreteEntityType: ConcreteEntityIds.typeFromClass(rootClass) };
+          return { name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
         });
 
       Object.defineProperty(
         generatedClass.prototype,
         "collectReferenceConcreteIds",
         {
-          value(this: typeof generatedClass, referenceIds: ConcreteEntityIdSet) {
+          value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
             const superImpl = superclass.prototype["collectReferenceConcreteIds"];
             superImpl.call(this, referenceIds);
@@ -161,8 +161,8 @@ export class ClassRegistry {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
               if (!relatedElem || !Id64.isValid(relatedElem.id))
                 continue;
-              const concreteId = ConcreteEntityIds.fromEntityType(relatedElem.id, navProp.concreteEntityType);
-              referenceIds.add(concreteId);
+              const referenceId = EntityReferences.fromEntityType(relatedElem.id, navProp.concreteEntityType);
+              referenceIds.add(referenceId);
             }
           },
           // defaults for methods on a prototype (required for sinon to stub out methods on tests)

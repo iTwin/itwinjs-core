@@ -7,7 +7,7 @@
  * @module Elements
  */
 
-import { ConcreteEntityIdSet, Id64String } from "@itwin/core-bentley";
+import { EntityReferenceSet, Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
   BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
@@ -58,7 +58,7 @@ export class ExternalSource extends InformationReferenceElement {
     const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
     return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
   }
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.repository) referenceIds.addElement(this.repository.id);
   }

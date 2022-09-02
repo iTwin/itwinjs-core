@@ -5,20 +5,20 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { ConcreteEntity, ConcreteEntityId, ConcreteEntityIds } from "@itwin/core-backend";
+import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
 
 // possible table types in current BisCore
 // TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
 // TODO: verify the BisCore schema has no other real tables in an iModel before proceeding here
 /** @internal */
-export type EntityKey = ConcreteEntityId;
+export type EntityKey = EntityReference;
 
 /** @internal */
 export class EntityMap<V> {
   private _map = new Map<EntityKey, V>();
 
   public static makeKey(entity: ConcreteEntity): EntityKey {
-    return ConcreteEntityIds.from(entity);
+    return EntityReferences.from(entity);
   }
 
   public clear(): void {
