@@ -943,7 +943,7 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
       if (q !== undefined && q > tolerance){
         this._points.moveIndexToIndex (i, n1);
         if (this._fractions !== undefined)
-          this._fractions.setAtUncheckedIndex (i, this._fractions.atUncheckedIndex(n1));
+          this._fractions.setAtUncheckedIndex (n1, this._fractions.atUncheckedIndex(i));
         if (this._derivatives)
           this._derivatives.moveIndexToIndex (i, n1);
           n1++;
