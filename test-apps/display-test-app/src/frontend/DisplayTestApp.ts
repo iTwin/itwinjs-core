@@ -183,19 +183,20 @@ const dtaFrontendMain = async () => {
       const writable = configuration.openReadWrite ?? false;
       iModel = await openFile({ fileName: iModelName, writable });
       setTitle(iModel);
-    }
-    const origStandalone = configuration.standalone;
-    try {
-      const iModelId = configuration.iModelId;
-      const iTwinId = configuration.iTwinId;
-      if (undefined !== iModelId && undefined !== iTwinId) {
-        const writable = configuration.openReadWrite ?? false;
-        iModel = await openFile({ iModelId, iTwinId, writable });
-        setTitle(iModel);
+    } else {
+      const origStandalone = configuration.standalone;
+      try {
+        const iModelId = configuration.iModelId;
+        const iTwinId = configuration.iTwinId;
+        if (undefined !== iModelId && undefined !== iTwinId) {
+          const writable = configuration.openReadWrite ?? false;
+          iModel = await openFile({ iModelId, iTwinId, writable });
+          setTitle(iModel);
+        }
+      } catch (error) {
+        configuration.standalone = origStandalone;
+        alert(`Error getting hub iModel: ${error}`);
       }
-    } catch (error) {
-      configuration.standalone = origStandalone;
-      alert(`Error getting hub iModel: ${error}`);
     }
 
     await uiReady; // Now wait for the HTML UI to finish loading.
