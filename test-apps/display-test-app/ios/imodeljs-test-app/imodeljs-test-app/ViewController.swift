@@ -137,14 +137,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
            let envData = JSON.fromString(envString) {
             configData = envData
         }
-        authClient = DtaServiceAuthorizationClient(configData: configData)
-        if authClient == nil {
-            authClient = DtaOidcAuthorizationClient(configData: configData)
-        }
+        authClient = DtaServiceAuthorizationClient(configData: configData) ?? DtaOidcAuthorizationClient(configData: configData)
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
     }
 
-    func setupFrontend(bimFile: URL?, iModelId: String? = nil, iTwinId: String? = nil) {
+    func setupFrontend(bimFile: URL? = nil, iModelId: String? = nil, iTwinId: String? = nil) {
         let config = WKWebViewConfiguration()
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
@@ -162,13 +159,13 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         self.view.setNeedsLayout()
     
         let host = IModelJsHost.sharedInstance()
-        var hashParams = "#port=\(host.getPort())&platform=ios"
+        var hashParams = "#port=\(host.getPort())&platform=ios&standalone=true"
 
         if let bimFilePath = bimFile?.path.encodedForURLQuery() {
-            hashParams.append("&standalone=true&iModelName=" + bimFilePath)
+            hashParams.append("&iModelName=" + bimFilePath)
         }
         if let iModelId = iModelId?.encodedForURLQuery(), let iTwinId = iTwinId?.encodedForURLQuery() {
-            hashParams.append("&standalone=true&iModelId=\(iModelId)&iTwinId=\(iTwinId)")
+            hashParams.append("&iModelId=\(iModelId)&iTwinId=\(iTwinId)")
         }
         if configData["IMJS_IGNORE_CACHE"] != nil {
             hashParams.append("&ignoreCache=true")
@@ -176,19 +173,22 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
 
         webView.addUserContentController(OpenModelHander(self))
         webView.addUserContentController(ModelOpenedHandler(exitOnMessage: self.argFileName != nil))
-        // let url = "http://192.168.86.20:3000/"
-        let url = "imodeljs://app"
+        let url = configData["IMJS_DEV_SERVER"] as? String ?? "imodeljs://app"
         webView.load(URLRequest(url: URL(string: url + hashParams)!))
         host.register(webView)
     }
-    
-    /// Show alert for webkit alert
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+
+    func showAlert(message: String, completionHandler: @escaping () -> Void = {}) {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel) { action in
             completionHandler()
         })
         self.present(alert, animated: true)
+    }
+    
+    /// Show alert for webkit alert
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        showAlert(message: message, completionHandler: completionHandler)
     }
     
     func pickSnapshot(completion: @escaping (URL?) -> Void) {
@@ -285,18 +285,22 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         super.viewDidLoad()
         setupBackend()
         if let standaloneFilename = configData["IMJS_STANDALONE_FILENAME"] as? String {
-            let documentsDirectory = getDocumentsDirectory()
-            let bimFile = documentsDirectory.appendingPathComponent(standaloneFilename)
-            setupFrontend(bimFile: bimFile)
+            let bimFile = getDocumentsDirectory().appendingPathComponent(standaloneFilename)
+            let exists = FileManager.default.fileExists(atPath: bimFile.path)
+            setupFrontend(bimFile: exists ? bimFile : nil)
+            if !exists {
+                // alert the user after the view controller has loaded
+                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
+                    self.showAlert(message: "File does not exist: \(bimFile.path)")
+                }
+            }
         } else if let _ = authClient,
                   let iModelId = configData["IMJS_IMODEL_ID"] as? String,
                   let iTwinId = configData["IMJS_ITWIN_ID"] as? String {
             setupFrontend(bimFile: nil, iModelId: iModelId, iTwinId: iTwinId)
-        }
-        
-        // Try to open file in Documents dir passed as argument
-        if let fileName = argFileName {
-            let url = URL(fileURLWithPath: getDocumentsDirectory().path).appendingPathComponent(fileName)
+        } else if let fileName = argFileName {
+            // Try to open file in Documents dir passed as argument
+            let url = getDocumentsDirectory().appendingPathComponent(fileName)
             if FileManager.default.fileExists(atPath: url.path) {
                 setupFrontend(bimFile: url)
             } else {
