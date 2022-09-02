@@ -38,7 +38,7 @@
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
     "mocha": "^8.3.2",
-    "mocha-junit-reporter": "^1.16.0",
+    "mocha-junit-reporter": "^2.0.2",
     "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
