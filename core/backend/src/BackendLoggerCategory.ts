@@ -83,12 +83,6 @@ export enum BackendLoggerCategory {
   EventSink = "core-backend.EventSink",
 
   /** The logger category used by the following classes:
-   * - [[IModelSchemaLoader]]
-   * @alpha
-   */
-  IModelSchemaLoader = "core-backend.IModelSchemaLoader",
-
-  /** The logger category used by the following classes:
    * - [[iModels]]
    * @alpha
    */

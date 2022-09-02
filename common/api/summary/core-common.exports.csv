@@ -188,6 +188,9 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+public;ECSchemaItemProps
+public;ECSchemaProps
+public;ECSchemaReferenceProps
 beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType

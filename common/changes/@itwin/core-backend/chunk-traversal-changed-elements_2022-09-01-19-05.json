@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "await new promise in CustomViewState3dCreator getModelExtents",
+      "comment": "Chunk traversal options for ChangedElementsDb",
       "type": "none"
     }
   ],

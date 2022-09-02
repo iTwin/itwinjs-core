@@ -56,6 +56,24 @@ const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
 
+## IModelSchemaLoader replaced with SchemaLoader
+
+Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
+
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
+const schema = loader.getSchema("BisCore");
+```
+
+The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+
 ### OpenTelemetry
 
 It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.

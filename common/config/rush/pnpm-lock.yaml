@@ -15,7 +15,6 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
-      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@opentelemetry/api': ^1.0.4
       '@types/chai': 4.3.1
@@ -66,7 +65,6 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
-      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@opentelemetry/api': 1.1.0
       '@types/chai': 4.3.1
@@ -12837,7 +12835,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.34.0_a091c9f0bec713000de4103e0d3e5933
       '@typescript-eslint/experimental-utils': 5.34.0_eslint@8.22.0+typescript@4.4.4
       eslint: 8.22.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -15656,7 +15654,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -21109,7 +21107,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.18.13
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1
+      jest: 27.5.1_ts-node@10.9.1
       jest-util: 27.5.1
       json5: 2.2.1
       lodash.memoize: 4.1.2
