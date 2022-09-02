@@ -2,6 +2,12 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.3.1",
+      "tag": "@itwin/core-backend_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.0",
       "tag": "@itwin/core-backend_v3.3.0",
       "date": "Thu, 18 Aug 2022 19:08:02 GMT",
@@ -51,6 +57,18 @@
           },
           {
             "comment": "added SQLiteDb.withOpenDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-backend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@3.2.15"
           }
         ]
       }

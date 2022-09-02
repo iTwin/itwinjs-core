@@ -1,6 +1,11 @@
 # Change Log - @itwin/frontend-devtools
 
-This log was last generated on Thu, 18 Aug 2022 19:08:02 GMT and should not be manually modified.
+This log was last generated on Fri, 26 Aug 2022 15:40:02 GMT and should not be manually modified.
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
 
 ## 3.3.0
 Thu, 18 Aug 2022 19:08:02 GMT
@@ -9,6 +14,11 @@ Thu, 18 Aug 2022 19:08:02 GMT
 
 - Change keyin to test to attach any cesium asset using getCesiumAssetUrl
 - Add keyins for changing the schedule script associated with a viewport and dumping the contents of the selection set.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

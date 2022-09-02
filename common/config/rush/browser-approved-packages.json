@@ -67,10 +67,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelbank-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -279,6 +275,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -316,7 +316,7 @@
     },
     {
       "name": "@itwin/presentation-common",
-      "allowedCategories": [ "backend", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@itwin/presentation-components",
@@ -369,6 +369,18 @@
     {
       "name": "@opentelemetry/api",
       "allowedCategories": [ "backend", "common" ]
+    },
+    {
+      "name": "@opentelemetry/resources",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/sdk-trace-base",
+      "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@opentelemetry/semantic-conventions",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "@playwright/test",
@@ -1065,10 +1077,6 @@
     {
       "name": "webpack-cli",
       "allowedCategories": [ "integration-testing", "internal" ]
-    },
-    {
-      "name": "webpack-filter-warnings-plugin",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "wms-capabilities",

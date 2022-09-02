@@ -49,6 +49,7 @@ import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { ColorDefProps } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -758,43 +759,42 @@ export interface CloudStorageUploadOptions {
 
 // @alpha
 export interface CodeIndex {
-    findCode: (code: CodeService.ScopeSpecAndValue) => CodeService.CodeGuid | undefined;
-    findHighestUsed: (from: CodeService.SequenceScope) => CodeService.CodeValue | undefined;
-    findNextAvailable: (from: CodeService.SequenceScope) => CodeService.CodeValue;
-    forAllCodes: (iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter) => void;
-    forAllCodeSpecs: (iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter) => void;
-    getCode: (guid: CodeService.CodeGuid) => CodeService.CodeEntry | undefined;
-    getCodeSpec: (props: CodeService.CodeSpecName) => CodeService.NameAndJson;
-    isCodePresent: (guid: CodeService.CodeGuid) => boolean;
+    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+    isCodePresent(guid: CodeService.CodeGuid): boolean;
 }
 
 // @alpha
 export interface CodeService {
-    addAllCodes: () => Promise<number>;
+    addAllCodes(iModel: IModelDb): Promise<number>;
     // @internal (undocumented)
-    addAllCodeSpecs: () => Promise<void>;
-    addCodeSpec: (val: CodeService.NameAndJson) => Promise<void>;
-    readonly appParams: CodeService.ObtainLockParams & CodeService.AuthorAndOrigin;
-    readonly briefcase: BriefcaseDb;
+    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
+    readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
     readonly codeIndex: CodeIndex;
-    deleteCodes: (guid: CodeService.CodeGuid[]) => Promise<void>;
-    reserveCode: (code: CodeService.ProposedCode) => Promise<void>;
-    reserveCodes: (arg: CodeService.ReserveCodesArgs) => Promise<number>;
-    reserveNextAvailableCode: (arg: CodeService.ReserveNextArgs) => Promise<void>;
-    reserveNextAvailableCodes: (arg: CodeService.ReserveNextArrayArgs) => Promise<number>;
+    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+    reserveCode(code: CodeService.ProposedCode): Promise<void>;
+    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
+    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
+    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
     sasToken: AccessToken;
-    synchronizeWithCloud: () => void;
-    updateCode: (props: CodeService.UpdatedCode) => Promise<void>;
-    updateCodes: (arg: CodeService.UpdateCodesArgs) => Promise<number>;
-    verifyCode: (props: CodeService.ElementCodeProps) => void;
+    synchronizeWithCloud(): void;
+    updateCode(props: CodeService.UpdatedCode): Promise<void>;
+    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    verifyCode(props: CodeService.ElementCodeProps): void;
 }
 
 // @alpha (undocumented)
 export namespace CodeService {
     let // @internal (undocumented)
-    createForBriefcase: undefined | ((db: BriefcaseDb) => CodeService);
+    createForIModel: ((db: IModelDb) => CodeService) | undefined;
     export interface AuthorAndOrigin {
         readonly author: Mutable<NameAndJson>;
         readonly origin: Mutable<NameAndJson>;
@@ -834,8 +834,11 @@ export namespace CodeService {
     export type CodeState = number;
     export type CodeValue = string;
     export interface ElementCodeProps {
-        readonly code: CodeProps;
-        federationGuid?: GuidString;
+        readonly iModel: IModelDb;
+        readonly props: {
+            readonly code: CodeProps;
+            federationGuid?: GuidString;
+        };
     }
     export class Error extends BentleyError {
         // @internal
@@ -849,13 +852,13 @@ export namespace CodeService {
     export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
     export interface MakeProposedCodeArgs {
         // (undocumented)
-        readonly briefcase: BriefcaseDb;
-        // (undocumented)
         readonly code: Required<CodeProps>;
+        // (undocumented)
+        readonly iModel: IModelDb;
         // (undocumented)
         readonly props: CodeService.CodeGuidStateJson;
     }
-    export function makeScopeAndSpec(briefcase: BriefcaseDb, code: CodeProps): CodeService.ScopeAndSpec;
+    export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec;
     export interface NameAndJson {
         // (undocumented)
         readonly json?: SettingObject;
@@ -863,12 +866,6 @@ export namespace CodeService {
         readonly name: string;
     }
     export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
-    export interface ObtainLockParams {
-        nRetries: number;
-        onFailure?: CloudSqlite.WriteLockBusyHandler;
-        retryDelayMs: number;
-        user?: string;
-    }
     export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
     export interface ProposedCodeProps extends CodeGuidStateJson {
         value?: CodeValue;
@@ -1852,7 +1849,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @public
 export interface ExportGraphicsInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     materialId?: Id64String;
@@ -1915,7 +1912,7 @@ export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 // @public
 export interface ExportLinesInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
@@ -1957,7 +1954,7 @@ export interface ExportPartGraphicsOptions {
 
 // @public
 export interface ExportPartInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
@@ -1977,7 +1974,7 @@ export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
 // @public
 export interface ExportPartLinesInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
 }
@@ -3935,6 +3932,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantChunkTraversal?: boolean;
+    // (undocumented)
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
@@ -3949,6 +3948,54 @@ export type ProgressFunction = (loaded: number, total: number) => ProgressStatus
 export enum ProgressStatus {
     Abort = 1,
     Continue = 0
+}
+
+// @alpha
+export interface PropertyStore {
+    readonly appParams: SQLiteDb.ObtainLockParams;
+    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
+    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    sasToken: AccessToken;
+    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
+    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
+    // @internal
+    startPrefetch(): SQLiteDb.CloudPrefetch;
+    synchronizeWithCloud(): void;
+    readonly values: PropertyStore.Values;
+}
+
+// @alpha (undocumented)
+export namespace PropertyStore {
+    let // @internal (undocumented)
+    openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+    export type IterationReturn = void | "stop";
+    export type PropertyArray = {
+        name: PropertyName;
+        value: PropertyType;
+    }[];
+    export interface PropertyFilter {
+        readonly orderBy?: "ASC" | "DESC";
+        readonly sqlExpression?: string;
+        readonly value?: string;
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    }
+    export type PropertyIteration = (name: string) => IterationReturn;
+    export type PropertyName = string;
+    export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+    export interface Values {
+        forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
+        getBlob(name: PropertyName): Uint8Array | undefined;
+        getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
+        getBoolean(name: PropertyName): boolean | undefined;
+        getBoolean(name: PropertyName, defaultValue: boolean): boolean;
+        getNumber(name: PropertyName): number | undefined;
+        getNumber(name: PropertyName, defaultValue: number): number;
+        getObject<T extends SettingObject>(name: PropertyName): T | undefined;
+        getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+        getProperty(name: PropertyName): PropertyType | undefined;
+        getString(name: PropertyName): string | undefined;
+        getString(name: PropertyName, defaultValue: string): string;
+    }
 }
 
 // @public
@@ -4024,7 +4071,7 @@ export class RenderMaterialElement extends DefinitionElement {
     toJSON(): RenderMaterialProps;
 }
 
-// @public (undocumented)
+// @public
 export namespace RenderMaterialElement {
     export class Params {
         constructor(paletteName: string);
@@ -4527,6 +4574,13 @@ export namespace SQLiteDb {
         container: SQLiteDb.CloudContainer;
         dbName: string;
         user: string;
+    }
+    // @internal
+    export interface ObtainLockParams {
+        nRetries: number;
+        onFailure?: CloudSqlite.WriteLockBusyHandler;
+        retryDelayMs: number;
+        user?: string;
     }
     export interface OpenOrCreateParams {
         defaultTxn?: 0 | 1 | 2 | 3;

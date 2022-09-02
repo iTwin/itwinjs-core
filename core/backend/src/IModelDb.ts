@@ -2298,9 +2298,9 @@ export class BriefcaseDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    if (openMode === OpenMode.ReadWrite && CodeService.createForBriefcase) {
+    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
       try {
-        const codeService = CodeService.createForBriefcase(briefcaseDb);
+        const codeService = CodeService.createForIModel(briefcaseDb);
         briefcaseDb._codeService = codeService;
         this.onCodeServiceCreated.raiseEvent(codeService);
       } catch (e: any) {
