@@ -10,7 +10,7 @@ import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, 
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { EntityReferenceSet, DbResult, Id64String } from "@itwin/core-bentley";
+import { DbResult, EntityReferenceSet, Id64String } from "@itwin/core-bentley";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
