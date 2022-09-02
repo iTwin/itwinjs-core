@@ -7,8 +7,10 @@ import { Id64String } from "@itwin/core-bentley";
 import { Point3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
-import { HitDetail, HitPriority, HitSource, SnapDetail } from "../HitDetail";
+import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
+import { LocateResponse, SnapStatus } from "../ElementLocateManager";
 import { ScreenViewport } from "../Viewport";
+import { AccuSnap } from "../AccuSnap";
 
 interface HitDetailProps {
   hitPoint: XYZProps;
@@ -45,6 +47,12 @@ describe.only("AccuSnap", () => {
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl: (props: SnapRequestProps) => SnapResponseProps): void {
       iModel.requestSnap = (props) => Promise.resolve(impl(props));
+    }
+
+    async function requestSnap(hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<{ status: SnapStatus, detail?: SnapDetail }> {
+      const response = new LocateResponse();
+      const detail = await AccuSnap.requestSnap(makeHitDetail(hit), snapModes, 1, 1, undefined, response);
+      return { detail, status: response.snapStatus };
     }
   });
 });
