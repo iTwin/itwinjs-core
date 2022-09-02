@@ -271,10 +271,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             let documentsDirectory = getDocumentsDirectory()
             let bimFile = documentsDirectory.appendingPathComponent(standaloneFilename)
             setupFrontend(bimFile: bimFile)
-        }
-        else if let _ = authClient,
-                let iModelId = configData["IMJS_IMODEL_ID"] as? String,
-                let iTwinId = configData["IMJS_ITWIN_ID"] as? String {
+        } else if let _ = authClient,
+                  let iModelId = configData["IMJS_IMODEL_ID"] as? String,
+                  let iTwinId = configData["IMJS_ITWIN_ID"] as? String {
             setupFrontend(bimFile: nil, iModelId: iModelId, iTwinId: iTwinId)
         }
     }
