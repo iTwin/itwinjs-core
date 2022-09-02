@@ -1142,8 +1142,6 @@ export namespace RenderSchedule {
         timeline.addSymbologyOverrides(overrides, time);
     }
 
-    // FIXME: check this is tested
-
     /** Used by the [Element.collectReferenceIds]($backend) method overrides in RenderTimeline and DisplayStyle.
      * @internal
      */

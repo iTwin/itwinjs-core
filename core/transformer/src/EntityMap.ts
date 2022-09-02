@@ -7,9 +7,6 @@
  */
 import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
 
-// possible table types in current BisCore
-// TODO: verify that it is impossible to have an id collision between two non-element entity tables (check preserveElementIdsForFiltering)
-// TODO: verify the BisCore schema has no other real tables in an iModel before proceeding here
 /** @internal */
 export type EntityKey = EntityReference;
 
