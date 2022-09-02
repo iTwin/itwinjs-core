@@ -86,20 +86,21 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
                 if let response = response as? HTTPURLResponse
                 {
                     if response.statusCode == 200 {
-                        if let data = data {
-                            if let json = try? JSONSerialization.jsonObject(with: data) as? JSON {
-                                if let accessToken = json["access_token"] as? String {
-                                    self.accessToken = "Bearer \(accessToken)"
-                                } else {
-                                    self.accessToken = nil
-                                }
-                                if let expiresIn = json["expires_in"] as? Double {
-                                    self.expirationDate = Date(timeIntervalSinceNow: expiresIn)
-                                } else {
-                                    self.expirationDate = nil
-                                }
-                                completion(nil)
+                        if let data = data,
+                           let json = try? JSONSerialization.jsonObject(with: data) as? JSON {
+                            if let accessToken = json["access_token"] as? String {
+                                self.accessToken = "Bearer \(accessToken)"
+                            } else {
+                                self.accessToken = nil
                             }
+                            if let expiresIn = json["expires_in"] as? Double {
+                                self.expirationDate = Date(timeIntervalSinceNow: expiresIn)
+                            } else {
+                                self.expirationDate = nil
+                            }
+                            completion(nil)
+                        } else {
+                            completion(self.error(reason: "Invalid response body."))
                         }
                     } else {
                         completion(self.error(reason: "Status code: \(response.statusCode)"))
