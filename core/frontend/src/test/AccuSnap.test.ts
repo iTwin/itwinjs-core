@@ -12,7 +12,7 @@ import { LocateResponse, SnapStatus } from "../ElementLocateManager";
 import { ScreenViewport } from "../Viewport";
 import { AccuSnap } from "../AccuSnap";
 import { IModelApp } from "../IModelApp";
-import { testBlankViewport } from "./openBlankViewport";
+import { testBlankViewportAsync } from "./openBlankViewport";
 
 interface HitDetailProps {
   hitPoint?: XYZProps;
@@ -74,7 +74,7 @@ describe.only("AccuSnap", () => {
     }
 
     async function testSnap(hit: HitDetailProps, verify: (response: SnapResponse) => void, snapModes: SnapMode[] = [], configureViewport?: (vp: ScreenViewport) => void): Promise<void> {
-      testBlankViewport(async (vp) => {
+      await testBlankViewportAsync(async (vp) => {
         if (configureViewport)
           configureViewport(vp);
 
@@ -84,7 +84,7 @@ describe.only("AccuSnap", () => {
     }
 
     it("fails for intersection on map, model, or classifier", async () => {
-      const modes = [SnapMode.Nearest];
+      const modes = [SnapMode.Intersection];
       await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
       await testSnap({ isClassifier: true }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
       await testSnap(

@@ -79,3 +79,20 @@ export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenV
     vp.dispose();
   }
 }
+
+export type TestBlankViewportAsyncOptions = BlankViewportOptions & { test: (vp: ScreenViewport) => Promise<void> };
+
+/** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
+ * @internal
+ */
+export async function testBlankViewportAsync(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): Promise<void> {
+  const vp = openBlankViewport(typeof args === "function" ? undefined : args);
+  try {
+    if (typeof args === "function")
+      await args(vp);
+    else
+      await args.test(vp);
+  } finally {
+    vp.dispose();
+  }
+}
