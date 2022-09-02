@@ -40,10 +40,12 @@ export class IModelCloneContext {
     this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
   }
 
+  /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
   public async initialize() {
     await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(this.sourceDb);
   }
 
+  /** construct and initialize an IModelCloneContext at once, for where you construct in an async context */
   public async create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext> {
     const instance = new IModelCloneContext(...args);
     await instance.initialize();

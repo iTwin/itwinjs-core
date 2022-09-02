@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { EntityReferences as BentleyEntityReferences, EntityReference, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
+import { EntityReferences as BentleyEntityReferences, ConcreteEntityTypes, EntityReference, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
@@ -56,17 +56,21 @@ export class EntityReferences extends BentleyEntityReferences {
   }
   /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
 
+  /** create an EntityReference given an entity */
   public static from(entity: ConcreteEntity): EntityReference {
     const type = this.typeFromClass(entity.constructor as typeof Entity);
     return `${type}${entity.id}`;
   }
 
+  /** create an EntityReference given an id and a JavaScript class */
   public static fromClass(id: Id64String, entityClass: typeof Entity): EntityReference {
     const type = this.typeFromClass(entityClass);
     return `${type}${id}`;
   }
 
-  /** Searches for a class by name in the [ClassRegistry]($backend) */
+  /** Create an EntityReference given an id and a qualified EC class name
+   * @note Searches for a class by name in the [ClassRegistry]($backend)
+   */
   public static fromClassFullName(id: Id64String, classFullName: string): EntityReference {
     const ecclass = this._ClassRegistry.findRegisteredClass(classFullName);
     if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
