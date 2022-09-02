@@ -2574,7 +2574,7 @@ export namespace IModelJson {
         capped?: boolean;
         height?: number;
         // @deprecated (undocumented)
-        origin: XYZProps;
+        origin?: XYZProps;
         topOrigin?: XYZProps;
         topX?: number;
         topY?: number;
