@@ -8,7 +8,7 @@ import { IModelConnection, SnapshotConnection, ViewRect } from "@itwin/core-fron
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewportsWithDpr } from "../TestViewport";
 
-describe("Wait for tiles", () => {
+describe.only("Wait for scene completion", () => {
   let imodel: IModelConnection;
 
   before(async () => {
@@ -29,14 +29,15 @@ describe("Wait for tiles", () => {
     }
   }
 
-  it("should successfully wait for all tiles to load and render", async () => {
+  it("should successfully wait for scene completion", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       expect(vp.view.is3d());
 
       vp.viewFlags = vp.viewFlags.copy({ visibleEdges: false, lighting: false, renderMode: RenderMode.SmoothShade });
 
-      await vp.waitForTilesToLoad();
+      vp.invalidateScene();
+      await vp.waitForSceneCompletion();
       expect(vp.numRequestedTiles).to.equal(0);
       expect(vp.numSelectedTiles).to.equal(1);
 

@@ -2496,9 +2496,8 @@ export abstract class Viewport implements IDisposable, TileUser {
 
   /** Waits for all tiles to load and render for this viewport.
    * @returns A promise which will resolve when all tiles finish loading and are rendered for this viewport.
-   * @param options The options governing how this method behaves. Particularly, if the `isAddedToViewManager` property is false (defaults to true), this method will pump the tile request scheduler itself.
    */
-  public async waitForTilesToLoad(options: {isAddedToViewManager: boolean} = {isAddedToViewManager: true}): Promise<void> {
+  public async waitForSceneCompletion(): Promise<void> {
     let haveNewTiles = true;
     while (haveNewTiles) {
       this.requestRedraw();
@@ -2527,15 +2526,13 @@ export abstract class Viewport implements IDisposable, TileUser {
         }
       }
 
-      // NB: If the viewport is NOT added to the ViewManager's render loop, then we must manually pump the tile request scheduler.
-      if (!options.isAddedToViewManager && haveNewTiles)
+      if (!IModelApp.viewManager.hasViewport(this) && haveNewTiles)
         IModelApp.tileAdmin.process();
 
       await BeDuration.wait(100);
     }
 
     await IModelApp.renderSystem.waitForAllExternalTextures();
-
     this.renderFrame();
   }
 

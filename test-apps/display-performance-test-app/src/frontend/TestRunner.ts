@@ -514,7 +514,7 @@ export class TestRunner {
 
   private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
     const timer = new StopWatch(undefined, true);
-    await viewport.waitForTilesToLoad({isAddedToViewManager: false});
+    await viewport.waitForSceneCompletion();
     timer.stop();
 
     const selectedTiles = getSelectedTileStats(viewport);

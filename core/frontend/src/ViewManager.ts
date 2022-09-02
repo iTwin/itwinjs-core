@@ -13,7 +13,7 @@ import { IModelConnection } from "./IModelConnection";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
-import { ScreenViewport, ViewportDecorator } from "./Viewport";
+import { ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
 import { System } from "./render/webgl/System";
 
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
@@ -145,6 +145,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
+  }
+
+  /** @internal */
+  public hasViewport(vpToFind: Viewport) {
+    for (const vp of this._viewports)
+      if (vp === vpToFind)
+        return true;
+    return false;
   }
 
   /** Called after the selected view changes.
