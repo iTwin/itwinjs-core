@@ -52,11 +52,11 @@ describe.only("AccuSnap", () => {
     type SnapResponse = SnapStatus | SnapDetail;
 
     function assertSnapDetail(response: SnapResponse): SnapDetail {
-      expect(response).instanceOf(SnapResponse);
+      expect(response).instanceOf(SnapDetail);
       return response as SnapDetail;
     }
 
-    async function requestSnap(hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<{ status: SnapStatus, detail?: SnapDetail }> {
+    async function requestSnap(hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<SnapResponse> {
       const response = new LocateResponse();
       const detail = await AccuSnap.requestSnap(makeHitDetail(hit), snapModes, 1, 1, undefined, response);
       if (detail) {
