@@ -7,14 +7,14 @@ import * as sinon from "sinon";
 import * as path from "path";
 import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, ModelProps, RelatedElement, RelatedElementProps, RelationshipProps } from "@itwin/core-common";
 import {
-  ConcreteEntityIds, DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, IModelDb, IModelSchemaLoader, Model, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
-import { ConcreteEntityIdSet, ConcreteEntityTypes } from "@itwin/core-bentley";
+import { ConcreteEntityTypes, EntityReferenceSet } from "@itwin/core-bentley";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -260,9 +260,9 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ]);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -320,10 +320,10 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
-      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && EntityReferences.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
     const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
@@ -366,12 +366,12 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...modelWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      ConcreteEntityIds.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(modelTestEntityIds[0], ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
+      EntityReferences.fromEntityType(modelTestEntityIds[1], ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(IModelDb.dictionaryId, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(modelTestEntityIds[0], ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
       // ignoring this one, because there seems to be a bug when specifying a relationship instance as a nav prop
-      // ConcreteEntityIds.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
+      // EntityReferences.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
 
     const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
@@ -412,16 +412,16 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...relWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      ...relTestEntityIds.map((id) => ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Element)),
-      ConcreteEntityIds.fromEntityType(modelWithNavPropId, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
+      ...relTestEntityIds.map((id) => EntityReferences.fromEntityType(id, ConcreteEntityTypes.Element)),
+      EntityReferences.fromEntityType(modelWithNavPropId, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(aspectWithNavPropId, ConcreteEntityTypes.ElementAspect),
     ]);
   });
 
   it("should not override custom registered schema class implementations of collectReferenceConcreteIds", async () => {
     const testImplReferenceId = "TEST-INVALID-ID";
     class MyTestElementWithNavProp extends TestElementWithNavProp {
-      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
+      public override collectReferenceConcreteIds(referenceIds: EntityReferenceSet) {
         super.collectReferenceConcreteIds(referenceIds);
         referenceIds.addElement(testImplReferenceId);
       }
@@ -473,10 +473,10 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...elemWithNavProp.getReferenceConcreteIds()],
     ).to.have.members([
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
-      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && EntityReferences.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
     expect(testElementWithNavPropCollectReferencesSpy.called).to.be.true;
@@ -505,10 +505,10 @@ describe("Class Registry - generated classes", () => {
     expect(
       [...derivedElemWithNavProp.getReferenceConcreteIds()]
     ).to.have.members([
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
-      ConcreteEntityIds.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
-      elemWithNavProp.parent && ConcreteEntityIds.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
-      ConcreteEntityIds.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(elemWithNavProp.model, ConcreteEntityTypes.Model),
+      EntityReferences.fromEntityType(elemWithNavProp.code.scope, ConcreteEntityTypes.Element),
+      elemWithNavProp.parent && EntityReferences.fromEntityType(elemWithNavProp.parent?.id, ConcreteEntityTypes.Element),
+      EntityReferences.fromEntityType(testImplReferenceId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
     // explicitly check we called the super function
     // (we already know its implementation was called, because testImplReferenceId is in the derived call's result)
@@ -520,13 +520,13 @@ describe("Class Registry - generated classes", () => {
 
   it("should work along a complex chain of overrides", async () => {
     class MyDerived2 extends Derived2 {
-      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
+      public override collectReferenceConcreteIds(referenceIds: EntityReferenceSet) {
         super.collectReferenceConcreteIds(referenceIds);
         referenceIds.addElement("derived-2");
       }
     }
     class MyDerived4 extends Derived4 {
-      public override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet) {
+      public override collectReferenceConcreteIds(referenceIds: EntityReferenceSet) {
         super.collectReferenceConcreteIds(referenceIds);
         referenceIds.addElement("derived-4");
       }

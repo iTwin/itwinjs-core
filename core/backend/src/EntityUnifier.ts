@@ -8,9 +8,9 @@
  * for entity-generic operations in the transformer
  */
 import * as assert from "assert";
-import { ConcreteEntityId, ConcreteEntityIds, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
+import { ConcreteEntityTypes, EntityReference, EntityReferences, Id64String } from "@itwin/core-bentley";
 import { DbResult, IModelError } from "@itwin/core-common";
-import { ConcreteEntity, ConcreteEntityProps } from "./ConcreteEntityId";
+import { ConcreteEntity, ConcreteEntityProps } from "./EntityReference";
 import { ElementAspect } from "./ElementAspect";
 import { Element } from "./Element";
 import { Relationship } from "./Relationship";
@@ -35,9 +35,9 @@ export namespace EntityUnifier {
     else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
   }
 
-  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { concreteEntityId: ConcreteEntityId }) {
-    if ("concreteEntityId" in arg) {
-      const [type, id] = ConcreteEntityIds.split(arg.concreteEntityId);
+  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { entityReference: EntityReference }) {
+    if ("entityReference" in arg) {
+      const [type, id] = EntityReferences.split(arg.entityReference);
       const bisCoreRootClassName = ConcreteEntityTypes.toBisCoreRootClassFullName(type);
       return db.withPreparedStatement(`SELECT 1 FROM ${bisCoreRootClassName} WHERE ECInstanceId=?`, (stmt) => {
         stmt.bindId(1, id);

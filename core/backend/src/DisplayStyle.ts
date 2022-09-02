@@ -11,7 +11,7 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
-import { ConcreteEntityIdSet } from "./ConcreteEntityId";
+import { EntityReferenceSet } from "./EntityReference";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -42,7 +42,7 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
       referenceIds.addElement(id);
@@ -213,7 +213,7 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
       referenceIds.addElement(textureId);

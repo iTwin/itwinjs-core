@@ -7,9 +7,9 @@
  */
 
 import * as assert from "assert";
-import { ConcreteEntityIdSet, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { EntityReferenceSet, DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { ConcreteEntityIds } from "./ConcreteEntityId";
+import { EntityReferences } from "./EntityReference";
 import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
@@ -71,7 +71,7 @@ export class Relationship extends Entity {
   /**
    * For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
    */
-  protected override collectReferenceConcreteIds(referenceIds: ConcreteEntityIdSet): void {
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     // FIXME: test this
     super.collectReferenceConcreteIds(referenceIds);
     let relInfo: RelTypeInfo;
@@ -85,8 +85,8 @@ export class Relationship extends Entity {
         "or, the relationship's reference type info may be undefined if this link table relationship references a CodeSpec, which is not supported",
       ].join("\n"));
     }
-    referenceIds.add(ConcreteEntityIds.fromEntityType(this.sourceId, relInfo.source));
-    referenceIds.add(ConcreteEntityIds.fromEntityType(this.targetId, relInfo.target));
+    referenceIds.add(EntityReferences.fromEntityType(this.sourceId, relInfo.source));
+    referenceIds.add(EntityReferences.fromEntityType(this.targetId, relInfo.target));
   }
 }
 

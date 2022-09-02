@@ -8,15 +8,15 @@
 import * as path from "path";
 import * as Semver from "semver";
 import {
-  AccessToken, assert, ConcreteEntityId, ConcreteEntityIdSet, ConcreteEntityTypes, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
+  AccessToken, assert, ConcreteEntityTypes, DbResult, EntityReference, EntityReferenceSet, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, MarkRequired,
   OpenMode, YieldManager,
 } from "@itwin/core-bentley";
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
-  ChannelRootAspect, ConcreteEntity, ConcreteEntityIds, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, EntityUnifier, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
+  ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, EntityUnifier, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
@@ -158,10 +158,10 @@ class PartiallyCommittedEntity {
      * It is possible for the submodel of an element to be separately resolved from the actual element,
      * so its resolution must be tracked separately
      */
-    private _missingReferences: ConcreteEntityIdSet,
+    private _missingReferences: EntityReferenceSet,
     private _onComplete: () => void
   ) {}
-  public resolveReference(id: ConcreteEntityId) {
+  public resolveReference(id: EntityReference) {
     this._missingReferences.delete(id);
     if (this._missingReferences.size === 0) this._onComplete();
   }
@@ -598,8 +598,8 @@ export class IModelTransformer extends IModelExportHandler {
     sourceEntity: ConcreteEntity
   ) {
     return () => {
-      const targetId = this.context.findTargetEntityId(ConcreteEntityIds.from(sourceEntity));
-      if (!ConcreteEntityIds.isValid(targetId))
+      const targetId = this.context.findTargetEntityId(EntityReferences.from(sourceEntity));
+      if (!EntityReferences.isValid(targetId))
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
       const onEntityTransform = IModelTransformer.transformCallbackFor(this, sourceEntity);
       const updateEntity = EntityUnifier.updaterFor(this.targetDb, sourceEntity);
@@ -608,7 +608,7 @@ export class IModelTransformer extends IModelExportHandler {
         (targetProps as RelationshipProps).sourceId = this.context.findTargetElementId(sourceEntity.sourceId);
         (targetProps as RelationshipProps).targetId = this.context.findTargetElementId(sourceEntity.targetId);
       }
-      updateEntity({ ...targetProps, id: ConcreteEntityIds.toId64(targetId) });
+      updateEntity({ ...targetProps, id: EntityReferences.toId64(targetId) });
       this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
@@ -617,16 +617,16 @@ export class IModelTransformer extends IModelExportHandler {
    * create a [[PartiallyCommittedEntity]] to track resolution of those references
    */
   private collectUnmappedReferences(entity: ConcreteEntity) {
-    const missingReferences = new ConcreteEntityIdSet();
+    const missingReferences = new EntityReferenceSet();
     let thisPartialElem: PartiallyCommittedEntity | undefined;
 
     for (const referenceId of entity.getReferenceConcreteIds()) {
       // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
-      const concreteIdInTarget = this.context.findTargetEntityId(referenceId);
-      const alreadyImported = ConcreteEntityIds.isValid(concreteIdInTarget);
+      const referenceIdInTarget = this.context.findTargetEntityId(referenceId);
+      const alreadyImported = EntityReferences.isValid(referenceIdInTarget);
       if (alreadyImported) continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
-      const referencedExistsInSource = EntityUnifier.exists(this.sourceDb, { concreteEntityId: referenceId });
+      const referencedExistsInSource = EntityUnifier.exists(this.sourceDb, { entityReference: referenceId });
       if (!referencedExistsInSource) {
         Logger.logWarning(loggerCategory, `Source ${EntityUnifier.getReadableType(entity)} (${entity.id}) has a dangling reference to (${referenceId})`);
         switch (this._options.danglingReferencesBehavior) {
@@ -651,8 +651,8 @@ export class IModelTransformer extends IModelExportHandler {
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
       missingReferences.add(referenceId);
-      const concreteEntityId = ConcreteEntityIds.from(entity);
-      this._pendingReferences.set({ referenced: referenceId, referencer: concreteEntityId }, thisPartialElem);
+      const entityReference = EntityReferences.from(entity);
+      this._pendingReferences.set({ referenced: referenceId, referencer: entityReference }, thisPartialElem);
     }
   }
 
@@ -730,8 +730,8 @@ export class IModelTransformer extends IModelExportHandler {
 
   private getElemTransformState(elementId: Id64String) {
     const dbHasModel = (db: IModelDb, id: Id64String) => {
-      const maybeModelId = ConcreteEntityIds.fromEntityType(id, ConcreteEntityTypes.Model);
-      return EntityUnifier.exists(db, { concreteEntityId: maybeModelId });
+      const maybeModelId = EntityReferences.fromEntityType(id, ConcreteEntityTypes.Model);
+      return EntityUnifier.exists(db, { entityReference: maybeModelId });
     };
     const isSubModeled = dbHasModel(this.sourceDb, elementId);
     const idOfElemInTarget = this.context.findTargetElementId(elementId);
@@ -808,7 +808,7 @@ export class IModelTransformer extends IModelExportHandler {
       const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
-      pendingRef.resolveReference(ConcreteEntityIds.from(entity));
+      pendingRef.resolveReference(EntityReferences.from(entity));
       this._pendingReferences.delete(key);
     }
   }

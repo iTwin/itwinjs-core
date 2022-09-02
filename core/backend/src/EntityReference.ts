@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { ConcreteEntityIds as BentleyConcreteEntityIds, ConcreteEntityId, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
+import { EntityReferences as BentleyEntityReferences, EntityReference, ConcreteEntityTypes, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
@@ -16,7 +16,7 @@ import type { Relationship, RelationshipProps } from "./Relationship";
 import * as assert from "assert";
 
 // re-export so consumers don't need to manually import the basic types we are extending
-export * from "@itwin/core-bentley/lib/cjs/ConcreteEntityId";
+export * from "@itwin/core-bentley/lib/cjs/EntityReference";
 
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
  * other entity classes. In the future if there is a need
@@ -31,10 +31,10 @@ export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 /**
- * Utility function namespace for the ConcreteEntityId type which is a string
+ * Utility function namespace for the EntityReference type which is a string
  * @alpha
  */
-export class ConcreteEntityIds extends BentleyConcreteEntityIds {
+export class EntityReferences extends BentleyEntityReferences {
 
   // necessary to prevent cyclic dependencies, the required modules will be in the require cache already so I don't store
   /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
@@ -56,25 +56,25 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
   }
   /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
 
-  public static from(entity: ConcreteEntity): ConcreteEntityId {
+  public static from(entity: ConcreteEntity): EntityReference {
     const type = this.typeFromClass(entity.constructor as typeof Entity);
     return `${type}${entity.id}`;
   }
 
-  public static fromClass(id: Id64String, entityClass: typeof Entity): ConcreteEntityId {
+  public static fromClass(id: Id64String, entityClass: typeof Entity): EntityReference {
     const type = this.typeFromClass(entityClass);
     return `${type}${id}`;
   }
 
   /** Searches for a class by name in the [ClassRegistry]($backend) */
-  public static fromClassFullName(id: Id64String, classFullName: string): ConcreteEntityId {
+  public static fromClassFullName(id: Id64String, classFullName: string): EntityReference {
     const ecclass = this._ClassRegistry.findRegisteredClass(classFullName);
     if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
     return this.fromClass(id, ecclass);
   }
 
   /** Searches for a class by name in the [ClassRegistry]($backend) */
-  public static fromEntityType(id: Id64String, type: ConcreteEntityTypes): ConcreteEntityId {
+  public static fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
     return `${type}${id}`;
   }
 
@@ -84,6 +84,6 @@ export class ConcreteEntityIds extends BentleyConcreteEntityIds {
     else if (entityClass.is(this._ElementAspectClass)) return ConcreteEntityTypes.ElementAspect;
     else if (entityClass.is(this._ModelClass)) return ConcreteEntityTypes.Model;
     else if (entityClass.is(this._RelationshipClass)) return ConcreteEntityTypes.Relationship;
-    else assert(false, "unknown or abstract entity type passed to ConcreteEntityIds.from");
+    else assert(false, "unknown or abstract entity type passed to EntityReferences.from");
   }
 }
