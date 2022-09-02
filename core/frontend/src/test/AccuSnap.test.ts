@@ -11,10 +11,11 @@ import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitD
 import { LocateResponse, SnapStatus } from "../ElementLocateManager";
 import { ScreenViewport } from "../Viewport";
 import { AccuSnap } from "../AccuSnap";
+import { IModelApp } from "../IModelApp";
+import { testBlankViewport } from "./openBlankViewport";
 
 interface HitDetailProps {
-  hitPoint: XYZProps;
-  viewport: ScreenViewport;
+  hitPoint?: XYZProps;
   testPoint?: XYZProps; // defaults to hitPoint
   iModel?: IModelConnection;
   sourceId?: Id64String;
@@ -24,29 +25,33 @@ interface HitDetailProps {
   geometryClass?: GeometryClass;
 }
 
-function makeHitDetail(props: HitDetailProps): HitDetail {
+function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
+  const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
   return new HitDetail(
-    Point3d.fromJSON(props.testPoint ?? props.hitPoint),
-    props.viewport,
+    Point3d.fromJSON(props?.testPoint ?? hitPoint),
+    vp,
     HitSource.AccuSnap,
-    Point3d.fromJSON(props.hitPoint),
-    props.sourceId ?? "0",
+    Point3d.fromJSON(hitPoint),
+    props?.sourceId ?? "0",
     HitPriority.Unknown,
     0,
     0,
-    props.subCategoryId,
-    props.geometryClass,
-    props.modelId,
-    props.iModel,
+    props?.subCategoryId,
+    props?.geometryClass,
+    props?.modelId,
+    props?.iModel,
     undefined,
-    props.isClassifier
+    props?.isClassifier
   );
 }
 
 describe.only("AccuSnap", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
   describe("requestSnap", () => {
-    function overrideRequestSnap(iModel: IModelConnection, impl: (props: SnapRequestProps) => SnapResponseProps): void {
-      iModel.requestSnap = (props) => Promise.resolve(impl(props));
+    function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
+      iModel.requestSnap = (props) => Promise.resolve(impl ? impl(props) : { status: SnapStatus.Success, hitPoint: props.testPoint });
     }
 
     type SnapResponse = SnapStatus | SnapDetail;
@@ -56,9 +61,9 @@ describe.only("AccuSnap", () => {
       return response as SnapDetail;
     }
 
-    async function requestSnap(hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<SnapResponse> {
+    async function requestSnap(vp: ScreenViewport, hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<SnapResponse> {
       const response = new LocateResponse();
-      const detail = await AccuSnap.requestSnap(makeHitDetail(hit), snapModes, 1, 1, undefined, response);
+      const detail = await AccuSnap.requestSnap(makeHitDetail(vp, hit), snapModes, 1, 1, undefined, response);
       if (detail) {
         expect(response.snapStatus).to.equal(SnapStatus.Success);
         return detail;
@@ -67,5 +72,27 @@ describe.only("AccuSnap", () => {
         return response.snapStatus;
       }
     }
+
+    async function testSnap(hit: HitDetailProps, verify: (response: SnapResponse) => void, snapModes: SnapMode[] = [], configureViewport?: (vp: ScreenViewport) => void): Promise<void> {
+      testBlankViewport(async (vp) => {
+        if (configureViewport)
+          configureViewport(vp);
+
+        const response = await requestSnap(vp, hit, snapModes);
+        verify(response);
+      });
+    }
+
+    it("fails for intersection on map, model, or classifier", async () => {
+      const modes = [SnapMode.Nearest];
+      await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
+      await testSnap({ isClassifier: true }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x123" },
+        (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
+        modes,
+        (vp) => vp.mapLayerFromHit = () => { return {} as any; }
+      );
+    });
   });
 });
