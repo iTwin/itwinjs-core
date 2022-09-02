@@ -1941,42 +1941,6 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("new bug test", async () => {
-    const seedDb = SnapshotDb.openFile("/tmp/bad-scope.bim");
-    const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NewBugSource.bim");
-    const sourceDb = SnapshotDb.createFrom(seedDb, sourceDbPath);
-
-    sourceDb.saveChanges();
-
-    const targetDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ExhaustiveIdentityTransformTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: sourceDb.rootSubject });
-
-    const targetModelId = PhysicalModel.insert(targetDb, IModel.rootSubjectId, "phys-model-in-target");
-
-    targetDb.saveChanges();
-
-    class TestTransformer extends IModelTransformer {
-      public remapCount = 0;
-      public override shouldExportElement(sourceElement: Element): boolean {
-        if (sourceElement instanceof PhysicalPartition) {
-          this.remapCount++;
-          this.context.remapElement(sourceElement.id, targetModelId);
-        }
-        return super.shouldExportElement(sourceElement);
-      }
-    }
-
-    const transformer = new TestTransformer(sourceDb, targetDb, { includeSourceProvenance: true });
-    transformer.importer.doNotUpdateElementIds.add(targetModelId);
-
-    await expect(transformer.processSchemas()).to.eventually.be.fulfilled;
-    await expect(transformer.processAll()).to.eventually.be.fulfilled;
-    expect(transformer.remapCount).to.be.greaterThanOrEqual(2);
-
-    sourceDb.close();
-    targetDb.close();
-  });
-
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
