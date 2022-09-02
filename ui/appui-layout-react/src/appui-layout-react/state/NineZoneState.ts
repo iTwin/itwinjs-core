@@ -8,14 +8,14 @@
 
 // Cspell:ignore popout
 import produce from "immer";
-import { PointProps, Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { createTabsState, updateTabState } from "./internal/TabStateHelpers";
 import { addFloatingWidget, addPopoutWidget, FloatingWidgetsState, PopoutWidgetsState, WidgetsState } from "./WidgetState";
 import { PanelsState } from "./PanelState";
 import { ToolSettingsState } from "./ToolSettingsState";
 import { createPanelsState } from "./internal/PanelStateHelpers";
 import { DraggedTabState, removeTabFromWidget, TabsState } from "./TabState";
-import { UiError } from "@itwin/appui-abstract";
+import { PointProps, UiError } from "@itwin/appui-abstract";
 import { getUniqueId } from "../base/NineZone";
 import { category, convertPopoutWidgetContainerToFloating } from "./internal/NineZoneStateHelpers";
 import { NineZoneStateReducer } from "./NineZoneStateReducer";
