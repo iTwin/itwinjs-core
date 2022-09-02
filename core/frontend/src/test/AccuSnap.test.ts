@@ -6,13 +6,10 @@ import { expect } from "chai";
 import { SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 
-function overrideRequestSnap(iModel: IModelConnection, impl: (iModel: IModelConnection, props: SnapRequestProps) => Promise<SnapResponseProps>): () => void {
-  const baseImpl = iModel.requestSnap;
-  iModel.requestSnap = (props) => impl(iModel, props);
-  return () => iModel.requestSnap = baseImpl;
-}
-
 describe.only("AccuSnap", () => {
   describe("requestSnap", () => {
+    function overrideRequestSnap(iModel: IModelConnection, impl: (iModel: IModelConnection, props: SnapRequestProps) => SnapResponseProps): void {
+      iModel.requestSnap = (props) => Promise.resolve(impl(iModel, props));
+    }
   });
 });
