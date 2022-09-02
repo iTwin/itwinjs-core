@@ -45,7 +45,6 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
     "GHSA-cfm4-qjh2-4765", // https://github.com/advisories/GHSA-cfm4-qjh2-4765 @bentley/react-scripts>webpack-dev-server>selfsigned>node-forge
     "GHSA-fwr7-v2mv-hh25", // https://github.com/advisories/GHSA-fwr7-v2mv-hh25 @bentley/react-scripts>fast-sass-loader>async, @bentley/react-scripts>webpack-dev-server>portfinder>async
     "GHSA-phwq-j96m-2c2q", // https://github.com/advisories/GHSA-phwq-j96m-2c2q @bentley/react-scripts>workbox-webpack-plugin>workbox-build>@surma/rollup-plugin-off-main-thread>ejs
-    "GHSA-93q8-gq69-wqmw", // https://github.com/advisories/GHSA-93q8-gq69-wqmw mocha>wide-align>string-width@2.1.1>strip-ansi@4.0.0>ansi-regex@3.0.0, @bentley/build-tools>mocha-junit-reporter>strip-ansi@4.0.0>ansi-regex@3.0.0, chai-jest-snapshot>jest-snapshot>pretty-format>ansi-regex@3.0.0
     "GHSA-6h5x-7c5m-7cr7", // https://github.com/advisories/GHSA-6h5x-7c5m-7cr7 @bentley/react-scripts>webpack-dev-server>sockjs-client>eventsource
     "GHSA-rp65-9cf3-cjxr", // https://github.com/advisories/GHSA-rp65-9cf3-cjxr @bentley/react-scripts>@svgr/webpack>@svgr/plugin-svgo>svgo>css-select>nth-check
     "GHSA-wc69-rhjr-hc9g", // https://github.com/advisories/GHSA-wc69-rhjr-hc9g backend-integration-tests>azurite>sequelize>moment
