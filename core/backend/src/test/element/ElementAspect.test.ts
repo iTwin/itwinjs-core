@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, SubCategoryAppearance } from "@itwin/core-common";
-import {
-  Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
-} from "../../core-backend";
+import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, IModel, IModelError, QueryRowFormat, SubCategoryAppearance, SubjectProps } from "@itwin/core-common";
+import { ChannelRootAspect, Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory, Subject, SubjectOwnsSubjects } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
@@ -131,6 +129,91 @@ describe("ElementAspect", () => {
 
     const allAspects: ElementAspect[] = iModel.elements.getAspects(element.id);
     assert.equal(allAspects.length, 6);
+  });
+
+  it.skip("should be able to change the element to which an aspect attaches", async (): Promise<void> => {
+    const file = IModelTestUtils.prepareOutputFile("ElementAspect", "ExternalSourceAspect.bim");
+    const imodel = SnapshotDb.createEmpty(file, { rootSubject: { name: "ExternalSourceAspect" } });
+
+    const harbor: SubjectProps = {
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(imodel, IModel.rootSubjectId, "harbor"),
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      description: "a harbor made from boulders arranged in an open ring",
+    };
+
+    const boats: SubjectProps = {
+      classFullName: Subject.classFullName,
+      code: Subject.createCode(imodel, IModel.rootSubjectId, "boats"),
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(IModel.rootSubjectId),
+      description: "small single-engine fishing boats and houseboats",
+    };
+
+    const harborId = imodel.elements.insertElement(harbor);
+    const boatsId = imodel.elements.insertElement(boats);
+
+    const root: ChannelRootAspectProps = {
+      classFullName: ChannelRootAspect.classFullName,
+      element: { id: harborId },
+      owner: "harbormaster",
+    };
+
+    imodel.elements.insertAspect(root);
+
+    imodel.saveChanges("write harbor and boats and aspect");
+
+    // Assert that the aspect is attached to the harbor.
+    {
+      const aspectAttachedToHarbor = (
+        "select * from bis:Subject as subject"
+        + " inner join bis:ChannelRootAspect as aspect on subject.ECInstanceId = aspect.Element.id"
+        + " and subject.CodeValue = 'harbor' and aspect.Owner = 'harbormaster'"
+      );
+
+      const found = [];
+      for await (const aspect of imodel.query(
+        aspectAttachedToHarbor, undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      )) {
+        found.push(aspect);
+      }
+
+      assert.strictEqual(found.length, 1);
+    }
+
+    // Note: Aspect API still needs work; no handle!
+    const found = imodel.elements.getAspects(harborId);
+
+    assert.exists(found);
+    assert.strictEqual(found.length, 1);
+
+    root.id = found[0].id;
+    root.element.id = boatsId;
+
+    imodel.elements.updateAspect(root);
+
+    imodel.saveChanges("move the aspect to the boats");
+
+    // Assert that the aspect is attached to the boats.
+    {
+      const aspectAttachedToBoats = (
+        "select * from bis:Subject as subject"
+        + " inner join bis:ChannelRootAspect as aspect on subject.ECInstanceId = aspect.Element.id"
+        + " and subject.CodeValue = 'boats' and aspect.Owner = 'harbormaster'"
+      );
+
+      const found = [];
+      for await (const aspect of imodel.query(
+        aspectAttachedToBoats, undefined,
+        { rowFormat: QueryRowFormat.UseJsPropertyNames }
+      )) {
+        found.push(aspect);
+      }
+
+      assert.strictEqual(found.length, 1);
+    }
   });
 
   it("should be able to insert, update, and delete MultiAspects", () => {
