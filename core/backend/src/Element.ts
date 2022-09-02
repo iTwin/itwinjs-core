@@ -6,7 +6,7 @@
  * @module Elements
  */
 
-import { CompressedId64Set, EntityReferenceSet, ConcreteEntityTypes, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
+import { CompressedId64Set, ConcreteEntityTypes, EntityReferenceSet, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
   ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
@@ -349,6 +349,7 @@ export class Element extends Entity {
     return this.collectReferenceIds(predecessorIds);
   }
 
+  /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addModel(this.model); // The modeledElement is a reference
