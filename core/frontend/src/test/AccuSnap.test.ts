@@ -75,6 +75,7 @@ describe.only("AccuSnap", () => {
 
     async function testSnap(hit: HitDetailProps, verify: (response: SnapResponse) => void, snapModes: SnapMode[] = [], configureViewport?: (vp: ScreenViewport) => void): Promise<void> {
       await testBlankViewportAsync(async (vp) => {
+        overrideRequestSnap(vp.iModel);
         if (configureViewport)
           configureViewport(vp);
 
