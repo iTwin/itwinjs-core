@@ -9,7 +9,7 @@ import { DtaConfiguration } from "../common/DtaConfiguration";
 
 let configuration: DtaConfiguration = {};
 
-export async function setOpenIModelConfiguration(value: DtaConfiguration) {
+export function setOpenIModelConfiguration(value: DtaConfiguration) {
   configuration = value;
 }
 
@@ -36,9 +36,7 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
   const opts: DownloadBriefcaseOptions = { syncMode: SyncMode.PullOnly };
   let downloader: BriefcaseDownloader | undefined;
   try {
-    downloader = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, opts, undefined, (progress) => {
-      console.log(`Download progress: ${JSON.stringify(progress)}`);
-    });
+    downloader = await NativeApp.requestDownloadBriefcase(iTwinId, iModelId, opts, undefined);
 
     // Wait for the download to complete.
     await downloader.downloadPromise;
@@ -56,7 +54,7 @@ async function downloadIModel(iModelId: GuidString, iTwinId: GuidString): Promis
         // briefcase and try again.
         // When syncMode is SyncMode.PullOnly (which is what we use), briefcaseId is ALWAYS 0, so try
         // to delete the existing file using that briefcaseId.
-        const filename = await NativeApp.getBriefcaseFileName({ iModelId: iModelId, briefcaseId: 0 });
+        const filename = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
         await NativeApp.deleteBriefcase(filename);
         return downloadIModel(iModelId, iTwinId);
       }
@@ -71,9 +69,8 @@ export async function openIModel(props: OpenIModelProps): Promise<IModelConnecti
     return openIModelFile(fileName, writable);
   } else {
     // Since fileName is required to be defined in OpenFileIModelProps, the fact that it is
-    // undefined means that props must be of type OpenHubIModelProps.
-    const hubProps = props as OpenHubIModelProps;
-    const { iModelId, iTwinId } = hubProps;
+    // undefined means that props must be of type OpenHubIModelProps, (which the compiler knows).
+    const { iModelId, iTwinId } = props;
     return openHubIModel(iModelId, iTwinId, writable);
   }
 }
@@ -92,11 +89,11 @@ async function openIModelFile(fileName: string, writable: boolean): Promise<IMod
 async function openHubIModel(iModelId: GuidString, iTwinId: GuidString, writable: boolean): Promise<IModelConnection> {
   const localBriefcases = await NativeApp.getCachedBriefcases(iModelId);
   if (localBriefcases.length > 0) {
-    const fileName = await NativeApp.getBriefcaseFileName({ iModelId: iModelId, briefcaseId: 0 });
+    const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
     if (configuration.ignoreCache) {
       await NativeApp.deleteBriefcase(fileName);
     } else {
-      return openIModel({ fileName, writable });  
+      return openIModel({ fileName, writable });
     }
   }
   const briefcaseProps = await downloadIModel(iModelId, iTwinId);

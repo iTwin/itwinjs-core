@@ -12,7 +12,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 let configuration: DtaConfiguration = {};
 
-export async function setSignInConfiguration(value: DtaConfiguration) {
+export function setSignInConfiguration(value: DtaConfiguration) {
   configuration = value;
 }
 
@@ -35,8 +35,7 @@ export async function signIn(): Promise<boolean> {
   if (configuration.headless) {
     const token = await DtaRpcInterface.getClient().getAccessToken();
     authClient = new TestFrontendAuthorizationClient(token);
-  }
-  else if (ProcessDetector.isElectronAppFrontend) {
+  } else if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
   } else if (ProcessDetector.isMobileAppFrontend) {
     // The default auth client works on mobile

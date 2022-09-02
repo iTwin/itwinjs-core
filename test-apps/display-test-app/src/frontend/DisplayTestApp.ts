@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { GuidString, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";

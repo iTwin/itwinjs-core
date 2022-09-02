@@ -134,7 +134,7 @@ export class Surface {
         await this.openHubIModel();
       },
     }));
-  
+
     tb.addItem(createToolButton({
       iconUnicode: "\ue9d8", // "property-data"
       tooltip: "Open Blank Connection",
@@ -189,7 +189,7 @@ export class Surface {
     if (undefined === props) {
       return;
     }
-    this.openIModel(props);
+    await this.openIModel(props);
   }
 
   private async openFileIModel(fileName?: string): Promise<void> {
@@ -199,7 +199,7 @@ export class Surface {
         return;
       }
     }
-    this.openIModel({ fileName, writable: this.openReadWrite });
+    await this.openIModel({ fileName, writable: this.openReadWrite });
   }
 
   private async openIModel(props: OpenIModelProps): Promise<void> {
@@ -212,7 +212,6 @@ export class Surface {
       alert(`Error opening iModel: ${err.toString()}`);
     }
   }
-
 
   public get firstViewer(): Viewer | undefined {
     for (const window of this._windows)

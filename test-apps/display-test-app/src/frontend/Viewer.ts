@@ -431,7 +431,7 @@ export class Viewer extends Window {
   private async resetIModel(props: OpenIModelProps): Promise<void> {
     const { fileName, iModelId } = props;
     let newIModel: IModelConnection;
-    const sameFile = (fileName !== undefined && fileName === this._imodel.key) || (iModelId !== undefined && iModelId == this._imodel.iModelId);
+    const sameFile = (fileName !== undefined && fileName === this._imodel.key) || (iModelId !== undefined && iModelId === this._imodel.iModelId);
     if (!sameFile) {
       try {
         newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
