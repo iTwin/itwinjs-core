@@ -586,6 +586,7 @@ public;StatusMessageRendererProps
 public;StickyMessage(props: StickyMessageProps): JSX.Element
 deprecated;StickyMessage(props: StickyMessageProps): JSX.Element
 public;StickyMessageProps
+internal;SubjectModelIdsCache
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs

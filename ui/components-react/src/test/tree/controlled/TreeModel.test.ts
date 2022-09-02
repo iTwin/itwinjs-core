@@ -73,6 +73,28 @@ describe("MutableTreeModel", () => {
     childNodesArray.set(0, childNode.id);
   });
 
+  describe("constructor", () => {
+    it("clones empty seed model", () => {
+      const seedModel = new MutableTreeModel();
+      seedModel.setNumChildren(undefined, 0);
+      treeModel = new MutableTreeModel(seedModel);
+      expect(treeModel.getRootNode().numChildren).to.be.equal(0);
+      expect(treeModel.getChildren(undefined)?.getLength()).to.be.equal(0);
+    });
+
+    it("clones populated seed model", () => {
+      const seedModel = new MutableTreeModel();
+      seedModel.setChildren(undefined, [createTreeModelNodeInput("root1"), createTreeModelNodeInput("root2")], 0);
+      seedModel.setNumChildren("root1", 1);
+      seedModel.setChildren("root1", [{ ...createTreeModelNodeInput("child1"), numChildren: 0 }], 0);
+      treeModel = new MutableTreeModel(seedModel);
+      expect(treeModel.getRootNode().numChildren).to.be.equal(2);
+      expect(treeModel.getNode("root1")?.numChildren).to.be.equal(1);
+      expect(treeModel.getNode("root2")?.numChildren).to.be.equal(undefined);
+      expect(treeModel.getNode("child1")?.numChildren).to.be.equal(0);
+    });
+  });
+
   describe("getRootNode", () => {
     it("returns empty root node", () => {
       const node = treeModel.getRootNode();

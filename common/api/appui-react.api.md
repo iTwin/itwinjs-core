@@ -4027,6 +4027,8 @@ export interface ModelsVisibilityHandlerProps {
     hierarchyAutoUpdateEnabled?: boolean;
     // (undocumented)
     rulesetId: string;
+    // @internal (undocumented)
+    subjectModelIdsCache?: SubjectModelIdsCache;
     // (undocumented)
     viewport: Viewport;
 }
@@ -5545,6 +5547,13 @@ export interface StickyMessageProps {
     messageDetails: NotifyMessageDetailsType;
     // (undocumented)
     severity: MessageSeverity;
+}
+
+// @internal (undocumented)
+export class SubjectModelIdsCache {
+    constructor(imodel: IModelConnection);
+    // (undocumented)
+    getSubjectModelIds(subjectId: Id64String): Promise<Id64String[]>;
 }
 
 // @public

@@ -7,17 +7,6 @@ parameters:
 
 steps:
   #-------
-  # Clients Tests
-  #-------
-  - task: PublishTestResults@2
-    displayName: "Publish Clients - iTwin Test Results"
-    inputs:
-      testResultsFiles: "clients/itwin/lib/test/junit_results.xml"
-      testRunTitle: "Clients - iTwin Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-      searchFolder: ${{ parameters.workingDir }}
-    condition: succeededOrFailed()
-
-  #-------
   # Core Tests
   #-------
   - task: PublishTestResults@2

@@ -16,6 +16,7 @@ import { AxisAlignedBox3d } from '@itwin/core-common';
 import { Base64EncodedString } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
+import { BentleyError } from '@itwin/core-bentley';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -43,10 +44,12 @@ import { CloudStorageContainerDescriptor } from '@itwin/core-common';
 import { CloudStorageContainerUrl } from '@itwin/core-common';
 import { CloudStorageProvider } from '@itwin/core-common';
 import { Code } from '@itwin/core-common';
+import { CodeProps } from '@itwin/core-common';
 import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { ColorDefProps } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -128,6 +131,7 @@ import { LocalDirName } from '@itwin/core-common';
 import { LocalFileName } from '@itwin/core-common';
 import { LogLevel } from '@itwin/core-bentley';
 import { LowAndHighXYZ } from '@itwin/core-geometry';
+import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
@@ -459,6 +463,8 @@ export class BriefcaseDb extends IModelDb {
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
     get iTwinId(): GuidString;
+    // @alpha (undocumented)
+    static readonly onCodeServiceCreated: BeEvent<(service: CodeService) => void>;
     static readonly onOpen: BeEvent<(_args: OpenBriefcaseArgs) => void>;
     static readonly onOpened: BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>;
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
@@ -751,6 +757,171 @@ export interface CloudStorageUploadOptions {
     contentEncoding?: "gzip";
     // (undocumented)
     type?: string;
+}
+
+// @alpha
+export interface CodeIndex {
+    findCode(code: CodeService.ScopeSpecAndValue): CodeService.CodeGuid | undefined;
+    findHighestUsed(from: CodeService.SequenceScope): CodeService.CodeValue | undefined;
+    findNextAvailable(from: CodeService.SequenceScope): CodeService.CodeValue;
+    forAllCodes(iter: CodeService.CodeIteration, filter?: CodeService.CodeFilter): void;
+    forAllCodeSpecs(iter: CodeService.NameAndJsonIteration, filter?: CodeService.ValueFilter): void;
+    getCode(guid: CodeService.CodeGuid): CodeService.CodeEntry | undefined;
+    getCodeSpec(props: CodeService.CodeSpecName): CodeService.NameAndJson;
+    isCodePresent(guid: CodeService.CodeGuid): boolean;
+}
+
+// @alpha
+export interface CodeService {
+    addAllCodes(iModel: IModelDb): Promise<number>;
+    // @internal (undocumented)
+    addAllCodeSpecs(iModel: IModelDb): Promise<void>;
+    addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
+    readonly appParams: SQLiteDb.ObtainLockParams & CodeService.AuthorAndOrigin;
+    // @internal (undocumented)
+    close: () => void;
+    readonly codeIndex: CodeIndex;
+    deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+    reserveCode(code: CodeService.ProposedCode): Promise<void>;
+    reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
+    reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
+    reserveNextAvailableCodes(arg: CodeService.ReserveNextArrayArgs): Promise<number>;
+    sasToken: AccessToken;
+    synchronizeWithCloud(): void;
+    updateCode(props: CodeService.UpdatedCode): Promise<void>;
+    updateCodes(arg: CodeService.UpdateCodesArgs): Promise<number>;
+    verifyCode(props: CodeService.ElementCodeProps): void;
+}
+
+// @alpha (undocumented)
+export namespace CodeService {
+    let // @internal (undocumented)
+    createForIModel: ((db: IModelDb) => CodeService) | undefined;
+    export interface AuthorAndOrigin {
+        readonly author: Mutable<NameAndJson>;
+        readonly origin: Mutable<NameAndJson>;
+    }
+    export type AuthorName = string;
+    export interface CodeEntry {
+        readonly author?: AuthorName;
+        readonly guid: CodeGuid;
+        readonly json?: SettingObject;
+        readonly origin: CodeOriginName;
+        readonly scope: ScopeGuid;
+        readonly spec: CodeSpecName;
+        readonly state?: CodeState;
+        readonly value: CodeValue;
+    }
+    export interface CodeFilter extends ValueFilter {
+        readonly origin?: CodeOriginName;
+        readonly scope?: ScopeGuid;
+        readonly spec?: CodeSpecName;
+    }
+    export type CodeGuid = GuidString;
+    export interface CodeGuidStateJson {
+        readonly guid: CodeGuid;
+        readonly json?: SettingObject;
+        readonly state?: CodeState;
+    }
+    export type CodeIteration = (guid: GuidString) => IterationReturn;
+    export type CodeOriginName = string;
+    export interface CodeSequence {
+        getFirstValue(): CodeValue;
+        getLastValue(): CodeValue;
+        getNextValue(code: CodeValue): CodeValue;
+        isValidCode(code: CodeValue): boolean;
+        get sequenceName(): string;
+    }
+    export type CodeSpecName = string;
+    export type CodeState = number;
+    export type CodeValue = string;
+    export interface ElementCodeProps {
+        readonly iModel: IModelDb;
+        readonly props: {
+            readonly code: CodeProps;
+            federationGuid?: GuidString;
+        };
+    }
+    export class Error extends BentleyError {
+        // @internal
+        constructor(errorId: ErrorId, errNum: number, message: string, problems?: ReserveProblem[] | UpdateProblem[]);
+        readonly errorId: ErrorId;
+        readonly problems?: ReserveProblem[] | UpdateProblem[];
+    }
+    export type ErrorId = "BadIndexProps" | "CorruptIModel" | "CorruptIndex" | "DuplicateValue" | "GuidIsInUse" | "GuidMismatch" | "IllegalValue" | "IndexReadonly" | "InvalidCodeScope" | "InvalidGuid" | "InvalidSequence" | "MissingCode" | "MissingGuid" | "MissingInput" | "MissingSpec" | "NoCodeIndex" | "SequenceFull" | "ReserveErrors" | "SequenceNotFound" | "SqlLogicError" | "UpdateErrors" | "ValueIsInUse" | "WrongVersion";
+    export function getSequence(name: string): CodeSequence;
+    export type IterationReturn = void | "stop";
+    export function makeProposedCode(arg: CodeService.MakeProposedCodeArgs): CodeService.ProposedCode;
+    export interface MakeProposedCodeArgs {
+        // (undocumented)
+        readonly code: Required<CodeProps>;
+        // (undocumented)
+        readonly iModel: IModelDb;
+        // (undocumented)
+        readonly props: CodeService.CodeGuidStateJson;
+    }
+    export function makeScopeAndSpec(iModel: IModelDb, code: CodeProps): CodeService.ScopeAndSpec;
+    export interface NameAndJson {
+        // (undocumented)
+        readonly json?: SettingObject;
+        // (undocumented)
+        readonly name: string;
+    }
+    export type NameAndJsonIteration = (nameAndJson: NameAndJson) => IterationReturn;
+    export type ProposedCode = ProposedCodeProps & ScopeSpecAndValue;
+    export interface ProposedCodeProps extends CodeGuidStateJson {
+        value?: CodeValue;
+    }
+    export function registerSequence(seq: CodeSequence): void;
+    export interface ReserveCodesArgs {
+        readonly allOrNothing?: true;
+        readonly codes: CodeService.ProposedCode[];
+    }
+    export interface ReserveNextArgs {
+        readonly code: CodeService.ProposedCodeProps;
+        readonly from: SequenceScope;
+    }
+    export interface ReserveNextArrayArgs {
+        readonly asManyAsPossible?: true;
+        readonly codes: CodeService.ProposedCodeProps[];
+        readonly from: CodeService.SequenceScope;
+    }
+    export interface ReserveProblem {
+        readonly code: ProposedCode;
+        readonly errorId: ErrorId;
+        readonly message: string;
+    }
+    export interface ScopeAndSpec {
+        // (undocumented)
+        readonly scope: ScopeGuid;
+        // (undocumented)
+        readonly spec: CodeSpecName;
+    }
+    export type ScopeGuid = GuidString;
+    export interface ScopeSpecAndValue extends ScopeAndSpec {
+        // (undocumented)
+        readonly value: CodeValue;
+    }
+    export interface SequenceScope extends ScopeAndSpec {
+        readonly seq: CodeSequence;
+        readonly start?: CodeValue;
+    }
+    export interface UpdateCodesArgs {
+        readonly allOrNothing?: true;
+        readonly props: CodeService.UpdatedCode[];
+    }
+    export type UpdatedCode = MarkRequired<Partial<ProposedCode>, "guid">;
+    export interface UpdateProblem {
+        readonly errorId: ErrorId;
+        readonly message: string;
+        readonly prop: UpdatedCode;
+    }
+    export interface ValueFilter {
+        readonly orderBy?: "ASC" | "DESC";
+        readonly sqlExpression?: string;
+        readonly value?: string;
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    }
 }
 
 // @public
@@ -1554,10 +1725,11 @@ export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementT
 
 // @beta
 export class ElementSubTreeDeleter extends ElementTreeTopDown {
-    constructor(iModel: IModelDb, topElement: Id64String, shouldPruneCb: ElementSubTreeDeleteFilter, scope?: ElementTreeWalkerScope);
+    constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter);
+    deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
+    deleteSpecialElementSubTrees(): void;
     // (undocumented)
     protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void;
-    pruneElementTree(): void;
     // (undocumented)
     protected shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean;
 }
@@ -1578,12 +1750,14 @@ export abstract class ElementTreeBottomUp {
 
 // @beta
 export class ElementTreeDeleter extends ElementTreeBottomUp {
-    constructor(iModel: IModelDb, topElement: Id64String, scope?: ElementTreeWalkerScope);
-    deleteElementTree(): void;
+    deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void;
+    deleteSpecialElements(): void;
     // (undocumented)
     protected shouldExploreModel(_model: Model): boolean;
     // (undocumented)
     protected shouldVisitElement(_elementId: Id64String): boolean;
+    // (undocumented)
+    protected _special: SpecialElements;
     // (undocumented)
     protected visitElement(elementId: Id64String, _scope: ElementTreeWalkerScope): void;
     // (undocumented)
@@ -1677,7 +1851,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @public
 export interface ExportGraphicsInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     materialId?: Id64String;
@@ -1740,7 +1914,7 @@ export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 // @public
 export interface ExportLinesInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
@@ -1782,7 +1956,7 @@ export interface ExportPartGraphicsOptions {
 
 // @public
 export interface ExportPartInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
@@ -1802,7 +1976,7 @@ export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
 // @public
 export interface ExportPartLinesInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
 }
@@ -2051,6 +2225,17 @@ export class GenericSchema extends Schema {
     static get schemaFilePath(): string;
     // (undocumented)
     static get schemaName(): string;
+}
+
+// @internal
+export class GeoCoordConfig {
+    // (undocumented)
+    static loadDefaultDatabases(): void;
+    // (undocumented)
+    static loadForImodel(settings: Settings): void;
+    // (undocumented)
+    static onStartup(): void;
+    static readonly prefetches: SQLiteDb.CloudPrefetch[];
 }
 
 // @public
@@ -2385,6 +2570,10 @@ export abstract class IModelDb extends IModel {
     // @internal (undocumented)
     clearFontMap(): void;
     close(): void;
+    // @alpha (undocumented)
+    get codeService(): CodeService | undefined;
+    // @internal (undocumented)
+    protected _codeService?: CodeService;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
     constructEntity<T extends Entity>(props: EntityProps): T;
@@ -2522,7 +2711,7 @@ export namespace IModelDb {
         getElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T;
         // @internal
         getElementJson<T extends ElementProps>(elementId: ElementLoadProps): T;
-        getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T;
+        getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T;
         getRootSubject(): Subject;
         hasSubModel(elementId: Id64String): boolean;
         insertAspect(aspectProps: ElementAspectProps): void;
@@ -2530,9 +2719,10 @@ export namespace IModelDb {
         // @internal
         _queryAspects(elementId: Id64String, fromClassFullName: string, excludedClassFullNames?: Set<string>): ElementAspect[];
         queryChildren(elementId: Id64String): Id64String[];
-        queryElementIdByCode(code: Code): Id64String | undefined;
+        queryElementIdByCode(code: Required<CodeProps>): Id64String | undefined;
         // @internal
         queryLastModifiedTime(elementId: Id64String): string;
+        queryParent(elementId: Id64String): Id64String | undefined;
         tryGetElement<T extends Element_2>(elementId: Id64String | GuidString | Code | ElementLoadProps, elementClass?: EntityClassType<Element_2>): T | undefined;
         tryGetElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T | undefined;
         updateAspect(aspectProps: ElementAspectProps): void;
@@ -2925,6 +3115,8 @@ export class ITwinWorkspace implements Workspace {
     get cloudCache(): SQLiteDb.CloudCache;
     // (undocumented)
     readonly containerDir: LocalDirName;
+    // (undocumented)
+    static finalize(): void;
     // (undocumented)
     findContainer(containerId: WorkspaceContainer.Id): ITwinWorkspaceContainer | undefined;
     // (undocumented)
@@ -3749,6 +3941,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantChunkTraversal?: boolean;
+    // (undocumented)
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
@@ -3763,6 +3957,54 @@ export type ProgressFunction = (loaded: number, total: number) => ProgressStatus
 export enum ProgressStatus {
     Abort = 1,
     Continue = 0
+}
+
+// @alpha
+export interface PropertyStore {
+    readonly appParams: SQLiteDb.ObtainLockParams;
+    deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
+    deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    sasToken: AccessToken;
+    saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
+    saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
+    // @internal
+    startPrefetch(): SQLiteDb.CloudPrefetch;
+    synchronizeWithCloud(): void;
+    readonly values: PropertyStore.Values;
+}
+
+// @alpha (undocumented)
+export namespace PropertyStore {
+    let // @internal (undocumented)
+    openPropertyStore: ((props: CloudSqlite.ContainerAccessProps) => PropertyStore) | undefined;
+    export type IterationReturn = void | "stop";
+    export type PropertyArray = {
+        name: PropertyName;
+        value: PropertyType;
+    }[];
+    export interface PropertyFilter {
+        readonly orderBy?: "ASC" | "DESC";
+        readonly sqlExpression?: string;
+        readonly value?: string;
+        readonly valueCompare?: "GLOB" | "LIKE" | "NOT GLOB" | "NOT LIKE" | "=" | "<" | ">";
+    }
+    export type PropertyIteration = (name: string) => IterationReturn;
+    export type PropertyName = string;
+    export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+    export interface Values {
+        forAllProperties(iter: PropertyIteration, filter?: PropertyFilter): void;
+        getBlob(name: PropertyName): Uint8Array | undefined;
+        getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
+        getBoolean(name: PropertyName): boolean | undefined;
+        getBoolean(name: PropertyName, defaultValue: boolean): boolean;
+        getNumber(name: PropertyName): number | undefined;
+        getNumber(name: PropertyName, defaultValue: number): number;
+        getObject<T extends SettingObject>(name: PropertyName): T | undefined;
+        getObject<T extends SettingObject>(name: PropertyName, defaultValue: T): T;
+        getProperty(name: PropertyName): PropertyType | undefined;
+        getString(name: PropertyName): string | undefined;
+        getString(name: PropertyName, defaultValue: string): string;
+    }
 }
 
 // @public
@@ -3838,7 +4080,7 @@ export class RenderMaterialElement extends DefinitionElement {
     toJSON(): RenderMaterialProps;
 }
 
-// @public (undocumented)
+// @public
 export namespace RenderMaterialElement {
     export class Params {
         constructor(paletteName: string);
@@ -4298,6 +4540,7 @@ export class SQLiteDb implements IDisposable {
     dispose(): void;
     executeSQL(sql: string): DbResult;
     get isOpen(): boolean;
+    get isReadonly(): boolean;
     // @internal (undocumented)
     readonly nativeDb: IModelJsNative.SQLiteDb;
     openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
@@ -4308,24 +4551,12 @@ export class SQLiteDb implements IDisposable {
     saveChanges(): void;
     // @internal (undocumented)
     static startCloudPrefetch(container: SQLiteDb.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch;
-    vacuum(args?: {
-        pageSize?: number;
-        into?: LocalFileName;
-    }): void;
+    vacuum(args?: SQLiteDb.VacuumDbArgs): void;
     // @internal
-    static withLockedContainer(args: {
-        user: string;
-        dbName: string;
-        container: SQLiteDb.CloudContainer;
-        busyHandler?: CloudSqlite.WriteLockBusyHandler;
-    },
-    operation: (db: SQLiteDb) => Promise<void>): Promise<void>;
-    static withOpenDb<T>(args: {
-        dbName: string;
-        openMode?: OpenMode | SQLiteDb.OpenParams;
-        container?: SQLiteDb.CloudContainer;
-    }, operation: (db: SQLiteDb) => T): T;
+    withLockedContainer<T>(args: SQLiteDb.LockAndOpenArgs, operation: () => T): Promise<T>;
+    withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withSavePoint(savePointName: string, operation: () => void): void;
     withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
 }
 
@@ -4339,14 +4570,26 @@ export namespace SQLiteDb {
     export type CloudContainer = IModelJsNative.CloudContainer;
     // @internal (undocumented)
     export type CloudPrefetch = IModelJsNative.CloudPrefetch;
-    export interface CreateParams extends OpenOrCreateParams {
-        pageSize?: number;
-    }
+    export type CreateParams = OpenOrCreateParams & PageSize;
     export enum DefaultTxnMode {
         Deferred = 1,
         Exclusive = 3,
         Immediate = 2,
         None = 0
+    }
+    // @internal (undocumented)
+    export interface LockAndOpenArgs {
+        busyHandler?: CloudSqlite.WriteLockBusyHandler;
+        container: SQLiteDb.CloudContainer;
+        dbName: string;
+        user: string;
+    }
+    // @internal
+    export interface ObtainLockParams {
+        nRetries: number;
+        onFailure?: CloudSqlite.WriteLockBusyHandler;
+        retryDelayMs: number;
+        user?: string;
     }
     export interface OpenOrCreateParams {
         defaultTxn?: 0 | 1 | 2 | 3;
@@ -4358,6 +4601,18 @@ export namespace SQLiteDb {
     }
     export interface OpenParams extends OpenOrCreateParams {
         openMode: OpenMode;
+    }
+    export interface PageSize {
+        pageSize?: number;
+    }
+    export interface VacuumDbArgs extends PageSize {
+        into?: LocalFileName;
+    }
+    export interface WithOpenDbArgs {
+        // @internal (undocumented)
+        container?: SQLiteDb.CloudContainer;
+        dbName: string;
+        openMode?: OpenMode | SQLiteDb.OpenParams;
     }
 }
 
@@ -4388,14 +4643,16 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     getValueString(colIndex: number): string;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
+    isValueNull(colIndex: number): boolean;
     next(): IteratorResult<any>;
-    prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors?: boolean): void;
+    nextRow(): boolean;
+    prepare(db: IModelJsNative.AnyDb, logErrors?: boolean): void;
     reset(): void;
     // (undocumented)
     get sql(): string;
     step(): DbResult;
     // (undocumented)
-    get stmt(): IModelJsNative.SqliteStatement | undefined;
+    get stmt(): IModelJsNative.SqliteStatement;
 }
 
 // @public
@@ -4972,9 +5229,10 @@ export interface WorkspaceDb {
 
 // @beta
 export interface WorkspaceOpts {
-    cloudCacheProps?: WorkspaceCloudCacheProps;
     containerDir?: LocalDirName;
     settingsFiles?: LocalFileName | [LocalFileName];
+    // @internal
+    testCloudCache?: SQLiteDb.CloudCache;
 }
 
 // @beta

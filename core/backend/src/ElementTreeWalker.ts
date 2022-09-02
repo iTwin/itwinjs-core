@@ -8,7 +8,6 @@
 import { assert, DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { SubCategory } from "./Category";
 import { DefinitionElement, DefinitionPartition, Element, Subject } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, Model } from "./Model";
@@ -17,6 +16,23 @@ const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
 /** @beta */
 export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
+
+function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64Array> {
+  const children: Id64Array = [];
+  const parents: Id64Array = [];
+  for (const eid of ids) {
+    const parentId = iModel.elements.queryParent(eid);
+    if (parentId !== undefined && ids.includes(parentId))
+      children.push(eid);
+    else
+      parents.push(eid);
+  }
+
+  if (children.length === 0)
+    return [parents];
+
+  return [...sortChildrenBeforeParents(iModel, children), parents];
+}
 
 function isModelEmpty(iModel: IModelDb, modelId: Id64String): boolean {
   return iModel.withPreparedStatement(`select count(*) from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
@@ -98,7 +114,7 @@ export class ElementTreeWalkerScope {
 
 function fmtElement(iModel: IModelDb, elementId: Id64String): string {
   const el = iModel.elements.getElement(elementId);
-  return `${el.id} ${el.classFullName} ${el.code.value} ${el.getDisplayLabel()}`;
+  return `${el.id} ${el.classFullName} ${el.getDisplayLabel()}`;
 }
 
 function fmtModel(model: Model): string {
@@ -113,16 +129,30 @@ function isTraceEnabled(): boolean {
   return isTraceEnabledChecked === 1;
 }
 
-function logElement(op: string, iModel: IModelDb, elementId: Id64String, scope?: ElementTreeWalkerScope): void {
-  if (isTraceEnabled())
-    Logger.logTrace(loggerCategory, `${op} ${fmtElement(iModel, elementId)} ${scope?.toString()}`);
+function logElement(op: string, iModel: IModelDb, elementId: Id64String, scope?: ElementTreeWalkerScope, logChildren?: boolean): void {
+  if (!isTraceEnabled())
+    return;
+
+  Logger.logTrace(loggerCategory, `${op} ${fmtElement(iModel, elementId)} ${scope ? scope.toString() : ""}`);
+
+  if (logChildren)
+    iModel.elements.queryChildren(elementId).forEach((c) => logElement(" - ", iModel, c, undefined, true));
 }
 
-function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: ElementTreeWalkerScope): void {
+function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: ElementTreeWalkerScope, logElements?: boolean): void {
   if (!isTraceEnabled())
     return;
   const model: Model = iModel.models.getModel(modelId);
-  Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope?.toString()}`);
+  Logger.logTrace(loggerCategory, `${op} ${fmtModel(model)} ${scope ? scope.toString() : ""}`);
+
+  if (logElements) {
+    iModel.withPreparedStatement(`select ecinstanceid from ${Element.classFullName} where Model.Id = ?`, (stmt) => {
+      stmt.bindId(1, modelId);
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        logElement(" - ", iModel, stmt.getValue(0).getId());
+      }
+    });
+  }
 }
 
 /** Does a depth-first search on the tree defined by an element and its sub-models and children.
@@ -220,32 +250,27 @@ class SpecialElements {
     return false; // not a special element
   }
 
-  // It's dangerous to pass a mixture of SubCategories and Categories to deleteDefinitionElements.
-  // That function will delete the Categories first, which automatically deletes all their child
-  // SubCategories (in native code). If a SubCategory in the list is one of those children, then
-  // deleteDefinitionElements will try and fail with an exception to delete that SubCategory in a subsequent step.
-  // To work around this, we delete the SubCategories first, then everything else.
-  private _siftSpecialElements(iModel: IModelDb): Array<string[]> {
-    const subCategories: Id64Array = [];
-    const other: Id64Array = [];
-    this.definitions.forEach((elementId) => {
-      if (iModel.elements.tryGetElement(elementId, SubCategory) !== undefined)
-        subCategories.push(elementId);
-      else
-        other.push(elementId);
-    });
-    return [subCategories, other];
-  }
-
+  /** Delete special elements - This calls Elements.deleteDefinitionElements to process the collected definition elements as a group and then
+   * calls Models.deleteModel on collected definition models. It then deletes all collected Subjects by calling Element.deleteElement on them.
+   * @note Caller must ensure that the special elements were recorded in a depth-first search.
+   */
   public deleteSpecialElements(iModel: IModelDb) {
-    for (const definitions of this._siftSpecialElements(iModel)) {
+    // It's dangerous to pass a mixture of SubCategories and Categories to deleteDefinitionElements.
+    // That function will delete the Categories first, which automatically deletes all their child
+    // SubCategories (in native code). If a SubCategory in the list is one of those children, then
+    // deleteDefinitionElements will try and fail with an exception to delete that SubCategory in a subsequent step.
+    // To work around this, we delete the SubCategories first, then everything else.
+    // A similar problem occurs when you pass other kinds of elements to deleteDefinitionElements, where some are
+    // children and others are parents. deleteDefinitionElements does not preserve the order that you specify,
+    // and it does not process children before parents.
+    for (const definitions of sortChildrenBeforeParents(iModel, this.definitions)) {
       if (isTraceEnabled()) definitions.forEach((e) => logElement("try delete", iModel, e));
-      iModel.elements.deleteDefinitionElements(definitions); // will not deleted definitions that are still in use.
+      iModel.elements.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
     }
 
     for (const m of this.definitionModels) {
       if (!isModelEmpty(iModel, m)) {
-        logModel("Model not empty - cannot delete - may contain Definitions that are still in use", iModel, m);
+        logModel("Model not empty - cannot delete - may contain Definitions that are still in use", iModel, m, undefined, true);
       } else {
         logModel("delete", iModel, m);
         iModel.models.deleteModel(m);
@@ -255,29 +280,24 @@ class SpecialElements {
 
     for (const e of this.subjects) {
       if (iModel.elements.queryChildren(e).length !== 0) {
-        logElement("Subject still has children - cannot delete - may have child DefinitionModels", iModel, e);
+        logElement("Subject still has children - cannot delete - may have child DefinitionModels", iModel, e, undefined, true);
       } else {
         logElement("delete", iModel, e);
         iModel.elements.deleteElement(e);
       }
     }
   }
+
 }
 
 /** Deletes an entire element tree, including sub-models and child elements.
  * Items are deleted in bottom-up order. Definitions and Subjects are deleted after normal elements.
+ * Call deleteNormalElements on each tree. Then call deleteSpecialElements.
+ * @see deleteElementTree for a simple way to use this class.
  * @beta
  */
 export class ElementTreeDeleter extends ElementTreeBottomUp {
-  private _special: SpecialElements = new SpecialElements();
-  private _topElement: Id64String;
-  private _topScope: ElementTreeWalkerScope;
-
-  public constructor(iModel: IModelDb, topElement: Id64String, scope?: ElementTreeWalkerScope) {
-    super(iModel);
-    this._topElement = topElement;
-    this._topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, this._topElement);
-  }
+  protected _special: SpecialElements = new SpecialElements();
 
   protected override shouldExploreModel(_model: Model): boolean { return true; }
   protected override shouldVisitElement(_elementId: Id64String): boolean { return true; }
@@ -286,8 +306,7 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     if (isDefinitionModel(model))
       return; // we recorded definition models in visitElement when we encountered the DefinitionPartition elements.
 
-    // visitElement was called first, and it deleted the elements in the model. So, now it's safe to delete the model itself.
-    // TODO: will fail if model has an element that is sub-modeled by a **DefinitionModel**. I hope that never occurs!
+    // visitElement has already deleted the elements in the model. So, now it's safe to delete the model itself.
     logModel("delete", this._iModel, model.id, _scope);
     model.delete();
   }
@@ -299,9 +318,21 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
     }
   }
 
-  /** Delete the element tree. */
-  public deleteElementTree(): void {
-    this.processElementTree(this._topElement, this._topScope); // Delete the "normal" elements and record the special elements for deferred processing
+  /**
+   * Delete the "normal" elements and record the special elements for deferred processing.
+   * @param topElement The parent of the sub-tree to be deleted. Top element itself is also deleted.
+   * @param scope How the parent was found
+   * @see deleteSpecialElements
+   */
+  public deleteNormalElements(topElement: Id64String, scope?: ElementTreeWalkerScope): void {
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+    this.processElementTree(topElement, topScope); //
+  }
+
+  /** Delete all special elements that were found and deferred by deleteNormalElements. Call this
+   * function once after all element trees are processed by deleteNormalElements.
+   */
+  public deleteSpecialElements(): void {
     this._special.deleteSpecialElements(this._iModel);
   }
 
@@ -367,45 +398,45 @@ abstract class ElementTreeTopDown {
  */
 export type ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean;
 
-/** Deletes the element sub-trees that are chosen by a supplied filter function.
- * This class uses ElementTreeTopDown to visit element sub-trees in top-down order.
- * When the filter function chooses a sub-tree, this class uses ElementTreeDeleter to delete it.
- * Note that when a sub-tree is selected and deleted, its children and sub-models are not visited.
+/** Performs a breadth-first search to visit elements in top-down order.
+ * When the supplied filter function chooses an element, ElementTreeDeleter is used to delete it and its sub-tree.
  * @beta
  */
 export class ElementSubTreeDeleter extends ElementTreeTopDown {
-  private _special: SpecialElements = new SpecialElements();
-
-  private _topElement: Id64String;
-  private _topScope: ElementTreeWalkerScope;
-
+  private _treeDeleter: ElementTreeDeleter;
   private _shouldPruneCb: ElementSubTreeDeleteFilter;
 
-  /** Construct an ElementSubTreeDeleter. @see pruneElementTree.
+  /** Construct an ElementSubTreeDeleter.
    * @param iModel The iModel
    * @param topElement Where to start the search.
    * @param shouldPruneCb Callback that selects sub-trees that should be deleted.
+   * @see deleteElementSubTrees for a simple way to use this class.
    */
-  public constructor(iModel: IModelDb, topElement: Id64String, shouldPruneCb: ElementSubTreeDeleteFilter, scope?: ElementTreeWalkerScope) {
+  public constructor(iModel: IModelDb, shouldPruneCb: ElementSubTreeDeleteFilter) {
     super(iModel);
-    this._topElement = topElement;
-    this._topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, this._topElement);
+    this._treeDeleter = new ElementTreeDeleter(this._iModel);
     this._shouldPruneCb = shouldPruneCb;
   }
 
   protected override shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean { return this._shouldPruneCb(elementId, scope); }
 
   protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void {
-    if (!this._special.recordSpecialElement(this._iModel, elementId)) {
-      const del = new ElementTreeDeleter(this._iModel, elementId, scope);
-      del.deleteElementTree();
-    }
+    this._treeDeleter.deleteNormalElements(elementId, scope);
   }
 
-  /** Traverses the tree of elements, beginning with the top element, and deletes all selected sub-trees. */
-  public pruneElementTree() {
-    this.processElementTree(this._topElement, this._topScope); // deletes normal elements and their sub-trees, defers special elements
-    this._special.deleteSpecialElements(this._iModel);
+  /** Traverses the tree of elements beginning with the top element, and deletes all selected sub-trees.
+   * Normal elements are deleted. Any special elements that are encountered are deferred.
+   * Call deleteSpecialElementSubTrees after all top elements have been processed. */
+  public deleteNormalElementSubTrees(topElement: Id64String, scope?: ElementTreeWalkerScope) {
+    const topScope = scope ?? ElementTreeWalkerScope.createTopScope(this._iModel, topElement);
+    this.processElementTree(topElement, topScope); // deletes normal elements and their sub-trees, defers special elements
+  }
+
+  /** Delete all special elements and their sub-trees that were found in the course of processing.
+   * The sub-trees were already expanded by ElementTreeDeleter.deleteNormalElements.
+   */
+  public deleteSpecialElementSubTrees() {
+    this._treeDeleter.deleteSpecialElements();
   }
 }
 
@@ -415,8 +446,9 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
  * @beta
  */
 export function deleteElementTree(iModel: IModelDb, topElement: Id64String): void {
-  const del = new ElementTreeDeleter(iModel, topElement);
-  del.deleteElementTree();
+  const del = new ElementTreeDeleter(iModel);
+  del.deleteNormalElements(topElement);
+  del.deleteSpecialElements();
 }
 
 /** Deletes all element sub-trees that are selected by the supplied filter. Uses ElementSubTreeDeleter.
@@ -428,6 +460,7 @@ export function deleteElementTree(iModel: IModelDb, topElement: Id64String): voi
  * @beta
  */
 export function deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void {
-  const del = new ElementSubTreeDeleter(iModel, topElement, filter);
-  del.pruneElementTree();
+  const del = new ElementSubTreeDeleter(iModel, filter);
+  del.deleteNormalElementSubTrees(topElement);
+  del.deleteSpecialElementSubTrees();
 }

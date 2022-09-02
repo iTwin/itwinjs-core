@@ -19,6 +19,11 @@ import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
 import { TokenArg } from "./IModelDb";
 
+function wasStarted(val: string | undefined): asserts val is string {
+  if (undefined === val)
+    throw new Error("Call HubMock.startup first");
+}
+
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
  *
@@ -59,10 +64,8 @@ export class HubMock {
 
   /** Determine whether a test us currently being run under HubMock */
   public static get isValid() { return undefined !== this.mockRoot; }
-
   public static get iTwinId() {
-    if (undefined === this._iTwinId)
-      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+    wasStarted(this._iTwinId);
     return this._iTwinId;
   }
 
@@ -89,7 +92,7 @@ export class HubMock {
    * @note this function throws an exception if any of the iModels used during the tests are left open.
    */
   public static shutdown() {
-    if (!this.isValid)
+    if (this.mockRoot === undefined)
       return;
 
     HubMock._iTwinId = undefined;
@@ -97,10 +100,8 @@ export class HubMock {
       hub[1].cleanup();
 
     this.hubs.clear();
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    IModelJsFs.purgeDirSync(this.mockRoot!);
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    IModelJsFs.removeSync(this.mockRoot!);
+    IModelJsFs.purgeDirSync(this.mockRoot);
+    IModelJsFs.removeSync(this.mockRoot);
     IModelHost.setHubAccess(this._saveHubAccess);
     this.mockRoot = undefined;
   }
@@ -114,9 +115,7 @@ export class HubMock {
 
   /** create a [[LocalHub]] for an iModel.  */
   public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
-    if (!this.mockRoot)
-      throw new Error("call startup first");
-
+    wasStarted(this.mockRoot);
     const props = { ...arg, iModelId: Guid.createValue() };
     const mock = new LocalHub(join(this.mockRoot, props.iModelId), props);
     this.hubs.set(props.iModelId, mock);
