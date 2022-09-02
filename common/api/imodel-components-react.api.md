@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="react" />
-
 import { Cartographic } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { CommonProps } from '@itwin/core-react';

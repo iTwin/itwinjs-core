@@ -26,13 +26,13 @@ import { Constructor } from '@itwin/core-bentley';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
+import { EntityReferenceSet } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
-import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
@@ -7152,7 +7152,7 @@ export namespace RenderSchedule {
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
         // @internal
-        discloseIds(ids: Id64Set): void;
+        discloseIds(ids: EntityReferenceSet): void;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;

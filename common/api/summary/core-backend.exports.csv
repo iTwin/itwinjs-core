@@ -59,6 +59,8 @@ alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
+alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -104,6 +106,7 @@ beta;class DriverBundleElement
 public;ECDb 
 public;ECDbOpenMode
 public;ECEnumValue
+internal;ECReferenceTypesCache
 internal;ECSchemaXmlContext
 public;ECSqlBinder
 public;ECSqlColumnInfo
@@ -135,6 +138,8 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
+alpha;EntityReferences 
+internal;EntityUnifier
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -297,6 +302,7 @@ public;PushChangesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
+internal;RelTypeInfo
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
@@ -310,6 +316,7 @@ public;RpcTrace
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
+internal;SchemaNotInCacheErr 
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 

@@ -33,6 +33,9 @@ public;compareWithTolerance(a: number, b: number, tolerance?: number): number
 public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
+alpha;ConcreteEntityTypes
+alpha;ConcreteEntityTypes
+internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
 public;Constructor
 public;DbOpcode
 public;DbResult
@@ -43,6 +46,9 @@ public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
 public;DuplicatePolicy
+alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
+alpha;EntityReferences
+alpha;EntityReferenceSet 
 public;Entry
 public;EntryContainer
 alpha;class ErrorCategory 
@@ -89,6 +95,7 @@ public;MutableCompressedId64Set
 public;NonFunctionPropertiesOf
 public;NonFunctionPropertyNamesOf
 public;ObservableSet
+public;omit
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
@@ -118,6 +125,7 @@ public;StopWatch
 alpha;class SuccessCategory 
 alpha;Tracing
 public;TransientIdSequence
+public;TupleKeyedMap
 public;TypedArrayBuilder
 public;TypedArrayBuilderOptions
 public;Uint16ArrayBuilder 
