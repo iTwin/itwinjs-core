@@ -297,10 +297,9 @@ export class IModelCloneContext {
             sourceElementAspect.className,
             propertyName
           );
-          /* eslint-disable @typescript-eslint/indent */
           assert(navPropRefType !== undefined,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`);
-          const targetEntityId = this.findTargetEntityId(EntityReferences.fromEntityType(sourceNavProp.id, navPropRefType));
-          /* eslint-enable @typescript-eslint/indent */
+          const targetEntityReference = this.findTargetEntityId(EntityReferences.fromEntityType(sourceNavProp.id, navPropRefType));
+          const targetEntityId = EntityReferences.toId64(targetEntityReference);
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
         }
