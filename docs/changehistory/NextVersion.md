@@ -68,11 +68,11 @@ const schema = loader.getSchema("BisCore");
 
 // New
 import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name: string) => { return iModel.getSchemaProps(name); });
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
 const schema = loader.getSchema("BisCore");
 ```
 
-The new SchemaLoader can be constructed with any function that returns schema json when passed a schema name or undefined if the schema cannot be found
+The new SchemaLoader can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ### OpenTelemetry
 
