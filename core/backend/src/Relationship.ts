@@ -7,7 +7,7 @@
  */
 
 import * as assert from "assert";
-import { EntityReferenceSet, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { DbResult, EntityReferenceSet, Id64, Id64String } from "@itwin/core-bentley";
 import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { EntityReferences } from "./EntityReference";
 import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
@@ -67,9 +67,8 @@ export class Relationship extends Entity {
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
-  // TODO: what about required references? aren't these required?
   /**
-   * For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
+   * @note For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
    */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     // FIXME: test this

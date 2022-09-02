@@ -35,7 +35,7 @@ export namespace EntityUnifier {
     else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
   }
 
-  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { id: Id64String } | { entityReference: EntityReference }) {
+  export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { entityReference: EntityReference }) {
     if ("entityReference" in arg) {
       const [type, id] = EntityReferences.split(arg.entityReference);
       const bisCoreRootClassName = ConcreteEntityTypes.toBisCoreRootClassFullName(type);
@@ -46,37 +46,9 @@ export namespace EntityUnifier {
         if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
         else throw new IModelError(matchesResult, "query failed");
       });
-    } else if ("entity" in arg) {
+    } else {
       return db.withPreparedStatement(`SELECT 1 FROM [${arg.entity.schemaName}].[${arg.entity.className}] WHERE ECInstanceId=?`, (stmt) => {
         stmt.bindId(1, arg.entity.id);
-        const matchesResult = stmt.step();
-        if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
-        if (matchesResult === DbResult.BE_SQLITE_DONE) return false;
-        else throw new IModelError(matchesResult, "query failed");
-      });
-    } else {
-      // FIXME: maybe lone id should default to an element id for backwards compat?
-      // or just not be supported, I don't think this is even called atm
-      return db.withPreparedStatement(`
-        SELECT 1 FROM (
-          -- all possible bis core root types
-          -- FIXME: create a test verifying the assumption that this is all of them...
-          -- Should probably construct this query at module import time from the same list that the test uses
-          -- for a single source of truth
-          SELECT ECInstanceId FROM bis.Element
-          UNION ALL
-          SELECT ECInstanceId FROM bis.ElementMultiAspect
-          UNION ALL
-          SELECT ECInstanceId FROM bis.ElementUniqueAspect
-          UNION ALL
-          SELECT ECInstanceId FROM bis.ElementRefersToElements
-          UNION ALL
-          SELECT ECInstanceId FROM bis.ElementDrivesElement
-          UNION ALL
-          SELECT ECInstanceId FROM bis.ModelSelectorRefersToModels
-        ) WHERE ECInstanceId=?
-      `, (stmt) => {
-        stmt.bindId(1, arg.id);
         const matchesResult = stmt.step();
         if (matchesResult === DbResult.BE_SQLITE_ROW) return true;
         if (matchesResult === DbResult.BE_SQLITE_DONE) return false;

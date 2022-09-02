@@ -13,7 +13,6 @@ export * from "./CloudSqlite";
 export * from "./ConcreteEntityId";
 export * from "./EntityReference";
 export * from "./ECReferenceTypesCache";
-export * from "./EntityKey";
 export * from "./EntityUnifier";
 export * from "./DisplayStyle";
 export * from "./ECDb";

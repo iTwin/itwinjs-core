@@ -102,6 +102,7 @@ export class Entity {
    */
   public static get isGeneratedClass() { return false; }
 
+  // NOTE: will also consider using generated collectReferences everywhere and a separate collectJsonPropertyReferenceIds
   /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
    * This is important for cloning operations but can be useful in other situations as well.
    * @note In the next breaking change, the behavior of this function will change to return a EntityReferenceSet

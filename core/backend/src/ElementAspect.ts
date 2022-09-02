@@ -217,7 +217,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     return val;
   }
 
-  // FIXME: start using generated collectReferences everywhere and use a separate collectJsonPropertyReferenceIds
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.scope.id);

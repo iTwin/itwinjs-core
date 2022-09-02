@@ -6,7 +6,7 @@
  * @module iModels
  */
 
-import { ConcreteEntityTypes, DbResult, Logger } from "@itwin/core-bentley";
+import { ConcreteEntityTypes, DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
 import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
@@ -38,8 +38,8 @@ export class ECReferenceTypesCache {
   public static globalCache = new ECReferenceTypesCache();
 
   /** nesting based tuple map keyed by qualified property path tuple [schemaName, className, propName] */
-  private _propQualifierToRefType = new Map<string, Map<string, Map<string, ConcreteEntityTypes>>>();
-  private _relClassNameEndToRefTypes = new Map<string, Map<string, RelTypeInfo>>();
+  private _propQualifierToRefType = new TupleKeyedMap<[string, string, string], ConcreteEntityTypes>();
+  private _relClassNameEndToRefTypes = new TupleKeyedMap<[string, string], RelTypeInfo>();
   private _initedSchemas = new Map<string, SchemaKey>();
 
   private static bisRootClassToRefType: Record<string, ConcreteEntityTypes | undefined> = {
@@ -116,28 +116,19 @@ export class ECReferenceTypesCache {
       }
     }
 
-    const classMap = new Map<string, Map<string, ConcreteEntityTypes>>();
-    this._propQualifierToRefType.set(schema.name.toLowerCase(), classMap);
-
-    const relClassesMap = new Map<string, RelTypeInfo>();
-    this._relClassNameEndToRefTypes.set(schema.name.toLowerCase(), relClassesMap);
-
     for (const ecclass of schema.getClasses()) {
-      const propMap = new Map<string, ConcreteEntityTypes>();
-      classMap.set(ecclass.name.toLowerCase(), propMap);
-
       for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
         const relClass = await prop.relationshipClass;
         const relInfo = await this.relInfoFromRelClass(relClass);
         if (relInfo === undefined) continue;
         const navPropRefType = prop.direction === StrengthDirection.Forward ? relInfo.target : relInfo.source;
-        propMap.set(prop.name.toLowerCase(), navPropRefType);
+        this._propQualifierToRefType.set([schema.name.toLowerCase(), ecclass.name.toLowerCase(), prop.name.toLowerCase()], navPropRefType);
       }
 
       if (ecclass instanceof RelationshipClass) {
         const relInfo = await this.relInfoFromRelClass(ecclass);
-        if (relInfo) relClassesMap.set(ecclass.name.toLowerCase(), relInfo);
+        if (relInfo) this._relClassNameEndToRefTypes.set([schema.name.toLowerCase(), ecclass.name.toLowerCase()], relInfo);
       }
     }
 
@@ -163,17 +154,19 @@ export class ECReferenceTypesCache {
 
   public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | ConcreteEntityTypes {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
-    return this._propQualifierToRefType
-      .get(schemaName.toLowerCase())
-      ?.get(className.toLowerCase())
-      ?.get(propName.toLowerCase());
+    return this._propQualifierToRefType.get([
+      schemaName.toLowerCase(),
+      className.toLowerCase(),
+      propName.toLowerCase(),
+    ]);
   }
 
   public getRelationshipEndType(schemaName: string, className: string): undefined | RelTypeInfo {
     if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
-    return this._relClassNameEndToRefTypes
-      .get(schemaName.toLowerCase())
-      ?.get(className.toLowerCase());
+    return this._relClassNameEndToRefTypes.get([
+      schemaName.toLowerCase(),
+      className.toLowerCase(),
+    ]);
   }
 
   public clear() {

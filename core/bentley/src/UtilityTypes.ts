@@ -103,25 +103,6 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  */
 export type ExtractLiterals<T, U extends T> = Extract<T, U>;
 
-/** Makes all nested properties/members of an object/array immutable.
- * Use sparingly (not sure what the performance impact is), but useful if you know problems will be caused by mutating
- * Borrowed from redux, a similar form exists in the ts-essentials package.
- * @internal
- */
-export type DeepReadonly<T> =
-  T extends ReadonlyArray<infer R> ? (R extends object ? DeepReadonlyArray<R> : ReadonlyArray<R>) :
-  T extends (...args: any[]) => any ? T :
-  T extends object ? DeepReadonlyObject<T> :
-  T;
-
-/** use DeepReadonly instead */
-type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
-
-/** use DeepReadonly instead */
-type DeepReadonlyObject<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};
-
 /** A runtime property omitter, removing properties in a given list from a given object.
  * Compatible with the typescript `Omit` mapped type:
  * ```js

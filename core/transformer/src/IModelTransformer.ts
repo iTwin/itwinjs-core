@@ -1066,14 +1066,6 @@ export class IModelTransformer extends IModelExportHandler {
     this.resolvePendingReferences(sourceAspect);
   }
 
-  // TODO: ideally we'd match the behavior of the element export which:
-  // 1. tries to find a remapping, transforms the props
-  // 2. if the element hasn't changed (LastMod), we're done
-  // 3. otherwise collect unmapped references in its ec data
-  // 4. import the element (the id must have been found, by code or remap if it's an update)
-  // 5. create a remapping now that it's imported
-  // 6. resolve any pending references now that it's imported
-  // 7. add provenance
   /** Override of [IModelExportHandler.onExportElementMultiAspects]($transformer) that imports ElementMultiAspects into the target iModel when they are exported from the source iModel.
    * This override calls [[onTransformElementAspect]] for each ElementMultiAspect and then [IModelImporter.importElementMultiAspects]($transformer) to update the target iModel.
    * @note ElementMultiAspects are handled as a group to make it easier to differentiate between insert, update, and delete.

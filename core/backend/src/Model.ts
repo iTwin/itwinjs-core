@@ -221,7 +221,7 @@ export class Model extends Entity {
   /** Delete this Model from the iModel. */
   public delete() { this.iModel.models.deleteModel(this.id); }
 
-  // TODO: what about required references? aren't these required?
+  // NOTE: non-element entities do not yet have a concept of required references
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     if (this.parentModel) referenceIds.addModel(this.parentModel);
