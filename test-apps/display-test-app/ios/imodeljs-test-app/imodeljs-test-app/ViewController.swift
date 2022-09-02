@@ -58,7 +58,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
 
         webView.addUserContentController(OpenModelHander(self))
         webView.addUserContentController(ModelOpenedHandler(exitOnMessage: self.argFileName != nil))
-        webView.load(URLRequest(url: URL(string: "imodeljs://app" + queryParam)!))
+        // let url = "http://192.168.86.20:3000/"
+        let url = "imodeljs://app"
+        webView.load(URLRequest(url: URL(string: url + queryParam)!))
         host.register(webView)
     }
     
