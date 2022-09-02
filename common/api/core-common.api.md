@@ -2318,7 +2318,7 @@ export interface ECSchemaItemProps {
     readonly schemaVersion?: string;
 }
 
-// @public (undocumented)
+// @public
 export interface ECSchemaProps {
     // (undocumented)
     readonly $schema: string;
