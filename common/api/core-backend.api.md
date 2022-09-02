@@ -60,6 +60,7 @@ import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
+import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -2608,7 +2609,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
-    getSchemaProps(name: string): IModelJsNative.SchemaProps;
+    getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;

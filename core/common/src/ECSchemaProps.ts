@@ -3,14 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @public */
 export interface ECSchemaReferenceProps {
   readonly name: string;
   readonly version: string;
 }
 
+/** @public */
 export interface ECSchemaItemProps {
   readonly $schema?: string;
-  readonly schema?: string;  // conditionally required
+  readonly schema?: string;
   readonly schemaVersion?: string;
   readonly name?: string;
   readonly schemaItemType?: string;
@@ -19,6 +21,9 @@ export interface ECSchemaItemProps {
   readonly customAttributes?: Array<{ [value: string]: any }>;
 }
 
+/** Properties of an ECSchema
+ *  @public
+ */
 export interface ECSchemaProps {
   readonly $schema: string;
   readonly name: string;
