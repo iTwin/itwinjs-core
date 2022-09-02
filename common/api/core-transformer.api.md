@@ -7,6 +7,7 @@
 import { AccessToken } from '@itwin/core-bentley';
 import { CodeSpec } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
+import { ConcreteEntity } from '@itwin/core-backend';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
 import { Element as Element_2 } from '@itwin/core-backend';
 import { ElementAspect } from '@itwin/core-backend';
@@ -15,6 +16,10 @@ import { ElementMultiAspect } from '@itwin/core-backend';
 import { ElementProps } from '@itwin/core-common';
 import { ElementUniqueAspect } from '@itwin/core-backend';
 import { Entity } from '@itwin/core-backend';
+import { EntityProps } from '@itwin/core-common';
+import { EntityReference } from '@itwin/core-backend';
+import { EntityReference as EntityReference_2 } from '@itwin/core-bentley';
+import { EntityReferenceSet } from '@itwin/core-bentley';
 import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
 import { IModelCloneContext } from '@itwin/core-backend';
@@ -28,6 +33,9 @@ import { RelationshipProps } from '@itwin/core-backend';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SQLiteDb } from '@itwin/core-backend';
+
+// @internal
+export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean;
 
 // @beta
 export class IModelExporter {
@@ -138,8 +146,9 @@ export class IModelImporter implements Required<IModelImportOptions> {
     readonly doNotUpdateElementIds: Set<string>;
     protected getAdditionalStateJson(): any;
     importElement(elementProps: ElementProps): Id64String;
-    importElementMultiAspects(aspectPropsArray: ElementAspectProps[], filterFunc?: (a: ElementMultiAspect) => boolean): void;
-    importElementUniqueAspect(aspectProps: ElementAspectProps): void;
+    importElementMultiAspects(aspectPropsArray: ElementAspectProps[],
+    filterFunc?: (a: ElementMultiAspect) => boolean): Id64String[];
+    importElementUniqueAspect(aspectProps: ElementAspectProps): Id64String;
     importModel(modelProps: ModelProps): void;
     importRelationship(relationshipProps: RelationshipProps): Id64String;
     protected loadAdditionalStateJson(_additionalState: any): void;
@@ -150,7 +159,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     protected onDeleteModel(modelId: Id64String): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
-    protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
+    protected onInsertElementAspect(aspectProps: ElementAspectProps): Id64String;
     protected onInsertModel(modelProps: ModelProps): Id64String;
     protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String;
     protected onProgress(): void;
@@ -206,9 +215,9 @@ export class IModelTransformer extends IModelExportHandler {
     protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
-    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
-    // @deprecated (undocumented)
-    initFromExternalSourceAspects(): void;
+    // @deprecated
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void>;
+    initialize(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
     // @internal
@@ -230,8 +239,8 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
-    protected _partiallyCommittedElements: Map<string, PartiallyCommittedElement>;
-    protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
+    protected _partiallyCommittedEntities: EntityMap<PartiallyCommittedEntity>;
+    protected _pendingReferences: PendingReferenceMap<PartiallyCommittedEntity>;
     // @internal
     preExportElement(sourceElement: Element_2): Promise<void>;
     processAll(): Promise<void>;

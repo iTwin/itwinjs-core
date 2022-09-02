@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { Attributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -264,6 +262,24 @@ export namespace CompressedId64Set {
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
 
+// @alpha
+export enum ConcreteEntityTypes {
+    // (undocumented)
+    Element = "e",
+    // (undocumented)
+    ElementAspect = "a",
+    // (undocumented)
+    Model = "m",
+    // (undocumented)
+    Relationship = "r"
+}
+
+// @alpha
+export namespace ConcreteEntityTypes {
+    // @internal
+    export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
+}
+
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
 
@@ -483,6 +499,40 @@ export enum DuplicatePolicy {
     Allow = 0,
     Replace = 2,
     Retain = 1
+}
+
+// @alpha
+export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
+
+// @alpha
+export class EntityReferences {
+    // (undocumented)
+    static isElement(id: EntityReference): boolean;
+    // (undocumented)
+    static isElementAspect(id: EntityReference): boolean;
+    // (undocumented)
+    static isModel(id: EntityReference): boolean;
+    // (undocumented)
+    static isRelationship(id: EntityReference): boolean;
+    // @internal
+    static isValid(id: EntityReference): boolean;
+    // @internal
+    static makeInvalid(type: ConcreteEntityTypes): EntityReference;
+    static split(id: EntityReference): [ConcreteEntityTypes, Id64String];
+    // (undocumented)
+    static toId64(id: EntityReference): string;
+}
+
+// @alpha
+export class EntityReferenceSet extends Set<EntityReference> {
+    // (undocumented)
+    addAspect(id: Id64String): void;
+    // (undocumented)
+    addElement(id: Id64String): void;
+    // (undocumented)
+    addModel(id: Id64String): void;
+    // (undocumented)
+    addRelationship(id: Id64String): void;
 }
 
 // @public
@@ -1150,6 +1200,13 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
+    static makeCategorizedLogger(category: string): {
+        logTrace: (message: string, metaData?: LoggingMetaData) => void;
+        logError: (message: string, metaData?: LoggingMetaData) => void;
+        logWarning: (message: string, metaData?: LoggingMetaData) => void;
+        logException: (err: any, log?: LogFunction | undefined) => void;
+        logInfo: (message: string, metaData?: LoggingMetaData) => void;
+    };
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
@@ -1274,6 +1331,9 @@ export class ObservableSet<T> extends Set<T> {
     readonly onCleared: BeEvent<() => void>;
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
+
+// @public
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
 
 // @beta
 export class OneAtATimeAction<T> {
@@ -1556,6 +1616,25 @@ export class Tracing {
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
+    // (undocumented)
+    [Symbol.iterator](): IterableIterator<[K, V]>;
+    // (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(entries?: readonly (readonly [K, V])[] | null);
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    get(key: K): V | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: V): this;
+    // (undocumented)
+    get size(): number;
 }
 
 // @public
