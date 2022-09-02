@@ -11,6 +11,10 @@ pr:
     include:
       - master
       - release/*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
 
 jobs:
   - template: ci-core.yaml

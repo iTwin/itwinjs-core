@@ -16,6 +16,10 @@ pr:
     include:
       - master
       - release/*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
 
 variables:
   - group: iTwin.js non-secret config variables
