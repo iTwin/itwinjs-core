@@ -6,6 +6,15 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
+import { DtaConfiguration } from "../common/DtaConfiguration";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
+
+let configuration: DtaConfiguration = {};
+
+export function setSignInConfiguration(value: DtaConfiguration) {
+  configuration = value;
+}
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -22,17 +31,26 @@ export async function signIn(): Promise<boolean> {
     });
   }
 
-  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
-  if (ProcessDetector.isElectronAppFrontend) {
+  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | TestFrontendAuthorizationClient | undefined;
+  if (configuration.headless) {
+    const token = await DtaRpcInterface.getClient().getAccessToken();
+    authClient = new TestFrontendAuthorizationClient(token);
+  } else if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
-  } else if (ProcessDetector.isMobileAppFrontend){
-    // not implemented
+  } else if (ProcessDetector.isMobileAppFrontend) {
+    // The default auth client works on mobile
+    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    return accessToken !== undefined && accessToken.length > 0;
   } else {
+    const clientId = configuration.oidcClientId ?? "imodeljs-spa-test";
+    const redirectUri = configuration.oidcRedirectUri ?? "http://localhost:3000/signin-callback";
+    const scope = configuration.oidcScope ?? "openid email profile organization itwinjs";
+    const responseType = "code";
     authClient = new BrowserAuthorizationClient({
-      clientId: "imodeljs-spa-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
-      responseType: "code",
+      clientId,
+      redirectUri,
+      scope,
+      responseType,
     });
     try {
       await authClient.signInSilent();

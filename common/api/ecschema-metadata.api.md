@@ -1829,6 +1829,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1862,6 +1869,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
@@ -1916,6 +1930,9 @@ export interface SchemaProps {
     // (undocumented)
     readonly version: string;
 }
+
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal
 export class SchemaReadHelper<T = unknown> {
