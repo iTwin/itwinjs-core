@@ -49,10 +49,23 @@ describe.only("AccuSnap", () => {
       iModel.requestSnap = (props) => Promise.resolve(impl(props));
     }
 
+    type SnapResponse = SnapStatus | SnapDetail;
+
+    function assertSnapDetail(response: SnapResponse): SnapDetail {
+      expect(response).instanceOf(SnapResponse);
+      return response as SnapDetail;
+    }
+
     async function requestSnap(hit: HitDetailProps, snapModes: SnapMode[] = []): Promise<{ status: SnapStatus, detail?: SnapDetail }> {
       const response = new LocateResponse();
       const detail = await AccuSnap.requestSnap(makeHitDetail(hit), snapModes, 1, 1, undefined, response);
-      return { detail, status: response.snapStatus };
+      if (detail) {
+        expect(response.snapStatus).to.equal(SnapStatus.Success);
+        return detail;
+      } else {
+        expect(response.snapStatus).not.to.equal(SnapStatus.Success);
+        return response.snapStatus;
+      }
     }
   });
 });
