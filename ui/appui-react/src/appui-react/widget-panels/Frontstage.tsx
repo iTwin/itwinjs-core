@@ -684,6 +684,7 @@ export function initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneS
     for (const [, panel] of Object.entries(stateDraft.panels)) {
       const expanded = panel.widgets.find((widgetId) => stateDraft.widgets[widgetId].minimized === false);
       const firstWidget = panel.widgets.length > 0 ? stateDraft.widgets[panel.widgets[0]] : undefined;
+      // istanbul ignore next
       if (!expanded && firstWidget) {
         firstWidget.minimized = false;
       }
@@ -787,6 +788,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
   restored = produce(restored, (draft) => {
     // Floating widget might have been removed when saving, dock tool settings if tab is not found.
     const location = findTab(draft, toolSettingsTabId);
+    // istanbul ignore else
     if (!location) {
       draft.toolSettings.type = "docked";
     }
@@ -982,6 +984,7 @@ function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneSt
     const floatingWidgetId = floatingWidget.id;
 
     // Add to an existing floating widget.
+    // istanbul ignore next
     if (floatingWidgetId in state.widgets) {
       return insertTabToWidget(state, tabId, floatingWidgetId, tabLocation.tabIndex);
     }
@@ -1035,10 +1038,12 @@ export function setWidgetState(
       if (isFloatingTabLocation(location)) {
         const floatingWidget = draft.floatingWidgets.byId[location.floatingWidgetId];
         floatingWidget.hidden = false;
+      // istanbul ignore else
       } else if (isPanelTabLocation(location)) {
         const panel = draft.panels[location.side];
         panel.collapsed = false;
         if (undefined === panel.size || 0 === panel.size) {
+          // istanbul ignore next
           panel.size = panel.minSize ?? 200;
         }
       }
