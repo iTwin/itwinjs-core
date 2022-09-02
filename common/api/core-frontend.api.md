@@ -12839,6 +12839,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
     get grabbingCursor(): string;
     // (undocumented)
     get grabCursor(): string;
+    // @internal (undocumented)
+    hasViewport(vpToFind: Viewport): boolean;
     // (undocumented)
     inDynamicsMode: boolean;
     // @beta
@@ -13315,6 +13317,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     viewToNpcArray(pts: Point3d[]): void;
     viewToWorld(input: XYAndZ, out?: Point3d): Point3d;
     viewToWorldArray(pts: Point3d[]): void;
+    waitForSceneCompletion(): Promise<void>;
     // @internal
     get wantViewAttachmentBoundaries(): boolean;
     set wantViewAttachmentBoundaries(want: boolean);
