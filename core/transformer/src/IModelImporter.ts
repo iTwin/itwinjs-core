@@ -621,6 +621,7 @@ export interface IModelImporterState {
  * @param entity The current persistent Entity.
  * @param entityProps The new EntityProps to compare against
  * @note This method should only be called if changeset information is not available.
+ * @internal
  */
 export function hasEntityChanged(entity: Entity, entityProps: EntityProps, namesToIgnore?: Set<string>): boolean {
   let changed: boolean = false;

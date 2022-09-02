@@ -94,7 +94,7 @@ export class EntityReferences {
 }
 
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
- * @public
+ * @alpha
  */
 export class EntityReferenceSet extends Set<EntityReference> {
   public addElement(id: Id64String) { this.add(`e${id}`); }
