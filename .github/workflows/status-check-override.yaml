@@ -1,0 +1,87 @@
+# For pull requests that only modify documentation, individual CI events may forego running.
+# (This is done by each action/pipeline/event's config.) The itwinjs-core repo requires some
+# of those events to have finished successfully or neutrally to allow a pull request to be
+# merged.
+#
+# This config will fake successful status checks for such events when it detects
+# *only* documentation changes in a pull request.
+
+name: Skip Check
+
+on:
+  # workflow_dispatch:   # Allows you to run this workflow manually from the Actions tab
+  pull_request:
+    branches:
+      - master
+      - release/*
+    paths:
+      - "**.md"
+      - docs/**
+
+env:
+  documentation_files: false
+  non_documentation_files: false
+  documentation_files_only: false
+
+jobs:
+  detect-if-skip:
+    name: Detect If Skip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Check for certain paths having been modified
+      - name: Path filter
+        uses: dorny/paths-filter@v2   # See https://github.com/marketplace/actions/paths-changes-filter
+        id: path_filter
+        with:
+          filters: |
+            documentation_files:
+              - "docs/**"
+              - "**.md"
+            non_md:
+              - "**/!(*.md)"
+            non_doc_folder:
+              - "!(docs/**)"
+
+      # Set variables
+      - name: "Set Variable: documentation_files"
+        run: |
+          echo documentation_files=${{
+            steps.path_filter.outputs.documentation_files == 'true' }} >> $GITHUB_ENV
+
+      - name: "Set Variable: non_documentation_files"
+        run: |
+          echo non_documentation_files=${{
+            steps.path_filter.outputs.non_md == 'true' &&
+            steps.path_filter.outputs.non_doc_folder == 'true' }} >> $GITHUB_ENV
+
+      - name: "Set Variable: documentation_files_only"
+        run: |
+          echo documentation_files_only=${{
+            env.documentation_files == 'true' && !(env.non_documentation_files == 'true') }} >> $GITHUB_ENV
+
+      # For debugging
+      - name: Print variables
+        run: |
+          echo documentation_files=${{env.documentation_files}}
+          echo non_documentation_files=${{env.non_documentation_files}}
+          echo documentation_files_only=${{env.documentation_files_only}}
+
+      # Fake required checks if neccessary
+      - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks
+        if: ${{ env.documentation_files_only == 'true' }}   # when to create status
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: extract-api   # name of the status check to simulate
+          conclusion: success
+
+      # Add more status checks below if necessary
+
+      # TEMPLATE
+      # - uses: LouisBrunner/checks-action@v1.3.0
+      #   if: ${{ env.documentation_files_only == 'true' }}   # when to create status
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: <name-of-any-status-check-to-simulate>   # name of the status check to simulate
+      #     conclusion: success
