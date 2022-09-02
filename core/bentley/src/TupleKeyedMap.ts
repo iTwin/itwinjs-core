@@ -11,6 +11,7 @@ interface PartialMap<K, V> {
   get(k: K): V | undefined;
   set(k: K, v: V): PartialMap<K, V>;
   has(k: K): boolean;
+  size: number;
   [Symbol.iterator](): IterableIterator<[K, V]>;
 }
 
@@ -23,6 +24,7 @@ interface PartialMap<K, V> {
  * ```
  * It is implemented by each index of the tuple key being used as a singular key into a submap
  * @note this only implements a subset, [[PartialMap]], of the Map interface
+ * @public
  */
 export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
   private _map = new Map<K[0], Map<any, V> | V>();
