@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Add test for attaching aspect to a different element",
+      "comment": "",
       "type": "none"
     }
   ],
