@@ -65,7 +65,7 @@ export function createNineZoneState(args?: Partial<NineZoneState>): NineZoneStat
  * @internal
  */
 export function convertAllPopupWidgetContainersToFloating(state: NineZoneState): NineZoneState {
-  // TODO: needs work
+  // TODO: review
   return produce(state, (draft) => {
     for (const widgetContainerId of state.popoutWidgets.allIds) {
       const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
@@ -85,7 +85,7 @@ export function convertAllPopupWidgetContainersToFloating(state: NineZoneState):
 
 /** @internal */
 export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState {
-  // TODO: needs work
+  // TODO: review
   if (idIsContainerId) {
     const widgetLocation = getWidgetLocation(state, widgetTabId);
     // istanbul ignore else
@@ -133,7 +133,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
 
 /** @internal */
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {
-  // TODO: needs work
+  // TODO: review
   const location = getTabLocation(state, widgetTabId);
   if (!location)
     throw new UiError(category, "Tab not found");
@@ -176,7 +176,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
 
 /** @internal */
 export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps) {
-  // TODO: needs work
+  // TODO: review
   if (floatingWidgetId in state.floatingWidgets.byId) {
     return produce(state, (draft) => {
       draft.floatingWidgets.byId[floatingWidgetId].bounds = bounds;
@@ -189,7 +189,7 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
 /** @internal */
 // istanbul ignore next
 export function popoutWidgetToChildWindow(state: NineZoneState, tabId: string, preferredBounds: RectangleProps): NineZoneState {
-  // TODO: needs work
+  // TODO: review
   const location = getTabLocation(state, tabId);
   if (!location)
     throw new UiError(category, "Tab not found");
