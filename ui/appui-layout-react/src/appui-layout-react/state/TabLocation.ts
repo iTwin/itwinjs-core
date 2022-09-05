@@ -10,7 +10,7 @@ import { PanelSide } from "../widget-panels/Panel";
 import { TabState } from "./TabState";
 import { NineZoneState } from "./NineZoneState";
 import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "./WidgetState";
-import { findWidget } from "./WidgetLocation";
+import { getWidgetLocation } from "./WidgetLocation";
 
 /** @internal */
 export interface PanelTabLocation {
@@ -51,7 +51,7 @@ export function isPanelTabLocation(location: TabLocation): location is PanelTabL
 /** Returns a tab location or `undefined` if tab is not in a widget.
  * @internal
  */
-export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
+export function getTabLocation(state: NineZoneState, id: TabState["id"]): TabLocation | undefined {
   let widgetId;
   for (const [, widget] of Object.entries(state.widgets)) {
     const index = widget.tabs.indexOf(id);
@@ -62,7 +62,7 @@ export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation |
   }
   if (!widgetId)
     return undefined;
-  const widgetLocation = findWidget(state, widgetId);
+  const widgetLocation = getWidgetLocation(state, widgetId);
   return widgetLocation ? {
     ...widgetLocation,
     widgetId,

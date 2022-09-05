@@ -15,7 +15,7 @@ import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from
 import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import {
   dockWidgetContainer,
-  findTab, findWidget, floatWidget, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
+  floatWidget, getTabLocation, getWidgetLocation, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
@@ -707,7 +707,7 @@ export class FrontstageDef {
   public getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetDef.id);
+      const location = getTabLocation(this.nineZoneState, widgetDef.id);
       // istanbul ignore next
       if (!location)
         return WidgetState.Hidden;
@@ -753,7 +753,7 @@ export class FrontstageDef {
   public isPopoutWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (location)
         return isPopoutTabLocation(location);
@@ -765,7 +765,7 @@ export class FrontstageDef {
   public isFloatingWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (location)
         return isFloatingTabLocation(location);
@@ -785,7 +785,7 @@ export class FrontstageDef {
   public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       if (location) {
         let popoutWidgetContainerId: string | undefined;
         if (isPopoutTabLocation(location)) {
@@ -810,7 +810,7 @@ export class FrontstageDef {
     let widgetIsVisible = false;
     // istanbul ignore else
     if (this.nineZoneState) {
-      const tabLocation = findTab(this.nineZoneState, widgetId);
+      const tabLocation = getTabLocation(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (tabLocation) {
         if (isFloatingTabLocation(tabLocation)) {
@@ -837,7 +837,7 @@ export class FrontstageDef {
   /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.
    * @internal */
   public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
-    const location = findWidget(state, widgetContainerId);
+    const location = getWidgetLocation(state, widgetContainerId);
     // istanbul ignore next
     if (!location)
       return;
@@ -884,7 +884,7 @@ export class FrontstageDef {
     if (!this.nineZoneState)
       return;
 
-    let location = findTab(this.nineZoneState, widgetId);
+    let location = getTabLocation(this.nineZoneState, widgetId);
     if (!location || isPopoutTabLocation(location))
       return;
 
@@ -907,7 +907,7 @@ export class FrontstageDef {
     this.nineZoneState = state;
 
     // now that the state is updated get the id of the container that houses the widgetTab/widgetId
-    location = findTab(state, widgetId);
+    location = getTabLocation(state, widgetId);
     assert(!!location && isPopoutTabLocation(location));
 
     const widgetContainerId = location.widgetId;
@@ -943,7 +943,7 @@ export class FrontstageDef {
     if (!this.nineZoneState)
       return;
 
-    const location = findWidget(this.nineZoneState, childWindowId);
+    const location = getWidgetLocation(this.nineZoneState, childWindowId);
     if (!location || !isPopoutWidgetLocation(location))
       return;
 
@@ -985,7 +985,7 @@ export class FrontstageDef {
     // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
     // an API call has moved the widget from a popout state to a floating state.
     // istanbul ignore else
-    const location = findWidget(this.nineZoneState, widgetContainerId);
+    const location = getWidgetLocation(this.nineZoneState, widgetContainerId);
     if (!location || !isPopoutWidgetLocation(location))
       return;
 
@@ -1002,7 +1002,7 @@ export class FrontstageDef {
   public dockWidgetContainer(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       if (location) {
         const widgetContainerId = location.widgetId;
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
@@ -1033,7 +1033,7 @@ export class FrontstageDef {
     if (!this.nineZoneState)
       return undefined;
 
-    const location = findTab(this.nineZoneState, widgetId);
+    const location = getTabLocation(this.nineZoneState, widgetId);
     // istanbul ignore else
     if (location && isFloatingTabLocation(location)) {
       return location.floatingWidgetId;

@@ -10,7 +10,7 @@ import { produce } from "immer";
 import { Point, Rectangle } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { removeTabFromWidget } from "./TabState";
-import { findWidget, isPanelWidgetLocation } from "./WidgetLocation";
+import { getWidgetLocation, isPanelWidgetLocation } from "./WidgetLocation";
 import { NineZoneAction } from "./NineZoneAction";
 import { isPanelDropTargetState, isSectionDropTargetState, isTabDropTargetState, isWidgetDropTargetState, isWindowDropTargetState } from "./DropTargetState";
 import { getWidgetPanelSectionId, insertPanelWidget } from "./PanelState";
@@ -161,7 +161,7 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
         state = addWidgetState(state, target.newWidgetId, draggedWidget.tabs, draggedWidget);
       } else if (isWidgetDropTargetState(target)) {
         state = updateHomeOfToolSettingsWidget(state, target.widgetId, floatingWidget.home);
-        const widget = findWidget(state, target.widgetId);
+        const widget = getWidgetLocation(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
           state = updatePanelState(state, widget.side, {
             collapsed: false,
@@ -354,7 +354,7 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
         state = addWidgetState(state, target.newWidgetId, [action.id]);
       } else if (isWidgetDropTargetState(target)) {
         updateHomeOfToolSettingsWidget(state, target.widgetId, state.draggedTab.home);
-        const widget = findWidget(state, target.widgetId);
+        const widget = getWidgetLocation(state, target.widgetId);
         if (widget && isPanelWidgetLocation(widget)) {
           const panel = state.panels[widget.side];
           state = updatePanelState(state, panel.side, {

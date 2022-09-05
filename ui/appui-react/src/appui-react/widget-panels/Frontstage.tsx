@@ -18,9 +18,9 @@ import { StagePanelLocation, UiItemsManager, WidgetState } from "@itwin/appui-ab
 import { Rectangle, RectangleProps, Size, SizeProps, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
 import { ToolbarPopupAutoHideContext } from "@itwin/components-react";
 import {
-  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, findTab,
-  floatingWidgetBringToFront,
-  FloatingWidgetHomeState, FloatingWidgets, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
+  addFloatingWidget, addPanelWidget, addTab, addTabToWidget, convertAllPopupWidgetContainersToFloating, createNineZoneState, floatingWidgetBringToFront,
+  FloatingWidgetHomeState,
+  FloatingWidgets, getTabLocation, getUniqueId, getWidgetPanelSectionId, insertPanelWidget, insertTabToWidget, isFloatingTabLocation,
   isHorizontalPanelSide, isPanelTabLocation, isPopoutTabLocation, NineZone, NineZoneAction, NineZoneDispatch, NineZoneLabels, NineZoneState, NineZoneStateReducer, PanelSide,
   panelSides, removeTab, removeTabFromWidget, TabState, toolSettingsTabId, WidgetPanels,
 } from "@itwin/appui-layout-react";
@@ -787,7 +787,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
   // TODO: remove when isUUID check is refactored.
   restored = produce(restored, (draft) => {
     // Floating widget might have been removed when saving, dock tool settings if tab is not found.
-    const location = findTab(draft, toolSettingsTabId);
+    const location = getTabLocation(draft, toolSettingsTabId);
     // istanbul ignore else
     if (!location) {
       draft.toolSettings.type = "docked";
@@ -1023,10 +1023,10 @@ export function setWidgetState(
     return hideWidget(state, widgetDef);
   } else if (widgetState === WidgetState.Open) {
     const id = widgetDef.id;
-    let location = findTab(state, id);
+    let location = getTabLocation(state, id);
     if (!location) {
       state = addHiddenWidget(state, widgetDef);
-      location = findTab(state, id);
+      location = getTabLocation(state, id);
     }
 
     return produce(state, (draft) => {
@@ -1050,10 +1050,10 @@ export function setWidgetState(
     });
   } else if (widgetState === WidgetState.Closed) {
     const id = widgetDef.id;
-    let location = findTab(state, id);
+    let location = getTabLocation(state, id);
     if (!location) {
       state = addHiddenWidget(state, widgetDef);
-      location = findTab(state, id);
+      location = getTabLocation(state, id);
     }
 
     // TODO: should change activeTabId of a widget with multiple tabs.
@@ -1073,7 +1073,7 @@ export function setWidgetState(
 
 /** Stores widget location and hides it in the UI. */
 function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
-  const location = findTab(state, widgetDef.id);
+  const location = getTabLocation(state, widgetDef.id);
   if (!location)
     return state;
   // istanbul ignore else
@@ -1104,7 +1104,7 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
 
 /** @internal */
 export function showWidget(state: NineZoneState, id: TabState["id"]) {
-  const location = findTab(state, id);
+  const location = getTabLocation(state, id);
   if (!location)
     return state;
   state = produce(state, (draft) => {
@@ -1124,7 +1124,7 @@ export function showWidget(state: NineZoneState, id: TabState["id"]) {
 
 /** @internal */
 export function expandWidget(state: NineZoneState, id: TabState["id"]) {
-  const location = findTab(state, id);
+  const location = getTabLocation(state, id);
   if (!location)
     return state;
 

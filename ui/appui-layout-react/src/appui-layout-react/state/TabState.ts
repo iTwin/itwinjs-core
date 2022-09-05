@@ -12,7 +12,7 @@ import { IconSpec, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { NineZoneState } from "./NineZoneState";
 import { FloatingWidgetHomeState, WidgetState } from "./WidgetState";
-import { findTab } from "./TabLocation";
+import { getTabLocation } from "./TabLocation";
 import { category } from "./internal/NineZoneStateHelpers";
 import { createTabState } from "./internal/TabStateHelpers";
 import { assertWidgetState, removeWidget, setWidgetActiveTabId, updateWidgetState } from "./internal/WidgetStateHelpers";
@@ -72,7 +72,7 @@ export function insertTabToWidget(state: NineZoneState, tabId: TabState["id"], w
   if (!(tabId in state.tabs))
     throw new UiError(category, "Tab does not exist", undefined, () => ({ tabId }));
   assertWidgetState(state, widgetId);
-  const location = findTab(state, tabId);
+  const location = getTabLocation(state, tabId);
   if (location)
     throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
 
@@ -86,7 +86,7 @@ export function insertTabToWidget(state: NineZoneState, tabId: TabState["id"], w
  * @internal
  */
 export function removeTabFromWidget(state: NineZoneState, tabId: TabState["id"]): NineZoneState {
-  const location = findTab(state, tabId);
+  const location = getTabLocation(state, tabId);
   if (!location)
     return state;
 

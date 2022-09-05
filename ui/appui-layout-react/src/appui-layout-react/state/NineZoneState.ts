@@ -19,8 +19,8 @@ import { PointProps, UiError } from "@itwin/appui-abstract";
 import { getUniqueId } from "../base/NineZone";
 import { category, convertPopoutWidgetContainerToFloating } from "./internal/NineZoneStateHelpers";
 import { NineZoneStateReducer } from "./NineZoneStateReducer";
-import { findTab, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "./TabLocation";
-import { findWidget, isFloatingWidgetLocation, isPopoutWidgetLocation } from "./WidgetLocation";
+import { getTabLocation, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation } from "./TabLocation";
+import { getWidgetLocation, isFloatingWidgetLocation, isPopoutWidgetLocation } from "./WidgetLocation";
 
 /** @internal */
 export interface NineZoneState {
@@ -87,7 +87,7 @@ export function convertAllPopupWidgetContainersToFloating(state: NineZoneState):
 export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, idIsContainerId?: boolean): NineZoneState {
   // TODO: needs work
   if (idIsContainerId) {
-    const widgetLocation = findWidget(state, widgetTabId);
+    const widgetLocation = getWidgetLocation(state, widgetTabId);
     // istanbul ignore else
     if (widgetLocation) {
       if (isFloatingWidgetLocation(widgetLocation)) {
@@ -108,7 +108,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
       }
     }
   } else {
-    const location = findTab(state, widgetTabId);
+    const location = getTabLocation(state, widgetTabId);
     if (location) {
       if (isFloatingTabLocation(location)) {
         const floatingWidgetId = location.widgetId;
@@ -134,7 +134,7 @@ export function dockWidgetContainer(state: NineZoneState, widgetTabId: string, i
 /** @internal */
 export function floatWidget(state: NineZoneState, widgetTabId: string, point?: PointProps, size?: SizeProps): NineZoneState {
   // TODO: needs work
-  const location = findTab(state, widgetTabId);
+  const location = getTabLocation(state, widgetTabId);
   if (!location)
     throw new UiError(category, "Tab not found");
 
@@ -190,7 +190,7 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
 // istanbul ignore next
 export function popoutWidgetToChildWindow(state: NineZoneState, tabId: string, preferredBounds: RectangleProps): NineZoneState {
   // TODO: needs work
-  const location = findTab(state, tabId);
+  const location = getTabLocation(state, tabId);
   if (!location)
     throw new UiError(category, "Tab not found");
 

@@ -524,12 +524,6 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 // @internal
-export function findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined;
-
-// @internal
-export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined;
-
-// @internal
 export function FloatingTab(): JSX.Element;
 
 // @internal (undocumented)
@@ -789,6 +783,9 @@ export function getOverflown(width: number, docked: ReadonlyArray<readonly [stri
 // @internal (undocumented)
 export function getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps): Rectangle;
 
+// @internal
+export function getTabLocation(state: NineZoneState, id: TabState["id"]): TabLocation | undefined;
+
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
 
@@ -797,6 +794,9 @@ export const getToolbarItemProps: <TProps extends {}>(props: TProps) => ToolbarI
 
 // @internal (undocumented)
 export function getUniqueId(): string;
+
+// @internal
+export function getWidgetLocation(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined;
 
 // @internal (undocumented)
 export function getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string;

@@ -10,8 +10,8 @@ import { castDraft, produce } from "immer";
 import { UiError } from "@itwin/appui-abstract";
 import { NineZoneState } from "../NineZoneState";
 import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "../WidgetState";
-import { findTab } from "../TabLocation";
-import { findWidget, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
+import { getTabLocation } from "../TabLocation";
+import { getWidgetLocation, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
 import { Rectangle } from "@itwin/core-react";
 import { category, setRectangleProps } from "./NineZoneStateHelpers";
 import { updatePanelState } from "./PanelStateHelpers";
@@ -52,7 +52,7 @@ export function addWidgetState(state: NineZoneState, id: WidgetState["id"], tabs
     if (!(tabId in state.tabs))
       throw new UiError(category, "Tab does not exist", undefined, () => ({ tabId }));
 
-    const location = findTab(state, tabId);
+    const location = getTabLocation(state, tabId);
     if (location)
       throw new UiError(category, "Tab is already in a widget", undefined, () => ({ tabId, widgetId: location.widgetId }));
   }
@@ -63,7 +63,7 @@ export function addWidgetState(state: NineZoneState, id: WidgetState["id"], tabs
 
 /** @internal */
 export function removeWidget(state: NineZoneState, id: WidgetState["id"]): NineZoneState {
-  const location = findWidget(state, id);
+  const location = getWidgetLocation(state, id);
   if (!location)
     throw new UiError(category, "Widget not found");
 
@@ -185,7 +185,7 @@ export function removePanelWidget(state: NineZoneState, id: WidgetState["id"], l
 }
 
 function findPanelWidget(state: NineZoneState, id: WidgetState["id"]) {
-  const location = findWidget(state, id);
+  const location = getWidgetLocation(state, id);
   if (location && isPanelWidgetLocation(location))
     return location;
   return undefined;

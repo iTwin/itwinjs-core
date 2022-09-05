@@ -47,7 +47,7 @@ export function isPanelWidgetLocation(location: WidgetLocation): location is Pan
 /** Returns a widget location or `undefined` if widget is not found.
  * @internal
  */
-export function findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
+export function getWidgetLocation(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined {
   if (id in state.floatingWidgets.byId) {
     return {
       floatingWidgetId: id,

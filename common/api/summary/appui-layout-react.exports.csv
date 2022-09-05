@@ -87,8 +87,6 @@ beta;ExpandableItem
 deprecated;ExpandableItem 
 beta;ExpandableItemProps 
 deprecated;ExpandableItemProps 
-internal;findTab(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
-internal;findWidget(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;FloatingTab(): JSX.Element
 internal;FloatingTabLocation
 internal;FloatingWidget: React_2.NamedExoticComponent
@@ -143,9 +141,11 @@ internal;getDefaultZonesManagerZonesProps: () => ZonesManagerZonesProps
 internal;getDragDistance: (from: Point, to: Point, direction: Direction) => number
 internal;getOverflown(width: number, docked: ReadonlyArray
 internal;getResizeBy(handle: FloatingWidgetResizeHandle, offset: PointProps): Rectangle
+internal;getTabLocation(state: NineZoneState, id: TabState["id"]): TabLocation | undefined
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 internal;getToolbarItemProps: 
 internal;getUniqueId(): string
+internal;getWidgetLocation(state: NineZoneState, id: WidgetState["id"]): WidgetLocation | undefined
 internal;getWidgetPanelSectionId(side: PanelSide, panelSectionIndex: number): string
 internal;getWindowResizeSettings: (zoneId: WidgetZoneId) => ZoneWindowResizeSettings
 internal;getZoneCell: (id: ZoneId) => Cell

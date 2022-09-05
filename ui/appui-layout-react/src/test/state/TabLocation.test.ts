@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 import { should } from "chai";
 import {
-  addFloatingWidget, addPanelWidget, createNineZoneState, findTab, removeTabFromWidget,
+  addFloatingWidget, addPanelWidget, createNineZoneState, getTabLocation, removeTabFromWidget,
 } from "../../appui-layout-react";
 import { addWidgetState } from "../../appui-layout-react/state/internal/WidgetStateHelpers";
 import { addTabs } from "../Utils";
 
-describe("findTab", () => {
+describe("getTabLocation", () => {
   it("should return 'undefined' if widget is not found", () => {
     let state = createNineZoneState();
     state = addTabs(state, ["t1"]);
     state = addFloatingWidget(state, "w1", ["t1"]);
     state = removeTabFromWidget(state, "t1");
-    const tab = findTab(state, "t1");
+    const tab = getTabLocation(state, "t1");
     should().not.exist(tab);
   });
 
@@ -23,7 +23,7 @@ describe("findTab", () => {
     let state = createNineZoneState();
     state = addTabs(state, ["t1"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
-    const tab = findTab(state, "t2");
+    const tab = getTabLocation(state, "t2");
     should().not.exist(tab);
   });
 
@@ -31,7 +31,7 @@ describe("findTab", () => {
     let state = createNineZoneState();
     state = addTabs(state, ["t1", "t2"]);
     state = addWidgetState(state, "w1", ["t1"]);
-    const tab = findTab(state, "t1");
+    const tab = getTabLocation(state, "t1");
     should().not.exist(tab);
   });
 });
