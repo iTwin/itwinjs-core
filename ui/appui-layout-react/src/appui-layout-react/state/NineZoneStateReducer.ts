@@ -271,10 +271,9 @@ export function NineZoneStateReducer(state: NineZoneState, action: NineZoneActio
       return state;
     }
     case "WIDGET_TAB_CLICK": {
-      const widget = state.widgets[action.widgetId];
-
-      state = setWidgetActiveTabId(state, widget.id, action.id);
-      return updateWidgetState(state, widget.id, {
+      const { id, widgetId } = action;
+      state = setWidgetActiveTabId(state, widgetId, id);
+      return updateWidgetState(state, widgetId, {
         minimized: false,
       });
     }
