@@ -55,6 +55,11 @@ export interface ExtentLimits {
   max: number;
 }
 
+export interface GetModelDisplayTransformArgs {
+  modelId: Id64String;
+  output?: Transform;
+}
+
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
@@ -62,6 +67,13 @@ export interface ExtentLimits {
  */
 export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+}
+
+export interface ComputeDisplayTransformArgs {
+  modelId: Id64String;
+  elementId?: Id64String;
+  timePoint?: number;
+  output?: Transform;
 }
 
 /** Arguments to [[ViewState3d.lookAt]] for either a perspective or orthographic view
@@ -1251,6 +1263,16 @@ export abstract class ViewState extends ElementState {
         normal.set(newVec.x, newVec.y, newVec.z);
       }
     }
+  }
+
+  public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
+    const elevation = this.getModelElevation(args.modelId);
+    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId, Transform.createIdentity());
+    if (!modelTransform)
+      return elevation !== 0 ? Transform.createTranslationXYZ(0, 0, elevation, args.output) : undefined;
+
+    modelTransform.origin.z += elevation;
+    return args.output ? modelTransform.clone(args.output) : modelTransform;
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
