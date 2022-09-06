@@ -255,7 +255,7 @@ export class ElectronHost {
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
-        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true, supportFetchAPI: true } }]);
       const eopt = opts?.electronHost;
       this._developmentServer = eopt?.developmentServer ?? false;
       const frontendPort = eopt?.frontendPort ?? 3000;
