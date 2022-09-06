@@ -1257,7 +1257,7 @@ export abstract class ViewState extends ElementState {
   public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
     if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
       const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
-      const newVec = transform.matrix.multiplyInverse(normal);
+      const newVec = transform.matrix.multiplyVector(normal);
       if (undefined !== newVec) {
         newVec.normalizeInPlace();
         normal.set(newVec.x, newVec.y, newVec.z);

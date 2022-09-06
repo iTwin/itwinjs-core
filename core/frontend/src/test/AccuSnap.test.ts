@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
+import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
@@ -75,9 +75,9 @@ describe.only("AccuSnap", () => {
 
     function expectPoint(actual: XYZ, expected: XYZProps): void {
       const expectedPt = Point3d.fromJSON(expected);
-      expect(actual.x).to.equal(expectedPt.x);
-      expect(actual.y).to.equal(expectedPt.y);
-      expect(actual.z).to.equal(expectedPt.z);
+      expect(Math.abs(actual.x - expectedPt.x)).most(0.0000001);
+      expect(Math.abs(actual.y - expectedPt.y)).most(0.0000001);
+      expect(Math.abs(actual.z - expectedPt.z)).most(0.0000001);
     }
 
     function expectSnapDetail(response: SnapResponse, expected: SnapDetailProps): SnapDetail {
@@ -171,6 +171,13 @@ describe.only("AccuSnap", () => {
         (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
         [],
         (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+      );
+
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0,], [0, -1, 0]] }),
+        [],
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
       );
     });
 
