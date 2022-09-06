@@ -59,7 +59,7 @@
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
-      parameter:
+      parameters:
         workingDir: $(System.DefaultWorkingDirectory)/itwinjs-core
 
     # Will run if even there is a failure somewhere else in the pipeline.
