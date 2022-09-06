@@ -77,7 +77,7 @@ export class EntityReferences extends BentleyEntityReferences {
     return this.fromClass(id, ecclass);
   }
 
-  /** Searches for a class by name in the [ClassRegistry]($backend) */
+  /** Create an EntityReference quickly from an exact reference type and id */
   public static fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
     return `${type}${id}`;
   }
