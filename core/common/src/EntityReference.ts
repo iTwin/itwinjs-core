@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "./Id";
+import { Id64, Id64String } from "@itwin/core-bentley";
 
 /**
  * Types of concrete entities. Used for storing strings in JavaScript reference-equality containers which encode

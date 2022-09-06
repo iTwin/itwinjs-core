@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { EntityReferences as BentleyEntityReferences, ConcreteEntityTypes, EntityReference, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
+import { EntityReferences as BentleyEntityReferences, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, ModelProps } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
 import type { Element } from "./Element";

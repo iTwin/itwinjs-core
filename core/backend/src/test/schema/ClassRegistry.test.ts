@@ -5,16 +5,19 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import * as path from "path";
-import { BisCodeSpec, Code, DefinitionElementProps, ElementAspectProps, EntityMetaData, ModelProps, RelatedElement, RelatedElementProps, RelationshipProps } from "@itwin/core-common";
 import {
-  DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink, Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
+  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, EntityMetaData, EntityReferenceSet, ModelProps,
+  RelatedElement, RelatedElementProps, RelationshipProps,
+} from "@itwin/core-common";
+import {
+  DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink,
+  Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
 import { ClassRegistry } from "../../ClassRegistry";
-import { ConcreteEntityTypes, EntityReferenceSet } from "@itwin/core-bentley";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;

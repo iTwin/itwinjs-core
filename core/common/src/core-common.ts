@@ -28,6 +28,7 @@ export * from "./ECSqlTypes";
 export * from "./ElementProps";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";
+export * from "./EntityReference";
 export * from "./Environment";
 export * from "./FeatureGates";
 export * from "./FeatureIndex";

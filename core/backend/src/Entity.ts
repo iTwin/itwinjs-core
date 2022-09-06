@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { EntityReferences, EntityReferenceSet, Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
-import { EntityProps, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
+import { EntityProps, EntityReferences, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 

@@ -6,8 +6,8 @@
  * @module iModels
  */
 
-import { ConcreteEntityTypes, DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
-import { IModelError } from "@itwin/core-common";
+import { DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
+import { ConcreteEntityTypes, IModelError } from "@itwin/core-common";
 import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
 import { IModelDb } from "./IModelDb";
