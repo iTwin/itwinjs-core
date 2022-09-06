@@ -6,15 +6,6 @@
  * @module Collections
  */
 
-/** @public the set of Map interface functions supported by TupleKeyedMap */
-export interface PartialMap<K, V> {
-  get(k: K): V | undefined;
-  set(k: K, v: V): PartialMap<K, V>;
-  has(k: K): boolean;
-  readonly size: number;
-  [Symbol.iterator](): IterableIterator<[K, V]>;
-}
-
 /** A map similar to the standard JavaScript Map collection except that the keys must be a tuple
  * (javascript array), and value comparison is used on these tuple keys, without a user-provided hash function.
  * This means you can use array literals to store complicated data.
@@ -23,10 +14,10 @@ export interface PartialMap<K, V> {
  * const value = map.get([1, "y"]); // a normal map would identify these keys as different because they are independent objects!
  * ```
  * It is implemented by each index of the tuple key being used as a singular key into a submap
- * @note this only implements a subset, [[PartialMap]], of the Map interface
+ * @note this only implements a subset of the Map interface
  * @public
  */
-export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
+export class TupleKeyedMap<K extends readonly any[], V> {
   private _map = new Map<K[0], Map<any, V> | V>();
 
   // argument types match those of Map
