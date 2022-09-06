@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, XYZProps } from "@itwin/core-geometry";
+import { LineSegment3d, Point3d, XYZ, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
@@ -73,27 +73,27 @@ describe.only("AccuSnap", () => {
       curve: [XYZProps, XYZProps];
     }
 
-    function expectPoints(expected: XYZProps, actual: XYZProps): void {
-      const e = Point3d.fromJSON(expected);
-      const a = Point3d.fromJSON(actual);
-      expect(a.isAlmostEqual(e)).to.be.true;
+    function expectPoint(actual: XYZ, expected: XYZProps): void {
+      const expectedPt = Point3d.fromJSON(expected);
+      expect(actual.x).to.equal(expectedPt.x);
+      expect(actual.y).to.equal(expectedPt.y);
+      expect(actual.z).to.equal(expectedPt.z);
     }
 
     function expectSnapDetail(response: SnapResponse, expected: SnapDetailProps): SnapDetail {
       expect(response).instanceOf(SnapDetail);
       const detail = response as SnapDetail;
 
-      const expectedPoint = Point3d.fromJSON(expected.point);
-      expect(detail.hitPoint.isAlmostEqual(expectedPoint)).to.be.true;
-      expect(detail.snapPoint.isAlmostEqual(expectedPoint)).to.be.true;
+      expectPoint(detail.hitPoint, expected.point);
+      expectPoint(detail.snapPoint, expected.point);
 
       expect(detail.normal).not.to.be.undefined;
-      expect(detail.normal!.isAlmostEqual(Point3d.fromJSON(expected.normal))).to.be.true;
+      expectPoint(detail.normal!, expected.normal);
 
       const segment = detail.primitive as LineSegment3d;
       expect(segment).instanceOf(LineSegment3d);
-      expect(segment.point0Ref.isAlmostEqual(Point3d.fromJSON(expected.curve[0]))).to.be.true;
-      expect(segment.point1Ref.isAlmostEqual(Point3d.fromJSON(expected.curve[1]))).to.be.true;
+      expectPoint(segment.point0Ref, expected.curve[0]);
+      expectPoint(segment.point1Ref, expected.curve[1]);
 
       return detail;
     }
@@ -141,6 +141,12 @@ describe.only("AccuSnap", () => {
     });
 
     it("applies elevation to elements in plan projection models", async () => {
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [1, 2, 7], normal: [0, 1, 0], curve: [[0, 0, 4], [1, 0, 4]] }),
+        [],
+        (vp) => vp.view.getModelElevation = () => 4
+      );
     });
 
     it("applies model display transform to elements", async () => {
