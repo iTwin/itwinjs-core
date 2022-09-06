@@ -735,7 +735,7 @@ export class AccuSnap implements Decorator {
       if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
         transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
         if (0 !== elevation)
-          transform.origin.set(0, 0, elevation);
+          transform.origin.z += elevation;
       } else if (0 !== elevation) {
         transform = Transform.createTranslationXYZ(0, 0, elevation);
       }

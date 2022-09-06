@@ -85,7 +85,6 @@ describe.only("AccuSnap", () => {
       const detail = response as SnapDetail;
 
       expectPoint(detail.snapPoint, expected.point);
-      expectPoint(detail.hitPoint, expected.point);
 
       expect(detail.normal).not.to.be.undefined;
       expectPoint(detail.normal!, expected.normal);
@@ -94,6 +93,8 @@ describe.only("AccuSnap", () => {
       expect(segment).instanceOf(LineSegment3d);
       expectPoint(segment.point0Ref, expected.curve[0]);
       expectPoint(segment.point1Ref, expected.curve[1]);
+
+      expectPoint(detail.hitPoint, expected.point);
 
       return detail;
     }
@@ -153,7 +154,7 @@ describe.only("AccuSnap", () => {
       public constructor(public readonly transform: Transform) { }
 
       public getModelDisplayTransform(): Transform {
-        return this.transform;
+        return this.transform.clone();
       }
     }
 
@@ -182,7 +183,19 @@ describe.only("AccuSnap", () => {
       // plan projection elevation, model display transform, schedule script transforms.
     });
 
-    it("gives priority to elevation", async () => {
+    it("applies elevation and model display transform", async () => {
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [2, 1, 9], normal: [0, 1, 0], curve: [[1, -1, 6], [2, -1, 6]] }),
+        [],
+        (vp) => {
+          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(new Point3d(1, -1, 10), Matrix3d.createIdentity()));
+          vp.view.getModelElevation = () => -4;
+        }
+      );
+    });
+
+    it("ignores model timeline transform", async () => {
     });
   });
 });
