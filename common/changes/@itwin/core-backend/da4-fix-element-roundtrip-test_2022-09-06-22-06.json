@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "await new promise in CustomViewState3dCreator getModelExtents",
+      "comment": "BoxProps.origin name changed to baseOrigin to agree with json format",
       "type": "none"
     }
   ],

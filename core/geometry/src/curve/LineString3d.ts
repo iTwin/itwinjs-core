@@ -931,6 +931,31 @@ public override rangeBetweenFractions(fraction0: number, fraction1: number, tran
 
   }
 
+  /** Compress out duplicate points (according to point.isAlmostEqual)
+   */
+   public removeDuplicatePoints(tolerance: number = Geometry.smallMetricDistance) {
+    const n = this._points.length;
+    if (n < 2)
+      return;
+    let n1 = 1;
+    for (let i = 1; i < n; i++){
+      const q = this._points.distanceIndexIndex (i, n1 - 1);
+      if (q !== undefined && q > tolerance){
+        this._points.moveIndexToIndex (i, n1);
+        if (this._fractions !== undefined)
+          this._fractions.setAtUncheckedIndex (n1, this._fractions.atUncheckedIndex(i));
+        if (this._derivatives)
+          this._derivatives.moveIndexToIndex (i, n1);
+          n1++;
+      }
+    }
+    this._points.resize (n1);
+    if (this._fractions)
+      this._fractions.resize (n1);
+    if (this._derivatives)
+      this._derivatives.resize (n1);
+  }
+
   /** Append a suitable evaluation of a curve ..
    * * always append the curve point
    * * if fraction array is present, append the fraction
