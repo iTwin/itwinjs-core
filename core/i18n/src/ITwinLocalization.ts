@@ -6,17 +6,16 @@
  * @module Localization
  */
 
-import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
+import i18next, { i18n, InitOptions, Module } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
-import { BackendOptions } from "i18next-http-backend";
-import XHR from "i18next-xhr-backend";
+import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
-import type { Localization } from "@itwin/core-common";
+import type { Localization, TranslationOptions } from "@itwin/core-common";
 
 /** Options for ITwinLocalization
  *  @public
  */
-export interface LocalizationOptions {
+export interface ITwinLocalizationOptions {
   urlTemplate?: string;
   backendPlugin?: Module;
   detectorPlugin?: Module;
@@ -36,7 +35,7 @@ export class ITwinLocalization implements Localization {
   private readonly _detectionOptions: DetectorOptions;
   private readonly _namespaces = new Map<string, Promise<void>>();
 
-  public constructor(options?: LocalizationOptions) {
+  public constructor(options?: ITwinLocalizationOptions) {
     this.i18next = i18next.createInstance();
 
     this._backendOptions = {
@@ -51,9 +50,11 @@ export class ITwinLocalization implements Localization {
       caches: [],
       ...options?.detectorOptions,
     };
+
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
+      maxRetries: 1, // prevents wasted time and potential timeouts when requesting localization files throws an error
       backend: this._backendOptions,
       detection: this._detectionOptions,
       ...options?.initOptions,
@@ -61,15 +62,20 @@ export class ITwinLocalization implements Localization {
 
     this.i18next
       .use(options?.detectorPlugin ?? i18nextBrowserLanguageDetector)
-      .use(options?.backendPlugin ?? XHR)
+      .use(options?.backendPlugin ?? Backend)
       .use(TranslationLogger);
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
+    // In case defaultNS is passed into the constructor, make sure it's in the namespaces list
+    if (this._initOptions.defaultNS && namespaces.indexOf(this._initOptions.defaultNS) === -1) {
+      namespaces.push(this._initOptions.defaultNS);
+    }
+
     const initOptions: InitOptions = {
-      ... this._initOptions,
       ns: namespaces,
       defaultNS: namespaces[0],
+      ...this._initOptions,
     };
 
     // if in a development environment, set debugging
@@ -117,10 +123,16 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
+  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
     const value = this.i18next.t(key, options);
-    if (typeof value !== "string")
-      throw new Error("Translation key(s) not found");
+
+    if (typeof value !== "string") {
+      throw new Error("Translation key(s) string not found");
+    }
 
     return value;
   }
@@ -132,7 +144,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -153,7 +165,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
@@ -200,10 +212,10 @@ export class ITwinLocalization implements Localization {
           return resolve();
 
         // Here we got a non-null err object.
-        // This method is called when the system has attempted to load the resources for the namespace for each
-        // possible locale. For example 'fr-ca' might be the most specific local, in which case 'fr' ) and 'en are fallback locales.
-        // using i18next-xhr-backend, err will be an array of strings that includes the namespace it tried to read and the locale. There
-        // might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible language.
+        // This method is called when the system has attempted to load the resources for the namespaces for each possible locale.
+        // For example 'fr-ca' might be the most specific locale, in which case 'fr' and 'en' are fallback locales.
+        // Using Backend from i18next-http-backend, err will be an array of strings of each namespace it tried to read and its locale.
+        // There might be errs for some other namespaces as well as this one. We resolve the promise unless there's an error for each possible locale.
         let locales = this.getLanguageList().map((thisLocale: any) => `/${thisLocale}/`);
 
         try {

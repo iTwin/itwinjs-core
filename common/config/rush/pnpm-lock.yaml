@@ -683,35 +683,45 @@ importers:
   ../../core/i18n:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/certa': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
       '@itwin/eslint-plugin': workspace:*
+      '@types/chai': 4.3.1
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
+      '@types/mocha': ^8.2.2
       '@types/node': 16.11.7
+      chai: ^4.1.2
       eslint: ^7.11.0
-      i18next: ^21.2.6
+      i18next: 21.9.0
       i18next-browser-languagedetector: ^6.1.2
-      i18next-http-backend: ^1.3.1
-      i18next-xhr-backend: ^3.2.2
+      i18next-http-backend: ^1.4.1
       rimraf: ^3.0.2
+      source-map-loader: ^4.0.0
       typescript: ~4.4.0
+      webpack: ^5.64.4
     dependencies:
-      i18next: 21.9.1
+      i18next: 21.9.0
       i18next-browser-languagedetector: 6.1.5
       i18next-http-backend: 1.4.1
-      i18next-xhr-backend: 3.2.2
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/certa': link:../../tools/certa
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@types/chai': 4.3.1
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
+      '@types/mocha': 8.2.3
       '@types/node': 16.11.7
+      chai: 4.3.6
       eslint: 7.32.0
       rimraf: 3.0.2
+      source-map-loader: 4.0.0_webpack@5.74.0
       typescript: 4.4.4
+      webpack: 5.74.0
 
   ../../core/markup:
     specifiers:
@@ -8658,7 +8668,7 @@ packages:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
       '@types/eslint': 7.2.14
-      '@types/estree': 0.0.51
+      '@types/estree': 0.0.52
 
   /@types/eslint/7.2.14:
     resolution: {integrity: sha512-pESyhSbUOskqrGcaN+bCXIQDyT5zTaRWfj5ZjjSlMatgGjIn3QQPfocAu4WSabUR7CGyLZ2CQaZyISOEX7/saw==}
@@ -12835,7 +12845,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.34.0_a091c9f0bec713000de4103e0d3e5933
       '@typescript-eslint/experimental-utils': 5.34.0_eslint@8.22.0+typescript@4.4.4
       eslint: 8.22.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -14473,15 +14483,8 @@ packages:
       - encoding
     dev: false
 
-  /i18next-xhr-backend/3.2.2:
-    resolution: {integrity: sha512-OtRf2Vo3IqAxsttQbpjYnmMML12IMB5e0fc5B7qKJFLScitYaXa1OhMX0n0X/3vrfFlpHL9Ro/H+ps4Ej2j7QQ==}
-    deprecated: replaced by i18next-http-backend
-    dependencies:
-      '@babel/runtime': 7.18.9
-    dev: false
-
-  /i18next/21.9.1:
-    resolution: {integrity: sha512-ITbDrAjbRR73spZAiu6+ex5WNlHRr1mY+acDi2ioTHuUiviJqSz269Le1xHAf0QaQ6GgIHResUhQNcxGwa/PhA==}
+  /i18next/21.9.0:
+    resolution: {integrity: sha512-B+6/yd7rCpJidyPuBaEApUECx7G8Ai6+tqYhrChsY4MmQqJhG7qJ4eT6Lm1OnRhieVelEtfxh4aAQktdNVZtDA==}
     dependencies:
       '@babel/runtime': 7.18.9
     dev: false
@@ -15654,7 +15657,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -21107,7 +21110,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.18.13
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.1
       lodash.memoize: 4.1.2
