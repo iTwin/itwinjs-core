@@ -36,6 +36,7 @@
     "build:ios-app": "cd ios/imodeljs-test-app && xcodebuild build",
     "build:ios": "npm run -s build:frontend-webpack && npm run -s build:ios-backend && npm run -s copy:ios-frontend && npm run build:ios-env-json",
     "build:ios-env-json": "ts-node --skip-project ./buildEnvJson.ts",
+    "start:ios": "cross-env NODE_ENV=development run-p start:webserver",
     "build:android-backend": "npm run -s build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
     "install-android-lib": "node ./android/scripts/installAndroidNativeLib.js",
     "copy:android-assets": "node ./android/scripts/copyAndroidAssets.js",
