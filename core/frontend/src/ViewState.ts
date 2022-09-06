@@ -55,18 +55,13 @@ export interface ExtentLimits {
   max: number;
 }
 
-export interface GetModelDisplayTransformArgs {
-  modelId: Id64String;
-  output?: Transform;
-}
-
 /** Interface adopted by an object that wants to apply a per-model display transform.
  * This is intended chiefly for use by model alignment tools.
  * @see [[ViewState.modelDisplayTransformProvider]].
  * @beta
  */
 export interface ModelDisplayTransformProvider {
-  getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+  getModelDisplayTransform(modelId: Id64String): Transform | undefined;
 }
 
 export interface ComputeDisplayTransformArgs {
@@ -1236,38 +1231,9 @@ export abstract class ViewState extends ElementState {
     this._modelDisplayTransformProvider = provider;
   }
 
-  /** Obtain the transform with which the specified model will be displayed, accounting for this view's [[ModelDisplayTransformProvider]].
-   * @beta
-   */
-  public getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform {
-    return this.modelDisplayTransformProvider ? this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, baseTransform) : baseTransform;
-  }
-
-  /** @internal */
-  public transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void {
-    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
-      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
-      const newPnt = inverse ? transform.multiplyInversePoint3d(pnt) : transform.multiplyPoint3d(pnt);
-      if (undefined !== newPnt)
-        pnt.set(newPnt.x, newPnt.y, newPnt.z);
-    }
-  }
-
-  /** @internal */
-  public transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void {
-    if (undefined !== modelId && undefined !== this.modelDisplayTransformProvider) {
-      const transform = this.modelDisplayTransformProvider.getModelDisplayTransform(modelId, Transform.createIdentity());
-      const newVec = transform.matrix.multiplyVector(normal);
-      if (undefined !== newVec) {
-        newVec.normalizeInPlace();
-        normal.set(newVec.x, newVec.y, newVec.z);
-      }
-    }
-  }
-
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     const elevation = this.getModelElevation(args.modelId);
-    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId, Transform.createIdentity());
+    const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId);
 
     // NB: A ModelTimeline can apply a transform to all elements in the model, but no code exists which actually applies that at display time.
     // So for now we continue to only consider the ElementTimeline transform.

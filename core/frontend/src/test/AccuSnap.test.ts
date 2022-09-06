@@ -45,7 +45,7 @@ function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
   );
 }
 
-describe.only("AccuSnap", () => {
+describe("AccuSnap", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
