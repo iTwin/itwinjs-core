@@ -7,8 +7,8 @@
  */
 
 import * as assert from "assert";
-import { DbResult, EntityReferenceSet, Id64, Id64String } from "@itwin/core-bentley";
-import { IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { EntityReferences } from "./EntityReference";
 import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
 import { ECSqlStatement } from "./ECSqlStatement";

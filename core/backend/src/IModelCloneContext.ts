@@ -6,8 +6,11 @@
  * @module iModels
  */
 import * as assert from "assert";
-import { ConcreteEntityTypes, DbResult, EntityReference, Id64, Id64String } from "@itwin/core-bentley";
-import { Code, CodeScopeSpec, CodeSpec, ElementAspectProps, ElementProps, IModel, IModelError, PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  Code, CodeScopeSpec, CodeSpec, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, IModel, IModelError,
+  PrimitiveTypeCode, PropertyMetaData, RelatedElement, RelatedElementProps,
+} from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";

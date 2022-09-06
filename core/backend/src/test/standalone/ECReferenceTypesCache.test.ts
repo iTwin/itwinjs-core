@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ConcreteEntityTypes } from "@itwin/core-bentley";
+import { ConcreteEntityTypes } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { ECReferenceTypesCache } from "../../ECReferenceTypesCache";

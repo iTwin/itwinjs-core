@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { DbResult, EntityReferenceSet, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
-import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
+import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";

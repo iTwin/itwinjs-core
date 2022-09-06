@@ -7,10 +7,10 @@
  * @module Elements
  */
 
-import { EntityReferenceSet, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
+  BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";

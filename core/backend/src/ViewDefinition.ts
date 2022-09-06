@@ -6,14 +6,15 @@
  * @module ViewDefinitions
  */
 
-import { ConcreteEntityTypes, EntityReferenceSet, Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
+  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
+  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelCloneContext } from "./IModelCloneContext";
