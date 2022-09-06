@@ -181,5 +181,8 @@ describe.only("AccuSnap", () => {
     it("applies multiple transforms", async () => {
       // plan projection elevation, model display transform, schedule script transforms.
     });
+
+    it("gives priority to elevation", async () => {
+    });
   });
 });

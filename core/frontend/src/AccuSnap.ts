@@ -743,10 +743,14 @@ export class AccuSnap implements Decorator {
       snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
       if (undefined !== result.parentGeomType)
         snap.parentGeomType = result.parentGeomType;
+
+      // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry.
       if (undefined !== result.hitPoint) {
-        snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
+        snap.hitPoint.setFromJSON(result.hitPoint);
         thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
       }
+
+      // Apply display transform to normal.
       if (undefined !== result.normal) {
         snap.normal = Vector3d.fromJSON(result.normal);
         thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
