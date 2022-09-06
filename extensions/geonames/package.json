@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geonames-extension",
-  "version": "2.19.43",
+  "version": "2.19.44",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
