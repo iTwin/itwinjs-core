@@ -60,7 +60,7 @@
 
     - template: ../templates/core-build.yaml
       parameters:
-        workingDir: $(System.DefaultWorkingDirectory)/itwinjs-core
+        workingDir: $(System.DefaultWorkingDirectory)/iTwin/itwinjs-core 
 
     # Will run if even there is a failure somewhere else in the pipeline.
 #     - template: ../templates/publish-test-results.yaml
