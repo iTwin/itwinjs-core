@@ -33,12 +33,12 @@ import {
   SchemaContextEditor,
   SchemaContext,
   SchemaComparer,
+  SchemaLoader,
   ISchemaCompareReporter,
   SchemaChanges,
   ISchemaChanges,
   AnyDiagnostic,
 } from "@itwin/ecschema-metadata";
-import { IModelSchemaLoader } from "@itwin/core-backend/lib/cjs/IModelSchemaLoader";
 import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
@@ -99,7 +99,7 @@ export class DynamicSchemaGenerator {
       }
     };
 
-    const createEntityclasses = async (
+    const createEntityClasses = async (
       editor: SchemaContextEditor,
       schema: Schema
     ) => {
@@ -152,27 +152,27 @@ export class DynamicSchemaGenerator {
       const bisSchema = loader.getSchema("BisCore");
       const funcSchema = loader.getSchema("Functional");
       const buildingSpatialSchema = loader.getSchema("BuildingSpatial");
-      const spatialComppositionSchema = loader.getSchema("SpatialComposition");
+      const spatialCompositionSchema = loader.getSchema("SpatialComposition");
 
       await context.addSchema(newSchema);
       await context.addSchema(bisSchema);
       await context.addSchema(funcSchema);
       await context.addSchema(buildingSpatialSchema);
-      await context.addSchema(spatialComppositionSchema);
+      await context.addSchema(spatialCompositionSchema);
       await (newSchema as MutableSchema).addReference(bisSchema); // TODO remove this hack later
       await (newSchema as MutableSchema).addReference(funcSchema);
       await (newSchema as MutableSchema).addReference(buildingSpatialSchema);
       await (newSchema as MutableSchema).addReference(
-        spatialComppositionSchema
+        spatialCompositionSchema
       );
 
       await createBaseClasses(editor, newSchema);
-      await createEntityclasses(editor, newSchema);
+      await createEntityClasses(editor, newSchema);
       await createRelationshipClasses(editor, newSchema);
       return newSchema;
     };
 
-    const loader = new IModelSchemaLoader(imodel);
+    const loader = new SchemaLoader((name: string) => { return iModel.getSchemaProps(name); });
     const existingSchema = loader.tryGetSchema("COBieConnectorDynamic");
     const latestSchema = await createSchema(false);
 

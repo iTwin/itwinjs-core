@@ -203,7 +203,9 @@
       },
       "ToggleCamera": {
         "description": "Turn on/off use of camera in active view",
-        "flyover": "Toggle Camera"
+        "flyover": "Toggle Camera",
+        "turnOnFlyover": "Turn Camera On",
+        "turnOffFlyover":"Turn Camera Off"
       }
     },
     "OpenSettings": {

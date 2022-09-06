@@ -49,6 +49,7 @@ import { CodeScopeProps } from '@itwin/core-common';
 import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
+import { ColorDefProps } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -60,6 +61,7 @@ import { DisplayStyle3dSettingsProps } from '@itwin/core-common';
 import { DisplayStyleProps } from '@itwin/core-common';
 import { DisplayStyleSettings } from '@itwin/core-common';
 import { EcefLocation } from '@itwin/core-common';
+import { ECSchemaProps } from '@itwin/core-common';
 import { ECSqlReader } from '@itwin/core-common';
 import { ECSqlValueType } from '@itwin/core-common';
 import { EditingScopeNotifications } from '@itwin/core-common';
@@ -173,7 +175,6 @@ import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
-import type { Schema as Schema_2 } from '@itwin/ecschema-metadata';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -376,8 +377,6 @@ export enum BackendLoggerCategory {
     Functional = "core-backend.Functional",
     IModelDb = "core-backend.IModelDb",
     IModelHost = "core-backend.IModelHost",
-    // @alpha
-    IModelSchemaLoader = "core-backend.IModelSchemaLoader",
     IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
     IModelTileUpload = "core-backend.IModelTileUpload",
     LinearReferencing = "core-backend.LinearReferencing",
@@ -1850,7 +1849,7 @@ export type ExportGraphicsFunction = (info: ExportGraphicsInfo) => void;
 
 // @public
 export interface ExportGraphicsInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     materialId?: Id64String;
@@ -1913,7 +1912,7 @@ export type ExportLinesFunction = (info: ExportLinesInfo) => void;
 
 // @public
 export interface ExportLinesInfo {
-    color: number;
+    color: ColorDefProps;
     elementId: Id64String;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
@@ -1955,7 +1954,7 @@ export interface ExportPartGraphicsOptions {
 
 // @public
 export interface ExportPartInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     materialId?: Id64String;
     mesh: ExportGraphicsMesh;
@@ -1975,7 +1974,7 @@ export type ExportPartLinesFunction = (info: ExportPartLinesInfo) => void;
 
 // @public
 export interface ExportPartLinesInfo {
-    color: number;
+    color: ColorDefProps;
     geometryClass: GeometryClass;
     lines: ExportGraphicsLines;
 }
@@ -2607,6 +2606,7 @@ export abstract class IModelDb extends IModel {
     getJsClass<T extends typeof Entity>(classFullName: string): T;
     getMassProperties(props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
+    getSchemaProps(name: string): ECSchemaProps;
     get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
     importSchemas(schemaFileNames: LocalFileName[]): Promise<void>;
@@ -2974,14 +2974,6 @@ export { IModelJsNative }
 export interface IModelNameArg extends TokenArg, ITwinIdArg {
     // (undocumented)
     readonly iModelName: string;
-}
-
-// @alpha
-export class IModelSchemaLoader {
-    // @internal
-    constructor(_iModel: IModelDb);
-    getSchema<T extends Schema_2>(schemaName: string): T;
-    tryGetSchema<T extends Schema_2>(schemaName: string): T | undefined;
 }
 
 // @public
@@ -3940,6 +3932,8 @@ export interface ProcessChangesetOptions {
     // (undocumented)
     tempDir?: string;
     // (undocumented)
+    wantChunkTraversal?: boolean;
+    // (undocumented)
     wantParents?: boolean;
     // (undocumented)
     wantPropertyChecksums?: boolean;
@@ -4077,7 +4071,7 @@ export class RenderMaterialElement extends DefinitionElement {
     toJSON(): RenderMaterialProps;
 }
 
-// @public (undocumented)
+// @public
 export namespace RenderMaterialElement {
     export class Params {
         constructor(paletteName: string);
