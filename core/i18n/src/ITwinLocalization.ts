@@ -68,14 +68,14 @@ export class ITwinLocalization implements Localization {
 
   public async initialize(namespaces: string[]): Promise<void> {
     // In case defaultNS is passed into the constructor, make sure it's in the namespaces list
-    if (this._initOptions.defaultNS && namespaces.indexOf(this._initOptions.defaultNS) == -1) {
+    if (this._initOptions.defaultNS && namespaces.indexOf(this._initOptions.defaultNS) === -1) {
       namespaces.push(this._initOptions.defaultNS);
     }
 
     const initOptions: InitOptions = {
       ns: namespaces,
       defaultNS: namespaces[0],
-      ...this._initOptions
+      ...this._initOptions,
     };
 
     // if in a development environment, set debugging
@@ -128,7 +128,7 @@ export class ITwinLocalization implements Localization {
       throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
 
-    let value = this.i18next.t(key, options);
+    const value = this.i18next.t(key, options);
 
     if (typeof value !== "string") {
       throw new Error("Translation key(s) string not found");

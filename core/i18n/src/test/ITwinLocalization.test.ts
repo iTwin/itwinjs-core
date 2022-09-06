@@ -5,11 +5,11 @@
 
 import { assert } from "chai";
 import { Localization } from "@itwin/core-common";
-import { ITwinLocalization } from "../ITwinLocalization"
+import { ITwinLocalization } from "../ITwinLocalization";
 
 describe("ITwinLocalization", () => {
 
-  var localization: Localization;
+  let localization: Localization;
 
   describe("#initialize", () => {
 
@@ -48,8 +48,6 @@ describe("ITwinLocalization", () => {
         await itwinLocalization.initialize(["Test"]);
         assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
       });
-
-
     });
   });
 
@@ -149,6 +147,6 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getLocalizedString("Nonexisting:Missing.String"), "Missing.String");
       });
     });
-  })
+  });
 
 });
