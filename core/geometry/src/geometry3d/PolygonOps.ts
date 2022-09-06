@@ -247,9 +247,9 @@ export class PolygonOps {
   }
   /** Sum areas of triangles from points[0] to each far edge, as viewed with upVector pointing up.
    * * Consider triangles from points[0] to each edge.
-   * * Sum the areas perpendicular to the upVector all these triangles.
+   * * Sum the areas perpendicular to the upVector.
    * * If the upVector is near-zero length, a simple z vector is used.
-   * @returns sum of absolute triangle areas.
+   * @returns sum of triangle areas.
    */
    public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
     let scale = upVector.magnitude ();

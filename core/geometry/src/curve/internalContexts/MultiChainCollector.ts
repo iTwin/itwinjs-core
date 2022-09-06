@@ -277,8 +277,7 @@ export class MultiChainCollector {
     return bag;
   }
 /** Return chains as individual calls to announceChain. */
-public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): LineString3d[] {
-  const linestrings: LineString3d[] = [];
+public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void {
   const chains = this._chains;
   if (chains.length === 1){
     const ls = this.chainToLineString3d(chains[0]);
@@ -291,7 +290,6 @@ public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): 
         announceChain(ls);
       }
     }
-  return linestrings;
   }
 }
 // static methods to assist offset sequences ....
