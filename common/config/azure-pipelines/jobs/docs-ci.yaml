@@ -20,8 +20,6 @@ pr:
       - release/1*
   paths:
     exclude:
-      - "**.md"
-      - docs/**
       - .github/CODEOWNERS
 
 jobs:
