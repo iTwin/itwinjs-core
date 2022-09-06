@@ -19,9 +19,8 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-i18n/file.json --tsIndexFile=./core-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-i18n",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "npm run -s test:chrome && npm run -s test:electron",
+    "test": "npm run -s test:chrome",
     "test:chrome": "certa -r chrome",
-    "test:electron": "certa -r electron",
     "webpack:test": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "cover": "npm -s test"
   },
