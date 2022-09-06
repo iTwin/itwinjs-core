@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Sep 2022 20:54:19 GMT and should not be manually modified.
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+### Updates
+
+- Chunk traversal options for ChangedElementsDb
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

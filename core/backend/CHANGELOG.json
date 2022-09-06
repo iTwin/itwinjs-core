@@ -2,6 +2,18 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.3.3",
+      "tag": "@itwin/core-backend_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Chunk traversal options for ChangedElementsDb"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.2",
       "tag": "@itwin/core-backend_v3.3.2",
       "date": "Thu, 01 Sep 2022 14:37:22 GMT",
