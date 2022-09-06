@@ -51,6 +51,7 @@ describe.only("AccuSnap", () => {
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
+      // ###TODO set curve to a line segment starting at props.testPoint
       iModel.requestSnap = (props) => Promise.resolve(impl ? impl(props) : { status: SnapStatus.Success, hitPoint: props.testPoint });
     }
 
@@ -94,6 +95,30 @@ describe.only("AccuSnap", () => {
         modes,
         (vp) => vp.mapLayerFromHit = () => { return {} as any; }
       );
+    });
+
+    it("applies elevation to plan projection models", async () => {
+    });
+
+    it("applies elevation to elements in plan projection models", async () => {
+    });
+
+    it("applies model display transform to models", async () => {
+    });
+
+    it("applies model display transform to elements", async () => {
+    });
+
+    it("applies schedule script transform to models", async () => {
+    });
+
+    it("applies schedule script transforms to elements", async () => {
+      // both model and element timelines
+      // normal and point
+    });
+
+    it("applies multiple transforms", async () => {
+      // plan projection elevation, model display transform, schedule script transforms.
     });
   });
 });
