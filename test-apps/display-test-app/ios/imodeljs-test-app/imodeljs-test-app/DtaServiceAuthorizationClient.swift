@@ -5,7 +5,7 @@
 
 import Foundation
 
-/// A struct to hold the settings used by DtaOidcAuthorizationClient
+/// A struct to hold the settings used by DtaServiceAuthSettings
 struct DtaServiceAuthSettings {
     var clientId: String
     var clientSecret: String
@@ -53,17 +53,17 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
 
     func checkSettings() -> NSError? {
         if authSettings.clientId.count == 0 {
-            return error(reason: "DtaOidcAuthorizationClient: initialize() was called with invalid or empty clientId")
+            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientId")
         }
         if authSettings.clientSecret.count == 0 {
-            return error(reason: "DtaOidcAuthorizationClient: initialize() was called with invalid or empty clientSecret")
+            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty clientSecret")
         }
         if authSettings.scope.count == 0 {
-            return error(reason: "DtaOidcAuthorizationClient: initialize() was called with invalid or empty scope")
+            return error(reason: "DtaServiceAuthSettings: initialize() was called with invalid or empty scope")
         }
         let scope = authSettings.scope
         if scope.contains("openid") || scope.contains("email") || scope.contains("profile") || scope.contains("organization") {
-            return error(reason: "DtaOidcAuthorizationClient: Scopes for a service cannot include 'openid email profile organization'")
+            return error(reason: "DtaServiceAuthSettings: Scopes for a service cannot include 'openid email profile organization'")
         }
         return nil
     }
