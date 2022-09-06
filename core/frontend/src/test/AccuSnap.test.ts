@@ -188,6 +188,7 @@ describe.only("AccuSnap", () => {
         find: () => modelTimeline,
         toJSON: () => [],
       };
+
       return script as unknown as RenderSchedule.Script;
     }
 
@@ -215,7 +216,16 @@ describe.only("AccuSnap", () => {
     });
 
     it("applies multiple transforms", async () => {
-      // plan projection elevation, model display transform, schedule script transforms.
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [2, -1, 9], normal: [1, 0, 0], curve: [[0, 0, 6], [0, -1, 6]] }),
+        [],
+        (vp) => {
+          vp.view.getModelElevation = () => 10;
+          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))));
+          vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(0, 0, -4));
+        }
+      );
     });
 
     it("applies elevation and model display transform", async () => {
