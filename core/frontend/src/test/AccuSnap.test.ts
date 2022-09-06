@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, XYZ, XYZProps } from "@itwin/core-geometry";
+import { LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
@@ -84,8 +84,8 @@ describe.only("AccuSnap", () => {
       expect(response).instanceOf(SnapDetail);
       const detail = response as SnapDetail;
 
-      expectPoint(detail.hitPoint, expected.point);
       expectPoint(detail.snapPoint, expected.point);
+      expectPoint(detail.hitPoint, expected.point);
 
       expect(detail.normal).not.to.be.undefined;
       expectPoint(detail.normal!, expected.normal);
@@ -149,7 +149,28 @@ describe.only("AccuSnap", () => {
       );
     });
 
+    class Transformer {
+      public constructor(public readonly transform: Transform) { }
+
+      public getModelDisplayTransform(): Transform {
+        return this.transform;
+      }
+    }
+
     it("applies model display transform to elements", async () => {
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] }),
+        [],
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1))
+      );
+
+      await testSnap(
+        { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
+        (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
+        [],
+        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+      );
     });
 
     it("applies schedule script transforms to elements", async () => {
