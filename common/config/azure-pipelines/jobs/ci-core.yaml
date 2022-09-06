@@ -36,7 +36,7 @@
     - checkout: iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
       clean: true
       
-    - script: ls $(System.DefaultWorkingDirectory)
+    - script: dir $(System.DefaultWorkingDirectory)
       
     - task: NodeTool@0
       displayName: "Use Node $(nodeVersion)"
