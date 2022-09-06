@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Maplayers widget now correctly rerefresh its state whenever the application switches between different viewports.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

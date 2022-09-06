@@ -2553,6 +2553,14 @@ export type HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean;
 export type HasZ = Readonly<WriteableHasZ>;
 
 // @public
+export interface HoleFillOptions {
+    includeOriginalMesh?: boolean;
+    maxEdgesAroundHole?: number;
+    maxPerimeter?: number;
+    upVector?: Vector3d;
+}
+
+// @public
 export namespace IModelJson {
     export interface ArcByVectorProps {
         center: XYZProps;
@@ -3278,6 +3286,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     quickLength(): number;
     quickUnitNormal(result?: Vector3d): Vector3d | undefined;
     rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d;
+    removeDuplicatePoints(tolerance?: number): void;
     reverseInPlace(): void;
     segmentIndexAndLocalFractionToGlobalFraction(index: number, localFraction: number): number;
     setFrom(other: LineString3d): void;
@@ -4121,6 +4130,7 @@ export class Point3dArray {
     static cloneXYZPropsAsNumberArray(data: XYZProps[]): number[][];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
+    static countNonDuplicates(points: Point3d[], tolerance?: number): number;
     static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
@@ -4137,7 +4147,7 @@ export class Point3dArray {
     } | undefined;
     static multiplyInPlace(transform: Transform, xyz: Float64Array): void;
     static packToFloat64Array(data: Point3d[]): Float64Array;
-    static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean): number;
+    static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge?: boolean, maxPointsToUse?: number): number;
     static sumWeightedX(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedY(weights: Float64Array, points: Point3d[]): number;
     static sumWeightedZ(weights: Float64Array, points: Point3d[]): number;
@@ -4342,7 +4352,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addBox(box: Box): void;
     addCone(cone: Cone): void;
     addCoordinateFacets(pointArray: Point3d[][], paramArray?: Point2d[][], normalArray?: Vector3d[][], endFace?: boolean): void;
-    addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined, params: GrowableXYArray | undefined, colors: number[] | undefined): void;
+    addFacetFromGrowableArrays(points: GrowableXYZArray, normals: GrowableXYZArray | undefined, params: GrowableXYArray | undefined, colors: number[] | undefined, edgeVisible?: boolean[]): void;
     addFacetFromVisitor(visitor: PolyfaceVisitor): void;
     addGeometryQuery(g: GeometryQuery): void;
     // @internal
@@ -4485,6 +4495,8 @@ export class PolyfaceData {
 
 // @public
 export class PolyfaceQuery {
+    static announceBoundaryChainsAsLineString3d(mesh: Polyface | PolyfaceVisitor, announceLoop: (points: LineString3d) => void): void;
+    static announceBoundaryEdges(source: Polyface | PolyfaceVisitor | undefined, announceEdge: (pointA: Point3d, pointB: Point3d, indexA: number, indexB: number, facetIndex: number) => void, includeDanglers?: boolean, includeMismatch?: boolean, includeNull?: boolean): void;
     static announceDuplicateFacetIndices(polyface: Polyface, announceCluster: (clusterFacetIndices: number[]) => void): void;
     static announceSweepLinestringToConvexPolyfaceXY(linestringPoints: GrowableXYZArray, polyface: Polyface, announce: AnnounceDrapePanel): any;
     // @internal
@@ -4502,6 +4514,7 @@ export class PolyfaceQuery {
     static cloneFiltered(source: Polyface | PolyfaceVisitor, filter: (visitor: PolyfaceVisitor) => boolean): Polyface;
     static clonePartitions(polyface: Polyface | PolyfaceVisitor, partitions: number[][]): Polyface[];
     static cloneWithColinearEdgeFixup(polyface: Polyface): Polyface;
+    static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyface | undefined;
     static cloneWithTVertexFixup(polyface: Polyface): IndexedPolyface;
     static collectDuplicateFacetIndices(polyface: Polyface, includeSingletons?: boolean): number[][];
     static collectRangeLengthData(polyface: Polyface | PolyfaceVisitor): RangeLengthData;
@@ -4509,12 +4522,13 @@ export class PolyfaceQuery {
     static computePrincipalAreaMoments(source: Polyface): MomentData | undefined;
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
+    static fillSimpleHoles(mesh: IndexedPolyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
     static markAllEdgeVisibility(mesh: IndexedPolyface, value: boolean): void;
     static markPairedEdgesInvisible(mesh: IndexedPolyface, sharpEdgeAngle?: Angle): void;
-    static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
+    static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges?: boolean): number[][];
     static partitionFacetIndicesByVertexConnectedComponent(polyface: Polyface | PolyfaceVisitor): number[][];
     static partitionFacetIndicesByVisibilityVector(polyface: Polyface | PolyfaceVisitor, vectorToEye: Vector3d, sideAngleTolerance: Angle): number[][];
     static reorientVertexOrderAroundFacetsForConsistentOrientation(mesh: IndexedPolyface): boolean;
@@ -4573,6 +4587,7 @@ export class PolygonOps {
     static sortOuterAndHoleLoopsXY(loops: IndexedReadWriteXYZCollection[]): IndexedReadWriteXYZCollection[][];
     static sumAreaXY(polygons: Point3d[][]): number;
     static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number;
+    static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number;
     static sumTriangleAreasXY(points: Point3d[]): number;
     static testXYPolygonTurningDirections(pPointArray: Point2d[] | Point3d[]): number;
     static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean;
@@ -4593,6 +4608,7 @@ export class PolylineOps {
     static compressShortEdges(source: Point3d[], maxEdgeLength: number): Point3d[];
     static compressSmallTriangles(source: Point3d[], maxTriangleArea: number): Point3d[];
     static edgeLengthRange(points: Point3d[]): Range1d;
+    static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
 // @internal
@@ -5247,6 +5263,7 @@ export class Sample {
     static readonly range2d: Range2d[];
     static readonly range3d: Range3d[];
     static readonly ray3d: Ray3d[];
+    static sweepXZLineStringToMeshWithHoles(xzPoints: number[][], ySweep: number, acceptFunction: (x0: number, y0: number) => boolean): IndexedPolyface;
     static readonly vector2d: Vector2d[];
 }
 
@@ -5347,6 +5364,14 @@ export abstract class SolidPrimitive extends GeometryQuery {
 
 // @public
 export type SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe";
+
+// @public
+export class SpacePolygonTriangulation {
+    static spaceQuadDiagonalAspectRatio(point0: Point3d, point1: Point3d, point2: Point3d, point3: Point3d): number;
+    static spaceTriangleAspectRatio(point0: Point3d, point1: Point3d, point2: Point3d): number;
+    static triangulateGreedyEarCut(points: Point3d[], announceLoopAndTriangles: AnnounceLoopAndTrianglesFunction): boolean;
+    static triangulateSimplestSpaceLoop(loop: Point3d[] | LineString3d, announceLoopAndTriangles: AnnounceLoopAndTrianglesFunction, maxPerimeter?: number): boolean;
+}
 
 // @public
 export class Sphere extends SolidPrimitive implements UVSurface {

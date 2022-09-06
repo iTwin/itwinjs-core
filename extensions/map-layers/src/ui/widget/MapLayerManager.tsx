@@ -180,6 +180,17 @@ export function MapLayerManager(props: MapLayerManagerProps) {
 
   }, [backgroundMapLayers, overlayMapLayers, activeViewport, loadMapLayerSettingsFromViewport, handleProviderStatusChanged]);
 
+  // Monitor viewport updates, and refresh the widget accordingly.
+  // Note: This is needed for multiple viewport applications.
+  React.useEffect(() => {
+    // Update background map status
+    setBackgroundMapVisible(activeViewport.viewFlags.backgroundMap);
+
+    // Refresh list of layers
+    loadMapLayerSettingsFromViewport(activeViewport);
+
+  }, [activeViewport, loadMapLayerSettingsFromViewport]);
+
   React.useEffect(() => {
     async function fetchWmsMapData() {
       const sources: MapLayerSource[] = [];
