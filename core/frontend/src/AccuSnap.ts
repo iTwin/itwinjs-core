@@ -748,6 +748,7 @@ export class AccuSnap implements Decorator {
       if (undefined !== result.hitPoint) {
         snap.hitPoint.setFromJSON(result.hitPoint);
         thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
+        snap.hitPoint.z += elevation;
       }
 
       // Apply display transform to normal.
