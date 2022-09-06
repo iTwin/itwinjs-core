@@ -1268,11 +1268,29 @@ export abstract class ViewState extends ElementState {
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     const elevation = this.getModelElevation(args.modelId);
     const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId, Transform.createIdentity());
-    if (!modelTransform)
-      return elevation !== 0 ? Transform.createTranslationXYZ(0, 0, elevation, args.output) : undefined;
 
-    modelTransform.origin.z += elevation;
-    return args.output ? modelTransform.clone(args.output) : modelTransform;
+    // NB: A ModelTimeline can apply a transform to all elements in the model, but no code exists which actually applies that at display time.
+    // So for now we continue to only consider the ElementTimeline transform.
+    let scriptTransform;
+    if (this.scheduleScript && args.elementId) {
+      const idPair = Id64.getUint32Pair(args.elementId);
+      const modelTimeline = this.scheduleScript.find(args.modelId);
+      const elementTimeline = modelTimeline?.getTimelineForElement(idPair.lower, idPair.upper);
+      scriptTransform = elementTimeline?.getAnimationTransform(args.timePoint ?? this.displayStyle.settings.timePoint ?? 0);
+    }
+
+    if (0 === elevation && !modelTransform && !scriptTransform)
+      return undefined;
+
+    const transform = Transform.createIdentity(args.output);
+    transform.origin.z = elevation;
+    if (modelTransform)
+      transform.multiplyTransformTransform(modelTransform, transform);
+
+    if (scriptTransform)
+      transform.multiplyTransformTransform(scriptTransform as Transform, transform);
+
+    return transform;
   }
 
   /** Invoked when this view becomes the view displayed by the specified [[Viewport]].
