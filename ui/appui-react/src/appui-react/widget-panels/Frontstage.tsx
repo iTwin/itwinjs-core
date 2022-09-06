@@ -784,16 +784,6 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     return;
   });
 
-  // TODO: remove when isUUID check is refactored.
-  restored = produce(restored, (draft) => {
-    // Floating widget might have been removed when saving, dock tool settings if tab is not found.
-    const location = getTabLocation(draft, toolSettingsTabId);
-    // istanbul ignore else
-    if (!location) {
-      draft.toolSettings.type = "docked";
-    }
-  });
-
   if (FrontstageManager.nineZoneSize && (0 !== FrontstageManager.nineZoneSize.height || 0 !== FrontstageManager.nineZoneSize.width)) {
     restored = FrameworkStateReducer(restored, {
       type: "RESIZE",
@@ -804,22 +794,6 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
     }, frontstageDef);
   }
   return restored;
-}
-
-/**
- * Checks to see whether a widget id is one of our generated uuids
- * @param uuid the string value to test
- * @returns boolean
- */
-function isUUID(uuid: string) {
-  const s = `${uuid}`;
-
-  const result = s.match("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-  // istanbul ignore else
-  if (result === null) {
-    return false;
-  }
-  return true;
 }
 
 /** Prepares NineZoneState to be saved.
@@ -837,32 +811,12 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
       if (tab.id === toolSettingsTabId)
         continue;
 
-      // istanbul ignore else
-      if (isUUID(tab.id))
-        continue;
-
       draft.tabs[tab.id] = {
         id: tab.id,
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
         allowedPanelTargets: tab.allowedPanelTargets,
         userSized: tab.userSized,
       };
-    }
-  });
-  packed = produce(packed, (draft) => {
-    for (const [, floatingWidget] of Object.entries(state.floatingWidgets.byId)) {
-      const widgetId = floatingWidget.id;
-      // istanbul ignore else
-      if (isUUID(widgetId)) {
-        const widget = draft.widgets[widgetId];
-        for (const tabId of widget.tabs) {
-          delete draft.tabs[tabId];
-        }
-        const idIndex = draft.floatingWidgets.allIds.indexOf(widgetId);
-        draft.floatingWidgets.allIds.splice(idIndex, 1);
-        delete draft.floatingWidgets.byId[widgetId];
-        delete draft.widgets[widgetId];
-      }
     }
   });
   return packed;

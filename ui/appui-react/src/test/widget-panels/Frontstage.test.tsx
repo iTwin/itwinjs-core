@@ -1782,9 +1782,7 @@ describe("Frontstage local storage wrapper", () => {
         let nineZone = createNineZoneState();
         nineZone = addTab(nineZone, "t1");
         nineZone = addTab(nineZone, "t2");
-        nineZone = addTab(nineZone, getUniqueId());
         nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-        nineZone = addFloatingWidget(nineZone, getUniqueId(), ["t2"]);
         const sut = packNineZoneState(nineZone);
         sut.should.matchSnapshot();
       });
