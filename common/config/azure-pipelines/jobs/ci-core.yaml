@@ -1,4 +1,6 @@
-# parameters:
+parameters:
+- name: branch
+  default: $(Build.SourceBranchName)
 #   nodeVersion: ''
 
 # jobs:
@@ -31,9 +33,17 @@
 
 #   workspace:
 #     clean: all
+resources:
+  repositories:
+    - repository: iTwinjs-core-pr-branch
+      type: github
+      name: iTwin/itwinjs-core
+      ref: ${{ parameters.branch }} # change to master after this branch is merged
+      endpoint: iTwin
+
 
   steps:
-    - checkout: iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
+    - checkout: iTwinjs-core-pr-branch #FIXME, branch name must be the same on both native and TS side
 #       clean: true
       
     - task: NodeTool@0
