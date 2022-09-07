@@ -225,6 +225,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the full path to the directory in which to store cached briefcases.
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
+* IMJS_EXIT_AFTER_MODEL_OPENED
+  * If defined on iOS, the app will exit after successfully openening an iModel. This is used for automated testing with the iOS Simulator.
 
 ## Key-ins
 
