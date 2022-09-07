@@ -10,7 +10,7 @@ import { PanelSide } from "../widget-panels/Panel";
 import { TabState } from "./TabState";
 import { NineZoneState } from "./NineZoneState";
 import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "./WidgetState";
-import { getWidgetLocation } from "./WidgetLocation";
+import { getWidgetLocation, isFloatingWidgetLocation, isPopoutWidgetLocation } from "./WidgetLocation";
 
 /** @internal */
 export interface PanelTabLocation {
@@ -62,9 +62,21 @@ export function getTabLocation(state: NineZoneState, id: TabState["id"]): TabLoc
   }
   if (!widgetId)
     return undefined;
-  const widgetLocation = getWidgetLocation(state, widgetId);
-  return widgetLocation ? {
-    ...widgetLocation,
+  const location = getWidgetLocation(state, widgetId);
+  if (!location)
+    return undefined;
+  if (isFloatingWidgetLocation(location))
+    return {
+      floatingWidgetId: widgetId,
+      widgetId,
+    };
+  if (isPopoutWidgetLocation(location))
+    return {
+      popoutWidgetId: widgetId,
+      widgetId,
+    };
+  return {
+    side: location.side,
     widgetId,
-  } : undefined;
+  };
 }
