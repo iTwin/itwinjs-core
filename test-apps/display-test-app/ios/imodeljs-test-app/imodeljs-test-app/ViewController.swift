@@ -122,14 +122,18 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     private var authClient: AuthorizationClient? = nil
     private var documentCompletion : ((URL?) -> Void)? = nil
     
-    private lazy var argFileName : String? = {
-        let args = ProcessInfo.processInfo.arguments
-        if args.count == 2 && args[1].hasSuffix(".bim") {
-            return args[1]
+    private func parseArguments() {
+        // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
+        ProcessInfo.processInfo.arguments[1...].forEach { arg in
+            if arg.hasPrefix("IMJS_") {
+                let split = arg.split(separator: "=")
+                if split.count == 2 {
+                    configData[String(split[0])] = String(split[1])
+                }
+            }
         }
-        return nil
-    }()
-
+    }
+    
     func setupBackend() {
         let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/main.js"))
         if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets"),
@@ -137,6 +141,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
            let envData = JSON.fromString(envString) {
             configData = envData
         }
+        parseArguments()
         authClient = DtaServiceAuthorizationClient(configData: configData) ?? DtaOidcAuthorizationClient(configData: configData)
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
     }
@@ -172,9 +177,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         }
 
         webView.addUserContentController(OpenModelHander(self))
-        webView.addUserContentController(ModelOpenedHandler(exitOnMessage: self.argFileName != nil))
-        let url = configData["IMJS_DEV_SERVER"] as? String ?? "imodeljs://app"
-        webView.load(URLRequest(url: URL(string: url + hashParams)!))
+        webView.addUserContentController(ModelOpenedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
+        let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
+        webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
     }
 
@@ -287,26 +292,22 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         if let standaloneFilename = configData["IMJS_STANDALONE_FILENAME"] as? String {
             let bimFile = getDocumentsDirectory().appendingPathComponent(standaloneFilename)
             let exists = FileManager.default.fileExists(atPath: bimFile.path)
-            setupFrontend(bimFile: exists ? bimFile : nil)
-            if !exists {
-                // alert the user after the view controller has loaded
-                DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
-                    self.showAlert(message: "File does not exist: \(bimFile.path)")
+            if configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil, !exists {
+                print("ERROR: \(standaloneFilename) does not exist in the app's Documents directory")
+                exit(EXIT_FAILURE)
+            } else {
+                setupFrontend(bimFile: exists ? bimFile : nil)
+                if !exists {
+                    // alert the user after the view controller has loaded
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
+                        self.showAlert(message: "File does not exist: \(bimFile.path)")
+                    }
                 }
             }
         } else if let _ = authClient,
                   let iModelId = configData["IMJS_IMODEL_ID"] as? String,
                   let iTwinId = configData["IMJS_ITWIN_ID"] as? String {
             setupFrontend(bimFile: nil, iModelId: iModelId, iTwinId: iTwinId)
-        } else if let fileName = argFileName {
-            // Try to open file in Documents dir passed as argument
-            let url = getDocumentsDirectory().appendingPathComponent(fileName)
-            if FileManager.default.fileExists(atPath: url.path) {
-                setupFrontend(bimFile: url)
-            } else {
-                NSLog("ERROR: \(fileName) does not exist in the app's Documents directory")
-                exit(EXIT_FAILURE)
-            }
         } else {
             setupFrontend()
         }
@@ -341,7 +342,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if let stringMessage = message.body as? String {
-                NSLog("iModel opened: \(stringMessage)")
+                print("iModel opened: \(stringMessage)")
             }
             if exitOnMessage {
                 exit(EXIT_SUCCESS)
