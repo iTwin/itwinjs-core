@@ -1063,10 +1063,10 @@ export function setWidgetState(
     });
   } else if (widgetState === WidgetState.Floating) {
     const id = widgetDef.id;
-    let location = findTab(state, id);
+    let location = getTabLocation(state, id);
     if (!location) {
       state = addHiddenWidget(state, widgetDef);
-      location = findTab(state, id);
+      location = getTabLocation(state, id);
     }
 
     assert(!!location);
@@ -1093,7 +1093,7 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
     widgetDef.tabLocation = {
       side: floatingWidget.home.side,
       tabIndex: floatingWidget.home.widgetIndex,
-      widgetId: widgetDef.id,
+      widgetId: floatingWidget.id,
       widgetIndex: floatingWidget.home.widgetIndex,
       floatingWidget,
     };

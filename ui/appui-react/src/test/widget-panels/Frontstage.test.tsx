@@ -1478,7 +1478,7 @@ describe("Frontstage local storage wrapper", () => {
         let nineZone = createNineZoneState();
         nineZone = addTab(nineZone, "t1");
         nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-        const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+        const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Unloaded);
         sut.should.eq(nineZone);
       });
 
@@ -1651,6 +1651,31 @@ describe("Frontstage local storage wrapper", () => {
         });
       });
 
+      describe("WidgetState.Floating", () => {
+        it("should float a panel widget", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.floatingWidgets.allIds.should.length(1);
+          sut.panels.left.widgets.should.length(0);
+        });
+
+        it("should float a hidden widget", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.floatingWidgets.allIds.should.length(1);
+        });
+
+        it("should not update if widget is floating", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.should.eq(nineZone);
+        });
+      });
     });
 
     describe("showWidget ", () => {
