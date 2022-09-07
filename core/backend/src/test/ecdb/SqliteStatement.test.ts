@@ -391,7 +391,7 @@ describe("SqliteStatement", () => {
     });
   });
   // This test generate no log when run as suite but is successful when only this fixture run.
-  it.skip("check prepare logErrors flag", () => {
+  it("check prepare logErrors flag", () => {
     const fileName = "logErrors.ecdb";
     const ecdbPath = path.join(outDir, fileName);
     using(ECDbTestHelper.createECDb(outDir, fileName), (ecdb: ECDb) => {

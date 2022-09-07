@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "Switch from the IModelSchemaLoader to the SchemaLoader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

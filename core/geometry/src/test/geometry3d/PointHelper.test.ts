@@ -168,6 +168,12 @@ function testCentroidNormal(ck: Checker, pointsA: Point3d[], expectedArea: numbe
 describe("PointHelper.centroid", () => {
   it("PointHelper.centroid", () => {
     const ck = new Checker();
+
+    const zero = Point3d.create();
+    const unitX = Point3d.create(1);
+    for (const invalidPoly of [[], [zero], [zero, unitX], [zero, unitX, zero], [zero, unitX, unitX]])
+      ck.testUndefined(PolygonOps.areaNormalGo(GrowableXYZArray.create(invalidPoly)), "areaNormalGo is undefined for invalid polygon");
+
     for (const pointsA of Sample.createSimpleXYPointLoops()) {
       const areaXY = PolygonOps.areaXY(pointsA);
       testCentroidNormal(ck, pointsA, areaXY);

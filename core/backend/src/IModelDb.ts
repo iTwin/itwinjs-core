@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
@@ -1031,6 +1031,15 @@ export abstract class IModelDb extends IModel {
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+  }
+
+  /** Returns the full schema for the input name.
+   * @param name The name of the schema e.g. 'BisCore'
+   * @returns The SchemaProps for the requested schema
+   * @throws if the schema can not be found or loaded.
+   */
+  public getSchemaProps(name: string): ECSchemaProps {
+    return this.nativeDb.getSchemaProps(name);
   }
 
   /** Query if this iModel contains the definition of the specified class.
