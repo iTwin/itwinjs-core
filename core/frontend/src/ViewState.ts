@@ -55,19 +55,34 @@ export interface ExtentLimits {
   max: number;
 }
 
-/** Interface adopted by an object that wants to apply a per-model display transform.
- * This is intended chiefly for use by model alignment tools.
- * @see [[ViewState.modelDisplayTransformProvider]].
+/** Interface adopted by an object that wants to apply per-model display transforms.
+ * A model's display transform is applied when rendering the model in a [[Viewport]].
+ * @see [[ViewState.modelDisplayTransformProvider]] to get or set the transform provider for a view.
+ * @see [[ViewState.computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by a ModelDisplayTransformProvider.
  * @beta
  */
 export interface ModelDisplayTransformProvider {
+  /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
+   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-gemoetry).
+   */
   getModelDisplayTransform(modelId: Id64String): Transform | undefined;
 }
 
+/** Arguments supplied to [[ViewState.computeDisplayTransform]].
+ * @beta
+ */
 export interface ComputeDisplayTransformArgs {
+  /** The Id of the model for which to compute the display transform. */
   modelId: Id64String;
+  /** The Id of a specific element belonging to the model identified by [[modelId]] for which to compute the display transform. */
   elementId?: Id64String;
+  /** The point in time, expressed in [Unix seconds](https://en.wikipedia.org/wiki/Unix_time), at which to evaluate the display transform.
+   * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
+   */
   timePoint?: number;
+  /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
+   * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
+   */
   output?: Transform;
 }
 
@@ -1213,8 +1228,9 @@ export abstract class ViewState extends ElementState {
    */
   public getModelElevation(_modelId: Id64String): number { return 0; }
 
-  /** Specify a provider of per-model display transforms. Intended chiefly for use by model alignment tools.
-   * @note The transform supplied is used for display purposes **only**. Do not expect operations like snapping to account for the display transform.
+  /** An object that can provide per-model transforms to be applied at display time.
+   * @note The transform is used for display purposes only. Operations upon geometry within the model may not take the display transform into account.
+   * @see [[computeDisplayTransform]] to compute a full display transform for a model or an element within it, which may include a transform supplied by this provider.
    * @beta
    */
   public get modelDisplayTransformProvider(): ModelDisplayTransformProvider | undefined {
@@ -1231,6 +1247,13 @@ export abstract class ViewState extends ElementState {
     this._modelDisplayTransformProvider = provider;
   }
 
+  /** Compute the transform applied to a model at display time, if any.
+   * The display transform may be constructed from any combination of the following:
+   *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyleSettings.planProjectionSettings]($common);
+   *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
+   *  - A transform applied to an element by an [ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   * @beta
+   */
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     const elevation = this.getModelElevation(args.modelId);
     const modelTransform = this.modelDisplayTransformProvider?.getModelDisplayTransform(args.modelId);
