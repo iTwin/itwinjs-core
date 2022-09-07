@@ -23,7 +23,7 @@ import {
 } from "../../appui-react";
 import TestUtils, { mount, storageMock, stubRaf, UiStateStorageStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { expect, should } from "chai";
+import { expect } from "chai";
 import { Provider } from "react-redux";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name, deprecation/deprecation */
@@ -878,7 +878,7 @@ describe("Frontstage local storage wrapper", () => {
           wrapper: (props) => <UiStateStorageHandler {...props} />,
         });
         await TestUtils.flushAsyncOperations();
-        should().exist(frontstageDef.nineZoneState);
+        expect(frontstageDef.nineZoneState).to.exist;
         frontstageDef.nineZoneState!.should.not.eq(setting.nineZone);
       });
 
@@ -910,7 +910,7 @@ describe("Frontstage local storage wrapper", () => {
         });
         await TestUtils.flushAsyncOperations();
 
-        should().exist(frontstageDef.nineZoneState?.tabs.w1);
+        expect(frontstageDef.nineZoneState?.tabs.w1).to.exist;
       });
     });
 
@@ -1605,12 +1605,12 @@ describe("Frontstage local storage wrapper", () => {
           nineZone = addFloatingWidget(nineZone, "w1", ["w1"]);
           const widgetDef = new WidgetDef({ id: "w1", hideWithUiWhenFloating: true });
           let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          should().not.exist(hideWidgetState.floatingWidgets.byId.w1);
+          expect(hideWidgetState.floatingWidgets.byId.w1).to.not.exist;
           let showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
           expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
 
           hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          should().not.exist(hideWidgetState.floatingWidgets.byId.w1);
+          expect(hideWidgetState.floatingWidgets.byId.w1).to.not.exist;
           widgetDef.setFloatingContainerId(undefined);
           showWidgetState = setWidgetState(hideWidgetState, widgetDef, WidgetState.Open);
           expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
@@ -1624,14 +1624,14 @@ describe("Frontstage local storage wrapper", () => {
           const widgetDef = new WidgetDef({ id: "w1" });
           widgetDef.defaultFloatingSize = { width: 450, height: 250 };
           let hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          should().not.exist(hideWidgetState.floatingWidgets.byId.w1);
+          expect(hideWidgetState.floatingWidgets.byId.w1).to.not.exist;
           let newState = produce(hideWidgetState, (stateDraft) => {
             delete stateDraft.floatingWidgets.byId.w1;
           });
           let showWidgetState = setWidgetState(newState, widgetDef, WidgetState.Open);
           expect(showWidgetState.floatingWidgets.byId.w1.hidden).to.be.false;
           hideWidgetState = setWidgetState(nineZone, widgetDef, WidgetState.Hidden);
-          should().not.exist(hideWidgetState.floatingWidgets.byId.w1);
+          expect(hideWidgetState.floatingWidgets.byId.w1).to.not.exist;
           newState = produce(hideWidgetState, (stateDraft) => {
             delete stateDraft.floatingWidgets.byId.w1;
           });
@@ -1721,8 +1721,8 @@ describe("Frontstage local storage wrapper", () => {
         };
         const newState = restoreNineZoneState(frontstageDef, savedState);
         newState.widgets.w1.tabs.should.eql(["t2"]);
-        should().not.exist(newState.tabs.t1);
-        should().not.exist(newState.tabs.t3);
+        expect(newState.tabs.t1).to.not.exist;
+        expect(newState.tabs.t3).to.not.exist;
       });
 
       it("should restore tabs", () => {
@@ -1825,7 +1825,7 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
         sinon.stub(frontstageDef, "centerLeft").get(() => zoneDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        should().exist(newState.tabs.w1);
+        expect(newState.tabs.w1).to.exist;
       });
 
       it("should add bottomLeft widgets", () => {
@@ -1838,8 +1838,8 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef, widgetDef2]);
         sinon.stub(frontstageDef, "bottomLeft").get(() => zoneDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        should().exist(newState.tabs.t1);
-        should().exist(newState.tabs.t2);
+        expect(newState.tabs.t1).to.exist;
+        expect(newState.tabs.t2).to.exist;
       });
 
       it("should add centerRight widgets", () => {
@@ -1850,7 +1850,7 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
         sinon.stub(frontstageDef, "centerRight").get(() => zoneDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        should().exist(newState.tabs.w1);
+        expect(newState.tabs.w1).to.exist;
       });
 
       it("should add bottomRight widgets", () => {
@@ -1861,7 +1861,7 @@ describe("Frontstage local storage wrapper", () => {
         sinon.stub(zoneDef, "widgetDefs").get(() => [widgetDef]);
         sinon.stub(frontstageDef, "bottomRight").get(() => zoneDef);
         const newState = addMissingWidgets(frontstageDef, state);
-        should().exist(newState.tabs.w1);
+        expect(newState.tabs.w1).to.exist;
       });
 
       it("should add leftPanel widgets", () => {
@@ -2300,9 +2300,9 @@ describe("Frontstage local storage wrapper", () => {
         });
 
         await TestUtils.flushAsyncOperations();
-        should().exist(frontstageDef?.nineZoneState?.tabs.LeftStart1, "LeftStart1");
-        should().exist(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1");
-        should().exist(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderW1, "TestUi2ProviderW1");
+        expect(frontstageDef?.nineZoneState?.tabs.LeftStart1, "LeftStart1").to.exist;
+        expect(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1").to.exist;
+        expect(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderW1, "TestUi2ProviderW1").to.exist;
         frontstageDef?.nineZoneState?.widgets.rightEnd.tabs.should.eql(["TestUi2ProviderRM1"], "rightEnd widget tabs");
         frontstageDef?.nineZoneState?.widgets.leftStart.tabs.should.eql(["LeftStart1", "TestUi2ProviderW1"], "leftStart widget tabs");
 
@@ -2311,11 +2311,11 @@ describe("Frontstage local storage wrapper", () => {
         });
 
         await TestUtils.flushAsyncOperations();
-        should().exist(frontstageDef?.nineZoneState?.tabs.LeftStart1, "LeftStart1 after unregister");
+        expect(frontstageDef?.nineZoneState?.tabs.LeftStart1, "LeftStart1 after unregister").to.exist;
         // tabs should remain but no widget container should reference them
-        should().not.exist(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1 after unregister");
-        should().not.exist(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderW1, "TestUi2ProviderW1 after unregister");
-        should().not.exist(frontstageDef?.nineZoneState?.widgets.rightEnd, "rightEnd widget");
+        expect(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderRM1, "TestUi2ProviderRM1 after unregister").to.not.exist;
+        expect(frontstageDef?.nineZoneState?.tabs.TestUi2ProviderW1, "TestUi2ProviderW1 after unregister").to.not.exist;
+        expect(frontstageDef?.nineZoneState?.widgets.rightEnd, "rightEnd widget").to.not.exist;
         frontstageDef?.nineZoneState?.widgets.leftStart.tabs.should.eql(["LeftStart1"], "leftStart widget tabs");
       });
 
