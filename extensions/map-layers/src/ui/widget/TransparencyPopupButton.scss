@@ -22,12 +22,16 @@
 
 
 .map-transparency-popup-button {
-.transparent-button {
-  width: 16px;
-  height: 16px;
-}
+  .transparent-button {
+    width: 16px;
+    height: 16px;
+  }
 
-svg.checkered {
-  fill: $buic-foreground-body;
-}
+  svg.checkered {
+    fill: $buic-foreground-body;
+  }
+
+  svg.checkered-disabled {
+    fill: $buic-foreground-muted;
+  }
 }

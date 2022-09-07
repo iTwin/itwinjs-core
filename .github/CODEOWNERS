@@ -108,7 +108,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
-/core/mobile                    @iTwin/itwinjs-core-admins
+/core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                   @iTwin/itwinjs-core-display
 /core/quantity                  @calebmshafer @ColinKerr
 /core/transformer               @MichaelBelousov @ColinKerr
@@ -144,6 +144,7 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
+/test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @bbastings @dassaf4

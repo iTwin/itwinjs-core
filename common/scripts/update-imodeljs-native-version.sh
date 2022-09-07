@@ -47,9 +47,14 @@ echo "Updating @bentley/imodeljs-native to $AddonVersion..."
 updatePackageJson "core/backend"
 updatePackageJson "full-stack-tests/backend"
 
-# Update XCode project. This relies on the "version = " string occurring exactly once, specifying the imodeljs-native version.
-PbxProj="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"
-sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+# Update XCode projects. This relies on the "version = " string occurring exactly once, specifying the imodeljs-native version.
+PbxProj1="$RepoRoot/tools/internal/ios/core-test-runner/core-test-runner.xcodeproj/project.pbxproj"
+PbxProj2="$RepoRoot/test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-test-app.xcodeproj/project.pbxproj"
+
+for PbxProj in PbxProj1 PbxProj2
+do
+  sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+done
 
 # Purge node_modules
 rm "$RepoRoot/common/config/rush/browser-approved-packages.json"

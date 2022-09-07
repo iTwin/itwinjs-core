@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
-import { IModelTileTreeProps, ServerTimeoutError } from "@itwin/core-common";
+import { ServerTimeoutError } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
   TileRequest, TileRequestChannel, TileTree,
@@ -209,7 +209,7 @@ describe("requestTileTreeProps", () => {
     expect(fulfilled.every((x) => x === "0x1c")).to.be.true;
   });
 
-  it.skip("should throttle requests", async () => {
+  it("should throttle requests", async () => {
     const numRequests = 10;
     const getProps = async (index: number) => {
       await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
@@ -232,7 +232,7 @@ describe("requestTileTreeProps", () => {
     await Promise.all(promises);
   });
 
-  it.skip("should reject when iModel closed", async () => {
+  it("should reject when iModel closed", async () => {
     overrideRequestTileTreeProps(async (iModel, _treeId) => {
       return new Promise((resolve, _reject) => {
         iModel.onClose.addOnce((_) => {
@@ -266,48 +266,5 @@ describe("requestTileTreeProps", () => {
 
     // We closed the iModel. Reopen it for use by subsequent tests.
     imodel = await SnapshotConnection.openFile("mirukuru.ibim");
-  });
-
-  // ###TODO This occassionally times out, possibly due to sporadic failures in previous tests
-  it.skip("should fulfill requests for other iModels after a different iModel is closed", async () => {
-    imodel2 = await SnapshotConnection.openFile("test.bim");
-
-    overrideRequestTileTreeProps(async (iModel, treeId) => {
-      if (iModel === imodel2)
-        return { id: treeId } as IModelTileTreeProps;
-
-      return new Promise((resolve, _reject) => {
-        iModel.onClose.addOnce((_) => setTimeout(resolve, 15));
-      });
-    });
-
-    const promises = [];
-    for (let i = 0; i < 3; i++)
-      promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, i.toString()).then((_props) => i).catch((err) => err));
-
-    promises.push(IModelApp.tileAdmin.requestTileTreeProps(imodel, "imodel2").then((_props) => "imodel2").catch((err) => err));
-
-    await imodel.close();
-
-    const results = await Promise.all(promises);
-    expect(results.length).to.equal(4);
-
-    // The first 2 requests should have resolved, because they were immediately dispatched.
-    expect(typeof results[0]).to.equal("number");
-    expect(typeof results[1]).to.equal("number");
-
-    // The third request should have been abandoned because the iModel was closed.
-    expect(results[2]).instanceof(ServerTimeoutError);
-
-    // After the first iModel was closed, requests associated with the second iModel should resolve.
-    expect(results[3]).to.equal("imodel2");
-
-    overrideRequestTileTreeProps(undefined);
-
-    // We closed the iModel. Reopen it for use by subsequent tests.
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
-
-    await imodel2.close();
-    imodel2 = undefined;
   });
 });

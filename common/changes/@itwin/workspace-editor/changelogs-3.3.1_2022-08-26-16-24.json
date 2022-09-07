@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/workspace-editor"
+    }
+  ],
+  "packageName": "@itwin/workspace-editor",
+  "email": "aruniverse@users.noreply.github.com"
+}

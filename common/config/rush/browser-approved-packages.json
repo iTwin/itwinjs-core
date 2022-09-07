@@ -67,10 +67,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodelbank-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend", "internal" ]
     },
@@ -279,6 +275,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/itwinui-icons",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -412,7 +412,7 @@
     },
     {
       "name": "@typescript-eslint/eslint-plugin",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "@typescript-eslint/parser",
@@ -600,11 +600,11 @@
     },
     {
       "name": "eslint-plugin-deprecation",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-import",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-jam3",
@@ -620,15 +620,19 @@
     },
     {
       "name": "eslint-plugin-prefer-arrow",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-react",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
     },
     {
       "name": "eslint-plugin-react-hooks",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "eslint-plugin-testing-library",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "eventemitter2",
@@ -1036,7 +1040,7 @@
     },
     {
       "name": "ts-node",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "typedoc",
