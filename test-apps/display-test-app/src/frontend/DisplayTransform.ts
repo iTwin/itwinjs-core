@@ -10,7 +10,7 @@ import { parseArgs } from "@itwin/frontend-devtools";
 class TransformProvider {
   public constructor(private readonly _models: Set<string>, private readonly _transform: Transform) { }
 
-  public getModelDisplayTransform(modelId: string, baseTransform: Transform): Transform {
+  public getModelDisplayTransform(modelId: string): Transform | undefined{
     return this._models.has(modelId) ? this._transform.clone() : undefined;
   }
 }
