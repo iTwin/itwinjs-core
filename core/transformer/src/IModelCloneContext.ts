@@ -12,7 +12,7 @@ import {
   PrimitiveTypeCode, RelatedElementProps,
 } from "@itwin/core-common";
 import {
-  ElementAspect, EntityReferences, IModelElementCloneContext, SQLiteDb,
+  ElementAspect, EntityReferences, IModelDb, IModelElementCloneContext, SQLiteDb,
 } from "@itwin/core-backend";
 import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
 import { EntityUnifier } from "./EntityUnifier";
@@ -166,12 +166,37 @@ export class IModelCloneContext extends IModelElementCloneContext {
     return targetElementAspectProps;
   }
 
+  private static aspectRemapTableName = "AspectIdRemaps";
+
   public override saveStateToDb(db: SQLiteDb): void {
     super.saveStateToDb(db);
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
+      `CREATE TABLE ${IModelCloneContext.aspectRemapTableName} (Source INTEGER, Target INTEGER)`
+    )) throw Error("Failed to create the aspect remap table in the state database");
+    db.saveChanges();
+    db.withPreparedSqliteStatement(
+      `INSERT INTO ${IModelCloneContext.aspectRemapTableName} (Source, Target) VALUES (?, ?)`,
+      (stmt) => {
+        for (const [source, target] of this._aspectRemapTable) {
+          stmt.reset();
+          stmt.bindId(1, source);
+          stmt.bindId(2, target);
+          if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert aspect remapping into the state database");
+        }
+      });
   }
 
   public override loadStateFromDb(db: SQLiteDb): void {
     super.loadStateFromDb(db);
-    // FIXME: implement
+    // FIXME: test this
+    db.withSqliteStatement(`SELECT Source, Target FROM ${IModelCloneContext.aspectRemapTableName}`, (stmt) => {
+      let status = DbResult.BE_SQLITE_ERROR;
+      while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
+        const source = stmt.getValue(0).getId();
+        const target = stmt.getValue(1).getId();
+        this._aspectRemapTable.set(source, target);
+      }
+      assert(status === DbResult.BE_SQLITE_DONE);
+    });
   }
 }
