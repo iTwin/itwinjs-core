@@ -9,7 +9,8 @@ Table of contents:
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
 - [Display](#display)
-  - [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
+  - [Ambient occlusion improvements](#ambient-occlusion-improvements)
+  - [Improved display transform support](#improved-display-transform-support)
 - [Presentation](#presentation)
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [OpenTelemetry](#opentelemetry)
@@ -43,7 +44,7 @@ The new `SchemaLoader` can be constructed with any function that returns [ECSche
 
 ## Display
 
-### Ambient Occlusion Improvements
+### Ambient occlusion improvements
 
 The ambient occlusion effect has undergone some quality improvements.
 
@@ -62,6 +63,16 @@ New effect, shown below:
 ![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
+
+### Improved display transform support
+
+In some cases, geometry is displayed within a [Viewport]($frontend) at a different location, orientation, and/or scale than that with which it is persisted in the iModel. For example:
+
+- A [DisplayStyle]($backend) may use [PlanProjectionSettings.elevation]($common) to adjust a plan projection model's position on the Z axis.
+- A [ModelDisplayTransformProvider]($frontend) may supply [Transform]($core-geometry)s to be applied to specific models.
+- A [RenderSchedule.Script]($common) may apply [Transform]($core-geometry)s to groups of elements belonging to a [RenderSchedule.ElementTimeline]($common).
+
+Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
 
 ## Presentation
 

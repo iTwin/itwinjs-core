@@ -1247,11 +1247,13 @@ export abstract class ViewState extends ElementState {
     this._modelDisplayTransformProvider = provider;
   }
 
-  /** Compute the transform applied to a model at display time, if any.
+  /** Compute the transform applied to a model or element at display time, if any.
    * The display transform may be constructed from any combination of the following:
    *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyleSettings.planProjectionSettings]($common);
    *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
-   *  - A transform applied to an element by an [ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   *  - A transform applied to an element by an [RenderSchedule.ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   * @param args A description of how to compute the transform.
+   * @returns The computed transform, or `undefined` if no display transform is to be applied.
    * @beta
    */
   public computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
