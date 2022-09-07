@@ -7,12 +7,10 @@ import { ConcreteEntityTypes } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { ECReferenceTypesCache } from "../../ECReferenceTypesCache";
-import { SnapshotDb } from "../../IModelDb";
-import { IModelSchemaLoader } from "../../IModelSchemaLoader";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelSchemaLoader, Relationship, SnapshotDb } from "@itwin/core-backend";
+import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as Semver from "semver";
-import { Relationship } from "../../Relationship";
 import { SchemaItemType } from "@itwin/ecschema-metadata";
 
 describe("ECReferenceTypesCache", () => {
