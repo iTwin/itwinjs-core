@@ -11,6 +11,7 @@ Table of contents:
 - [Presentation](#presentation)
   - [Restoring Presentation tree state](#restoring-presentation-tree-state)
   - [OpenTelemetry](#opentelemetry)
+  - [Localization changes](#localization-changes)
 - [Electron versions support](#electron-versions-support)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
@@ -59,24 +60,6 @@ const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
 
-## IModelSchemaLoader replaced with SchemaLoader
-
-Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
-
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
-
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
-
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
-
 ### OpenTelemetry
 
 It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
@@ -99,6 +82,36 @@ Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
   traceExporter.export(spans, () => {});
 } });
 ```
+
+### Localization Changes
+
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
+
+In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
+
+**Deprecated APIs:**
+
+- PresentationManagerProps.localeDirectories
+- PresentationManagerProps.defaultLocale
+- PresentationManager.activeLocale
+
+## IModelSchemaLoader replaced with SchemaLoader
+
+Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
+
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
+const schema = loader.getSchema("BisCore");
+```
+
+The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ## Electron versions support
 
