@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelbank-client",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelbank-client"
+}
