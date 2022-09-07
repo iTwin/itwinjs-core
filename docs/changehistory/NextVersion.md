@@ -6,17 +6,44 @@ publish: false
 
 Table of contents:
 
-- [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
-- [Transformer API](#transformer-api)
+- [Electron 17 support](#electron-17-support)
+- [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Display](#display)
+  - [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
 - [Presentation](#presentation)
-  - [Restoring Presentation tree state](#restoring-presentation-tree-state)
+  - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [OpenTelemetry](#opentelemetry)
-- [Electron versions support](#electron-versions-support)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
+- [Deprecations](#deprecations)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
-## Ambient Occlusion Improvements
+## Electron 17 support
+
+In addition to the already supported Electron 14, iTwin.js now supports Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), and [17](https://www.electronjs.org/blog/electron-17-0). At the moment, support for Electron 18 and 19 is blocked due to a [bug in the V8 javascript engine](https://github.com/electron/electron/issues/35043).
+
+## IModelSchemaLoader replaced
+
+The `IModelSchemaLoader` class has been replaced with [SchemaLoader]($ecschema-metadata) for obtaining schemas from an iModel. This allows us to remove the @itwin/ecschema-metadata dependency from @itwin/core-backend.
+
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
+const schema = loader.getSchema("BisCore");
+```
+
+The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+
+## Display
+
+### Ambient Occlusion Improvements
 
 The ambient occlusion effect has undergone some quality improvements.
 
@@ -36,16 +63,9 @@ New effect, shown below:
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
 
-## Transformer API
-
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
-It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
-awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
-changes instead of the full source contents.
-
 ## Presentation
 
-### Restoring Presentation tree state
+### Restoring presentation tree state
 
 It is now possible to restore previously saved Presentation tree state on component mount.
 
@@ -58,24 +78,6 @@ useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
 const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
-
-## IModelSchemaLoader replaced with SchemaLoader
-
-Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
-
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
-
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
-
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ### OpenTelemetry
 
@@ -100,10 +102,6 @@ Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
 } });
 ```
 
-## Electron versions support
-
-In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
-
 ## Geometry
 
 ### Coplanar facet consolidation
@@ -117,3 +115,9 @@ A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can 
 A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
 
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+
+## Deprecations
+
+### @itwin/core-transformer
+
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
