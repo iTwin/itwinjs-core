@@ -34,7 +34,7 @@
 
   steps:
     - checkout: iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
-      clean: true
+#       clean: true
       
     - script: dir $(System.DefaultWorkingDirectory)/common/temp
       
