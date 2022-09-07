@@ -8,14 +8,13 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { ECReferenceTypesCache } from "../../ECReferenceTypesCache";
 import { Relationship, SnapshotDb } from "@itwin/core-backend";
-import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { KnownTestLocations as BackendTestsKnownLocations, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import * as Semver from "semver";
 import { SchemaItemType, SchemaLoader } from "@itwin/ecschema-metadata";
 
 describe("ECReferenceTypesCache", () => {
   let testIModel: SnapshotDb;
-  const testSchemaPath = path.join(KnownTestLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
+  const testSchemaPath = path.join(BackendTestsKnownLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
   const testFixtureRefCache = new ECReferenceTypesCache();
 
   before(async () => {
