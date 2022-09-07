@@ -6,6 +6,8 @@
 import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
@@ -203,6 +205,14 @@ class ExitTool extends Tool {
   }
 }
 
+function createHubAccess(configuration: DtaConfiguration) {
+  if (configuration.urlPrefix) {
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+  } else {
+    return new FrontendIModelsAccess();
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -240,6 +250,7 @@ export class DisplayTestApp {
           BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
+        hubAccess: createHubAccess(configuration),
       },
       localhostIpcApp: {
         socketUrl,
@@ -250,7 +261,7 @@ export class DisplayTestApp {
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
-    } else if (ProcessDetector.isIOSAppFrontend || ProcessDetector.isAndroidAppFrontend) {
+    } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";

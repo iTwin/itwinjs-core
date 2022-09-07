@@ -4,11 +4,10 @@
 
 ```ts
 
-/// <reference types="electron" />
-
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import type { BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions } from 'electron';
+import * as ElectronModuleExports from 'electron';
 import { ExtractLiterals } from '@itwin/core-bentley';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
@@ -40,7 +39,7 @@ export class ElectronHost {
     // (undocumented)
     static appIconPath: string;
     // (undocumented)
-    static get electron(): typeof Electron;
+    static get electron(): typeof ElectronModuleExports;
     // (undocumented)
     static frontendURL: string;
     static getWindowMaximizedSetting(windowName: string): boolean | undefined;

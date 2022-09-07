@@ -97,7 +97,7 @@ describe("RequireMagicCommentsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
-  it.skip("should work with copyfile comments and addCopyFileSuffix handler", async () => {
+  it("should work with copyfile comments and addCopyFileSuffix handler", async () => {
     fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,
@@ -111,7 +111,7 @@ describe("RequireMagicCommentsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
-  it.skip("should work with copyfile comments, addCopyFileSuffix, and resolve converted", async () => {
+  it("should work with copyfile comments, addCopyFileSuffix, and resolve converted", async () => {
     fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,
@@ -126,7 +126,7 @@ describe("RequireMagicCommentsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
 
-  it.skip("should work with copyfile comments, addCopyFileSuffix, and resolve not converted", async () => {
+  it("should work with copyfile comments, addCopyFileSuffix, and resolve not converted", async () => {
     fsFromJson({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: copyfile*/"./bar.txt");`,
       "lib/test/assets/require-magic-comments-plugin-test/bar.txt": `This is bar.txt`,

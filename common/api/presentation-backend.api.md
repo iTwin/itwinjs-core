@@ -53,16 +53,16 @@ import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
 
-// @public (undocumented)
+// @public
 export interface BackendDiagnosticsAttribute {
-    // @alpha (undocumented)
+    // @beta
     diagnostics?: BackendDiagnosticsOptions;
 }
 
-// @alpha (undocumented)
+// @beta
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-// @alpha (undocumented)
+// @beta
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
     // (undocumented)
     handler: BackendDiagnosticsHandler;
@@ -73,6 +73,9 @@ export interface ContentCacheConfig {
     // @alpha
     size?: number;
 }
+
+// @public
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -251,6 +254,8 @@ export interface PresentationManagerProps {
     // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
+    // (undocumented)
+    diagnosticsCallback?: DiagnosticsCallback;
     // @deprecated
     enableSchemasPreload?: boolean;
     // @beta
