@@ -26,15 +26,17 @@ For more details, see the new descriptions of the `texelStepSize` and `maxDistan
 ## Transformer API
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
-It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
-awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
-changes instead of the full source contents.
+Use [IModelTransformer.initialize]($transformer) instead, if you are not using a `process*` function, since those all implicitly
+initialize as necessary now.
+
+The transformer also now handles out-of-order non-element entities like aspects, which could cause errors while transforming
+some models previously.
 
 ## Presentation
 
 ### Localization Changes
 
-Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
 In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
 
