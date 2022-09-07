@@ -2,90 +2,103 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { SplitButton } from "../../core-react";
-import { RelativePosition, SpecialKey } from "@itwin/appui-abstract";
+import { RelativePosition } from "@itwin/appui-abstract";
 import { ButtonType } from "../../core-react/button/Button";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<SplitButton />", () => {
-  it("should render", () => {
-    const wrapper = mount(<SplitButton label="test" />);
-    wrapper.unmount();
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
-
   it("renders correctly", () => {
-    shallow(<SplitButton label="test" />).should.matchSnapshot();
+    render(<SplitButton label="test" />);
+
+    expect(screen.getByText(/test/)).to.exist;
   });
 
   it("renders with icon correctly", () => {
-    shallow(<SplitButton label="test" icon="icon-placeholder" />).should.matchSnapshot();
+    render(<SplitButton label="test" icon="icon-placeholder" />);
+
+    expect(classesFromElement(screen.getByText(/test/).firstElementChild)).to.include.members(["icon", "icon-placeholder"]);
   });
 
   it("renders with drawBorder correctly", () => {
-    shallow(<SplitButton label="test" drawBorder />).should.matchSnapshot();
+    render(<SplitButton label="test" drawBorder />);
+
+    expect(classesFromElement(screen.getAllByRole("button")[0])).to.include("core-split-button-border");
   });
 
-  it("renders with popupPosition correctly", () => {
-    shallow(<SplitButton label="test" popupPosition={RelativePosition.BottomLeft} />).should.matchSnapshot();
+  it("renders with popupPosition correctly", async () => {
+    render(<SplitButton label="test" popupPosition={RelativePosition.BottomLeft} />);
+
+    await theUserTo.click(screen.getAllByRole("button")[2]);
+    expect(classesFromElement(screen.getByTestId("core-popup"))).to.include("core-popup-bottom-left");
   });
 
-  it("renders with buttonType=Blue correctly", () => {
-    shallow(<SplitButton label="test" buttonType={ButtonType.Blue} />).should.matchSnapshot();        // eslint-disable-line deprecation/deprecation
-  });
-  it("renders with buttonType=Disabled correctly", () => {
-    shallow(<SplitButton label="test" buttonType={ButtonType.Disabled} />).should.matchSnapshot();    // eslint-disable-line deprecation/deprecation
-  });
-  it("renders with buttonType=Hollow correctly", () => {
-    shallow(<SplitButton label="test" buttonType={ButtonType.Hollow} />).should.matchSnapshot();      // eslint-disable-line deprecation/deprecation
-  });
-  it("renders with buttonType=Primary correctly", () => {
-    shallow(<SplitButton label="test" buttonType={ButtonType.Primary} />).should.matchSnapshot();     // eslint-disable-line deprecation/deprecation
+  ([
+    ["Blue", "uicore-buttons-blue"],
+    ["Disabled", "uicore-buttons-disabled"],
+    ["Hollow", "uicore-buttons-hollow"],
+    ["Primary", "uicore-buttons-primary"],
+  ] as [keyof typeof ButtonType, string][]).map(([testedType, expectedClass]) => {
+    it(`renders with buttonType=${testedType} correctly`, () => {
+      render(<SplitButton label="test" buttonType={ButtonType[testedType]} />);
+
+      expect(classesFromElement(screen.getAllByRole("button")[0])).to.include(expectedClass);
+    });
   });
 
-  it("handles keydown/up correctly", () => {
-    const wrapper = mount<SplitButton>(<SplitButton label="test" />);
-    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: SpecialKey.ArrowDown });
-    expect(wrapper.state().expanded).to.be.true;
+  it("handles keydown/up correctly", async () => {
+    render(<SplitButton label="test" />);
+    expect(screen.queryByTestId("core-popup")).to.be.null;
 
-    wrapper.find(".core-split-button").at(0).simulate("keyup", { keyCode: 0 });
-    wrapper.unmount();
+    await theUserTo.keyboard("[Tab][ArrowDown]");
+
+    expect(screen.getByTestId("core-popup")).to.exist;
   });
 
-  it("calls onExecute on Enter keyup", () => {
+  it("calls onExecute on Enter keyup", async () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<SplitButton label="test" onExecute={spyMethod} />);
-    wrapper.find(".core-split-button").at(0).simulate("keyup", { key: SpecialKey.Enter });
+    render(<SplitButton label="test" onExecute={spyMethod} />);
+
+    await theUserTo.keyboard("[Tab][Enter]");
     spyMethod.calledOnce.should.true;
-    wrapper.unmount();
   });
 
-  it("handles click on arrow correctly", () => {
-    const wrapper = mount<SplitButton>(<SplitButton label="test" />);
-    wrapper.find(".core-split-button-arrow").at(0).simulate("click");
-    expect(wrapper.state().expanded).to.be.true;
-    wrapper.find(".core-split-button-arrow").at(0).simulate("click");
-    expect(wrapper.state().expanded).to.be.false;
-    wrapper.unmount();
+  it("handles click on arrow correctly", async () => {
+    render(<SplitButton label="test" />);
+    expect(screen.queryByTestId("core-popup")).to.be.null;
+
+    await theUserTo.click(screen.getAllByRole("button")[2]);
+    expect(screen.getByTestId("core-popup")).to.exist;
+
+    await theUserTo.click(screen.getAllByRole("button")[2]);
+    expect(screen.queryByTestId("core-popup")).to.be.null;
   });
 
-  it("handles menu close correctly", () => {
-    const wrapper = mount<SplitButton>(<SplitButton label="test" />);
-    wrapper.find(".core-split-button-arrow").at(0).simulate("click");
-    expect(wrapper.state().expanded).to.be.true;
-    wrapper.find(".core-context-menu").at(0).simulate("click", { target: document.getElementsByClassName(".core-split-button-arrow")[0] });
-    expect(wrapper.state().expanded).to.be.false;
-    wrapper.unmount();
+  it("handles menu close correctly", async () => {
+    render(<SplitButton label="test"><div data-testid="menubutton" /></SplitButton>);
+    expect(screen.queryByTestId("core-popup")).to.be.null;
+
+    await theUserTo.click(screen.getAllByRole("button")[2]);
+    expect(screen.getByTestId("core-popup")).to.exist;
+
+    await theUserTo.click(screen.getByTestId("menubutton"));
+    expect(screen.queryByTestId("core-popup")).to.be.null;
   });
 
   it("handles initialExpanded prop correctly", () => {
-    const wrapper = mount<SplitButton>(<SplitButton label="test" initialExpanded={true} />);
-    expect(wrapper.state().expanded).to.be.true;
-    wrapper.unmount();
+    render(<SplitButton label="test" initialExpanded={true} />);
+    expect(screen.getByTestId("core-popup")).to.exist;
   });
 
 });

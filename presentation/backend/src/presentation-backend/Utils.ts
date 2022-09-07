@@ -50,16 +50,34 @@ export function normalizeVersion(version?: string) {
   return "0.0.0";
 }
 
-/** @alpha */
+/**
+ * A function that can be called after receiving diagnostics.
+ * @beta
+ */
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-/** @alpha */
+/**
+ * Data structure for backend diagnostics options.
+ * @beta
+ */
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
   handler: BackendDiagnosticsHandler;
 }
 
-/** @public */
+/**
+ * Data structure which contains backend diagnostics options.
+ * @public
+ */
 export interface BackendDiagnosticsAttribute {
-  /** @alpha */
+  /**
+   * Backend diagnostics options.
+   * @beta
+   */
   diagnostics?: BackendDiagnosticsOptions;
 }
+
+/**
+ * A callback function that can be called after receiving diagnostics.
+ * @public
+ */
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;

@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { Checkbox } from "../../core-react/checkbox/Checkbox";
 import { InputStatus } from "../../core-react/inputs/InputStatus";
 
@@ -94,24 +93,16 @@ describe("Checkbox", () => {
   it("Checkbox should call onBlur handler", () => {
     const spyMethod = sinon.spy();
 
-    const wrapper = mount(
+    render(
       // add dummy onChange method that is require when specifying a checked value
       <Checkbox checked={false} onChange={() => { }} onBlur={spyMethod} />,
     );
 
-    const input = wrapper.find("input");
-    input.length.should.eq(1);
-
-    input.simulate("blur");
+    fireEvent.blur(screen.getByRole("checkbox"));
     spyMethod.calledOnce.should.false;
 
-    const label = wrapper.find("label");
-    label.length.should.eq(1);
-
-    label.simulate("blur");
+    fireEvent.blur(screen.getByRole("checkbox").parentElement!);
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
 });

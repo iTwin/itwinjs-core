@@ -7,13 +7,13 @@
  */
 
 import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey, SchemaLoader } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -322,7 +322,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const schemaLoader = new SchemaLoader((name: string) => { return this.sourceDb.getSchemaProps(name); });
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);

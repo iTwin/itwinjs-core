@@ -568,6 +568,28 @@ describe("PresentationManager", () => {
       expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
+    it("invokes diagnostics callback with diagnostic results", async () => {
+      const diagnosticsCallback = sinon.spy();
+      addonMock.reset();
+      manager = new PresentationManager({ addon: addonMock.object, diagnosticsCallback });
+
+      const diagnosticOptions: DiagnosticsOptions = { perf: true };
+      const diagnosticsResult: Diagnostics = {
+        logs: [{
+          scope: "test",
+          scopeCreateTimestamp: 1000,
+          duration: 123,
+        }],
+      };
+      addonMock
+        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
+      addonMock.verifyAll();
+      expect(diagnosticsCallback).to.be.calledOnceWith(diagnosticsResult);
+    });
+
   });
 
   describe("addon results conversion to Presentation objects", () => {
