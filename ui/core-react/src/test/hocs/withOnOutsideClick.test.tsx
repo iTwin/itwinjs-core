@@ -3,12 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { withOnOutsideClick } from "../../core-react";
+import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/react";
 
-describe("WithOnOutsideClick", () => {
+describe("WithOnOutsideClick", async () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   const WithOnOutsideClickDiv = withOnOutsideClick((props) => (<div {...props} />), undefined, true, false); // eslint-disable-line @typescript-eslint/naming-convention
 
@@ -19,122 +24,73 @@ describe("WithOnOutsideClick", () => {
 
   const WithOnOutsidePointerAndDefaultDiv = withOnOutsideClick((props) => (<div {...props} />), defaultOnClose, true, true); // eslint-disable-line @typescript-eslint/naming-convention
 
-  it("should render", () => {
-    const wrapper = mount(<WithOnOutsideClickDiv />);
-    wrapper.unmount();
-  });
-
-  it("renders correctly", () => {
-    shallow(<WithOnOutsideClickDiv />).should.matchSnapshot();
-  });
-
-  it("should handle document click", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
+  it("should handle document click", async () => {
     const spyOnClose = sinon.spy();
-    const wrapper = mount(<WithOnOutsideClickDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
+    render(<WithOnOutsideClickDiv onOutsideClick={spyOnClose} />);
 
-    outerNode.dispatchEvent(new MouseEvent("click"));
+    await theUserTo.pointer(["[MouseLeft]"]);
     expect(spyOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    wrapper.unmount();
   });
 
-  it("should handle document click in default", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
-    defaultOnClose.resetHistory();
-    const wrapper = mount(<WithOnOutsideClickAndDefaultDiv />, { attachTo: outerNode });
-
-    outerNode.dispatchEvent(new MouseEvent("click"));
-    expect(defaultOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    wrapper.unmount();
-  });
-
-  it("should handle document pointer events", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
+  it("should handle inner click", async () => {
     const spyOnClose = sinon.spy();
-    const wrapper = mount(<WithOnOutsidePointerDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
+    render(<WithOnOutsideClickDiv onOutsideClick={spyOnClose}><div>Inside</div></WithOnOutsideClickDiv>);
 
-    outerNode.dispatchEvent(new MouseEvent("pointerdown"));
-    outerNode.dispatchEvent(new MouseEvent("pointerup"));
+    await theUserTo.click(screen.getByText("Inside"));
+    expect(spyOnClose).not.to.be.called;
+  });
+
+  it("should handle document click in default", async () => {
+    defaultOnClose.resetHistory();
+    render(<WithOnOutsideClickAndDefaultDiv />);
+
+    await theUserTo.pointer("[MouseLeft]");
+    expect(defaultOnClose.calledOnce).to.be.true;
+  });
+
+  it("should handle document pointer events", async () => {
+    const spyOnClose = sinon.spy();
+    render(<WithOnOutsidePointerDiv onOutsideClick={spyOnClose} />);
+
+    await theUserTo.pointer("[MouseLeft]");
     expect(spyOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    wrapper.unmount();
   });
 
-  it("should handle document pointer events in default", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
+  it("should handle empty onOutsideClick (Coverage only)", async () => {
+    render(<WithOnOutsidePointerDiv />);
 
+    // Although there is an await, error in eventhandlers do not trigger errors.
+    // This is only adding coverage but we cant really test "nothing" to happen...
+    await theUserTo.pointer("[MouseLeft]");
+  });
+
+  it("should handle document pointer events in default", async () => {
     defaultOnClose.resetHistory();
-    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv />, { attachTo: outerNode });
+    render(<WithOnOutsidePointerAndDefaultDiv />);
 
-    outerNode.dispatchEvent(new MouseEvent("pointerdown"));
-    outerNode.dispatchEvent(new MouseEvent("pointerup"));
+    await theUserTo.pointer("[MouseLeft]");
     expect(defaultOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    wrapper.unmount();
   });
 
-  it("should dispatch close processing if clicking on a popup", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
-    const popupNode = document.createElement("div");
-    popupNode.setAttribute("class", "core-popup");
-    document.body.appendChild(popupNode);
-
+  it("should dispatch close processing if clicking on a popup", async () => {
     defaultOnClose.resetHistory();
-    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv closeOnNestedPopupOutsideClick />, { attachTo: outerNode });
+    render(<><div className="core-popup" data-testid="popup" /><WithOnOutsidePointerAndDefaultDiv closeOnNestedPopupOutsideClick /></>);
 
-    popupNode.dispatchEvent(new MouseEvent("pointerdown"));
-    popupNode.dispatchEvent(new MouseEvent("pointerup"));
+    await theUserTo.click(screen.getByTestId("popup"));
     expect(defaultOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    document.body.removeChild(popupNode);
-    wrapper.unmount();
   });
 
-  it("should not dispatch close processing if clicking on a popup", () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
+  it("should not dispatch close processing if clicking on a popup", async () => {
+    defaultOnClose.resetHistory();
     // build an hierarchy that will test all recursion in code
-    const popupNode = document.createElement("div");
-    popupNode.setAttribute("class", "core-popup");
-    const popupChild = document.createElement("div");
-    popupNode.appendChild(popupChild);
-    const popupGrandChild = document.createElement("div");
-    popupChild.appendChild(popupGrandChild);
-    const popupGrandChildElement = document.createElement("p");
-    popupGrandChild.appendChild(popupGrandChildElement);
-    document.body.appendChild(popupNode);
+    render(<><div className="core-popup"><div><div><p>PopupContent</p></div></div></div><WithOnOutsidePointerAndDefaultDiv /></>);
 
-    defaultOnClose.resetHistory();
-    const wrapper = mount(<WithOnOutsidePointerAndDefaultDiv />, { attachTo: outerNode });
-
-    popupGrandChildElement.dispatchEvent(new MouseEvent("pointerdown"));
-    popupGrandChildElement.dispatchEvent(new MouseEvent("pointerup"));
+    await theUserTo.click(screen.getByText("PopupContent"));
     expect(defaultOnClose.calledOnce).to.be.false;
 
-    outerNode.dispatchEvent(new MouseEvent("pointerdown"));
-    outerNode.dispatchEvent(new MouseEvent("pointerup"));
+    await theUserTo.unhover(screen.getByText("PopupContent"));
+    await theUserTo.pointer("[MouseLeft]");
     expect(defaultOnClose.calledOnce).to.be.true;
-
-    document.body.removeChild(outerNode);
-    document.body.removeChild(popupNode);
-    wrapper.unmount();
   });
 
 });

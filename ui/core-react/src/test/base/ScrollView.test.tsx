@@ -2,30 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { ScrollView } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 describe("<ScrollView />", () => {
-  it("should render", () => {
-    const wrapper = mount(<ScrollView />);
-    wrapper.unmount();
-  });
-  it("renders correctly", () => {
-    shallow(<ScrollView />).should.matchSnapshot();
-  });
-
   it("content renders correctly", () => {
-    shallow(<ScrollView>Test content</ScrollView>).should.matchSnapshot();
+    render(<ScrollView>Test content</ScrollView>);
+
+    expect(screen.getByText("Test content")).to.exist;
   });
 
   it("has correct className", () => {
-    const wrapper = mount(<ScrollView />);
-    wrapper.find(".uicore-scrollview").length.should.eq(1);
-  });
+    render(<ScrollView data-testid="tested" />);
 
-  it("has correct text", () => {
-    const wrapper = mount(<ScrollView>Test Content</ScrollView>);
-    wrapper.find(".uicore-scrollview").text().should.equal("Test Content");
+    expect(classesFromElement(screen.getByTestId("tested"))).to.include("uicore-scrollview");
   });
 });

@@ -94,6 +94,110 @@ describe("ItemKeyboardNavigator", () => {
       expect(spy).to.be.calledWith(false);
     });
 
+    it("should handle no crossAxisArrowKeyHandler (horizontal)", () => {
+      const spy = sinon.spy();
+      const nav = new ItemKeyboardNavigator(spy, spy);
+      nav.orientation = Orientation.Vertical;
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.ArrowLeft);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spy).to.not.be.called;
+    });
+
+    it("should handle no crossAxisArrowKeyHandler (vertical)", () => {
+      const spy = sinon.spy();
+      const nav = new ItemKeyboardNavigator(spy,spy);
+      nav.orientation = Orientation.Horizontal;
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.ArrowDown);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spy).to.not.be.called;
+    });
+
+    it("should focus on item 0 for Home", () => {
+      const spyFocus = sinon.spy();
+      const nav = new ItemKeyboardNavigator(spyFocus, () => {});
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.Home);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spyFocus).to.be.calledWith(0);
+    });
+
+    it("should focus on last item for End", () => {
+      const spyFocus = sinon.spy();
+      const count = 10;
+      const nav = new ItemKeyboardNavigator(spyFocus, () => {});
+      nav.itemCount = count;
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.End);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spyFocus).to.be.calledWith(count - 1);
+    });
+
+    it("should activate item for Enter", () => {
+      const spyActivate = sinon.spy();
+      const nav = new ItemKeyboardNavigator(() => {}, spyActivate);
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.Enter);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spyActivate).to.be.calledWith(0);
+    });
+
+    it("should activate item for Space", () => {
+      const spyActivate = sinon.spy();
+      const nav = new ItemKeyboardNavigator(() => {}, spyActivate);
+      keyEventMock.setup((x) => x.key).returns(() => SpecialKey.Space);
+      nav.handleKeyDownEvent(keyEventMock.object, 0);
+      nav.handleKeyUpEvent(keyEventMock.object, 0);
+      expect(spyActivate).to.be.calledWith(0);
+    });
+
+    ([
+      ["previous item for ArrowUp (horizontal)", SpecialKey.ArrowUp, Orientation.Vertical, 4, 0],
+      ["next item for ArrowDown (horizontal)", SpecialKey.ArrowDown, Orientation.Vertical, 6, 9],
+      ["previous item for ArrowLeft (vertical)", SpecialKey.ArrowLeft, Orientation.Horizontal, 4, 0],
+      ["next item for ArrowRight (vertical)", SpecialKey.ArrowRight, Orientation.Horizontal, 6, 9],
+    ] as [string, SpecialKey, Orientation, number, number][]).map(([
+      title, key, orientation, result, wrapStart,
+    ]) => {
+      it(`should focus on ${title}`, () => {
+        const spyFocus = sinon.spy();
+        const count = 10;
+        const nav = new ItemKeyboardNavigator(spyFocus, () => {});
+        nav.orientation = orientation;
+        nav.itemCount = count;
+        keyEventMock.setup((x) => x.key).returns(() => key);
+        nav.handleKeyDownEvent(keyEventMock.object, 5);
+        nav.handleKeyUpEvent(keyEventMock.object, 5);
+        expect(spyFocus).to.be.calledWith(result);
+      });
+
+      it(`should allow wrap if true on ${title}`, () => {
+        const spyFocus = sinon.spy();
+        const count = 10;
+        const nav = new ItemKeyboardNavigator(spyFocus, () => {});
+        nav.orientation = orientation;
+        nav.itemCount = count;
+        nav.allowWrap = true;
+        keyEventMock.setup((x) => x.key).returns(() => key);
+        nav.handleKeyDownEvent(keyEventMock.object, wrapStart);
+        nav.handleKeyUpEvent(keyEventMock.object, wrapStart);
+        expect(spyFocus).to.be.calledWith(wrapStart === 0 ? 9 : 0);
+      });
+
+      it(`should not allow wrap if false on ${title}`, () => {
+        const spyFocus = sinon.spy();
+        const count = 10;
+        const nav = new ItemKeyboardNavigator(spyFocus, () => {});
+        nav.orientation = orientation;
+        nav.itemCount = count;
+        nav.allowWrap = false;
+        keyEventMock.setup((x) => x.key).returns(() => key);
+        nav.handleKeyDownEvent(keyEventMock.object, wrapStart);
+        nav.handleKeyUpEvent(keyEventMock.object, wrapStart);
+        expect(spyFocus).to.not.be.called;
+      });
+    });
   });
 
   describe("isNavigationKey", () => {

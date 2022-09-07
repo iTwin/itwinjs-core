@@ -853,46 +853,6 @@ describe("Polyface.Faces", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddCoordinateFacets");
   });
-  // cspell:word dgnjs
-  it.skip("Solid primitive param verification with native", () => {
-    const ck = new Checker();
-    const options = new StrokeOptions();
-    options.needParams = true;
-    options.needParams = true;
-    const builder = PolyfaceBuilder.create(options);
-    builder.toggleReversedFacetFlag();
-    const torusPipes = Sample.createTorusPipes();
-
-    builder.addTorusPipe(torusPipes[1]);
-    builder.addTorusPipe(torusPipes[2]);
-
-    const polyface = builder.claimPolyface();
-    const nativePolyface = JSON.parse(fs.readFileSync("./src/test/deepComparisonTestFiles/Polyface.ParamsAndNormals.dgnjs", "utf8"));
-
-    const jsParams = polyface.data.param;
-    const jsParamsIdx = polyface.data.paramIndex;
-    const nativeParams = nativePolyface.Group.Member[0].IndexedMesh.Param;
-    const nativeParamIdx = nativePolyface.Group.Member[0].IndexedMesh.ParamIndex;
-    ck.testExactNumber(jsParamsIdx!.length, nativeParamIdx.length, "Number of params match");
-    for (let i = 0; i < jsParams!.length; i++) {
-      ck.testCoordinate(jsParams!.getXAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][0]);
-      ck.testCoordinate(jsParams!.getYAtUncheckedPointIndex(polyface.data.paramIndex![i]), nativeParams[nativeParamIdx[i]][1]);
-    }
-
-    const jsNormals = polyface.data.normal!;
-    const jsNormalIdx = polyface.data.normalIndex;
-    const nativeNormals = nativePolyface.Group.Member[0].IndexedMesh.Normal;
-    const nativeNormalIdx = nativePolyface.Group.Member[0].IndexedMesh.NormalIndex;
-    ck.testExactNumber(jsNormalIdx!.length, nativeNormalIdx.length, "Number of params match");
-    for (let i = 0; i < jsNormals.length; i++) {
-      const normal = jsNormals.getVector3dAtCheckedVectorIndex(i)!;
-      ck.testCoordinate(normal.x, nativeNormals[nativeNormalIdx[i]][0]);
-      ck.testCoordinate(normal.y, nativeNormals[nativeNormalIdx[i]][1]);
-      ck.testCoordinate(normal.z, nativeNormals[nativeNormalIdx[i]][2]);
-    }
-
-    expect(ck.getNumErrors()).equals(0);
-  });
 });
 
 it("PartialSawToothTriangulation", () => {
@@ -1052,6 +1012,7 @@ it("SolidPrimitiveBoundary", () => {
   let x0 = 0;
   const y0 = 0;
   const delta = 10;
+  const z1 = 10.0;
   for (const capped of [true, false]) {
     for (const solid of
       [Box.createRange(Range3d.createXYZXYZ(0, 0, 0, 1, 2, 3), capped)!, TorusPipe.createInFrame(Transform.createIdentity(), 2, 1, Angle.createDegrees(180), capped)!, Cone.createBaseAndTarget(Point3d.create(0, 0, 0), Point3d.create(0, 0, 2), Vector3d.unitX(), Vector3d.unitY(), 2, 1, capped)!]) {
@@ -1074,11 +1035,14 @@ it("SolidPrimitiveBoundary", () => {
         Angle.createDegrees(30),
         Angle.createDegrees(50)]) {
         PolyfaceQuery.markPairedEdgesInvisible(mesh, angle);
+        const boundary1 = PolyfaceQuery.boundaryEdges(mesh);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y1);
-        if (capped)
-          ck.testUndefined(boundary, "no boundary for capped solid");
-        else
-          ck.testDefined(boundary, "uncapped solid has boundary");
+        if (capped) {
+          if (!ck.testUndefined(boundary1, "capped solid should have no boundary"))
+            GeometryCoreTestIO.captureCloneGeometry (allGeometry, boundary1, x0, y1, z1);
+        } else {
+          ck.testDefined(boundary1, "uncapped solid should have boundary");
+        }
         y1 += 2 * delta;
       }
       x0 += delta;

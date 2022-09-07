@@ -19,7 +19,7 @@ describe("ECRules Tests", () => {
 
   // This test will now fail on rule functions that encompass multiple rules (i.e. validateNavigationProperty), so we must
   // rethink this. This is more of a sanity check test, to make sure a rule function has been added to the rule set.
-  it.skip("All rules should be in the rule set.", () => {
+  it("All rules should be in the rule set.", () => {
     const missingRules: string[] = [];
     for (const [key] of Object.entries(Rules.Diagnostics)) {
       if (Rules.ECRuleSet.classRules && Rules.ECRuleSet.classRules.find((x) => x.name.toLowerCase() === key.toLowerCase()))
