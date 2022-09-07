@@ -51,7 +51,7 @@ describe("AccuSnap", () => {
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
-      iModel.requestSnap = (props) => Promise.resolve(impl ? impl(props) : {
+      iModel.requestSnap = async (props) => Promise.resolve(impl ? impl(props) : {
         status: SnapStatus.Success,
         hitPoint: props.testPoint,
         snapPoint: props.testPoint,
@@ -61,11 +61,6 @@ describe("AccuSnap", () => {
     }
 
     type SnapResponse = SnapStatus | SnapDetail;
-
-    function assertSnapDetail(response: SnapResponse): SnapDetail {
-      expect(response).instanceOf(SnapDetail);
-      return response as SnapDetail;
-    }
 
     interface SnapDetailProps {
       point: XYZProps;
@@ -175,7 +170,7 @@ describe("AccuSnap", () => {
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0,], [0, -1, 0]] }),
+        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
         (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
       );
@@ -209,7 +204,7 @@ describe("AccuSnap", () => {
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0,], [0, -1, 0]] }),
+        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
         (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
       );
