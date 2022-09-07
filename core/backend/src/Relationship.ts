@@ -8,7 +8,7 @@
 
 import * as assert from "assert";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
+import { ConcreteEntityTypes, EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { EntityReferences } from "./EntityReference";
 import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -70,12 +70,18 @@ export class Relationship extends Entity {
   /**
    * @note For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
    */
-  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
-    // FIXME: test this
+  protected override collectReferenceConcreteIds(
+    referenceIds: EntityReferenceSet,
+    options: {
+      getRelationshipEndType(schemaName: string, className: string): { source: ConcreteEntityTypes, target: ConcreteEntityTypes };
+    } = {
+      getRelationshipEndType: () => ({source: ConcreteEntityTypes.Element, target: ConcreteEntityTypes.Element}),
+    }
+  ): void {
     super.collectReferenceConcreteIds(referenceIds);
     let relInfo: RelTypeInfo;
     try {
-      const maybeRelInfo = ECReferenceTypesCache.globalCache.getRelationshipEndType(this.schemaName, this.className);
+      const maybeRelInfo = options.getRelationshipEndType(this.schemaName, this.className);
       assert(maybeRelInfo !== undefined);
       relInfo = maybeRelInfo;
     } catch  {
