@@ -10,7 +10,7 @@ import {
   RelatedElement, RelatedElementProps, RelationshipProps,
 } from "@itwin/core-common";
 import {
-  DefinitionElement, DefinitionModel, ECReferenceTypesCache, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink,
+  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, Model, RepositoryLink,
   Schema, SnapshotDb, SpatialViewDefinition, UrlLink, ViewDefinition3d,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -281,9 +281,6 @@ describe("Class Registry - generated classes", () => {
 
   it("should get references from its bis superclass", async () => {
     await imodel.importSchemas([testSchemaPath]); // will throw an exception if import fails
-
-    // must init the global reference cache to call `getReferenceConcreteIds` on a relationship entity instance
-    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(imodel);
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestElementWithNavProp = imodel.getJsClass<typeof Element>("TestGeneratedClasses:TestElementWithNavProp");

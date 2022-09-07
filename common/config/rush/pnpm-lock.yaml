@@ -15,6 +15,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@opentelemetry/api': ^1.0.4
       '@types/chai': 4.3.1
@@ -65,6 +66,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@opentelemetry/api': 1.2.0
       '@types/chai': 4.3.1

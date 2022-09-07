@@ -102,3 +102,9 @@ export class EntityReferenceSet extends Set<EntityReference> {
   public addAspect(id: Id64String) { this.add(`a${id}`); }
   public addRelationship(id: Id64String) { this.add(`r${id}`); }
 }
+
+/** @internal entity reference type information of a relationship */
+export interface RelTypeInfo {
+  source: ConcreteEntityTypes;
+  target: ConcreteEntityTypes;
+}
