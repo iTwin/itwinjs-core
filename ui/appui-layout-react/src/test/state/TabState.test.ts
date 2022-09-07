@@ -7,6 +7,12 @@ import { addPanelWidget, addPopoutWidget, addTab, addTabToWidget, createNineZone
 import { addTabs, handleMetaData } from "../Utils";
 
 describe("addTab", () => {
+  it("should add a tab", () => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state.tabs.t1.should.exist;
+  });
+
   it("should throw if tab is already added", () => {
     let state = createNineZoneState();
     state = addTab(state, "t1");
