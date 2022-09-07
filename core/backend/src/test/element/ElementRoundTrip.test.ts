@@ -803,10 +803,6 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       }
     );
 
-    const awaitingFixFromDAssaf = true;
-    if (awaitingFixFromDAssaf)
-      return;
-
     const geom = [
       { header: { flags: 0 } },
       { box: { baseOrigin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
