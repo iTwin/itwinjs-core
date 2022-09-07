@@ -10,8 +10,7 @@ import { DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
 import { ConcreteEntityTypes, IModelError } from "@itwin/core-common";
 import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
-import { IModelDb } from "./IModelDb";
-import { IModelSchemaLoader } from "./IModelSchemaLoader";
+import { IModelDb, IModelSchemaLoader } from "@itwin/core-backend";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
 

@@ -9,11 +9,7 @@
  */
 import * as assert from "assert";
 import { ConcreteEntityTypes, DbResult,  EntityReference, EntityReferences, IModelError } from "@itwin/core-common";
-import { ConcreteEntity, ConcreteEntityProps } from "./EntityReference";
-import { ElementAspect } from "./ElementAspect";
-import { Element } from "./Element";
-import { Relationship } from "./Relationship";
-import { IModelDb } from "./IModelDb";
+import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Relationship } from "@itwin/core-backend";
 
 /** @internal */
 export namespace EntityUnifier {
