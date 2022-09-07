@@ -61,8 +61,6 @@
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
-      parameters:
-        workingDir: $(System.DefaultWorkingDirectory)/iTwin/
     
     # Will run if even there is a failure somewhere else in the pipeline.
 #     - template: ../templates/publish-test-results.yaml
