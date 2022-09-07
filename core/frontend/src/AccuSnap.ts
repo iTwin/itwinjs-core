@@ -737,6 +737,7 @@ export class AccuSnap implements Decorator {
       if (undefined !== result.normal) {
         snap.normal = Vector3d.fromJSON(result.normal);
         displayTransform?.matrix.multiplyVector(snap.normal, snap.normal);
+        snap.normal.normalizeInPlace();
       }
 
       if (SnapMode.Intersection !== snap.snapMode)
