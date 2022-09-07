@@ -63,7 +63,7 @@ export interface ExtentLimits {
  */
 export interface ModelDisplayTransformProvider {
   /** Given the Id of a model, return the transform to be applied to it at display time, or `undefined` to apply no display transform.
-   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-gemoetry).
+   * @note Callers typically want to modify the returned Transform - make sure to return a new, mutable Transform, e.g. by using [Transform.clone]($core-geometry).
    */
   getModelDisplayTransform(modelId: Id64String): Transform | undefined;
 }
@@ -1249,7 +1249,7 @@ export abstract class ViewState extends ElementState {
 
   /** Compute the transform applied to a model or element at display time, if any.
    * The display transform may be constructed from any combination of the following:
-   *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyleSettings.planProjectionSettings]($common);
+   *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyle3dSettings.planProjectionSettings]($common);
    *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
    *  - A transform applied to an element by an [RenderSchedule.ElementTimeline]($common) defined by this view's [[scheduleScript]].
    * @param args A description of how to compute the transform.
