@@ -40,7 +40,7 @@ const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
 const schema = loader.getSchema("BisCore");
 ```
 
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+[SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ## Display
 
