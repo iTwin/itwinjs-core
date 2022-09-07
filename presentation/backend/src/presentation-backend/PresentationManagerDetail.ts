@@ -20,7 +20,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsAttribute, BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey } from "./Utils";
 import { buildElementsProperties } from "./ElementPropertiesHelper";
 
 /** @internal */
