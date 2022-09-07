@@ -119,9 +119,9 @@ export class Entity {
    * In the next breaking change it will replace getReferenceIds, and is already used by the transformer
    * @internal
    */
-  public getReferenceConcreteIds(...argsForOverrides: any[]): EntityReferenceSet {
+  public getReferenceConcreteIds(): EntityReferenceSet {
     const referenceIds = new EntityReferenceSet();
-    this.collectReferenceConcreteIds(referenceIds, ...argsForOverrides);
+    this.collectReferenceConcreteIds(referenceIds);
     return referenceIds;
   }
 
@@ -152,7 +152,7 @@ export class Entity {
    * In the next breaking change it will replace getReferenceIds
    * @internal
    */
-  protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet, ..._otherArgsForOverrideImpls: any[]): void {
+  protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void {
     return; // no references by default
   }
 }

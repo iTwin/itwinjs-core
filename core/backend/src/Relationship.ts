@@ -6,11 +6,8 @@
  * @module Relationships
  */
 
-import * as assert from "assert";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ConcreteEntityTypes, EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
-import { EntityReferences } from "./EntityReference";
-import { ECReferenceTypesCache, RelTypeInfo } from "./ECReferenceTypesCache";
+import { EntityReferenceSet, IModelError, IModelStatus, RelationshipProps, SourceAndTarget } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -66,33 +63,6 @@ export class Relationship extends Entity {
   public delete() { this.iModel.relationships.deleteInstance(this.toJSON()); }
 
   public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
-
-  /**
-   * @note For entity/link-table relationships, you must initialize the owning schema in the [ECReferenceTypesCache.globalCache]($backend) in order to call this.
-   */
-  protected override collectReferenceConcreteIds(
-    referenceIds: EntityReferenceSet,
-    options: {
-      getRelationshipEndType(schemaName: string, className: string): { source: ConcreteEntityTypes, target: ConcreteEntityTypes };
-    } = {
-      getRelationshipEndType: () => ({source: ConcreteEntityTypes.Element, target: ConcreteEntityTypes.Element}),
-    }
-  ): void {
-    super.collectReferenceConcreteIds(referenceIds);
-    let relInfo: RelTypeInfo;
-    try {
-      const maybeRelInfo = options.getRelationshipEndType(this.schemaName, this.className);
-      assert(maybeRelInfo !== undefined);
-      relInfo = maybeRelInfo;
-    } catch  {
-      throw Error([
-        "Either the relationship's reference type info was not cached, and you must initialize the `ECReferenceTypesCache` with the required schema;",
-        "or, the relationship's reference type info may be undefined if this link table relationship references a CodeSpec, which is not supported",
-      ].join("\n"));
-    }
-    referenceIds.add(EntityReferences.fromEntityType(this.sourceId, relInfo.source));
-    referenceIds.add(EntityReferences.fromEntityType(this.targetId, relInfo.target));
-  }
 }
 
 /** A Relationship where one Element refers to another Element
@@ -119,6 +89,13 @@ export class ElementRefersToElements extends Relationship {
   public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
     const relationship: T = this.create(iModel, sourceId, targetId);
     return iModel.relationships.insertInstance(relationship.toJSON());
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addElement(this.targetId);
   }
 }
 
@@ -422,7 +399,7 @@ export class ElementDrivesElement extends Relationship {
     this.priority = props.priority;
   }
 
-  public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
+  public static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
@@ -432,6 +409,30 @@ export class ElementDrivesElement extends Relationship {
     props.status = this.status;
     props.priority = this.priority;
     return props;
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet,): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addElement(this.targetId);
+  }
+}
+
+/** The third (and last) possible link-table relationship base class in an iModel.
+ * Has no external use, but is included for completeness of the [Entity.collectReferenceConcreteIds]($backend)
+ * implementations for link-table relationships. Generating the types of the source and target automatically would require
+ * coupling this package with ecschema-metadata which we do not want to do.
+ * @internal
+ */
+export class ModelSelectorRefersToModels extends Relationship {
+  /** @internal */
+  public static override get className(): string { return "ModelSelectorRefersToModels"; }
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.sourceId);
+    referenceIds.addModel(this.targetId);
   }
 }
 

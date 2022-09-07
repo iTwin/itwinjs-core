@@ -7,11 +7,11 @@ import { ConcreteEntityTypes } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as path from "path";
 import { ECReferenceTypesCache } from "../../ECReferenceTypesCache";
-import { IModelSchemaLoader, Relationship, SnapshotDb } from "@itwin/core-backend";
+import { Relationship, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as Semver from "semver";
-import { SchemaItemType } from "@itwin/ecschema-metadata";
+import { SchemaItemType, SchemaLoader } from "@itwin/ecschema-metadata";
 
 describe("ECReferenceTypesCache", () => {
   let testIModel: SnapshotDb;
@@ -28,7 +28,7 @@ describe("ECReferenceTypesCache", () => {
   });
 
   it("should be able to assume that all non-codespec classes in biscore have one of the known roots", async () => {
-    const schemaLoader = new IModelSchemaLoader(testIModel);
+    const schemaLoader = new SchemaLoader((name: string) => { return testIModel.getSchemaProps(name); });
     const schema = schemaLoader.getSchema("BisCore");
     for (const ecclass of schema.getClasses()) {
       const unsupportedClassNames = ["CodeSpec", "ElementDrivesElement", "SpatialIndex"];

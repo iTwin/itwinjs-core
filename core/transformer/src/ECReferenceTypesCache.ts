@@ -7,10 +7,10 @@
  */
 
 import { DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
-import { ConcreteEntityTypes, IModelError } from "@itwin/core-common";
-import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, StrengthDirection } from "@itwin/ecschema-metadata";
+import { ConcreteEntityTypes, IModelError, RelTypeInfo } from "@itwin/core-common";
+import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, SchemaLoader, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
-import { IModelDb, IModelSchemaLoader } from "@itwin/core-backend";
+import { IModelDb } from "@itwin/core-backend";
 
 const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
 
@@ -19,12 +19,6 @@ const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
  */
 export class SchemaNotInCacheErr extends Error {
   public constructor() { super("Schema was not in cache, initialize that schema"); }
-}
-
-/** @internal */
-export interface RelTypeInfo {
-  source: ConcreteEntityTypes;
-  target: ConcreteEntityTypes;
 }
 
 /**
@@ -85,7 +79,7 @@ export class ECReferenceTypesCache {
 
   /** initialize from an imodel with metadata */
   public async initAllSchemasInIModel(imodel: IModelDb): Promise<void> {
-    const schemaLoader = new IModelSchemaLoader(imodel);
+    const schemaLoader = new SchemaLoader((name: string) => { return imodel.getSchemaProps(name); });
     await imodel.withPreparedStatement(`
       SELECT Name FROM ECDbMeta.ECSchemaDef
       -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
