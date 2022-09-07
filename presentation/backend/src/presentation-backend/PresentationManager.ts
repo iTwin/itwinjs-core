@@ -307,7 +307,7 @@ export interface PresentationManagerProps {
    * @beta
   */
   getLocalizedString?: (key: string) => string;
-  
+
   /*
    * A function that will be called after receiving diagnostics.
    * @beta
