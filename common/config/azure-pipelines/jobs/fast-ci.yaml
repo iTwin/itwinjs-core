@@ -11,6 +11,11 @@ pr:
     include:
       - master
       - release/*
+  paths:
+    exclude:
+      - "**.md"
+      - docs/**
+      - .github/CODEOWNERS
 
 jobs:
   - template: ci-core.yaml

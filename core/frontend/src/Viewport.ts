@@ -2532,10 +2532,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
-        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        const pixel = pixels.getPixel(x, y);
+        const modelId = pixel.featureTable?.modelId;
         if (undefined !== modelId) {
-          npc.z -= this.view.getModelElevation(modelId);
-          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+          const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
+          transform?.multiplyInversePoint3d(npc, npc);
         }
       }
     }
