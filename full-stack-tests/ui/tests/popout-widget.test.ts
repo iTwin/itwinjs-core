@@ -64,7 +64,7 @@ test.describe("popout widget", () => {
     });
   });
 
-  test.only("should maintain popout widget bounds (after reload)", async ({ context, page }) => {
+  test("should maintain popout widget bounds (after reload)", async ({ context, page }) => {
     const tab = tabLocator(page, "View Attributes");
     const widget = widgetLocator({ tab });
     const popoutButton = widget.locator('[title="Pop out active widget tab"]');
