@@ -9,12 +9,12 @@
 import * as React from "react";
 import { SendBack } from "./SendBack";
 import { ActiveTabIdContext, useActiveTab, WidgetIdContext } from "./Widget";
-import { toolSettingsTabId } from "../base/NineZoneState";
 import { Dock } from "./Dock";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
 import { PinToggle } from "./PinToggle";
 import { PopoutToggle } from "./PopoutToggle";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 /** @internal */
 export const TabBarButtons = React.memo(function TabBarButtons() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
