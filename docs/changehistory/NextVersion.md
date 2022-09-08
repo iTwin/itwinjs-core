@@ -6,18 +6,18 @@ publish: false
 
 Table of contents:
 
-- [NextVersion](#nextversion)
-  - [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
-  - [Transformer API](#transformer-api)
-  - [Presentation](#presentation)
-    - [Restoring Presentation tree state](#restoring-presentation-tree-state)
-    - [OpenTelemetry](#opentelemetry)
-    - [Localization Changes](#localization-changes)
-  - [IModelSchemaLoader replaced with SchemaLoader](#imodelschemaloader-replaced-with-schemaloader)
-  - [Electron versions support](#electron-versions-support)
-  - [Geometry](#geometry)
-    - [Coplanar facet consolidation](#coplanar-facet-consolidation)
-    - [Filling mesh holes](#filling-mesh-holes)
+- [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
+- [Transformer API](#transformer-api)
+- [IModelCloneContext split out with new base IModelElementCloneContext](#imodelclonecontext-split-out-with-new-base-imodelelementclonecontext)
+- [Presentation](#presentation)
+  - [Restoring Presentation tree state](#restoring-presentation-tree-state)
+  - [OpenTelemetry](#opentelemetry)
+  - [Localization Changes](#localization-changes)
+- [IModelSchemaLoader replaced with SchemaLoader](#imodelschemaloader-replaced-with-schemaloader)
+- [Electron versions support](#electron-versions-support)
+- [Geometry](#geometry)
+  - [Coplanar facet consolidation](#coplanar-facet-consolidation)
+  - [Filling mesh holes](#filling-mesh-holes)
 
 ## Ambient Occlusion Improvements
 
@@ -41,11 +41,17 @@ For more details, see the new descriptions of the `texelStepSize` and `maxDistan
 
 ## Transformer API
 
-The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it,
-if you are not using a `process*` function to run the transformer, replace its usage with [IModelTransformer.initialize]($transformer).
+The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it.
+If you are not using a `process*` function to run the transformer, then you do need to replace it with [IModelTransformer.initialize]($transformer).
 
 The transformer now handles referencing properties on out-of-order non-element entities like aspects, models, or relationships, previously
 traversal might invalidate references on, for example,  `ExternalSourceAspects`.
+
+## IModelCloneContext split out with new base IModelElementCloneContext
+
+The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
+can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
+class, [IModelCloneContext]($transformer).
 
 ## Presentation
 
