@@ -133,11 +133,12 @@ rush.json       @iTwin/itwinjs-core-admins
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
 /extensions/map-layers                @mdastous-bentley @MarcBedard8
 
-/full-stack-tests/core                @iTwin/itwinjs-core-admins
-/full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
-/full-stack-tests/rpc-interface @calebmshafer @wgoehrig
+/full-stack-tests/core                    @iTwin/itwinjs-core-admins
+/full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
+/full-stack-tests/presentation            @iTwin/itwinjs-core-presentation
+/full-stack-tests/rpc                     @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc-interface           @calebmshafer @wgoehrig
+/full-stack-tests/ui                      @iTwin/itwinjs-core-ui
 
 /presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
