@@ -24,7 +24,7 @@ $nz-widget-target-border-size: 2px;
   transition: transform $iui-speed-fast ease-in;
   pointer-events: all;
   display: flex;
-  box-shadow: $iui-elevation-2;
+  box-shadow: $iui-elevation-8;
 
   @include uicore-z-index(drop-target);
 }
@@ -32,5 +32,5 @@ $nz-widget-target-border-size: 2px;
 @mixin nz-targeted-widget-target {
   transform: scale(1.2);
   background-color: $nz-opaque-outline-color;
-  box-shadow: $iui-elevation-4;
+  box-shadow: $iui-elevation-16;
 }
