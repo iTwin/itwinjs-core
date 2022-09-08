@@ -28,26 +28,26 @@ stages:
               workingDir: $(Pipeline.Workspace)/itwinjs-core
               outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
 
-  - stage: CreateOctopusRelease
-    displayName: Create Octopus release
-    dependsOn: Build
-    jobs:
+  # - stage: CreateOctopusRelease
+  #   displayName: Create Octopus release
+  #   dependsOn: Build
+  #   jobs:
 
-  - stage: DEV
-    displayName: Deployment (DEV)
-    dependsOn: CreateOctopusRelease
-    jobs:
-    - template: ./templates/docs/deploy-docs.yaml
-      parameters:
-        env: DEV
+  # - stage: DEV
+  #   displayName: Deployment (DEV)
+  #   dependsOn: CreateOctopusRelease
+  #   jobs:
+  #   - template: ./templates/docs/deploy-docs.yaml
+  #     parameters:
+  #       env: DEV
 
-  - stage: ProductTestsDEV
-    displayName: Product Tests (DEV)
-    dependsOn: DEV
-    jobs:
-    - template: ./templates/docs/deploy-docs.yaml
-      parameters:
-        env: DEV
+  # - stage: ProductTestsDEV
+  #   displayName: Product Tests (DEV)
+  #   dependsOn: DEV
+  #   jobs:
+  #   - template: ./templates/docs/deploy-docs.yaml
+  #     parameters:
+  #       env: DEV
 
   # - stage: QA
   #   displayName: Deployment (QA)
