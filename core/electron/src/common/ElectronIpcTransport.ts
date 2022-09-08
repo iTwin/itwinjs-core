@@ -23,6 +23,7 @@ export interface IpcTransportMessage { id: string, parameters?: RpcSerializedVal
 /** @internal */
 export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
   private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
+  private _removeListeners: VoidFunction[] = [];
   protected _protocol: ElectronRpcProtocol;
 
   public get protocol() { return this._protocol; }
@@ -43,7 +44,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   protected setupPush() { }
 
   private _setupDataChannel() {
-    this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
+    const removeListener = this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {
       let pending = this._partials.get(chunk.id);
       if (!pending) {
         pending = [];
@@ -63,10 +64,11 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
         }
       }
     });
+    this._removeListeners.push(removeListener);
   }
 
   private _setupObjectsChannel() {
-    this.protocol.ipcSocket.addListener(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
+    const removeListener = this.protocol.ipcSocket.addListener(OBJECTS_CHANNEL, async (evt: any, message: TIn) => {
       const pending = this._partials.get(message.id);
       if (pending && !Array.isArray(pending)) {
         throw new IModelError(BentleyStatus.ERROR, `Message already received for id "${message.id}".`);
@@ -87,6 +89,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
         this.handleComplete(message.id, evt);
       }
     });
+    this._removeListeners.push(removeListener);
   }
 
   private _extractValue(t: IpcTransportMessage): RpcSerializedValue {
@@ -136,6 +139,10 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
 
     this._partials.delete(id);
     return partial.message;
+  }
+
+  public cleanup() {
+    this._removeListeners.forEach((removeListener) => removeListener())
   }
 }
 
@@ -216,7 +223,13 @@ let transport: ElectronIpcTransport | undefined;
 
 /** @internal */
 export function initializeIpc(protocol: ElectronRpcProtocol) {
+  if (transport && transport.protocol !== protocol) {
+    transport.cleanup();
+    transport = undefined;
+  }
+
   if (undefined === transport)
     transport = ProcessDetector.isElectronAppFrontend ? new FrontendIpcTransport(protocol) : new BackendIpcTransport(protocol);
+
   return transport;
 }
