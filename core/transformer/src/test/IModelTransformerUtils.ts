@@ -217,29 +217,34 @@ export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
-  remapper: IModelTransformer | ((id: Id64String) => Id64String) | {
+  remapper: IModelTransformer |  {
     findTargetCodeSpecId: (id: Id64String) => Id64String;
     findTargetElementId: (id: Id64String) => Id64String;
-  } = (id: Id64String) => id,
+    findTargetAspectId: (id: Id64String) => Id64String;
+  } = {
+    findTargetCodeSpecId: (id) => id,
+    findTargetElementId: (id) => id,
+    findTargetAspectId: (id) => id,
+  },
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
     // [IModelTransformerOptions.includeSourceProvenance]$(transformer) is set to true
-    classesToIgnoreMissingElemsOfInTarget = IModelTransformer.provenanceElementClasses,
+    classesToIgnoreMissingEntitiesOfInTarget = [...IModelTransformer.provenanceElementClasses, ...IModelTransformer.provenanceElementAspectClasses],
     compareElemGeom = false,
   }: {
     expectedElemsOnlyInSource?: Partial<ElementProps>[];
     /** before checking elements that are only in the source are correct, filter out elements of these classes */
-    classesToIgnoreMissingElemsOfInTarget?: typeof Entity[];
+    classesToIgnoreMissingEntitiesOfInTarget?: typeof Entity[];
     compareElemGeom?: boolean;
   } = {}
 ) {
-  const [remapElem, remapCodeSpec] =
-    typeof remapper === "function"
-      ? [remapper, remapper]
-      : remapper instanceof IModelTransformer
-        ? [remapper.context.findTargetElementId.bind(remapper.context), remapper.context.findTargetCodeSpecId.bind(remapper.context)]
-        : [remapper.findTargetElementId, remapper.findTargetCodeSpecId];
+  const [remapElem, remapCodeSpec, remapAspect]
+    = remapper instanceof IModelTransformer
+    ? [remapper.context.findTargetElementId.bind(remapper.context),
+      remapper.context.findTargetCodeSpecId.bind(remapper.context),
+      remapper.context.findTargetAspectId.bind(remapper.context)]
+    : [remapper.findTargetElementId, remapper.findTargetCodeSpecId, remapper.findTargetAspectId];
 
   expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
   expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
@@ -347,6 +352,16 @@ export async function assertIdentityTransformation(
         { considerNonExistingAndUndefinedEqual: true }
       );
     }
+
+    for (const sourceAspect of sourceDb.elements.getAspects(sourceElemId)) {
+      if (classesToIgnoreMissingEntitiesOfInTarget.some((c) => sourceAspect instanceof c))
+        continue;
+      const sourceAspectId = sourceAspect.id;
+      const targetAspectId = remapAspect(sourceAspectId);
+      expect(targetAspectId).not.to.equal(Id64.invalid);
+      const targetAspect = targetDb.elements.getAspect(targetAspectId);
+      expect(targetAspect).not.to.be.undefined;
+    }
   }
 
   for await (const [targetElemId] of targetDb.query(
@@ -373,7 +388,7 @@ export async function assertIdentityTransformation(
   ]
     .filter(
       (elem) =>
-        !classesToIgnoreMissingElemsOfInTarget.some(
+        !classesToIgnoreMissingEntitiesOfInTarget.some(
           (cls) => elem instanceof cls
         )
     )
