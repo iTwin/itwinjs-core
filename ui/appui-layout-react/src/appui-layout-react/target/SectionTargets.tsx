@@ -11,7 +11,7 @@ import * as React from "react";
 import { TargetContainer } from "./TargetContainer";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";
-import { WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { MergeTarget } from "./MergeTarget";
 
 /** @internal */
@@ -28,7 +28,7 @@ export const SectionTargets = withTargetVersion("2", function SectionTargets(pro
       className="nz-target-sectionTargets"
       direction={direction}
     >
-      <SectionTarget sectionIndex={0}  />
+      <SectionTarget sectionIndex={0} />
       <MergeTarget widgetId={widgetId} />
       <SectionTarget sectionIndex={1} />
     </TargetContainer>

@@ -10,9 +10,9 @@ import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { BeEvent, DbResult, OpenMode, Optional } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import { CloudSqlite } from "../CloudSqlite";
 import { IModelHost, KnownLocations } from "../IModelHost";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
@@ -196,7 +196,7 @@ export interface WorkspaceOpts {
   /**
    * only for tests
    * @internal */
-  testCloudCache?: SQLiteDb.CloudCache;
+  testCloudCache?: CloudSqlite.CloudCache;
 }
 
 /**
@@ -210,7 +210,7 @@ export interface Workspace {
   /** The [[Settings]] for this Workspace */
   readonly settings: Settings;
   /** The CloudCache for cloud-based WorkspaceContainers */
-  readonly cloudCache?: SQLiteDb.CloudCache;
+  readonly cloudCache?: CloudSqlite.CloudCache;
 
   /** search for a previously opened container.
    * @param containerId the id of the container
@@ -271,7 +271,7 @@ export interface WorkspaceContainer {
   /** CloudContainer for this WorkspaceContainer (`undefined` if this is a local WorkspaceContainer.)
    * @internal
   */
-  readonly cloudContainer?: SQLiteDb.CloudContainer;
+  readonly cloudContainer?: CloudSqlite.CloudContainer;
 
   /** @internal */
   addWorkspaceDb(toAdd: ITwinWorkspaceDb): void;
@@ -291,18 +291,18 @@ export class ITwinWorkspace implements Workspace {
   private _containers = new Map<WorkspaceContainer.Id, ITwinWorkspaceContainer>();
   public readonly containerDir: LocalDirName;
   public readonly settings: Settings;
-  private static _sharedCloudCache?: SQLiteDb.CloudCache;
-  private _cloudCache?: SQLiteDb.CloudCache;
-  public get cloudCache(): SQLiteDb.CloudCache {
+  private static _sharedCloudCache?: CloudSqlite.CloudCache;
+  private _cloudCache?: CloudSqlite.CloudCache;
+  public get cloudCache(): CloudSqlite.CloudCache {
     if (undefined === this._cloudCache)
       this._cloudCache = ITwinWorkspace.getSharedCloudCache();
     return this._cloudCache;
   }
-  private static getSharedCloudCache(): SQLiteDb.CloudCache {
+  private static getSharedCloudCache(): CloudSqlite.CloudCache {
     if (undefined === this._sharedCloudCache) {
       const rootDir = join(IModelHost.cacheDir, "Workspace", "cloud");
       IModelJsFs.recursiveMkDirSync(rootDir);
-      this._sharedCloudCache = SQLiteDb.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
+      this._sharedCloudCache = CloudSqlite.createCloudCache({ rootDir, cacheSize: "20G", name: "workspace" });
     }
     return this._sharedCloudCache;
   }
@@ -425,7 +425,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
   public readonly filesDir: LocalDirName;
   public readonly id: WorkspaceContainer.Id;
 
-  public readonly cloudContainer?: SQLiteDb.CloudContainer | undefined;
+  public readonly cloudContainer?: CloudSqlite.CloudContainer | undefined;
   private _wsDbs = new Map<WorkspaceDb.DbName, ITwinWorkspaceDb>();
   public get dirName() { return join(this.workspace.containerDir, this.id); }
 
@@ -456,7 +456,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     this.id = props.containerId;
 
     if (account?.accessName && account.storageType)
-      this.cloudContainer = SQLiteDb.createCloudContainer({ accessToken: "", ...props, ...account });
+      this.cloudContainer = CloudSqlite.createCloudContainer({ accessToken: "", ...props, ...account });
 
     workspace.addContainer(this);
     this.filesDir = join(this.dirName, "Files");
@@ -497,7 +497,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
     return `${dbName}:${this.validateVersion(version)}`;
   }
 
-  public static resolveCloudFileName(cloudContainer: SQLiteDb.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
+  public static resolveCloudFileName(cloudContainer: CloudSqlite.CloudContainer, props: WorkspaceDb.Props): WorkspaceDb.DbFullName {
     const dbName = props.dbName;
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
@@ -529,7 +529,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
    * @note This requires that the cloudContainer is attached and the write lock on the container be held. The copy should be modified with
    * new content before the write lock is released, and thereafter should never be modified again.
    */
-  public static async makeNewVersion(cloudContainer: SQLiteDb.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
+  public static async makeNewVersion(cloudContainer: CloudSqlite.CloudContainer, fromProps: WorkspaceDb.Props, versionType: WorkspaceDb.VersionIncrement) {
     const oldName = this.resolveCloudFileName(cloudContainer, fromProps);
     const oldDb = this.parseDbFileName(oldName);
     const newVersion = semver.inc(oldDb.version, versionType);
@@ -692,9 +692,9 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     return localFileName;
   }
 
-  public prefetch(opts?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch | undefined {
+  public prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined {
     const cloudContainer = this.container.cloudContainer;
-    return (cloudContainer !== undefined) ? SQLiteDb.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
+    return (cloudContainer !== undefined) ? CloudSqlite.startCloudPrefetch(cloudContainer, this.dbFileName, opts) : undefined;
   }
 }
 

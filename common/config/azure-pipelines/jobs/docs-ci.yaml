@@ -18,6 +18,9 @@ pr:
     exclude:
       - release/2*
       - release/1*
+  paths:
+    exclude:
+      - .github/CODEOWNERS
 
 jobs:
   - job:

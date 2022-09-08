@@ -9,7 +9,7 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
   BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
@@ -17,10 +17,10 @@ import {
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CloudSqlite } from "./CloudSqlite";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { SQLiteDb } from "./SQLiteDb";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -126,8 +126,8 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   public static readonly cloudCacheName = "v2Checkpoints";
-  private static _cloudCache?: SQLiteDb.CloudCache;
-  private static containers = new Map<string, SQLiteDb.CloudContainer>();
+  private static _cloudCache?: CloudSqlite.CloudCache;
+  private static containers = new Map<string, CloudSqlite.CloudContainer>();
 
   public static getFolder(): LocalDirName {
     const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
@@ -153,7 +153,7 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  private static get cloudCache(): SQLiteDb.CloudCache {
+  private static get cloudCache(): CloudSqlite.CloudCache {
     if (!this._cloudCache) {
       let rootDir = process.env.CHECKPOINT_CACHE_DIR;
       if (!rootDir) {
@@ -167,7 +167,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = SQLiteDb.createCloudCache({ name: this.cloudCacheName, rootDir });
+      this._cloudCache = CloudSqlite.createCloudCache({ name: this.cloudCacheName, rootDir });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
@@ -184,13 +184,13 @@ export class V2CheckpointManager {
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2Props));
+      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
       this.containers.set(v2Props.containerId, container);
     }
     return container;
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: SQLiteDb.CloudContainer }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
@@ -207,14 +207,14 @@ export class V2CheckpointManager {
         container.connect(this.cloudCache);
       container.checkForChanges();
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-        const logPrefetch = async (prefetch: SQLiteDb.CloudPrefetch) => {
+        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(SQLiteDb.startCloudPrefetch(container, dbName));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -233,7 +233,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = SQLiteDb.createCloudContainer(this.toCloudContainerProps(v2props));
+    const container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2props));
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }
