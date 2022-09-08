@@ -49,7 +49,7 @@ import { CodeScopeSpec } from '@itwin/core-common';
 import { CodeSpec } from '@itwin/core-common';
 import { ColorDef } from '@itwin/core-common';
 import { ColorDefProps } from '@itwin/core-common';
-import { ConcreteEntityTypes } from '@itwin/core-bentley';
+import { ConcreteEntityTypes } from '@itwin/core-common';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
@@ -77,9 +77,9 @@ import { EntityIdAndClassIdIterable } from '@itwin/core-common';
 import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
 import { EntityQueryParams } from '@itwin/core-common';
-import { EntityReference } from '@itwin/core-bentley';
-import { EntityReferences as EntityReferences_2 } from '@itwin/core-bentley';
-import { EntityReferenceSet } from '@itwin/core-bentley';
+import { EntityReference } from '@itwin/core-common';
+import { EntityReferences as EntityReferences_2 } from '@itwin/core-common';
+import { EntityReferenceSet } from '@itwin/core-common';
 import { EntityReferenceSet as EntityReferenceSet_2 } from '@itwin/core-bentley/lib/cjs/EntityReference';
 import { ExternalSourceAspectProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentProps } from '@itwin/core-common';
@@ -1802,8 +1802,10 @@ export class ElementDrivesElement extends Relationship {
     constructor(props: ElementDrivesElementProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
-    static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
+    static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
     status: number;
     // (undocumented)
@@ -1880,6 +1882,8 @@ export class ElementOwnsUniqueAspect extends RelatedElement {
 export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static get className(): string;
+    // @internal (undocumented)
+    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
@@ -2020,22 +2024,6 @@ export class EntityReferences extends EntityReferences_2 {
     static fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference;
     // @internal
     static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
-}
-
-// @internal (undocumented)
-export namespace EntityUnifier {
-    // (undocumented)
-    export type EntityUpdater = (entityProps: ConcreteEntityProps) => void;
-    // (undocumented)
-    export function exists(db: IModelDb, arg: {
-        entity: ConcreteEntity;
-    } | {
-        entityReference: EntityReference;
-    }): boolean;
-    // (undocumented)
-    export function getReadableType(entity: ConcreteEntity): "element" | "element aspect" | "relationship" | "unknown entity type";
-    export function updaterFor(db: IModelDb, entity: ConcreteEntity): EntityUpdater;
-        {};
 }
 
 // @public
@@ -2722,44 +2710,11 @@ export class HubMock {
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
 
-// @beta
-export class IModelCloneContext {
-    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
-    // @internal
-    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
-    // @internal
-    cloneElementAspect(sourceElementAspect: ElementAspect): ElementAspectProps;
-    // (undocumented)
-    create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext>;
-    dispose(): void;
-    // @internal
-    dump(outputFileName: string): void;
-    filterSubCategory(sourceSubCategoryId: Id64String): void;
-    findTargetAspectId(sourceAspectId: Id64String): Id64String;
-    findTargetCodeSpecId(sourceId: Id64String): Id64String;
-    findTargetElementId(sourceElementId: Id64String): Id64String;
-    findTargetEntityId(sourceEntityId: EntityReference): EntityReference;
-    get hasSubCategoryFilter(): boolean;
-    // @internal
-    importCodeSpec(sourceCodeSpecId: Id64String): void;
-    // @internal
-    importFont(sourceFontNumber: number): void;
-    initialize(): Promise<void>;
-    get isBetweenIModels(): boolean;
-    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
-    // @internal
-    loadStateFromDb(db: SQLiteDb): void;
-    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
-    remapElement(sourceId: Id64String, targetId: Id64String): void;
-    remapElementAspect(aspectSourceId: Id64String, aspectTargetId: Id64String): void;
-    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
-    removeElement(sourceId: Id64String): void;
-    removeElementAspect(aspectSourceId: Id64String): void;
-    // @internal
-    saveStateToDb(db: SQLiteDb): void;
-    readonly sourceDb: IModelDb;
-    readonly targetDb: IModelDb;
-}
+// @beta @deprecated (undocumented)
+export const IModelCloneContext: typeof IModelElementCloneContext;
+
+// @beta @deprecated (undocumented)
+export type IModelCloneContext = IModelElementCloneContext;
 
 // @public
 export abstract class IModelDb extends IModel {
@@ -2992,6 +2947,38 @@ export namespace IModelDb {
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
         setDefaultViewId(viewId: Id64String): void;
     }
+}
+
+// @beta
+export class IModelElementCloneContext {
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
+    // @internal
+    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
+    static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
+    dispose(): void;
+    // @internal
+    dump(outputFileName: string): void;
+    filterSubCategory(sourceSubCategoryId: Id64String): void;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
+    get hasSubCategoryFilter(): boolean;
+    // @internal
+    importCodeSpec(sourceCodeSpecId: Id64String): void;
+    // @internal
+    importFont(sourceFontNumber: number): void;
+    initialize(): Promise<void>;
+    get isBetweenIModels(): boolean;
+    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
+    // @internal
+    loadStateFromDb(db: SQLiteDb): void;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    removeElement(sourceId: Id64String): void;
+    // @internal
+    saveStateToDb(db: SQLiteDb): void;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
 }
 
 // @public
@@ -3890,6 +3877,14 @@ export class ModelSelector extends DefinitionElement {
     models: Id64String[];
     // @internal (undocumented)
     toJSON(): ModelSelectorProps;
+}
+
+// @internal
+export class ModelSelectorRefersToModels extends Relationship {
+    // (undocumented)
+    static get className(): string;
+    // (undocumented)
+    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
 }
 
 // @public

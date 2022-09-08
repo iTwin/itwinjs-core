@@ -106,7 +106,6 @@ beta;class DriverBundleElement
 public;ECDb 
 public;ECDbOpenMode
 public;ECEnumValue
-internal;ECReferenceTypesCache
 internal;ECSchemaXmlContext
 public;ECSqlBinder
 public;ECSqlColumnInfo
@@ -139,7 +138,6 @@ public;EmbeddedFileLink
 public;Entity
 public;EntityClassType
 alpha;EntityReferences 
-internal;EntityUnifier
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -210,11 +208,15 @@ public;class GroupInformationModel
 public;GroupInformationPartition 
 public;GroupModel 
 internal;HubMock
-beta;IModelCloneContext
+beta;IModelCloneContext: typeof IModelElementCloneContext
+deprecated;IModelCloneContext: typeof IModelElementCloneContext
+beta;IModelCloneContext = IModelElementCloneContext
+deprecated;IModelCloneContext = IModelElementCloneContext
 public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
+beta;IModelElementCloneContext
 public;IModelHost
 public;IModelHostConfiguration 
 public;IModelHostOptions
@@ -258,6 +260,7 @@ internal;LockStatusShared
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 
@@ -302,7 +305,6 @@ public;PushChangesArgs
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
-internal;RelTypeInfo
 public;RenderMaterialElement 
 public;RenderMaterialElement
 public;RenderMaterialOwnsRenderMaterials 
@@ -316,7 +318,6 @@ public;RpcTrace
 public;Schema
 internal;SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey
 internal;SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType
-internal;SchemaNotInCacheErr 
 public;Schemas
 public;SectionCallout 
 public;SectionDrawing 

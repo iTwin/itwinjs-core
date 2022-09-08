@@ -265,24 +265,6 @@ export namespace CompressedId64Set {
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
 
-// @alpha
-export enum ConcreteEntityTypes {
-    // (undocumented)
-    Element = "e",
-    // (undocumented)
-    ElementAspect = "a",
-    // (undocumented)
-    Model = "m",
-    // (undocumented)
-    Relationship = "r"
-}
-
-// @alpha
-export namespace ConcreteEntityTypes {
-    // @internal
-    export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
-}
-
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
 
@@ -502,40 +484,6 @@ export enum DuplicatePolicy {
     Allow = 0,
     Replace = 2,
     Retain = 1
-}
-
-// @alpha
-export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
-
-// @alpha
-export class EntityReferences {
-    // (undocumented)
-    static isElement(id: EntityReference): boolean;
-    // (undocumented)
-    static isElementAspect(id: EntityReference): boolean;
-    // (undocumented)
-    static isModel(id: EntityReference): boolean;
-    // (undocumented)
-    static isRelationship(id: EntityReference): boolean;
-    // @internal
-    static isValid(id: EntityReference): boolean;
-    // @internal
-    static makeInvalid(type: ConcreteEntityTypes): EntityReference;
-    static split(id: EntityReference): [ConcreteEntityTypes, Id64String];
-    // (undocumented)
-    static toId64(id: EntityReference): string;
-}
-
-// @alpha
-export class EntityReferenceSet extends Set<EntityReference> {
-    // (undocumented)
-    addAspect(id: Id64String): void;
-    // (undocumented)
-    addElement(id: Id64String): void;
-    // (undocumented)
-    addModel(id: Id64String): void;
-    // (undocumented)
-    addRelationship(id: Id64String): void;
 }
 
 // @public
@@ -1622,7 +1570,6 @@ export class TransientIdSequence {
 }
 
 // @public
-<<<<<<< HEAD
 export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
     protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
     append(values: T): void;
@@ -1660,6 +1607,9 @@ export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
     constructor(options?: TypedArrayBuilderOptions);
 =======
 export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
+=======
+export class TupleKeyedMap<K extends readonly any[], V> {
+>>>>>>> 44f3b42948 (re-extract api)
     // (undocumented)
     [Symbol.iterator](): IterableIterator<[K, V]>;
     // (undocumented)
