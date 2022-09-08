@@ -34,7 +34,6 @@ describe("default NativePlatform", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
-      localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,

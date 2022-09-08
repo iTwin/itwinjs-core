@@ -4,25 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect } from '@playwright/test';
 import assert from 'assert';
+import { tabLocator, widgetLocator } from './Utils';
 
 test.describe("widget auto size", () => {
   test.beforeEach(async ({ page, baseURL }) => {
     assert(baseURL);
     await page.goto(`${baseURL}?frontstage=appui-test-providers:WidgetApi`);
-
-    await page.waitForSelector('#uifw-configurableui-wrapper');
-
-    // Expect a title "to contain" a substring.
-    await expect(page).toHaveTitle(/AppUI Standalone Test App/);
   });
 
   test("auto-sized floating widget should folow the cursor when undocked", async ({ page }) => {
-    const frontstage = await page.locator(".uifw-widgetPanels-frontstage");
+    const frontstage = page.locator(".uifw-widgetPanels-frontstage");
 
     // Widget from end section of a bottom panel.
-    const tab = await page.locator("text=Layout Controls");
-    const widget = await page.locator(".nz-widget-widget", { has: tab });
-    const titleBarHandle = await widget.locator(".nz-handle");
+    const tab = tabLocator(page, "Layout Controls");
+    const widget = widgetLocator({ tab });
+    const titleBarHandle = widget.locator(".nz-handle");
 
     const boundingBox = await titleBarHandle.boundingBox();
     const frontstageBoundingBox = await frontstage.boundingBox();

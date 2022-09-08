@@ -29,6 +29,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -45,7 +46,6 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { ServerBasedLocks } from "./ServerBasedLocks";
-import { SQLiteDb } from "./SQLiteDb";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -2162,7 +2162,7 @@ export interface TokenArg {
  */
 export interface CloudContainerArgs {
   /** @internal */
-  container?: SQLiteDb.CloudContainer;
+  container?: CloudSqlite.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).

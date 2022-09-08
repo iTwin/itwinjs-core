@@ -8,10 +8,11 @@ import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
 import {
-  addPanelWidget, addTab, createDraggedTabState, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
+  addPanelWidget, addTab, createNineZoneState, CursorTypeContext, DragManager, PanelStateContext,
   PanelTarget, useAllowedPanelTarget,
 } from "../../appui-layout-react";
 import { createDragInfo, createDragStartArgs, TestNineZoneProvider } from "../Providers";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal/TabStateHelpers";
 
 describe("PanelTarget", () => {
   it("should render targeted", () => {
@@ -62,19 +63,19 @@ describe("PanelTarget", () => {
 
   it("should render hidden when dragged tab doesn't allow panel target", () => {
     const dragManager = React.createRef<DragManager>();
-    let nineZone = createNineZoneState();
-    nineZone = addTab(nineZone, "t1", {
+    let state = createNineZoneState();
+    state = addTab(state, "t1", {
       allowedPanelTargets: ["top", "right", "bottom"],
     });
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.draggedTab = createDraggedTabState("t1");
     });
     const { container } = render(
       <TestNineZoneProvider
         dragManagerRef={dragManager}
-        state={nineZone}
+        state={state}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <PanelTarget />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -93,16 +94,16 @@ describe("PanelTarget", () => {
 describe("useAllowedPanelTarget", () => {
   describe("dragged tab", () => {
     it("should return true when allowedPanelTargets is undefined", () => {
-      let nineZone = createNineZoneState();
-      nineZone = addTab(nineZone, "t1");
-      nineZone = produce(nineZone, (draft) => {
+      let state = createNineZoneState();
+      state = addTab(state, "t1");
+      state = produce(state, (draft) => {
         draft.draggedTab = createDraggedTabState("t1");
       });
       const { result } = renderHook(() => useAllowedPanelTarget(), {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
-          state={nineZone}
+          state={state}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
+          <PanelStateContext.Provider value={state.panels.left} {...props} />
         </TestNineZoneProvider>,
       });
       result.current.should.true;
@@ -112,15 +113,15 @@ describe("useAllowedPanelTarget", () => {
   describe("dragged widget", () => {
     it("should return true when allowedPanelTargets of active tab is undefined", () => {
       const dragManager = React.createRef<DragManager>();
-      let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-      nineZone = addTab(nineZone, "t1");
+      let state = createNineZoneState();
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const { result } = renderHook(() => useAllowedPanelTarget(), {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           dragManagerRef={dragManager}
-          state={nineZone}
+          state={state}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
+          <PanelStateContext.Provider value={state.panels.left} {...props} />
         </TestNineZoneProvider>,
       });
 
@@ -136,15 +137,15 @@ describe("useAllowedPanelTarget", () => {
 
     it("should return false when allowedPanelTargets of active tab has no panel side", () => {
       const dragManager = React.createRef<DragManager>();
-      let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-      nineZone = addTab(nineZone, "t1", { allowedPanelTargets: ["top", "right", "bottom"] });
+      let state = createNineZoneState();
+      state = addTab(state, "t1", { allowedPanelTargets: ["top", "right", "bottom"] });
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const { result } = renderHook(() => useAllowedPanelTarget(), {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
           dragManagerRef={dragManager}
-          state={nineZone}
+          state={state}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left} {...props} />
+          <PanelStateContext.Provider value={state.panels.left} {...props} />
         </TestNineZoneProvider>,
       });
 

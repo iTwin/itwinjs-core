@@ -12,10 +12,10 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabStateContext, getUniqueId, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState } from "../base/NineZoneState";
 import { getCursorClassName } from "./CursorOverlay";
 import { PanelSide, PanelStateContext } from "./Panel";
 import { withTargetVersion } from "../target/TargetOptions";
+import { isHorizontalPanelState } from "../state/PanelState";
 
 /** @internal */
 export const PanelTarget = React.memo(
