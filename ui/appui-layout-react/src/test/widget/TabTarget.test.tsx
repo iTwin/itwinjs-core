@@ -5,16 +5,17 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { addPanelWidget, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, CursorTypeContext, DraggedWidgetIdContext, DragManager, WidgetIdContext, WidgetTabTarget } from "../../appui-layout-react";
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 
 describe("WidgetTabTarget ", () => {
   it("should render with cursor type", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetIdContext.Provider value="w1">
           <CursorTypeContext.Provider value="grabbing">
@@ -27,11 +28,12 @@ describe("WidgetTabTarget ", () => {
   });
 
   it("should render hidden in dragged widget", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <DraggedWidgetIdContext.Provider value="w1">
           <WidgetIdContext.Provider value="w1">
@@ -45,11 +47,12 @@ describe("WidgetTabTarget ", () => {
 
   it("should render targeted", () => {
     const dragManager = React.createRef<DragManager>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dragManagerRef={dragManager}
       >
         <WidgetIdContext.Provider value="w1">

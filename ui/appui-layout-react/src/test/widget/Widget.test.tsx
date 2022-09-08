@@ -18,15 +18,15 @@ describe("PanelWidget", () => {
     it("should dispatch", () => {
       sinon.stub(NineZoneModule, "getUniqueId").returns("newId");
       const dispatch = sinon.stub<NineZoneDispatch>();
-      let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-      nineZone = addTab(nineZone, "t1");
+      let state = createNineZoneState();
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const { container } = render(
         <TestNineZoneProvider
-          state={nineZone}
+          state={state}
           dispatch={dispatch}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left}>
+          <PanelStateContext.Provider value={state.panels.left}>
             <PanelSideContext.Provider value="left">
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
@@ -50,15 +50,15 @@ describe("PanelWidget", () => {
 
     it("should adjust bounds to keep widget under pointer", () => {
       const dispatch = sinon.stub<NineZoneDispatch>();
-      let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-      nineZone = addTab(nineZone, "t1");
+      let state = createNineZoneState();
+      state = addTab(state, "t1");
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const { container } = render(
         <TestNineZoneProvider
-          state={nineZone}
+          state={state}
           dispatch={dispatch}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left}>
+          <PanelStateContext.Provider value={state.panels.left}>
             <PanelSideContext.Provider value="left">
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
@@ -86,20 +86,20 @@ describe("PanelWidget", () => {
 
     it("should use preferredFloatingWidgetSize of active tab", () => {
       const dispatch = sinon.stub<NineZoneDispatch>();
-      let nineZone = createNineZoneState();
-      nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-      nineZone = addTab(nineZone, "t1", {
+      let state = createNineZoneState();
+      state = addTab(state, "t1", {
         preferredFloatingWidgetSize: {
           height: 400,
           width: 500,
         },
       });
+      state = addPanelWidget(state, "left", "w1", ["t1"]);
       const { container } = render(
         <TestNineZoneProvider
-          state={nineZone}
+          state={state}
           dispatch={dispatch}
         >
-          <PanelStateContext.Provider value={nineZone.panels.left}>
+          <PanelStateContext.Provider value={state.panels.left}>
             <PanelSideContext.Provider value="left">
               <PanelWidget widgetId="w1" {...defaultProps} />
             </PanelSideContext.Provider>
@@ -125,14 +125,14 @@ describe("PanelWidget", () => {
   });
 
   it("should measure widget bounds", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <PanelSideContext.Provider value="left">
             <PanelWidget widgetId="w1" {...defaultProps} />
           </PanelSideContext.Provider>
@@ -154,14 +154,15 @@ describe("PanelWidget", () => {
 
   it("should dispatch FLOATING_WIDGET_BRING_TO_FRONT", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <WidgetStateContext.Provider value={nineZone.widgets.w1}>
+        <WidgetStateContext.Provider value={state.widgets.w1}>
           <WidgetIdContext.Provider value="w1">
             <FloatingWidgetIdContext.Provider value="fw1">
               <Widget />

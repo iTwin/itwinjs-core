@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Clarify RenderMaterialElement documentation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

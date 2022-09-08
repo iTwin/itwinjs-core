@@ -2296,6 +2296,62 @@ export class ECJsNames {
     static toJsName(propName: string, isSystemProperty?: boolean): string;
 }
 
+// @public (undocumented)
+export interface ECSchemaItemProps {
+    // (undocumented)
+    readonly $schema?: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
+    // (undocumented)
+    readonly schema?: string;
+    // (undocumented)
+    readonly schemaItemType?: string;
+    // (undocumented)
+    readonly schemaVersion?: string;
+}
+
+// @public
+export interface ECSchemaProps {
+    // (undocumented)
+    readonly $schema: string;
+    // (undocumented)
+    readonly alias: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly items?: {
+        [name: string]: ECSchemaItemProps;
+    };
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly references?: ECSchemaReferenceProps[];
+    // (undocumented)
+    readonly version: string;
+}
+
+// @public (undocumented)
+export interface ECSchemaReferenceProps {
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly version: string;
+}
+
 // @beta (undocumented)
 export class ECSqlReader {
     // @internal
