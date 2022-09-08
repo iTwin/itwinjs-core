@@ -142,7 +142,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
   }
 
   public cleanup() {
-    this._removeListeners.forEach((removeListener) => removeListener())
+    this._removeListeners.forEach((removeListener) => removeListener());
   }
 }
 
