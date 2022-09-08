@@ -128,7 +128,7 @@ IModelApp.localization.getLocalizedKeys("Hello, %{SafetyBaseMessages:info.login.
 
 Behind the scenes, iTwin.js uses the [i18next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example given above.
 
-As mentioned above, [IModelApp.localization]($frontend) uses an instance of the [ITwinLocalization]($i18n) class by default, which initializes i18next with a set of options that are usually fine for all applications. If you want different options, you could instantiate your own instance of [ITwinLocalization]($i18n) and pass in your own [LocalizationOptions]($i18n) to [ITwinLocalization.constructor]($i18n). Alternatively, you could create your own implementation of the iTwin.js [Localization]($common) interface or even import and use the i18next package directly.
+As mentioned above, [IModelApp.localization]($frontend) uses an instance of the [ITwinLocalization]($i18n) class by default, which initializes i18next with a set of options that are usually fine for all applications. If you want different options, you could instantiate your own instance of [ITwinLocalization]($i18n) and pass in your own [ITwinLocalizationOptions]($i18n) to [ITwinLocalization.constructor]($i18n). Alternatively, you could create your own implementation of the iTwin.js [Localization]($common) interface or even import and use the i18next package directly.
 
 ### A Note About HTML in Localized Strings
 
