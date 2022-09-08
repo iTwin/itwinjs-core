@@ -26,7 +26,6 @@ import { Constructor } from '@itwin/core-bentley';
 import { ConvexClipPlaneSet } from '@itwin/core-geometry';
 import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
-import { EntityReferenceSet } from '@itwin/core-bentley';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeoServiceStatus } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
@@ -1561,6 +1560,24 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
+export enum ConcreteEntityTypes {
+    // (undocumented)
+    Element = "e",
+    // (undocumented)
+    ElementAspect = "a",
+    // (undocumented)
+    Model = "m",
+    // (undocumented)
+    Relationship = "r"
+}
+
+// @alpha
+export namespace ConcreteEntityTypes {
+    // @internal
+    export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
+}
+
+// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -2788,6 +2805,40 @@ export interface EntityQueryParams {
     only?: boolean;
     orderBy?: string;
     where?: string;
+}
+
+// @alpha
+export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
+
+// @alpha
+export class EntityReferences {
+    // (undocumented)
+    static isElement(id: EntityReference): boolean;
+    // (undocumented)
+    static isElementAspect(id: EntityReference): boolean;
+    // (undocumented)
+    static isModel(id: EntityReference): boolean;
+    // (undocumented)
+    static isRelationship(id: EntityReference): boolean;
+    // @internal
+    static isValid(id: EntityReference): boolean;
+    // @internal
+    static makeInvalid(type: ConcreteEntityTypes): EntityReference;
+    static split(id: EntityReference): [ConcreteEntityTypes, Id64String];
+    // (undocumented)
+    static toId64(id: EntityReference): string;
+}
+
+// @alpha
+export class EntityReferenceSet extends Set<EntityReference> {
+    // (undocumented)
+    addAspect(id: Id64String): void;
+    // (undocumented)
+    addElement(id: Id64String): void;
+    // (undocumented)
+    addModel(id: Id64String): void;
+    // (undocumented)
+    addRelationship(id: Id64String): void;
 }
 
 // @public
@@ -6861,6 +6912,14 @@ export interface RelatedElementProps {
 
 // @public
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
+}
+
+// @internal
+export interface RelTypeInfo {
+    // (undocumented)
+    source: ConcreteEntityTypes;
+    // (undocumented)
+    target: ConcreteEntityTypes;
 }
 
 // @public
