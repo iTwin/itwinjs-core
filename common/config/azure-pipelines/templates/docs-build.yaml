@@ -64,3 +64,36 @@ steps:
     artifact: .updated.json
     displayName: Publish Pipeline Artifact - .updated.json
     condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+
+  # Extra stuff
+
+  - task: DownloadPipelineArtifact@2
+    displayName: 'Download Pipeline Artifact - Nuget Spec'
+    inputs:
+      buildType: specific
+      project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+      definition: 1830
+      buildVersionToDownload: specific
+      pipelineId: 1234689
+
+  - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+    displayName: 'Replace tokens in NugetPackage.nuspec'
+    inputs:
+      targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+
+  - task: DeleteFiles@1
+    displayName: 'Delete landing page '
+    inputs:
+      SourceFolder: '$(tempDocsLocation)\public_build'
+      Contents: index.html
+
+  - task: NuGetToolInstaller@1
+    inputs:
+      versionSpec: 4.9.2
+
+  - task: NuGetCommand@2
+    displayName: 'NuGet pack'
+    inputs:
+      command: pack
+      packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      versioningScheme: byBuildNumber

@@ -7,6 +7,9 @@
 #       - release/2*
 #       - release/1*
 
+trigger: none
+pr: none
+
 # Pull in artifacts
 
 stages:
