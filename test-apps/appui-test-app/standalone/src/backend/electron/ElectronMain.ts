@@ -9,7 +9,7 @@ import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-import { IModelHostOptions } from "@itwin/core-backend/src/IModelHost";
+import { IModelHostOptions } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 

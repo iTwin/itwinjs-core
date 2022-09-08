@@ -33,7 +33,9 @@ interface IndicatorProps extends CommonProps {
   onClick?: () => void;
   /** If dialog prop is set, used to determine initial state. */
   opened?: boolean;
-  /** Describes whether the footer is in footer or widget mode. */
+  /** Describes whether the footer is in footer or widget mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode?: boolean;
   /** Tooltip text if not specified label is used */
   toolTip?: string;
@@ -45,6 +47,7 @@ interface IndicatorProps extends CommonProps {
  * @beta
  */
 export function Indicator(props: IndicatorProps) {
+  // eslint-disable-next-line deprecation/deprecation
   const { className, contentType, dialog, iconName, iconSpec, isInFooterMode, isLabelVisible, label, labelSide, onClick, opened, style, toolTip } = props;
   const hasClickAction = React.useMemo(() => !!onClick || !!dialog, [dialog, onClick]);
   const [isOpen, setIsOpen] = React.useState(!!opened);

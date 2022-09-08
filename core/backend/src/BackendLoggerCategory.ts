@@ -83,12 +83,6 @@ export enum BackendLoggerCategory {
   EventSink = "core-backend.EventSink",
 
   /** The logger category used by the following classes:
-   * - [[IModelSchemaLoader]]
-   * @alpha
-   */
-  IModelSchemaLoader = "core-backend.IModelSchemaLoader",
-
-  /** The logger category used by the following classes:
    * - [[iModels]]
    * @alpha
    */
@@ -101,8 +95,8 @@ export enum BackendLoggerCategory {
   NativeApp = "core-backend.NativeApp",
 
   /** The logger category used by the following classes:
-   * - [[ViewStateHydrater]]
+   * - [[ViewStateHydrator]]
    * @internal
    */
-  ViewStateHydrater = "core-backend.ViewStateHydrater",
+  ViewStateHydrator = "core-backend.ViewStateHydrator",
 }

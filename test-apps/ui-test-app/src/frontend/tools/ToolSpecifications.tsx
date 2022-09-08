@@ -24,7 +24,7 @@ import { Dialog, FillCentered, ReactMessage, SvgPath, SvgSprite, UnderlinedButto
 import {
   Backstage, CommandItemDef, ContentGroup, ContentGroupProps, ContentLayoutManager, ContentProps, ContentViewManager,
   FrontstageManager, IModelViewportControl, Indicator, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
-  StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
+  StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef,
 } from "@itwin/appui-react";
 import { FooterPopupContentType, FooterSeparator, Dialog as NZ_Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp } from "../";
@@ -98,9 +98,6 @@ export function UnitsFormatDialog() {
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
-const SampleStatus = withStatusFieldProps(SampleStatusField);
-
 // Sample UI items provider that dynamically adds ui items
 class AppItemsProvider implements UiItemsProvider {
   public readonly id = "AnotherStatusBarItemProvider";
@@ -127,7 +124,7 @@ class AppItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     const isHiddenCondition = new ConditionalBooleanValue(() => !AppItemsProvider._sampleBackstageItemVisible, [AppItemsProvider.syncEventId]);
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusSeparatorId, StatusBarSection.Left, 11, <FooterSeparator />, { isHidden: isHiddenCondition }));
-    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatus />, { isHidden: isHiddenCondition }));
+    statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusFieldId, StatusBarSection.Left, 12, <SampleStatusField />, { isHidden: isHiddenCondition }));
     statusBarItems.push(StatusBarItemUtilities.createStatusBarItem(AppItemsProvider.sampleStatusField2Id, StatusBarSection.Left, 13,
       <Indicator
         iconName="icon-app-1"

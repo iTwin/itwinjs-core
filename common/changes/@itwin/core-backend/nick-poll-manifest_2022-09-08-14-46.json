@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "call container.checkForChanges before attempting to open a v2 checkpoint",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

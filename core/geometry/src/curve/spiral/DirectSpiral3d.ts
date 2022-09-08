@@ -120,7 +120,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     for (let i = 1; i <= numInterval; i++) {
       fraction1 = distances.getXAtUncheckedPointIndex(i);
       trueDistance1 = trueDistance0 + this._evaluator.integrateDistanceBetweenFractions(fraction0, fraction1);
-      distances.setXYZAtCheckedPointIndex(i, fraction1, trueDistance1);
+      distances.setXYAtCheckedPointIndex(i, fraction1, trueDistance1);
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
     }

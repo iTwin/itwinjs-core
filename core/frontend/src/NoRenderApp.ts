@@ -68,6 +68,7 @@ export class NoRenderApp {
   public static async startup(opts?: IModelAppOptions): Promise<void> {
     opts = opts ? opts : {};
     opts.renderSys = new NullRenderSystem();
+    opts.noRender = true;
     await IModelApp.startup(opts);
   }
 }

@@ -5,15 +5,22 @@
 import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
-import { ITwinElectronApi } from "../backend/ElectronPreload";
+import type { IpcRenderer } from "electron";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
+import type { ITwinElectronApi } from "../common/ITwinElectronApi";
+
+declare global {
+  interface Window {
+    itwinjs: ITwinElectronApi;
+  }
+}
 
 /**
  * Frontend Ipc support for Electron apps.
  */
 class ElectronIpc implements IpcSocketFrontend {
-  private _api: ITwinElectronApi;
+  private _api: ITwinElectronApi | IpcRenderer;
   public addListener(channelName: string, listener: IpcListener) {
     this._api.addListener(channelName, listener);
     return () => this._api.removeListener(channelName, listener);
@@ -30,7 +37,8 @@ class ElectronIpc implements IpcSocketFrontend {
   constructor() {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    this._api = (window as any).itwinjs ?? require("electron").ipcRenderer; // eslint-disable-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    this._api = window.itwinjs ?? require("electron").ipcRenderer;
   }
 }
 

@@ -408,37 +408,38 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
       expect(ck.getNumErrors()).equals(0);
       });
-      //  in the input directories ...
-      //    Madhav.json is the whole input set for 5 sections.
-      //    sectionA..sectionE are splits of the separate sections.
-      //  Note that the corresponding .imjs files are reduced to linestrings and are accessed in other tests.
-  // (skip this in production builds -- it's more part of helping the user understand his data than code test)
-      it.skip("SectioningJson", () => {
-        const ck = new Checker();
-        const allGeometry: GeometryQuery[] = [];
-        // cspell:word Madhav
-        for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "MadhavInput"]) {
-            console.log({ baseName });
-          const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.json`, "utf8");
-          const jsonA = JSON.parse(stringA);
-          const parser = new SectionDataParser();
-          parser.parseAny(jsonA);
-          console.log({ baseName, linestringCount: parser.allChains.length });
-          let numOpen = 0;
-          let numClosed = 0;
-          for (const chain of parser.allChains) {
-            if (chain.length > 0) {
-              if (chain[0].isAlmostEqual(chain[chain.length - 1]))
-                numClosed++;
-              else
-                numOpen++;
-            }
-          }
-          console.log({ numOpen, numClosed });
+
+  // In the input directories ...
+  //  * MadhavInput.json is the whole input set for 5 sections.
+  //  * sectionA..sectionE are splits of the separate sections.
+  // Note that the corresponding .imjs files are reduced to linestrings and are accessed in other tests.
+  // This is an example of custom data (linestring) parsing, and is included here for additional code coverage.
+  it("SectioningJson", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    // cspell:word Madhav
+    for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "MadhavInput"]) {
+      console.log({ baseName });
+      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.json`, "utf8");
+      const jsonA = JSON.parse(stringA);
+      const parser = new SectionDataParser();
+      parser.parseAny(jsonA);
+      console.log({ baseName, linestringCount: parser.allChains.length });
+      let numOpen = 0;
+      let numClosed = 0;
+      for (const chain of parser.allChains) {
+        if (chain.length > 0) {
+          if (chain[0].isAlmostEqual(chain[chain.length - 1]))
+            numClosed++;
+          else
+            numOpen++;
         }
-      GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
-        expect(ck.getNumErrors()).equals(0);
-        });
+      }
+      console.log({ numOpen, numClosed });
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
   it("NearTangencyUnion", () => {
     testSelectedTangencySubsets(true, 0, [-1], [], "Base");

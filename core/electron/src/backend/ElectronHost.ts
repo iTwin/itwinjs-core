@@ -9,7 +9,7 @@
 // IMPORTANT: Do not call or construct any of these imports. Otherwise, a require("electron") call will be emitted at top level.
 // Instead, use `ElectronHost.electron.<type>`
 
-import { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
@@ -17,6 +17,10 @@ import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-bac
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
+
+// This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
+// See: https://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
+import * as ElectronModuleExports from "electron";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -89,7 +93,7 @@ export interface WindowSizeAndPositionProps {
 export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof Electron;
+  private static _electron: typeof ElectronModuleExports;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;

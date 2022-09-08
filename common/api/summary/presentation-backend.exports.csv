@@ -1,12 +1,13 @@
 sep=;
 Release Tag;API Item
 public;BackendDiagnosticsAttribute
-alpha;BackendDiagnosticsHandler = (logs: Diagnostics) => void
-alpha;BackendDiagnosticsOptions 
+beta;BackendDiagnosticsHandler = (logs: Diagnostics) => void
+beta;BackendDiagnosticsOptions 
 public;ContentCacheConfig
+public;DiagnosticsCallback = (diagnostics: Diagnostics) => void
 beta;DiskHierarchyCacheConfig 
 internal;getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined
-internal;getLocalesDirectory: (assetsDirectory: string) => string
+internal;getLocalizedStringEN(key: string): any
 beta;HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig
 beta;HierarchyCacheConfigBase
 beta;HierarchyCacheMode

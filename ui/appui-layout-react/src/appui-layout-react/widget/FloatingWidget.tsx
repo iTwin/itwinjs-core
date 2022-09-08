@@ -12,14 +12,17 @@ import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
 import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
-import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
-import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
+import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
+import { MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
+import { FloatingWidgetState, WidgetState } from "../state/WidgetState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
-import { Widget, WidgetProvider, WidgetStateContext } from "./Widget";
+import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
 import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
+import { WidgetTarget } from "../target/WidgetTarget";
+import { WidgetOutline } from "../outline/WidgetOutline";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
 type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
@@ -42,23 +45,26 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const activeTab = tabsState[activeTabId];
   const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
   const uiIsVisible = React.useContext(UiIsVisibleContext);
+  const autoSized = isSingleTab && !userSized;
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
     const position = boundsRect.topLeft();
+    // istanbul ignore next
     return {
       ...CssProperties.transformFromPosition(position),
-      height: minimized || (isSingleTab && !userSized) ? undefined : height,
-      width: (isSingleTab && !userSized) ? undefined : width,
-      maxHeight: (isSingleTab && !userSized) ? "60%" : undefined,
-      maxWidth: (isSingleTab && !userSized) ? "60%" : undefined,
+      height: minimized || autoSized ? undefined : height,
+      width: autoSized ? undefined : width,
+      maxHeight: autoSized ? "60%" : undefined,
+      maxWidth: autoSized ? "60%" : undefined,
     };
-  }, [bounds, isSingleTab, minimized, userSized]);
+  }, [autoSized, bounds, minimized]);
   const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
   const className = React.useMemo(() => classnames(
     minimized && "nz-minimized",
     hideFloatingWidget && "nz-hidden",
   ), [minimized, hideFloatingWidget]);
+
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>
@@ -93,6 +99,8 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
+  const ref = useHandleAutoSize(dragged);
+
   const isToolSettingsTab = widget.tabs[0] === toolSettingsTabId;
   const className = classnames(
     "nz-widget-floatingWidget",
@@ -109,9 +117,13 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       className={className}
       widgetId={floatingWidgetId}
       style={props.style}
+      ref={ref}
     >
       <WidgetTabBar separator={!widget.minimized} />
-      <WidgetContentContainer />
+      <WidgetContentContainer>
+        <WidgetTarget />
+        <WidgetOutline />
+      </WidgetContentContainer>
       {isResizable && <>
         <FloatingWidgetHandle handle="left" />
         <FloatingWidgetHandle handle="top" />
@@ -125,6 +137,54 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     </Widget >
   );
 });
+
+// Re-adjust bounds so that widget is behind pointer when auto-sized.
+// istanbul ignore next
+function useHandleAutoSize(dragged: boolean) {
+  const dragManager = React.useContext(DragManagerContext);
+  const dispatch = React.useContext(NineZoneDispatchContext);
+  const measureNz = React.useContext(MeasureContext);
+  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  assert(!!floatingWidgetId);
+
+  const updatePosition = React.useRef(true);
+  const ref = React.useRef<WidgetComponent>(null);
+
+  React.useLayoutEffect(() => {
+    if (!updatePosition.current)
+      return;
+    if (!dragged)
+      return;
+    if (!dragManager.draggedItem)
+      return;
+    if (!ref.current)
+      return;
+
+    let bounds = ref.current.measure();
+    const nzBounds = measureNz();
+    const pointerPosition = dragManager.draggedItem.info.pointerPosition;
+
+    if (bounds.containsPoint(pointerPosition))
+      return;
+
+    // Pointer is outside of tab area. Need to re-adjust widget bounds so that tab is behind pointer
+    if (pointerPosition.x > bounds.right) {
+      const offset = pointerPosition.x - bounds.right + 20;
+      bounds = bounds.offsetX(offset);
+    }
+
+    // Adjust bounds to be relative to 9z origin
+    bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
+
+    dispatch({
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id: floatingWidgetId,
+      bounds: bounds.toProps(),
+    });
+    updatePosition.current = false;
+  }, [dragged, dragManager, dispatch, floatingWidgetId, measureNz]);
+  return ref;
+}
 
 interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;
@@ -160,6 +220,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);
     handleDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",

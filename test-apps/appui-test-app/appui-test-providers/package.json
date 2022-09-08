@@ -52,7 +52,7 @@
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/presentation-components": "workspace:*",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/itwinui-css": "0.x",
     "classnames": "^2.3.1",

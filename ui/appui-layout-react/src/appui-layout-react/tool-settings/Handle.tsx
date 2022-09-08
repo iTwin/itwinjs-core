@@ -27,17 +27,18 @@ export interface DockedToolSettingsHandleProps extends CommonProps {
 export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHandle(props: DockedToolSettingsHandleProps) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
   const dispatch = React.useContext(NineZoneDispatchContext);
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(props.onResize);
-  const newWidgetDragItemId = React.useMemo(() => getUniqueId(), []);
-  const onDragStart = useDragToolSettings({ newWidgetDragItemId });
+  const newFloatingWidgetId = React.useMemo(() => getUniqueId(), []);
+  const onDragStart = useDragToolSettings({ newFloatingWidgetId });
   const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
     onDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "TOOL_SETTINGS_DRAG_START",
-      newFloatingWidgetId: newWidgetDragItemId,
+      newFloatingWidgetId,
     });
-  }, [dispatch, newWidgetDragItemId, onDragStart]);
+  }, [dispatch, newFloatingWidgetId, onDragStart]);
   const dragRef = useDrag(handleDragStart);
   const refs = useRefs(dragRef, resizeObserverRef);
   const title = useLabel("toolSettingsHandleTitle");

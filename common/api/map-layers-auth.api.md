@@ -5,6 +5,7 @@
 ```ts
 
 import { BeEvent } from '@itwin/core-bentley';
+import { Listener } from '@itwin/core-bentley';
 import { MapLayerAccessClient } from '@itwin/core-frontend';
 import { MapLayerAccessToken } from '@itwin/core-frontend';
 import { MapLayerAccessTokenParams } from '@itwin/core-frontend';
@@ -31,7 +32,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     // (undocumented)
     invalidateToken(token: MapLayerAccessToken): boolean;
     // (undocumented)
-    readonly onOAuthProcessEnd: BeEvent<import("@itwin/core-bentley").Listener>;
+    readonly onOAuthProcessEnd: BeEvent<Listener>;
     // (undocumented)
     get redirectUri(): string | undefined;
     // (undocumented)
@@ -40,7 +41,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     setEnterpriseClientId(serviceBaseUrl: string, clientId: string): void;
     // (undocumented)
     unInitialize(): void;
-    }
+}
 
 // @beta (undocumented)
 export interface ArcGisEnterpriseClientId {
@@ -70,7 +71,7 @@ export class ArcGisOAuth2Endpoint implements MapLayerTokenEndpoint {
     getUrl(): string;
     // (undocumented)
     get isArcgisOnline(): boolean;
-    }
+}
 
 // @internal (undocumented)
 export enum ArcGisOAuth2EndpointType {
@@ -142,7 +143,7 @@ export class ArcGisTokenGenerator {
     getTokenServiceUrl(baseUrl: string): Promise<string | undefined>;
     // (undocumented)
     static rfc1738Encode(str: string): string;
-    }
+}
 
 // @internal (undocumented)
 export class ArcGisTokenManager {
@@ -160,7 +161,7 @@ export class ArcGisTokenManager {
     static saveToBrowserStorage(): void;
     // (undocumented)
     static setOAuth2Token(key: string, token: ArcGisOAuth2Token): void;
-    }
+}
 
 // @internal (undocumented)
 export class ArcGisUrl {
@@ -169,7 +170,6 @@ export class ArcGisUrl {
     // (undocumented)
     static getRestUrlFromGenerateTokenUrl(url: URL): Promise<URL | undefined>;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

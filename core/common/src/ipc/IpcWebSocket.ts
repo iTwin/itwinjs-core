@@ -131,6 +131,8 @@ export class IpcWebSocketFrontend extends IpcWebSocket implements IpcSocketFront
 /** @internal */
 export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBackend {
   private _handlers = new Map<string, (event: Event, methodName: string, ...args: any[]) => Promise<any>>();
+  private _processingQueue: IpcWebSocketMessage[] = [];
+  private _processing: IpcWebSocketMessage | undefined;
 
   public constructor() {
     super();
@@ -151,25 +153,42 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
   }
 
   private async dispatch(_evt: Event, message: IpcWebSocketMessage) {
-    if (message.type !== IpcWebSocketMessageType.Invoke || !message.method)
+    if (message.type !== IpcWebSocketMessageType.Invoke)
       return;
 
-    const handler = this._handlers.get(message.channel);
-    if (!handler)
+    this._processingQueue.push(message);
+    await this.processMessages();
+  }
+
+  private async processMessages() {
+    if (this._processing || !this._processingQueue.length) {
       return;
+    }
 
-    let args = message.data;
-    if (typeof (args) === "undefined")
-      args = [];
+    const message = this._processingQueue.shift();
+    if (message && message.method) {
+      const handler = this._handlers.get(message.channel);
+      if (handler) {
+        this._processing = message;
 
-    const response = await handler({} as any, message.method, ...args);
+        let args = message.data;
+        if (typeof (args) === "undefined")
+          args = [];
 
-    IpcWebSocket.transport.send({
-      type: IpcWebSocketMessageType.Response,
-      channel: message.channel,
-      response: message.request,
-      data: response,
-      sequence: -1,
-    });
+        const response = await handler({} as any, message.method, ...args);
+
+        IpcWebSocket.transport.send({
+          type: IpcWebSocketMessageType.Response,
+          channel: message.channel,
+          response: message.request,
+          data: response,
+          sequence: -1,
+        });
+
+        this._processing = undefined;
+      }
+    }
+
+    await this.processMessages();
   }
 }

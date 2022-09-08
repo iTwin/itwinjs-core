@@ -1,6 +1,6 @@
 {
   "name": "@itwin/rpcinterface-full-stack-tests",
-  "version": "3.3.0-dev.71",
+  "version": "3.4.0-dev.36",
   "description": "Test the full iTwin.js Core stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -55,7 +55,7 @@
     "dotenv-expand": "^5.1.0",
     "mocha": "^10.0.0",
     "openid-client": "^4.7.4",
-    "puppeteer": "chrome-86"
+    "puppeteer": "15.5.0"
   },
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
@@ -67,17 +67,21 @@
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",
-    "@types/puppeteer": "2.0.1",
+    "assert": "^2.0.0",
+    "browserify-zlib": "^0.2.0",
+    "buffer": "^6.0.3",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
-    "null-loader": "^0.1.1",
+    "null-loader": "^4.0.1",
+    "path-browserify": "^1.0.1",
     "rimraf": "^3.0.2",
-    "source-map-loader": "^1.0.0",
+    "source-map-loader": "^4.0.0",
+    "stream-browserify": "^3.0.0",
     "typescript": "~4.4.0",
-    "webpack": "4.42.0",
-    "webpack-cli": "^3.1.0"
+    "webpack": "^5.64.4",
+    "webpack-cli": "^4.10.0"
   },
   "eslintConfig": {
     "plugins": [

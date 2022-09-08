@@ -13,7 +13,7 @@ import { assert } from "@itwin/core-bentley";
 import { useTransientState } from "./ContentRenderer";
 
 /** Properties of [[ScrollableWidgetContent]] component.
- * @internal future
+ * @internal
  */
 export interface ScrollableWidgetContentProps {
   /** Optional unique identifier for item. If defined it will be added to DOM Element attribute as data-item-id */
@@ -23,7 +23,7 @@ export interface ScrollableWidgetContentProps {
 }
 
 /** Component that enables widget content scrolling.
- * @internal future
+ * @internal
  */
 export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const scrollPosition = React.useRef(new Point());

@@ -75,11 +75,11 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't apply [[RenderMaterial]]s to surfaces. */
   noMaterial?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noCameraLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSourceLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSolarLight?: boolean;
   /** If true, display the edges of surfaces. */
   visEdges?: boolean;

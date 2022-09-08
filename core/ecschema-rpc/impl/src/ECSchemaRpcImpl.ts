@@ -1,10 +1,11 @@
-import * as backend from "@itwin/core-backend";
-import { BentleyError, BentleyStatus, IModelRpcProps, IModelStatus, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
-import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import * as backend from "@itwin/core-backend";
+import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
+import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 /**
@@ -55,7 +56,7 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     // Iterate over the rows returned from AsyncIterableIterator. The custom Query overload returns
     // a typed row instance instead of any.
     const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
-    for await (const row of iModelDb.query(schemaNameQuery, undefined, {rowFormat: QueryRowFormat.UseJsPropertyNames})) {
+    for await (const row of iModelDb.query(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const schemaDefinitionRow = row as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;
       const read = Number(schemaDefinitionRow.read);
@@ -79,17 +80,6 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     }
 
     const iModelDb = await this.getIModelDatabase(tokenProps);
-    const schemaResult = iModelDb.nativeDb.getSchema(schemaName);
-
-    if (schemaResult.error !== undefined) {
-      const defaultMessage = schemaResult.error.status === IModelStatus.NotFound ? `${schemaName} schema Not Found` : schemaResult.error.message;
-      throw new BentleyError(schemaResult.error.status, defaultMessage);
-    }
-
-    if (schemaResult.result === undefined) {
-      throw new BentleyError(BentleyStatus.ERROR, `${schemaName} schema could not be retrieved.`);
-    }
-
-    return JSON.parse(schemaResult.result);
+    return iModelDb.nativeDb.getSchemaProps(schemaName);
   }
 }

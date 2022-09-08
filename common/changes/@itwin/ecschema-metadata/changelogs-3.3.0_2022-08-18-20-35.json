@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/ecschema-metadata"
+    }
+  ],
+  "packageName": "@itwin/ecschema-metadata",
+  "email": "aruniverse@users.noreply.github.com"
+}

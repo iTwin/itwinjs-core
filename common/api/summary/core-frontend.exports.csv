@@ -90,6 +90,7 @@ public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
+beta;ComputeDisplayTransformArgs
 public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
 public;connectViewportViews(viewports: Iterable
@@ -441,6 +442,7 @@ public;ParticleProps
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
+beta;Props
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult
@@ -546,7 +548,6 @@ public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
-public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
@@ -580,7 +581,6 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest

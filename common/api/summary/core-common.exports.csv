@@ -188,6 +188,9 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+public;ECSchemaItemProps
+public;ECSchemaProps
+public;ECSchemaReferenceProps
 beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
@@ -341,6 +344,8 @@ public;HttpServerResponse
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
+public;IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean
+public;IgnoreAnimationOverridesArgs
 public;ImageBuffer
 public;ImageBufferFormat
 public;ImageGraphic

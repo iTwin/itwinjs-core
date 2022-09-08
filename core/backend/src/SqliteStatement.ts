@@ -6,7 +6,7 @@
  * @module SQLite
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelHost } from "./IModelHost";
@@ -51,9 +51,10 @@ export type BindParameter = number | string;
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
+  private _db: IModelJsNative.AnyDb | undefined;
 
   public constructor(private _sql: string) { }
-  public get stmt() { return this._stmt; }
+  public get stmt(): IModelJsNative.SqliteStatement { return this._stmt!; }
   public get sql() { return this._sql; }
 
   /** Check if this statement has been prepared successfully or not */
@@ -66,9 +67,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb | IModelJsNative.SQLiteDb, logErrors = true): void {
+  public prepare(db: IModelJsNative.AnyDb, logErrors = true): void {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
+    this._db = db;
     this._stmt = new IModelHost.platform.SqliteStatement();
     this._stmt.prepare(db, this._sql, logErrors);
   }
@@ -77,13 +79,13 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * or not. See [SQLite docs](https://www.sqlite.org/c3ref/stmt_readonly.html) for details.
    */
   public get isReadonly(): boolean {
-    return this._stmt!.isReadonly();
+    return this.stmt.isReadonly();
   }
 
   /** Reset this statement so that the next call to step will return the first row, if any.
    */
   public reset(): void {
-    this._stmt!.reset();
+    this.stmt.reset();
   }
 
   /** Call this function when finished with this statement. This releases the native resources held by the statement. */
@@ -91,7 +93,26 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
+      this._db = undefined;
     }
+  }
+
+  /**
+   * Call `step` on this statement and determine whether a new row is available.
+   * Use this method only when this statement has been prepared with a SELECT statement.
+   * @return true if a new row is available, false otherwise.
+   * @throws if `step` returns anything other than BE_SQLITE_ROW or BE_SQLITE_DONE.
+   */
+  public nextRow(): boolean {
+    const rc = this.step();
+    switch (rc) {
+      case DbResult.BE_SQLITE_ROW:
+        return true;
+      case DbResult.BE_SQLITE_DONE:
+        return false;
+    }
+
+    throw new BentleyError(rc, this._db!.getLastError());
   }
 
   /** Binds a value to the specified SQL parameter.
@@ -114,22 +135,22 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
     if (value === undefined || value === null) {
-      stat = this._stmt!.bindNull(parameter);
+      stat = this.stmt.bindNull(parameter);
     } else if (typeof (value) === "number") {
       if (Number.isInteger(value))
-        stat = this._stmt!.bindInteger(parameter, value);
+        stat = this.stmt.bindInteger(parameter, value);
       else
-        stat = this._stmt!.bindDouble(parameter, value);
+        stat = this.stmt.bindDouble(parameter, value);
     } else if (typeof (value) === "boolean") {
-      stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
+      stat = this.stmt.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
-      stat = this._stmt!.bindString(parameter, value);
+      stat = this.stmt.bindString(parameter, value);
     } else if (!!value.id) {
-      stat = this._stmt!.bindId(parameter, value.id);
+      stat = this.stmt.bindId(parameter, value.id);
     } else if (!!value.guid) {
-      stat = this._stmt!.bindGuid(parameter, value.guid);
+      stat = this.stmt.bindGuid(parameter, value.guid);
     } else if (value instanceof Uint8Array) {
-      stat = this._stmt!.bindBlob(parameter, value);
+      stat = this.stmt.bindBlob(parameter, value);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
 
@@ -146,42 +167,48 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param val integer to bind.
    */
   public bindInteger(parameter: BindParameter, val: number) {
-    this.checkBind(this._stmt!.bindInteger(parameter, val));
+    this.checkBind(this.stmt.bindInteger(parameter, val));
   }
   /** Bind a double parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val double to bind.
    */
   public bindDouble(parameter: BindParameter, val: number) {
-    this.checkBind(this._stmt!.bindDouble(parameter, val));
+    this.checkBind(this.stmt.bindDouble(parameter, val));
   }
   /** Bind a string parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val string to bind.
    */
   public bindString(parameter: BindParameter, val: string) {
-    this.checkBind(this._stmt!.bindString(parameter, val));
+    this.checkBind(this.stmt.bindString(parameter, val));
   }
   /** Bind an Id64String parameter as a 64-bit integer
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Id to bind.
    */
   public bindId(parameter: BindParameter, id: Id64String) {
-    this.checkBind(this._stmt!.bindId(parameter, id));
+    this.checkBind(this.stmt.bindId(parameter, id));
   }
   /** Bind a Guid parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Guid to bind.
    */
   public bindGuid(parameter: BindParameter, guid: GuidString) {
-    this.checkBind(this._stmt!.bindGuid(parameter, guid));
+    this.checkBind(this.stmt.bindGuid(parameter, guid));
   }
   /** Bind a blob parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val blob to bind.
    */
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
-    this.checkBind(this._stmt!.bindBlob(parameter, blob));
+    this.checkBind(this.stmt.bindBlob(parameter, blob));
+  }
+  /** Bind null to a parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   */
+  public bindNull(parameter: BindParameter) {
+    this.checkBind(this.stmt.bindNull(parameter));
   }
 
   /** Bind values to all parameters in the statement.
@@ -218,7 +245,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat = this._stmt!.clearBindings();
+    const stat = this.stmt.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in clearBindings");
   }
@@ -234,45 +261,50 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
-  public step(): DbResult { return this._stmt!.step(); }
+  public step(): DbResult { return this.stmt.step(); }
 
   /** Get the query result's column count (only for SQL SELECT statements). */
-  public getColumnCount(): number { return this._stmt!.getColumnCount(); }
+  public getColumnCount(): number { return this.stmt.getColumnCount(); }
 
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of SQL column in query result (0-based)
    */
-  public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
+  public getValue(columnIx: number): SqliteValue { return new SqliteValue(this.stmt, columnIx); }
+
+  /** Determine whether the value of the specified column is null
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public isValueNull(colIndex: number): boolean { return this.stmt.isValueNull(colIndex); }
 
   /** Get a size in bytes of a blob or text column
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public getColumnBytes(colIndex: number): number { return this._stmt!.getColumnBytes(colIndex); }
+  public getColumnBytes(colIndex: number): number { return this.stmt.getColumnBytes(colIndex); }
 
   /** Get a value as a blob
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public getValueBlob(colIndex: number): Uint8Array { return this._stmt!.getValueBlob(colIndex); }
+  public getValueBlob(colIndex: number): Uint8Array { return this.stmt.getValueBlob(colIndex); }
   /** Get a value as a double
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueDouble(colIndex: number): number { return this._stmt!.getValueDouble(colIndex); }
+  public getValueDouble(colIndex: number): number { return this.stmt.getValueDouble(colIndex); }
   /** Get a value as a integer
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueInteger(colIndex: number): number { return this._stmt!.getValueInteger(colIndex); }
+  public getValueInteger(colIndex: number): number { return this.stmt.getValueInteger(colIndex); }
   /** Get a value as a string
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueString(colIndex: number): string { return this._stmt!.getValueString(colIndex); }
+  public getValueString(colIndex: number): string { return this.stmt.getValueString(colIndex); }
   /** Get a value as an Id
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueId(colIndex: number): Id64String { return this._stmt!.getValueId(colIndex); }
+  public getValueId(colIndex: number): Id64String { return this.stmt.getValueId(colIndex); }
   /** Get a value as a Guid
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueGuid(colIndex: number): GuidString { return this._stmt!.getValueGuid(colIndex); }
+  public getValueGuid(colIndex: number): GuidString { return this.stmt.getValueGuid(colIndex); }
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.

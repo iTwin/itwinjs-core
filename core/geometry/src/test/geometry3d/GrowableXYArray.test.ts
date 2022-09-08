@@ -131,7 +131,7 @@ describe("GrowableXYArray", () => {
     for (let i = 0; i < pointE.length; i++) {
       const xy = pointE.getPoint2dAtCheckedPointIndex(i)!.plus(vector);
       pointE.setAtCheckedPointIndex(i, xy);
-      pointF.setXYZAtCheckedPointIndex(i, xy.x, xy.y);
+      pointF.setXYAtCheckedPointIndex(i, xy.x, xy.y);
     }
     const pointG = pointA.clone();
     pointG.multiplyTransformInPlace(transform);
@@ -367,8 +367,8 @@ describe("GrowableXYArray", () => {
     }
     ck.testUndefined(xyPoints.distanceIndexToPoint(-1, spacePoint), "distance to invalid indexA");
 
-    ck.testFalse(xyPoints.setXYZAtCheckedPointIndex(-5, 1, 2), "negative index for setCoordinates");
-    ck.testFalse(xyPoints.setXYZAtCheckedPointIndex(100, 1, 2), "huge index for setCoordinates");
+    ck.testFalse(xyPoints.setXYAtCheckedPointIndex(-5, 1, 2), "negative index for setCoordinates");
+    ck.testFalse(xyPoints.setXYAtCheckedPointIndex(100, 1, 2), "huge index for setCoordinates");
 
     ck.testFalse(xyPoints.setAtCheckedPointIndex(-5, spacePoint), "negative index for setAt");
     ck.testFalse(xyPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");

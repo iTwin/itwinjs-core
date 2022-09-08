@@ -8,8 +8,8 @@ import { BeEvent, UnexpectedErrors } from "@itwin/core-bentley";
 import {
   BriefcaseConnection, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
 } from "@itwin/core-frontend";
-import { Icon } from "@itwin/core-react";
-import { StatusFieldProps, UiFramework } from "@itwin/appui-react";
+import { CommonProps, Icon } from "@itwin/core-react";
+import { UiFramework } from "@itwin/appui-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { ProgressRadial } from "@itwin/itwinui-react";
 
@@ -150,7 +150,7 @@ class SyncManager {
   }
 }
 
-export class PushPullStatusField extends React.Component<StatusFieldProps, PushPullState> {
+export class PushPullStatusField extends React.Component<CommonProps, PushPullState> {
   constructor(props?: any, context?: any) {
     super(props, context);
 
@@ -186,7 +186,6 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
         <FooterIndicator
           className={"simple-editor-app-statusFields-pushPull"}
           style={this.props.style}
-          isInFooterMode={this.props.isInFooterMode}
         >
           <div id="simple-editor-app-statusFields-pushPull-buttons" title="Synchronizing...">
             <div>
@@ -213,7 +212,6 @@ export class PushPullStatusField extends React.Component<StatusFieldProps, PushP
       <FooterIndicator
         className={"simple-editor-app-statusFields-pushPull"}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
       >
         <div id="simple-editor-app-statusFields-pushPull-buttons">
           <div title={pushTitleTxt} onClick={async () => SyncManager.syncChanges(true)}>

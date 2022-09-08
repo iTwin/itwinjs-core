@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import { AccessToken } from '@itwin/core-bentley';
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import { AuthorizationClient } from '@itwin/core-common';
@@ -11,6 +13,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import * as https from 'https';
+import { Listener } from '@itwin/core-bentley';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
@@ -180,15 +183,15 @@ export class MobileHost {
     // (undocumented)
     static readonly onAuthAccessTokenChanged: BeEvent<(accessToken: string | undefined, expirationDate: string | undefined) => void>;
     // (undocumented)
-    static readonly onEnterBackground: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onEnterBackground: BeEvent<Listener>;
     // (undocumented)
-    static readonly onEnterForeground: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onEnterForeground: BeEvent<Listener>;
     // (undocumented)
-    static readonly onMemoryWarning: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onMemoryWarning: BeEvent<Listener>;
     // (undocumented)
-    static readonly onOrientationChanged: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onOrientationChanged: BeEvent<Listener>;
     // (undocumented)
-    static readonly onWillTerminate: BeEvent<import("@itwin/core-bentley").Listener>;
+    static readonly onWillTerminate: BeEvent<Listener>;
     // @internal (undocumented)
     static reconnect(connection: number): void;
     static startup(opt?: MobileHostOpts): Promise<void>;
@@ -279,7 +282,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     sendToFrontend(message: MobileRpcChunks, connection?: number): void;
     // (undocumented)
     socket: WebSocket;
-    }
+}
 
 // @beta (undocumented)
 export class MobileRpcRequest extends RpcRequest {
@@ -328,7 +331,6 @@ export class SasUrlExpired extends BentleyError {
 export class UserCancelledError extends BentleyError {
     constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction);
 }
-
 
 // (No @packageDocumentation comment for this package)
 

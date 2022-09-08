@@ -14,60 +14,65 @@ import { SectionsStatusField } from "../../appui-react/statusfields/SectionsFiel
 import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
 
-describe("SectionsField", () => {
-  class AppStatusBarWidgetControl extends StatusBarWidgetControl {
-    constructor(info: ConfigurableCreateInfo, options: any) {
-      super(info, options);
+[true, false].map((withDeprecated) => {
+  const testType = withDeprecated ? " (with deprecated isInFooterMode props)" : "";
+
+  describe(`SectionsField${testType}`, () => {
+    class AppStatusBarWidgetControl extends StatusBarWidgetControl {
+      constructor(info: ConfigurableCreateInfo, options: any) {
+        super(info, options);
+      }
+
+      // eslint-disable-next-line deprecation/deprecation
+      public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+        return (
+          <>
+            <SectionsStatusField {...(withDeprecated ? {isInFooterMode} : {})} />
+          </>
+        );
+      }
     }
 
-    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
-      return (
-        <>
-          <SectionsStatusField isInFooterMode={isInFooterMode} />
-        </>
-      );
-    }
-  }
+    let widgetControl: StatusBarWidgetControl | undefined;
 
-  let widgetControl: StatusBarWidgetControl | undefined;
+    before(async () => {
+      await TestUtils.initializeUiFramework();
+      await MockRender.App.startup();
 
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-    await MockRender.App.startup();
-
-    const statusBarWidgetDef = new WidgetDef({
-      classId: AppStatusBarWidgetControl,
-      defaultState: WidgetState.Open,
-      isFreeform: false,
-      isStatusBar: true,
+      const statusBarWidgetDef = new WidgetDef({
+        classId: AppStatusBarWidgetControl,
+        defaultState: WidgetState.Open,
+        isFreeform: false,
+        isStatusBar: true,
+      });
+      widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
     });
-    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+
+    after(async () => {
+      await MockRender.App.shutdown();
+      TestUtils.terminateUiFramework();
+    });
+
+    it("should render", () => {
+      mount(<Provider store={TestUtils.store}>
+        <StatusBar widgetControl={widgetControl} />
+      </Provider>);
+    });
+
+    it("should open/close on click", () => {
+      const wrapper = mount(<Provider store={TestUtils.store}>
+        <StatusBar widgetControl={widgetControl} />
+      </Provider>);
+
+      // Simulate a click to open the pop-up dialog
+      wrapper.find("div.uifw-indicator-icon").simulate("click"); // Opens it
+      wrapper.update();
+
+      expect(wrapper.find("div.uifw-sections-footer-contents").length).to.eq(1);
+
+      wrapper.find("div.uifw-indicator-icon").simulate("click"); // Closes it
+      wrapper.update();
+    });
+
   });
-
-  after(async () => {
-    await MockRender.App.shutdown();
-    TestUtils.terminateUiFramework();
-  });
-
-  it("should render", () => {
-    mount(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
-    </Provider>);
-  });
-
-  it("should open/close on click", () => {
-    const wrapper = mount(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
-    </Provider>);
-
-    // Simulate a click to open the pop-up dialog
-    wrapper.find("div.uifw-indicator-icon").simulate("click"); // Opens it
-    wrapper.update();
-
-    expect(wrapper.find("div.uifw-sections-footer-contents").length).to.eq(1);
-
-    wrapper.find("div.uifw-indicator-icon").simulate("click"); // Closes it
-    wrapper.update();
-  });
-
 });

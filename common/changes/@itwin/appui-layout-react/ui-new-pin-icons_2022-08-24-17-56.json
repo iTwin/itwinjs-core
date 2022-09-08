@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-layout-react",
+      "comment": "New icons from Visual Design team for pin/unpin panel.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-layout-react"
+}

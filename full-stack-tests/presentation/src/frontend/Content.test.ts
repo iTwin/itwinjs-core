@@ -226,7 +226,7 @@ describe("Content", () => {
         { className: "PCJ_TestSchema:TestClass", id: "0x71" },
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = getFieldByLabel(descriptor.fields, "Ñámê");
+      const field = getFieldByLabel(descriptor.fields, "Name");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -423,6 +423,7 @@ describe("Content", () => {
       expect(field.properties[0].property.navigationPropertyInfo).is.not.null;
       expect(field.properties[0].property.navigationPropertyInfo?.isForwardRelationship).to.eq(false);
       expect(field.properties[0].property.navigationPropertyInfo?.classInfo.id).to.eq("0x40");
+      expect(field.properties[0].property.navigationPropertyInfo?.targetClassInfo.id).to.eq("0x41");
 
     });
 

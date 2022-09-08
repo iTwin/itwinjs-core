@@ -12,6 +12,9 @@ exports[`WidgetPanelProvider should render captured 1`] = `
       class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
         class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
@@ -67,7 +70,8 @@ exports[`WidgetPanelProvider should render captured 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -75,9 +79,16 @@ exports[`WidgetPanelProvider should render captured 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
   </div>
   <div
@@ -118,6 +129,9 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
       class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
         class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
@@ -173,7 +187,8 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -181,9 +196,16 @@ exports[`WidgetPanelProvider should render collapsed 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
   </div>
   <div
@@ -223,6 +245,9 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
     <div
       class="nz-panel-section-0 nz-widgetPanels-horizontal nz-panel-section-full-size"
     >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
       <div
         class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
       >
@@ -279,7 +304,8 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -287,9 +313,16 @@ exports[`WidgetPanelProvider should render horizontal 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
+      />
     </div>
   </div>
   <div
@@ -386,7 +419,8 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -394,8 +428,12 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
       <div
         class="nz-vertical-panel-splitter"
@@ -451,8 +489,12 @@ exports[`WidgetPanelProvider should render multiple widgets 1`] = `
           />
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -493,6 +535,9 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
     <div
       class="nz-panel-section-0 nz-widgetPanels-horizontal nz-panel-section-full-size"
     >
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-first"
+      />
       <div
         class="nz-widget-widget nz-widget-panelWidget nz-horizontal nz-fill nz-border-bottom nz-border-left nz-border-right"
       >
@@ -549,7 +594,8 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -557,9 +603,16 @@ exports[`WidgetPanelProvider should render spanned 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-top nz-last"
+      />
     </div>
   </div>
   <div
@@ -600,6 +653,9 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
       class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
         class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
@@ -655,7 +711,8 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -663,9 +720,16 @@ exports[`WidgetPanelProvider should render vertical 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
   </div>
   <div
@@ -706,6 +770,9 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
       class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
         class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
@@ -761,7 +828,8 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -769,9 +837,16 @@ exports[`WidgetPanelProvider should render with span bottom 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
   </div>
   <div
@@ -812,6 +887,9 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
       class="nz-panel-section-0 nz-widgetPanels-vertical nz-panel-section-full-size"
     >
       <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-first"
+      />
+      <div
         class="nz-widget-widget nz-widget-panelWidget nz-fill nz-border-left nz-border-right"
       >
         <div
@@ -867,7 +945,8 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
                   xmlns="http://www.w3.org/2000/svg"
                 >
                   <path
-                    d="m7.9 2.4-1.33579 1.33584 5.6 5.6 1.23579-1.23584.3.3a1.42143 1.42143 0 0 0 .6.2.86434.86434 0 0 0 .6-.3l.9-.9a.78478.78478 0 0 0 0-1.1l-6.1-6.1a.78478.78478 0 0 0 -1.1 0l-.9.9a.78478.78478 0 0 0 0 1.1zm1.2-1.3 5.8 5.7-.6.6-5.8-5.8zm.3906 11.219-.0906 3.081-3.5-3.6-3.6 3.7-2.3.5.6-2.3 3.6-3.6-3.5-3.5 2.89087-.18067zm6.5094 2.26681-14.5858-14.58581-1.4142 1.4142 14.5858 14.5858z"
+                    d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+                    fill-rule="evenodd"
                   />
                 </svg>
               </i>
@@ -875,9 +954,16 @@ exports[`WidgetPanelProvider should render with top spanned 1`] = `
           </div>
         </div>
         <div
-          class="nz-widget-content-container"
-        />
+          class="nz-widget-contentContainer"
+        >
+          <div
+            class="nz-content"
+          />
+        </div>
       </div>
+      <div
+        class="nz-widget-widgetTarget nz-hidden nz-left nz-last"
+      />
     </div>
   </div>
   <div

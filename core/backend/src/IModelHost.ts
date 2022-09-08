@@ -8,7 +8,6 @@
 
 import * as os from "os";
 import * as path from "path";
-import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
@@ -326,23 +325,7 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!ProcessDetector.isMobileAppBackend)
-      this.validateNativePlatformVersion();
-
     platform.logger = Logger;
-  }
-
-  private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
-    const thisVersion = this.platform.version;
-    if (semver.satisfies(thisVersion, requiredVersion))
-      return;
-    if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
-      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
-      return;
-    }
-    this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
@@ -518,8 +501,9 @@ export class IModelHost {
     IModelHost.configuration = undefined;
     IModelHost.tileCacheService = undefined;
     IModelHost.tileUploader = undefined;
-    IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
+    ITwinWorkspace.finalize();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

@@ -4,6 +4,9 @@
 
 ```ts
 
+/// <reference types="node" />
+
+import { Application } from 'express';
 import { RpcConfiguration } from '@itwin/core-common';
 import { Server } from 'http';
 import { WebAppRpcProtocol } from '@itwin/core-common';
@@ -12,7 +15,7 @@ import { WebAppRpcProtocol } from '@itwin/core-common';
 export class IModelJsExpressServer {
     constructor(protocol: WebAppRpcProtocol, config?: IModelJsExpressServerConfig);
     // (undocumented)
-    protected _app: import("express").Application;
+    protected _app: Application;
     // (undocumented)
     protected _configureHeaders(): void;
     // (undocumented)
@@ -37,7 +40,6 @@ export class WebEditServer extends IModelJsExpressServer {
     // (undocumented)
     protected _configureRoutes(): void;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

@@ -1,103 +1,140 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`OptionalDependenciesPlugin should ignore critical dependency 1`] = `
-"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+"(() => {
+var exports = {};
+exports.id = 179;
+exports.ids = [179];
+exports.modules = {
 
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const foo = __webpack_require__(2);
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
+/***/ 730:
+/***/ (() => {
 
 const pathBar = \\"./bar\\";const bar = require(pathBar);
 
+/***/ }),
+
+/***/ 585:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const foo = __webpack_require__(730);
+
 /***/ })
-],[[0,1]]]);"
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require(\\"./runtime~main.js\\");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = (__webpack_exec__(585));
+
+})();"
 `;
 
 exports[`OptionalDependenciesPlugin should ignore non-call use of require 1`] = `
-"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+"(() => {
+var exports = {};
+exports.id = 179;
+exports.ids = [179];
+exports.modules = {
 
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const foo = __webpack_require__(2);
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
+/***/ 730:
+/***/ (() => {
 
 const optional = true;let req = (optional) ? require : console.log;const bar = req(\\"./bar\\");
 
+/***/ }),
+
+/***/ 585:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const foo = __webpack_require__(730);
+
 /***/ })
-],[[0,1]]]);"
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require(\\"./runtime~main.js\\");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = (__webpack_exec__(585));
+
+})();"
 `;
 
 exports[`OptionalDependenciesPlugin should ignore optional dependency in try/catch 1`] = `
-"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+"(() => {
+var exports = {};
+exports.id = 179;
+exports.ids = [179];
+exports.modules = {
 
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const foo = __webpack_require__(2);
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
+/***/ 730:
+/***/ (() => {
 
 try {const bar = require(\\"./bar\\");} catch {}
 
+/***/ }),
+
+/***/ 585:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const foo = __webpack_require__(730);
+
 /***/ })
-],[[0,1]]]);"
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require(\\"./runtime~main.js\\");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = (__webpack_exec__(585));
+
+})();"
 `;
 
 exports[`OptionalDependenciesPlugin should work without optional dependencies 1`] = `
-"(window[\\"webpackJsonp\\"] = window[\\"webpackJsonp\\"] || []).push([[0],[
-/* 0 */
-/***/ (function(module, exports, __webpack_require__) {
+"(() => {
+var exports = {};
+exports.id = 179;
+exports.ids = [179];
+exports.modules = {
 
-module.exports = __webpack_require__(1);
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const foo = __webpack_require__(2);
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-const bar = __webpack_require__(3);
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports) {
+/***/ 593:
+/***/ (() => {
 
 console.log(\\"This is bar\\");
 
+/***/ }),
+
+/***/ 730:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const bar = __webpack_require__(593);
+
+/***/ }),
+
+/***/ 585:
+/***/ ((__unused_webpack_module, __unused_webpack_exports, __webpack_require__) => {
+
+const foo = __webpack_require__(730);
+
 /***/ })
-],[[0,1]]]);"
+
+};
+;
+
+// load runtime
+var __webpack_require__ = require(\\"./runtime~main.js\\");
+__webpack_require__.C(exports);
+var __webpack_exec__ = (moduleId) => (__webpack_require__(__webpack_require__.s = moduleId))
+var __webpack_exports__ = (__webpack_exec__(585));
+
+})();"
 `;

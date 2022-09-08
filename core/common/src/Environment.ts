@@ -16,9 +16,9 @@ import { SkyBox, SkyBoxProps } from "./SkyBox";
  * @extensions
  */
 export interface EnvironmentProps {
-  /** @see [[Environment.ground]] and [[Environment.displayGround]]. */
+  /** See [[Environment.ground]] and [[Environment.displayGround]]. */
   ground?: GroundPlaneProps;
-  /** @see [[Environment.sky]] and [[Environment.displaySky]]. */
+  /** See [[Environment.sky]] and [[Environment.displaySky]]. */
   sky?: SkyBoxProps;
 }
 

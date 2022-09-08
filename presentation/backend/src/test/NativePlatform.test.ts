@@ -9,6 +9,9 @@ import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
 import { DiagnosticsScopeLogs, PresentationError, UpdateInfo, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { PresentationManagerMode } from "../presentation-backend/PresentationManager";
+import { BeEvent } from "@itwin/core-bentley";
+import sinon from "sinon";
+import { join } from "path";
 
 describe("default NativePlatform", () => {
 
@@ -17,7 +20,7 @@ describe("default NativePlatform", () => {
 
   beforeEach(async () => {
     try {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
     } catch (e) {
       let isLoaded = false;
       try {
@@ -31,7 +34,6 @@ describe("default NativePlatform", () => {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const TNativePlatform = createDefaultNativePlatform({
       id: faker.random.uuid(),
-      localeDirectories: [],
       taskAllocationsMap: {},
       mode: PresentationManagerMode.ReadOnly,
       isChangeTrackingEnabled: false,
@@ -74,64 +76,39 @@ describe("default NativePlatform", () => {
   describe("handleRequest", () => {
 
     it("calls addon", async () => {
-      const guid = faker.random.uuid();
       addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: guid }))
-        .verifiable();
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ result: "0" }))
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: () => { } }))
         .verifiable();
       expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0" });
       addonMock.verifyAll();
     });
 
-    it("polls multiple times on pending response", async () => {
-      const guid = faker.random.uuid();
-      addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: guid }));
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Pending, message: "" } }));
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Pending, message: "" } }));
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ result: "999" }));
-      expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "999" });
-      addonMock.verify((x) => x.pollResponse(guid), moq.Times.exactly(3));
-    });
-
     it("throws on cancellation response", async () => {
-      const guid = faker.random.uuid();
       addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: guid }));
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }));
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
-    it("throws on queueRequest error response", async () => {
+    it("throws on error response", async () => {
       addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }));
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => { } }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
     });
 
-    it("throws on pollResponse error response", async () => {
-      const guid = faker.random.uuid();
+    it("adds listener to cancel event and calls it only after first invocation", async () => {
+      const cancelFunction = sinon.spy();
+      const cancelEvent: BeEvent<() => void> = new BeEvent<() => void>();
       addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: guid }));
-      addonMock
-        .setup((x) => x.pollResponse(guid))
-        .returns(() => ({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }));
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError, "test");
+        .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+        .returns(() => ({ result: Promise.resolve({ result: "0" }), cancel: cancelFunction }));
+      expect(await nativePlatform.handleRequest(undefined, "", cancelEvent)).to.deep.equal({ result: "0" });
+      addonMock.verifyAll();
+      cancelEvent.raiseEvent();
+      cancelEvent.raiseEvent();
+      expect(cancelFunction.calledOnce).to.be.true;
     });
 
   });
@@ -141,12 +118,8 @@ describe("default NativePlatform", () => {
       scope: "test",
     };
     addonMock
-      .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-      .returns(() => ({ result: "" }));
-    addonMock
-      .setup((x) => x.pollResponse(moq.It.isAny()))
-      .returns(() => ({ result: "0", diagnostics }))
-      .verifiable();
+      .setup((x) => x.handleRequest(moq.It.isAny(), ""))
+      .returns(() => ({ result: Promise.resolve({ result: "0", diagnostics }), cancel: () => { } }));
     expect(await nativePlatform.handleRequest(undefined, "")).to.deep.equal({ result: "0", diagnostics });
     addonMock.verifyAll();
   });

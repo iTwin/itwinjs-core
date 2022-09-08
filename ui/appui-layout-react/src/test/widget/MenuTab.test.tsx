@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
+import { Rectangle } from "@itwin/core-react";
 import { act, fireEvent, render } from "@testing-library/react";
 import {
   addPanelWidget,
@@ -42,8 +43,8 @@ describe("MenuTab", () => {
 
   it("should render", () => {
     let state = createNineZoneState();
-    state = addPanelWidget(state, "top", "w1", ["t1"]);
     state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { container } = render(
       <WidgetMenuTab />,
       {
@@ -60,8 +61,8 @@ describe("MenuTab", () => {
 
   it("should render with badge and icon", async () => {
     let state = createNineZoneState();
-    state = addPanelWidget(state, "top", "w1", ["t1"]);
     state = addTab(state, "t1", { iconSpec: <div>icon</div> });
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
     const { findByText } = render(
       <ShowWidgetIconContext.Provider value={true}>
         <WidgetMenuTab badge={<div>badge</div>} />
@@ -82,12 +83,12 @@ describe("MenuTab", () => {
   it("should close overflow menu", () => {
     const fakeTimers = sinon.useFakeTimers();
     let state = createNineZoneState();
-    state = addPanelWidget(state, "top", "w1", ["t1"]);
     state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
     const close = sinon.spy();
     render(
       <WidgetOverflowContext.Provider value={{ close }}>
-        <WidgetContext.Provider value={{ measure: () => ({ height: 0, width: 0 }) }}>
+        <WidgetContext.Provider value={{ measure: () => new Rectangle() }}>
           <WidgetMenuTab />
         </WidgetContext.Provider>
       </WidgetOverflowContext.Provider>,

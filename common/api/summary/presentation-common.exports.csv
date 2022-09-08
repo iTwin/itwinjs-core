@@ -26,10 +26,10 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
-alpha;ClientDiagnostics 
+beta;ClientDiagnostics 
 public;ClientDiagnosticsAttribute
-alpha;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
-alpha;ClientDiagnosticsOptions 
+beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
+beta;ClientDiagnosticsOptions 
 internal;CommonIpcParams
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
@@ -70,13 +70,13 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
-alpha;Diagnostics
-alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
-alpha;DiagnosticsLogEntry
-alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
-alpha;DiagnosticsLogMessage
-alpha;DiagnosticsOptions
-alpha;DiagnosticsScopeLogs
+beta;Diagnostics
+beta;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
+beta;DiagnosticsLogEntry
+beta;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
+beta;DiagnosticsLogMessage
+beta;DiagnosticsOptions
+beta;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 public;DisplayLabelRequestOptions
 public;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions
@@ -209,6 +209,8 @@ public;LabelOverride
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+internal;LocalizationHelper
+internal;LocalizationHelperProps
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
@@ -223,13 +225,6 @@ public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
 public;NoCategoryIdentifier
-public;Node
-public;Node
-internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
-internal;listFromJSON(json: NodeJSON[] | string): Node[]
-internal;listReviver(key: string, value: any): any
-internal;reviver(key: string, value: any): any
-internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
@@ -251,7 +246,6 @@ public;NodePathFilteringData
 public;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
-public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
@@ -335,7 +329,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
-alpha;RpcDiagnosticsOptions = Omit
+beta;RpcDiagnosticsOptions = Omit_2
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
@@ -411,3 +405,4 @@ public;VariableValue = boolean | string | number | number[] | Id64String | Id64S
 public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
 public;VariableValueType
 public;VariableValueTypes
+public;WithCancelEvent

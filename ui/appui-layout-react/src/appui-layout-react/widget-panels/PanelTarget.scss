@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
+@import "../outline/variables";
 
 .nz-widgetPanels-panelTarget {
   $size: 1em;
@@ -65,7 +66,7 @@
 
   &.nz-targeted {
     &:after {
-      background: rgb(140, 210, 255);
+      background: $nz-opaque-outline-color;
       opacity: 0.5;
     }
 

@@ -9,7 +9,9 @@
 import { GuidString, Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { IModel } from "./IModel";
 
-/** The props that hold the identity of the object defining the uniqueness scope for a set of Code values.
+/**
+ * The identity of the element defining the scope for a Code value.
+ * For query input, may either be an ElementId or a FederationGuid. When returned from a query, it will be an ElementId.
  * @public
  * @extensions
  */
@@ -20,19 +22,23 @@ export type CodeScopeProps = Id64String | GuidString;
  * @extensions
  */
 export interface CodeProps {
-  spec: Id64String;
+  /** Either the stringified 64-bit Id of the CodeSpec for this code, or the name of the CodeSpec. */
+  spec: Id64String | string;
+  /** Either the ElementId or the FederationGuid of the element that provides the scope for this code. */
   scope: CodeScopeProps;
+  /** the value of this code. May be undefined. */
   value?: string;
 }
 
-/** A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
+/**
+ * A three-part structure containing information about the [Code]($docs/bis/guide/fundamentals/codes) of an Element
  * @public
  */
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/guide/fundamentals/codes.md#codespec) of the Element */
   public spec: Id64String;
   /** The [CodeScope]($docs/bis/guide/fundamentals/codes.md#codescope-property) of the Element */
-  public scope: string;
+  public scope: Id64String;
   /** The [CodeValue]($docs/bis/guide/fundamentals/codes.md#codevalue-property) of the Element
    * @note Leading and trailing whitespace is invalid so is automatically trimmed.
    */
@@ -47,7 +53,7 @@ export class Code implements CodeProps {
   }
 
   /** Create an empty, non-unique code with no special meaning. */
-  public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
+  public static createEmpty(): Code { const id = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }

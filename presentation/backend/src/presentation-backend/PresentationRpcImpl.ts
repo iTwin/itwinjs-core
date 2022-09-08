@@ -7,7 +7,7 @@
  */
 
 import { IModelDb } from "@itwin/core-backend";
-import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   ClientDiagnostics, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
@@ -44,6 +44,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
+  private _cancelEvents: Map<string, BeEvent<() => void>>;
 
   public constructor(props?: { requestTimeout: number }) {
     super();
@@ -57,10 +58,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       cleanupInterval: 1000,
 
       cleanupHandler: (id, _, reason) => {
-        if (reason !== "request")
+        if (reason !== "request") {
           Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+          // istanbul ignore next
+          this._cancelEvents.get(id)?.raiseEvent();
+        }
+        this._cancelEvents.delete(id);
       },
     });
+    this._cancelEvents = new Map<string, BeEvent<() => void>>();
   }
 
   public dispose() {
@@ -127,6 +133,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const managerRequestOptions: any = {
         ...options,
         imodel,
+        cancelEvent: new BeEvent<() => void>(),
       };
 
       // set up ruleset variables
@@ -165,6 +172,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
+      this._cancelEvents.set(requestKey, managerRequestOptions.cancelEvent);
     }
 
     if (this._requestTimeout === 0) {
@@ -218,7 +226,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         parentKey: nodeKeyFromJson(options.parentKey),
       });
       const [nodes, count] = await Promise.all([
-        this.getManager(requestOptions.clientId).getNodes(options),
+        this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
       return { total: count, items: nodes.map(Node.toJSON) };
@@ -285,7 +293,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (!content)
@@ -308,7 +316,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getElementProperties(options);
+      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
     });
   }
 
@@ -340,7 +348,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (size === 0 || !content)
@@ -355,7 +363,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(options);
+      const label = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinition(options);
       return LabelDefinition.toJSON(label);
     });
   }
@@ -365,7 +373,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     if (pageOpts.paging.size < requestOptions.keys.length)
       requestOptions.keys.splice(pageOpts.paging.size);
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
+      const labels = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
       return {
         total: options.keys.length,
         items: labels.map(LabelDefinition.toJSON),

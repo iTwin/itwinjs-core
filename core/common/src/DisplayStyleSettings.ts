@@ -88,51 +88,51 @@ export enum MonochromeMode {
  * @extensions
  */
 export interface DisplayStyleSettingsProps {
-  /** @see [[DisplayStyleSettings.viewFlags]].
+  /** See [[DisplayStyleSettings.viewFlags]].
    * @note Be careful with the case of this field - it is spelled in all lower-case letters, while [[DisplayStyleSettings.viewFlags]] is spelled `viewFlags`.
    */
   viewflags?: ViewFlagProps;
-  /** @see [[DisplayStyleSettings.backgroundColor]]. */
+  /** See [[DisplayStyleSettings.backgroundColor]]. */
   backgroundColor?: ColorDefProps;
-  /** @see [[DisplayStyleSettings.monochromeColor]]. */
+  /** See [[DisplayStyleSettings.monochromeColor]]. */
   monochromeColor?: ColorDefProps;
-  /** @see [[DisplayStyleSettings.monochromeMode]]. */
+  /** See [[DisplayStyleSettings.monochromeMode]]. */
   monochromeMode?: MonochromeMode;
-  /** @see [[DisplayStyleSettings.analysisStyle]]. */
+  /** See [[DisplayStyleSettings.analysisStyle]]. */
   analysisStyle?: AnalysisStyleProps;
-  /** @see [[DisplayStyleSettings.analysisFraction]]. */
+  /** See [[DisplayStyleSettings.analysisFraction]]. */
   analysisFraction?: number;
-  /** @see [[DisplayStyleSettings.scheduleScriptProps]]. */
+  /** See [[DisplayStyleSettings.scheduleScriptProps]]. */
   scheduleScript?: RenderSchedule.ScriptProps;
-  /** @see [[DisplayStyleSettings.renderTimeline]]. */
+  /** See [[DisplayStyleSettings.renderTimeline]]. */
   renderTimeline?: Id64String;
-  /** @see [[DisplayStyleSettings.timePoint]]. */
+  /** See [[DisplayStyleSettings.timePoint]]. */
   timePoint?: number;
   /** Overrides applied to the appearances of subcategories in the view.
-   * @see [[DisplayStyleSettings.overrideSubCategory]].
+   * See [[DisplayStyleSettings.overrideSubCategory]].
    */
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
-  /** @see [[DisplayStyleSettings.backgroundMap]]. */
+  /** See [[DisplayStyleSettings.backgroundMap]]. */
   backgroundMap?: PersistentBackgroundMapProps;
-  /** @see [[DisplayStyleSettings.contextRealityModels]]. */
+  /** See [[DisplayStyleSettings.contextRealityModels]]. */
   contextRealityModels?: ContextRealityModelProps[];
   /** Ids of elements not to be displayed in the view. Prefer the compressed format, especially when sending between frontend and backend - the number of Ids may be quite large.
-   * @see [[DisplayStyleSettings.excludedElements]].
+   * See [[DisplayStyleSettings.excludedElements]].
    */
   excludedElements?: Id64Array | CompressedId64Set;
-  /** @see [[DisplayStyleSettings.mapImagery]].
+  /** See [[DisplayStyleSettings.mapImagery]].
    * @beta
    */
   mapImagery?: MapImageryProps;
   /** Overrides applied to the appearance of models in the view.
-   * @see [[DisplayStyleSettings.overrideModelAppearance]].
+   * See [[DisplayStyleSettings.overrideModelAppearance]].
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
-  /** @see [[DisplayStyleSettings.clipStyle]]. */
+  /** See [[DisplayStyleSettings.clipStyle]]. */
   clipStyle?: ClipStyleProps;
-  /** @see [[DisplayStyleSettings.planarClipMasks]]. */
+  /** See [[DisplayStyleSettings.planarClipMasks]]. */
   planarClipOvr?: DisplayStylePlanarClipMaskProps[];
-  /** @see [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
+  /** See [[DisplayStyleSettings.whiteOnWhiteReversal]]. */
   whiteOnWhiteReversal?: WhiteOnWhiteReversalProps;
 }
 
@@ -141,19 +141,19 @@ export interface DisplayStyleSettingsProps {
  * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  /** @see [[DisplayStyle3dSettings.environment. */
+  /** See [[DisplayStyle3dSettings.environment. */
   environment?: EnvironmentProps;
-  /** @see [[DisplayStyle3dSettings.thematic. */
+  /** See [[DisplayStyle3dSettings.thematic. */
   thematic?: ThematicDisplayProps;
-  /** @see [[DisplayStyle3dSettings.hiddenLineSettings. */
+  /** See [[DisplayStyle3dSettings.hiddenLineSettings. */
   hline?: HiddenLine.SettingsProps;
-  /** @see [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
+  /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
   ao?: AmbientOcclusion.Props;
-  /** @see [[DisplayStyle3dSettings.solarShadows]]. */
+  /** See [[DisplayStyle3dSettings.solarShadows]]. */
   solarShadows?: SolarShadowSettingsProps;
-  /** @see [[DisplayStyle3dSettings.lights]]. */
+  /** See [[DisplayStyle3dSettings.lights]]. */
   lights?: LightSettingsProps;
-  /** @see [[DisplayStyle3dSettings.planProjections. */
+  /** See [[DisplayStyle3dSettings.planProjections. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
    * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.

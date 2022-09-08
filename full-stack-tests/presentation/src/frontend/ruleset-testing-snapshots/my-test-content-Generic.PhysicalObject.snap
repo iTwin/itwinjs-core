@@ -500,7 +500,7 @@ Array [
               "pc_bis_Element_UserLabel_2": PropertyRecord {
                 "description": "Properties_60InstancesWithUrl2.dgn",
                 "property": Object {
-                  "displayLabel": "Ñámê",
+                  "displayLabel": "Name",
                   "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_Element_UserLabel_2",
                   "typename": "string",
                 },
@@ -513,7 +513,7 @@ Array [
               "pc_bis_UrlLink_Url": PropertyRecord {
                 "description": "file:///d|/temp/properties_60instanceswithurl2.dgn",
                 "property": Object {
-                  "displayLabel": "Pàth",
+                  "displayLabel": "Path",
                   "name": "rc_generic_PhysicalObject_bis_PhysicalModel_bis_PhysicalPartition_ncc_bis_RepositoryLink$pc_bis_UrlLink_Url",
                   "typename": "string",
                 },

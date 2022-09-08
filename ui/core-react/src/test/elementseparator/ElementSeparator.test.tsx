@@ -2,32 +2,58 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { fireEvent, render, screen } from "@testing-library/react";
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import userEvent from "@testing-library/user-event";
 import { ElementSeparator, RatioChangeResult } from "../../core-react/elementseparator/ElementSeparator";
 import { Orientation } from "../../core-react/enums/Orientation";
+import { classesFromElement } from "../TestUtils";
 
 describe("ElementSeparator", () => {
   let clock: sinon.SinonFakeTimers;
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  const throttleMs = 16;
   beforeEach(() => {
     clock = sinon.useFakeTimers({ now: Date.now() });
+    theUserTo = userEvent.setup({
+      advanceTimers:(delay) => {
+        clock.tick(delay);
+      },
+      delay: throttleMs,
+    });
   });
 
   afterEach(() => {
     clock.restore();
   });
 
-  const throttleMs = 16;
-  function moveElement(moveAmount: { clientX: number } | { clientY: number }, moveDelayMs: number = throttleMs) {
-    document.dispatchEvent(new MouseEvent("pointermove", moveAmount));
-    clock.tick(moveDelayMs);
-  }
-
   enum TestCallbackType {
     Uncontrolled,
     Controlled,
+  }
+
+  function getButton() {
+    return screen.getByRole("button");
+  }
+
+  function expectUnhovered() {
+    expect(classesFromElement(getButton()))
+      .to.include("core-element-separator-group-unhovered", "Did not find unhover class on unhovered element")
+      .and.to.not.include("core-element-separator-group-hovered", "Found hover class on unhovered element");
+  }
+
+  function expectHovered() {
+    expect(classesFromElement(getButton()))
+      .to.include("core-element-separator-group-hovered", "Did not find hover class on hovered element")
+      .and.to.not.include("core-element-separator-group-unhovered", "Found unhover class on hovered element");
+  }
+
+  function expectCleanHover() {
+    expect(classesFromElement(getButton()))
+      .to.not.include("core-element-separator-group-hovered", "Found hover class on freshly created element")
+      .and.to.not.include("core-element-separator-group-unhovered", "Found unhover class on freshly created element");
   }
 
   function setupElementSeparatorCallbackIndifferentTests(callbackType: TestCallbackType) {
@@ -49,8 +75,8 @@ describe("ElementSeparator", () => {
         }
       });
 
-      it("calls onRatioChanged when it gets dragged horizontally", () => {
-        const elementSeparator = mount(
+      it("calls onRatioChanged when it gets dragged horizontally", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -58,15 +84,16 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 70}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(1);
         expect(onRatioChanged.calledWith(0.7), "Called with wrong argument").to.be.true;
       });
 
-      it("calls onRatioChanged when it gets dragged vertically", () => {
-        const elementSeparator = mount(
+      it("calls onRatioChanged when it gets dragged vertically", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Vertical}
             movableArea={100}
@@ -74,15 +101,16 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientY: 50 });
-        moveElement({ clientY: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {y: 50}},
+          {coords: {y: 70}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(1);
         expect(onRatioChanged.calledWith(0.7), "Called with wrong argument").to.be.true;
       });
 
-      it("calls onRatioChanged when it gets dragged 1px", () => {
-        const elementSeparator = mount(
+      it("calls onRatioChanged when it gets dragged 1px", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -90,14 +118,21 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 51 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 51}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(1);
       });
 
       it("calls onRatioChanged only once when moved multiple times in the same throttle frame", async () => {
-        const elementSeparator = mount(
+        theUserTo = userEvent.setup({
+          advanceTimers:(delay) => {
+            clock.tick(delay);
+          },
+          delay: 1,
+        });
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -105,9 +140,10 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 60 }, 1);
-        moveElement({ clientX: 80 }, 1);
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 60}},
+          {coords: {x: 80}},
+        ]);
 
         clock.tick(throttleMs);
 
@@ -116,8 +152,8 @@ describe("ElementSeparator", () => {
 
       });
 
-      it("stops calling onRatioChanged when dragging stops", () => {
-        const elementSeparator = mount(
+      it("stops calling onRatioChanged when dragging stops", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -125,33 +161,36 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 70}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(1);
 
-        document.dispatchEvent(new MouseEvent("pointerup"));
-        moveElement({ clientX: 90 });
+        await theUserTo.pointer([{keys: "[/MouseLeft]"},
+          {coords: {x: 90}},
+        ]);
 
         expect(onRatioChanged.callCount, "Called when dragging stopped").to.be.equal(1);
       });
 
-      it("does not call onRatioChanged when dragging without movableArea set", () => {
-        const elementSeparator = mount(
+      it("does not call onRatioChanged when dragging without movableArea set", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             ratio={0.5}
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 70}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(0);
       });
 
-      it("stops calling onRatioChanged when pointerdown event happens while still dragging", () => {
-        const elementSeparator = mount(
+      it("stops calling onRatioChanged when pointerdown event happens while still dragging", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -159,19 +198,25 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+          {coords: {x: 70}},
+        ]);
 
         expect(onRatioChanged.callCount).to.be.equal(1);
 
-        elementSeparator.simulate("pointerdown", { clientY: 70 });
-        moveElement({ clientX: 90 });
+        // This is not an interaction that user-events allow or physically make any sense,
+        // you cant press your mouse button while it's pressed, but the code have a case for it.
+        // I'm leaving it here in case this is a know edge case that happens in a way I cant imagine now.
+        fireEvent.pointerDown(getButton());
+
+        await theUserTo.pointer([{target: getButton(), coords: {x: 70}},
+          {coords: {x: 90}}]);
 
         expect(onRatioChanged.callCount, "Called when dragging stopped").to.be.equal(1);
       });
 
       it("should not have hover classes when element created", () => {
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -179,12 +224,11 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on freshly created element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on freshly created element").to.be.equal(0);
+        expectCleanHover();
       });
 
-      it("should have hover class when pointer enters element", () => {
-        const elementSeparator = mount(
+      it("should have hover class when pointer enters element", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -192,14 +236,13 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerover");
+        await theUserTo.hover(getButton());
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on hovered element").to.be.equal(0);
+        expectHovered();
       });
 
-      it("should have unhover class when pointer leaves element", () => {
-        const elementSeparator = mount(
+      it("should have unhover class when pointer leaves element", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -207,17 +250,16 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerover");
-        elementSeparator.simulate("pointerout");
+        await theUserTo.hover(getButton());
+        await theUserTo.unhover(getButton());
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on hovered element").to.be.equal(1);
+        expectUnhovered();
       });
 
-      it("should call onResizeHandleHoverChanged when pointer enters or leaves", () => {
+      it("should call onResizeHandleHoverChanged when pointer enters or leaves", async () => {
         const onHoverChanged = sinon.spy();
 
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -226,17 +268,17 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerover");
+        await theUserTo.hover(getButton());
         expect(onHoverChanged.calledOnce, "Was not called on pointer enter").to.be.true;
 
-        elementSeparator.simulate("pointerout");
+        await theUserTo.unhover(getButton());
         expect(onHoverChanged.calledTwice, "Was not called on pointer leave").to.be.true;
       });
 
-      it("should call isResizeHandleBeingDragged when pointer down or up", () => {
+      it("should call isResizeHandleBeingDragged when pointer down or up", async () => {
         const onDragChanged = sinon.spy();
 
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -245,48 +287,15 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.simulate("pointerdown");
+        await theUserTo.pointer({ keys: "[MouseLeft>]", target: getButton()});
         expect(onDragChanged.callCount, "Was not called on pointer down").to.be.equal(1);
 
-        document.dispatchEvent(new MouseEvent("pointerup"));
+        await theUserTo.pointer({ keys: "[/MouseLeft]"});
         expect(onDragChanged.callCount, "Was not called on pointer up").to.be.equal(2);
       });
 
-      it("should have hover class when pointer down", () => {
-        const elementSeparator = mount(
-          <ElementSeparator
-            orientation={Orientation.Horizontal}
-            movableArea={100}
-            ratio={0.5}
-            onRatioChanged={onRatioChanged}
-          />);
-
-        elementSeparator.simulate("pointerdown");
-
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on hovered element").to.be.equal(0);
-      });
-
-      it("should have unhover class when pointer up", () => {
-        const elementSeparator = mount(
-          <ElementSeparator
-            orientation={Orientation.Horizontal}
-            movableArea={100}
-            ratio={0.5}
-            onRatioChanged={onRatioChanged}
-          />);
-
-        elementSeparator.simulate("pointerdown");
-        document.dispatchEvent(new MouseEvent("pointerup"));
-
-        elementSeparator.mount();
-
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Did not find unhover class on unhovered element").to.be.equal(1);
-      });
-
       it("should have hover class when group is hovered", () => {
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -295,12 +304,11 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on hovered element").to.be.equal(0);
+        expectHovered();
       });
 
       it("should have no class when group is not hovered and element has not been hovered or dragged once", () => {
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -309,12 +317,27 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on never hovered element").to.be.equal(0);
+        expectCleanHover();
       });
 
       it("should have unhovered class when group is not hovered and element has been hovered or dragged", () => {
-        const elementSeparator = mount(
+        const {rerender} = render(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            ratio={0.5}
+            isResizeHandleHovered={false}
+            onRatioChanged={onRatioChanged}
+          />);
+        rerender(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            ratio={0.5}
+            isResizeHandleHovered={true}
+            onRatioChanged={onRatioChanged}
+          />);
+        rerender(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -323,15 +346,11 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.setProps({ isResizeHandleHovered: true });
-        elementSeparator.setProps({ isResizeHandleHovered: false });
-
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Did not find unhover class on unhovered element").to.be.equal(1);
+        expectUnhovered();
       });
 
       it("should have hover class when group is dragged", () => {
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -340,12 +359,11 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Did not find hover class on hovered element").to.be.equal(1);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on hovered element").to.be.equal(0);
+        expectHovered();
       });
 
       it("should have no class when group is not dragged and element has not been hovered or dragged once", () => {
-        const elementSeparator = mount(
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -354,12 +372,27 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Found unhover class on never hovered element").to.be.equal(0);
+        expectCleanHover();
       });
 
       it("should have unhovered class when group is not dragged and element has been hovered or dragged", () => {
-        const elementSeparator = mount(
+        const {rerender} = render(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            ratio={0.5}
+            isResizeHandleBeingDragged={false}
+            onRatioChanged={onRatioChanged}
+          />);
+        rerender(
+          <ElementSeparator
+            orientation={Orientation.Horizontal}
+            movableArea={100}
+            ratio={0.5}
+            isResizeHandleBeingDragged={true}
+            onRatioChanged={onRatioChanged}
+          />);
+        rerender(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -368,15 +401,11 @@ describe("ElementSeparator", () => {
             onRatioChanged={onRatioChanged}
           />);
 
-        elementSeparator.setProps({ isResizeHandleBeingDragged: true });
-        elementSeparator.setProps({ isResizeHandleBeingDragged: false });
-
-        expect(elementSeparator.find(".core-element-separator-group-hovered").length, "Found hover class on unhovered element").to.be.equal(0);
-        expect(elementSeparator.find(".core-element-separator-group-unhovered").length, "Did not find unhover class on unhovered element").to.be.equal(1);
+        expectUnhovered();
       });
 
-      it("should not call callback if orientation horizontal and position on x axis does not change", () => {
-        const elementSeparator = mount(
+      it("should not call callback if orientation horizontal and position on x axis does not change", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Horizontal}
             movableArea={100}
@@ -384,13 +413,15 @@ describe("ElementSeparator", () => {
             ratio={0.5}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientX: 50 });
-        moveElement({ clientX: 50, clientY: 70 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords:{x: 50}},
+          {coords: {x: 50, y: 70}},
+        ]);
+
         expect(onRatioChanged.callCount, "Called when position did not change on x axis").to.be.equal(0);
       });
 
-      it("should not call callback if orientation vertical and position on y axis does not change", () => {
-        const elementSeparator = mount(
+      it("should not call callback if orientation vertical and position on y axis does not change", async () => {
+        render(
           <ElementSeparator
             orientation={Orientation.Vertical}
             movableArea={100}
@@ -398,8 +429,9 @@ describe("ElementSeparator", () => {
             ratio={0.5}
           />);
 
-        elementSeparator.simulate("pointerdown", { clientY: 50 });
-        moveElement({ clientX: 70, clientY: 50 });
+        await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords:{y: 50}},
+          {coords: {y: 50, x: 70}},
+        ]);
         expect(onRatioChanged.callCount, "Called when position did not change on y axis").to.be.equal(0);
       });
     });
@@ -408,10 +440,10 @@ describe("ElementSeparator", () => {
   setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Controlled);
   setupElementSeparatorCallbackIndifferentTests(TestCallbackType.Uncontrolled);
 
-  it("should update ratio if ratio not changed but element hovered", () => {
+  it("should update ratio if ratio not changed but element hovered", async () => {
     const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
 
-    const elementSeparator = mount(
+    render(
       <ElementSeparator
         orientation={Orientation.Horizontal}
         movableArea={100}
@@ -419,122 +451,20 @@ describe("ElementSeparator", () => {
         ratio={0.5}
       />);
 
-    elementSeparator.simulate("pointerover");
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    elementSeparator.mount();
-
+    await theUserTo.pointer([{keys: "[MouseLeft>]", target: getButton(), coords: {x: 50}},
+      {coords: {x: 70}}]);
     expect(onRatioChanged.callCount).to.be.equal(1);
 
-    moveElement({ clientX: 90 });
+    await theUserTo.unhover(getButton());
+    await theUserTo.pointer({target: getButton(), coords: {x: 90}});
     expect(onRatioChanged.callCount).to.be.equal(2);
   });
 
-  it("should update ratio if ratio changes but element not hovered", () => {
-    const onRatioChanged = sinon.spy((ratio: number) => ({ ratio }));
-
-    const elementSeparator = mount(
-      <ElementSeparator
-        orientation={Orientation.Horizontal}
-        movableArea={100}
-        onRatioChanged={onRatioChanged}
-        ratio={0.5}
-      />);
-
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    expect(onRatioChanged.callCount).to.be.equal(1);
-
-    moveElement({ clientX: 90 });
-    expect(onRatioChanged.callCount).to.be.equal(2);
-  });
-
-  it("should update ratio if ratio changed and element is hovered", () => {
-    const onRatioChanged = sinon.spy((ratio: number) => ({ ratio }));
-
-    const elementSeparator = mount(
-      <ElementSeparator
-        orientation={Orientation.Horizontal}
-        movableArea={100}
-        onRatioChanged={onRatioChanged}
-        ratio={0.5}
-      />);
-
-    elementSeparator.simulate("pointerover");
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    expect(onRatioChanged.callCount).to.be.equal(1);
-
-    moveElement({ clientX: 90 });
-    expect(onRatioChanged.callCount).to.be.equal(2);
-  });
-
-  it("should not update ratio if ratio has not changed and element is not hovered (draggable area left)", () => {
-    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
-
-    const elementSeparator = mount(
-      <ElementSeparator
-        orientation={Orientation.Horizontal}
-        movableArea={100}
-        onRatioChanged={onRatioChanged}
-        ratio={0.5}
-      />);
-
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
-
-    moveElement({ clientX: 90 });
-    expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
-  });
-
-  it("should update ratio if ratio undefined and element is not hovered", () => {
-    const onRatioChanged = sinon.spy();
-
-    const elementSeparator = mount(
-      <ElementSeparator
-        orientation={Orientation.Horizontal}
-        movableArea={100}
-        onRatioChanged={onRatioChanged}
-        ratio={0.5}
-      />);
-
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
-
-    moveElement({ clientX: 90 });
-    expect(onRatioChanged.callCount, "Element should move when ratio undefined for backwards compatibility").to.be.equal(2);
-  });
-
-  it("should start updating on hover after leaving draggable area", () => {
-    const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
-
-    const elementSeparator = mount(
-      <ElementSeparator
-        orientation={Orientation.Horizontal}
-        movableArea={100}
-        onRatioChanged={onRatioChanged}
-        ratio={0.5}
-      />);
-
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
-    moveElement({ clientX: 70 });
-    expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
-
-    moveElement({ clientX: 90 });
-    expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
-
-    elementSeparator.simulate("pointerover");
-    moveElement({ clientX: 40 });
-    expect(onRatioChanged.callCount, "Ratio change should be called again after pointer is hovering").to.be.equal(2);
-  });
-
-  it("should call drag stop callback when unmounted while being dragged", () => {
+  it("should call drag stop callback when unmounted while being dragged", async () => {
     const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
     const onResizeHandleDragChangedSpy = sinon.spy();
 
-    const elementSeparator = mount(
+    const {unmount} = render(
       <ElementSeparator
         orientation={Orientation.Horizontal}
         movableArea={100}
@@ -545,27 +475,27 @@ describe("ElementSeparator", () => {
         onResizeHandleDragChanged={onResizeHandleDragChangedSpy}
       />);
 
-    elementSeparator.simulate("pointerdown", { clientX: 50 });
+    await theUserTo.pointer({keys: "[MouseLeft>]", target:getButton(), coords: {x: 50}});
     expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(1);
 
-    moveElement({ clientX: 70 });
+    await theUserTo.pointer({coords: {x: 70}});
     expect(onRatioChanged.callCount, "First ratio change should always be called").to.be.equal(1);
 
-    moveElement({ clientX: 90 });
+    await theUserTo.pointer({coords: {x: 90}});
     expect(onRatioChanged.callCount, "Called ratio change when it was not hovered and update was not needed").to.be.equal(1);
 
     expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(1);
 
-    elementSeparator.unmount();
+    unmount();
 
     expect(onResizeHandleDragChangedSpy.callCount).to.be.equal(2);
   });
 
-  it("should call hover stop callback when unmounted while being hovered", () => {
+  it("should call hover stop callback when unmounted while being hovered", async () => {
     const onRatioChanged = sinon.spy(() => ({ ratio: 0.5 }));
     const onResizeHandleHoverChanged = sinon.spy();
 
-    const elementSeparator = mount(
+    const {unmount} = render(
       <ElementSeparator
         orientation={Orientation.Horizontal}
         movableArea={100}
@@ -576,11 +506,11 @@ describe("ElementSeparator", () => {
         onResizeHandleHoverChanged={onResizeHandleHoverChanged}
       />);
 
-    elementSeparator.simulate("pointerover");
+    await theUserTo.hover(getButton());
 
     expect(onResizeHandleHoverChanged.callCount).to.be.equal(1);
 
-    elementSeparator.unmount();
+    unmount();
 
     expect(onResizeHandleHoverChanged.callCount).to.be.equal(2);
   });

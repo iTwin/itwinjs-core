@@ -9,7 +9,9 @@
 import "./Settings.scss";
 import * as React from "react";
 import { FrameworkAccuDraw, UiFramework } from "@itwin/appui-react";
+import { TargetOptionsContext } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/target/TargetOptions";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import { SampleAppIModelApp } from "../../index";
 
 /** UiSettingsPage displaying the active settings. */
 export class AccudrawSettingsPageComponent extends React.Component {
@@ -49,6 +51,21 @@ function SettingsItem(props: SettingsItemProps) {
       <div className="panel right-panel">
         {settingUi}
       </div>
+    </div>
+  );
+}
+
+export function TargetSettingsPageComponent() {
+  const targetOptions = React.useContext(TargetOptionsContext);
+  return (
+    <div className="uifw-settings">
+      <SettingsItem
+        title="Use 2.0 targets"
+        description="Display widget drop targets when dragging"
+        settingUi={<ToggleSwitch checked={targetOptions.version === "2"} onChange={() => {
+          SampleAppIModelApp.setTargetVersion(targetOptions.version === "2" ? "1" : "2");
+        }} />}
+      />
     </div>
   );
 }

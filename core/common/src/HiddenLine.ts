@@ -156,11 +156,11 @@ export namespace HiddenLine {
 
   /** The JSON representation of a [[HiddenLine.Settings]]. */
   export interface SettingsProps {
-    /** @see [[HiddenLine.Settings.visible]]. */
+    /** See [[HiddenLine.Settings.visible]]. */
     visible?: StyleProps;
-    /** @see [[HiddenLine.Settings.hidden]]. */
+    /** See [[HiddenLine.Settings.hidden]]. */
     hidden?: StyleProps;
-    /** @see [[HiddenLine.Settings.transparencyThreshold. */
+    /** See [[HiddenLine.Settings.transparencyThreshold. */
     transThreshold?: number;
   }
 

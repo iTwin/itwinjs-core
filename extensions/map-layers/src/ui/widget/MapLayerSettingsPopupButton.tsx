@@ -11,10 +11,13 @@ import { MapManagerSettings } from "./MapManagerSettings";
 import "./MapLayerSettingsPopupButton.scss";
 import { MapLayersUI } from "../../mapLayers";
 import { Button } from "@itwin/itwinui-react";
+export interface MapLayerSettingsPopupButtonProps {
+  disabled?: boolean;
+}
 
 /** @alpha */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapLayerSettingsPopupButton() {
+export function MapLayerSettingsPopupButton(props: MapLayerSettingsPopupButtonProps) {
   const panelRef = React.useRef<HTMLDivElement>(null);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [buttonTooltip] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:Widget.SettingsButtonTooltip"));
@@ -65,7 +68,7 @@ export function MapLayerSettingsPopupButton() {
 
   return (
     <>
-      <Button styleType="borderless" title={buttonTooltip} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
+      <Button disabled={props.disabled} styleType="borderless" title={buttonTooltip} className="maplayers-settings-popup-button" onClick={togglePopupDisplay} ref={buttonRef}>
         <WebFontIcon iconName="icon-settings" />
       </Button>
       <Popup

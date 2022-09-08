@@ -9,10 +9,11 @@ import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, createNineZoneState, createPanelsState, createVerticalPanelState, DragManager,
+  addPanelWidget, addTab, createNineZoneState, DragManager,
   NineZoneDispatch, PanelSide, PanelStateContext, useResizeGrip, WidgetPanelContext, WidgetPanelGrip,
 } from "../../appui-layout-react";
-import { createDragItemInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
+import { createDragInfo, TestNineZoneProvider, TestNineZoneProviderProps } from "../Providers";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("WidgetPanelGrip", () => {
   const wrapper = (props: any) => <WidgetPanelContext.Provider
@@ -48,14 +49,15 @@ describe("WidgetPanelGrip", () => {
 
   it("should dispatch PANEL_TOGGLE_COLLAPSED", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -76,20 +78,16 @@ describe("WidgetPanelGrip", () => {
   it("should start resize via timer and dispatch PANEL_SET_SIZE", () => {
     const fakeTimers = sinon.useFakeTimers();
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          size: 200,
-        }),
-      }),
-    });
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", { size: 200 });
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -113,13 +111,14 @@ describe("WidgetPanelGrip", () => {
   });
 
   it("should not start resize w/o pointer down", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -132,13 +131,14 @@ describe("WidgetPanelGrip", () => {
   });
 
   it("should reset initial position on pointer up", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -154,21 +154,19 @@ describe("WidgetPanelGrip", () => {
 
   it("should auto-open collapsed unpinned panel", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          pinned: false,
-          collapsed: true,
-        }),
-      }),
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", {
+      pinned: false,
+      collapsed: true,
     });
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
-        <PanelStateContext.Provider value={nineZone.panels.left}>
+        <PanelStateContext.Provider value={state.panels.left}>
           <WidgetPanelGrip />
         </PanelStateContext.Provider>
       </TestNineZoneProvider>,
@@ -271,7 +269,7 @@ describe("useResizeGrip", () => {
       wrapper,
     });
     dragManagerRef.current?.handleDragStart({
-      info: createDragItemInfo(),
+      info: createDragInfo(),
       item: {
         type: "panelGrip",
         id: "bottom",
@@ -329,9 +327,9 @@ describe("useResizeGrip", () => {
   });
 
   it("should expand collapsed panel", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
-      stateDraft.panels.left.collapsed = true;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
+      draft.panels.left.collapsed = true;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -355,9 +353,9 @@ describe("useResizeGrip", () => {
   });
 
   it("should not expand if collapseOffset is not reached", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
-      stateDraft.panels.left.collapsed = true;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
+      draft.panels.left.collapsed = true;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -377,8 +375,8 @@ describe("useResizeGrip", () => {
   });
 
   it("should collapse", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 200;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 200;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {
@@ -408,8 +406,8 @@ describe("useResizeGrip", () => {
   });
 
   it("should not resize if drag direction does not match resize direction", () => {
-    const state = produce(createNineZoneState(), (stateDraft) => {
-      stateDraft.panels.left.size = 300;
+    const state = produce(createNineZoneState(), (draft) => {
+      draft.panels.left.size = 300;
     });
     const dispatch = sinon.stub<NineZoneDispatch>();
     const initialProps: WrapperProps = {

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "generate correct date format in local hub changesets",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

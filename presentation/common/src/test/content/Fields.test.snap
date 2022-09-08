@@ -311,6 +311,12 @@ Object {
             "name": "SchemaName:ClassName",
           },
           "isForwardRelationship": false,
+          "isTargetPolymorphic": true,
+          "targetClassInfo": Object {
+            "id": "0x1",
+            "label": "Class Label",
+            "name": "SchemaName:ClassName",
+          },
         },
         "type": "string",
       },
