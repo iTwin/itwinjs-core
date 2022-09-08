@@ -12,7 +12,7 @@ import { act, renderHook } from "@testing-library/react-hooks";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
 import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-react";
-import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, getUniqueId, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
+import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
 import { createDraggedTabState } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal/TabStateHelpers";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
