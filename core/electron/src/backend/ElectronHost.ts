@@ -264,8 +264,8 @@ export class ElectronHost {
           privileges: {
             standard: true,
             secure: true,
-            supportFetchAPI: true
-          }
+            supportFetchAPI: true,
+          },
         }]);
       const eopt = opts?.electronHost;
       this._developmentServer = eopt?.developmentServer ?? false;

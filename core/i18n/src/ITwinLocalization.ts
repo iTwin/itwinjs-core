@@ -70,21 +70,20 @@ export class ITwinLocalization implements Localization {
 
   public async initialize(namespaces: string[]): Promise<void> {
     let initNamespaces: readonly string[];
-    let combinedNamespaces: string[];
-    let defaultNS: string;
+    let defaultNamespace: string;
 
     if (this._initOptions.ns === undefined) {
-      initNamespaces = []
+      initNamespaces = [];
     } else if (typeof this._initOptions.ns === "string") {
-      initNamespaces = [this._initOptions.ns]
+      initNamespaces = [this._initOptions.ns];
     } else {  // === string[]
       initNamespaces = this._initOptions.ns;
     }
-    combinedNamespaces = [...new Set([...namespaces, ...initNamespaces])]; // without duplicates
+    const combinedNamespaces: string[] = [...new Set([...namespaces, ...initNamespaces])]; // without duplicates
 
-    defaultNS = combinedNamespaces[0];
+    defaultNamespace = combinedNamespaces[0];
     if (this._initOptions.defaultNS) {
-      defaultNS = this._initOptions.defaultNS;
+      defaultNamespace = this._initOptions.defaultNS;
 
       // Make sure defaultNS is in namespaces list
       if (combinedNamespaces.indexOf(this._initOptions.defaultNS) === -1) {
@@ -94,7 +93,7 @@ export class ITwinLocalization implements Localization {
 
     const initOptions: InitOptions = {
       ...this._initOptions,
-      defaultNS: defaultNS,
+      defaultNS: defaultNamespace,
       ns: combinedNamespaces,
     };
 
