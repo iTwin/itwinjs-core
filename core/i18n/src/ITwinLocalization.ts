@@ -6,16 +6,16 @@
  * @module Localization
  */
 
-import i18next, { i18n, InitOptions, Module } from "i18next";
+import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
-import type { Localization, TranslationOptions } from "@itwin/core-common";
+import type { Localization } from "@itwin/core-common";
 
 /** Options for ITwinLocalization
  *  @public
  */
-export interface ITwinLocalizationOptions {
+export interface LocalizationOptions {
   urlTemplate?: string;
   backendPlugin?: Module;
   detectorPlugin?: Module;
@@ -35,7 +35,7 @@ export class ITwinLocalization implements Localization {
   private readonly _detectionOptions: DetectorOptions;
   private readonly _namespaces = new Map<string, Promise<void>>();
 
-  public constructor(options?: ITwinLocalizationOptions) {
+  public constructor(options?: LocalizationOptions) {
     this.i18next = i18next.createInstance();
 
     this._backendOptions = {
@@ -141,7 +141,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @public
    */
-  public getLocalizedString(key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
     if (options?.returnDetails || options?.returnObjects) {
       throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
@@ -162,7 +162,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string {
     let fullKey: string | string[] = "";
 
     if (typeof key === "string") {
@@ -183,7 +183,7 @@ export class ITwinLocalization implements Localization {
    * @throws Error if no keys resolve to a string.
    * @internal
    */
-  public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
+  public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
     if (options?.returnDetails || options?.returnObjects) {
       throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
