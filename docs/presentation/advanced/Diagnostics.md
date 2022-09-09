@@ -29,7 +29,7 @@ To get diagnostics on a per request basis, diagnostics options can be supplied t
 
 ### Getting diagnostics for all requests
 
-It's also possible to set up [PresentationManager]($presentation-backend) to retrieve diagnostics of every request made through it. This can be done by supplying diagnostics options, including the handler, when calling [PresentationManager.initialize]($presentation-backend).
+It's also possible to set up [PresentationManager]($presentation-backend) to retrieve diagnostics of every request made through it. This can be done by supplying diagnostics options, including the handler, when calling [Presentation.initialize]($presentation-backend).
 
 ```ts
 [[include:Presentation.Diagnostics.Backend.PerManager]]
