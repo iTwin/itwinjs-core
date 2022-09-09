@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { test, expect } from '@playwright/test';
 import assert from 'assert';
-import { tabLocator, widgetLocator } from './Utils';
+import { frontstageLocator, tabLocator, titleBarHandleLocator, widgetLocator } from './Utils';
 
 test.describe("widget auto size", () => {
   test.beforeEach(async ({ page, baseURL }) => {
@@ -13,12 +13,12 @@ test.describe("widget auto size", () => {
   });
 
   test("auto-sized floating widget should folow the cursor when undocked", async ({ page }) => {
-    const frontstage = page.locator(".uifw-widgetPanels-frontstage");
+    const frontstage = frontstageLocator(page);
 
     // Widget from end section of a bottom panel.
     const tab = tabLocator(page, "Layout Controls");
     const widget = widgetLocator({ tab });
-    const titleBarHandle = widget.locator(".nz-handle");
+    const titleBarHandle = titleBarHandleLocator(widget);
 
     const boundingBox = await titleBarHandle.boundingBox();
     const frontstageBoundingBox = await frontstage.boundingBox();
