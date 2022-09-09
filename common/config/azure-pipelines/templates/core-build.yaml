@@ -9,16 +9,20 @@ parameters:
     default: 1
 
 steps:
-  - powershell: |
+  - bash: |
         # Because ADO evaluates Agent.OS at runtime,
         # we cannot use it in build-time expressions.
         # Instead, set the RUSH_BUILD_CACHE_WRITE_ALLOWED env var here.
 
-        $acceptableReasons = "IndividualCI", "Manual"
-        $useRushWriteCache = "$(Agent.OS)" -eq "Linux" -and $acceptableReasons.Contains("$(Build.Reason)")
+        acceptableReasons=("IndividualCI" "Manual")
+        useRushWriteCache = 0
 
-        Write-Host "setting RUSH_BUILD_CACHE_WRITE_ALLOWED to $([int]$useRushWriteCache)"
-        Write-Host "##vso[task.setvariable variable=RUSH_BUILD_CACHE_WRITE_ALLOWED;]$([int]$useRushWriteCache)"
+        if [[ "$(Agent.OS)" == "Linux" ]] && [[ $acceptableReasons =~ "$(Build.Reason)" ]]; then
+          useRushWriteCache = 1
+        fi
+
+        echo "setting RUSH_BUILD_CACHE_WRITE_ALLOWED to $useRushWriteCache"
+        echo "##vso[task.setvariable variable=RUSH_BUILD_CACHE_WRITE_ALLOWED;]$useRushWriteCache"
     displayName: "Set Rush Build Cache env vars"
 
   - script: node common/scripts/install-run-rush.js check
