@@ -9,6 +9,21 @@ parameters:
     default: 1
 
 steps:
+  - task: PowerShell@2
+    displayName: "Set Rush Build Cache env vars"
+    inputs:
+      targetType: 'inline'
+      script: |
+        # Because ADO evaluates Agent.OS at runtime,
+        # we cannot use it in build-time expressions.
+        # Instead, set the RUSH_BUILD_CACHE_WRITE_ALLOWED env var here.
+
+        $acceptableReasons = "IndividualCI", "Manual"
+        $useRushWriteCache = "$(Agent.OS)" -eq "Linux" -and $acceptableReasons.Contains("$(Build.Reason)")
+
+        Write-Host "setting RUSH_BUILD_CACHE_WRITE_ALLOWED to $([int]$useRushWriteCache)"
+        Write-Host "##vso[task.setvariable variable=RUSH_BUILD_CACHE_WRITE_ALLOWED;]$([int]$useRushWriteCache)"
+
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
@@ -34,10 +49,6 @@ steps:
     env:
       RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
-      ${{ if and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}:
-        RUSH_BUILD_CACHE_WRITE_ALLOWED: 1
-      ${{ if not(and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual'))) }}:
-        RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
