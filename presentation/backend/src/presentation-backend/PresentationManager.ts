@@ -26,7 +26,7 @@ import {
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, DiagnosticsCallback, getElementKey } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getElementKey } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -297,11 +297,14 @@ export interface PresentationManagerProps {
   /** @internal */
   addon?: NativePlatformDefinition;
 
-  /*
-   * A function that will be called after receiving diagnostics.
+  /**
+   * Parameters for gathering diagnostics at the manager level. When supplied, they're used with every request
+   * made through the manager.
+   *
+   * @see [Diagnostics documentation page]($docs/presentation/advanced/Diagnostics.md)
    * @beta
    */
-  diagnosticsCallback?: DiagnosticsCallback;
+  diagnostics?: BackendDiagnosticsOptions;
 }
 
 /**

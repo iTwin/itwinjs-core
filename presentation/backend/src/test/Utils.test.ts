@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
+import { DbResult } from "@itwin/core-bentley";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
-import { getElementKey, normalizeVersion } from "../presentation-backend/Utils";
+import { combineDiagnosticsOptions, getElementKey, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
 
@@ -64,4 +65,274 @@ describe("getNormalizedVersion", () => {
     expect(normalizeVersion("invalid")).to.eq("0.0.0");
   });
 
+});
+
+describe("combineDiagnosticsOptions", () => {
+  const handler = sinon.spy();
+
+  it("doesn't set `perf` if none of the arguments have it", () => {
+    expect(combineDiagnosticsOptions(
+      { perf: false, handler },
+      { perf: undefined, handler },
+      undefined,
+    )).to.be.undefined;
+  });
+
+  it("sets `perf` to the single truthy value", () => {
+    expect(combineDiagnosticsOptions(
+      { perf: true, handler },
+      undefined,
+    )).to.deep.eq(
+      { perf: true },
+    );
+    expect(combineDiagnosticsOptions(
+      { perf: true, handler },
+      { perf: false, handler },
+    )).to.deep.eq(
+      { perf: true },
+    );
+    expect(combineDiagnosticsOptions(
+      { perf: false, handler },
+      { perf: true, handler },
+    )).to.deep.eq(
+      { perf: true },
+    );
+    expect(combineDiagnosticsOptions(
+      { perf: { minimumDuration: 123 }, handler },
+      { perf: false, handler },
+    )).to.deep.eq(
+      { perf: { minimumDuration: 123 } },
+    );
+    expect(combineDiagnosticsOptions(
+      { perf: false, handler },
+      { perf: { minimumDuration: 456 }, handler },
+    )).to.deep.eq(
+      { perf: { minimumDuration: 456 } },
+    );
+  });
+
+  it("sets `perf` to lower requirement", () => {
+    expect(combineDiagnosticsOptions(
+      { perf: { minimumDuration: 123 }, handler },
+      { perf: { minimumDuration: 0 }, handler },
+      { perf: { minimumDuration: 456 }, handler },
+      { perf: true, handler },
+    )).to.deep.eq(
+      { perf: true },
+    );
+    expect(combineDiagnosticsOptions(
+      { perf: { minimumDuration: 123 }, handler },
+      { perf: { minimumDuration: 0 }, handler },
+      { perf: { minimumDuration: 456 }, handler },
+    )).to.deep.eq(
+      { perf: { minimumDuration: 0 } },
+    );
+  });
+
+  it("doesn't set `dev` if none of the arguments have it", () => {
+    expect(combineDiagnosticsOptions(
+      { dev: undefined, handler },
+      undefined,
+    )).to.be.undefined;
+  });
+
+  it("sets `dev` severity", () => {
+    expect(combineDiagnosticsOptions(
+      { handler },
+      { dev: "error", handler },
+      { dev: true, handler },
+    )).to.deep.eq(
+      { dev: "debug" },
+    );
+  });
+
+  it("doesn't set `editor` if none of the arguments have it", () => {
+    expect(combineDiagnosticsOptions(
+      { editor: undefined, handler },
+      undefined,
+    )).to.be.undefined;
+  });
+
+  it("sets `editor` severity", () => {
+    expect(combineDiagnosticsOptions(
+      { handler },
+      { editor: "error", handler },
+      { editor: true, handler },
+    )).to.deep.eq(
+      { editor: "debug" },
+    );
+  });
+
+  it("combines multiple attributes", () => {
+    expect(combineDiagnosticsOptions(
+      { handler },
+      { editor: "info", handler },
+      { dev: "error", handler },
+      { perf: { minimumDuration: 123 }, handler },
+    )).to.deep.eq(
+      { editor: "info", dev: "error", perf: { minimumDuration: 123 } },
+    );
+  });
+
+});
+
+describe("reportDiagnostics", () => {
+  const handler = sinon.spy();
+
+  beforeEach(() => {
+    handler.resetHistory();
+  });
+
+  it("only calls handler when there are logs to be reported", () => {
+    reportDiagnostics({ handler, perf: true, dev: "trace", editor: "trace" }, {});
+    expect(handler).to.not.be.called;
+    reportDiagnostics({ handler, perf: true, dev: "trace", editor: "trace" }, { logs: [] });
+    expect(handler).to.not.be.called;
+  });
+
+  it("only includes entries matching given options", () => {
+    reportDiagnostics(
+      { handler, perf: { minimumDuration: 100 }, dev: "info", editor: "warning" },
+      {
+        logs: [{
+          scope: "scope with higher duration",
+          duration: 101,
+        }, {
+          scope: "scope with equal duration",
+          duration: 100,
+        }, {
+          scope: "scope with lower duration",
+          duration: 99,
+        }, {
+          scope: "scope with equal duration and matching logs",
+          duration: 100,
+          logs: [{
+            category: "test category",
+            message: "matching dev severity",
+            timestamp: 1,
+            severity: { dev: "info" },
+          }, {
+            category: "test category",
+            message: "higher dev severity",
+            timestamp: 2,
+            severity: { dev: "warning" },
+          }, {
+            category: "test category",
+            message: "lower dev severity",
+            timestamp: 3,
+            severity: { dev: "trace" },
+          }, {
+            category: "test category",
+            message: "matching editor severity",
+            timestamp: 4,
+            severity: { editor: "warning" },
+          }, {
+            category: "test category",
+            message: "higher editor severity",
+            timestamp: 5,
+            severity: { editor: "error" },
+          }, {
+            category: "test category",
+            message: "lower editor severity",
+            timestamp: 6,
+            severity: { editor: "info" },
+          }, {
+            category: "test category",
+            message: "matching dev and editor severities",
+            timestamp: 6,
+            severity: { dev: "error", editor: "error" },
+          }],
+        }, {
+          scope: "scope with equal duration and non-matching logs",
+          duration: 100,
+          logs: [{
+            category: "test category",
+            message: "non-matching severities",
+            timestamp: 1,
+            severity: {},
+          }],
+        }, {
+          scope: "scope with lower duration and matching logs",
+          duration: 1,
+          logs: [{
+            category: "test category",
+            message: "matching severities",
+            timestamp: 1,
+            severity: { dev: "error", editor: "error" },
+          }],
+        }],
+      },
+    );
+    expect(handler).to.be.calledOnce;
+    expect(handler.firstCall.args[0]).to.deep.eq({
+      logs: [{
+        scope: "scope with higher duration",
+        duration: 101,
+      }, {
+        scope: "scope with equal duration",
+        duration: 100,
+      }, {
+        scope: "scope with equal duration and matching logs",
+        duration: 100,
+        logs: [{
+          category: "test category",
+          message: "matching dev severity",
+          timestamp: 1,
+          severity: { dev: "info" },
+        }, {
+          category: "test category",
+          message: "higher dev severity",
+          timestamp: 2,
+          severity: { dev: "warning" },
+        }, {
+          category: "test category",
+          message: "matching editor severity",
+          timestamp: 4,
+          severity: { editor: "warning" },
+        }, {
+          category: "test category",
+          message: "higher editor severity",
+          timestamp: 5,
+          severity: { editor: "error" },
+        }, {
+          category: "test category",
+          message: "matching dev and editor severities",
+          timestamp: 6,
+          severity: { dev: "error", editor: "error" },
+        }],
+      }, {
+        scope: "scope with equal duration and non-matching logs",
+        duration: 100,
+      }, {
+        scope: "scope with lower duration and matching logs",
+        logs: [{
+          category: "test category",
+          message: "matching severities",
+          timestamp: 1,
+          severity: { dev: "error", editor: "error" },
+        }],
+      }],
+    });
+  });
+
+  it("includes zero duration scopes when requesting all performance diagnostics", () => {
+    reportDiagnostics(
+      { handler, perf: true },
+      {
+        logs: [{
+          scope: "zero duration scope",
+          duration: 0,
+          scopeCreateTimestamp: 123,
+        }],
+      },
+    );
+    expect(handler).to.be.calledOnce;
+    expect(handler.firstCall.args[0]).to.deep.eq({
+      logs: [{
+        scope: "zero duration scope",
+        duration: 0,
+        scopeCreateTimestamp: 123,
+      }],
+    });
+  });
 });

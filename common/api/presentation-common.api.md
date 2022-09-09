@@ -243,11 +243,17 @@ export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
     handler: ClientDiagnosticsHandler;
 }
 
+// @internal
+export function combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined;
+
 // @internal (undocumented)
 export interface CommonIpcParams {
     // (undocumented)
     clientId: string;
 }
+
+// @internal
+export function compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1;
 
 // @public
 export interface CompressedClassInfoJSON {

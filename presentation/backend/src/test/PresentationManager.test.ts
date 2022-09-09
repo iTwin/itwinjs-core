@@ -12,9 +12,9 @@ import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwi
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
-  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
-  FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
+  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DisplayLabelRequestOptions,
+  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType, FieldJSON,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
   MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
   PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
@@ -625,13 +625,8 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
-      const diagnosticOptions: DiagnosticsOptions = {
-        perf: true,
-        editor: "info",
-        dev: "warning",
-      };
-      const diagnosticsResult: Diagnostics = {
+    it("invokes request's diagnostics handler with diagnostic results", async () => {
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           duration: 123,
@@ -639,21 +634,23 @@ describe("PresentationManager", () => {
       };
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { perf: true, handler: diagnosticsListener } });
       addonMock.verifyAll();
       expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
     });
 
-    it("invokes diagnostics callback with diagnostic results", async () => {
+    it("invokes manager's diagnostics callback with diagnostic results", async () => {
       const diagnosticsCallback = sinon.spy();
       addonMock.reset();
-      manager = new PresentationManager({ addon: addonMock.object, diagnosticsCallback });
+      manager = new PresentationManager({ addon: addonMock.object, diagnostics: { handler: diagnosticsCallback, perf: true } });
 
-      const diagnosticOptions: DiagnosticsOptions = { perf: true };
-      const diagnosticsResult: Diagnostics = {
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           scopeCreateTimestamp: 1000,
@@ -661,10 +658,13 @@ describe("PresentationManager", () => {
         }],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
       addonMock.verifyAll();
       expect(diagnosticsCallback).to.be.calledOnceWith(diagnosticsResult);
     });

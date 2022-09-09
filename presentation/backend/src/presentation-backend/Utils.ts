@@ -10,7 +10,9 @@ import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import { Diagnostics, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
+import {
+  combineDiagnosticsSeverities, compareDiagnosticsSeverities, Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey,
+} from "@itwin/presentation-common";
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -66,8 +68,52 @@ export interface BackendDiagnosticsAttribute {
   diagnostics?: BackendDiagnosticsOptions;
 }
 
-/**
- * A callback function that can be called after receiving diagnostics.
- * @public
- */
-export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
+/** @internal */
+export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined {
+  const combinedOptions: DiagnosticsOptions = {};
+  options.forEach((d) => {
+    if (!d)
+      return;
+    if (d.perf === true || typeof d.perf === "object" && (!combinedOptions.perf || typeof combinedOptions.perf === "object" && d.perf.minimumDuration < combinedOptions.perf.minimumDuration)) {
+      combinedOptions.perf = d.perf;
+    }
+    const combinedDev = combineDiagnosticsSeverities(d.dev, combinedOptions.dev);
+    if (combinedDev)
+      combinedOptions.dev = combinedDev;
+    const combinedEditor = combineDiagnosticsSeverities(d.editor, combinedOptions.editor);
+    if (combinedEditor)
+      combinedOptions.editor = combinedEditor;
+  });
+  return (combinedOptions.dev || combinedOptions.editor || combinedOptions.perf) ? combinedOptions : undefined;
+}
+
+/** @internal */
+export function reportDiagnostics(options: BackendDiagnosticsOptions, diagnostics: Diagnostics) {
+  const stripped = diagnostics.logs ? stripDiagnostics(options, diagnostics.logs) : undefined;
+  stripped && options.handler({ logs: stripped });
+}
+function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(options: DiagnosticsOptions, diagnostics: TEntry[]) {
+  const stripped: TEntry[] = [];
+  diagnostics.forEach((entry) => {
+    if (DiagnosticsLogEntry.isScope(entry)) {
+      const scopeLogs = stripDiagnostics(options, entry.logs ?? []);
+      const strippedScope = { ...entry, logs: scopeLogs };
+      if (!strippedScope.logs)
+        delete strippedScope.logs;
+      if (entry.duration !== undefined && (options.perf === true || typeof options.perf === "object" && entry.duration >= options.perf.minimumDuration)) {
+        stripped.push(strippedScope);
+      } else if (scopeLogs) {
+        delete strippedScope.duration;
+        delete strippedScope.scopeCreateTimestamp;
+        stripped.push(strippedScope);
+      }
+    } else {
+      const matchesDevSeverity = entry.severity.dev && compareDiagnosticsSeverities(entry.severity.dev, options.dev) >= 0;
+      const matchesEditorSeverity = entry.severity.editor && compareDiagnosticsSeverities(entry.severity.editor, options.editor) >= 0;
+      if (matchesDevSeverity || matchesEditorSeverity) {
+        stripped.push({ ...entry });
+      }
+    }
+  });
+  return stripped.length > 0 ? stripped : undefined;
+}

@@ -18,7 +18,7 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { UpdatesTracker } from "./UpdatesTracker";
-import { BackendDiagnosticsHandler, BackendDiagnosticsOptions, DiagnosticsCallback, getElementKey, getLocalesDirectory } from "./Utils";
+import { BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, getLocalesDirectory, reportDiagnostics } from "./Utils";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -26,7 +26,7 @@ export class PresentationManagerDetail implements IDisposable {
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _updatesTracker: UpdatesTracker | undefined;
   private _onManagerUsed: (() => void) | undefined;
-  private _diagnosticsCallback: DiagnosticsCallback | undefined;
+  private _diagnosticsOptions: BackendDiagnosticsOptions | undefined;
 
   public rulesets: RulesetManager;
   public activeLocale: string | undefined;
@@ -74,7 +74,7 @@ export class PresentationManagerDetail implements IDisposable {
 
     this._onManagerUsed = undefined;
     this.rulesets = new RulesetManagerImpl(getNativePlatform);
-    this._diagnosticsCallback = params.diagnosticsCallback;
+    this._diagnosticsOptions = params.diagnostics;
   }
 
   public dispose(): void {
@@ -134,7 +134,7 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics, cancelEvent, ...strippedParams } = params;
+    const { requestId, imodel, locale, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     this._onManagerUsed?.();
 
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
@@ -147,18 +147,16 @@ export class PresentationManagerDetail implements IDisposable {
       },
     };
 
-    let diagnosticsListener: BackendDiagnosticsHandler | undefined;
-    if (diagnostics) {
-      const { handler: tempDiagnosticsListener, ...diagnosticsOptions } = diagnostics;
-      diagnosticsListener = tempDiagnosticsListener;
-      nativeRequestParams.params.diagnostics = diagnosticsOptions;
-    }
+    const diagnostics = combineDiagnosticsOptions(this._diagnosticsOptions, requestDiagnostics);
+    if (diagnostics)
+      nativeRequestParams.params.diagnostics = diagnostics;
 
     const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
+
     if (response.diagnostics) {
       const logs = { logs: [response.diagnostics] };
-      diagnosticsListener && diagnosticsListener(logs);
-      this._diagnosticsCallback && this._diagnosticsCallback(logs);
+      this._diagnosticsOptions && reportDiagnostics(this._diagnosticsOptions, logs);
+      requestDiagnostics && reportDiagnostics(requestDiagnostics, logs);
     }
 
     return response.result;

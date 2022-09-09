@@ -68,14 +68,14 @@ export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
     handler: BackendDiagnosticsHandler;
 }
 
+// @internal (undocumented)
+export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined;
+
 // @public
 export interface ContentCacheConfig {
     // @alpha
     size?: number;
 }
-
-// @public
-export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -253,8 +253,8 @@ export interface PresentationManagerProps {
     };
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
-    // (undocumented)
-    diagnosticsCallback?: DiagnosticsCallback;
+    // @beta
+    diagnostics?: BackendDiagnosticsOptions;
     // @deprecated
     enableSchemasPreload?: boolean;
     // @internal
@@ -282,6 +282,9 @@ export interface PresentationPropsBase extends PresentationManagerProps {
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
 }
+
+// @internal (undocumented)
+export function reportDiagnostics(options: BackendDiagnosticsOptions, diagnostics: Diagnostics): void;
 
 // @beta
 export class RulesetEmbedder {
