@@ -12,11 +12,12 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { TabDropTargetState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { WidgetIdContext, WidgetStateContext } from "../widget/Widget";
 import { TabIdContext } from "../widget/ContentRenderer";
 import { assert } from "@itwin/core-bentley";
 import { withTargetVersion } from "./TargetOptions";
+import { TabDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export const TabTarget = withTargetVersion("2", function TabTarget() {
