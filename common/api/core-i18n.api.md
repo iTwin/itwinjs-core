@@ -10,20 +10,20 @@ import { i18n } from 'i18next';
 import { InitOptions } from 'i18next';
 import type { Localization } from '@itwin/core-common';
 import { Module } from 'i18next';
-import type { TranslationOptions } from '@itwin/core-common';
+import { TOptionsBase } from 'i18next';
 
 // @public
 export class ITwinLocalization implements Localization {
-    constructor(options?: ITwinLocalizationOptions);
+    constructor(options?: LocalizationOptions);
     changeLanguage(language: string): Promise<void>;
     // @internal
-    getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string;
     // @internal (undocumented)
     getLanguageList(): readonly string[];
     getLocalizedKeys(line: string): string;
-    getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    getLocalizedString(key: string | string[], options?: TOptionsBase): string;
     // @internal
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TOptionsBase): string;
     getNamespacePromise(name: string): Promise<void> | undefined;
     // (undocumented)
     i18next: i18n;
@@ -35,7 +35,7 @@ export class ITwinLocalization implements Localization {
 }
 
 // @public
-export interface ITwinLocalizationOptions {
+export interface LocalizationOptions {
     // (undocumented)
     backendHttpOptions?: BackendOptions;
     // (undocumented)
