@@ -43,17 +43,28 @@ export function normalizeVersion(version?: string) {
 export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
 
 /**
- * A function that can be called after receiving diagnostics.
+ * A function that received request diagnostics and, optionally, request context.
  * @beta
  */
-export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 /**
  * Data structure for backend diagnostics options.
  * @beta
  */
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-  handler: BackendDiagnosticsHandler;
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
+  /**
+   * An optional function to supply request context that'll be passed to [[handler]] when
+   * it's called after the request is fulfilled.
+   */
+  requestContextSupplier?: () => TContext;
+
+  /**
+   * Request diagnostics handler function that is called after the request is fulfilled. The handler
+   * receives request diagnostics as the first argument and, optionally, request context as the
+   * second (see [[requestContextSupplier]]).
+   */
+  handler: BackendDiagnosticsHandler<TContext>;
 }
 
 /**
@@ -88,9 +99,9 @@ export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOp
 }
 
 /** @internal */
-export function reportDiagnostics(options: BackendDiagnosticsOptions, diagnostics: Diagnostics) {
+export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext) {
   const stripped = diagnostics.logs ? stripDiagnostics(options, diagnostics.logs) : undefined;
-  stripped && options.handler({ logs: stripped });
+  stripped && options.handler({ logs: stripped }, context);
 }
 function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(options: DiagnosticsOptions, diagnostics: TEntry[]) {
   const stripped: TEntry[] = [];

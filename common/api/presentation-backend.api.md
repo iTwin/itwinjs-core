@@ -60,12 +60,12 @@ export interface BackendDiagnosticsAttribute {
 }
 
 // @beta
-export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 // @beta
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-    // (undocumented)
-    handler: BackendDiagnosticsHandler;
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
+    handler: BackendDiagnosticsHandler<TContext>;
+    requestContextSupplier?: () => TContext;
 }
 
 // @internal (undocumented)
@@ -284,7 +284,7 @@ export interface PresentationPropsBase extends PresentationManagerProps {
 }
 
 // @internal (undocumented)
-export function reportDiagnostics(options: BackendDiagnosticsOptions, diagnostics: Diagnostics): void;
+export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
 
 // @beta
 export class RulesetEmbedder {

@@ -55,15 +55,19 @@ Presentation.initialize({
   diagnostics: {
     // requesting performance metrics
     perf: true,
+    // a function to capture current context so it can be used when the handler function is called
+    requestContextSupplier: () => {
+      // get the parent span that our diagnostics should nest under - it'll be supplied
+      // as the second argument to the `handler` function
+      return trace.getSpan(context.active())?.spanContext();
+    },
     // the handler function is called after every request made through the `Presentation` API
-    handler: (diagnostics) => {
-      // get the parent span that our diagnostics should nest under
-      const parentSpanContext = trace.getSpan(context.active())?.spanContext();
+    handler: (diagnostics, parentSpanContext) => {
       // convert diagnostics to OpenTelemetry spans
       const spans = convertToReadableSpans(diagnostics, parentSpanContext);
       // do export
       traceExporter.export(spans, () => {});
-    }
+    },
   },
 });
 ```

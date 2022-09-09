@@ -8,11 +8,12 @@ import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
 import { BeEvent, IDisposable } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
-  ContentDescriptorRequestOptions, ContentFlags, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized, Ruleset,
+  ContentDescriptorRequestOptions, ContentFlags, DiagnosticsOptions, InstanceKey, Key, KeySet, PresentationError, PresentationStatus, Prioritized,
+  Ruleset,
 } from "@itwin/presentation-common";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import {
-  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePresentationDefaultUnitFormats,
+  createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes, NativePlatformResponse, NativePresentationDefaultUnitFormats,
   NativePresentationKeySetJSON, NativePresentationUnitSystem,
 } from "./NativePlatform";
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerMode, PresentationManagerProps, UnitSystemFormat } from "./PresentationManager";
@@ -134,33 +135,42 @@ export class PresentationManagerDetail implements IDisposable {
   }
 
   public async request(params: RequestParams): Promise<string> {
-    const { requestId, imodel, locale, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     this._onManagerUsed?.();
-
+    const { requestId, imodel, locale, unitSystem, diagnostics: requestDiagnostics, cancelEvent, ...strippedParams } = params;
     const imodelAddon = this.getNativePlatform().getImodelAddon(imodel);
-    const nativeRequestParams: any = {
-      requestId,
-      params: {
-        locale: (locale ?? this.activeLocale)?.toLocaleLowerCase(),
-        unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
-        ...strippedParams,
+    const response = await withOptionalDiagnostics(
+      [this._diagnosticsOptions, requestDiagnostics],
+      async (diagnosticsOptions) => {
+        const nativeRequestParams: any = {
+          requestId,
+          params: {
+            locale: (locale ?? this.activeLocale)?.toLocaleLowerCase(),
+            unitSystem: toOptionalNativeUnitSystem(unitSystem ?? this.activeUnitSystem),
+            ...strippedParams,
+            ...(diagnosticsOptions ? { diagnostics: diagnosticsOptions } : undefined),
+          },
+        };
+        return this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
       },
-    };
-
-    const diagnostics = combineDiagnosticsOptions(this._diagnosticsOptions, requestDiagnostics);
-    if (diagnostics)
-      nativeRequestParams.params.diagnostics = diagnostics;
-
-    const response = await this.getNativePlatform().handleRequest(imodelAddon, JSON.stringify(nativeRequestParams), cancelEvent);
-
-    if (response.diagnostics) {
-      const logs = { logs: [response.diagnostics] };
-      this._diagnosticsOptions && reportDiagnostics(this._diagnosticsOptions, logs);
-      requestDiagnostics && reportDiagnostics(requestDiagnostics, logs);
-    }
-
+    );
     return response.result;
   }
+}
+
+async function withOptionalDiagnostics(
+  diagnosticsOptions: Array<BackendDiagnosticsOptions | undefined>,
+  nativePlatformRequestHandler: (combinedDiagnosticsOptions: DiagnosticsOptions | undefined) => Promise<NativePlatformResponse<string>>,
+): Promise<NativePlatformResponse<string>> {
+  const contexts = diagnosticsOptions.map((d) => d?.requestContextSupplier?.());
+  const combinedOptions = combineDiagnosticsOptions(...diagnosticsOptions);
+  const response = await nativePlatformRequestHandler(combinedOptions);
+  if (response.diagnostics) {
+    const diagnostics = { logs: [response.diagnostics] };
+    diagnosticsOptions.forEach((options, i) => {
+      options && reportDiagnostics(diagnostics, options, contexts[i]);
+    });
+  }
+  return response;
 }
 
 interface RequestParams {

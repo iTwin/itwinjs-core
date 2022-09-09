@@ -184,15 +184,21 @@ describe("reportDiagnostics", () => {
   });
 
   it("only calls handler when there are logs to be reported", () => {
-    reportDiagnostics({ handler, perf: true, dev: "trace", editor: "trace" }, {});
+    reportDiagnostics({}, { handler, perf: true, dev: "trace", editor: "trace" });
     expect(handler).to.not.be.called;
-    reportDiagnostics({ handler, perf: true, dev: "trace", editor: "trace" }, { logs: [] });
+    reportDiagnostics({ logs: [] }, { handler, perf: true, dev: "trace", editor: "trace" });
     expect(handler).to.not.be.called;
+  });
+
+  it("calls handler with provided context", () => {
+    const context = {};
+    const diagnostics = { logs: [{ scope: "x", duration: 1 }] };
+    reportDiagnostics(diagnostics, { handler, perf: true }, context);
+    expect(handler).to.be.calledOnceWithExactly(diagnostics, context);
   });
 
   it("only includes entries matching given options", () => {
     reportDiagnostics(
-      { handler, perf: { minimumDuration: 100 }, dev: "info", editor: "warning" },
       {
         logs: [{
           scope: "scope with higher duration",
@@ -262,6 +268,7 @@ describe("reportDiagnostics", () => {
           }],
         }],
       },
+      { handler, perf: { minimumDuration: 100 }, dev: "info", editor: "warning" },
     );
     expect(handler).to.be.calledOnce;
     expect(handler.firstCall.args[0]).to.deep.eq({
@@ -317,7 +324,6 @@ describe("reportDiagnostics", () => {
 
   it("includes zero duration scopes when requesting all performance diagnostics", () => {
     reportDiagnostics(
-      { handler, perf: true },
       {
         logs: [{
           scope: "zero duration scope",
@@ -325,6 +331,7 @@ describe("reportDiagnostics", () => {
           scopeCreateTimestamp: 123,
         }],
       },
+      { handler, perf: true },
     );
     expect(handler).to.be.calledOnce;
     expect(handler.firstCall.args[0]).to.deep.eq({

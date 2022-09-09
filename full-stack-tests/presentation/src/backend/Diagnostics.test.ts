@@ -101,19 +101,22 @@ describe("Diagnostics", async () => {
   });
 
   it("reports with only requested diagnostics", async () => {
+    const managerDiagnosticsContext = {};
     const managerDiagnosticsSpy = sinon.spy();
+    const requestDiagnosticsContext = {};
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy } }), async (manager) => {
+    await using(new PresentationManager({ diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext } }), async (manager) => {
       await manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
         diagnostics: {
           editor: "trace",
           handler: requestDiagnosticsSpy,
+          requestContextSupplier: () => requestDiagnosticsContext,
         },
       });
     });
-    expect(managerDiagnosticsSpy).be.calledOnceWith(sinon.match((d: Diagnostics) => {
+    expect(managerDiagnosticsSpy).be.calledOnceWithExactly(sinon.match((d: Diagnostics) => {
       function isPerfOrDevLog(entry: DiagnosticsLogEntry): boolean {
         if (DiagnosticsLogEntry.isMessage(entry)) {
           return entry.severity.dev !== undefined;
@@ -122,8 +125,8 @@ describe("Diagnostics", async () => {
           && (!entry.logs || entry.logs.every(isPerfOrDevLog));
       }
       return d.logs && d.logs.length > 0 && d.logs.every(isPerfOrDevLog);
-    }));
-    expect(requestDiagnosticsSpy).to.calledOnceWith(sinon.match((d: Diagnostics) => {
+    }), managerDiagnosticsContext);
+    expect(requestDiagnosticsSpy).to.calledOnceWithExactly(sinon.match((d: Diagnostics) => {
       function isEditorLog(entry: DiagnosticsLogEntry): boolean {
         if (DiagnosticsLogEntry.isMessage(entry)) {
           return entry.severity.editor !== undefined;
@@ -132,7 +135,7 @@ describe("Diagnostics", async () => {
           && (!entry.logs || entry.logs.every(isEditorLog));
       }
       return d.logs && d.logs.length > 0 && d.logs.every(isEditorLog);
-    }));
+    }), requestDiagnosticsContext);
   });
 
 });
@@ -179,6 +182,10 @@ describe("Learning Snippets", () => {
 
     it("gets backend per-manager diagnostics", async () => {
       Presentation.terminate();
+
+      let requestIndex = 0;
+      const getCurrentActivityId = sinon.fake(() => (++requestIndex).toString());
+
       const log = sinon.stub();
       const id1 = "0x1";
       const id2 = "0x2";
@@ -188,11 +195,13 @@ describe("Learning Snippets", () => {
         diagnostics: {
           // request performance metrics
           perf: true,
-          // supply a callback that'll receive the diagnostics
-          handler: (diagnostics: Diagnostics) => {
+          // supply a method to capture current request context
+          requestContextSupplier: getCurrentActivityId,
+          // supply a callback that'll receive the diagnostics and request context supplied by `requestContextSupplier`
+          handler: (diagnostics: Diagnostics, currentActivityId?: string) => {
             // log duration of each diagnostics scope
             diagnostics.logs && diagnostics.logs.forEach((entry) => {
-              log(`${entry.scope}: ${entry.duration}`);
+              log(`[${currentActivityId}] ${entry.scope}: ${entry.duration}`);
             });
           },
         },
@@ -203,9 +212,10 @@ describe("Learning Snippets", () => {
       await Presentation.getManager().getElementProperties({ imodel, elementId: id2 });
       // __PUBLISH_EXTRACT_END__
 
+      expect(getCurrentActivityId).to.be.calledTwice;
       expect(log).to.be.calledTwice;
-      expect(log.firstCall.args[0]).to.match(/GetContent: \d+/);
-      expect(log.secondCall.args[0]).to.match(/GetContent: \d+/);
+      expect(log.firstCall.args[0]).to.match(/\[1\] GetContent: \d+/);
+      expect(log.secondCall.args[0]).to.match(/\[2\] GetContent: \d+/);
     });
 
   });
