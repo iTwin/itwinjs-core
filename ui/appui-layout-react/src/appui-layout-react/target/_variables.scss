@@ -27,10 +27,40 @@ $nz-widget-target-border-size: 2px;
   box-shadow: $iui-elevation-8;
 
   @include uicore-z-index(drop-target);
+
+  @media (prefers-reduced-motion: no-preference) {
+    @keyframes nz-pulse {
+      from {
+        transform: scale3d(1, 1, 1);
+      }
+
+      50% {
+        transform: scale3d(1.1, 1.1, 1.1);
+      }
+
+      to {
+        transform: scale3d(1, 1, 1);
+      }
+    }
+
+    @keyframes nz-grow {
+      from {
+        transform: scale3d(0, 0, 0);
+      }
+
+      to {
+        transform: scale3d(1, 1, 1);
+      }
+    }
+  }
+
+  animation: nz-grow $iui-speed-fast ease-in-out,
+  nz-pulse 3s ease-in-out 2s infinite;
 }
 
 @mixin nz-targeted-widget-target {
   transform: scale(1.2);
   background-color: $nz-opaque-outline-color;
   box-shadow: $iui-elevation-16;
+  animation-iteration-count: 0, 0;
 }
