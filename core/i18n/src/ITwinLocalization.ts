@@ -166,6 +166,10 @@ export class ITwinLocalization implements Localization {
    * @internal
    */
   public getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")
