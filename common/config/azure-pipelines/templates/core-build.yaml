@@ -19,7 +19,7 @@ steps:
 
         Write-Host "setting RUSH_BUILD_CACHE_WRITE_ALLOWED to $([int]$useRushWriteCache)"
         Write-Host "##vso[task.setvariable variable=RUSH_BUILD_CACHE_WRITE_ALLOWED;]$([int]$useRushWriteCache)"
-      displayName: "Set Rush Build Cache env vars"
+    displayName: "Set Rush Build Cache env vars"
 
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
