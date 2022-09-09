@@ -13,7 +13,7 @@ Table of contents:
   - [Improved display transform support](#improved-display-transform-support)
 - [Presentation](#presentation)
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
-  - [OpenTelemetry](#opentelemetry)
+  - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
   - [Localization changes](#localization-changes)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
@@ -90,32 +90,18 @@ useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
 const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
-### OpenTelemetry
 
-It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
+### Diagnostics improvements and OpenTelemetry
 
-Example usage:
+The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has been upgraded from `@alpha` to `@beta`. Several new features have also been added:
 
-```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
-
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
-});
-
-Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
-  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
-  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-  traceExporter.export(spans, () => {});
-} });
-```
+- Ability to retrieve backend version when sending a request from the frontend. See [Getting request diagnostics on the frontend](../presentation/advanced/Diagnostics.md#getting-request-diagnostics-on-the-frontend) section for an example.
+- Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
+- Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
 
 ### Localization Changes
 
-Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
 In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
 
