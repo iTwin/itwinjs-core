@@ -9,11 +9,7 @@ parameters:
     default: 1
 
 steps:
-  - task: PowerShell@2
-    displayName: "Set Rush Build Cache env vars"
-    inputs:
-      targetType: 'inline'
-      script: |
+  - powershell: |
         # Because ADO evaluates Agent.OS at runtime,
         # we cannot use it in build-time expressions.
         # Instead, set the RUSH_BUILD_CACHE_WRITE_ALLOWED env var here.
@@ -23,6 +19,7 @@ steps:
 
         Write-Host "setting RUSH_BUILD_CACHE_WRITE_ALLOWED to $([int]$useRushWriteCache)"
         Write-Host "##vso[task.setvariable variable=RUSH_BUILD_CACHE_WRITE_ALLOWED;]$([int]$useRushWriteCache)"
+      displayName: "Set Rush Build Cache env vars"
 
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
