@@ -1548,6 +1548,29 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 // @public
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
 
+// @internal (undocumented)
+export class LocalizationHelper {
+    constructor(props: LocalizationHelperProps);
+    // (undocumented)
+    getLocalizedContent(content: Content): Content;
+    // (undocumented)
+    getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
+    // (undocumented)
+    getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
+    // (undocumented)
+    getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodes(nodes: Node_2[]): Node_2[];
+    // (undocumented)
+    getLocalizedString(text: string): string;
+}
+
+// @internal (undocumented)
+export interface LocalizationHelperProps {
+    // (undocumented)
+    getLocalizedString: (key: string) => string;
+}
+
 // @beta
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
     elementClasses?: string[];

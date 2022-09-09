@@ -6,13 +6,27 @@
  * @module Core
  */
 
-import path from "path";
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
   combineDiagnosticsSeverities, compareDiagnosticsSeverities, Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey,
 } from "@itwin/presentation-common";
+
+const ecPresentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+const rulesEngine = require("@itwin/presentation-common/lib/cjs/assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
+
+/** @internal */
+export function getLocalizedStringEN(key: string) {
+  const [namespace, identifier] = key.split(":", 2);
+  if (namespace === "ECPresentation") {
+    return ecPresentation[identifier];
+  }
+  if (namespace === "RulesEngine") {
+    return rulesEngine[identifier];
+  }
+  return key;
+}
 
 /** @internal */
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined {
@@ -37,10 +51,6 @@ export function normalizeVersion(version?: string) {
   }
   return "0.0.0";
 }
-
-/** @internal */
-// istanbul ignore next
-export const getLocalesDirectory = (assetsDirectory: string) => path.join(assetsDirectory, "locales");
 
 /**
  * A function that received request diagnostics and, optionally, request context.

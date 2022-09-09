@@ -88,7 +88,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
 
 // @internal (undocumented)
-export const getLocalesDirectory: (assetsDirectory: string) => string;
+export function getLocalizedStringEN(key: string): any;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -192,8 +192,8 @@ export enum PresentationBackendNativeLoggerCategory {
 // @public
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
-    get activeLocale(): string | undefined;
-    set activeLocale(value: string | undefined);
+    // @deprecated
+    activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
@@ -251,14 +251,18 @@ export interface PresentationManagerProps {
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
+    // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
     // @beta
     diagnostics?: BackendDiagnosticsOptions;
     // @deprecated
     enableSchemasPreload?: boolean;
+    // @beta
+    getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;
+    // @deprecated
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
     presentationAssetsRoot?: string | {

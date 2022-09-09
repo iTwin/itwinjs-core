@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority, SQLiteDb } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
@@ -34,7 +34,7 @@ describe("Cloud workspace containers", () => {
       };
       IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
       fs.emptyDirSync(cacheProps.rootDir);
-      return SQLiteDb.createCloudCache(cacheProps);
+      return CloudSqlite.createCloudCache(cacheProps);
     };
 
     const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });

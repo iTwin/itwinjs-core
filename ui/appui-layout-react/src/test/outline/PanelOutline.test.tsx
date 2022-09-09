@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { createHorizontalPanelState, createNineZoneState, createPanelsState, DragManager, NineZoneState, PanelSide, PanelSideContext, PanelStateContext } from "../../appui-layout-react";
+import { createNineZoneState, DragManager, NineZoneState, PanelSide, PanelSideContext, PanelStateContext } from "../../appui-layout-react";
 import { PanelOutline, useHidden } from "../../appui-layout-react/outline/PanelOutline";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
 import { createDragStartArgs, TestNineZoneProvider } from "../Providers";
 import { renderHook } from "@testing-library/react-hooks";
 import { act } from "react-dom/test-utils";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("PanelOutline", () => {
   interface WrapperProps {
@@ -44,13 +45,8 @@ describe("PanelOutline", () => {
   });
 
   it("should render spanned horizontal outline", () => {
-    const state = createNineZoneState({
-      panels: createPanelsState({
-        bottom: createHorizontalPanelState("bottom", {
-          span: true,
-        }),
-      }),
-    });
+    let state = createNineZoneState();
+    state = updatePanelState(state, "bottom", { span: true });
     const { container } = render(
       <PanelOutline />,
       {
@@ -82,7 +78,7 @@ describe("useHidden", () => {
 
   it("should return `true` if target is not a panel", () => {
     const dragManagerRef = React.createRef<DragManager>();
-    const { result }= renderHook(() => useHidden(), {
+    const { result } = renderHook(() => useHidden(), {
       wrapper: (props) => <Wrapper dragManagerRef={dragManagerRef} {...props} />, // eslint-disable-line react/display-name
     });
     act(() => {
@@ -96,7 +92,7 @@ describe("useHidden", () => {
 
   it("should return `true` if target is not a current panel", () => {
     const dragManagerRef = React.createRef<DragManager>();
-    const { result }= renderHook(() => useHidden(), {
+    const { result } = renderHook(() => useHidden(), {
       wrapper: (props) => <Wrapper dragManagerRef={dragManagerRef} {...props} />, // eslint-disable-line react/display-name
     });
     act(() => {
@@ -112,7 +108,7 @@ describe("useHidden", () => {
 
   it("should return `false`", () => {
     const dragManagerRef = React.createRef<DragManager>();
-    const { result }= renderHook(() => useHidden(), {
+    const { result } = renderHook(() => useHidden(), {
       wrapper: (props) => <Wrapper dragManagerRef={dragManagerRef} {...props} />, // eslint-disable-line react/display-name
     });
     act(() => {

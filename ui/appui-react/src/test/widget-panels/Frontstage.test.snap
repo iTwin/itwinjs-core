@@ -234,7 +234,6 @@ Object {
       "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
-      "preferredPopoutWidgetSize": undefined,
       "userSized": undefined,
     },
   },
