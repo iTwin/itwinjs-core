@@ -67,15 +67,33 @@ export class ITwinLocalization implements Localization {
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
-    // In case defaultNS is passed into the constructor, make sure it's in the namespaces list
-    if (this._initOptions.defaultNS && namespaces.indexOf(this._initOptions.defaultNS) === -1) {
-      namespaces.push(this._initOptions.defaultNS);
+    let initNamespaces: readonly string[];
+    let combinedNamespaces: string[];
+    let defaultNS: string;
+
+    if (this._initOptions.ns === undefined) {
+      initNamespaces = []
+    } else if (typeof this._initOptions.ns === "string") {
+      initNamespaces = [this._initOptions.ns]
+    } else {  // === string[]
+      initNamespaces = this._initOptions.ns;
+    }
+    combinedNamespaces = [...new Set([...namespaces, ...initNamespaces])]; // without duplicates
+
+    defaultNS = combinedNamespaces[0];
+    if (this._initOptions.defaultNS) {
+      defaultNS = this._initOptions.defaultNS;
+
+      // Make sure defaultNS is in namespaces list
+      if (combinedNamespaces.indexOf(this._initOptions.defaultNS) === -1) {
+        combinedNamespaces.push(this._initOptions.defaultNS);
+      }
     }
 
     const initOptions: InitOptions = {
-      ns: namespaces,
-      defaultNS: namespaces[0],
       ...this._initOptions,
+      defaultNS: defaultNS,
+      ns: combinedNamespaces,
     };
 
     // if in a development environment, set debugging
