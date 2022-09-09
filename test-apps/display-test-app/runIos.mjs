@@ -73,7 +73,6 @@ async function go() {
   if (device.state !== "Booted") {
     console.log(`Booting simulator: ${device.name}`);
     await simctl.bootDevice();
-    // TODO: see if we need to wait for the boot to complete before continuing
   }
 
   // Install the app
@@ -90,9 +89,8 @@ async function go() {
 
   // Copy the model to the simulator's Documents dir
   const container = await simctl.getAppContainer(bundleId, "data");
-  const __dirname = dirname(fileURLToPath(import.meta.url));
-  const imodelPath=`${__dirname}/../../core/backend/src/test/assets/${bimFile}`;
-  await copyFile(imodelPath, `${container}/Documents/${bimFile}`);
+  const assetsPath=`${dirname(fileURLToPath(import.meta.url))}/../../core/backend/src/test/assets`;
+  await copyFile(`${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
 
   // Launch the app instructing it to open the model and exit
   console.log("Launching app");
