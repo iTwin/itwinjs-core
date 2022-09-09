@@ -69,16 +69,9 @@ export class ITwinLocalization implements Localization {
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
-    let initNamespaces: readonly string[];
     let defaultNamespace: string;
 
-    if (this._initOptions.ns === undefined) {
-      initNamespaces = [];
-    } else if (typeof this._initOptions.ns === "string") {
-      initNamespaces = [this._initOptions.ns];
-    } else {  // === string[]
-      initNamespaces = this._initOptions.ns;
-    }
+    const initNamespaces: string[] = [this._initOptions.ns || []].flat();
     const combinedNamespaces: string[] = [...new Set([...namespaces, ...initNamespaces])]; // without duplicates
 
     defaultNamespace = combinedNamespaces[0];
