@@ -35,7 +35,7 @@ async function go() {
   const simctl = new Simctl();
   process.exitCode = 1;
 
-  console.log("Getting devices");
+  console.log("Getting iOS devices");
   const results = await simctl.getDevices(undefined, 'iOS');
   var device = undefined;
   const keys = Object.keys(results).filter(key => key.startsWith("13"));
@@ -65,7 +65,7 @@ async function go() {
     return;
   }
 
-  // Select the simulator we'll use
+  // Select the simulator we're using
   console.log(`Using simulator: ${device.name} iOS: ${device.sdk}`);
   simctl.udid = device.udid;
 
