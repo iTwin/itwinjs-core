@@ -12,6 +12,8 @@ import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
 
+const DEFAULT_MAX_RETRIES: number = 1; // a low number prevents wasted time and potential timeouts when requesting localization files throws an error
+
 /** Options for ITwinLocalization
  *  @public
  */
@@ -54,7 +56,7 @@ export class ITwinLocalization implements Localization {
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
-      maxRetries: 1, // prevents wasted time and potential timeouts when requesting localization files throws an error
+      maxRetries: DEFAULT_MAX_RETRIES,
       backend: this._backendOptions,
       detection: this._detectionOptions,
       ...options?.initOptions,
