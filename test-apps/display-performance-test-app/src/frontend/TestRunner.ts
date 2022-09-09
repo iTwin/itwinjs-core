@@ -5,7 +5,7 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
