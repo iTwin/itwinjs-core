@@ -226,7 +226,7 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
-  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:ios` and is the URL to the debug web server running on the developer's computer.)
+  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
 
 ## Key-ins
 
