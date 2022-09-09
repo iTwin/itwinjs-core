@@ -63,7 +63,6 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
-import { trace } from "console";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2283,8 +2282,6 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note This method should almost never be invoked directly - it is invoked on your behalf by [[ViewManager]]'s render loop.
    */
   public renderFrame(): void {
-    console.log("renderFrame---");
-    console.trace("hello");
     this._frameStatsCollector.beginFrame();
 
     const changeFlags = this._changeFlags;
@@ -2351,7 +2348,6 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {
-        console.log("renderFrame, creatingScene, requestMissingTiles");
         this._frameStatsCollector.beginTime("createChangeSceneTime");
         IModelApp.tileAdmin.clearTilesForUser(this);
         IModelApp.tileAdmin.clearUsageForUser(this);
