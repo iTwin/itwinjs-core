@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add waitForTilesToLoad API to Viewport.",
+      "comment": "Add waitForSceneCompletion API to Viewport.",
       "type": "none"
     }
   ],
