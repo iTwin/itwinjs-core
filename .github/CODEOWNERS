@@ -40,8 +40,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig
-/common/**/core-electron.*                    @wgoehrig
-/common/**/core-electron/                     @wgoehrig
+/common/**/core-electron.*                    @wgoehrig @GytisCepk @ben-polinsky
+/common/**/core-electron/                     @wgoehrig @GytisCepk @ben-polinsky
 /common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
 /common/**/express-server.*                   @calebmshafer @wgoehrig
 /common/**/express-server/                    @calebmshafer @wgoehrig
@@ -98,7 +98,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
-/core/electron                  @wgoehrig @ramanujam-raman
+/core/electron                  @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server            @calebmshafer @wgoehrig
 /core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
