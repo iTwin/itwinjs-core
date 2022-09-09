@@ -61,7 +61,7 @@
     "@itwin/perf-tools": "workspace:*",
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "5.0.0-dev.4",
+    "@bentley/react-scripts": "^5.0.0",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "16.11.7",
