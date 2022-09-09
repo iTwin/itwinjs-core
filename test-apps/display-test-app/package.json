@@ -105,7 +105,8 @@
     "webpack": "^5.64.4",
     "semver": "^7.3.5",
     "express-ws": "^5.0.2",
-    "@types/express-ws": "^3.0.1"
+    "@types/express-ws": "^3.0.1",
+    "node-simctl": "~7.1.4"
   },
   "browserslist": [
     "last 4 chrome version",
