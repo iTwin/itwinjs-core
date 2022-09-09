@@ -63,6 +63,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
+import { trace } from "console";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -291,6 +292,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
+
+  private _hasMissingTiles = false;
+  private _missingTilesSize = 0;
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -2279,6 +2283,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note This method should almost never be invoked directly - it is invoked on your behalf by [[ViewManager]]'s render loop.
    */
   public renderFrame(): void {
+    console.log("renderFrame---");
+    console.trace("hello");
     this._frameStatsCollector.beginFrame();
 
     const changeFlags = this._changeFlags;
@@ -2345,6 +2351,7 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (!this._sceneValid) {
       if (!this._freezeScene) {
+        console.log("renderFrame, creatingScene, requestMissingTiles");
         this._frameStatsCollector.beginTime("createChangeSceneTime");
         IModelApp.tileAdmin.clearTilesForUser(this);
         IModelApp.tileAdmin.clearUsageForUser(this);
@@ -2353,6 +2360,8 @@ export abstract class Viewport implements IDisposable, TileUser {
         this.createScene(context);
 
         context.requestMissingTiles();
+        this._hasMissingTiles = context.hasMissingTiles;
+        this._missingTilesSize = context.missingTiles.size;
         target.changeScene(context.scene);
         isRedrawNeeded = true;
         this._frameStatsCollector.endTime("createChangeSceneTime");
@@ -2494,22 +2503,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.readImageToCanvas();
   }
 
-  /** Waits for all tiles to load and render for this viewport.
-   * @returns A promise which will resolve when all tiles finish loading and are rendered for this viewport.
-   */
-  public async waitForSceneCompletion(): Promise<void> {
+  private async _waitForTiles(args: {loopPrelude?: () => void, loopPostlude?: (haveNewTiles: boolean) => void} = {}) {
     let haveNewTiles = true;
     while (haveNewTiles) {
-      this.requestRedraw();
-      this.invalidateScene();
-      this.renderFrame();
+      if (undefined !== args.loopPrelude)
+        args.loopPrelude();
 
-      // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
-      const context = this.createSceneContext();
-      this.createScene(context);
-      context.requestMissingTiles();
-
-      haveNewTiles = !this.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
+      haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles || 0 < this._missingTilesSize;
       if (!haveNewTiles) {
         // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
         for (const vp of this.view.secondaryViewports) {
@@ -2526,12 +2526,53 @@ export abstract class Viewport implements IDisposable, TileUser {
         }
       }
 
-      if (!IModelApp.viewManager.hasViewport(this) && haveNewTiles)
-        IModelApp.tileAdmin.process();
+      if (undefined !== args.loopPostlude)
+        args.loopPostlude(haveNewTiles);
 
       await BeDuration.wait(100);
     }
+  }
 
+  private async _waitForSceneCompletionWithViewManager(): Promise<void> {
+    // Must first wait to ensure all tile trees are loaded -- tile requests will not happen before then; it may look like we have no requests pending, but in reality no requests even began.
+    while (!this.areAllTileTreesLoaded) {
+      await BeDuration.wait(100);
+    }
+
+    // After all tile trees have loaded, kick off an initial request for tiles.
+    this.invalidateScene();
+    this.renderFrame();
+
+    // Let the ViewManager/TileAdmin initiate all further requests for tiles until no more requests are pending.
+    await this._waitForTiles();
+  }
+
+  private async _waitForSceneCompletionWithoutViewManager(): Promise<void> {
+    await this._waitForTiles({
+      loopPrelude: () => {
+      // Since this viewport is not being managed by the ViewManager, we must first manually invalidate the scene and re-render the frame each tick of the tile-wait loop.
+        this.invalidateScene();
+        this.renderFrame();
+      },
+      loopPostlude: (haveNewTiles: boolean) => {
+        // Since the viewport is not being managed by the ViewManager, we must manually pump the TileAdmin to initiate further tile requests each tick of the tile-wait loop.
+        if (haveNewTiles)
+          IModelApp.tileAdmin.process();
+      },
+    });
+  }
+
+  /** Waits for all tiles to load and render for this viewport.
+   * @returns A promise which will resolve when all tiles finish loading and are rendered for this viewport.
+   */
+  public async waitForSceneCompletion(): Promise<void> {
+    // First wait for scene completion, which varies depending on if the viewport is managed or unmanaged.
+    const promise = IModelApp.viewManager.hasViewport(this)
+      ? this._waitForSceneCompletionWithViewManager()
+      : this._waitForSceneCompletionWithoutViewManager();
+    await promise;
+
+    // Must finally wait for all external textures to load in order for the scene to be complete.
     await IModelApp.renderSystem.waitForAllExternalTextures();
     this.renderFrame();
   }
