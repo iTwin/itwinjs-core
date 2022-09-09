@@ -24,7 +24,7 @@ test.describe("widget state", () => {
   });
 
   test("should hide a floating widget", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:ViewAttributesWidget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:ViewAttributesWidget" });
     const tab = tabLocator(page, "View Attributes");
     await expect(tab).toBeVisible();
     await expect(widget).toBeVisible();
@@ -39,7 +39,7 @@ test.describe("widget state", () => {
   });
 
   test("should hide a floating widget (multiple tabs)", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const tab1 = tabLocator(page, "FW-1");
     const tab2 = tabLocator(page, "FW-2");
     const tab3 = tabLocator(page, "FW-3");
@@ -74,7 +74,7 @@ test.describe("widget state", () => {
   });
 
   test("should maintain active tab when widgets are hidden", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const activeTab = activeTabLocator(widget);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-1");
 
@@ -101,7 +101,7 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const widgetBounds = await widget.boundingBox();
     expect(widgetBounds).toBeDefined();
 
@@ -117,7 +117,7 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const widgetBounds = await widget.boundingBox();
     expect(widgetBounds).toBeDefined();
 

@@ -15,8 +15,13 @@ export async function runKeyin(page: Page, keyin: string) {
 
 type PanelSide = "left" | "right" | "top" | "bottom";
 
-export function floatingWidgetLocator(page: Page, widgetId: string) {
-  return page.locator(`[data-widget-id="${widgetId}"]`);
+type FloatingWidgetLocatorArgs = { page: Page, id: string } | { tab: Locator };
+
+export function floatingWidgetLocator(args: FloatingWidgetLocatorArgs) {
+  if ("tab" in args) {
+    return args.tab.page().locator(".nz-widget-floatingWidget", { has: args.tab });
+  }
+  return args.page.locator(`[data-widget-id="${args.id}"]`);
 }
 
 type WidgetLocatorArgs = { tab: Locator } | { panel: Locator };
@@ -44,14 +49,27 @@ export function panelLocator(args: PanelLocatorArgs) {
   return args.page.locator(`.nz-widgetPanels-panel.nz-${args.side}`);
 }
 
+export function titleBarHandleLocator(widget: Locator) {
+  return widget.locator(".nz-handle");
+}
+
+export function frontstageLocator(page: Page) {
+  return page.locator(".uifw-widgetPanels-frontstage");
+}
+
 export interface SavedFrontstageState {
   nineZone: {
+    floatingWidgets: {
+      allIds: string[];
+    };
     popoutWidgets: {
       allIds: string[];
     };
     widgets: {
       [id in string]: {
+        id: string;
         activeTabId: string;
+        tabs: string[];
       };
     }
   };

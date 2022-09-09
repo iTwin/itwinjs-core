@@ -236,6 +236,12 @@ Object {
       "preferredFloatingWidgetSize": undefined,
       "userSized": undefined,
     },
+    "t2": Object {
+      "allowedPanelTargets": undefined,
+      "id": "t2",
+      "preferredFloatingWidgetSize": undefined,
+      "userSized": undefined,
+    },
   },
   "toolSettings": Object {
     "type": "docked",
