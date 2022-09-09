@@ -36,6 +36,8 @@ steps:
       RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
       ${{ if and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual')) }}:
         RUSH_BUILD_CACHE_WRITE_ALLOWED: 1
+      ${{ if not(and(eq(variables['Agent.OS'], 'Linux'), in(variables['Build.Reason'], 'IndividualCI', 'Manual'))) }}:
+        RUSH_BUILD_CACHE_WRITE_ALLOWED: 0
 
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
