@@ -305,14 +305,14 @@ describe("iModel", () => {
     const testMaterialName = "test material name";
     const testPaletteName = "test palette name";
     const testDescription = "test description";
-    const color = [25, 32, 9];
-    const specularColor = [99, 255, 1];
+    const color = [0.3, 0.7, 0.8];
+    const specularColor = [0.1, 1, 0];
     const finish = 0.4;
     const transmit = 0.1;
     const diffuse = 0.24;
     const specular = 0.9;
     const reflect = 0.3;
-    const reflectColor = [255, 0, 127];
+    const reflectColor = [1, 0, 0.5];
     /* eslint-disable @typescript-eslint/naming-convention */
     const textureMapProps: TextureMapProps = {
       pattern_angle: 3.0,

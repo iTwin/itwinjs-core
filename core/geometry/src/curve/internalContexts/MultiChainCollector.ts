@@ -251,6 +251,17 @@ export class MultiChainCollector {
       return curves[0];
     return Path.createArray(curves);
   }
+  private chainToLineString3d(curves: CurvePrimitive[]): LineString3d | undefined{
+    if (curves.length === 0)
+      return undefined;
+    const linestring = LineString3d.create ();
+    for (const curve of curves){
+      curve.emitStrokes (linestring);
+      linestring.removeDuplicatePoints ();
+    }
+    return linestring;
+  }
+
   /** Return the collected results, structured as the simplest possible type. */
   public grabResult(makeLoopIfClosed: boolean = false): CurvePrimitive | Path | BagOfCurves | Loop | undefined {
     const chains = this._chains;
@@ -264,6 +275,21 @@ export class MultiChainCollector {
       bag.tryAddChild(q);
     }
     return bag;
+  }
+/** Return chains as individual calls to announceChain. */
+public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void): void {
+  const chains = this._chains;
+  if (chains.length === 1){
+    const ls = this.chainToLineString3d(chains[0]);
+    if (ls)
+      announceChain(ls);
+  } else if (chains.length > 1){
+    for (const chain of chains) {
+      const ls = this.chainToLineString3d(chain);
+      if (ls)
+        announceChain(ls);
+      }
+    }
   }
 }
 // static methods to assist offset sequences ....
@@ -348,7 +374,6 @@ export class OffsetHelpers {
   }
   /**
    * * Restructure curve fragments as chains and offsets
-   * * Return object with named chains, insideOffsets, outsideOffsets
    * * BEWARE that if the input is not a loop the classification of outputs is suspect.
    * @param fragments fragments to be chained
    * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail.

@@ -14,7 +14,7 @@ describe("PopoutToggle", () => {
     const { container } = render(
       <TestNineZoneProvider>
         <PanelStateContext.Provider value={nineZone.panels.left}>
-          <ActiveTabIdContext.Provider value={"t1"}>
+          <ActiveTabIdContext.Provider value="t1">
             <PopoutToggle />
           </ActiveTabIdContext.Provider>
         </PanelStateContext.Provider>
@@ -32,7 +32,7 @@ describe("PopoutToggle", () => {
         dispatch={dispatch}
       >
         <PanelStateContext.Provider value={nineZone.panels.left}>
-          <ActiveTabIdContext.Provider value={"t1"}>
+          <ActiveTabIdContext.Provider value="t1">
             <PopoutToggle />
           </ActiveTabIdContext.Provider>
         </PanelStateContext.Provider>

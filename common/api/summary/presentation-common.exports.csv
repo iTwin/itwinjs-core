@@ -30,7 +30,9 @@ beta;ClientDiagnostics
 public;ClientDiagnosticsAttribute
 beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
 beta;ClientDiagnosticsOptions 
+internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
 internal;CommonIpcParams
+internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 alpha;ComputeSelectionRequestOptions
@@ -209,6 +211,8 @@ public;LabelOverride
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+internal;LocalizationHelper
+internal;LocalizationHelperProps
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 

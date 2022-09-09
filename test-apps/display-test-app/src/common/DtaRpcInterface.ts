@@ -30,4 +30,5 @@ export class DtaRpcInterface extends RpcInterface {
   public async writeExternalFile(_filename: string, _content: string): Promise<void> { return this.forward(arguments); }
   public async terminate(): Promise<void> { return this.forward(arguments); }
   public async getEnvConfig(): Promise<DtaConfiguration> { return this.forward(arguments); }
+  public async getAccessToken(): Promise<string> { return this.forward(arguments); }
 }

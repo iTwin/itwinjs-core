@@ -136,6 +136,11 @@ export class WidgetApiStage {
         pinned: true,
         defaultState: StagePanelState.Open,
       },
+      leftPanelProps: {
+        resizable: true,
+        pinned: true,
+        defaultState: StagePanelState.Open,
+      },
     };
 
     ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(widgetApiStageProps));
