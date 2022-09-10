@@ -2,6 +2,7 @@
   "name": "imodel-from-orbitgt-pointcloud",
   "//private": "NOTE: this is a private package that is never published",
   "private": true,
+  "version": "0.0.0",
   "license": "MIT",
   "scripts": {
     "build": "tsc 1>&2",

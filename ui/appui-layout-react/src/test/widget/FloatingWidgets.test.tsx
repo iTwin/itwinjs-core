@@ -9,12 +9,12 @@ import { TestNineZoneProvider } from "../Providers";
 
 describe("FloatingWidgets", () => {
   it("should render", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidgets />
       </TestNineZoneProvider>,

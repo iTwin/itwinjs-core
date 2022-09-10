@@ -59,7 +59,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "5.0.0-dev.4",
+    "@bentley/react-scripts": "^5.0.0",
     "@types/bunyan": "^1.8.4",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",

@@ -12,7 +12,7 @@ import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwi
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
+  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
@@ -546,35 +546,49 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
-      const diagnosticOptions: DiagnosticsOptions = {
-        perf: true,
-        editor: "info",
-        dev: "warning",
-      };
-      const diagnosticsResult: Diagnostics = {
+    it("invokes request's diagnostics handler with diagnostic results", async () => {
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           duration: 123,
         }],
       };
+      const diagnosticsContext = {};
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: "ruleset",
+        diagnostics: {
+          perf: true,
+          handler: diagnosticsListener,
+          requestContextSupplier: () => diagnosticsContext,
+        },
+      });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsListener).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
     });
 
-    it("invokes diagnostics callback with diagnostic results", async () => {
-      const diagnosticsCallback = sinon.spy();
+    it("invokes manager's diagnostics callback with diagnostic results", async () => {
       addonMock.reset();
-      manager = new PresentationManager({ addon: addonMock.object, diagnosticsCallback });
 
-      const diagnosticOptions: DiagnosticsOptions = { perf: true };
-      const diagnosticsResult: Diagnostics = {
+      const diagnosticsCallback = sinon.spy();
+      const diagnosticsContext = {};
+      manager = new PresentationManager({
+        addon: addonMock.object,
+        diagnostics: {
+          perf: true,
+          handler: diagnosticsCallback,
+          requestContextSupplier: () => diagnosticsContext,
+        },
+      });
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           scopeCreateTimestamp: 1000,
@@ -582,12 +596,68 @@ describe("PresentationManager", () => {
         }],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
       addonMock.verifyAll();
-      expect(diagnosticsCallback).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+    });
+
+    it("invokes manager and request diagnostics callbacks", async () => {
+      addonMock.reset();
+
+      const requestDiagnosticsCallback = sinon.spy();
+      const requestDiagnosticsContext = {};
+
+      const managerDiagnosticsCallback = sinon.spy();
+      const managerDiagnosticsContext = {};
+      manager = new PresentationManager({
+        addon: addonMock.object,
+        diagnostics: {
+          perf: true,
+          handler: managerDiagnosticsCallback,
+          requestContextSupplier: () => managerDiagnosticsContext,
+        },
+      });
+      const diagnosticsResult = {
+        scope: "req",
+        logs: [{
+          scope: "perf scope",
+          scopeCreateTimestamp: 1000,
+          duration: 123,
+        }, {
+          scope: "log scope",
+          logs: [{
+            message: "msg",
+            category: "cat",
+            severity: { dev: "debug" as DiagnosticsLoggerSeverity },
+            timestamp: 123,
+          }],
+        }],
+      };
+      addonMock
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true, dev: "debug" })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: "ruleset",
+        diagnostics: {
+          dev: "debug",
+          handler: requestDiagnosticsCallback,
+          requestContextSupplier: () => requestDiagnosticsContext,
+        },
+      });
+      addonMock.verifyAll();
+      expect(managerDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[0]] }] }, managerDiagnosticsContext);
+      expect(requestDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[1]] }] }, requestDiagnosticsContext);
     });
 
   });
