@@ -124,6 +124,7 @@ export class ITwinDialog extends React.Component<ITwinDialogProps, ITwinDialogSt
         <div className="itwins animate">
           <div className="header">
             <h3>Select ITwin</h3>
+            {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
             <span onClick={this._onClose.bind(this)} className="icon icon-close" title="Close" />
           </div>
           <div className="itwins-content">
