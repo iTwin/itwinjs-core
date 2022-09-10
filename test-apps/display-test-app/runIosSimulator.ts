@@ -2,8 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { copyFile, readdir } from 'fs/promises';
-import { homedir } from 'os';
+import { copyFile } from 'fs/promises';
+import { execSync } from 'child_process';
+
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
 
@@ -64,21 +65,22 @@ async function main() {
   }
 
   // Install the app
-  const dir = `${homedir()}/Library/Developer/Xcode/DerivedData/`;
-  const files = await readdir(dir);
-  const appDir = files.find(fn => fn.startsWith(appName));
-  if (!appDir) {
-    console.log(`Unable to find app build in ${dir}`);
+  console.log("Getting build directory");
+  const output = execSync("xcodebuild -showBuildSettings", { cwd: `${__dirname}/ios/imodeljs-test-app`, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore']}).split("\n");
+  const buildDir = output.find(line => line.includes("BUILD_DIR = "))?.trim().substring(12).slice(0, -9); // removes the "BUILD_DIR = " prefix, and the "/Products" suffix
+  if (!buildDir) {
+    console.log("Unable to determine BUILD_DIR from xcodebuild -showBuildSettings");
     return;
   }
-  const appPath = `${dir}${appDir}/Build/Products/Debug-iphonesimulator/${appName}.app`;
+  const appPath = `${buildDir}/Debug-iphonesimulator/${appName}.app`;
   console.log(`Installing app from: ${appPath}`);
   await simctl.installApp(appPath);
 
   // Copy the model to the simulator's Documents dir
   const container = await simctl.getAppContainer(bundleId, "data");
-  const assetsPath=`${__dirname}/../../core/backend/src/test/assets`;
-  await copyFile(`${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
+  const assetsPath = "../../core/backend/src/test/assets";
+  console.log(`Copying model from: ${assetsPath} into the app's Documents.`);
+  await copyFile(`${__dirname}/${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
 
   // Launch the app instructing it to open the model and exit
   console.log("Launching app");
