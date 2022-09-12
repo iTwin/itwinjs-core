@@ -6,9 +6,9 @@
 import { assert } from "chai";
 import { spawn, SpawnOptions } from "child_process";
 import * as path from "path";
-import { ElectronHostTest, TestResult } from "./ElectronHostTests";
+import { TestResult, testSuites } from "./ElectronTestCommon";
 
-async function spawnElectronMainProcess(testToRun: ElectronHostTest) {
+async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
   const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-var-requires
 
   const args = [
@@ -20,7 +20,8 @@ async function spawnElectronMainProcess(testToRun: ElectronHostTest) {
     cwd: process.cwd(),
     env: {
       ...process.env,
-      ELECTRON_HOST_TEST_TO_RUN: testToRun, // eslint-disable-line @typescript-eslint/naming-convention
+      ELECTRON_SUITE_TITLE: suiteToRun, // eslint-disable-line @typescript-eslint/naming-convention
+      ELECTRON_TEST_TITLE: testToRun, // eslint-disable-line @typescript-eslint/naming-convention
     },
   };
 
@@ -32,16 +33,12 @@ async function spawnElectronMainProcess(testToRun: ElectronHostTest) {
   assert.equal(exitCode, TestResult.Success);
 }
 
-describe("ElectronHost tests.", async () => {
-  it("Should start without options.", async () => {
-    await spawnElectronMainProcess(ElectronHostTest.StartupWithoutOptions);
+for (const testSuite of testSuites) {
+  describe(testSuite.title, async () => {
+    for (const test of testSuite.tests) {
+      it(test.title, async () => {
+        await spawnElectronMainProcess(testSuite.title, test.title);
+      });
+    }
   });
-
-  it("Should register ipc handler.", async () => {
-    await spawnElectronMainProcess(ElectronHostTest.RegisterIpcHandlers);
-  });
-
-  it("Should open main window.", async () => {
-    await spawnElectronMainProcess(ElectronHostTest.OpenMainWindow);
-  });
-});
+}
