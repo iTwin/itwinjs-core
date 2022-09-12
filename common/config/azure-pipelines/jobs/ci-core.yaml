@@ -43,9 +43,9 @@ steps:
   - script: git checkout ${{ parameters.gitBranch }}
 
   - task: NodeTool@0
-    displayName: "Use Node ${{ nodeVersion }}"
+    displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
-      versionSpec: ${{ nodeVersion }}
+      versionSpec: ${{ parameters.nodeVersion }}
       checkLatest: true
 
   - script: |
@@ -69,6 +69,6 @@ steps:
   # Will run if even there is a failure somewhere else in the pipeline.
 #     - template: ../templates/publish-test-results.yaml
 #       parameters:
-#         NodeVersion: ${{ nodeVersion }}
+#         NodeVersion: ${{ parameters.nodeVersion }}
   # The publish script identifies any new packages not previously published and tags the build
 #     - template: ../templates/publish.yaml
