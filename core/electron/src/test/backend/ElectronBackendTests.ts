@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { electronHostTestSuite } from "./ElectronHostTests";
+import { electronHostTestSuite } from "./ElectronHost.test";
 
 export enum TestResult {
   Success = 0,
@@ -19,4 +19,6 @@ export interface TestSuite {
   }[]
 }
 
-export const testSuites = [electronHostTestSuite];
+export const testSuites: TestSuite[] = [
+  electronHostTestSuite,
+];

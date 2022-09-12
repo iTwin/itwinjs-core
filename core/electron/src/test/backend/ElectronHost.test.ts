@@ -3,42 +3,74 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { assert } from "chai";
-import { spawn, SpawnOptions } from "child_process";
-import * as path from "path";
-import { TestResult, testSuites } from "./ElectronTestCommon";
+import { ElectronHost } from "../../ElectronBackend";
+import { TestSuite } from "./ElectronBackendTests";
 
-async function spawnElectronMainProcess(suiteToRun: string, testToRun: string) {
-  const command = require("electron/index.js"); // eslint-disable-line @typescript-eslint/no-var-requires
-
-  const args = [
-    path.join(__dirname, "./ElectronHostTestImpl.js"),
-  ];
-
-  const options: SpawnOptions = {
-    stdio: ["ipc", "inherit", "inherit"],
-    cwd: process.cwd(),
-    env: {
-      ...process.env,
-      ELECTRON_SUITE_TITLE: suiteToRun, // eslint-disable-line @typescript-eslint/naming-convention
-      ELECTRON_TEST_TITLE: testToRun, // eslint-disable-line @typescript-eslint/naming-convention
+export const electronHostTestSuite: TestSuite = {
+  title: "ElectronHost tests.",
+  tests: [
+    {
+      title: "Should start without options.",
+      func: testStartWithoutOptions,
     },
-  };
+    {
+      title: "Should register ipc handler.",
+      func: testRegisterIpcHandler,
+    },
+    {
+      title: "Should open main window.",
+      func: testOpenMainWindow,
+    },
+  ],
+};
 
-  const electronProcess = spawn(command, args, options);
+async function testStartWithoutOptions() {
+  assert(!ElectronHost.isValid);
+  assert(!NativeHost.isValid);
+  assert(!IModelHost.isValid);
 
-  const exitCode = await new Promise((resolve) => {
-    electronProcess.on("exit", (status) => resolve(status || 0));
+  await ElectronHost.startup();
+
+  assert(ElectronHost.isValid);
+  assert(NativeHost.isValid);
+  assert(IModelHost.isValid);
+
+  assert(ElectronHost.electron !== undefined);
+  assert(ElectronHost.app !== undefined);
+};
+
+async function testRegisterIpcHandler() {
+  class RpcHandlerMock extends IpcHandler {
+    public override get channelName() { return "RpcHandlerMock-channel"; }
+    public static wasRegisterCalled = false;
+
+    public static override register() {
+      RpcHandlerMock.wasRegisterCalled = true;
+      return () => undefined;
+    }
+  }
+
+  await ElectronHost.startup({
+    electronHost: {
+      ipcHandlers: [RpcHandlerMock],
+    },
   });
-  assert.equal(exitCode, TestResult.Success);
+
+  assert(RpcHandlerMock.wasRegisterCalled);
 }
 
-for (const testSuite of testSuites) {
-  describe(testSuite.title, async () => {
-    for (const test of testSuite.tests) {
-      it(test.title, async () => {
-        await spawnElectronMainProcess(testSuite.title, test.title);
-      });
-    }
-  });
+async function testOpenMainWindow() {
+  await ElectronHost.startup();
+  const electron = ElectronHost.electron;
+
+  let windows = electron.BrowserWindow.getAllWindows();
+  assert(windows.length === 0);
+
+  await ElectronHost.openMainWindow();
+
+  windows = electron.BrowserWindow.getAllWindows();
+  assert(windows.length === 1);
+  assert(ElectronHost.mainWindow?.id === windows[0].id);
 }
