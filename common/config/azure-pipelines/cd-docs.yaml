@@ -10,6 +10,8 @@
 trigger: none
 pr: none
 
+name: $(Date:yyyyMMdd).$(Rev:r).$(Build.BuildId)
+
 # Pull in artifacts
 
 stages:

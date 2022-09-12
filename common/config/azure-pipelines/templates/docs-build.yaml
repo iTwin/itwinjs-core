@@ -97,5 +97,3 @@ steps:
       command: pack
       packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
       versioningScheme: byBuildNumber
-    env:
-      BUILD_BUILDNUMBER: $(Build.BuildNumber)
