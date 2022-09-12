@@ -37,38 +37,38 @@ parameters:
 #   workspace:
 #     clean: all
 
-  steps:
-    - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
+steps:
+  - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
 #       clean: true
-    - script: git checkout ${{ parameters.gitBranch }}
+  - script: git checkout ${{ parameters.gitBranch }}
 
-    - task: NodeTool@0
-      displayName: "Use Node ${{ nodeVersion }}"
-      inputs:
-        versionSpec: ${{ nodeVersion }}
-        checkLatest: true
+  - task: NodeTool@0
+    displayName: "Use Node ${{ nodeVersion }}"
+    inputs:
+      versionSpec: ${{ nodeVersion }}
+      checkLatest: true
 
-    - script: |
-        git config --local user.email imodeljs-admin@users.noreply.github.com
-        git config --local user.name imodeljs-admin
-      displayName: git config
+  - script: |
+      git config --local user.email imodeljs-admin@users.noreply.github.com
+      git config --local user.name imodeljs-admin
+    displayName: git config
 
-    - powershell: |
-        # Get the new version number.
-        $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
-        $currVersion = $json[0].version
+  - powershell: |
+      # Get the new version number.
+      $json = Get-Content -Raw -Path common/config/rush/version-policies.json | ConvertFrom-Json
+      $currVersion = $json[0].version
 
-        $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
+      $newBuildNumber = $currVersion + "_$(Build.BuildNumber)"
 
-        Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
-      displayName: Set build number
-      condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
+      Write-Host "##vso[build.updatebuildnumber]$newBuildNumber"
+    displayName: Set build number
+    condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
-    - template: ../templates/core-build.yaml
+  - template: ../templates/core-build.yaml
 
-    # Will run if even there is a failure somewhere else in the pipeline.
+  # Will run if even there is a failure somewhere else in the pipeline.
 #     - template: ../templates/publish-test-results.yaml
 #       parameters:
 #         NodeVersion: ${{ nodeVersion }}
-    # The publish script identifies any new packages not previously published and tags the build
+  # The publish script identifies any new packages not previously published and tags the build
 #     - template: ../templates/publish.yaml
