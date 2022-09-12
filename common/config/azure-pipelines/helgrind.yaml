@@ -50,8 +50,8 @@ jobs:
       # - script: sudo apt-get install valgrind
       #   displayName: apt install valgrind
 
+      # setup env to inject debug build during install
       - template: templates/install-node-addon-from-artifact.yaml@buildscripts
-        displayName: setup env to use debug build
         parameters:
           buildId: 1625785 # 3.4.6
 
