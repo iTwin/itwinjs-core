@@ -16,7 +16,7 @@ async function spawnElectronMainProcess(testToRun: ElectronHostTest) {
   ];
 
   const options: SpawnOptions = {
-    stdio: ["ipc", "pipe", "pipe"],
+    stdio: ["ipc", "inherit", "inherit"],
     cwd: process.cwd(),
     env: {
       ...process.env,
@@ -25,8 +25,6 @@ async function spawnElectronMainProcess(testToRun: ElectronHostTest) {
   };
 
   const electronProcess = spawn(command, args, options);
-  electronProcess.stdout?.on("data", (data: any) => process.stdout.write(data));
-  electronProcess.stderr?.on("data", (data: any) => process.stderr.write(data));
 
   const exitCode = await new Promise((resolve) => {
     electronProcess.on("exit", (status) => resolve(status || 0));
