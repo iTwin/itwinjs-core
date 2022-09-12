@@ -25,8 +25,8 @@ pr:
 jobs:
   - template: ci-core.yaml
     parameters:
-      name: Node_16
-      nodeVersion: 16.13.0
+      name: Node_18
+      nodeVersion: 18.9.0
       pool:
         name: $(name)
         demands:

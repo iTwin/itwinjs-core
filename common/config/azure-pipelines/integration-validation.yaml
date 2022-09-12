@@ -31,9 +31,9 @@ jobs:
         Linux_node_14_x:
           imageName: ubuntu-latest
           nodeVersion: 14.x
-        # linux_node_16_x:
-        #   imageName: ubuntu-latest
-        #   nodeVersion: 16.x
+        linux_node_16_x:
+          imageName: ubuntu-latest
+          nodeVersion: 16.x
         Windows_node_12_7:
           imageName: windows-latest
           nodeVersion: 12.17.0
@@ -43,9 +43,9 @@ jobs:
         Windows_node_14_x:
           imageName: windows-latest
           nodeVersion: 14.x
-        # Windows_node_16_x:
-        #   imageName: windows-latest
-        #   nodeVersion: 16.x
+        Windows_node_16_x:
+          imageName: windows-latest
+          nodeVersion: 16.x
         MacOS_node_12_7:
           imageName: macos-latest
           nodeVersion: 12.17.0
@@ -55,9 +55,9 @@ jobs:
         MacOS_node_14_x:
           imageName: macos-latest
           nodeVersion: 14.x
-        # MacOS_node_16_x:
-        #   imageName: macos-latest
-        #   nodeVersion: 16.x
+        MacOS_node_16_x:
+          imageName: macos-latest
+          nodeVersion: 16.x
     pool:
       vmImage: $(imageName)
     steps:
