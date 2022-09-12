@@ -374,7 +374,14 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       if (widgetPanelSectionId in state.widgets) {
         state = addTabToWidget(state, widgetDef.id, widgetPanelSectionId);
       } else {
-        state = addPanelWidget(state, side, widgetPanelSectionId, [widgetDef.id]);
+        const panel = state.panels[side];
+        if (panel.widgets.length < panel.maxWidgetCount) {
+          state = addPanelWidget(state, side, widgetPanelSectionId, [widgetDef.id]);
+        } else {
+          const widgetIndex = Math.min(preferredWidgetIndex, panel.widgets.length - 1);
+          const widgetId = panel.widgets[widgetIndex];
+          state = addTabToWidget(state, widgetDef.id, widgetId);
+        }
       }
     }
   }
