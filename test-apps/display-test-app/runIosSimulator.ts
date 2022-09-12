@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
-import { execSync } from 'child_process';
+import { execFileSync } from 'child_process';
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
@@ -66,7 +66,7 @@ async function main() {
 
   // Install the app
   console.log("Getting build directory");
-  const output = execSync("xcodebuild -showBuildSettings", { cwd: `${__dirname}/ios/imodeljs-test-app`, encoding: 'utf-8', stdio: ['pipe', 'pipe', 'ignore']}).split("\n");
+  const output = execFileSync("xcodebuild", ["-showBuildSettings"], { stdio: ['ignore', 'pipe', 'ignore'], cwd: `${__dirname}/ios/imodeljs-test-app`, encoding: "utf8"}).split("\n");
   const buildDir = output.find(line => line.includes("BUILD_DIR = "))?.trim().substring(12).slice(0, -9); // removes the "BUILD_DIR = " prefix, and the "/Products" suffix
   if (!buildDir) {
     console.log("Unable to determine BUILD_DIR from xcodebuild -showBuildSettings");
@@ -84,8 +84,8 @@ async function main() {
 
   // Launch the app instructing it to open the model and exit
   console.log("Launching app");
-  const stdout = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
-  if (stdout.includes("iModel opened")) {
+  const launchOutput = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
+  if (launchOutput.includes("iModel opened")) {
     process.exitCode = 0;
     console.log("Success!");
   } else {
