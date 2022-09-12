@@ -8,7 +8,7 @@ import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-
 import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { EditTools } from "./EditTool";
 
-/** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
+/** @beta Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {
   public static override toolId = "DeleteElements";
   public static override iconSpec = "icon-delete";

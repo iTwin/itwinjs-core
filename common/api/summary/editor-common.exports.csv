@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-alpha;BasicManipulationCommandIpc 
+beta;BasicManipulationCommandIpc 
 alpha;BlendEdgesProps
 alpha;BooleanMode
 alpha;BooleanOperationProps
@@ -13,10 +13,10 @@ alpha;CutDirectionMode
 alpha;CutProps
 alpha;DeleteSubEntityProps
 alpha;EdgeParameterRangeProps
-alpha;EditCommandIpc
-alpha;editorBuiltInCmdIds:
+beta;EditCommandIpc
+beta;editorBuiltInCmdIds:
 internal;editorChannel = "editor"
-alpha;EditorIpc
+beta;EditorIpc
 alpha;ElementGeometryCacheFilter
 alpha;ElementGeometryResultOptions
 alpha;ElementGeometryResultProps
@@ -26,7 +26,7 @@ alpha;EvaluatedEdgeProps
 alpha;EvaluatedFaceProps
 alpha;EvaluatedVertexProps
 alpha;FaceParameterRangeProps
-alpha;FlatBufferGeometryFilter
+beta;FlatBufferGeometryFilter
 alpha;HollowFacesProps
 alpha;ImprintProps
 alpha;LocateSubEntityProps

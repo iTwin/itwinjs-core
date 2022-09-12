@@ -9,13 +9,13 @@
 /** @internal */
 export const editorChannel = "editor";
 
-/** @alpha */
+/** @beta */
 export interface EditorIpc {
   startCommand: (commandId: string, iModelKey: string, ...args: any[]) => Promise<any>;
   callMethod: (name: string, ...args: any[]) => Promise<any>;
 }
 
-/** @alpha */
+/** @beta */
 export interface EditCommandIpc {
   ping: () => Promise<{ commandId: string, version: string, [propName: string]: any }>;
 }

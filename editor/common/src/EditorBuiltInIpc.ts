@@ -11,13 +11,13 @@ import { AngleProps, Matrix3dProps, Range1dProps, Range3dProps, TransformProps, 
 import { ColorDefProps, EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementGeometryDataEntry, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
-/** @alpha */
+/** @beta */
 export const editorBuiltInCmdIds = {
   cmdBasicManipulation: "basicManipulation",
   cmdSolidModeling: "solidModeling",
 };
 
-/** @alpha */
+/** @beta */
 export interface FlatBufferGeometryFilter {
   /** Optional limit on number of displayable entries to accept */
   maxDisplayable?: number;
@@ -33,7 +33,7 @@ export interface FlatBufferGeometryFilter {
   geometry?: { curves: boolean, surfaces: boolean, solids: boolean };
 }
 
-/** @alpha */
+/** @beta */
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
   deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
   transformPlacement(ids: CompressedId64Set, transform: TransformProps): Promise<IModelStatus>;
@@ -75,13 +75,13 @@ export interface BasicManipulationCommandIpc extends EditCommandIpc {
 
   /** Update the project extents for the iModel.
    * @param extents New project extents.
-   * @throws [[IModelError]] if unable to aquire schema lock or update the extents property.
+   * @throws [[IModelError]] if unable to acquire schema lock or update the extents property.
    */
   updateProjectExtents(extents: Range3dProps): Promise<void>;
 
   /** Update the position of the iModel on the earth.
    * @param ecefLocation New ecef location properties.
-   * @throws [[IModelError]] if unable to aquire schema lock or update the ecef location property.
+   * @throws [[IModelError]] if unable to acquire schema lock or update the ecef location property.
    * @note Clears the geographic coordinate reference system of the iModel, do not call when a valid GCS exists.
    */
   updateEcefLocation(ecefLocation: EcefLocationProps): Promise<void>;

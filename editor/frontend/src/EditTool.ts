@@ -18,7 +18,9 @@ import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveT
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
 
-/** @alpha Options for [[EditTools.initialize]]. */
+/** Options for [[EditTools.initialize]].
+ * @beta
+ */
 export interface EditorOptions {
   /** If true, all tools will be registered. */
   registerAllTools?: true | undefined;
@@ -30,11 +32,13 @@ export interface EditorOptions {
   registerBasicManipulationTools?: true | undefined;
   /** If true, tools for sketching will be registered. */
   registerSketchTools?: true | undefined;
-  /** If true, tools for solid modeling will be registered. */
+  /** If true, tools for creating solid primitives will be registered. */
   registerSolidModelingTools?: true | undefined;
 }
 
-/** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
+/** functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand.
+ * @beta
+ */
 export class EditTools {
   public static namespace = "Editor";
   public static tools = "Editor:tools.";

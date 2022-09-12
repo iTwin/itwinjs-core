@@ -200,16 +200,16 @@ internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
 public;ElementAspectProps 
-alpha;ElementGeometry
-alpha;ElementGeometryBuilderParams
-alpha;ElementGeometryBuilderParamsForPart
+beta;ElementGeometry
+beta;ElementGeometryBuilderParams
+beta;ElementGeometryBuilderParamsForPart
 public;ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange
 public;ElementGeometryChange
 public;ElementGeometryDataEntry
-alpha;ElementGeometryFunction = (info: ElementGeometryInfo) => void
-alpha;ElementGeometryInfo
+beta;ElementGeometryFunction = (info: ElementGeometryInfo) => void
+beta;ElementGeometryInfo
 public;ElementGeometryOpcode
-alpha;ElementGeometryRequest
+beta;ElementGeometryRequest
 public;ElementGraphicsRequestProps = PersistentGraphicsRequestProps | DynamicGraphicsRequest2dProps | DynamicGraphicsRequest3dProps
 public;ElementIdsAndRangesProps
 public;ElementLoadOptions

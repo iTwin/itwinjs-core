@@ -36,17 +36,17 @@ function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, 
   return (0.0 !== pixelSize ? vp.target.adjustPixelSizeForLOD(pixelSize) : 0.001);
 }
 
-/** @alpha */
+/** @beta */
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number {
   return computeChordToleranceFromPointAndRadius(vp, pt, radius ? radius : Constant.oneCentimeter);
 }
 
-/** @alpha */
+/** @beta */
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number {
   return computeChordToleranceFromPointAndRadius(vp, range.center, 0.5 * range.low.distance(range.high));
 }
 
-/** @alpha */
+/** @beta */
 export class DynamicGraphicsProvider {
   public readonly iModel: IModelConnection;
   public readonly prefix: string;
@@ -164,7 +164,7 @@ export class DynamicGraphicsProvider {
   }
 }
 
-/** @alpha Placement tool base class for creating new elements. */
+/** @beta Placement tool base class for creating new elements. */
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
     const category = this.briefcase?.editorToolSettings.category;
@@ -289,7 +289,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
   }
 }
 
-/** @alpha Placement tool base class for creating new elements that use dynamics to show intermediate results. */
+/** @beta Placement tool base class for creating new elements that use dynamics to show intermediate results. */
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected _graphicsProvider?: DynamicGraphicsProvider;
 

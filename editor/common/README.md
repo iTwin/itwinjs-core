@@ -4,7 +4,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md 
 
 ## Description
 
-The __@itwin/editor-common__ package contains properties for commnunicating between the frontend and backend for editing iModels.
+The __@itwin/editor-common__ package contains properties for communicating between the frontend and backend for editing iModels.
 
 ## Documentation
 

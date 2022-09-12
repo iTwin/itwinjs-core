@@ -11,7 +11,7 @@ import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 
-/** @alpha Base class for creating a capped or uncapped SolidPrimitive. */
+/** @beta Base class for creating a capped or uncapped SolidPrimitive. */
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   protected readonly accepted: Point3d[] = [];
   protected baseRotation?: Matrix3d;
@@ -78,7 +78,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   }
 }
 
-/** @alpha Creates a sphere. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
+/** @beta Creates a sphere. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateSphereTool extends SolidPrimitiveTool {
   public static override toolId = "CreateSphere";
   public static override iconSpec = "icon-circle"; // TODO: Need better icon...
@@ -205,7 +205,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
   }
 }
 
-/** @alpha Values for [[CreateCylinderTool.createPhase]. */
+/** @beta Values for [[CreateCylinderTool.createPhase]. */
 export enum CreateCylinderPhase {
   /** Current tool phase to define center of base */
   AcceptBase,
@@ -217,7 +217,7 @@ export enum CreateCylinderPhase {
   AcceptResult,
 }
 
-/** @alpha Creates a cylinder. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
+/** @beta Creates a cylinder. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateCylinderTool extends SolidPrimitiveTool {
   public static override toolId = "CreateCylinder";
   public static override iconSpec = "icon-circle"; // TODO: Need better icon...
@@ -456,7 +456,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
   }
 }
 
-/** @alpha Values for [[CreateConeTool.createPhase]. */
+/** @beta Values for [[CreateConeTool.createPhase]. */
 export enum CreateConePhase {
   /** Current tool phase to define center of base */
   AcceptBase,
@@ -470,7 +470,7 @@ export enum CreateConePhase {
   AcceptResult,
 }
 
-/** @alpha Creates a cone. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
+/** @beta Creates a cone. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateConeTool extends SolidPrimitiveTool {
   public static override toolId = "CreateCone";
   public static override iconSpec = "icon-circle"; // TODO: Need better icon...
@@ -769,7 +769,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
   }
 }
 
-/** @alpha Creates a bix. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
+/** @beta Creates a bix. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateBoxTool extends SolidPrimitiveTool {
   public static override toolId = "CreateBox";
   public static override iconSpec = "icon-circle"; // TODO: Need better icon...
@@ -1072,7 +1072,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
   }
 }
 
-/** @alpha Values for [[CreateTorusTool.createPhase]. */
+/** @beta Values for [[CreateTorusTool.createPhase]. */
 export enum CreateTorusPhase {
   /** Current tool phase to define start point */
   AcceptStart,
@@ -1086,7 +1086,7 @@ export enum CreateTorusPhase {
   AcceptResult,
 }
 
-/** @alpha Creates a torus pipe. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
+/** @beta Creates a torus pipe. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateTorusTool extends SolidPrimitiveTool {
   public static override toolId = "CreateTorus";
   public static override iconSpec = "icon-circle"; // TODO: Need better icon...

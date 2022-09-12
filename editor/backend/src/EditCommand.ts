@@ -11,14 +11,14 @@ import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
 import { IModelError } from "@itwin/core-common";
 import { EditCommandIpc, editorChannel, EditorIpc } from "@itwin/editor-common";
 
-/** @alpha */
+/** @beta */
 export type EditCommandType = typeof EditCommand;
 
 /**
  * An EditCommand performs an editing action on the backend. EditCommands are usually paired with and driven by EditTools on the frontend.
  * EditCommands have a *commandId* that uniquely identifies them, so they can be found via a lookup in the [[EditCommandAdmin]].
  * Every time an EditCommand runs, a new instance of (a subclass of) this class is created.
- * @alpha
+ * @beta
  */
 export class EditCommand implements EditCommandIpc {
   /** The unique string that identifies this EditCommand class. This must be overridden in every subclass. */
@@ -71,7 +71,7 @@ class EditorAppHandler extends IpcHandler implements EditorIpc {
 /** EditCommandAdmin holds a mapping between commandIds and their corresponding [[EditCommand]] class. This provides the mechanism to
  * run EditCommands by commandId.
  * It also keeps track of the currently active EditCommand. When a new EditCommand starts, the active EditCommand is terminated.
- * @alpha
+ * @beta
  */
 export class EditCommandAdmin {
   public static readonly commands = new Map<string, EditCommandType>();

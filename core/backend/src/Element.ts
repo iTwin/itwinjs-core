@@ -446,8 +446,10 @@ export abstract class GeometricElement extends Element {
   public category: Id64String;
   /** The GeometryStream for this GeometricElement. */
   public geom?: GeometryStreamProps;
-  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @alpha
+  /** How to build the element's GeometryStream. This is used for insert and update only. It is not a persistent property.
+   * It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an
+   * alternative to `geom` when inserting or updating an element.
+   * @beta
    */
   public elementGeometryBuilderParams?: ElementGeometryBuilderParams;
   /** The origin, orientation, and bounding box of this GeometricElement. */
@@ -1494,8 +1496,10 @@ export class GeometryPart extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "GeometryPart"; }
   public geom?: GeometryStreamProps;
-  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property. It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an alternative to `geom` when inserting or updating an element.
-   * @alpha
+  /** How to build the part's GeometryStream. This is used for insert and update only. It is not a persistent property.
+   * It will be undefined in the properties returned by functions that read a persistent element. It may be specified as an
+   * alternative to `geom` when inserting or updating an element.
+   * @beta
    */
   public elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
   public bbox: ElementAlignedBox3d;

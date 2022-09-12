@@ -64,7 +64,7 @@ export enum ElementGeometryOpcode {
   TextString = 22,
   /** Specifies line style overrides as a [[LineStyle.Modifier]] */
   LineStyleModifiers = 23,
-  /** Boundary represention solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
+  /** Boundary representation solid, sheet, or wire body as a [[BRepEntity.DataProps]] */
   BRep = 25,
   /** Small single-tile raster image as an [[ImageGraphic]] */
   Image = 28,
@@ -83,7 +83,7 @@ export interface ElementGeometryDataEntry {
 }
 
 /** Information provided to [[ElementGeometryFunction]].
- * @alpha
+ * @beta
  */
 export interface ElementGeometryInfo {
   /** ID for the [Category]($core-backend), undefined for geometry parts */
@@ -102,12 +102,12 @@ export interface ElementGeometryInfo {
 
 /** A callback function that receives geometry stream data.
  * @see [IModelDb.elementGeometryRequest]($core-backend)
- * @alpha
+ * @beta
  */
 export type ElementGeometryFunction = (info: ElementGeometryInfo) => void;
 
 /** Parameters for [IModelDb.elementGeometryRequest]($core-backend)
- * @alpha
+ * @beta
  */
 export interface ElementGeometryRequest {
   /** The source element for the geometry stream */
@@ -130,7 +130,7 @@ export interface ElementGeometryRequest {
 
 /** Parameters for building the geometry stream of a [[GeometricElement]] using ElementGeometry.Builder
  * Note: The geometry stream is always in local coordinates, that is, relative to the element's [[Placement]].
- * @alpha
+ * @beta
  */
 export interface ElementGeometryBuilderParams {
   /** The geometry stream data */
@@ -140,7 +140,7 @@ export interface ElementGeometryBuilderParams {
 }
 
 /** Parameters for building the geometry stream of a [[GeometryPart]] using ElementGeometry.Builder.
- * @alpha
+ * @beta
  */
 export interface ElementGeometryBuilderParamsForPart {
   /** The geometry stream data */
@@ -254,7 +254,7 @@ export interface BRepGeometryInfo {
 export type BRepGeometryFunction = (info: BRepGeometryInfo) => void;
 
 /** Provides utility functions for working with [[ElementGeometryDataEntry]].
- * @alpha
+ * @beta
  */
 export namespace ElementGeometry {
   /** [[ElementGeometry.Builder]] is a helper class for populating a [[ElementGeometryDataEntry]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */
@@ -1148,8 +1148,8 @@ export namespace ElementGeometry {
     const builder = EGFBAccessors.Image;
     builder.startImage(fbb);
 
-    const textudeIdPair = Id64.getUint32Pair(image.textureId);
-    builder.addTextureId(fbb, flatbuffers.Long.create(textudeIdPair.lower, textudeIdPair.upper));
+    const textureIdPair = Id64.getUint32Pair(image.textureId);
+    builder.addTextureId(fbb, flatbuffers.Long.create(textureIdPair.lower, textureIdPair.upper));
     builder.addDrawBorder(fbb, image.hasBorder ? 1 : 0);
 
     const corners = ImageGraphicCorners.fromJSON(image.corners);

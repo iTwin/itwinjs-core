@@ -82,7 +82,7 @@ import { Viewport } from '@itwin/core-frontend';
 import { XYAndZ } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum ArcMethod {
     // (undocumented)
     CenterStart = 0,
@@ -94,7 +94,7 @@ export enum ArcMethod {
     StartMidEnd = 2
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum BCurveMethod {
     // (undocumented)
     ControlPoints = 0,
@@ -224,7 +224,7 @@ export class ChamferEdgesTool extends BlendEdgesTool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum CircleMethod {
     // (undocumented)
     Center = 0,
@@ -232,18 +232,18 @@ export enum CircleMethod {
     Edge = 1
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export function computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number;
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export function computeChordToleranceFromRange(vp: Viewport, range: Range3d): number;
 
-// @alpha
+// @beta
 export class CopyElementsTool extends MoveElementsTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
-    protected doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
+    protected doTransformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -270,7 +270,7 @@ export class CopyElementsTool extends MoveElementsTool {
     protected get wantMakeCopy(): boolean;
 }
 
-// @alpha
+// @beta
 export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -330,9 +330,9 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     set useSweep(value: boolean);
     // (undocumented)
     get useSweepProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export class CreateBCurveTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
@@ -402,7 +402,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     protected get wantPickableDynamics(): boolean;
 }
 
-// @alpha
+// @beta
 export class CreateBoxTool extends SolidPrimitiveTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -464,9 +464,9 @@ export class CreateBoxTool extends SolidPrimitiveTool {
     set width(value: number);
     // (undocumented)
     get widthProperty(): DialogProperty<number>;
-    }
+}
 
-// @alpha
+// @beta
 export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -518,9 +518,9 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export enum CreateConePhase {
     AcceptBase = 0,
     AcceptBaseRadius = 1,
@@ -529,7 +529,7 @@ export enum CreateConePhase {
     AcceptTopRadius = 3
 }
 
-// @alpha
+// @beta
 export class CreateConeTool extends SolidPrimitiveTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -593,16 +593,16 @@ export class CreateConeTool extends SolidPrimitiveTool {
     set useTopRadius(value: boolean);
     // (undocumented)
     get useTopRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export enum CreateCurvePhase {
     DefineEnd = 1,
     DefineOther = 2,
     DefineStart = 0
 }
 
-// @alpha
+// @beta
 export enum CreateCylinderPhase {
     AcceptBase = 0,
     AcceptLength = 2,
@@ -610,7 +610,7 @@ export enum CreateCylinderPhase {
     AcceptResult = 3
 }
 
-// @alpha
+// @beta
 export class CreateCylinderTool extends SolidPrimitiveTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -664,9 +664,9 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export abstract class CreateElementTool extends PrimitiveTool {
     protected abstract createElement(): Promise<void>;
     // (undocumented)
@@ -689,7 +689,7 @@ export abstract class CreateElementTool extends PrimitiveTool {
     protected get wantDynamics(): boolean;
 }
 
-// @alpha
+// @beta
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     // (undocumented)
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
@@ -735,7 +735,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
     protected get wantDynamics(): boolean;
 }
 
-// @alpha
+// @beta
 export class CreateEllipseTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
@@ -753,7 +753,7 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected cancelPoint(ev: BeButtonEvent): Promise<boolean>;
@@ -777,7 +777,7 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     protected get wantPickableDynamics(): boolean;
 }
 
-// @alpha
+// @beta
 export abstract class CreateOrContinuePathTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected readonly accepted: Point3d[];
@@ -905,7 +905,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     protected get wantSmartRotation(): boolean;
 }
 
-// @alpha
+// @beta
 export class CreateRectangleTool extends CreateOrContinuePathTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -952,9 +952,9 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export class CreateSphereTool extends SolidPrimitiveTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
@@ -991,9 +991,9 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export enum CreateTorusPhase {
     AcceptAngle = 3,
     AcceptCenter = 1,
@@ -1002,7 +1002,7 @@ export enum CreateTorusPhase {
     AcceptStart = 0
 }
 
-// @alpha
+// @beta
 export class CreateTorusTool extends SolidPrimitiveTool {
     // (undocumented)
     get angle(): number;
@@ -1061,7 +1061,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
     set useSecondaryRadius(value: boolean);
     // (undocumented)
     get useSecondaryRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha (undocumented)
 export class CurveData {
@@ -1128,9 +1128,9 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     set useDepth(value: boolean);
     // (undocumented)
     get useDepthProperty(): DialogProperty<boolean>;
-    }
+}
 
-// @alpha
+// @beta
 export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -1174,7 +1174,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
     protected wantSubEntityType(type: SubEntityType): boolean;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class DynamicGraphicsProvider {
     constructor(iModel: IModelConnection, prefix: string);
     // (undocumented)
@@ -1193,7 +1193,7 @@ export class DynamicGraphicsProvider {
     readonly prefix: string;
 }
 
-// @alpha
+// @beta
 export interface EditorOptions {
     registerAllTools?: true | undefined;
     registerBasicManipulationTools?: true | undefined;
@@ -1203,7 +1203,7 @@ export interface EditorOptions {
     registerUndoRedoTools?: true | undefined;
 }
 
-// @alpha
+// @beta
 export class EditTools {
     // (undocumented)
     static callCommand(methodName: string, ...args: any[]): Promise<any>;
@@ -1719,7 +1719,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     protected get wantModifyOriginal(): boolean;
 }
 
-// @alpha
+// @beta
 export class MoveElementsTool extends TransformElementsTool {
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
@@ -2000,7 +2000,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationNorthTool extends PrimitiveTool {
@@ -2044,7 +2044,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationPointTool extends PrimitiveTool {
@@ -2129,7 +2129,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectLocationCancelTool extends Tool {
@@ -2180,7 +2180,7 @@ export class ProjectLocationShowTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class RedoTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2188,7 +2188,7 @@ export class RedoTool extends Tool {
     static toolId: string;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum RotateAbout {
     // (undocumented)
     Center = 2,
@@ -2198,7 +2198,7 @@ export enum RotateAbout {
     Point = 0
 }
 
-// @alpha
+// @beta
 export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
     get aboutProperty(): DialogProperty<number>;
@@ -2258,7 +2258,7 @@ export class RotateElementsTool extends TransformElementsTool {
     protected xAxisPoint?: Point3d;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export enum RotateMethod {
     // (undocumented)
     By3Points = 0,
@@ -2311,7 +2311,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected readonly accepted: Point3d[];
@@ -2504,7 +2504,7 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -2560,7 +2560,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected get wantRepeatOperation(): boolean;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface TransformGraphicsData {
     // (undocumented)
     graphic: RenderGraphicOwner;
@@ -2570,7 +2570,7 @@ export interface TransformGraphicsData {
     placement: Placement;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export class TransformGraphicsProvider {
     constructor(iModel: IModelConnection, prefix: string);
     // (undocumented)
@@ -2591,7 +2591,7 @@ export class TransformGraphicsProvider {
     readonly prefix: string;
 }
 
-// @alpha
+// @beta
 export class UndoAllTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2599,7 +2599,7 @@ export class UndoAllTool extends Tool {
     static toolId: string;
 }
 
-// @alpha
+// @beta
 export class UndoTool extends Tool {
     // (undocumented)
     run(): Promise<boolean>;
@@ -2618,6 +2618,5 @@ export class UniteSolidElementsTool extends BooleanOperationTool {
     // (undocumented)
     static toolId: string;
 }
-
 
 ```

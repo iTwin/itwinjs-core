@@ -1,40 +1,40 @@
 sep=;
 Release Tag;API Item
-alpha;ArcMethod
-alpha;BCurveMethod
+beta;ArcMethod
+beta;BCurveMethod
 alpha;class BlendEdgesTool 
 alpha;class BooleanOperationTool 
 alpha;BreakCurveTool 
 alpha;ChamferEdgesTool 
-alpha;CircleMethod
-alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
-alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
-alpha;CopyElementsTool 
-alpha;CreateArcTool 
-alpha;CreateBCurveTool 
-alpha;CreateBoxTool 
-alpha;CreateCircleTool 
-alpha;CreateConePhase
-alpha;CreateConeTool 
-alpha;CreateCurvePhase
-alpha;CreateCylinderPhase
-alpha;CreateCylinderTool 
-alpha;class CreateElementTool 
-alpha;class CreateElementWithDynamicsTool 
-alpha;CreateEllipseTool 
-alpha;CreateLineStringTool 
-alpha;class CreateOrContinuePathTool 
-alpha;CreateRectangleTool 
-alpha;CreateSphereTool 
-alpha;CreateTorusPhase
-alpha;CreateTorusTool 
+beta;CircleMethod
+beta;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
+beta;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
+beta;CopyElementsTool 
+beta;CreateArcTool 
+beta;CreateBCurveTool 
+beta;CreateBoxTool 
+beta;CreateCircleTool 
+beta;CreateConePhase
+beta;CreateConeTool 
+beta;CreateCurvePhase
+beta;CreateCylinderPhase
+beta;CreateCylinderTool 
+beta;class CreateElementTool 
+beta;class CreateElementWithDynamicsTool 
+beta;CreateEllipseTool 
+beta;CreateLineStringTool 
+beta;class CreateOrContinuePathTool 
+beta;CreateRectangleTool 
+beta;CreateSphereTool 
+beta;CreateTorusPhase
+beta;CreateTorusTool 
 alpha;CurveData
 alpha;CutSolidElementsTool 
-alpha;DeleteElementsTool 
+beta;DeleteElementsTool 
 alpha;DeleteSubEntitiesTool 
-alpha;DynamicGraphicsProvider
-alpha;EditorOptions
-alpha;EditTools
+beta;DynamicGraphicsProvider
+beta;EditorOptions
+beta;EditTools
 alpha;class ElementGeometryCacheTool 
 alpha;ElementGeometryGraphicsProvider
 alpha;EmbossSolidElementsTool 
@@ -49,7 +49,7 @@ alpha;class LocateFaceOrProfileTool
 alpha;class LocateSubEntityTool 
 alpha;LoftProfilesTool 
 alpha;class ModifyCurveTool 
-alpha;MoveElementsTool 
+beta;MoveElementsTool 
 alpha;OffsetCurveTool 
 alpha;OffsetFacesTool 
 alpha;ProfileLocationData
@@ -62,22 +62,22 @@ beta;ProjectLocationChanged
 beta;ProjectLocationHideTool 
 beta;ProjectLocationSaveTool 
 beta;ProjectLocationShowTool 
-alpha;RedoTool 
-alpha;RotateAbout
-alpha;RotateElementsTool 
-alpha;RotateMethod
+beta;RedoTool 
+beta;RotateAbout
+beta;RotateElementsTool 
+beta;RotateMethod
 alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
-alpha;class SolidPrimitiveTool 
+beta;class SolidPrimitiveTool 
 alpha;SpinFacesTool 
 alpha;SubEntityData
 alpha;SubtractSolidElementsTool 
 alpha;SweepAlongPathTool 
 alpha;SweepFacesTool 
 alpha;ThickenSheetElementsTool 
-alpha;class TransformElementsTool 
-alpha;TransformGraphicsData
-alpha;TransformGraphicsProvider
-alpha;UndoAllTool 
-alpha;UndoTool 
+beta;class TransformElementsTool 
+beta;TransformGraphicsData
+beta;TransformGraphicsProvider
+beta;UndoAllTool 
+beta;UndoTool 
 alpha;UniteSolidElementsTool 

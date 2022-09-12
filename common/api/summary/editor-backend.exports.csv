@@ -1,7 +1,7 @@
 sep=;
 Release Tag;API Item
-alpha;BasicManipulationCommand 
-alpha;EditCommand 
-alpha;EditCommandAdmin
-alpha;EditCommandType = typeof EditCommand
+beta;BasicManipulationCommand 
+beta;EditCommand 
+beta;EditCommandAdmin
+beta;EditCommandType = typeof EditCommand
 alpha;SolidModelingCommand 

@@ -85,10 +85,10 @@ export interface IModelTransformOptions {
   /** Flag that indicates whether or not the transformation process should clone using binary geometry.
    *
    * Prefer to never to set this flag. If you need geometry changes, instead override [[IModelTransformer.onTransformElement]]
-   * and provide an [ElementGeometryBuilderParams]($backend) to the `elementGeometryBuilderParams`
+   * and provide an ElementGeometryBuilderParams to the `elementGeometryBuilderParams`
    * property of [ElementProps]($common) instead, it is much faster. You can read geometry during the transformation by setting the
    * [[IModelTransformOptions.loadSourceGeometry]] property to `true`, and passing that to a [GeometryStreamIterator]($common)
-   * @note this flag will be deprecated when `elementGeometryBuilderParams` is no longer an alpha API
+   * @note this flag will be deprecated when `elementGeometryBuilderParams` is no longer a beta API
    *
    * @default true
    */

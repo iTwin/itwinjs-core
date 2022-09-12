@@ -11,14 +11,14 @@ import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, Dynami
 import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
 import { EditTools } from "./EditTool";
 
-/** @alpha */
+/** @beta */
 export interface TransformGraphicsData {
   id: Id64String;
   placement: Placement;
   graphic: RenderGraphicOwner;
 }
 
-/** @alpha */
+/** @beta */
 export class TransformGraphicsProvider {
   public readonly iModel: IModelConnection;
   public readonly data: TransformGraphicsData[];
@@ -90,8 +90,8 @@ export class TransformGraphicsProvider {
   }
 
   /** Call to request a RenderGraphic for the supplied element id.
- * @see [[cleanupGraphics]] Must be called when the tool exits.
- */
+   * @see [[cleanupGraphics]] Must be called when the tool exits.
+   */
   public async createSingleGraphic(id: Id64String): Promise<boolean> {
     try {
       const info = await this.createRequest(id);
@@ -163,7 +163,7 @@ export class TransformGraphicsProvider {
   }
 }
 
-/** @alpha Base class for applying a transform to element placements. */
+/** @beta Base class for applying a transform to element placements. */
 export abstract class TransformElementsTool extends ElementSetTool {
   protected override get allowSelectionSet(): boolean { return true; }
   protected override get allowGroups(): boolean { return true; }
@@ -308,7 +308,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
   }
 }
 
-/** @alpha Move elements by applying translation to placement. */
+/** @beta Move elements by applying translation to placement. */
 export class MoveElementsTool extends TransformElementsTool {
   public static override toolId = "MoveElements";
   public static override iconSpec = "icon-move";
@@ -340,7 +340,7 @@ export class MoveElementsTool extends TransformElementsTool {
  * Using loadProps to return json format geometry to the frontend for each element in the tool agenda is very inefficient.
  * Applications that wish to support copy are expected to sub-class TransformElementsTool and register their
  * own EditCommand that can correctly copy their application elements.
- * @alpha
+ * @beta
  */
 export class CopyElementsTool extends MoveElementsTool {
   public static override toolId = "CopyElements";
@@ -369,7 +369,7 @@ export class CopyElementsTool extends MoveElementsTool {
       super.updateAnchorLocation(transform);
   }
 
-  protected async doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
+  protected async doTransformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
     if (numCopies < 1 || 0 === ids.length)
       return undefined;
 
@@ -404,7 +404,7 @@ export class CopyElementsTool extends MoveElementsTool {
 
   protected override async transformAndCopyAgenda(transform: Transform): Promise<Id64Arg | undefined> {
     try {
-      const newIds = await this.doTranformedCopy(this.agenda.elements, transform, this.numCopies);
+      const newIds = await this.doTransformedCopy(this.agenda.elements, transform, this.numCopies);
       if (undefined !== newIds)
         await this.saveChanges();
       return newIds;
@@ -456,20 +456,20 @@ export class CopyElementsTool extends MoveElementsTool {
   }
 }
 
-/** @alpha */
+/** @beta */
 export enum RotateMethod {
   By3Points,
   ByAngle,
 }
 
-/** @alpha */
+/** @beta */
 export enum RotateAbout {
   Point,
   Origin,
   Center,
 }
 
-/** @alpha Rotate elements by applying transform to placement. */
+/** @beta Rotate elements by applying transform to placement. */
 export class RotateElementsTool extends TransformElementsTool {
   public static override toolId = "RotateElements";
   public static override iconSpec = "icon-rotate";

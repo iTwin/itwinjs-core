@@ -23,7 +23,7 @@ import { Range3dProps } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { XYZProps } from '@itwin/core-geometry';
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface BasicManipulationCommandIpc extends EditCommandIpc {
     // (undocumented)
     deleteElements(ids: CompressedId64Set): Promise<IModelStatus>;
@@ -132,7 +132,7 @@ export interface EdgeParameterRangeProps {
     uRange: Range1dProps;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface EditCommandIpc {
     // (undocumented)
     ping: () => Promise<{
@@ -142,7 +142,7 @@ export interface EditCommandIpc {
     }>;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export const editorBuiltInCmdIds: {
     cmdBasicManipulation: string;
     cmdSolidModeling: string;
@@ -151,7 +151,7 @@ export const editorBuiltInCmdIds: {
 // @internal (undocumented)
 export const editorChannel = "editor";
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface EditorIpc {
     // (undocumented)
     callMethod: (name: string, ...args: any[]) => Promise<any>;
@@ -231,7 +231,7 @@ export interface FaceParameterRangeProps {
     vRange: Range1dProps;
 }
 
-// @alpha (undocumented)
+// @beta (undocumented)
 export interface FlatBufferGeometryFilter {
     accept?: ElementGeometryOpcode[];
     geometry?: {
@@ -448,7 +448,6 @@ export interface TransformSubEntityProps {
     subEntities: SubEntityProps | SubEntityProps[];
     transforms: TransformProps[];
 }
-
 
 // (No @packageDocumentation comment for this package)
 
