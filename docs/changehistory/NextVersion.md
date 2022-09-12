@@ -20,6 +20,7 @@ Table of contents:
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
+- [Editing](#editing)
 
 ## Electron 17 support
 
@@ -130,3 +131,11 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ### @itwin/core-transformer
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
+
+## Editing
+
+The APIs for creating editing tools using an [EditCommand]($editor-backend) have been upgraded from `@alpha` to `@beta`.
+The APIs for requesting and creating element geometry in flatbuffer format instead of json have been upgraded from `@alpha` to `@beta`.
+Use [IModelDb.elementGeometryRequest]($backend) to request geometry from geometric elements and geometry parts.
+A [ElementGeometryBuilderParams]($common) or [ElementGeometryBuilderParamsForPart]($common) can be specified instead
+of a [GeometryStreamProps]($common) when inserting or updating a geometric element or geometry part.
