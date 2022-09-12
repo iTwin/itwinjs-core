@@ -159,7 +159,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget should render correctly 1`]
               "testFunc": [Function],
             },
             "itemPriority": 20,
-            "label": "",
+            "label": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
           },
         ]
       }
@@ -353,7 +361,15 @@ exports[`BasicNavigationWidget BasicNavigationWidget with suffix and prefix item
               "testFunc": [Function],
             },
             "itemPriority": 20,
-            "label": "",
+            "label": ConditionalStringValue {
+              "_value": undefined,
+              "stringGetter": [Function],
+              "syncEventIds": Array [
+                "activecontentchanged",
+                "activeviewportchanged",
+                "viewstatechanged",
+              ],
+            },
           },
           Object {
             "badgeType": undefined,

@@ -12,7 +12,8 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetDropTargetState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { WidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export interface MergeTargetProps {

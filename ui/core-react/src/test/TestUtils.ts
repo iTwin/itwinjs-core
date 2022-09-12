@@ -109,4 +109,14 @@ export function stubScrollIntoView() {
   });
 }
 
+/**
+ * Extracts e.classList.values() and return as an array for expect.
+ * @param e Element to get class list
+ * @returns Array of classes for the element
+ */
+export function classesFromElement(e: Element | null | undefined) {
+  // ! below is intended, we want this to throw if there is no element, so the test returns a comprehensive error.
+  return Array.from(e!.classList.values());
+}
+
 export default TestUtils;   // eslint-disable-line: no-default-export

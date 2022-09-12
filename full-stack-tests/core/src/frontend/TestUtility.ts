@@ -152,15 +152,13 @@ export class TestUtility {
 
   /** Helper around the different shutdown workflows for different app types.
    * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.
-   *
    */
   public static async shutdownFrontend(): Promise<void> {
     this.systemFactory = () => TestUtility.createDefaultRenderSystem();
-    // FIXME: The ElectronApp.shutdown() has side-effects that aren't currently cleaned up properly
-    // so that a new ElectronApp.startup() has a clean slate. It is somewhere in Ipc land as the error
-    // is a missing Ipc method.
-    // if (ProcessDetector.isElectronAppFrontend)
-    //   return ElectronApp.shutdown();
+
+    if (ProcessDetector.isElectronAppFrontend)
+      return ElectronApp.shutdown();
+
     return IModelApp.shutdown();
   }
 }

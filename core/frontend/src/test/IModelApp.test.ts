@@ -11,7 +11,7 @@ import { IdleTool } from "../tools/IdleTool";
 import { SelectionTool } from "../tools/SelectTool";
 import { Tool } from "../tools/Tool";
 import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
-import { BentleyStatus, DbResult, IModelStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
 class TestAccuDraw extends AccuDraw { }
@@ -112,36 +112,19 @@ describe("IModelApp", () => {
     assert.equal(selTool.keyin, "select elements", "keyin comes from superclass");
   });
 
-  it("Localization with no substitution", () => {
-    // Custom namespace
-    //  "TrivialTest.Test1" exists as a key in TestApp.json
+  it("Should do localizations", () => {
+    // we have "TrivialTest.Test1" as the key in TestApp.json
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-
-    // Default namespace (iModelJs)
     assert.equal(IModelApp.localization.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
-  });
 
-  it("Localization when there is no key", () => {
-    // Custom namespace
-    //  "TrivialTest.Test3" does NOT exist as a key in TestApp.json
+    // there is no key for TrivialTest.Test3
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
 
-    // Default namespace (iModelJs)
-    assert.equal(IModelApp.localization.getLocalizedString("IDontExist.Test1"), "IDontExist.Test1");
-  });
-
-  it("Localization with variable substitution", () => { // Properly substitute the values in localized strings with interpolations
-    // Custom namespace
+    // Should properly substitute the values in localized strings with interpolations
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
 
-    // Default namespace (iModelJs)
-    assert.equal(IModelApp.localization.getLocalizedString("Errors.Status", { status: "test" }), "Status: test");
-    assert.equal(IModelApp.localization.getLocalizedString("ExtensionErrors.Success", { extensionName: "testExtension" }), "Extension 'testExtension' loaded");
-  });
-
-  it("Error status localization", () => {
     assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
     assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");
     assert.equal(IModelApp.translateStatus(DbResult.BE_SQLITE_ERROR_AlreadyOpen), "Database already open");
@@ -150,18 +133,7 @@ describe("IModelApp", () => {
     assert.equal(IModelApp.translateStatus(101), "DbResult.BE_SQLITE_DONE");
     assert.equal(IModelApp.translateStatus(11111), "Status: 11111");
     assert.equal(IModelApp.translateStatus(undefined as any), "Illegal value");
-  });
 
-  it("Attempt to register missing namespace logs error", async () => {
-
-    let errorOut: any[] = [];
-    Logger.initialize((c, m, d) => errorOut = [c, m, d]);
-    Logger.setLevel("i18n", LogLevel.Error);
-
-    await IModelApp.localization.registerNamespace("IDontExist");
-
-    assert.notEqual(errorOut.length, 0);
-    assert.equal(errorOut[0], "i18n"); // logged to correct category
   });
 
   it("Should support WebGL", () => {

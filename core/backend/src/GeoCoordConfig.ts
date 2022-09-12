@@ -6,11 +6,9 @@
  * @module iModels
  */
 
-// cspell:ignore customuri
-
 import { BentleyError, Logger } from "@itwin/core-bentley";
+import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
-import { SQLiteDb } from "./SQLiteDb";
 import { Settings } from "./workspace/Settings";
 import { WorkspaceContainer, WorkspaceDb } from "./workspace/Workspace";
 
@@ -21,10 +19,19 @@ interface GcsDbProps extends WorkspaceDb.Props, WorkspaceContainer.Alias {
   priority?: number;
 }
 
-/** Internal class to configure and load the gcs workspaces for an iModel. */
+/**
+ * Internal class to configure and load the gcs workspaces for an iModel.
+ * @internal
+ */
 export class GeoCoordConfig {
+  /** array of cloud prefetch tasks that may be awaited to permit offline usage */
+  public static readonly prefetches: CloudSqlite.CloudPrefetch[] = [];
 
   private static addGcsWorkspace(gcsDbAlias: string) {
+    // override to disable loading GCS data from workspaces
+    if (IModelHost.appWorkspace.settings.getBoolean("gcs/disableWorkspaces", false))
+      return;
+
     const ws = IModelHost.appWorkspace;
     const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
     const containerProps = ws.resolveContainer(dbProps.containerName);
@@ -34,7 +41,7 @@ export class GeoCoordConfig {
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
       if (!cloudContainer?.isConnected) {
-        Logger.logInfo("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
+        Logger.logError("GeoCoord", `could not load gcs database "${gcsDbAlias}"`);
         return;
       }
 
@@ -49,17 +56,14 @@ export class GeoCoordConfig {
       if (IModelHost.appWorkspace.settings.getBoolean("gcs/noLocalData", false))
         IModelHost.platform.enableLocalGcsFiles(false);
 
-      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${account.accessName}${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${account.accessName}/${containerProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
 
       if (true === dbProps.prefetch)
-        SQLiteDb.startCloudPrefetch(cloudContainer, gcsDbName);
+        this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
 
-    } catch (e: unknown) {
-      Logger.logError(loggerCat, `Cannot load GCS workspace: ${BentleyError.getErrorMessage(e)},
-      account="${account.accessName}"/"${containerProps.containerId}",
-      storage=${account.storageType},
-      isPublic=${containerProps.isPublic},
-      rootDir=${ws.cloudCache?.rootDir}`
+    } catch (e: any) {
+      Logger.logError(loggerCat, `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)},`
+        + `container=${account.accessName}/${containerProps.containerId}, storage=${account.storageType}, public=${containerProps.isPublic}, cacheDir=${IModelHost.cacheDir}`
       );
     }
   }
@@ -79,6 +83,7 @@ export class GeoCoordConfig {
   private static _defaultDbsLoaded = false;
   public static onStartup() {
     this._defaultDbsLoaded = false;
+    this.prefetches.length = 0;
   }
 
   public static loadDefaultDatabases(): void {

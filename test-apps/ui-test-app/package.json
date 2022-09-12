@@ -45,7 +45,7 @@
   ],
   "devDependencies": {
     "@axe-core/react": "4.3.1",
-    "@bentley/react-scripts": "5.0.0-dev.4",
+    "@bentley/react-scripts": "^5.0.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
@@ -62,7 +62,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^14.0.0",
+    "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
@@ -105,7 +105,7 @@
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/imodels-client-management": "^1.0.1",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/map-layers": "workspace:*",
@@ -142,7 +142,7 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended",
+    "extends": "plugin:@itwin/ui",
     "parserOptions": {
       "project": [
         "tsconfig.json",

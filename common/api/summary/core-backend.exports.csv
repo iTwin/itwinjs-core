@@ -39,6 +39,11 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
+beta;CloudSqlite
+internal;CloudPrefetch
+internal;LockAndOpenArgs
+internal;ObtainLockParams
+internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
@@ -168,6 +173,7 @@ public;GenericGraphicalType2d
 public;GenericPhysicalMaterial 
 public;GenericPhysicalType 
 public;GenericSchema 
+internal;GeoCoordConfig
 public;class GeometricElement 
 public;class GeometricElement2d 
 public;GeometricElement2dHasTypeDefinition 
@@ -205,7 +211,6 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
-alpha;IModelSchemaLoader
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -279,6 +284,8 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
+alpha;PropertyStore
+alpha;PropertyStore
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -333,11 +340,7 @@ public;class SpatialModel
 public;SpatialViewDefinition 
 public;SQLiteDb 
 public;SQLiteDb
-internal;BlobIO = IModelJsNative.BlobIO
-internal;CloudCache = IModelJsNative.CloudCache
-internal;CloudContainer = IModelJsNative.CloudContainer
-internal;CloudPrefetch = IModelJsNative.CloudPrefetch
-internal;LockAndOpenArgs
+internal;BlobIO
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

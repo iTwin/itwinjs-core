@@ -188,19 +188,9 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         this._tileMap = new ArcGISTileMap(this._settings.url, json.tileInfo?.lods?.length);
       }
 
-      const footprintJson = await ArcGisUtilities.getFootprintJson(this._settings.url, this.getRequestAuthorization());
-      if (undefined !== footprintJson && undefined !== footprintJson.featureCollection && Array.isArray(footprintJson.featureCollection.layers)) {
-        for (const layer of footprintJson.featureCollection.layers) {
-          if (layer.layerDefinition && layer.layerDefinition.extent) {
-            this.cartoRange = MapCartoRectangle.createFromDegrees(layer.layerDefinition.extent.xmin, layer.layerDefinition.extent.ymin, layer.layerDefinition.extent.xmax, layer.layerDefinition.extent.ymax);
-            break;
-          }
-        }
-      }
-
-      // Sometimes footprint request doesnt work, fallback to dataset fullextent
-      if (this.cartoRange === undefined && json.fullExtent) {
-        if (json.fullExtent.spatialReference.latestWkid === 3857) {
+      // Read range using fullextent from service metadata
+      if (json.fullExtent) {
+        if (json.fullExtent.spatialReference.latestWkid === 3857 || json.fullExtent.spatialReference.wkid === 102100) {
           const range3857 = Range2d.createFrom({
             low: {x: json.fullExtent.xmin, y: json.fullExtent.ymin},
             high: {x: json.fullExtent.xmax, y: json.fullExtent.ymax} });

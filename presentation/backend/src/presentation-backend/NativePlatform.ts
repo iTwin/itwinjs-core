@@ -89,7 +89,6 @@ export interface NativePlatformDefinition extends IDisposable {
 /** @internal */
 export interface DefaultNativePlatformProps {
   id: string;
-  localeDirectories: string[];
   taskAllocationsMap: { [priority: number]: number };
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;

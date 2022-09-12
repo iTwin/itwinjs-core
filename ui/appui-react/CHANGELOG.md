@@ -1,6 +1,48 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+### Updates
+
+- Update camera icon and make camera tooltip conditional on the camera's on/off state.
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:01 GMT
+
+### Updates
+
+- remove alpha tag from AutoCollapseUnpinnedPanels
+- upgrade mocha to version 10.0.0
+- Set `hideWithUiWhenFloating` flag of a widget when restoring a layout.
+- Fix an issue where a widget is added to the layout multiple times.
+- [ModelsTree]: Make sure all child elements visibility is changed
+- Deprecated `isInFooterMode` in `StatusFieldProps`, should always be considered true. Deprecated `withStatusFieldProps` which provides only deprecated props to components.
+- Deprecated `isInFooterMode` in `FrontstageProps` and `ContentLayoutComponentProps`, should alays be considered true.
+- Deprecated `withMessageCenterFieldProps`, components should directly use `MessageManager.registerAnimateOutToElement`.
+- Deprecate `openWidget` and `onOpenWidget` props from `StatusBarFields` interface.
+- Add option to display active tool name as the Tool Settings tab label.
+- Export useTransientState hook.
+- Do not require list of static backstage items to be specified with BackstageComposer. Allow StandardFrontstageProvider to hideToolSetting in modal stages.
+- Avoid slow keyin browser filtering when processing long keyins.
+- Change to only log the inability to find a content view when the content is required.
+- Models Tree: Optimize creating subjects hierarchy
+- Add hideWithUiWhenFloating prop to widgets so that an app can opt into hiding specific floating widgets when the UI automatically hides.
+- Save state of floating widgets when they are hidden
+- Use toaster from iTwinUI to display messages
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT
