@@ -3,6 +3,7 @@
 resources:
   repositories:
   - repository: buildscripts
+    type: git
     name: iModelTechnologies/imodeljs-build-pipeline-scripts
 
 
