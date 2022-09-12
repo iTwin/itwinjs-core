@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "TranslationOptions interface is now exported and renamed some localization interfaces to fix inconsistencies and name overlaps",
+      "comment": "Rename LocalizationOptions interface to TranslationOptions and export it",
       "type": "none"
     }
   ],
