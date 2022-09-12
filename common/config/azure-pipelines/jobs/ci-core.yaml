@@ -1,5 +1,10 @@
-# parameters:
-#   nodeVersion: ''
+parameters:
+- name: nodeVersion
+  default: ''
+- name: gitRepo
+  default: self
+- name: gitBranch
+  default: master
 
 # jobs:
 # - job:
@@ -24,7 +29,7 @@
 #   timeoutInMinutes: 120
 
 #   pool: ${{ parameters.pool }}
-  
+
 #   ${{ if eq(parameters.useLocalAddon, true) }}:
 #     variables:
 #       - group: $(VAR_GROUP)
@@ -33,14 +38,14 @@
 #     clean: all
 
   steps:
-    - checkout: iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
+    - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
 #       clean: true
-    - script: git checkout $(Build.SourceBranchName)
-      
+    - script: git checkout ${{ parameters.gitBranch }}
+
     - task: NodeTool@0
-      displayName: "Use Node $(nodeVersion)"
+      displayName: "Use Node ${{ nodeVersion }}"
       inputs:
-        versionSpec: $(nodeVersion)
+        versionSpec: ${{ nodeVersion }}
         checkLatest: true
 
     - script: |
@@ -60,10 +65,10 @@
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
-    
+
     # Will run if even there is a failure somewhere else in the pipeline.
 #     - template: ../templates/publish-test-results.yaml
 #       parameters:
-#         NodeVersion: $(nodeVersion)
+#         NodeVersion: ${{ nodeVersion }}
     # The publish script identifies any new packages not previously published and tags the build
 #     - template: ../templates/publish.yaml
