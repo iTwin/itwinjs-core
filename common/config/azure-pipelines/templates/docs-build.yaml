@@ -91,13 +91,11 @@ steps:
     inputs:
       versionSpec: 4.9.2
 
-  - script: |
-      echo $(Build.BuildNumber)
-      echo $BUILD_BUILDNUMBER
-
   - task: NuGetCommand@2
     displayName: 'NuGet pack'
     inputs:
       command: pack
       packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
       versioningScheme: byBuildNumber
+    env:
+      BUILD_BUILDNUMBER: $(Build.BuildNumber)
