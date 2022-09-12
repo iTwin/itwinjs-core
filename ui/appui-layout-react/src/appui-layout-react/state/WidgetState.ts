@@ -11,7 +11,7 @@ import { RectangleProps } from "@itwin/core-react";
 import produce from "immer";
 import { PanelSide } from "../widget-panels/Panel";
 import { category } from "./internal/NineZoneStateHelpers";
-import { addWidgetState, createFloatingWidgetState, createPopoutWidgetState } from "./internal/WidgetStateHelpers";
+import { addWidgetState, createFloatingWidgetState, createPopoutWidgetState, getNewFloatingWidgetBounds } from "./internal/WidgetStateHelpers";
 import { NineZoneState } from "./NineZoneState";
 import { TabState } from "./TabState";
 
@@ -73,6 +73,14 @@ export function addFloatingWidget(state: NineZoneState, id: FloatingWidgetState[
     throw new UiError(category, "Floating widget already exists");
 
   state = addWidgetState(state, id, tabs, widgetArgs);
+
+  if (!floatingWidgetArgs?.bounds) {
+    const bounds = getNewFloatingWidgetBounds(state);
+    floatingWidgetArgs = {
+      ...floatingWidgetArgs,
+      bounds,
+    };
+  }
   const floatingWidget = createFloatingWidgetState(id, floatingWidgetArgs);
   return produce(state, (stateDraft) => {
     stateDraft.floatingWidgets.byId[id] = floatingWidget;

@@ -928,25 +928,19 @@ interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
 function addHiddenWidget(state: NineZoneState, widgetDef: WidgetDef): NineZoneState {
   const tabLocation = widgetDef.tabLocation || widgetDef.defaultTabLocation;
   const tabId = widgetDef.id;
-  const widgetId = tabLocation.widgetId;
+  const { widgetId, tabIndex } = tabLocation;
 
   if (widgetId in state.widgets) {
     // Add to an existing widget (by widget id).
-    return insertTabToWidget(state, tabId, widgetId, tabLocation.tabIndex);
+    return insertTabToWidget(state, tabId, widgetId, tabIndex);
   } else if (tabLocation.floatingWidget) {
     const floatingWidget = tabLocation.floatingWidget;
-    const floatingWidgetId = floatingWidget.id;
-
-    // Add to an existing floating widget.
-    // istanbul ignore next
-    if (floatingWidgetId in state.widgets) {
-      return insertTabToWidget(state, tabId, floatingWidgetId, tabLocation.tabIndex);
-    }
+    assert(widgetId === floatingWidget.id);
 
     // Add to a new floating widget.
     const nzBounds = Rectangle.createFromSize(state.size);
     const bounds = Rectangle.create(floatingWidget.bounds).containIn(nzBounds);
-    return addFloatingWidget(state, floatingWidgetId, [tabId], {
+    return addFloatingWidget(state, floatingWidget.id, [tabId], {
       ...floatingWidget,
       bounds: bounds.toProps(),
     });
@@ -1021,6 +1015,22 @@ export function setWidgetState(
         }
       }
     });
+  } else if (widgetState === WidgetState.Floating) {
+    const id = widgetDef.id;
+    let location = getTabLocation(state, id);
+    if (!location) {
+      state = addHiddenWidget(state, widgetDef);
+      location = getTabLocation(state, id);
+    }
+
+    assert(!!location);
+    if (isFloatingTabLocation(location))
+      return state;
+
+    // Widget is not floating.
+    state = removeTabFromWidget(state, id);
+    const bounds = widgetDef.tabLocation?.floatingWidget?.bounds;
+    state = addFloatingWidget(state, getUniqueId(), [id], { bounds });
   }
   return state;
 }
@@ -1037,7 +1047,7 @@ function hideWidget(state: NineZoneState, widgetDef: WidgetDef) {
     widgetDef.tabLocation = {
       side: floatingWidget.home.side,
       tabIndex: floatingWidget.home.widgetIndex,
-      widgetId: widgetDef.id,
+      widgetId: floatingWidget.id,
       widgetIndex: floatingWidget.home.widgetIndex,
       floatingWidget,
     };
