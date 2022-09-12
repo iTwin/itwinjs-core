@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Improve support for display transforms in AccuSnap and ViewClipByElementTool.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

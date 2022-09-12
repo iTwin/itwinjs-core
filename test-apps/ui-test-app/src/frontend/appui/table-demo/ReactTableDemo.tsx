@@ -89,6 +89,7 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
   return (
     <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
       <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <label style={{ display: "flex" }}>
           <BodyText>Use Cell PropertyDescription</BodyText>
           &nbsp;
