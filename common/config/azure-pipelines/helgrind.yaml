@@ -1,5 +1,11 @@
 # iTwin.js Helgrind Testing
 
+resources:
+  repositories:
+  - repository: buildscripts
+    name: iModelTechnologies/imodeljs-build-pipeline-scripts
+
+
 trigger: none
 pr: none
 schedules:
@@ -42,6 +48,11 @@ jobs:
 
       # - script: sudo apt-get install valgrind
       #   displayName: apt install valgrind
+
+      - template: templates/install-node-addon-from-artifact.yaml@buildscripts
+        displayName: setup env to use debug build
+        parameters:
+          buildId: 1625785 # 3.4.6
 
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
