@@ -31,3 +31,39 @@ jobs:
         name: $(name)
         demands:
           - Agent.OS -equals $(platform)
+
+  # Should this be moved to a template?
+  - job:
+    pool:
+      vmImage: macos-latest
+    workspace:
+      clean: all
+
+    steps:
+      # - task: InstallAppleProvisioningProfile@1
+      #   displayName: 'Install an Apple provisioning profile'
+      #   inputs:
+      #     provProfileSecureFile: '$(ProvisioningProfileSecureFile)'
+      #   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
+
+      # - task: InstallAppleCertificate@2
+      #   displayName: 'Install an Apple certificate'
+      #   inputs:
+      #     certSecureFile: '$(CertificateSecureFile)'
+      #     certPwd: '$(CertificatePassword)'
+      #     setUpPartitionIdACLForPrivateKey: false
+      #   condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
+
+      - checkout: self
+        clean: true
+
+      - task: NodeTool@0
+        displayName: "Use Node 14.17.4"
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      - script: npm run build:ios-app
+        workingDirectory: "test-apps/display-test-app"
+        displayName: "Build iOS display-test-app swift"
+        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))

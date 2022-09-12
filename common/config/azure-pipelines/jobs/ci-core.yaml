@@ -3,11 +3,8 @@ parameters:
   pool: ''
   nodeVersion: ''
 
-
 jobs:
 - job:
-  variables:
-    - group: iTwin.js ios and App Center variables
   strategy:
     matrix:
       "Windows_${{ parameters.name }}":
