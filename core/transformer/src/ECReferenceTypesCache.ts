@@ -99,7 +99,6 @@ export class ECReferenceTypesCache {
     if (this._initedSchemas.has(schema.name)) {
       const cachedSchemaKey = this._initedSchemas.get(schema.name);
       assert(cachedSchemaKey !== undefined);
-      // FIXME: test this logic
       const incomingSchemaIsEqualOrOlder = schema.schemaKey.compareByVersion(cachedSchemaKey) <= 0;
       if (incomingSchemaIsEqualOrOlder) {
         return;
