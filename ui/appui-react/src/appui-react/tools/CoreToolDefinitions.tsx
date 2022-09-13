@@ -9,9 +9,9 @@
 import * as React from "react";
 // cSpell:ignore configurableui keyinbrowser
 import {
-  FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
-  ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
-  WalkViewTool, WindowAreaTool, ZoomViewTool,
+  FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, SetupWalkCameraTool,
+  ViewClipByElementTool, ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool,
+  ViewUndoTool, WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@itwin/core-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import { ToolbarPopupContext } from "@itwin/components-react";
@@ -141,6 +141,16 @@ export class CoreTools {
         return !!activeContentControl?.viewport?.view.is2d();
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       execute: async () => IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView),
+    });
+  }
+
+  public static get setupCameraWalkTool() {
+    return new ToolItemDef({
+      toolId: SetupWalkCameraTool.toolId,
+      iconSpec: SetupWalkCameraTool.iconSpec,
+      label: SetupWalkCameraTool.flyover,
+      description: SetupWalkCameraTool.description,
+      execute: async () => IModelApp.tools.run(SetupWalkCameraTool.toolId),
     });
   }
 
