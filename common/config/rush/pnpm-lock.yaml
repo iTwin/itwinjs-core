@@ -694,7 +694,7 @@ importers:
       '@types/node': 16.11.7
       chai: ^4.1.2
       eslint: ^7.11.0
-      i18next: 21.9.0
+      i18next: ^21.9.1
       i18next-browser-languagedetector: ^6.1.2
       i18next-http-backend: ^1.4.1
       rimraf: ^3.0.2
@@ -702,7 +702,7 @@ importers:
       typescript: ~4.4.0
       webpack: ^5.64.4
     dependencies:
-      i18next: 21.9.0
+      i18next: 21.9.1
       i18next-browser-languagedetector: 6.1.5
       i18next-http-backend: 1.4.1
     devDependencies:
@@ -8674,7 +8674,7 @@ packages:
   /@types/cpx/1.5.0:
     resolution: {integrity: sha512-kuGK3lZqEvHTSDbJcaA6tcPoEXV4/e88YrltZMcQUewZhzYQwNSTMGIiPBqeeFd4LCBo1CX5U6CV6LaHG3wXSg==}
     dependencies:
-      '@types/node': 14.14.31
+      '@types/node': 16.11.7
     dev: false
 
   /@types/debug/4.1.7:
@@ -8919,10 +8919,6 @@ packages:
 
   /@types/node/12.20.24:
     resolution: {integrity: sha512-yxDeaQIAJlMav7fH5AQqPH1u8YIuhYJXYBzxaQ4PifsU0GDO38MSdmEDeRlIxrKbC6NbEaaEHDanWb+y30U8SQ==}
-    dev: false
-
-  /@types/node/14.14.31:
-    resolution: {integrity: sha512-vFHy/ezP5qI0rFgJ7aQnjDXwAMrG0KqqIH7tQG5PPv3BWBayOPIQNBjVc/P6hhdZfMx51REc6tfDNXHUio893g==}
     dev: false
 
   /@types/node/14.18.27:
@@ -14415,8 +14411,8 @@ packages:
       - encoding
     dev: false
 
-  /i18next/21.9.0:
-    resolution: {integrity: sha512-B+6/yd7rCpJidyPuBaEApUECx7G8Ai6+tqYhrChsY4MmQqJhG7qJ4eT6Lm1OnRhieVelEtfxh4aAQktdNVZtDA==}
+  /i18next/21.9.1:
+    resolution: {integrity: sha512-ITbDrAjbRR73spZAiu6+ex5WNlHRr1mY+acDi2ioTHuUiviJqSz269Le1xHAf0QaQ6GgIHResUhQNcxGwa/PhA==}
     dependencies:
       '@babel/runtime': 7.19.0
     dev: false
