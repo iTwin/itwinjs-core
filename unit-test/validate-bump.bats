@@ -1,5 +1,11 @@
 #!/usr/bin/env ./libs/bats/bin/bats
 
+# SAMPLE outline
+# @test "Test name" {
+#   run *command*
+#   True or False based on exit status of the script
+# }
+
 @test "Nightly : dev" {
   run ./vb.sh "nightly" "3.3.0-dev.89" "master"
   [ "$status" -eq 0 ]
