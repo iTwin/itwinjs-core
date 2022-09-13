@@ -5,6 +5,9 @@ parameters:
   - name: pool
     type: string
     default: ''
+  - name: nodeVersion
+    type: string
+    default: ''
   - name: buildIos
     type: boolean
     default: false
