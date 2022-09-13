@@ -15,7 +15,7 @@
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
-    "test:backend": "mocha lib/cjs/test/backend/RunElectronBackendTests.js",
+    "test:integration": "mocha lib/cjs/test/backend/RunElectronBackendTests.js",
     "cover": ""
   },
   "repository": {
