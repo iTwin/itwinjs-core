@@ -39,11 +39,11 @@ jobs:
         OS: windows-latest
         platform: Windows_NT
         name: $(win_pool)
-      "Linux_${{ parameters.name }}":
+      "Linux_Node_16":
         OS: ubuntu-latest
         platform: Linux
         name: $(linux_pool)
-      "MacOS_${{ parameters.name }}":
+      "MacOS_Node_16":
         OS: macOS-latest
         platform: Darwin
         name: $(mac_pool)
