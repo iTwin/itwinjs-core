@@ -6,13 +6,11 @@
  * @module iModels
  */
 
-import { DbResult, Logger, TupleKeyedMap } from "@itwin/core-bentley";
+import { DbResult, TupleKeyedMap } from "@itwin/core-bentley";
 import { ConcreteEntityTypes, IModelError, RelTypeInfo } from "@itwin/core-common";
 import { ECClass, Mixin, RelationshipClass, RelationshipConstraint, Schema, SchemaKey, SchemaLoader, StrengthDirection } from "@itwin/ecschema-metadata";
 import * as assert from "assert";
 import { IModelDb } from "@itwin/core-backend";
-
-const logger = Logger.makeCategorizedLogger("ECClassNavPropReferenceCache");
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @internal
@@ -104,7 +102,6 @@ export class ECReferenceTypesCache {
       // FIXME: test this logic
       const incomingSchemaIsEqualOrOlder = schema.schemaKey.compareByVersion(cachedSchemaKey) <= 0;
       if (incomingSchemaIsEqualOrOlder) {
-        logger.logInfo("schema was already inited");
         return;
       }
     }
