@@ -73,7 +73,7 @@ jobs:
           echo "version validation passed on bump ${{ parameters.BumpType }}"
           exit 0
 
-        elif [[ $(Build.SourceBranchName)  =~ ^release\/[0-9]+\.[0-9]+\.x$ ]]
+        elif [[ $(Build.SourceBranchName)  =~ ^release\/[0-9]+\.[0-9]+.* ]]
         then
           # minor = dev version && queued on release
           if [[ ${{ parameters.BumpType }} == "minor" ]] && [[ $curVer =~ ^-?[0-9]+\.[0-9]+\.[0-9]+-dev\.[0-9]+ ]]
