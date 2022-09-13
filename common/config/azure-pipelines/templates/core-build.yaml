@@ -48,7 +48,7 @@ steps:
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build iOS display-test-app typescript"
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
-  - script: npm run build:ios build:ios-app
+  - script: npm run build:ios-app
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build iOS display-test-app swift"
     condition: and(succeeded(), eq('${{ parameters.buildIos }}',true), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
