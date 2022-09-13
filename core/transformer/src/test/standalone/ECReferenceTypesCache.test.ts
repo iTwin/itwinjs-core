@@ -11,6 +11,7 @@ import { Relationship, SnapshotDb } from "@itwin/core-backend";
 import { KnownTestLocations as BackendTestsKnownLocations, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test";
 import * as Semver from "semver";
 import { SchemaItemType, SchemaLoader } from "@itwin/ecschema-metadata";
+import * as sinon from "sinon";
 
 describe("ECReferenceTypesCache", () => {
   let testIModel: SnapshotDb;
@@ -99,7 +100,7 @@ describe("ECReferenceTypesCache", () => {
     });
   });
 
-  it("should schemas add new data when encountering a schema of a higher version", async () => {
+  it("should add new schema data when encountering a schema of a higher version", async () => {
     const thisTestRefCache = new ECReferenceTypesCache();
 
     const pathForEmpty = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
@@ -120,5 +121,40 @@ describe("ECReferenceTypesCache", () => {
 
     await thisTestRefCache.initAllSchemasInIModel(emptyWithBrandNewBiscore);
     expect(thisTestRefCache.getNavPropRefType("BisCore", "PhysicalType", "PhysicalMaterial")).to.equal(ConcreteEntityTypes.Element);
+  });
+
+  it("should not init schemas of a lower or equal version", async () => {
+    const thisTestRefCache = new ECReferenceTypesCache();
+
+    const pathForEmpty1 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
+    const emptyWithBrandNewBiscore1 = SnapshotDb.createEmpty(pathForEmpty1, { rootSubject: { name: "empty "}});
+    const pathForEmpty2 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
+    const emptyWithBrandNewBiscore2 = SnapshotDb.createEmpty(pathForEmpty2, { rootSubject: { name: "empty "}});
+
+    const bisVersionInEmpty1 = emptyWithBrandNewBiscore1.querySchemaVersion("BisCore");
+    assert(bisVersionInEmpty1 !== undefined);
+
+    const bisVersionInEmpty2 = emptyWithBrandNewBiscore2.querySchemaVersion("BisCore");
+    assert(bisVersionInEmpty2 !== undefined);
+
+    const bisVersionInSeed = testIModel.querySchemaVersion("BisCore");
+    assert(bisVersionInSeed !== undefined);
+
+    assert(Semver.eq(bisVersionInEmpty1, bisVersionInEmpty2));
+    assert(Semver.gt(bisVersionInEmpty1, bisVersionInSeed));
+    expect(() => testIModel.getMetaData("BisCore:RenderTimeline")).not.to.throw;
+    expect(() => emptyWithBrandNewBiscore1.getMetaData("BisCore:RenderTimeline")).to.throw;
+
+    const initSchemaSpy = sinon.spy(thisTestRefCache, "initSchema" as keyof ECReferenceTypesCache);
+
+    await thisTestRefCache.initAllSchemasInIModel(emptyWithBrandNewBiscore1);
+    expect(initSchemaSpy.called).to.be.true;
+    initSchemaSpy.resetHistory();
+
+    await thisTestRefCache.initAllSchemasInIModel(emptyWithBrandNewBiscore2);
+    expect(initSchemaSpy.called).to.be.false;
+
+    await thisTestRefCache.initAllSchemasInIModel(testIModel);
+    expect(initSchemaSpy.called).to.be.false;
   });
 });
