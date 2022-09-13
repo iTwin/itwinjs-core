@@ -210,7 +210,7 @@ export abstract class ViewDefinition extends DefinitionElement {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
-  /** @beta */
+  /** @alpha */
   public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     categorySelectorId: ConcreteEntityTypes.Element,
@@ -357,7 +357,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
-  /** @beta */
+  /** @alpha */
   public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     modelSelectorId: ConcreteEntityTypes.Element,

@@ -376,7 +376,7 @@ export class Element extends Entity {
 
   /** A map of every [[requiredReferenceKeys]] on this class to their entity type.
    * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
-   * @beta
+   * @alpha
    */
   public static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     parent: ConcreteEntityTypes.Element,
@@ -478,7 +478,7 @@ export abstract class GeometricElement extends Element {
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "category"];
-  /** @beta */
+  /** @alpha */
   public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
     ...super.requiredReferenceKeyTypeMap,
     category: ConcreteEntityTypes.Element,
