@@ -1,6 +1,10 @@
 parameters:
   - name: name
+    type: string
+    default: ''
   - name: pool
+    type: string
+    default: ''
   - name: buildIos
     type: boolean
     default: false
