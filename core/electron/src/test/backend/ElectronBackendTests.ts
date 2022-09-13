@@ -12,11 +12,11 @@ export enum TestResult {
 }
 
 export interface TestSuite {
-  title: string,
+  title: string;
   tests: {
-    title: string,
-    func: () => Promise<void>,
-  }[]
+    title: string;
+    func: () => Promise<void>;
+  }[];
 }
 
 export const testSuites: TestSuite[] = [

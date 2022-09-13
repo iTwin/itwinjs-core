@@ -39,7 +39,7 @@ async function testStartWithoutOptions() {
 
   assert(ElectronHost.electron !== undefined);
   assert(ElectronHost.app !== undefined);
-};
+}
 
 async function testRegisterIpcHandler() {
   class RpcHandlerMock extends IpcHandler {

@@ -11,19 +11,19 @@ import { TestResult, testSuites } from "./ElectronBackendTests";
  * and test must be defined in [testSuites].
  */
 async function run() {
-  const suiteToRun = process.env.ELECTRON_SUITE_TITLE;
-  const testToRun = process.env.ELECTRON_TEST_TITLE;
+  const suiteTitle = process.env.ELECTRON_SUITE_TITLE;
+  const testTitle = process.env.ELECTRON_TEST_TITLE;
 
-  const suite = testSuites.find((suite) => suite.title === suiteToRun);
-  if (suite === undefined)
+  const suiteToRun = testSuites.find((suite) => suite.title === suiteTitle);
+  if (suiteToRun === undefined)
     process.exit(TestResult.InvalidArguments);
 
-  const test = suite.tests.find((test) => test.title === testToRun);
-  if (test === undefined)
+  const testToRun = suiteToRun.tests.find((test) => test.title === testTitle);
+  if (testToRun === undefined)
     process.exit(TestResult.InvalidArguments);
 
   try {
-    await test.func();
+    await testToRun.func();
   } catch (e: unknown) {
     console.error(e); // eslint-disable-line no-console
     process.exit(TestResult.Failure);
