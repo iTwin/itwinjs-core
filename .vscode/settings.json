@@ -10,17 +10,17 @@
     "**/.rush": true
   },
   "files.exclude": {
-    "**/.nyc_output": true,
-    "**/.rush": true,
-    "**/*.build.log": true,
-    "**/*.build.error.log": true,
-    "**/generated-docs": true,
-    "**/package-deps.json": true,
-    "**/node_modules": true,
-    "**/test-apps/**/build": true,
-    "**/out": true,
-    "**/lib": true,
-    "common/temp": true
+    "**/.nyc_output": false,
+    "**/.rush": false,
+    "**/*.build.log": false,
+    "**/*.build.error.log": false,
+    "**/generated-docs": false,
+    "**/package-deps.json": false,
+    "**/node_modules": false,
+    "**/test-apps/**/build": false,
+    "**/out": false,
+    "**/lib": false,
+    "common/temp": false
   },
   "files.trimTrailingWhitespace": true,
   "files.associations": {

@@ -1,0 +1,3 @@
+[submodule "unit-test/libs/bats"]
+	path = unit-test/libs/bats
+	url = https://github.com/bats-core/bats-core.git
