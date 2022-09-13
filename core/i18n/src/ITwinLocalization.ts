@@ -74,8 +74,9 @@ export class ITwinLocalization implements Localization {
     const initNamespaces: string[] = [this._initOptions.ns || []].flat();
     const combinedNamespaces: Set<string> = new Set([...namespaces, ...initNamespaces]); // without duplicates
 
-    const defaultNamespace: string = this._initOptions.defaultNS ?? namespaces[0];
-    combinedNamespaces.add(defaultNamespace); // Make sure default namespace is in namespaces list
+    const defaultNamespace: string | false | readonly string[] = this._initOptions.defaultNS ?? namespaces[0];
+    if (defaultNamespace)
+      combinedNamespaces.add(defaultNamespace as string); // Make sure default namespace is in namespaces list
 
     const initOptions: InitOptions = {
       ...this._initOptions,
