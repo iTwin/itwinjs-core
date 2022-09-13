@@ -1483,7 +1483,8 @@
         "NODE_ENV": "development"
       },
       "outFiles": [
-        "${workspaceFolder}/core/electron/lib/**/*.js"
+        "${workspaceFolder}/core/electron/lib/**/*.js",
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ],
       "autoAttachChildProcesses": true
     },
