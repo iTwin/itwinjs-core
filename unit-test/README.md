@@ -7,7 +7,7 @@ Unit testing directory with bats-core
   * echo 'libs/bats/bin/bats $(find *.bats -maxdepth 0 | sort)' >> test/test_all.sh
   * chmod +x test/test_all.sh
 
-* How to write unit test
+* How to write a unit test
   * write a program you want to test in your local ./unit-test/
   * write a bat file to create a unit test (sample ./unit-test/validate-bump.bats)
     For documentatoin - (<https://bats-core.readthedocs.io/en/stable/>)
