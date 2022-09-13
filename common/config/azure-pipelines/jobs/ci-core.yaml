@@ -1,10 +1,10 @@
 parameters:
 - name: nodeVersion
   default: ''
-- name: gitRepo
-  default: self
-- name: gitBranch
-  default: master
+# - name: gitRepo
+#   default: self
+# - name: gitBranch
+#   default: master
 
 # jobs:
 # - job:
@@ -29,9 +29,9 @@ parameters:
 #     clean: all
 
 steps:
-  - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
-#       clean: true
-  - script: git checkout ${{ parameters.gitBranch }}
+  # - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
+  #     clean: true
+  # - script: git checkout ${{ parameters.gitBranch }}
 
   - task: NodeTool@0
     displayName: "Use Node ${{ parameters.nodeVersion }}"
