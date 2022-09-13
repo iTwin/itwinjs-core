@@ -15,9 +15,6 @@ import type { ElementAspect } from "./ElementAspect";
 import type { Relationship, RelationshipProps } from "./Relationship";
 import * as assert from "assert";
 
-// re-export so consumers don't need to manually import the basic types we are extending
-export * from "@itwin/core-bentley/lib/cjs/EntityReference";
-
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
  * other entity classes. In the future if there is a need
  * to manage them this way, it can be added
