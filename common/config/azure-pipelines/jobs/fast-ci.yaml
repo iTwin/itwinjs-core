@@ -27,12 +27,8 @@ jobs:
     parameters:
       name: Node_16
       nodeVersion: 16.13.0
+      buildIos: true
       pool:
         name: $(name)
         demands:
           - Agent.OS -equals $(platform)
-    - steps:
-      - script: npm run build:ios build:ios-app
-        workingDirectory: "test-apps/display-test-app"
-        displayName: "Build iOS display-test-app swift"
-        condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))

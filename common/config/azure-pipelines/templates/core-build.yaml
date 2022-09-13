@@ -7,6 +7,9 @@ parameters:
   - name: rushBuildCacheEnabled
     type: number
     default: 1
+  - name: buildIos
+    type: boolean
+    default: false
 
 steps:
   - script: node common/scripts/set-rush-write-cache-variables.js
@@ -45,6 +48,10 @@ steps:
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build iOS display-test-app typescript"
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
+  - script: npm run build:ios build:ios-app
+    workingDirectory: "test-apps/display-test-app"
+    displayName: "Build iOS display-test-app swift"
+    condition: and(succeeded(), ${{ parameters.buildIos }}, eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}

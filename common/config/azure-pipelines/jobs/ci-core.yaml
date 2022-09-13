@@ -2,6 +2,9 @@ parameters:
   name: ''
   pool: ''
   nodeVersion: ''
+  - name: buildIos
+    type: boolean
+    default: false
 
 jobs:
 - job:
@@ -53,6 +56,8 @@ jobs:
       condition: and(succeeded(), eq(variables['Agent.OS'], 'Windows_NT'))
 
     - template: ../templates/core-build.yaml
+      parameters:
+        buildIos: ${{ parameters.buildIos}}
 
     # Will run if even there is a failure somewhere else in the pipeline.
     - template: ../templates/publish-test-results.yaml
