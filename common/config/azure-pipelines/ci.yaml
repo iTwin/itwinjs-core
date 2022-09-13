@@ -32,40 +32,30 @@ schedules:
 #         vmImage: $(OS)
 
 jobs:
-# - job:
-#   strategy:
-#     matrix:
-#       "Windows_Node_16":
-#         OS: windows-latest
-#         platform: Windows_NT
-#         name: $(win_pool)
-#       "Linux_${{ parameters.name }}":
-#         OS: ubuntu-latest
-#         platform: Linux
-#         name: $(linux_pool)
-#       "MacOS_${{ parameters.name }}":
-#         OS: macOS-latest
-#         platform: Darwin
-#         name: $(mac_pool)
+- job:
+  strategy:
+    matrix:
+      "Windows_Node_16":
+        OS: windows-latest
+        platform: Windows_NT
+        name: $(win_pool)
+      "Linux_${{ parameters.name }}":
+        OS: ubuntu-latest
+        platform: Linux
+        name: $(linux_pool)
+      "MacOS_${{ parameters.name }}":
+        OS: macOS-latest
+        platform: Darwin
+        name: $(mac_pool)
 
-#   pool:
-#     vmImage: $(OS)
+  pool:
+    vmImage: $(OS)
 
-#   timeoutInMinutes: 120
+  timeoutInMinutes: 120
 
-#   workspace:
-#     clean: all
+  workspace:
+    clean: all
 
-#   steps:
-#   - template: jobs/ci-core.yaml
-#       parameters:
-#         nodeVersion: 16.13.0
-#         gitRepo: self
-#         gitBranch: master
-
-  - job: Windows
-    pool:
-      vmImage: windows-latest
   steps:
   - template: jobs/ci-core.yaml
       parameters:
@@ -73,24 +63,34 @@ jobs:
         gitRepo: self
         gitBranch: master
 
-  - job: Linux
-    pool:
-      vmImage: ubuntu-latest
-  steps:
-  - template: jobs/ci-core.yaml
-      parameters:
-        nodeVersion: 16.13.0
-        gitRepo: self
-        gitBranch: master
+  # - job: Windows
+  #   pool:
+  #     vmImage: windows-latest
+  # steps:
+  # - template: jobs/ci-core.yaml
+  #     parameters:
+  #       nodeVersion: 16.13.0
+  #       gitRepo: self
+  #       gitBranch: master
 
-  - job: Mac
-    pool:
-      vmImage: macOS-latest
-  steps:
-  - template: jobs/ci-core.yaml
-      parameters:
-        nodeVersion: 16.13.0
-        gitRepo: self
-        gitBranch: master
+  # - job: Linux
+  #   pool:
+  #     vmImage: ubuntu-latest
+  # steps:
+  # - template: jobs/ci-core.yaml
+  #     parameters:
+  #       nodeVersion: 16.13.0
+  #       gitRepo: self
+  #       gitBranch: master
+
+  # - job: Mac
+  #   pool:
+  #     vmImage: macOS-latest
+  # steps:
+  # - template: jobs/ci-core.yaml
+  #     parameters:
+  #       nodeVersion: 16.13.0
+  #       gitRepo: self
+  #       gitBranch: master
 
 
