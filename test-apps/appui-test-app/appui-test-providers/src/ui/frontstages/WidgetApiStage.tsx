@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 
 import {
   BackstageAppButton, BackstageManager, CommandItemDef, ConfigurableUiManager, ContentGroup, ContentGroupProps, ContentGroupProvider, ContentProps, FrontstageProps,
-  IModelViewportControl, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
+  IModelViewportControl, StagePanelState, StandardContentToolsUiItemsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsUiItemsProvider,
   StandardStatusbarUiItemsProvider,
   StateManager,
@@ -131,6 +131,16 @@ export class WidgetApiStage {
       contentGroupProps: WidgetApiStage._contentGroupProvider,
       cornerButton,
       usage: StageUsage.General,
+      topPanelProps: {
+        resizable: true,
+        pinned: true,
+        defaultState: StagePanelState.Open,
+      },
+      leftPanelProps: {
+        resizable: true,
+        pinned: true,
+        defaultState: StagePanelState.Open,
+      },
     };
 
     ConfigurableUiManager.addFrontstageProvider(new StandardFrontstageProvider(widgetApiStageProps));

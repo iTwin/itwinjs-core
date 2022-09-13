@@ -87,7 +87,8 @@ async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveRe
 
 function changePageSize(dbName: string, pageSizeInKb: number) {
   const sp = new StopWatch(undefined, true);
-  SQLiteDb.withOpenDb({ dbName, openMode: OpenMode.ReadWrite }, (db) => {
+  const db = new SQLiteDb();
+  db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite }, () => {
     let pageSize = 0;
     db.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())

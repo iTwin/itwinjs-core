@@ -2,6 +2,63 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-geometry_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-geometry_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-geometry_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "stroke centerline in addMiteredPipes"
+          },
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "sort non-horizontal loops in polyface clipper"
+          },
+          {
+            "comment": "Speedup CurveChainWithDistanceIndex.closestPoint"
+          },
+          {
+            "comment": "growable array improvements"
+          },
+          {
+            "comment": "Fix bug in range.extendWhenLarger"
+          },
+          {
+            "comment": "prevent Delaunay flipper from removing hole edges"
+          },
+          {
+            "comment": "Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-geometry_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-geometry_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.7",
       "tag": "@itwin/core-geometry_v3.2.7",
       "date": "Mon, 01 Aug 2022 13:36:56 GMT",

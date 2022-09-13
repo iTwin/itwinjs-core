@@ -522,8 +522,9 @@ export class IModelHost {
     // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = undefined;
     IModelHost.tileStorage = undefined;
-    IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
+    ITwinWorkspace.finalize();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 

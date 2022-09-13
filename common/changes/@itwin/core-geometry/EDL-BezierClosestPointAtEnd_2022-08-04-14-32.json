@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "When finding closest point on bspline, bezier endpoints were not explicitly tested",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}

@@ -11,7 +11,7 @@ import {
 import {
   BackstageItem,
   BackstageItemUtilities,
-  ContentLayoutProps, StageUsage, UiItemsManager, UiItemsProvider,
+  ContentLayoutProps, StageUsage, StandardContentLayouts, UiItemsManager, UiItemsProvider,
 } from "@itwin/appui-abstract";
 import {
   BackstageAppButton,
@@ -111,7 +111,19 @@ export class InitialIModelContentStageProvider extends ContentGroupProvider {
         }
         return new ContentGroup(savedViewLayoutProps.contentGroupProps);
       }
-      throw (Error(`Could not load saved layout ContentLayoutProps`));
+
+      return new ContentGroup({
+        id: "content-group",
+        layout: StandardContentLayouts.singleView,
+        contents: [
+          {
+            id: "viewport",
+            classId: IModelViewportControl,
+            applicationData: {
+            },
+          },
+        ],
+      });
     }
 
     // first find an appropriate layout

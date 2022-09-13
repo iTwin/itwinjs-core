@@ -120,23 +120,23 @@ describe("Class Registry - generated classes", () => {
     prop: string;
   }
 
-  interface TestElementWithNavPropProps  extends DefinitionElementProps {
+  interface TestElementWithNavPropProps extends DefinitionElementProps {
     navProp: RelatedElementProps;
   }
 
-  interface DerivedWithNavPropProps  extends TestElementWithNavPropProps {
+  interface DerivedWithNavPropProps extends TestElementWithNavPropProps {
     derivedNavProp: RelatedElementProps;
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  interface TestNonElementWithNavPropProps  extends ElementAspectProps {
+  interface TestNonElementWithNavPropProps extends ElementAspectProps {
     navProp: RelatedElement;
   }
 
   class TestGeneratedClasses extends Schema {
     public static override get schemaName(): string { return "TestGeneratedClasses"; }
     public static get classes() {
-      return [ TestElementWithNavProp, DerivedWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6 ];
+      return [TestElementWithNavProp, DerivedWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6];
     }
     public static registerSchema() {
       if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
@@ -281,7 +281,7 @@ describe("Class Registry - generated classes", () => {
     }
     class MyTestGeneratedClasses extends TestGeneratedClasses {
       public static override get classes() {
-        return [ MyTestElementWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6 ];
+        return [MyTestElementWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6];
       }
     }
     MyTestGeneratedClasses.registerSchema();
@@ -394,7 +394,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
@@ -419,6 +419,7 @@ describe("Class Registry - generated classes", () => {
     const derived6Id = imodel.elements.insertElement({
       classFullName: Derived6.classFullName,
       model: IModelDb.dictionaryId,
+      code: Code.createEmpty(),
       navProp: {
         id: testEntity1Id,
         relClassName: "TestGeneratedClasses:ElemRel",
@@ -498,7 +499,7 @@ describe("Class Registry - generated classes", () => {
           ActualDerivedWithNavProp,
           Derived2,
           Derived4,
-        // eslint-disable-next-line @typescript-eslint/dot-notation
+          // eslint-disable-next-line @typescript-eslint/dot-notation
         ].map((e) => e.prototype["collectReferenceIds"]) // eslint-disable-line @typescript-eslint/dot-notation
       )
     );

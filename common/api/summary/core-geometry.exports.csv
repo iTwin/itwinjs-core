@@ -138,6 +138,7 @@ internal;HalfEdgeGraph
 internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
+public;HoleFillOptions
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval
@@ -254,6 +255,7 @@ public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 
 public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe"
+public;SpacePolygonTriangulation
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex

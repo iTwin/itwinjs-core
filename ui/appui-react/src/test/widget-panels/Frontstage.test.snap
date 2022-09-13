@@ -150,10 +150,10 @@ Object {
     "byId": Object {
       "w1": Object {
         "bounds": Object {
-          "bottom": 0,
-          "left": 0,
-          "right": 0,
-          "top": 0,
+          "bottom": 140,
+          "left": 20,
+          "right": 220,
+          "top": 20,
         },
         "hidden": false,
         "home": Object {
@@ -234,7 +234,12 @@ Object {
       "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
-      "preferredPopoutWidgetSize": undefined,
+      "userSized": undefined,
+    },
+    "t2": Object {
+      "allowedPanelTargets": undefined,
+      "id": "t2",
+      "preferredFloatingWidgetSize": undefined,
       "userSized": undefined,
     },
   },

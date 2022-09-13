@@ -39,9 +39,17 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
+beta;CloudSqlite
+internal;CloudPrefetch
+internal;LockAndOpenArgs
+internal;ObtainLockParams
+internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 beta;class CloudStorageService
 internal;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
+alpha;CodeIndex
+alpha;CodeService
+alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
@@ -56,6 +64,8 @@ public;DefinitionGroupGroupsDefinitions
 public;DefinitionModel 
 public;DefinitionPartition 
 public;class DefinitionSet 
+beta;deleteElementSubTrees(iModel: IModelDb, topElement: Id64String, filter: ElementSubTreeDeleteFilter): void
+beta;deleteElementTree(iModel: IModelDb, topElement: Id64String): void
 public;DetailCallout 
 public;class DetailingSymbol 
 internal;DevTools
@@ -108,6 +118,12 @@ public;ElementOwnsExternalSourceAspects
 public;ElementOwnsMultiAspects 
 public;ElementOwnsUniqueAspect 
 public;ElementRefersToElements 
+beta;ElementSubTreeDeleteFilter = (elementId: Id64String, scope: ElementTreeWalkerScope) => boolean
+beta;ElementSubTreeDeleter 
+beta;class ElementTreeBottomUp
+beta;ElementTreeDeleter 
+beta;ElementTreeWalkerModelInfo
+beta;ElementTreeWalkerScope
 public;ElementUniqueAspect 
 public;ElevationCallout 
 public;EmbeddedFileLink 
@@ -157,6 +173,7 @@ public;GenericGraphicalType2d
 public;GenericPhysicalMaterial 
 public;GenericPhysicalType 
 public;GenericSchema 
+internal;GeoCoordConfig
 public;class GeometricElement 
 public;class GeometricElement2d 
 public;GeometricElement2dHasTypeDefinition 
@@ -194,7 +211,6 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
-alpha;IModelSchemaLoader
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -268,6 +284,8 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
+alpha;PropertyStore
+alpha;PropertyStore
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -322,10 +340,7 @@ public;class SpatialModel
 public;SpatialViewDefinition 
 public;SQLiteDb 
 public;SQLiteDb
-internal;BlobIO = IModelJsNative.BlobIO
-internal;CloudCache = IModelJsNative.CloudCache
-internal;CloudContainer = IModelJsNative.CloudContainer
-internal;CloudPrefetch = IModelJsNative.CloudPrefetch
+internal;BlobIO
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

@@ -214,7 +214,7 @@ export function ThemedSelect(props: ThemedSelectProps) {
   const noOptionLabel = React.useRef<string | undefined>();
   const defaultOptionMessage = React.useCallback(() => {
     if (!noOptionLabel.current) {
-      noOptionLabel.current = UiCore.translate("reactelect.noSelectOption");
+      noOptionLabel.current = UiCore.translate("reactselect.noSelectOption");
     }
     return noOptionLabel.current;
   }, [noOptionLabel]);

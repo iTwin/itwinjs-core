@@ -3,12 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RelativePosition } from "@itwin/appui-abstract";
-import { fireEvent, render, RenderResult } from "@testing-library/react";
-import { Popup, PopupProps } from "../../core-react";
+import { fireEvent, render, RenderResult, screen } from "@testing-library/react";
+import { Popup } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
+import userEvent from "@testing-library/user-event";
 
 function NestedPopup() {
   const [showPopup, setShowPopup] = React.useState(false);
@@ -58,6 +59,11 @@ function PrimaryPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOu
 }
 
 describe("<Popup />", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
+
   const sandbox = sinon.createSandbox();
 
   afterEach(() => {
@@ -74,14 +80,9 @@ describe("<Popup />", () => {
     expect(component.getByTestId("core-popup")).to.exist;
   });
 
-  it("mounts and unmounts correctly", () => {
-    const wrapper = render(<Popup isOpen top={30} left={70} />);
-    wrapper.unmount();
-  });
-
   it("mounts with role correctly", () => {
-    const wrapper = render(<Popup isOpen top={30} left={70} role="alert" />);
-    wrapper.unmount();
+    render(<Popup isOpen top={30} left={70} role="alert" />);
+    expect(screen.getByRole("alert")).to.exist;
   });
 
   it("renders correctly closed and open", () => {
@@ -322,57 +323,23 @@ describe("<Popup />", () => {
     expect(component.queryByTestId("NestedPopup-Button")).to.be.null;
   });
 
-  it("should remove animation", () => {
-    const wrapper = mount<PopupProps>(<Popup isOpen />);
-    const popup = wrapper.find(".core-popup");
-    wrapper.state("animationEnded").should.false;
+  it("should remove animation", async () => {
+    render(<Popup isOpen><div>Content</div></Popup>);
+    expect(classesFromElement(screen.getByRole("dialog"))).not.to.include("core-animation-ended");
 
-    const element = document.createElement("div");
-    popup.simulate("animationEnd", { target: element });
-    wrapper.state("animationEnded").should.false;
+    // Handles bubbling
+    fireEvent.animationEnd(screen.getByText("Content"));
+    expect(classesFromElement(screen.getByRole("dialog"))).not.to.include("core-animation-ended");
 
-    popup.simulate("animationEnd");
-    wrapper.state("animationEnded").should.true;
-
-    wrapper.unmount();
+    fireEvent.animationEnd(screen.getByRole("dialog"));
+    expect(classesFromElement(screen.getByRole("dialog"))).to.include("core-animation-ended");
   });
 
   describe("renders", () => {
-    it("should render with few props", () => {
-      const wrapper = mount(
-        <div>
-          <Popup isOpen />
-        </div>);
-      wrapper.unmount();
-    });
-
-    it("should render with many props", () => {
-      const wrapper = mount(
-        <div>
-          <Popup isOpen onOpen={() => { }} onClose={() => { }} showShadow showArrow position={RelativePosition.BottomRight} />
-        </div>);
-      wrapper.unmount();
-    });
-
-    it("renders correctly with few props", () => {
-      shallow(
-        <div>
-          <Popup isOpen />
-        </div>).should.matchSnapshot();
-    });
-
-    it("renders correctly with many props", () => {
-      shallow(
-        <div>
-          <Popup isOpen onOpen={() => { }} onClose={() => { }} showShadow showArrow position={RelativePosition.BottomRight} />
-        </div>).should.matchSnapshot();
-    });
-
     it("renders correctly with no animation", () => {
-      shallow(
-        <div>
-          <Popup isOpen animate={false} />
-        </div>).should.matchSnapshot();
+      render(<Popup isOpen animate={false} />);
+
+      expect(classesFromElement(screen.getByRole("dialog"))).to.include("core-popup-animation-none");
     });
 
   });
@@ -380,595 +347,390 @@ describe("<Popup />", () => {
   describe("componentDidUpdate", () => {
     it("should call onOpen", () => {
       const spyOnOpen = sinon.spy();
-      const wrapper = mount(<Popup onOpen={spyOnOpen} />);
-      wrapper.setProps({ isOpen: true });
+      const {rerender} = render(<Popup onOpen={spyOnOpen} />);
+      rerender(<Popup onOpen={spyOnOpen} isOpen={true} />);
       expect(spyOnOpen.calledOnce).to.be.true;
-      wrapper.unmount();
     });
 
     it("should call onClose", () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
-      wrapper.setProps({ isOpen: false });
+      const {rerender} = render(<Popup isOpen onClose={spyOnClose} />);
+      rerender(<Popup isOpen={false} onClose={spyOnClose} />);
       expect(spyOnClose.calledOnce).to.be.true;
-      wrapper.unmount();
     });
   });
 
   describe("positioning", () => {
     let divWrapper: RenderResult;
-    let targetElement: HTMLElement | null;
+    let targetElement: HTMLElement;
 
     beforeEach(() => {
       divWrapper = render(<div data-testid="test-target" />);
       targetElement = divWrapper.getByTestId("test-target");
+      sinon.stub(targetElement, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, y: 100, height: 50, width: 50 }));
     });
 
     afterEach(() => {
       divWrapper.unmount();
     });
 
-    it("should render TopLeft", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-top-left");
-      expect(popup.length).be.eq(1);
-      wrapper.state("top").should.eq(96);
-      wrapper.state("position").should.eq(RelativePosition.TopLeft);
-      wrapper.unmount();
-    });
+    ([
+      ["TopLeft", "core-popup-top-left", {top: "96px"}],
+      ["TopRight", "core-popup-top-right", {top: "96px"}],
+      ["BottomLeft", "core-popup-bottom-left", {}],
+      ["BottomRight", "core-popup-bottom-right", {}],
+      ["Top", "core-popup-top", {top: "96px"}],
+      ["Left", "core-popup-left", {left: "96px"}],
+      ["Right", "core-popup-right", {}],
+      ["Bottom", "core-popup-bottom", {}],
+      ["LeftTop", "core-popup-left-top", {}],
+      ["RightTop", "core-popup-right-top", {}],
+    ] as [keyof typeof RelativePosition, string, {top?: string}][]).map(([position, className, style])=>{
+      it(`should render ${position}`, () => {
+        const {rerender} = render(<Popup position={RelativePosition[position]} target={targetElement} />);
+        rerender(<Popup position={RelativePosition[position]} target={targetElement} isOpen={true} />);
 
-    it("should render TopRight", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopRight} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-top-right");
-      wrapper.state("top").should.eq(96);
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.TopRight);
-      wrapper.unmount();
-    });
+        const tested = screen.getByRole("dialog");
+        expect(classesFromElement(tested)).to.include(className);
 
-    it("should render BottomLeft", () => {
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomLeft} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-bottom-left");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.BottomLeft);
-      wrapper.unmount();
-    });
-
-    it("should render BottomRight", () => {
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomRight} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-bottom-right");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.BottomRight);
-      wrapper.unmount();
-    });
-
-    it("should render Top", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 50 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-top");
-      expect(popup.length).be.eq(1);
-      wrapper.state("top").should.eq(96);
-      wrapper.state("position").should.eq(RelativePosition.Top);
-      wrapper.unmount();
-    });
-
-    it("should render Left", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-left");
-      expect(popup.length).be.eq(1);
-      wrapper.state("left").should.eq(96);
-      wrapper.state("position").should.eq(RelativePosition.Left);
-      wrapper.unmount();
-    });
-
-    it("should render Right", () => {
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Right} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-right");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.Right);
-      wrapper.unmount();
-    });
-
-    it("should render Bottom", () => {
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Bottom} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-bottom");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.Bottom);
-      wrapper.unmount();
-    });
-
-    it("should render LeftTop", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 50 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-left-top");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.LeftTop);
-      wrapper.unmount();
-    });
-
-    it("should render RightTop", () => {
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.RightTop} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      const popup = wrapper.find("div.core-popup-right-top");
-      expect(popup.length).be.eq(1);
-      wrapper.state("position").should.eq(RelativePosition.RightTop);
-      wrapper.unmount();
+        expect(tested.style).to.include(style);
+      });
     });
 
     it("should render Bottom then Right", () => {
-      const wrapper = mount(<Popup position={RelativePosition.Bottom} target={targetElement} />);
-      wrapper.setProps({ isOpen: true });
-      let popup = wrapper.find("div.core-popup-bottom");
-      expect(popup.length).be.eq(1);
-      wrapper.setProps({ position: RelativePosition.Right });
-      wrapper.update();
-      popup = wrapper.find("div.core-popup-right");
-      expect(popup.length).be.eq(1);
-      wrapper.unmount();
+      const {rerender} = render(<Popup position={RelativePosition.Bottom} target={targetElement} />);
+
+      rerender(<Popup isOpen={true} position={RelativePosition.Bottom} target={targetElement} />);
+      expect(classesFromElement(screen.getByRole("dialog"))).to.include("core-popup-bottom");
+
+      rerender(<Popup isOpen={true} position={RelativePosition.Right} target={targetElement} />);
+      expect(classesFromElement(screen.getByRole("dialog"))).to.include("core-popup-right");
     });
   });
 
   describe("re-positioning", () => {
-    it("should reposition Bottom to Top", () => {
-      sandbox.stub(window, "innerHeight").get(() => 1000);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Bottom} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Top);
-      wrapper.unmount();
-    });
+    const whenCloseToBottomRepositionTo = ["innerHeight", 1000, { y: 100, height: 900}];
+    const whenCloseToTopRepositionTo = ["scrollY", 100, { y: 80 }];
+    const whenCloseToLeftRepositionTo = ["scrollX", 100, { x: 80 }];
+    const whenCloseToRightRepositionTo = ["innerWidth", 1000, { width: 1010 }];
+    ([
+      ["Bottom", ...whenCloseToBottomRepositionTo, "top"],
+      ["BottomLeft", ...whenCloseToBottomRepositionTo, "top-left"],
+      ["BottomRight", ...whenCloseToBottomRepositionTo, "top-right"],
+      ["Top", ...whenCloseToTopRepositionTo, "bottom"],
+      ["TopLeft", ...whenCloseToTopRepositionTo, "bottom-left"],
+      ["TopRight", ...whenCloseToTopRepositionTo, "bottom-right"],
+      ["Left", ...whenCloseToLeftRepositionTo, "right"],
+      ["LeftTop", ...whenCloseToLeftRepositionTo, "right-top"],
+      ["Right", ...whenCloseToRightRepositionTo, "left"],
+      ["RightTop", ...whenCloseToRightRepositionTo, "left-top"],
+    ] as [keyof typeof RelativePosition, keyof typeof window, number, DOMRectInit, RelativePosition, string][])
+      .map(([testedPosition, windowMethod, windowMethodReturn, rect, expectedClass]) => {
+        it(`should reposition ${testedPosition} to ${expectedClass}`, () => {
+          sandbox.stub(window, windowMethod).get(() => windowMethodReturn);
+          const target = document.createElement("div");
+          sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect(rect));
 
-    it("should reposition BottomLeft to TopLeft", () => {
-      sandbox.stub(window, "innerHeight").get(() => 1000);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomLeft} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.TopLeft);
-      wrapper.unmount();
-    });
-
-    it("should reposition BottomRight to TopRight", () => {
-      sandbox.stub(window, "innerHeight").get(() => 1000);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.BottomRight} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.TopRight);
-      wrapper.unmount();
-    });
-
-    it("should reposition Top to Bottom", () => {
-      sandbox.stub(window, "scrollY").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Bottom);
-      wrapper.unmount();
-    });
-
-    it("should reposition TopLeft to BottomLeft", () => {
-      sandbox.stub(window, "scrollY").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.BottomLeft);
-      wrapper.unmount();
-    });
-
-    it("should reposition TopLeft to BottomLeft", () => {
-      sandbox.stub(window, "scrollY").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopLeft} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.BottomLeft);
-      wrapper.unmount();
-    });
-
-    it("should reposition TopRight to BottomRight", () => {
-      sandbox.stub(window, "scrollY").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.TopRight} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.BottomRight);
-      wrapper.unmount();
-    });
-
-    it("should reposition Left to Right", () => {
-      sandbox.stub(window, "scrollX").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Right);
-      wrapper.unmount();
-    });
-
-    it("should reposition LeftTop to RightTop", () => {
-      sandbox.stub(window, "scrollX").get(() => 100);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 80 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.LeftTop} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.RightTop);
-      wrapper.unmount();
-    });
-
-    it("should reposition Right to Left", () => {
-      sandbox.stub(window, "innerWidth").get(() => 1000);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 1010 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Right} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Left);
-      wrapper.unmount();
-    });
-
-    it("should reposition RightTop to LeftTop", () => {
-      sandbox.stub(window, "innerWidth").get(() => 1000);
-      const target = document.createElement("div");
-      sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 1010 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.RightTop} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.LeftTop);
-      wrapper.unmount();
-    });
+          const {rerender} = render(<Popup position={RelativePosition[testedPosition]} target={target} />);
+          rerender(<Popup position={RelativePosition[testedPosition]} target={target} isOpen={true}/>);
+          expect(classesFromElement(screen.getByRole("dialog"))).to.include(`core-popup-${expectedClass}`);
+        });
+      });
 
     it("should not reposition on bottom overflow", () => {
       sandbox.stub(window, "innerHeight").get(() => 900);
       const target = document.createElement("div");
       sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ y: 100, height: 900 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Top} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Top);
-      wrapper.unmount();
+
+      const {rerender} = render(<Popup position={RelativePosition.Top} target={target} />);
+      rerender(<Popup position={RelativePosition.Top} target={target} isOpen={true} />);
+      expect(classesFromElement(screen.getByRole("dialog"))).to.include(`core-popup-top`);
     });
 
     it("should not reposition on right overflow", () => {
       sandbox.stub(window, "innerWidth").get(() => 1000);
       const target = document.createElement("div");
       sinon.stub(target, "getBoundingClientRect").returns(DOMRect.fromRect({ x: 100, width: 1000 }));
-      const wrapper = mount<PopupProps>(<Popup position={RelativePosition.Left} target={target} />);
-      wrapper.setProps({ isOpen: true });
-      wrapper.state("position").should.eq(RelativePosition.Left);
-      wrapper.unmount();
+
+      const {rerender} = render(<Popup position={RelativePosition.Left} target={target} />);
+      rerender(<Popup position={RelativePosition.Left} target={target} isOpen={true} />);
+      expect(classesFromElement(screen.getByRole("dialog"))).to.include(`core-popup-left`);
     });
   });
 
   describe("outside click", () => {
-    it("should call onOutsideClick", () => {
+    it("should call onOutsideClick", async () => {
       const spy = sinon.spy();
-      const wrapper = mount(<Popup isOpen onOutsideClick={spy} />);
+      render(<><button /><Popup isOpen onOutsideClick={spy} /></>);
 
-      const popup = wrapper.find(".core-popup").getDOMNode();
-      sinon.stub(popup, "contains").returns(false);
+      await theUserTo.click(screen.getByRole("button"));
 
-      const mouseDown = new PointerEvent("pointerdown");
-      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
-      window.dispatchEvent(mouseDown);
-
-      expect(spy.calledOnceWithExactly(mouseDown)).be.true;
-      wrapper.unmount();
+      expect(spy).to.be.calledOnce;
     });
 
-    it("should close on click outside without onOutsideClick", () => {
+    it("should close on click outside without onOutsideClick", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
+      render(<><button/><Popup isOpen onClose={spyOnClose} /></>);
 
-      const popup = wrapper.find(".core-popup").getDOMNode();
-      sinon.stub(popup, "contains").returns(false);
-
-      const mouseDown = new PointerEvent("pointerdown");
-      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
-      window.dispatchEvent(mouseDown);
+      await theUserTo.click(screen.getByRole("button"));
 
       spyOnClose.calledOnce.should.true;
-      expect(wrapper.state("isOpen")).to.be.false;
-
-      wrapper.unmount();
     });
 
-    it("should not close on click outside if pinned", () => {
+    it("should not close on click outside if pinned", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} isPinned />);
+      render(<><button /><Popup isOpen onClose={spyOnClose} isPinned /></>);
 
-      const popup = wrapper.find(".core-popup").getDOMNode();
-      sinon.stub(popup, "contains").returns(false);
-
-      const mouseDown = new PointerEvent("pointerdown");
-      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
-      window.dispatchEvent(mouseDown);
+      await theUserTo.click(screen.getByRole("button"));
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
-    it("should not close on popup content click", () => {
+    it("should not close on popup content click", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
+      render(<Popup isOpen onClose={spyOnClose}><button /></Popup>);
 
-      const popup = wrapper.find(".core-popup").getDOMNode();
-      sinon.stub(popup, "contains").returns(true);
-
-      const mouseDown = new PointerEvent("pointerdown");
-      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
-      window.dispatchEvent(mouseDown);
+      await theUserTo.click(screen.getByRole("button"));
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
-    it("should not close on target content click", () => {
-      const target = document.createElement("div");
-      sinon.stub(target, "contains").returns(true);
+    it("should not close on target content click", async () => {
+      render(<button/>);
+      const target = screen.getByRole("button");
 
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} target={target} />);
+      render(<><input/><Popup isOpen onClose={spyOnClose} target={target} /></>);
 
-      const mouseDown = new PointerEvent("pointerdown");
-      sinon.stub(mouseDown, "target").get(() => document.createElement("div"));
-      window.dispatchEvent(mouseDown);
+      await theUserTo.click(target);
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
 
-      wrapper.unmount();
+      // Sanity check that it would indeed close...
+      await theUserTo.click(screen.getByRole("textbox"));
+      spyOnClose.calledOnce.should.true;
     });
   });
 
   describe("scrolling", () => {
     it("should hide when scrolling", () => {
-      const wrapper = mount<Popup>(<Popup isOpen />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen onClose={spyOnClose}/>);
 
+      // Using this as user-event do not support scrolling: https://github.com/testing-library/user-event/issues/475
       const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
-      expect(wrapper.state().isOpen).false;
-      wrapper.unmount();
+      expect(spyOnClose).to.be.calledOnce;
     });
 
     it("should not hide when scrolling popup content", () => {
-      const wrapper = mount<Popup>(<Popup isOpen />);
-      const popup = wrapper.find(".core-popup").getDOMNode();
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen onClose={spyOnClose}/>);
 
       const scroll = new WheelEvent("wheel");
-      sinon.stub(scroll, "target").get(() => popup);
+      sinon.stub(scroll, "target").get(() => screen.getByRole("dialog"));
       window.dispatchEvent(scroll);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when scrolling if pinned", () => {
-      const wrapper = mount<Popup>(<Popup isOpen isPinned />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen isPinned onClose={spyOnClose}/>);
 
       const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when scrolling if closeOnWheel=false", () => {
-      const wrapper = mount<Popup>(<Popup isOpen closeOnWheel={false} />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen closeOnWheel={false} onClose={spyOnClose} />);
 
       const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when scrolling if onWheel prop is passed", () => {
       const spyWheel = sinon.spy();
-      const wrapper = mount<Popup>(<Popup isOpen onWheel={spyWheel} />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen onWheel={spyWheel} onClose={spyOnClose} />);
 
       const scroll = new WheelEvent("wheel");
       sinon.stub(scroll, "target").get(() => document.createElement("div"));
       window.dispatchEvent(scroll);
 
-      expect(wrapper.state().isOpen).true;
-      sinon.assert.called(spyWheel);
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
+      expect(spyWheel).to.be.called;
     });
 
   });
 
   describe("context menu", () => {
     it("should hide when context menu used", () => {
-      const wrapper = mount<Popup>(<Popup isOpen />);
+      const spyOnClose = sinon.spy();
+      render(<><div data-testid={"outside"} /><Popup isOpen onClose={spyOnClose} /></>);
 
       const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
-      expect(wrapper.state().isOpen).false;
-      wrapper.unmount();
+      expect(spyOnClose).to.be.calledOnce;
     });
 
     it("should not hide when context menu used popup content", () => {
-      const wrapper = mount<Popup>(<Popup isOpen />);
-      const popup = wrapper.find(".core-popup").getDOMNode();
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen onClose={spyOnClose}/>);
+      const popup = screen.getByRole("dialog");
 
       const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => popup);
       window.dispatchEvent(contextMenu);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when context menu used if pinned", () => {
-      const wrapper = mount<Popup>(<Popup isOpen isPinned />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen isPinned onClose={spyOnClose} />);
 
       const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when context menu used if closeOnContextMenu=false", () => {
-      const wrapper = mount<Popup>(<Popup isOpen closeOnContextMenu={false} />);
+      const spyOnClose = sinon.spy();
+      render(<Popup isOpen closeOnContextMenu={false} onClose={spyOnClose} />);
 
       const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
-      expect(wrapper.state().isOpen).true;
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
     });
 
     it("should not hide when context menu used if onContextMenu prop is passed", () => {
+      const spyOnClose = sinon.spy();
       const spyContextMenu = sinon.spy();
-      const wrapper = mount<Popup>(<Popup isOpen onContextMenu={spyContextMenu} />);
+      render(<Popup isOpen onContextMenu={spyContextMenu} onClose={spyOnClose} />);
 
       const contextMenu = new MouseEvent("contextmenu");
       sinon.stub(contextMenu, "target").get(() => document.createElement("div"));
       window.dispatchEvent(contextMenu);
 
-      expect(wrapper.state().isOpen).true;
-      sinon.assert.called(spyContextMenu);
-      wrapper.unmount();
+      expect(spyOnClose).to.not.be.called;
+      expect(classesFromElement(screen.getByRole("dialog"))).to.not.include("core-popup-hidden");
+      expect(spyContextMenu).to.be.called;
     });
 
   });
 
   describe("keyboard handling", () => {
-    it("should close on Escape", () => {
+    it("should call onClose on Escape", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose} />);
 
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+      await theUserTo.keyboard("[Escape]");
 
       spyOnClose.calledOnce.should.true;
-      expect(wrapper.state("isOpen")).to.be.false;
-
-      wrapper.unmount();
     });
 
-    it("should close on Enter", () => {
+    it("should call onClose on Enter", async () => {
       const spyOnClose = sinon.spy();
       const spyOnEnter = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} onEnter={spyOnEnter} />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose} onEnter={spyOnEnter} />);
 
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Enter" }));
+      await theUserTo.keyboard("[Enter]");
 
       spyOnClose.calledOnce.should.true;
       spyOnEnter.calledOnce.should.true;
-      expect(wrapper.state("isOpen")).to.be.false;
-
-      wrapper.unmount();
     });
 
-    it("should not close on Enter if closeOnEnter=false", () => {
+    it("should call onEnter on Enter", async () => {
+      const spyOnEnter = sinon.spy();
+      render(<Popup isOpen onEnter={spyOnEnter} />);
+
+      await theUserTo.keyboard("[Enter]");
+
+      spyOnEnter.calledOnce.should.true;
+    });
+
+    it("should not call onClose on Enter if closeOnEnter=false", async () => {
       const spyOnClose = sinon.spy();
       const spyOnEnter = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} onEnter={spyOnEnter} closeOnEnter={false} />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose} onEnter={spyOnEnter} closeOnEnter={false} />);
 
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Enter" }));
+      await theUserTo.keyboard("[Enter]");
 
       spyOnClose.calledOnce.should.false;
       spyOnEnter.calledOnce.should.true;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
     });
 
-    it("should do nothing on 'a'", () => {
+    it("should not call onClose on 'a'", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose}><div>fake content</div></Popup>);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose}><div>fake content</div></Popup>);
 
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "a" }));
+      await theUserTo.keyboard("a");
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
     });
 
-    it("should not close if Pinned", () => {
+    it("should not call onClose if Pinned", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} isPinned />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose} isPinned />);
 
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+      await theUserTo.keyboard("[Escape]");
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
     });
 
-    it("should not close if not open", () => {
+    it("should not call onClose if not open", async () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
-      wrapper.setState({ isOpen: false });
-      window.dispatchEvent(new KeyboardEvent("keydown", { bubbles: true, cancelable: true, view: window, key: "Escape" }));
+      const {rerender} = render(<Popup isOpen onClose={spyOnClose} />);
+      rerender(<Popup isOpen={false} onClose={spyOnClose} />);
+      spyOnClose.resetHistory();
+
+      await theUserTo.keyboard("[Escape]");
 
       spyOnClose.notCalled.should.true;
-
-      wrapper.unmount();
     });
 
-    it("should close on resize event (default behavior)", () => {
+    it("should call onClose on resize event (default behavior)", () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen onClose={spyOnClose} />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen onClose={spyOnClose} />);
 
       window.dispatchEvent(new UIEvent("resize"));
+
       spyOnClose.calledOnce.should.true;
-
-      expect(wrapper.state("isOpen")).to.be.false;
-
-      wrapper.unmount();
     });
 
-    it("should remain open on resize event (reposition switch)", () => {
+    it("should not call onClose on resize event (reposition switch)", () => {
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isOpen repositionOnResize={true} onClose={spyOnClose} />);
-      expect(wrapper.state("isOpen")).to.be.true;
+      render(<Popup isOpen repositionOnResize={true} onClose={spyOnClose} />);
 
       window.dispatchEvent(new UIEvent("resize"));
 
       spyOnClose.calledOnce.should.false;
-      expect(wrapper.state("isOpen")).to.be.true;
-
-      wrapper.unmount();
     });
 
   });

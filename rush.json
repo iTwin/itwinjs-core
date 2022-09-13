@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.58.0",
+  "rushVersion": "5.76.1",
   "pnpmVersion": "6.24.4",
   "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
   "projectFolderMinDepth": 2,
@@ -20,18 +20,15 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": [
-      "@types"
-    ]
+    "ignoredNpmScopes": ["@types"]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": [
-      "[^@]+@users\\.noreply\\.github\\.com"
-    ],
+    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
-    "url": "https://github.com/iTwin/itwinjs-core"
+    "url": "https://github.com/iTwin/itwinjs-core",
+    "defaultBranch": "master"
   },
   "projects": [
     {
@@ -59,13 +56,6 @@
       "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodelbank-client",
-      "projectFolder": "clients/imodelhub",
-      "reviewCategory": "common",
-      "shouldPublish": false,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
@@ -226,6 +216,13 @@
       "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/presentation-opentelemetry",
+      "projectFolder": "presentation/opentelemetry",
+      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -515,12 +512,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-full-stack-tests",
-      "projectFolder": "full-stack-tests/presentation",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
@@ -539,6 +530,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "presentation-full-stack-tests",
+      "projectFolder": "full-stack-tests/presentation",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
@@ -550,6 +547,12 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "ui-end-to-end-tests",
+      "projectFolder": "full-stack-tests/ui",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

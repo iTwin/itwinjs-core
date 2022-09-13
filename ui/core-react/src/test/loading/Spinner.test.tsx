@@ -2,44 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { Spinner, SpinnerSize } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<Spinner />", () => {
-  it("should render", () => {
-    const wrapper = mount(
-      <Spinner />,
-    );
-    wrapper.unmount();
-  });
+  ([[SpinnerSize.Small, "small"],
+    [SpinnerSize.Medium, "medium"],
+    [SpinnerSize.Large, "large"],
+    [SpinnerSize.XLarge, "xlarge"],
+  ] as [SpinnerSize, string][])
+    .map(([propSize, size]) => {
+      it(`should render ${size}`, () => {
+        const {container} = render(<Spinner size={propSize} />);
 
-  it("renders correctly", () => {
-    shallow(
-      <Spinner />,
-    ).should.matchSnapshot();
-  });
-
-  it("should render small", () => {
-    shallow(<Spinner size={SpinnerSize.Small} />).should.matchSnapshot();
-  });
-
-  it("should render medium", () => {
-    shallow(<Spinner size={SpinnerSize.Medium} />).should.matchSnapshot();
-  });
-
-  it("should render large", () => {
-    shallow(<Spinner size={SpinnerSize.Large} />).should.matchSnapshot();
-  });
-
-  it("should render x-large", () => {
-    shallow(<Spinner size={SpinnerSize.XLarge} />).should.matchSnapshot();
-  });
+        expect(classesFromElement(container.firstElementChild)).to.include(`core-spinner-${size}`);
+      });
+    });
 
   it("should render with sizeClass", () => {
-    shallow(<Spinner sizeClass="test-class" />).should.matchSnapshot();
+    const {container} = render(<Spinner sizeClass="test-class" />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("test-class");
   });
 
 });

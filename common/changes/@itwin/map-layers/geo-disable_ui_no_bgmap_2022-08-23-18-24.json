@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers",
+      "comment": "Disable map-layers widget when the background map setting is off in the current view settings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers"
+}

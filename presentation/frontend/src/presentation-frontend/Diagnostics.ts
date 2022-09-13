@@ -11,7 +11,8 @@ import {
 } from "@itwin/presentation-common";
 
 /**
- * @alpha
+ * A function which logs messages to the console.
+ * @beta
  */
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
   // eslint-disable-next-line no-console
@@ -27,7 +28,8 @@ export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
 }
 
 /**
- * @alpha
+ * A function which calls all diagnostics handlers passed to it.
+ * @beta
  */
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
   return (diagnostics: ClientDiagnostics) => {

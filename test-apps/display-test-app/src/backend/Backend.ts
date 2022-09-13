@@ -7,20 +7,21 @@ import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { IModelBankClient } from "@bentley/imodelbank-client";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelHubBackend, UrlFileHandler } from "@bentley/imodelbank-client/lib/cjs/imodelhub-node";
 import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
+  AuthorizationClient,
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
+import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+// import { ServiceAuthorizationClient } from "@itwin/service-authorization";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -175,6 +176,10 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     // Browser only
     if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
   }
+
+  public override async getAccessToken(): Promise<string> {
+    return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
+  }
 }
 
 export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
@@ -191,6 +196,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
 export const loadBackendConfig = (): DtaConfiguration => {
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
   loadEnv(path.join(__dirname, "..", "..", ".env"));
+  loadEnv(path.join(__dirname, "..", "..", ".env.local"));
 
   return getConfig();
 };
@@ -202,13 +208,8 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   iModelHost.logTileLoadTimeThreshold = 3;
   iModelHost.logTileSizeThreshold = 500000;
 
-  if (dtaConfig.customOrchestratorUri) {
-    const hubClient = new IModelBankClient(dtaConfig.customOrchestratorUri, new UrlFileHandler());
-    iModelHost.hubAccess = new IModelHubBackend(hubClient);
-  } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  }
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
 
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)
@@ -228,21 +229,17 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   /** register the implementation of our RPCs. */
   RpcManager.registerImpl(DtaRpcInterface, DisplayTestAppRpc);
+  opts.iModelHost.cacheDir = process.env.IMJS_BRIEFCASE_CACHE_LOCATION;
+  const authClient = await initializeAuthorizationClient();
+  if (authClient !== undefined) {
+    opts.iModelHost.authorizationClient = authClient;
+  }
   if (ProcessDetector.isElectronAppBackend) {
-    let authClient;
-    if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
-      authClient = new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
-        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
-        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
-      });
-      opts.iModelHost.authorizationClient = authClient;
-    }
     await ElectronHost.startup(opts);
-    if (authClient)
+    if (authClient instanceof ElectronMainAuthorization)
       await authClient.signInSilent();
     EditCommandAdmin.registerModule(editorBuiltInCommands);
-  } else if (ProcessDetector.isIOSAppBackend || ProcessDetector.isAndroidAppBackend) {
+  } else if (ProcessDetector.isMobileAppBackend) {
     await MobileHost.startup(opts);
   } else {
     await LocalhostIpcHost.startup(opts);
@@ -254,3 +251,65 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 };
+
+async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
+  if (process.env.IMJS_OIDC_HEADLESS) {
+    if (checkEnvVars(
+      "IMJS_OIDC_CLIENT_ID",
+      "IMJS_OIDC_SCOPE",
+      "IMJS_OIDC_EMAIL",
+      "IMJS_OIDC_PASSWORD"
+    )) {
+      // test-only authorization client with credentials from the environment.
+      return new TestBrowserAuthorizationClient({
+        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
+        scope: process.env.IMJS_OIDC_SCOPE!,
+        clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
+      }, {
+        email: process.env.IMJS_OIDC_EMAIL!,
+        password: process.env.IMJS_OIDC_PASSWORD!,
+      });
+    } else if (checkEnvVars(
+      "IMJS_OIDC_CLIENT_ID",
+      "IMJS_OIDC_CLIENT_SECRET",
+      "IMJS_OIDC_SCOPE",
+    )) {
+      // TODO: This throws a weird exception at run-time (ServiceAuthorizationClient is unable to load @itwin/core-bentley).
+      return undefined;
+      // // Setup a client using the service authorization workflow.
+      // return new ServiceAuthorizationClient({
+      //   clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      //   clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET!,
+      //   scope: process.env.IMJS_OIDC_SCOPE!,
+      //   authority: process.env.IMJS_OIDC_AUTHORITY,
+      // });
+    }
+  } else if (checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE")) {
+    if (ProcessDetector.isElectronAppBackend) {
+      return new ElectronMainAuthorization({
+        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+        scope: process.env.IMJS_OIDC_SCOPE!,
+        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
+      });
+    }
+  }
+  // Note: Mobile's default auth client works, and will be used if we get here on mobile.
+  return undefined;
+}
+
+/**
+ * Logs a warning if only some are provided
+ * @returns true if all are provided, false if any missing.
+ */
+function checkEnvVars(...keys: Array<string>): boolean {
+  const missing = keys.filter((name) => process.env[name] === undefined);
+  if (missing.length === 0) {
+    return true;
+  }
+  if (missing.length < keys.length) { // Some missing, warn
+    // eslint-disable-next-line no-console
+    console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
+  }
+  return false;
+}

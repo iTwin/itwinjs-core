@@ -6,12 +6,14 @@
  * @module SQLiteDb
  */
 
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, IDisposable, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
+import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
+// cspell:ignore savepoint
 /* eslint-disable @typescript-eslint/unified-signatures */
 
 /** A SQLiteDb file
@@ -22,18 +24,6 @@ export class SQLiteDb implements IDisposable {
   public readonly nativeDb = new IModelHost.platform.SQLiteDb();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
 
-  /** @internal */
-  public static createCloudContainer(args: CloudSqlite.ContainerAccessProps): SQLiteDb.CloudContainer {
-    return new IModelHost.platform.CloudContainer(args);
-  }
-  /** @internal */
-  public static createCloudCache(args: CloudSqlite.CacheProps): SQLiteDb.CloudCache {
-    return new IModelHost.platform.CloudCache(args);
-  }
-  /** @internal */
-  public static startCloudPrefetch(container: SQLiteDb.CloudContainer, dbName: string, args?: CloudSqlite.PrefetchProps): SQLiteDb.CloudPrefetch {
-    return new IModelHost.platform.CloudPrefetch(container, dbName, args);
-  }
   /** @internal */
   public static createBlobIO(): SQLiteDb.BlobIO {
     return new IModelHost.platform.BlobIO();
@@ -47,7 +37,11 @@ export class SQLiteDb implements IDisposable {
   /** Create a SQLiteDb
    * @param dbName The path to the SQLiteDb file to create.
    */
-  public createDb(dbName: string, container?: SQLiteDb.CloudContainer, params?: SQLiteDb.CreateParams): void {
+  public createDb(dbName: string): void;
+  /** @beta */
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void;
+  /** @internal */
+  public createDb(dbName: string, container?: CloudSqlite.CloudContainer, params?: SQLiteDb.CreateParams): void {
     this.nativeDb.createDb(dbName, container, params);
   }
 
@@ -57,17 +51,17 @@ export class SQLiteDb implements IDisposable {
   public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams): void;
   /**
    * @param container optional CloudContainer holding database
-   * @internal
+   * @beta
    */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void;
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void;
 
   /** @internal */
-  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: SQLiteDb.CloudContainer): void {
+  public openDb(dbName: string, openMode: OpenMode | SQLiteDb.OpenParams, container?: CloudSqlite.CloudContainer): void {
     this.nativeDb.openDb(dbName, openMode, container);
   }
 
   /** Close SQLiteDb.
-   * @param saveChanges if true, call `saveChanges` before closing db.
+   * @param saveChanges if true, call `saveChanges` before closing db. Otherwise unsaved changes are abandoned.
    */
   public closeDb(saveChanges?: boolean): void {
     if (saveChanges && this.isOpen)
@@ -76,76 +70,61 @@ export class SQLiteDb implements IDisposable {
     this.nativeDb.closeDb();
   }
 
-  /** Returns true if the SQLiteDb is open */
+  /** Returns true if this SQLiteDb is open */
   public get isOpen(): boolean { return this.nativeDb.isOpen(); }
 
-  /**
-   * 1. open a database
-   * 2. call a function supplying the open SQliteDb as argument. If it is async, await its return.
-   * 3. close the database (even if exceptions are thrown)
-   */
-  public static withOpenDb<T>(args: {
-    /** The name of the database to open */
-    dbName: string;
-    /** either an object with the open parameters or just OpenMode value. */
-    openMode?: OpenMode | SQLiteDb.OpenParams;
-    /** @internal */
-    container?: SQLiteDb.CloudContainer;
-  }, operation: (db: SQLiteDb) => T): T {
-    const db = new SQLiteDb();
-    db.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
-    let fromPromise = false;
+  /** Returns true if this SQLiteDb is open readonly */
+  public get isReadonly(): boolean { return this.nativeDb.isReadonly(); }
 
+  /**
+   * Open a database, perform an operation, then close the database.
+   *
+   * Details:
+   * - if database is open, throw an error
+   * - open a database
+   * - call a function with the database opened. If it is async, await its return.
+   * - if function throws, abandon all changes, close database, and rethrow
+   * - save all changes
+   * - close the database
+   * @return value from operation
+   */
+  public withOpenDb<T>(args: SQLiteDb.WithOpenDbArgs, operation: () => T): T {
+    if (this.isOpen)
+      throw new Error("database is already open");
+
+    const save = () => this.closeDb(true), abandon = () => this.closeDb(false);
+    this.openDb(args.dbName, args.openMode ?? OpenMode.Readonly, args.container);
     try {
-      const result = operation(db);
-      if (result instanceof Promise) {
-        fromPromise = true;
-        const doClose = () => db.closeDb();
-        result.then(doClose, doClose);
-      }
+      const result = operation();
+      result instanceof Promise ? result.then(save, abandon) : save();
       return result;
-    } finally {
-      if (!fromPromise)
-        db.closeDb();
+    } catch (e) {
+      abandon();
+      throw e;
     }
   }
 
   /**
-   * 1. acquire the write lock on a CloudContainer
-   * 2. open a ReadWrite database in the container
-   * 3. call a function with the opened database as an argument
-   * 4. close the database
-   * 5. release the write lock and upload changes.
+   * Perform an operation on a database in a CloudContainer with the write lock held.
+   *
+   * Details:
+   * - acquire the write lock on a CloudContainer
+   * - call `withOpenDb` with openMode `ReadWrite`
+   * - upload changes
+   * - release the write lock
+   * @param args arguments to lock the container and open the database
+   * @param operation an operation performed on the database with the write lock held.
+   * @return value from operation
    * @internal
    */
-  public static async withLockedContainer(
-    args: {
-      /** the name to be displayed in the event of lock collisions */
-      user: string;
-      /** the name of the database within the container */
-      dbName: string;
-      /** the CloudContainer on which the operation will be performed */
-      container: SQLiteDb.CloudContainer;
-      /** if present, function called when the write lock is currently held by another user. */
-      busyHandler?: CloudSqlite.WriteLockBusyHandler;
-    },
-    /** an asynchronous operation performed on the database with the write lock held. */
-    operation: (db: SQLiteDb) => Promise<void>) {
-    const fn = async () => SQLiteDb.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation);
-    await CloudSqlite.withWriteLock(args.user, args.container, fn, args.busyHandler);
+  public async withLockedContainer<T>(args: CloudSqlite.LockAndOpenArgs, operation: () => T) {
+    return CloudSqlite.withWriteLock(args.user, args.container, () => this.withOpenDb({ ...args, openMode: OpenMode.ReadWrite }, operation), args.busyHandler);
   }
 
   /** vacuum this database
    * @see https://www.sqlite.org/lang_vacuum.html
    */
-  public vacuum(args?: {
-    /** new page size
-     * @see https://www.sqlite.org/pragma.html#pragma_page_size
-     */
-    pageSize?: number;
-    /** if present, name of new file to vacuum into */
-    into?: LocalFileName;
-  }) {
+  public vacuum(args?: SQLiteDb.VacuumDbArgs) {
     this.nativeDb.vacuum(args);
   }
 
@@ -173,12 +152,8 @@ export class SQLiteDb implements IDisposable {
     const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
     const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
-      const val: T = callback(stmt);
-      if (val instanceof Promise) {
-        val.then(release, release);
-      } else {
-        release();
-      }
+      const val = callback(stmt);
+      val instanceof Promise ? val.then(release, release) : release();
       return val;
     } catch (err) {
       release();
@@ -198,16 +173,31 @@ export class SQLiteDb implements IDisposable {
     const stmt = this.prepareSqliteStatement(sql);
     const release = () => stmt.dispose();
     try {
-      const val: T = callback(stmt);
-      if (val instanceof Promise) {
-        val.then(release, release);
-      } else {
-        release();
-      }
+      const val = callback(stmt);
+      val instanceof Promise ? val.then(release, release) : release();
       return val;
     } catch (err) {
       release();
       throw err;
+    }
+  }
+
+  /**
+   * Perform an operation on this database within a [savepoint](https://www.sqlite.org/lang_savepoint.html). If the operation completes successfully, the
+   * changes remain in the current transaction. If the operation throws an exception, the savepoint is rolled back
+   * and all changes to the database from this method are reversed, leaving the transaction exactly as it was before this method.
+   */
+  public withSavePoint(savePointName: string, operation: () => void) {
+    if (this.isReadonly)
+      throw new Error("database is readonly");
+
+    this.executeSQL(`SAVEPOINT ${savePointName}`);
+    try {
+      operation();
+      this.executeSQL(`RELEASE ${savePointName}`);
+    } catch (e) {
+      this.executeSQL(`ROLLBACK TO ${savePointName}`);
+      throw e;
     }
   }
 
@@ -235,22 +225,61 @@ export class SQLiteDb implements IDisposable {
 
 /** @public */
 export namespace SQLiteDb {
-  /** A CloudSqlite container that may be connected to a CloudCache.
+  /** interface for reading and writing to a blob in a SQLiteDb
    * @internal
    */
-  export type CloudContainer = IModelJsNative.CloudContainer;
-  /** @internal */
-  export type CloudCache = IModelJsNative.CloudCache;
-  /** @internal */
-  export type CloudPrefetch = IModelJsNative.CloudPrefetch;
-  /** Incremental IO for blobs
-   * @internal
-   */
-  export type BlobIO = IModelJsNative.BlobIO;
+  export interface BlobIO {
+    /** Close this BlobIO if it is opened.
+       * @note this BlobIO *may* be reused after this call by calling `open` again.
+      */
+    close(): void;
+    /** get the total number of bytes in the blob */
+    getNumBytes(): number;
+    /** @return true if this BlobIO was successfully opened and may be use to read or write the blob */
+    isValid(): boolean;
+    /** Open this BlobIO against a table/row/column in a Db */
+    open(
+      /** The database for the blob */
+      db: IModelJsNative.AnyDb,
+      args: {
+        /** the name of the table for the blob*/
+        tableName: string;
+        /** the name of the column for the blob */
+        columnName: string;
+        /** The rowId of the blob */
+        row: number;
+        /** If true, open this BlobIO for write access */
+        writeable?: boolean;
+      }): void;
+    /** Read from a blob
+       * @returns the contents of the requested byte range
+       */
+    read(args: {
+      /** The number of bytes to read */
+      numBytes: number;
+      /** starting offset within the blob to read */
+      offset: number;
+      /** If present and of sufficient size, use this ArrayBuffer for the value. */
+      blob?: ArrayBuffer;
+    }): Uint8Array;
+    /** Reposition this BlobIO to a new rowId
+       * @note this BlobIO must be valid when this methods is called.
+       */
+    changeRow(row: number): void;
+    /** Write to a blob */
+    write(args: {
+      /** The number of bytes to write  */
+      numBytes: number;
+      /** starting offset within the blob to write */
+      offset: number;
+      /** the value to write */
+      blob: ArrayBuffer;
+    }): void;
+  }
 
   /** Default transaction mode for SQLiteDbs.
-     * @see https://www.sqlite.org/lang_transaction.html
-    */
+   * @see https://www.sqlite.org/lang_transaction.html
+   */
   export enum DefaultTxnMode {
     /** no default transaction is started. You must use BEGIN/COMMIT or SQLite will use implicit transactions */
     None = 0,
@@ -271,8 +300,8 @@ export namespace SQLiteDb {
     /** Do not attempt to verify that the file is a valid sQLite file before opening. */
     skipFileCheck?: boolean;
     /** the default transaction mode
-     * @see [[SQLiteDb.DefaultTxnMode]]
-    */
+   * @see [[SQLiteDb.DefaultTxnMode]]
+  */
     defaultTxn?: 0 | 1 | 2 | 3;
     /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */
     queryParam?: string;
@@ -284,10 +313,28 @@ export namespace SQLiteDb {
     openMode: OpenMode;
   }
 
-  /** Parameters for creating a new SQLiteDb */
-  export interface CreateParams extends OpenOrCreateParams {
+  /** Size of a SQLiteDb page in bytes */
+  export interface PageSize {
     /** see https://www.sqlite.org/pragma.html#pragma_page_size */
     pageSize?: number;
   }
 
+  /** Parameters for creating a new SQLiteDb */
+  export type CreateParams = OpenOrCreateParams & PageSize;
+
+  /** Arguments for `SqliteDb.withOpenDb` */
+  export interface WithOpenDbArgs {
+    /** The name of the database to open */
+    dbName: string;
+    /** either an object with the open parameters or just OpenMode value. */
+    openMode?: OpenMode | SQLiteDb.OpenParams;
+    /** @internal */
+    container?: CloudSqlite.CloudContainer;
+  }
+
+  /** Arguments for `SQLiteDb.vacuum` */
+  export interface VacuumDbArgs extends PageSize {
+    /** if present, name of new file to [vacuum into](https://www.sqlite.org/lang_vacuum.html) */
+    into?: LocalFileName;
+  }
 }

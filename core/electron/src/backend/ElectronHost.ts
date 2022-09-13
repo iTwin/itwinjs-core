@@ -18,6 +18,10 @@ import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfigur
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 
+// This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
+// See: https://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
+import * as ElectronModuleExports from "electron";
+
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
@@ -89,7 +93,7 @@ export interface WindowSizeAndPositionProps {
 export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof Electron;
+  private static _electron: typeof ElectronModuleExports;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;

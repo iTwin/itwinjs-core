@@ -42,7 +42,7 @@ describe("ExcludedElements", () => {
       imodel.saveChanges();
 
       const rows: any[] = [];
-      for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), {rowFormat: QueryRowFormat.UseJsPropertyNames}))
+      for await (const row of imodel.query("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
         rows.push(row);
 
       expect(rows.length).to.equal(1);

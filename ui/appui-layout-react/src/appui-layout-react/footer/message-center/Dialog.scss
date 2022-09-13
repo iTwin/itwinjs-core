@@ -9,7 +9,9 @@
 @import "variables";
 
 .nz-footer-messageCenter-dialog {
+  width: 16vw;
   min-width: $nz-footer-popup-min-width;
+  max-width: $nz-footer-popup-max-width;
 
   >div:last-child {
     >.nz-tabs {
@@ -21,7 +23,6 @@
 
     >.nz-messages {
       max-height: 280px;
-      max-width: 480px;
       min-height: $nz-message-horizontal-padding;
       overflow: auto;
 

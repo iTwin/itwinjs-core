@@ -5,21 +5,21 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { UnderlinedButton } from "../../core-react/button/UnderlinedButton";
+import userEvent from "@testing-library/user-event";
+import { classesFromElement } from "../TestUtils";
 
 describe("<UnderlinedButton />", () => {
-  it("renders content", () => {
-    const button = render(<UnderlinedButton>Test text</UnderlinedButton>);
-
-    // Verify, that Button can be queried by text. Throws if element is not found
-    button.getByText("Test text");
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
 
   it("renders all props", () => {
     const title = "underlined button";
 
-    const button = render(
+    render(
       <UnderlinedButton
         title={title}
         className={"test-class"}
@@ -27,29 +27,33 @@ describe("<UnderlinedButton />", () => {
         Test text
       </UnderlinedButton>);
 
-    expect((button.container.childNodes[0] as HTMLElement).title).to.equal(title);
-    expect(button.container.getElementsByClassName("test-class")).to.not.be.empty;
+    expect(classesFromElement(screen.getByRole("link", {name:title}))).to.include("test-class");
   });
 
-  it("handles onClick", () => {
+  it("handles onClick", async () => {
     const spyClick = sinon.spy();
     const spyActivate = sinon.spy();
 
-    const button = render(<UnderlinedButton onClick={spyClick} onActivate={spyActivate}>Test text</UnderlinedButton>);
+    render(<UnderlinedButton onClick={spyClick} onActivate={spyActivate}>Test text</UnderlinedButton>);
 
-    fireEvent.click(button.container.childNodes[0] as HTMLElement);
+    await theUserTo.click(screen.getByRole("link"));
 
     expect(spyClick).to.have.been.calledOnce;
     expect(spyActivate).to.have.been.calledOnce;
   });
 
-  it("handles onActivate", () => {
-    const spy = sinon.spy();
+  ["[Enter]", "[Space]"].map((pressedKey) => {
 
-    const button = render(<UnderlinedButton onActivate={spy}>Test text</UnderlinedButton>);
+    it(`handles onActivate for ${pressedKey} key`, async () => {
+      const spyClick = sinon.spy();
+      const spyActivate = sinon.spy();
 
-    fireEvent.keyUp(button.container.childNodes[0] as HTMLElement, { key: "Enter" });
+      render(<UnderlinedButton onClick={spyClick} onActivate={spyActivate}>Test text</UnderlinedButton>);
+      await theUserTo.tab();
+      await theUserTo.type(screen.getByRole("link"), pressedKey, {skipClick: true});
 
-    expect(spy).to.have.been.calledOnce;
+      expect(spyClick).to.not.have.been.calledOnce;
+      expect(spyActivate).to.have.been.calledOnce;
+    });
   });
 });

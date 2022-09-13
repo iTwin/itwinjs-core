@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, Id64, Id64Arg } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry, GeometryQuery,
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
@@ -946,21 +946,26 @@ export class ViewClipByElementTool extends ViewClipTool {
     return false;
   }
 
-  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
+  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false, modelId?: Id64String): Promise<boolean> {
     try {
       const placements = await viewport.iModel.elements.getPlacements(ids, { type: viewport.view.is3d() ? "3d" : "2d" });
       if (0 === placements.length)
         return false;
 
+      const displayTransform = modelId && 1 === placements.length ? viewport.view.computeDisplayTransform({ modelId, elementId: placements[0].elementId }) : undefined;
       const range = new Range3d();
       const transform = Transform.createIdentity();
       if (!alwaysUseRange && 1 === placements.length) {
         const placement = placements[0];
         range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
         transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
+        displayTransform?.multiplyTransformTransform(transform, transform);
       } else {
         for (const placement of placements)
           range.extendRange(placement.calculateRange());
+
+        if (displayTransform)
+          transform.setFrom(displayTransform);
       }
 
       if (range.isNull)
@@ -1017,7 +1022,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (undefined === hit || !hit.isElementHit)
       return EventHandled.No;
-    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange) ? EventHandled.Yes : EventHandled.No;
+    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange, hit.modelId) ? EventHandled.Yes : EventHandled.No;
   }
 }
 

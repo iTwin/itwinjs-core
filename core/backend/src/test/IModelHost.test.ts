@@ -18,7 +18,7 @@ import { TestUtils } from "./TestUtils";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelHost", () => {
-
+  const opts = { cacheDir: path.join(__dirname, ".cache") };
   beforeEach(async () => {
     await TestUtils.shutdownBackend();
   });
@@ -32,7 +32,7 @@ describe("IModelHost", () => {
   });
 
   it("valid default configuration", async () => {
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
 
     // Valid registered implemented RPCs
     expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
@@ -50,7 +50,7 @@ describe("IModelHost", () => {
   it("should raise onAfterStartup events", async () => {
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
     expect(eventHandler.calledOnce).to.be.true;
   });
 
@@ -186,7 +186,7 @@ describe("IModelHost", () => {
       setUseTileCache: setUseTileCacheStub,
     }));
 
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
 
     assert.isUndefined(IModelHost.tileCacheService);
     assert.isUndefined(IModelHost.tileUploader);
@@ -212,13 +212,8 @@ describe("IModelHost", () => {
   });
   /* eslint-enable deprecation/deprecation */
 
-  // TODO:
-  it.skip("should cleanup everything on shutdown", () => {
-
-  });
-
   it("should throw if hubAccess is undefined and getter is called", async () => {
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
     expect(IModelHost.getHubAccess()).undefined;
     expect(() => IModelHost.hubAccess).throws();
   });
