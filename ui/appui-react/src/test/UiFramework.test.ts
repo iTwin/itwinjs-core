@@ -223,6 +223,8 @@ describe("UiFramework localStorage Wrapper", () => {
       await UiFramework.setUiStateStorage(uisettings);
       expect(settingsProvider.settingsLoaded).to.be.false;
 
+      await UiFramework.initializeStateFromUserSettingsProviders();
+
       const uiVersion1 = "1";
       UiFramework.setUiVersion(uiVersion1);
       expect(UiFramework.uiVersion).to.eql(uiVersion1);

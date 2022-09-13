@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { RelativePosition } from "@itwin/appui-abstract";
 import { AppNotificationManager, PointerMessage } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { selectorMatches } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("PointerMessage", () => {
   before(async () => {
@@ -30,16 +30,12 @@ describe("PointerMessage", () => {
     details = new NotifyMessageDetails(OutputMessagePriority.None, "Brief", "Detailed", OutputMessageType.Pointer);
   });
 
-  it("should render correctly", () => {
-    shallow(
-      <PointerMessage />,
-    ).should.matchSnapshot();
-  });
-
   it("should display the message", () => {
-    const showMessage = sinon.spy(PointerMessage, "showMessage");
+    render(<PointerMessage  />);
+
     notifications.outputMessage(details);
-    expect(showMessage.called).to.be.true;
+
+    expect(screen.getByText("Brief")).to.satisfy(selectorMatches(".uifw-pointer-message .nz-content .uifw-pointer-message-content .uifw-pointer-message-text .uifw-pointer-message-brief"));
   });
 
   it("should hide the message", () => {
@@ -63,6 +59,7 @@ describe("PointerMessage", () => {
   });
 
   it("should offset the message", () => {
+    render(<PointerMessage />);
     details.setPointerTypeDetails(viewport, point, RelativePosition.Top);
     notifications.outputMessage(details);
 
@@ -90,13 +87,8 @@ describe("PointerMessage", () => {
 
   it("should update the message", () => {
     const updateMessage = sinon.spy(PointerMessage, "updateMessage");
+    render(<PointerMessage  />);
     notifications.updatePointerMessage({ x: 1, y: 1 }, RelativePosition.BottomRight);
     expect(updateMessage.called).to.be.true;
   });
-
-  it("should unmount correctly", () => {
-    const sut = mount(<PointerMessage />);
-    sut.unmount();
-  });
-
 });
