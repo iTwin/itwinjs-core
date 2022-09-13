@@ -11,7 +11,7 @@ import { MessageCenterFieldProps } from "../statusfields/MessageCenter";
 import { StatusBarContext } from "./StatusBar";
 
 /** HOC that injects values for [[MessageCenterFieldProps]].
- * @public
+ * @public @deprecated Use `MessageManager.registerAnimateOutToElement` to register this ref in the related component.
  */
 export const withMessageCenterFieldProps = <P extends MessageCenterFieldProps, C>(
   // eslint-disable-next-line @typescript-eslint/naming-convention

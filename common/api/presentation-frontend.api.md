@@ -37,7 +37,7 @@ import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { LabelDefinition } from '@itwin/presentation-common';
 import { Localization } from '@itwin/core-common';
-import { Node } from '@itwin/presentation-common';
+import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
 import { Paged } from '@itwin/presentation-common';
@@ -79,10 +79,10 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
 // @internal (undocumented)
 export const buildPagedArrayResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
-// @alpha (undocumented)
+// @beta
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void;
 
-// @alpha (undocumented)
+// @beta
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void;
 
 // @public
@@ -125,7 +125,7 @@ export class FavoritePropertiesManager implements IDisposable {
     onFavoritesChanged: BeEvent<() => void>;
     remove(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
     sortFields: (imodel: IModelConnection, fields: Field[]) => Field[];
-    }
+}
 
 // @public
 export interface FavoritePropertiesManagerProps {
@@ -177,7 +177,7 @@ export interface HiliteSet {
 export class HiliteSetProvider {
     static create(props: HiliteSetProviderProps): HiliteSetProvider;
     getHiliteSet(selection: Readonly<KeySet>): Promise<HiliteSet>;
-    }
+}
 
 // @public
 export interface HiliteSetProviderProps {
@@ -301,7 +301,8 @@ export enum PresentationFrontendLoggerCategory {
 
 // @public
 export class PresentationManager implements IDisposable {
-    activeLocale: string | undefined;
+    get activeLocale(): string | undefined;
+    set activeLocale(locale: string | undefined);
     activeUnitSystem: UnitSystemKey | undefined;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)
@@ -326,10 +327,10 @@ export class PresentationManager implements IDisposable {
     getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
-    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Node[]>;
+    getNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<Node_2[]>;
     getNodesAndCount(requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable>> & ClientDiagnosticsAttribute): Promise<{
         count: number;
-        nodes: Node[];
+        nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<number>;
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> & ClientDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>>;
@@ -533,7 +534,7 @@ export class SelectionScopesManager {
     set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined);
     computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string): Promise<KeySet>;
     getSelectionScopes(imodel: IModelConnection, locale?: string): Promise<SelectionScope[]>;
-    }
+}
 
 // @public
 export interface SelectionScopesManagerProps {
@@ -548,7 +549,7 @@ export class StateTracker {
     onExpandedNodesChanged(imodel: IModelConnection, rulesetId: string, sourceId: string, expandedNodes: NodeIdentifier[]): Promise<void>;
     // (undocumented)
     onHierarchyClosed(imodel: IModelConnection, rulesetId: string, sourceId: string): Promise<void>;
-    }
+}
 
 // @internal (undocumented)
 export class ToolSelectionSyncHandler implements IDisposable {
@@ -558,11 +559,10 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // (undocumented)
     isSuspended?: boolean;
     get pendingAsyncs(): Set<string>;
-    }
+}
 
 // @internal (undocumented)
 export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
-
 
 // (No @packageDocumentation comment for this package)
 

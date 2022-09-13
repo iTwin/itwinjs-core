@@ -7,16 +7,20 @@ export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CodeService";
 export * from "./CodeSpecs";
+export * from "./CloudSqlite";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./GeoCoordConfig";
 export * from "./LocalHub";
 export * from "./HubMock";
 export * from "./IModelJsFs";
@@ -40,13 +44,13 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
+export * from "./PropertyStore";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
@@ -174,6 +178,6 @@ export * from "./IModelDb"; // must be last
  * APIs for loading and using Settings and Workspace resources
  */
 /**
- * @docs-group-description ViewStateHydrater
+ * @docs-group-description ViewStateHydrator
  * Class responsible for loading ViewStates.
  */

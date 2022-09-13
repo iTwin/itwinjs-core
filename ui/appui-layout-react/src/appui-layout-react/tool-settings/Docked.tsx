@@ -42,7 +42,7 @@ const OverflowLabelAndEditor = React.memo(function OverflowLabelAndEditor({ wrap
 });
 
 /** Properties of [[DockedToolSettings]] component.
- * @internal future
+ * @internal
  */
 export interface DockedToolSettingsProps extends CommonProps {
   /** Tool settings content. */
@@ -52,7 +52,7 @@ export interface DockedToolSettingsProps extends CommonProps {
 }
 
 /** Component that displays tool settings as a bar across the top of the content view.
- * @internal future
+ * @internal
  */
 export function DockedToolSettings(props: DockedToolSettingsProps) {
   const [open, setOpen] = React.useState(false);

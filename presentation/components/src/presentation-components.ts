@@ -102,5 +102,16 @@ export * from "./presentation-components/labels/LabelsProvider";
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
 
+/**
+ * @module InstancesFilter
+ *
+ * @docs-group-description InstancesFilter
+ * Utilities for creating filters for filtering presentation data.
+ */
+export * from "./presentation-components/instance-filter-builder/InstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/Types";
+export * from "./presentation-components/instance-filter-builder/Utils";
+
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

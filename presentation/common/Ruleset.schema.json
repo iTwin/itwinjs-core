@@ -2075,6 +2075,10 @@
           "description": "Should the field containing related properties be assigned the `NestedContentField.autoExpand`\nattribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.",
           "type": "boolean"
         },
+        "forceCreateRelationshipCategory": {
+          "description": "Specifies whether a relationship category should be created regardless of whether any relationship properties were included.",
+          "type": "boolean"
+        },
         "handleTargetClassPolymorphically": {
           "description": "The attribute tells whether the target class specified through `propertiesSource` should be handled\npolymorphically. This means properties of the concrete class are loaded in addition to properties of the\ntarget class itself.",
           "type": "boolean"
@@ -2136,6 +2140,31 @@
             "SameInstance"
           ],
           "type": "string"
+        },
+        "relationshipProperties": {
+          "anyOf": [
+            {
+              "items": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/PropertySpecification"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            {
+              "enum": [
+                "*",
+                "_none_"
+              ],
+              "type": "string"
+            }
+          ],
+          "description": "List of names or definitions of relationship class properties that should be included in the content."
         },
         "skipIfDuplicate": {
           "description": "Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.",

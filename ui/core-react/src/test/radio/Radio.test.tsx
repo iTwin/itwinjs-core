@@ -2,26 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { InputStatus, Radio } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<Radio />", () => {
-  it("should render", () => {
-    mount(<Radio label="radio test" />);
-  });
-
   it("renders correctly", () => {
-    shallow(<Radio label="radio test" />).should.matchSnapshot();
+    render(<Radio label="radio test" />);
+
+    expect(screen.getByLabelText("radio test")).to.be.eq(screen.getByRole("radio"));
   });
 
   it("renders status correctly", () => {
-    shallow(<Radio label="radio test" status={InputStatus.Success} />).should.matchSnapshot();
+    const {container} = render(<Radio status={InputStatus.Success} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("success");
   });
 
   it("renders disabled correctly", () => {
-    shallow(<Radio label="radio test" disabled />).should.matchSnapshot();
+    const {container} = render(<Radio disabled />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("core-disabled");
   });
 });

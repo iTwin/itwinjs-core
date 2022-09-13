@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
-import { IModelHostConfiguration, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
@@ -197,9 +197,9 @@ export class MobileHost {
     const socket = opt?.ipcHost?.socket ?? new IpcWebSocketBackend();
     opt = { ...opt, mobileHost: { ...opt?.mobileHost }, ipcHost: { ...opt?.ipcHost, socket } };
 
-    const iModelHostConfiguration = opt?.iModelHost ?? new IModelHostConfiguration();
-    iModelHostConfiguration.authorizationClient = authorizationClient;
-    await NativeHost.startup({ ...opt, iModelHost: iModelHostConfiguration });
+    const iModelHost = opt?.iModelHost ?? {};
+    iModelHost.authorizationClient = authorizationClient;
+    await NativeHost.startup({ ...opt, iModelHost });
 
     if (IpcHost.isValid)
       MobileAppHandler.register();

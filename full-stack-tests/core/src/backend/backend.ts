@@ -12,7 +12,7 @@ import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import {
-  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
+  FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
@@ -23,7 +23,6 @@ import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIp
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import * as testCommands from "./TestEditCommands";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
-import { getIModelBankAccess } from "./IModelBankBackendCloudEnv";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 
 /* eslint-disable no-console */
@@ -78,17 +77,9 @@ async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
 
-  const iModelHost = new IModelHostConfiguration();
-
-  // Bootstrap the cloud environment
-  const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
-  if (enableIModelBank) {
-    iModelHost.hubAccess = getIModelBankAccess();
-  } else {
-    const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
-    iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  }
-
+  const iModelHost: IModelHostOptions = {};
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
   iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
 
   let shutdown: undefined | (() => Promise<void>);

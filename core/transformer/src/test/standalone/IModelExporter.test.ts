@@ -5,17 +5,17 @@
 
 import { assert, expect } from "chai";
 import * as path from "path";
-import { Id64 } from "@itwin/core-bentley";
-import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Element, GeometryPart, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { createBRepDataProps } from "@itwin/core-backend/lib/cjs/test/GeometryTestUtil";
+import { Id64 } from "@itwin/core-bentley";
 import { Code, GeometryStreamBuilder, IModel } from "@itwin/core-common";
+import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter } from "../../core-transformer";
-import {
-  IModelTransformerTestUtils,
-} from "../IModelTransformerUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelExportHandler } from "../../IModelExporter";
+import { IModelTransformerTestUtils } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
+
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("IModelExporter", () => {
   const outputDir = path.join(KnownTestLocations.outputDir, "IModelExporter");
@@ -31,7 +31,7 @@ describe("IModelExporter", () => {
 
   it("export element with brep geometry", async () => {
     const sourceDbPath = IModelTransformerTestUtils.prepareOutputFile("IModelExporter", "RoundtripBrep.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "brep-roundtrip" }});
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "brep-roundtrip" } });
 
     const builder = new GeometryStreamBuilder();
     builder.appendBRepData(createBRepDataProps(Point3d.create(5, 10, 0), YawPitchRollAngles.createDegrees(45, 0, 0)));
@@ -48,7 +48,7 @@ describe("IModelExporter", () => {
     const geomPartId = geomPart.insert();
     assert(Id64.isValidId64(geomPartId));
 
-    const geomPartInSource = sourceDb.elements.getElement<GeometryPart>({id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
+    const geomPartInSource = sourceDb.elements.getElement<GeometryPart>({ id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
     assert(geomPartInSource.geom?.[1]?.brep?.data !== undefined);
 
     sourceDb.saveChanges();
@@ -68,7 +68,7 @@ describe("IModelExporter", () => {
     exporter.wantGeometry = true;
     await expect(exporter.exportAll()).to.eventually.be.fulfilled;
 
-    const geomPartInTarget = flatTargetDb.elements.getElement<GeometryPart>({id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
+    const geomPartInTarget = flatTargetDb.elements.getElement<GeometryPart>({ id: geomPartId, wantGeometry: true, wantBRepData: true }, GeometryPart);
     assert(geomPartInTarget.geom?.[1]?.brep?.data !== undefined);
 
     sourceDb.close();

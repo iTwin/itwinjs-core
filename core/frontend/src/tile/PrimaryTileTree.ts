@@ -178,16 +178,18 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   private checkForceNoInstancing(provider: ModelDisplayTransformProvider | undefined) {
-    this._forceNoInstancing = false;
     // If this model has a display transform with a non-uniform scale then instancing needs to be forced off when using WebGL1.
-    if (undefined !== provider) {
-      const tf = provider.getModelDisplayTransform(this.model.id, Transform.createIdentity());
-      const sx = tf.matrix.getColumn(0).magnitudeSquared();
-      const sy = tf.matrix.getColumn(1).magnitudeSquared();
-      const sz = tf.matrix.getColumn(2).magnitudeSquared();
-      if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
-        this._forceNoInstancing = true;
-    }
+    this._forceNoInstancing = false;
+
+    const mat = provider?.getModelDisplayTransform(this.model.id)?.matrix;
+    if (!mat)
+      return;
+
+    const epsilon = Geometry.smallMetricDistance;
+    const sx = mat.getColumn(0).magnitudeSquared();
+    const sy = mat.getColumn(1).magnitudeSquared();
+    if (Math.abs(sx - sy) > epsilon || Math.abs(sx - mat.getColumn(2).magnitudeSquared()) > epsilon)
+      this._forceNoInstancing = true;
   }
 
   protected override getAnimationTransformNodeId() {
@@ -277,8 +279,9 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected override computeTransform(tree: TileTree): Transform {
-    const tf = this.computeBaseTransform(tree);
-    return this.view.getModelDisplayTransform(this.model.id, tf);
+    const baseTf = this.computeBaseTransform(tree);
+    const displayTf = this.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.model.id);
+    return displayTf ? baseTf.multiplyTransformTransform(displayTf, displayTf) : baseTf;
   }
 }
 
@@ -517,7 +520,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   [Symbol.iterator](): Iterator<TileTreeReference>;
   /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
   update(): void;
-  /** @see SpatialViewState.setTileTreeReferencesDeactivated. */
+  /** See SpatialViewState.setTileTreeReferencesDeactivated. */
   setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
 }
 

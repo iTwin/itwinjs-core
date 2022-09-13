@@ -8,7 +8,7 @@ import { AccessToken } from '@itwin/core-bentley';
 import { CodeSpec } from '@itwin/core-common';
 import { CompressedId64Set } from '@itwin/core-bentley';
 import * as ECSchemaMetaData from '@itwin/ecschema-metadata';
-import { Element } from '@itwin/core-backend';
+import { Element as Element_2 } from '@itwin/core-backend';
 import { ElementAspect } from '@itwin/core-backend';
 import { ElementAspectProps } from '@itwin/core-common';
 import { ElementMultiAspect } from '@itwin/core-backend';
@@ -63,14 +63,14 @@ export class IModelExporter {
     registerHandler(handler: IModelExportHandler): void;
     // @internal
     saveStateToJson(): IModelExporterState;
-    shouldExportElement(element: Element): boolean;
+    shouldExportElement(element: Element_2): boolean;
     readonly sourceDb: IModelDb;
     visitElements: boolean;
     visitRelationships: boolean;
     wantGeometry: boolean;
     wantSystemSchemas: boolean;
     wantTemplateModels: boolean;
-    }
+}
 
 // @internal
 export interface IModelExporterState {
@@ -108,7 +108,7 @@ export abstract class IModelExportHandler {
     onDeleteModel(_modelId: Id64String): void;
     onDeleteRelationship(_relInstanceId: Id64String): void;
     onExportCodeSpec(_codeSpec: CodeSpec, _isUpdate: boolean | undefined): void;
-    onExportElement(_element: Element, _isUpdate: boolean | undefined): void;
+    onExportElement(_element: Element_2, _isUpdate: boolean | undefined): void;
     onExportElementMultiAspects(_aspects: ElementMultiAspect[]): void;
     onExportElementUniqueAspect(_aspect: ElementUniqueAspect, _isUpdate: boolean | undefined): void;
     onExportFont(_font: FontProps, _isUpdate: boolean | undefined): void;
@@ -117,9 +117,9 @@ export abstract class IModelExportHandler {
     onExportSchema(_schema: Schema): Promise<void>;
     onProgress(): Promise<void>;
     // @internal
-    preExportElement(_element: Element): Promise<void>;
+    preExportElement(_element: Element_2): Promise<void>;
     shouldExportCodeSpec(_codeSpec: CodeSpec): boolean;
-    shouldExportElement(_element: Element): boolean;
+    shouldExportElement(_element: Element_2): boolean;
     shouldExportElementAspect(_aspect: ElementAspect): boolean;
     shouldExportRelationship(_relationship: Relationship): boolean;
     shouldExportSchema(_schemaKey: SchemaKey): boolean;
@@ -133,6 +133,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
+    deleteModel(modelId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     protected getAdditionalStateJson(): any;
@@ -146,6 +147,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onDeleteModel(modelId: Id64String): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
@@ -168,7 +170,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     get simplifyElementGeometry(): boolean;
     set simplifyElementGeometry(val: boolean);
     readonly targetDb: IModelDb;
-    }
+}
 
 // @internal
 export interface IModelImporterState {
@@ -202,8 +204,10 @@ export class IModelTransformer extends IModelExportHandler {
     dispose(): void;
     readonly exporter: IModelExporter;
     protected getAdditionalStateJson(): any;
-    protected hasElementChanged(sourceElement: Element, targetElementId: Id64String): boolean;
+    protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
+    // @deprecated (undocumented)
     initFromExternalSourceAspects(): void;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
@@ -212,24 +216,24 @@ export class IModelTransformer extends IModelExportHandler {
     protected loadAdditionalStateJson(_additionalState: any): void;
     protected loadStateFromDb(db: SQLiteDb): void;
     onDeleteElement(sourceElementId: Id64String): void;
-    onDeleteModel(_sourceModelId: Id64String): void;
+    onDeleteModel(sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
-    onExportElement(sourceElement: Element): void;
+    onExportElement(sourceElement: Element_2): void;
     onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void;
     onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void;
     onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     onExportModel(sourceModel: Model): void;
     onExportRelationship(sourceRelationship: Relationship): void;
     onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
-    onTransformElement(sourceElement: Element): ElementProps;
+    onTransformElement(sourceElement: Element_2): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     protected _partiallyCommittedElements: Map<string, PartiallyCommittedElement>;
     protected _pendingReferences: PendingReferenceMap<PartiallyCommittedElement>;
     // @internal
-    preExportElement(sourceElement: Element): Promise<void>;
+    preExportElement(sourceElement: Element_2): Promise<void>;
     processAll(): Promise<void>;
     processChanges(accessToken: AccessToken, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
@@ -252,15 +256,15 @@ export class IModelTransformer extends IModelExportHandler {
     saveStateToFile(nativeStatePath: string): void;
     protected _schemaExportDir: string;
     shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean;
-    shouldExportElement(_sourceElement: Element): boolean;
+    shouldExportElement(_sourceElement: Element_2): boolean;
     shouldExportRelationship(_sourceRelationship: Relationship): boolean;
     shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean;
     // @deprecated
-    protected skipElement(_sourceElement: Element): void;
+    protected skipElement(_sourceElement: Element_2): void;
     readonly sourceDb: IModelDb;
     readonly targetDb: IModelDb;
     get targetScopeElementId(): Id64String;
-    }
+}
 
 // @beta
 export interface IModelTransformOptions {
@@ -279,6 +283,14 @@ export interface IModelTransformOptions {
 }
 
 // @beta
+export interface InitFromExternalSourceAspectsArgs {
+    // (undocumented)
+    accessToken?: AccessToken;
+    // (undocumented)
+    startChangesetId?: string;
+}
+
+// @beta
 export interface OptimizeGeometryOptions {
     inlineUniqueGeometryParts?: boolean;
 }
@@ -286,10 +298,10 @@ export interface OptimizeGeometryOptions {
 // @beta
 export class TemplateModelCloner extends IModelTransformer {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
-    onTransformElement(sourceElement: Element): ElementProps;
+    onTransformElement(sourceElement: Element_2): ElementProps;
     placeTemplate2d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement2d): Promise<Map<Id64String, Id64String>>;
     placeTemplate3d(sourceTemplateModelId: Id64String, targetModelId: Id64String, placement: Placement3d): Promise<Map<Id64String, Id64String>>;
-    }
+}
 
 // @public
 export enum TransformerLoggerCategory {
@@ -300,7 +312,6 @@ export enum TransformerLoggerCategory {
     // @beta
     IModelTransformer = "core-backend.IModelTransformer"
 }
-
 
 // (No @packageDocumentation comment for this package)
 

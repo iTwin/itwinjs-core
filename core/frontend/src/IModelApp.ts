@@ -123,6 +123,10 @@ export interface IModelAppOptions {
   renderSys?: RenderSystem | RenderSystem.Options;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
+  /** If present, determines whether iModelApp is a NoRenderApp
+   *  @internal
+   */
+  noRender?: boolean;
   rpcInterfaces?: RpcInterfaceDefinition[];
   /** @beta */
   realityDataAccess?: RealityDataAccess;
@@ -190,6 +194,7 @@ export class IModelApp {
   private static _toolAdmin: ToolAdmin;
   private static _viewManager: ViewManager;
   private static _uiAdmin: UiAdmin;
+  private static _noRender: boolean;
   private static _wantEventLoop = false;
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
@@ -225,7 +230,6 @@ export class IModelApp {
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
   public static get viewManager(): ViewManager { return this._viewManager; }
-
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
   /** The [[TileAdmin]] for this session. */
@@ -353,6 +357,7 @@ export class IModelApp {
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
+    this._noRender = opts.noRender ?? false;
 
     this._setupRpcRequestContext();
 
@@ -460,6 +465,9 @@ export class IModelApp {
 
   /** @internal */
   public static requestNextAnimation() {
+    // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
+    if (IModelApp._noRender) return;
+
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
       requestAnimationFrame(IModelApp.eventLoop);

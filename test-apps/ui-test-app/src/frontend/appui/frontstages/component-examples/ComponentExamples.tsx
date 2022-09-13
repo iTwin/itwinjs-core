@@ -89,6 +89,7 @@ export const ComponentExamplesPage: React.FC<ComponentExamplesPageProps> = (prop
           );
         })}
       </div>
+      {/* eslint-disable-next-line deprecation/deprecation */}
       <StatusMessageRenderer />
     </div>
   );

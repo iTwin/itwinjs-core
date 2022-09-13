@@ -10,10 +10,8 @@ import "./TabBar.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Point, Timer } from "@itwin/core-react";
-import { assert } from "@itwin/core-bentley";
-import { isTabTarget, useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
-import { getUniqueId, NineZoneDispatchContext } from "../base/NineZone";
-import { WidgetTargetState } from "../base/NineZoneState";
+import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
+import { NineZoneDispatchContext } from "../base/NineZone";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
@@ -47,20 +45,8 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
       floatingWidgetId,
     });
   }, [dispatch, floatingWidgetId]);
-  const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
+  const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((target) => {
     floatingWidgetId !== undefined && handleActionAreaClick();
-
-    let target: WidgetTargetState = {
-      type: "floatingWidget",
-    };
-    if (dragTarget && isTabTarget(dragTarget)) {
-      target = dragTarget;
-    } else if (dragTarget) {
-      target = {
-        ...dragTarget,
-        newWidgetId: getUniqueId(),
-      };
-    }
     floatingWidgetId !== undefined && dispatch({
       type: "WIDGET_DRAG_END",
       floatingWidgetId,
@@ -74,7 +60,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
   });
 
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
+  const handleDragStart = React.useCallback((initialPointerPosition: Point, pointerPosition: Point) => {
     /* if floating widget extract the bounding rect and update state in case bounds are set by content.
       This is needed so the drag operation can keep widget inside ninezone container. */
     if (floatingWidgetId) {
@@ -91,6 +77,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     }
     handleWidgetDragStart({
       initialPointerPosition,
+      pointerPosition,
     });
   }, [dispatch, floatingWidgetId, handleWidgetDragStart]);
   const handleTouchStart = React.useCallback(() => {
@@ -124,7 +111,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
  * @internal
  */
 export function useDrag<T extends HTMLElement>(
-  onDragStart?: (initialPointerPosition: Point) => void,
+  onDragStart?: (initialPointerPosition: Point, pointerPosition: Point) => void,
   onDrag?: (position: Point) => void,
   onDragEnd?: () => void,
   onTouchStart?: () => void,
@@ -132,7 +119,6 @@ export function useDrag<T extends HTMLElement>(
 ) {
   const doubleClickTimer = React.useRef(new Timer(300));
   const clickCount = React.useRef(0);
-  const dragStartTimer = React.useRef<Timer>(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
 
   React.useEffect(() => {
@@ -151,13 +137,11 @@ export function useDrag<T extends HTMLElement>(
 
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
-    dragStartTimer.current.start();
     e.type === "touchstart" && onTouchStart && onTouchStart();
   }, [onTouchStart]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
     if (initialPointerPosition.current) {
-      onDragStart && onDragStart(initialPointerPosition.current);
-      dragStartTimer.current.stop();
+      onDragStart && onDragStart(initialPointerPosition.current, new Point(args.clientX, args.clientY));
       initialPointerPosition.current = undefined;
       return;
     }
@@ -166,23 +150,9 @@ export function useDrag<T extends HTMLElement>(
   const handlePointerUp = React.useCallback(() => {
     clickCount.current++;
     doubleClickTimer.current.start();
-    dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
     onDragEnd && onDragEnd();
   }, [onDragEnd]);
-
-  React.useEffect(() => {
-    const listener = () => {
-      assert(!!initialPointerPosition.current);
-      onDragStart && onDragStart(initialPointerPosition.current);
-      initialPointerPosition.current = undefined;
-    };
-    const timer = dragStartTimer.current;
-    timer.setOnExecute(listener);
-    return () => {
-      timer.setOnExecute(undefined);
-    };
-  }, [onDragStart]);
   const ref = usePointerCaptor<T>(handlePointerDown, handlePointerMove, handlePointerUp);
   return ref;
 }

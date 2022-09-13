@@ -34,9 +34,10 @@ public;ActiveContentChangedEventArgs
 internal;ActiveFrontstageDefProvider({ frontstageDef }:
 public;ActivityCenterField 
 public;ActivityMessage(props: ActivityMessageProps): JSX.Element
+deprecated;ActivityMessage(props: ActivityMessageProps): JSX.Element
 public;ActivityMessageCancelledEvent 
 public;ActivityMessageEventArgs
-public;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element | null
+public;ActivityMessagePopup(props: ActivityMessagePopupProps): JSX.Element
 public;ActivityMessagePopupProps 
 public;ActivityMessageProps
 public;ActivityMessageUpdatedEvent 
@@ -125,6 +126,7 @@ deprecated;CommandLaunchBackstageItem
 public;CommandLaunchBackstageItemProps 
 deprecated;CommandLaunchBackstageItemProps 
 public;ConditionalField 
+deprecated;ConditionalField 
 public;ConditionalFieldProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
@@ -140,8 +142,8 @@ public;ConfigurableUiElement
 public;ConfigurableUiManager
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
-public;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
-beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
+public;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => InferableComponentEnhancerWithProps
+beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => InferableComponentEnhancerWithProps
 public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
 public;ContentControlActivatedEvent 
@@ -191,6 +193,8 @@ internal;CursorPopupUpdatePositionEventArgs
 internal;CursorPrompt
 public;CursorUpdatedEvent 
 public;CursorUpdatedEventArgs
+internal;CustomActivityMessageContent({ initialActivityMessageInfo }:
+internal;CustomActivityMessageRenderer({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): JSX.Element
 public;CustomItemDef 
 public;CustomItemProps 
 public;DeepReadonly
@@ -222,7 +226,7 @@ public;ElementTooltipChangedEventArgs
 public;EmphasizeElementsChangedArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
-internal;expandWidget: (base:
+internal;expandWidget(state: NineZoneState, id: TabState["id"]): NineZoneState
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
 beta;FloatingContentControl 
@@ -230,9 +234,11 @@ beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
 beta;FloatingViewportContentControl 
 beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
-public;FooterModeField 
+public;FooterModeField(props: FooterModeFieldProps): JSX.Element
+deprecated;FooterModeField(props: FooterModeFieldProps): JSX.Element
 public;FooterModeFieldProps 
 beta;FrameworkAccuDraw 
+public;FrameworkReducer: (state: CombinedReducerState
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps
@@ -242,7 +248,7 @@ public;FrameworkUiAdmin
 public;FrameworkVersion(props: FrameworkVersionProps): JSX.Element
 internal;FrameworkVersionChangedEvent 
 internal;FrameworkVersionChangedEventArgs
-public;FrameworkVersionContext: React.Context
+public;FrameworkVersionContext: React_2.Context
 public;FrameworkVersionId = "1" | "2"
 public;FrameworkVersionProps
 internal;FrameworkVersionSwitch(props: FrameworkVersionSwitchProps): JSX.Element
@@ -284,7 +290,7 @@ internal;getFloatingZoneStyle: (props: ZoneManagerProps) =>
 internal;getFrontstageStateSettingName(frontstageId: WidgetPanelsFrontstageState["id"]): string
 beta;getIsHiddenIfFeatureOverridesActive(): ConditionalBooleanValue
 beta;getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue
-beta;getListPanel(props: ListPickerProps): React.ReactNode
+beta;getListPanel(props: ListPickerProps): React_2.ReactNode
 internal;getNestedStagePanelKey: (location: StagePanelLocation) => NestedStagePanelKey
 internal;getPanelZoneWidgets(frontstageDef: FrontstageDef, panelZone: WidgetIdTypes): WidgetDef[]
 beta;getQuantityFormatsSettingsManagerEntry(itemPriority: number, opts?: Partial
@@ -305,17 +311,17 @@ public;class HideIsolateEmphasizeActionHandler
 public;HideIsolateEmphasizeManager 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
-beta;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-deprecated;IModelConnectedNavigationWidget: import("react-redux").ConnectedComponent
-public;IModelConnectedViewport: import("react-redux").ConnectedComponent
-beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
+beta;IModelConnectedNavigationWidget: ConnectedComponent
+deprecated;IModelConnectedNavigationWidget: ConnectedComponent
+public;IModelConnectedViewport: ConnectedComponent
+beta;IModelConnectedViewSelector: ConnectedComponent
 public;IModelViewportControl 
 public;IModelViewportControlOptions
 internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
-internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
+internal;initializePanel(state: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
 beta;InputEditorCommitHandler
 alpha;InputEditorPopup 
 beta;InputEditorPopupProps 
@@ -438,8 +444,8 @@ public;PointerMessageChangedEventArgs
 public;PointerMessageProps 
 public;PopupButton 
 deprecated;PopupButton 
-public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
-deprecated;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React.ReactNode
+public;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
+deprecated;PopupButtonChildrenRenderProp = (args: PopupButtonChildrenRenderPropArgs) => React_2.ReactNode
 public;PopupButtonChildrenRenderPropArgs
 deprecated;PopupButtonChildrenRenderPropArgs
 public;PopupButtonProps 
@@ -455,8 +461,8 @@ beta;PositionPopup
 beta;PositionPopupContent(props: CommonDivProps): JSX.Element
 beta;PositionPopupProps 
 public;PresentationSelectionScope
-public;PromptField: import("react-redux").ConnectedComponent
-deprecated;PromptField: import("react-redux").ConnectedComponent
+public;PromptField: ConnectedComponent
+deprecated;PromptField: ConnectedComponent
 public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
@@ -478,16 +484,17 @@ internal;RULESET_MODELS: Ruleset
 internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
-public;SafeAreaContext: React.Context
-internal;saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise
+public;SafeAreaContext: React_2.Context
+internal;SavedWidget
+internal;SavedWidgets = ReadonlyArray
 public;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
 beta;selectionContextStateFunc(state: Readonly
 public;SelectionContextToolDefinitions
-public;SelectionInfoField: import("react-redux").ConnectedComponent
+public;SelectionInfoField: ConnectedComponent
 public;SelectionScope
-public;SelectionScopeField: import("react-redux").ConnectedComponent
+public;SelectionScopeField: ConnectedComponent
 public;SeparatorBackstageItem 
 deprecated;SeparatorBackstageItem 
 public;SessionState
@@ -499,8 +506,8 @@ beta;sessionStateMapDispatchToProps:
 public;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: (base:
 beta;SettingsModalFrontstage 
-internal;setWidgetLabel: (base:
-internal;setWidgetState: (base:
+internal;setWidgetLabel(state: NineZoneState, id: TabState["id"], label: string): NineZoneState
+internal;setWidgetState(state: NineZoneState, widgetDef: WidgetDef, widgetState: WidgetState): NineZoneState
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -508,8 +515,8 @@ alpha;SheetNavigationAid
 alpha;SheetNavigationAidControl 
 alpha;SheetNavigationProps 
 alpha;SheetsModalFrontstage 
-internal;showWidget: (base:
-public;SnapModeField: import("react-redux").ConnectedComponent
+internal;showWidget(state: NineZoneState, id: TabState["id"]): NineZoneState
+public;SnapModeField: ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
@@ -556,7 +563,7 @@ public;StatusBar
 public;StatusBarCenterSection(props: CommonDivProps): JSX.Element
 public;StatusBarComposer(props: StatusBarComposerProps): JSX.Element
 public;StatusBarComposerProps 
-internal;StatusBarContext: React.Context
+internal;StatusBarContext: React_2.Context
 public;StatusBarFieldId = string | null
 public;StatusBarItem 
 internal;StatusBarItemProps 
@@ -573,10 +580,13 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
-public;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null
+public;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
+deprecated;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
 public;StatusMessageRendererProps 
 public;StickyMessage(props: StickyMessageProps): JSX.Element
+deprecated;StickyMessage(props: StickyMessageProps): JSX.Element
 public;StickyMessageProps
+internal;SubjectModelIdsCache
 public;SupportsViewSelectorChange
 public;SyncToolSettingsPropertiesEvent 
 public;SyncToolSettingsPropertiesEventArgs
@@ -606,9 +616,10 @@ internal;TaskProps
 deprecated;TaskProps 
 internal;TaskPropsList
 deprecated;TaskPropsList
-public;ThemeManager: import("react-redux").ConnectedComponent
+public;ThemeManager: ConnectedComponent
 public;TileLoadingIndicator 
 public;ToastMessage(props: ToastMessageProps): JSX.Element
+deprecated;ToastMessage(props: ToastMessageProps): JSX.Element
 public;ToastMessageProps
 alpha;toggleAllCategories(viewManager: ViewManager, imodel: IModelConnection, display: boolean, viewport?: Viewport, forAllViewports?: boolean, filteredProvider?: IPresentationTreeDataProvider): Promise
 public;ToolActivatedEvent 
@@ -621,7 +632,7 @@ public;ToolAssistanceFieldProps
 internal;Toolbar 
 public;ToolbarButtonHelper
 public;ToolbarComposer(props: ExtensibleToolbarProps): JSX.Element
-beta;ToolbarDragInteractionContext: React.Context
+beta;ToolbarDragInteractionContext: React_2.Context
 internal;ToolbarGroupItem 
 public;ToolbarHelper
 beta;ToolbarPopup 
@@ -632,7 +643,7 @@ deprecated;ToolbarWidgetDefBase
 public;ToolbarWidgetProps 
 public;ToolButton 
 public;ToolButtonProps 
-internal;ToolGroupPanelContext: React.Context
+internal;ToolGroupPanelContext: React_2.Context
 public;ToolIconChangedEvent 
 public;ToolIconChangedEventArgs
 public;ToolInformation
@@ -671,19 +682,20 @@ beta;UiSettingsPage({ allowSettingUiFrameworkVersion }:
 public;UiSettingsProviderProps
 public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
-internal;UiStateStorageContext: React.Context
+internal;UiStateStorageContext: React_2.Context
 public;UiStateStorageHandler(props: UiSettingsProviderProps): JSX.Element
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
 alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
 beta;UnitSystemSelectorProps
 internal;useActiveContentControlId(): string | undefined
-internal;useActiveFrontstageDef(): import("./FrontstageDef").FrontstageDef | undefined
+internal;useActiveFrontstageDef(): FrontstageDef | undefined
 public;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
 public;useActiveStageId(): string
 public;useActiveViewport(): ScreenViewport | undefined
+internal;useActivityMessage({ activityMessageInfo, dismissActivityMessage, cancelActivityMessage, settings }: CustomActivityMessageProps): void
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 public;useBackstageManager: () => BackstageManager
@@ -709,7 +721,7 @@ public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): S
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 public;useSpecificWidgetDef(widgetId: string): WidgetDef | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
-internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
+internal;useToolSettingsNode(): string | number | boolean | {} | React_2.ReactElement
 beta;useTransientState(onSave?: () => void, onRestore?: () => void): void
 public;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 public;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
@@ -759,7 +771,7 @@ public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
 public;WidgetPanelProps = Omit
-internal;WidgetPanelsFrontstage: React.NamedExoticComponent
+internal;WidgetPanelsFrontstage: React_2.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsFrontstageState
 internal;WidgetPanelsStatusBar(props: CommonProps): JSX.Element | null
@@ -784,8 +796,10 @@ internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
 public;withMessageCenterFieldProps: 
+deprecated;withMessageCenterFieldProps: 
 public;withSafeArea: 
 public;withStatusFieldProps: 
+deprecated;withStatusFieldProps: 
 internal;Workflow 
 deprecated;Workflow 
 internal;WorkflowActivatedEvent 

@@ -10,7 +10,7 @@ import "./CubeNavigationAid.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Angle, AxisIndex, AxisOrder, Geometry, Matrix3d, Point2d, Vector2d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { IModelConnection, Viewport } from "@itwin/core-frontend";
+import { IModelApp, IModelConnection, Viewport } from "@itwin/core-frontend";
 import { CommonProps } from "@itwin/core-react";
 import { UiIModelComponents } from "../UiIModelComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
@@ -291,9 +291,21 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _handleCellHoverChange = (vect: Vector3d, state: CubeHover) => {
+    if (this._isInteractionLocked()) {
+      this.props.onAnimationEnd?.();
+      return;
+    }
     const hoverMap = this.state.hoverMap;
     hoverMap[`${vect.x}-${vect.y}-${vect.z}`] = state;
     this.setState({ hoverMap });
+  };
+
+  private _isInteractionLocked = () => {
+    // Locked by markup
+    if(undefined !== this.props.viewport && this.props.viewport === IModelApp.toolAdmin.markupView) {
+      return true;
+    }
+    return false;
   };
 
   private static _getMatrixFace = (rotMatrix: Matrix3d): Face => {
@@ -423,6 +435,11 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _onArrowClick = (arrow: Pointer) => {
+    if (this._isInteractionLocked()) {
+      // istanbul ignore next
+      this.props.onAnimationEnd?.();
+      return;
+    }
     const { newRotation, face } = this.getArrowRotationAndFace(arrow);
     this._animateRotation(newRotation, face);
   };
@@ -454,6 +471,10 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   private _handleBoxMouseDown = (event: any) => {
+    if (this._isInteractionLocked()) {
+      this.props.onAnimationEnd?.();
+      return;
+    }
     event.preventDefault();
     // only start listening after drag is confirmed. Ie. the 3D box is clicked.
     window.addEventListener("mousemove", this._onMouseMove, false);
@@ -480,6 +501,10 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
 
   // istanbul ignore next - unable to test touch
   private _handleBoxTouchStart = (event: any) => {
+    if (this._isInteractionLocked()) {
+      this.props.onAnimationEnd?.();
+      return;
+    }
     if (1 !== event.targetTouches.length)
       return;
     window.addEventListener("touchmove", this._onTouchMove, false);
@@ -511,6 +536,10 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   };
 
   private _handleFaceCellClick = (pos: Vector3d, face: Face) => {
+    if (this._isInteractionLocked()) {
+      this.props.onAnimationEnd?.();
+      return;
+    }
     const { endRotMatrix } = this.state;
     let rotMatrix = Matrix3d.createRigidViewAxesZTowardsEye(pos.x, pos.y, pos.z).inverse();
     // istanbul ignore else

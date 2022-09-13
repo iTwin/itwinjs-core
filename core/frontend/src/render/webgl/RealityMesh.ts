@@ -369,9 +369,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
 
   public override getPass(target: Target) {
-    if (target.isDrawingShadowMap)
-      return "none";
-
     if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return "translucent";
 

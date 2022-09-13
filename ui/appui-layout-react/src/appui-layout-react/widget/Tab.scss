@@ -12,6 +12,12 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  cursor: pointer;
+  padding: 4px 1em 0;
+  position: relative;
+  border: 0 solid $buic-background-5;
+  max-width: 9em;
+  background: $buic-background-3;
 
   >span {
     font-size: $nz-widget-tab-font-size;
@@ -25,108 +31,52 @@
     left: 0;
   }
 
-  &.nz-overflown {
-    cursor: pointer;
-    position: relative;
-    max-width: 18em;
-    line-height: 2em;
-    padding-left: 0.75em;
-    padding-right: 0.75em;
-    height: 1.75em;
-
-    >span {
-      margin-right: 3em;
-    }
-
-    >.nz-badge {
-      left: 0.25em;
-    }
-
+  &:not(.nz-minimized) {
     &.nz-active {
-      >.nz-icon {
+      background: $buic-background-2;
+      color: $buic-foreground-primary;
+      padding-bottom: 1px;
+      margin-bottom: -1px;
+
+      &:before {
+        $padding: 0.25em;
+        content: '';
         position: absolute;
-        right: 0.75em;
-        border-style: solid;
-        border-color: $buic-foreground-primary;
-        border-width: 0 0.15em 0.15em 0;
-        width: 0.5em;
-        height: 1em;
-        transform: rotate(45deg);
-        margin-left: auto;
+        background: currentColor;
+        left: $padding;
+        top: 1px;
+        border-radius: 0.2em;
+        width: calc(100% - #{2 * $padding});
+        height: 0.15em;
       }
-    }
 
-    &.nz-first {
-      margin-top: 0.5em;
-    }
-
-    &.nz-last {
-      margin-bottom: 0.5em;
-    }
-
-    @media (hover: hover) {
-      &:hover {
-        color: $buic-foreground-primary;
+      &.nz-last {
+        border-right-width: 1px;
       }
     }
   }
 
-  &:not(.nz-overflown) {
-    cursor: pointer;
-    padding: 4px 1em 0;
-    position: relative;
-    border: 0 solid $buic-background-5;
-    max-width: 9em;
-    background: $buic-background-3;
+  &:not(.nz-active),
+  &.nz-minimized {
+    color: $buic-foreground-muted;
+    border-right-width: 1px;
+  }
 
-    &:not(.nz-minimized) {
-      &.nz-active {
-        background: $buic-background-2;
-        color: $buic-foreground-primary;
-        padding-bottom: 1px;
-        margin-bottom: -1px;
-
-        &:before {
-          $padding: 0.25em;
-          content: '';
-          position: absolute;
-          background: currentColor;
-          left: $padding;
-          top: 1px;
-          border-radius: 0.2em;
-          width: calc(100% - #{2 * $padding});
-          height: 0.15em;
-        }
-
-        &.nz-last,
-        &.nz-last-not-overflown {
-          border-right-width: 1px;
-        }
-      }
+  &:not(.nz-minimized) {
+    &.nz-first-inactive {
+      border-left-width: 1px;
     }
+  }
 
-    &:not(.nz-active),
-    &.nz-minimized {
-      color: $buic-foreground-muted;
-      border-right-width: 1px;
-    }
+  &.nz-first {
+    border-top-left-radius: $nz-widget-tab-border-radius;
+  }
 
-    &:not(.nz-minimized) {
-      &.nz-first-inactive {
-        border-left-width: 1px;
-      }
-    }
+  &:hover {
+    background: $buic-background-2;
 
-    &.nz-first {
-      border-top-left-radius: $nz-widget-tab-border-radius;
-    }
-
-    &:hover {
-      background: $buic-background-2;
-
-      &:not(.nz-active) {
-        color: $buic-foreground-body;
-      }
+    &:not(.nz-active) {
+      color: $buic-foreground-body;
     }
   }
 }

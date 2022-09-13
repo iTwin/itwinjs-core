@@ -4,6 +4,7 @@ public;AdditionalTransform
 public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
+internal;aggregateLoad:
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -187,6 +188,9 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+public;ECSchemaItemProps
+public;ECSchemaProps
+public;ECSchemaReferenceProps
 beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
@@ -340,6 +344,8 @@ public;HttpServerResponse
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
+public;IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean
+public;IgnoreAnimationOverridesArgs
 public;ImageBuffer
 public;ImageBufferFormat
 public;ImageGraphic
@@ -375,6 +381,7 @@ public;IModelVersionProps =
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
+internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
@@ -383,6 +390,7 @@ internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 public;IpcListener = (evt: Event, ...args: any[]) => void
+internal;class IpcSession
 public;IpcSocket
 public;IpcSocketBackend 
 public;IpcSocketFrontend 
@@ -641,6 +649,7 @@ internal;RpcRoutingMap
 internal;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
+internal;RpcSessionInvocation 
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 

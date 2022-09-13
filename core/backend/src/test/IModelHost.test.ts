@@ -8,14 +8,15 @@ import * as sinon from "sinon";
 import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
-import { IModelHost, IModelHostConfiguration, KnownLocations } from "../IModelHost";
+import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
 import { Schemas } from "../Schema";
-import { IModelTestUtils, TestUtils } from "./index";
 import { AzureBlobStorage } from "../CloudStorageBackend";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { TestUtils } from "./TestUtils";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("IModelHost", () => {
-
+  const opts = { cacheDir: path.join(__dirname, ".cache") };
   beforeEach(async () => {
     await TestUtils.shutdownBackend();
   });
@@ -29,7 +30,7 @@ describe("IModelHost", () => {
   });
 
   it("valid default configuration", async () => {
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
 
     // Valid registered implemented RPCs
     expect(RpcRegistry.instance.implementationClasses.size).to.equal(5);
@@ -47,7 +48,7 @@ describe("IModelHost", () => {
   it("should raise onAfterStartup events", async () => {
     const eventHandler = sinon.spy();
     IModelHost.onAfterStartup.addOnce(eventHandler);
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
     expect(eventHandler.calledOnce).to.be.true;
   });
 
@@ -97,7 +98,7 @@ describe("IModelHost", () => {
   });
 
   it("should set the briefcase cache directory to expected locations", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     const cacheSubDir = "imodels";
 
     // Test cache default location
@@ -115,7 +116,7 @@ describe("IModelHost", () => {
   });
 
   it("should set Azure cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -135,7 +136,7 @@ describe("IModelHost", () => {
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     const setUseTileCacheStub = sinon.stub();
@@ -150,7 +151,7 @@ describe("IModelHost", () => {
   });
 
   it("should throw if both tileCacheService and tileCacheAzureCredentials are set", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheAzureCredentials = {
       account: "testAccount",
       accessKey: "testAccessKey",
@@ -166,7 +167,7 @@ describe("IModelHost", () => {
       setUseTileCache: setUseTileCacheStub,
     }));
 
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
 
     assert.isUndefined(IModelHost.tileCacheService);
     assert.isUndefined(IModelHost.tileUploader);
@@ -174,7 +175,7 @@ describe("IModelHost", () => {
   });
 
   it("should cleanup tileCacheService and tileUploader on shutdown", async () => {
-    const config = new IModelHostConfiguration();
+    const config: IModelHostOptions = {};
     config.tileCacheService = {} as AzureBlobStorage;
 
     await IModelHost.startup(config);
@@ -188,13 +189,8 @@ describe("IModelHost", () => {
     assert.isUndefined(IModelHost.tileUploader);
   });
 
-  // TODO:
-  it.skip("should cleanup everything on shutdown", () => {
-
-  });
-
   it("should throw if hubAccess is undefined and getter is called", async () => {
-    await IModelHost.startup();
+    await IModelHost.startup(opts);
     expect(IModelHost.getHubAccess()).undefined;
     expect(() => IModelHost.hubAccess).throws();
   });

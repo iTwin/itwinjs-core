@@ -8,7 +8,6 @@
 
 import * as os from "os";
 import * as path from "path";
-import * as semver from "semver";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
@@ -69,11 +68,11 @@ export interface CrashReportingConfig {
   uploadToBentley?: boolean;
 }
 
-/** Configuration of core-backend.
+/**
+ * Options for [[IModelHost.startup]]
  * @public
  */
-export class IModelHostConfiguration {
-
+export interface IModelHostOptions {
   /**
    * Root of the directory holding all the files that iTwin.js caches
    * - If not specified at startup a platform specific default is used -
@@ -88,83 +87,116 @@ export class IModelHostConfiguration {
    *   - etc.
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
-  public cacheDir?: LocalDirName;
+  cacheDir?: LocalDirName;
 
-  /** Options for creating the [[Workspace]]
+  /** The directory where application assets are found. */
+  appAssetsDir?: LocalDirName;
+
+  /**
+   * Options for creating the [[Workspace]]
    * @beta
    */
-  public workspace?: WorkspaceOpts;
+  workspace?: WorkspaceOpts;
 
-  /** The directory where the app's assets are found. */
-  public appAssetsDir?: LocalDirName;
-
-  /** The kind of iModel hub server to use.
+  /**
+   * The kind of iModel hub server to use.
    * @beta
    */
-  public hubAccess?: BackendHubAccess;
+  hubAccess?: BackendHubAccess;
 
   /** The Azure blob storage credentials to use for the tile cache service. If omitted and no external service implementation is provided, a local cache will be used.
    * @beta
    */
-  public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+  tileCacheAzureCredentials?: AzureBlobStorageCredentials;
 
   /**
    * @beta
    * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
    *       set this property with a custom [[CloudStorageService]].
    */
-  public tileCacheService?: CloudStorageService;
+  tileCacheService?: CloudStorageService;
 
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
    */
-  public restrictTileUrlsByClientIp?: boolean;
+  restrictTileUrlsByClientIp?: boolean;
+
+  /**
+   * Whether to enable OpenTelemetry tracing
+   * @beta
+   */
+  enableOpenTelemetry?: boolean;
 
   /** Whether to compress cached tiles.
    * Defaults to `true`.
    */
-  public compressCachedTiles?: boolean;
+  compressCachedTiles?: boolean;
 
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
    * @internal
    */
-  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  tileTreeRequestTimeout?: number;
+
   /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
    * @internal
    */
-  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
-  /** The default time, in milliseconds, used for [[tileTreeRequestTimeout]] and [[tileContentRequestTimeout]]. To change this, override one or both of those properties.
-   * @internal
-   */
-  public static defaultTileRequestTimeout = 20 * 1000;
+  tileContentRequestTimeout?: number;
 
-  /** The default time, in seconds, used for [[logTileLoadTimeThreshold]]. To change this, override that property.
-   * @internal
-   */
-  public static defaultLogTileLoadTimeThreshold = 40;
   /** The backend will log when a tile took longer to load than this threshold in seconds.
    * @internal
    */
-  public logTileLoadTimeThreshold: number = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  logTileLoadTimeThreshold?: number;
 
-  /** The default size, in bytes, used for [[logTileSizeThreshold]]. To change this, override that property.
-   * @internal
-   */
-  public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** The backend will log when a tile is loaded with a size in bytes above this threshold.
    * @internal
    */
-  public logTileSizeThreshold: number = IModelHostConfiguration.defaultLogTileSizeThreshold;
+  logTileSizeThreshold?: number;
 
   /** Crash-reporting configuration
    * @alpha
    */
-  public crashReportingConfig?: CrashReportingConfig;
+  crashReportingConfig?: CrashReportingConfig;
 
   /** The AuthorizationClient used to get accessTokens
    * @beta
    */
+  authorizationClient?: AuthorizationClient;
+}
+
+/** Configuration of core-backend.
+ * @public
+ */
+export class IModelHostConfiguration implements IModelHostOptions {
+  public static defaultTileRequestTimeout = 20 * 1000;
+  public static defaultLogTileLoadTimeThreshold = 40;
+  public static defaultLogTileSizeThreshold = 20 * 1000000;
+
+  public appAssetsDir?: LocalDirName;
+  public cacheDir?: LocalDirName;
+
+  /** @beta */
+  public workspace?: WorkspaceOpts;
+  /** @beta */
+  public hubAccess?: BackendHubAccess;
+  /** @beta */
   public authorizationClient?: AuthorizationClient;
+  /** @beta */
+  public tileCacheService?: CloudStorageService;
+  /** @beta */
+  public restrictTileUrlsByClientIp?: boolean;
+  public compressCachedTiles?: boolean;
+  /** @beta */
+  public tileCacheAzureCredentials?: AzureBlobStorageCredentials;
+  /** @internal */
+  public tileTreeRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** @internal */
+  public tileContentRequestTimeout = IModelHostConfiguration.defaultTileRequestTimeout;
+  /** @internal */
+  public logTileLoadTimeThreshold = IModelHostConfiguration.defaultLogTileLoadTimeThreshold;
+  /** @internal */
+  public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
+  /** @alpha */
+  public crashReportingConfig?: CrashReportingConfig;
 }
 
 /**
@@ -223,7 +255,7 @@ export class IModelHost {
     return this._platform;
   }
 
-  public static configuration?: IModelHostConfiguration;
+  public static configuration?: IModelHostOptions;
 
   /** Event raised during startup to allow loading settings data */
   public static readonly onWorkspaceStartup = new BeEvent<() => void>();
@@ -293,28 +325,12 @@ export class IModelHost {
     if (undefined === platform)
       return;
 
-    if (!ProcessDetector.isMobileAppBackend)
-      this.validateNativePlatformVersion();
-
     platform.logger = Logger;
-  }
-
-  private static validateNativePlatformVersion(): void {
-    const requiredVersion = require("../../package.json").dependencies["@bentley/imodeljs-native"]; // eslint-disable-line @typescript-eslint/no-var-requires
-    const thisVersion = this.platform.version;
-    if (semver.satisfies(thisVersion, requiredVersion))
-      return;
-    if (IModelJsFs.existsSync(path.join(__dirname, "DevBuild.txt"))) {
-      console.log("Bypassing version checks for development build"); // eslint-disable-line no-console
-      return;
-    }
-    this._platform = undefined;
-    throw new IModelError(IModelStatus.BadRequest, `imodeljs-native version is (${thisVersion}). core-backend requires version (${requiredVersion})`);
   }
 
   /**
    * @internal
-   * @note Use [[IModelHostConfiguration.tileCacheService]] to set the service provider.
+   * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
    */
   public static tileCacheService?: CloudStorageService;
 
@@ -332,16 +348,16 @@ export class IModelHost {
 
   /** Provides access to the IModelHub for this IModelHost
    * @beta
-   * @note If [[IModelHostConfiguration.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
+   * @note If [[IModelHostOptions.hubAccess]] was undefined when initializing this class, accessing this property will throw an error.
    * To determine whether one is present, use [[getHubAccess]].
    */
   public static get hubAccess(): BackendHubAccess {
     if (this._hubAccess === undefined)
-      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostConfiguration");
+      throw new IModelError(IModelStatus.BadRequest, "No BackendHubAccess supplied in IModelHostOptions");
     return this._hubAccess;
   }
 
-  private static initializeWorkspace(configuration: IModelHostConfiguration) {
+  private static initializeWorkspace(configuration: IModelHostOptions) {
     const settingAssets = path.join(KnownLocations.packageAssetsDir, "Settings");
     SettingsSchemas.addDirectory(path.join(settingAssets, "Schemas"));
     this._appWorkspace = new ITwinWorkspace(new ApplicationSettings(), configuration.workspace);
@@ -356,50 +372,51 @@ export class IModelHost {
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
   /** This method must be called before any iTwin.js services are used.
-   * @param configuration Host configuration data.
+   * @param options Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
-  public static async startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()): Promise<void> {
+  public static async startup(options?: IModelHostOptions): Promise<void> {
     if (this._isValid)
       return; // we're already initialized
     this._isValid = true;
 
+    options = options ?? {};
     if (IModelHost.sessionId === "")
       IModelHost.sessionId = Guid.createValue();
 
-    this.authorizationClient = configuration.authorizationClient;
+    this.authorizationClient = options.authorizationClient;
 
     this.logStartup();
 
     this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
-    initializeRpcBackend();
+    initializeRpcBackend(options.enableOpenTelemetry);
 
     if (this._platform === undefined) {
       try {
         this.loadNative();
       } catch (error) {
-        Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
+        Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (options));
         throw error;
       }
     }
 
-    if (configuration.crashReportingConfig && configuration.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this.platform.setCrashReporting(configuration.crashReportingConfig);
+    if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+      this.platform.setCrashReporting(options.crashReportingConfig);
 
-      Logger.logTrace(loggerCategory, "Configured crash reporting", () => ({
-        enableCrashDumps: configuration.crashReportingConfig?.enableCrashDumps,
-        wantFullMemoryDumps: configuration.crashReportingConfig?.wantFullMemoryDumps,
-        enableNodeReport: configuration.crashReportingConfig?.enableNodeReport,
-        uploadToBentley: configuration.crashReportingConfig?.uploadToBentley,
-      }));
+      Logger.logTrace(loggerCategory, "Configured crash reporting", {
+        enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
+        wantFullMemoryDumps: options.crashReportingConfig?.wantFullMemoryDumps,
+        enableNodeReport: options.crashReportingConfig?.enableNodeReport,
+        uploadToBentley: options.crashReportingConfig?.uploadToBentley,
+      });
 
-      if (configuration.crashReportingConfig.enableNodeReport) {
+      if (options.crashReportingConfig.enableNodeReport) {
         try {
           // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
           const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
           nodereport.setEvents("exception+fatalerror+apicall");
-          nodereport.setDirectory(configuration.crashReportingConfig.crashDir);
+          nodereport.setDirectory(options.crashReportingConfig.crashDir);
           nodereport.setVerbose("yes");
           Logger.logTrace(loggerCategory, "Configured native crash reporting (node-report)");
         } catch (err) {
@@ -408,8 +425,8 @@ export class IModelHost {
       }
     }
 
-    this.setupHostDirs(configuration);
-    this.initializeWorkspace(configuration);
+    this.setupHostDirs(options);
+    this.initializeWorkspace(options);
 
     BriefcaseManager.initialize(this._briefcaseCacheDir);
 
@@ -427,9 +444,10 @@ export class IModelHost {
       FunctionalSchema,
     ].forEach((schema) => schema.registerSchema()); // register all of the schemas
 
-    if (undefined !== configuration.hubAccess)
-      this._hubAccess = configuration.hubAccess;
-    this.configuration = configuration;
+    if (undefined !== options.hubAccess)
+      this._hubAccess = options.hubAccess;
+
+    this.configuration = options;
     this.setupTileCache();
 
     this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
@@ -462,7 +480,7 @@ export class IModelHost {
     Logger.logTrace(loggerCategory, "IModelHost.startup", () => startupInfo);
   }
 
-  private static setupHostDirs(configuration: IModelHostConfiguration) {
+  private static setupHostDirs(configuration: IModelHostOptions) {
     const setupDir = (dir: LocalDirName) => {
       dir = path.normalize(dir);
       IModelJsFs.recursiveMkDirSync(dir);
@@ -483,8 +501,9 @@ export class IModelHost {
     IModelHost.configuration = undefined;
     IModelHost.tileCacheService = undefined;
     IModelHost.tileUploader = undefined;
-    await IModelHost.appWorkspace.close();
+    IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
+    ITwinWorkspace.finalize();
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
 
@@ -521,23 +540,23 @@ export class IModelHost {
   /** The directory where application assets may be found */
   public static get appAssetsDir(): string | undefined { return undefined !== IModelHost.configuration ? IModelHost.configuration.appAssetsDir : undefined; }
 
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileTreeProps]($common) should wait before returning a "pending" status.
+  /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileTreeProps should wait before returning a "pending" status.
    * @internal
    */
   public static get tileTreeRequestTimeout(): number {
-    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileTreeRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+    return IModelHost.configuration?.tileTreeRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
   }
-  /** The time, in milliseconds, for which [IModelTileRpcInterface.requestTileContent]($common) should wait before returning a "pending" status.
+  /** The time, in milliseconds, for which IModelTileRpcInterface.requestTileContent should wait before returning a "pending" status.
    * @internal
    */
   public static get tileContentRequestTimeout(): number {
-    return undefined !== IModelHost.configuration ? IModelHost.configuration.tileContentRequestTimeout : IModelHostConfiguration.defaultTileRequestTimeout;
+    return IModelHost.configuration?.tileContentRequestTimeout ?? IModelHostConfiguration.defaultTileRequestTimeout;
   }
 
   /** The backend will log when a tile took longer to load than this threshold in seconds. */
-  public static get logTileLoadTimeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileLoadTimeThreshold : IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
+  public static get logTileLoadTimeThreshold(): number { return IModelHost.configuration?.logTileLoadTimeThreshold ?? IModelHostConfiguration.defaultLogTileLoadTimeThreshold; }
   /** The backend will log when a tile is loaded with a size in bytes above this threshold. */
-  public static get logTileSizeThreshold(): number { return undefined !== IModelHost.configuration ? IModelHost.configuration.logTileSizeThreshold : IModelHostConfiguration.defaultLogTileSizeThreshold; }
+  public static get logTileSizeThreshold(): number { return IModelHost.configuration?.logTileSizeThreshold ?? IModelHostConfiguration.defaultLogTileSizeThreshold; }
 
   /** Whether external tile caching is active.
    * @internal

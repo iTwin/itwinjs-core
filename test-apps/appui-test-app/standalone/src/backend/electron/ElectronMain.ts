@@ -5,17 +5,16 @@
 
 import { join } from "path";
 import { assert } from "@itwin/core-bentley";
-// import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
-import { IModelHostConfiguration } from "@itwin/core-backend";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { IModelHostOptions } from "@itwin/core-backend";
 
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
-export async function initializeElectron(opts?: IModelHostConfiguration) {
+export async function initializeElectron(opts?: IModelHostOptions) {
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),

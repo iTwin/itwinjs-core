@@ -7,7 +7,7 @@
 
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration, RpcManager } from "@itwin/core-common";
 import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
@@ -36,10 +36,9 @@ void (async () => {
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-  hostConfig.hubAccess = new BackendIModelsAccess(iModelClient);
-  await IModelHost.startup(hostConfig);
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const hubAccess = new BackendIModelsAccess(iModelClient);
+  await IModelHost.startup({ hubAccess, cacheDir: path.join(__dirname, ".cache") });
 
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "schema-rpc-test", version: "v1.0" } }, getRpcInterfaces());
   RpcManager.registerImpl(ECSchemaRpcInterface, ECSchemaRpcImpl);

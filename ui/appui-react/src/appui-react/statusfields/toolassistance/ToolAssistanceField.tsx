@@ -391,11 +391,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             indicatorRef={this._indicator}
             className={classnames("uifw-statusFields-toolassistance", this.props.className)}
             style={this.props.style}
-            isInFooterMode={this.props.isInFooterMode}
+            isInFooterMode={this.props.isInFooterMode ?? true}
             onClick={this._handleToolAssistanceIndicatorClick}
             title={tooltip}
           >
-            {this.props.isInFooterMode ? prompt : undefined}
+            {(this.props.isInFooterMode ?? true) ? prompt : undefined}
           </ToolAssistance>
         </div>
         <FooterPopup

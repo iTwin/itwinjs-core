@@ -13,6 +13,7 @@ import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocati
 import { AsyncLocalStorage } from "async_hooks";
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
 /**
@@ -56,7 +57,7 @@ export class RpcTrace {
 
 let initialized = false;
 /** @internal */
-export function initializeRpcBackend() {
+export function initializeRpcBackend(enableOpenTelemetry: boolean = false) {
   if (initialized)
     return;
 
@@ -64,13 +65,19 @@ export function initializeRpcBackend() {
 
   RpcInvocation.runActivity = RpcTrace.run; // redirect the invocation processing to the tracer
 
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
-    const api = require("@opentelemetry/api");
-    const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
-    Tracing.enableOpenTelemetry(tracer, api);
-    RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
-  } catch (_e) { }
+  if (enableOpenTelemetry) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const api = require("@opentelemetry/api");
+      const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
+      Tracing.enableOpenTelemetry(tracer, api);
+      RpcInvocation.runActivity = RpcTrace.runWithSpan; // wrap invocation in an OpenTelemetry span in addition to RpcTrace
+    } catch (e) {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      Logger.logError(BackendLoggerCategory.IModelHost, "Failed to initialize OpenTelemetry");
+      Logger.logException(BackendLoggerCategory.IModelHost, e);
+    }
+  }
 
   // set up static logger metadata to include current RpcActivity information for logs during rpc processing
   Logger.staticMetaData.set("rpc", () => RpcInvocation.sanitizeForLog(RpcTrace.currentActivity));

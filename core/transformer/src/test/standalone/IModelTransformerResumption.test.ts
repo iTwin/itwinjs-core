@@ -15,6 +15,8 @@ import { IModelTransformer, IModelTransformOptions } from "../../IModelTransform
 import { assertIdentityTransformation, HubWrappers, IModelTransformerTestUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
+import "./TransformerTestStartup"; // calls startup/shutdown IModelHost before/after all tests
+
 const formatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
   minimumFractionDigits: 2,
@@ -690,6 +692,7 @@ describe("test resuming transformations", () => {
     })();
 
     await assertIdentityTransformation(regularTarget, crashingTarget);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, crashingTarget);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });

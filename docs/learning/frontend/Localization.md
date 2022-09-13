@@ -4,23 +4,25 @@ Presenting information to the user in their preferred locale (language, date and
 
 ## Language translation
 
-String localization is handled in a conventional way. Rather than specifying strings directly, a "key" is passed to the `IModelApp.localization.getLocalizedString` method, which retrieves the corresponding string for the current locale for presentation to the user.
+String localization is handled in a conventional way. Rather than specifying strings directly, a "key" is passed to the [Localization.getLocalizedString]($common) method, which retrieves the corresponding string for the current locale for presentation to the user.
 
 For that to work, the localization system needs a dictionary of key-to-string substitutions for each expected locale. That dictionary is spread over a number of JSON files that are placed into a locale-specific directory in the application's "public" folder on the server. The key consists of a namespace (which identifies the specific JSON file in the locale directory, and thus must be unique across all packages in use), followed by a colon, followed by a period delimited tag that identifies the object within the JSON file.
 
-For example, suppose you are developing an application called SafetyBase and you want to group information, warning, and error messages into a localization namespace. Name the JSON file SafetyBaseMessages.json, put it into the public/locales/en directory, and put the following JSON in it:
+For example, suppose you are developing an application called SafetyBase and you want to group information, warning, and error messages into a localization namespace. You might name the JSON file SafetyBaseMessages.json. For the English locale, place SafetyBaseMessages.json into the public/locales/en directory. For another locale, say German, put a different SafetyBaseMessages.json file in the public/locales/de directory. For this example, say that the files look like this:
+
+`public/locales/en/SafetyBaseMessages.json`
 
 ```json
 {
   "info": {
     "login": {
       "notLoggedIn": "You are not currently logged in.",
-      "loggedIn": "You are logged in as {{userName}}."
+      "loggedIn": "You are logged in as {{username}}."
     }
   },
   "warning": {
     "login": {
-      "mustLogin": "That feature is unavailable unless you log.",
+      "mustLogin": "That feature is unavailable unless you log in.",
       "notAuthorized": "You are not authorized to access that resource."
     }
   },
@@ -31,42 +33,129 @@ For example, suppose you are developing an application called SafetyBase and you
 }
 ```
 
-The messages can now be accessed by first registering the namespace, and then using the translate method:
+`public/locales/de/SafetyBaseMessages.json`
 
-```ts
-messageNS: I18NNamespace = IModelApp.registerNamespace ("SafetyBaseMessages");
-await messageNS.readFinished;
-if (this.notLoggedIn) {
-  console.log (IModelApp.i18n.translate("SafetyBaseMessages:info.login.loggedIn")
-} else {
-  console.log (IModelApp.i18n.translate("SafetyBaseMessages:info.login.notLoggedIn", {userName: this.loginName});
+```json
+{
+  "info": {
+    "login": {
+      "notLoggedIn": "Sie sind derzeit nicht eingeloggt.",
+      "loggedIn": "Sie sind angemeldet als {{username}}."
+    }
+  },
+  "warning": {
+    "login": {
+      "mustLogin": "Diese Funktion ist nur verfügbar, wenn Sie sich anmelden.",
+      "notAuthorized": "Sie sind nicht berechtigt, auf diese Ressource zuzugreifen."
+    }
+  },
+  "error": {
+    "loginIncorrect": "Die Kombination aus Benutzername und Passwort ist ungültig.",
+    "offline": "NNetzwerkverbindung nicht verfügbar."
+  }
 }
 ```
 
-In the example above, we start by registering the namespace with IModelApp. That starts the process of retrieving the SafetyBaseMessages.json file in the directory corresponding to the current locale (in this case, "en") from the server. Since that might take a little while, before the first use of a namespace, we await on the readFinished property of the I18NNamespace, which is a Promise that is fulfilled when the file is retrieved and ready to be accessed by the translate method. If not logged in, we use the simple form of the translate method to display the string "You are not currently logged in to Bentley Connect." to the console. If the user is logged in, the message "You are logged in as xxx.", is displayed on the console, where xxx is replaced by this.loginName. This demonstrates passing additional argument to the translate method, which substitutes the value of the arguments for the corresponding variables specified in the {{ }} formulas in the translation string. That substitution is called "interpolation" in internationalization terminology.
+Note: German was translated from English in Google Translate.
 
-Behind the scenes, iTwin.js uses the [i18Next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example above. iTwin.js initializes i18next with a set of options that are usually fine for all applications. If you want different options, you can use i18next directly from your application, or instantiate an instance of iTwin.js' I18N class, which provides some convenience methods for waiting for the read to finish, etc.
+By default, the IModelApp uses an instance of [ITwinLocalization]($i18n) for localization purposes. Below, a user-created instance of this class will be passed in to IModelApp to demonstrate how a custom [Localization]($common) implementation could be used instead.
+
+```ts
+import { IModelApp } from "@itwin/core-frontend";
+
+// The Localization interface class
+import { Localization } from "@itwin/core-common";
+
+// The iTwin.js implementation for Localization.
+// *This can be replaced with your own implementation if you want!
+import { ITwinLocalization } from "@itwin/core-i18n";
+
+const myCustomLocalization: Localization = new ITwinLocalization();
+
+await IModelApp.startup({ localization: myCustomLocalization });
+
+```
+
+To utilize the localization dictionaries, first initialize the localization instance to register any namespaces. [Localization.initialize]($common) takes in a list of namespaces to register. [Localization.registerNamespace]($common) takes only a single namespace string at a time.
+
+```ts
+const namespaces: string[] = ["SafetyBaseMessages"];
+await IModelApp.localization.initialize(namespaces);
+
+// How to register an additional, new namespace after initialization:
+await IModelApp.localization.registerNamespace("AnotherNamespace");
+```
+
+Registering a namespace starts the process of retrieving the relevant namespace JSON file(s) corresponding to the set language/locale. This action returns a Promise which will be fulfilled when the file(s) is retrieved and ready to be accessed by the Localization instance, thus it is required to `await` for this process to finish. In the example above, the [Localization.initialize]($common) call is retrieving the `public/locale/en/SafetyBaseMessages.json` file and the [Localization.registerNamespace]($common) call will attempt to find a `public/locale/en/AnotherNamespace.json` file.
+
+Now, a locale-specific string can be requested with the [Localization.getLocalizedString]($common) method. To specify the value to grab from the localization dictionary, specify its key in the following format: The namespace, followed by a colon, followed by a period-delimited tag that identifies the object within the JSON file. For example, "SafetyBaseMessages:info.login.loggedIn" is the key for the info.login.loggedIn value in the SafetyBaseMessages namespace.
+
+```ts
+const myUsername = "John_Smith_123"
+
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
+// returns "You are not currently logged in."
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername});
+// returns "You are logged in as John_Smith_123."
+```
+
+Notice how in the second statement, "{{username}}" from SafetyBaseMessages:info.login.loggedIn's value was replaced with "John_Smith_123". The [Localization.getLocalizedString]($common) method accepts an optional key-value dictionary argument. The method will then substitute the values in this dictionary with corresponding keys in the localized string as long as they are surrounded by {{ }}. This substitution is called "interpolation" in internationalization terminology.
+
+Specific to the [ITwinLocalization]($i18n) class, the browser is used to detect the language if none is set. However, if that fails, the language will be set to English. Additionally, the selected language can be manually changed by calling the [Localization.changeLanguage]($common) interface method. Changing the language requires reacquiring the relevant namespace JSON files, so use `await` to wait for the returned Promise to resolve.
+
+```ts
+await IModelApp.localization.changeLanguage("de");
+
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.notLoggedIn");
+// returns "Sie sind derzeit nicht eingeloggt."
+IModelApp.localization.getLocalizedString("SafetyBaseMessages:info.login.loggedIn", { username: myUsername});
+// returns "Sie sind angemeldet als John_Smith_123."
+```
+
+To interpolate a value in a custom string (i.e., a string not from a localization JSON file), use the `Localization.getLocalizedKeys` method with keys in the format `%{key}`:
+
+```ts
+await IModelApp.localization.changeLanguage("en");
+
+IModelApp.localization.getLocalizedKeys("Please be aware: %{SafetyBaseMessages:error.offline}");
+// returns "Please be aware: Network connection not available."
+
+IModelApp.localization.getLocalizedKeys("Hello, %{SafetyBaseMessages:info.login.loggedIn}.");
+// returns "Hello, You are logged in as {{username}}."
+```
+
+### Powered by i18next
+
+Behind the scenes, iTwin.js uses the [i18next](http://www.i18next.com) JavaScript package. It has many other sophisticated internationalization capabilities, including formatting, plurals, and nesting, as well as the interpolation example given above.
+
+As mentioned above, [IModelApp.localization]($frontend) uses an instance of the [ITwinLocalization]($i18n) class by default, which initializes i18next with a set of options that are usually fine for all applications. If you want different options, you could instantiate your own instance of [ITwinLocalization]($i18n) and pass in your own [LocalizationOptions]($i18n) to [ITwinLocalization.constructor]($i18n). Alternatively, you could create your own implementation of the iTwin.js [Localization]($common) interface or even import and use the i18next package directly.
+
+### A Note About HTML in Localized Strings
 
 If you are using React for user interface development, please note that you should not put HTML markup in your localized strings for inclusion as text in your React controls. Such strings are not processed by the React transpiler, and thus the HTML tags will display verbatim rather than being processed as HTML.
 
 ## Tool Localization
 
-The primary way of initiating actions in iTwin.js applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *nameSpace* argument that specifies the I18NNamespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
+The primary way of initiating actions in iTwin.js applications is by authoring a subclass of the [Tool](./Tools) class. Each such Tool subclass is registered with the system by calling the register method on its class object. The register method takes an optional *namespace* argument that specifies the namespace that contains the localization strings for the tool, including its keyin, flyover, and description properties. The Tool's keyin property is used by the command parser to allow the user to type in the tool name to execute it. The flyover property is displayed when the cursor hovers over the Tool icon, and the description property is displayed in various contexts.
 
 The keys for each of those properties are synthesized from the Tool's namespace and toolId. For example, the translation key for the keyin property is \<Namespace\>:tools.\<toolId\>.keyin. Now suppose you author a PlaceSprinkler command in the SafetyBase application. Your Tool class might look like this:
 
 ```ts
 class PlaceSprinkler extends InteractiveTool {
   public static toolId = "Place.Sprinkler";
- ...
+  ...
 }
 
-// register the PlaceSprinkler class.
-const toyToolsNS: I18NNamespace = IModelApp.registerNamespace ("SafetyBaseTools");
-PlaceSprinkler.register(toyToolsNS);
+const toyToolsNamespace = "SafetyBaseTools";
+IModelApp.localization.registerNamespace([toyToolsNamespace]);
+
+// Register the PlaceSprinkler class
+PlaceSprinkler.register(toyToolsNamespace);
 ```
 
-Then the appropriate entry in the english version of SafetyBaseTools.json file might look like this:
+Then the appropriate entry in the English version of SafetyBaseTools.json file might look like this:
+
+`public/locales/en/SafetyBaseTools.json`
 
 ```json
 {
@@ -90,7 +179,8 @@ If you omit the "flyover" key, the keyin property is used for the flyover text. 
 In this example, the prompt1 and prompt2 keys are not used by the system - they could be used by your application during the operation of the Place Sprinkler command. They would be retrieved using this code:
 
 ```ts
-const firstPrompt: string = IModelApp.i18n.translate ("SafetyBaseTools:Place.Sprinkler.prompt1");
+const firstPrompt: string = IModelApp.localization.getLocalizedString("SafetyBaseTools:Place.Sprinkler.prompt1");
+// returns "Enter Sprinkler origin."
 ```
 
 Since your code retrieves those localized strings, they do not have to be subkeys of "tools.Place.Sprinkler". They could be separate keys in the same JSON file, or could even be in a different JSON file (in which case the namespace would be different). The convention demonstrated in the example above has the advantage of keeping the localizable strings associated with a particular tool all together, but the disadvantage that prompts or messages that might be usable for multiple tools would be duplicated in each tool.

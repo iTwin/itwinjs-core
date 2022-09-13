@@ -9,15 +9,18 @@
 // cspell:ignore BLOCKCACHE
 
 import * as path from "path";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@itwin/core-common";
-import { CloudSqlite, IModelJsNative } from "@bentley/imodeljs-native";
+import {
+  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName,
+} from "@itwin/core-common";
+import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CloudSqlite } from "./CloudSqlite";
 import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { V2CheckpointAccessProps } from "./BackendHubAccess";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -41,10 +44,20 @@ export interface CheckpointProps extends TokenArg {
   readonly reattachSafetySeconds?: number;
 }
 
+/** Return value from [[ProgressFunction]].
+ *  @public
+ */
+export enum ProgressStatus {
+  /** Continue download. */
+  Continue = 0,
+  /** Abort download. */
+  Abort = 1,
+}
+
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
  *  @public
  */
-export type ProgressFunction = (loaded: number, total: number) => number;
+export type ProgressFunction = (loaded: number, total: number) => ProgressStatus;
 
 /** The parameters that specify a request to download a checkpoint file from iModelHub.
  * @internal
@@ -113,8 +126,8 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   public static readonly cloudCacheName = "v2Checkpoints";
-  private static _cloudCache?: IModelJsNative.CloudCache;
-  private static containers = new Map<string, IModelJsNative.CloudContainer>();
+  private static _cloudCache?: CloudSqlite.CloudCache;
+  private static containers = new Map<string, CloudSqlite.CloudContainer>();
 
   public static getFolder(): LocalDirName {
     const cloudCachePath = path.join(BriefcaseManager.cacheDir, V2CheckpointManager.cloudCacheName);
@@ -140,7 +153,7 @@ export class V2CheckpointManager {
     return path.join(this.getFolder(), `${changesetId}.bim`);
   }
 
-  private static get cloudCache(): IModelJsNative.CloudCache {
+  private static get cloudCache(): CloudSqlite.CloudCache {
     if (!this._cloudCache) {
       let rootDir = process.env.CHECKPOINT_CACHE_DIR;
       if (!rootDir) {
@@ -154,7 +167,7 @@ export class V2CheckpointManager {
         }
       }
 
-      this._cloudCache = new IModelHost.platform.CloudCache({ name: this.cloudCacheName, rootDir, cacheSize: "50G" });
+      this._cloudCache = CloudSqlite.createCloudCache({ name: this.cloudCacheName, rootDir });
 
       // Its fine if its not a daemon, but lets log an info message
       if (!this._cloudCache.isDaemon)
@@ -171,13 +184,13 @@ export class V2CheckpointManager {
   private static getContainer(v2Props: V2CheckpointAccessProps) {
     let container = this.containers.get(v2Props.containerId);
     if (!container) {
-      container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2Props));
+      container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2Props));
       this.containers.set(v2Props.containerId, container);
     }
     return container;
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: IModelJsNative.CloudContainer }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ dbName: string, container: CloudSqlite.CloudContainer }> {
     let v2props: V2CheckpointAccessProps | undefined;
     try {
       v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
@@ -192,15 +205,16 @@ export class V2CheckpointManager {
       const dbName = v2props.dbName;
       if (!container.isConnected)
         container.connect(this.cloudCache);
-      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", true)) {
-        const logPrefetch = async (prefetch: IModelJsNative.CloudPrefetch) => {
+      container.checkForChanges();
+      if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
+        const logPrefetch = async (prefetch: CloudSqlite.CloudPrefetch) => {
           const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
           Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`);
           const done = await prefetch.promise;
           Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`);
         };
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
-        logPrefetch(new IModelHost.platform.CloudPrefetch(container, dbName));
+        logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName));
       }
       return { dbName, container };
     } catch (e: any) {
@@ -219,7 +233,7 @@ export class V2CheckpointManager {
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
     CheckpointManager.onDownloadV2.raiseEvent(job);
-    const container = new IModelHost.platform.CloudContainer(this.toCloudContainerProps(v2props));
+    const container = CloudSqlite.createCloudContainer(this.toCloudContainerProps(v2props));
     await CloudSqlite.transferDb("download", container, { dbName: v2props.dbName, localFileName: request.localFile, onProgress: request.onProgress });
     return request.checkpoint.changeset.id;
   }
@@ -267,6 +281,7 @@ export class V1CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     CheckpointManager.onDownloadV1.raiseEvent(job);
+    // eslint-disable-next-line deprecation/deprecation
     return (await IModelHost.hubAccess.downloadV1Checkpoint(job.request)).id;
   }
 }

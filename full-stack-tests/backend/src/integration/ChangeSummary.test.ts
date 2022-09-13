@@ -16,6 +16,8 @@ import {
 import { HubWrappers, IModelTestUtils, KnownTestLocations, TestChangeSetUtility } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 function setupTest(iModelId: string): void {
   const cacheFilePath: string = BriefcaseManager.getChangeCachePathName(iModelId);
   if (IModelJsFs.existsSync(cacheFilePath))
@@ -363,6 +365,7 @@ describe("ChangeSummary", () => {
     }
   });
 
+  // FIXME: "Must use HubMock for tests that modify iModels".
   it.skip("Create ChangeSummaries for changes to parent elements", async () => {
     // Generate a unique name for the iModel (so that this test can be run simultaneously by multiple users+hosts simultaneously)
     const iModelName = IModelTestUtils.generateUniqueName("ParentElementChangeTest");
@@ -441,6 +444,7 @@ describe("ChangeSummary", () => {
     await IModelHost.hubAccess.deleteIModel({ accessToken, iTwinId: testITwinId, iModelId: testIModelId });
   });
 
+  // FIXME: Failed OIDC signin for TestUserType.SuperManager.
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {
     const userContext1 = await HubUtility.getAccessToken(TestUserType.Manager);
     const userContext2 = await HubUtility.getAccessToken(TestUserType.SuperManager);

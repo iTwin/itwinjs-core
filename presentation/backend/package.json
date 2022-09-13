@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-backend",
-  "version": "3.3.0-dev.61",
+  "version": "3.4.0-dev.41",
   "description": "Backend of iTwin.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -39,11 +39,11 @@
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.3.0-dev.61",
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.61",
-    "@itwin/core-common": "workspace:^3.3.0-dev.61",
-    "@itwin/core-quantity": "workspace:^3.3.0-dev.61",
-    "@itwin/presentation-common": "workspace:^3.3.0-dev.61"
+    "@itwin/core-backend": "workspace:^3.4.0-dev.41",
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.41",
+    "@itwin/core-common": "workspace:^3.4.0-dev.41",
+    "@itwin/core-quantity": "workspace:^3.4.0-dev.41",
+    "@itwin/presentation-common": "workspace:^3.4.0-dev.41"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -63,7 +63,7 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "16.11.7",
     "@types/object-hash": "^1.3.0",
-    "@types/semver": "^7.3.9",
+    "@types/semver": "7.3.10",
     "@types/sinon": "^9.0.0",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",

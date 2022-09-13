@@ -14,11 +14,15 @@ exports[`WidgetOverflow should open panel 1`] = `
     style="outline: none;"
     tabindex="0"
   >
-    <div>
-      A
-    </div>
-    <div>
-      B
+    <div
+      class="nz-widget-menu_tabs"
+    >
+      <div>
+        A
+      </div>
+      <div>
+        B
+      </div>
     </div>
   </div>
   <div

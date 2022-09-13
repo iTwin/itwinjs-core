@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { FillCentered } from "@itwin/core-react";
-import { Indicator, StatusFieldProps } from "@itwin/appui-react";
+import { CommonProps, FillCentered } from "@itwin/core-react";
+import { Indicator } from "@itwin/appui-react";
 import { Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { ColorPickerPopup } from "@itwin/imodel-components-react";
 import { ColorDef } from "@itwin/core-common";
@@ -29,7 +29,7 @@ export function TestStatusBarDialog() {
     </div>
   );
 }
-export class SampleStatusField extends React.Component<StatusFieldProps> {
+export class SampleStatusField extends React.Component<CommonProps> {
   private _title = IModelApp.localization.getLocalizedString("SampleApp:statusFields.sampleField");
   constructor(props: any) {
     super(props);
@@ -42,7 +42,6 @@ export class SampleStatusField extends React.Component<StatusFieldProps> {
         dialog={<Dialog titleBar={<TitleBar title={this._title} />}>
           <TestStatusBarDialog />
         </Dialog>}
-        isInFooterMode={this.props.isInFooterMode}
         label="Left"
         isLabelVisible={true}
         toolTip={this._title}

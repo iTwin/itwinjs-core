@@ -10,11 +10,12 @@ import {
   BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
 } from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { IModelHost, IModelHostConfiguration } from "../../IModelHost";
+import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../RpcBackend";
-import { IModelTestUtils, TestUtils } from "../index";
+import { TestUtils } from "../TestUtils";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 const fakeRpc: RpcActivity = {
   accessToken: "dummy",
@@ -90,8 +91,7 @@ describe("TileCache open v1", () => {
   it("should create .tiles file next to .bim with default cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await TestUtils.shutdownBackend();
-    const config = new IModelHostConfiguration();
-    await TestUtils.startBackend(config);
+    await TestUtils.startBackend();
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
@@ -102,8 +102,9 @@ describe("TileCache open v1", () => {
   it("should create .tiles file next to .bim with set cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
     await TestUtils.shutdownBackend();
-    const config = new IModelHostConfiguration();
-    config.cacheDir = path.join(__dirname, ".cache");
+    const config = {
+      cacheDir: path.join(__dirname, ".cache"),
+    };
     await TestUtils.startBackend(config);
 
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "mirukuru.ibim");

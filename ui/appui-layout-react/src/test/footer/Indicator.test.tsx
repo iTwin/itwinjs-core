@@ -16,7 +16,7 @@ describe("<FooterIndicator />", () => {
     shallow(<FooterIndicator />).should.matchSnapshot();
   });
 
-  it("renders correctly in footer mode", () => {
+  it("renders correctly in footer mode (deprecated)", () => {
     shallow(<FooterIndicator isInFooterMode />).should.matchSnapshot();
   });
 

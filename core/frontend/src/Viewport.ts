@@ -458,7 +458,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
 
-  /** @see [DisplayStyle3dSettings.lights]($common) */
+  /** See [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
@@ -467,7 +467,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.displayStyle.settings.lights = settings;
   }
 
-  /** @see [DisplayStyle3dSettings.solarShadows]($common) */
+  /** See [DisplayStyle3dSettings.solarShadows]($common) */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
@@ -490,7 +490,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @see [DisplayStyleSettings.analysisFraction]($common). */
+  /** See [DisplayStyleSettings.analysisFraction]($common). */
   public get analysisFraction(): number {
     return this.displayStyle.settings.analysisFraction;
   }
@@ -498,7 +498,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.settings.analysisFraction = fraction;
   }
 
-  /** @see [DisplayStyleSettings.timePoint]($common) */
+  /** See [DisplayStyleSettings.timePoint]($common) */
   public get timePoint(): number | undefined {
     return this.displayStyle.settings.timePoint;
   }
@@ -566,7 +566,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.view.displayStyle.viewFlags = viewFlags;
   }
 
-  /** @see [[ViewState.displayStyle]] */
+  /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
@@ -579,7 +579,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.settings.applyOverrides(overrides);
   }
 
-  /** @see [DisplayStyleSettings.clipStyle]($common) */
+  /** See [DisplayStyleSettings.clipStyle]($common) */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
   public set clipStyle(style: ClipStyle) {
     this.displayStyle.settings.clipStyle = style;
@@ -765,12 +765,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.backgroundMapSettings = settings;
   }
 
-  /** @see [[DisplayStyleState.changeBackgroundMapProps]] */
+  /** See [[DisplayStyleState.changeBackgroundMapProps]] */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
-  /** @see [[DisplayStyleState.changeBackgroundMapProvider]] */
+  /** See [[DisplayStyleState.changeBackgroundMapProvider]] */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
     this.displayStyle.changeBackgroundMapProvider(props);
   }
@@ -1937,7 +1937,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return ViewStatus.Success;
   }
 
-  /** @see [[zoomToPlacements]]. */
+  /** See [[zoomToPlacements]]. */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
     this.zoomToPlacements(placements, options);
@@ -2532,10 +2532,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
-        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        const pixel = pixels.getPixel(x, y);
+        const modelId = pixel.featureTable?.modelId;
         if (undefined !== modelId) {
-          npc.z -= this.view.getModelElevation(modelId);
-          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+          const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
+          transform?.multiplyInversePoint3d(npc, npc);
         }
       }
     }
@@ -2612,7 +2613,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.cssPixelsToDevicePixels(cssPixels);
   }
 
-  /** @see [[ViewState.setModelDisplayTransformProvider]]
+  /** See [[ViewState.setModelDisplayTransformProvider]]
    * @internal
    */
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {

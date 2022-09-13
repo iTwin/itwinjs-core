@@ -73,7 +73,7 @@ export class MapLayersUI {
       const fiProvider = new FeatureInfoUiItemsProvider({ ...MapLayersUI._featureInfoOpts });
       const fiProviderId = config?.featureInfoProviderOverrides?.providerId ?? fiProvider.id;
       MapLayersUI._uiItemsProvidersId.push(fiProviderId);
-      UiItemsManager.register(mlProvider,  config?.featureInfoProviderOverrides);
+      UiItemsManager.register(fiProvider,  config?.featureInfoProviderOverrides);
     }
   }
 

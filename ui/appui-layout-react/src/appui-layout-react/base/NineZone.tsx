@@ -14,16 +14,19 @@ import { PanelSide } from "../widget-panels/Panel";
 import { WidgetContentManager } from "../widget/ContentManager";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdContext, DragProvider } from "./DragManager";
-import {
-  DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
-} from "./NineZoneState";
 import { assert } from "@itwin/core-bentley";
 import { WidgetTab } from "../widget/Tab";
+import { NineZoneAction } from "../state/NineZoneAction";
+import { NineZoneState } from "../state/NineZoneState";
+import { PanelsState } from "../state/PanelState";
+import { DraggedTabState, TabsState } from "../state/TabState";
+import { ToolSettingsState } from "../state/ToolSettingsState";
+import { FloatingWidgetsState, WidgetsState } from "../state/WidgetState";
 
-/** @internal future */
-export type NineZoneDispatch = (action: NineZoneActionTypes) => void;
+/** @internal */
+export type NineZoneDispatch = (action: NineZoneAction) => void;
 
-/** @internal future */
+/** @internal */
 export interface NineZoneProps {
   children?: React.ReactNode;
   dispatch: NineZoneDispatch;
@@ -51,7 +54,7 @@ export interface NineZoneLabels {
   popoutActiveTab?: string;
 }
 
-/** @internal future */
+/** @internal */
 export function NineZone(props: NineZoneProps) {
   const { children, ...providerProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const measurerRef = React.useRef<HTMLDivElement>(null);

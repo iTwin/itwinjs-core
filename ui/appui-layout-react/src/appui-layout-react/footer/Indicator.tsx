@@ -17,7 +17,9 @@ import { CommonProps } from "@itwin/core-react";
 export interface FooterIndicatorProps extends CommonProps {
   /** Indicator content. */
   children?: React.ReactNode;
-  /** Describes whether the footer is in footer or widget mode. */
+  /** Describes whether the footer is in footer or widget mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode?: boolean;
   /** Title for the indicator */
   title?: string;
@@ -34,7 +36,7 @@ export function FooterIndicator(props: FooterIndicatorProps) {
 
   const className = classnames(
     "nz-footer-indicator",
-    isInFooterMode && "nz-footer-mode",
+    (isInFooterMode ?? true) && "nz-footer-mode",
     props.className
   );
 

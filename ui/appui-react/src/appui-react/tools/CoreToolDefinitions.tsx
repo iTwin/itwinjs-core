@@ -13,7 +13,7 @@ import {
   ViewClipByPlaneTool, ViewClipByRangeTool, ViewClipByShapeTool, ViewClipDecorationProvider, ViewRedoTool, ViewToggleCameraTool, ViewUndoTool,
   WalkViewTool, WindowAreaTool, ZoomViewTool,
 } from "@itwin/core-frontend";
-import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import { ToolbarPopupContext } from "@itwin/components-react";
 import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
 import { ContentViewManager } from "../content/ContentViewManager";
@@ -27,6 +27,8 @@ import { SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { GroupItemDef } from "../toolbar/GroupItem";
 import { RestoreFrontstageLayoutTool } from "./RestoreLayoutTool";
 import { UiFramework } from "../UiFramework";
+import cameraAnimationIcon from "@itwin/itwinui-icons/icons/camera-animation.svg";
+import cameraAnimationDisabledIcon from "@itwin/itwinui-icons/icons/camera-animation-disabled.svg";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -157,11 +159,18 @@ export class CoreTools {
       toolId: ViewToggleCameraTool.toolId,
       iconSpec: new ConditionalStringValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.isCameraOn)
-          return "icon-camera-animation";
-        return "icon-camera-animation-disabled";
+        if (activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.isCameraOn) {
+          return IconSpecUtilities.createWebComponentIconSpec(cameraAnimationIcon);
+        }
+        return IconSpecUtilities.createWebComponentIconSpec(cameraAnimationDisabledIcon);
       }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
-      label: ViewToggleCameraTool.flyover,
+      label: new ConditionalStringValue(() => {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl?.viewport?.view.is3d() && activeContentControl?.viewport?.isCameraOn) {
+          return UiFramework.translate("tools.View.ToggleCamera.turnOffFlyover");
+        }
+        return UiFramework.translate("tools.View.ToggleCamera.turnOnFlyover");
+      }, [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ActiveViewportChanged, SyncUiEventId.ViewStateChanged]),
       description: ViewToggleCameraTool.description,
       isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();

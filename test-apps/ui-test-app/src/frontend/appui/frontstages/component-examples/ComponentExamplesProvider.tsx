@@ -895,6 +895,7 @@ export class ComponentExamplesProvider {
   };
 
   private static get messageSamples(): ComponentExampleCategory {
+    MessageManager.registerAnimateOutToElement(null);
     return {
       title: "Messages",
       examples: [
@@ -904,7 +905,7 @@ export class ComponentExamplesProvider {
           }>Toast message</UnderlinedButton>),
         createComponentExample("Toast with link", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            () => MessageManager.displayMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage), undefined, {placement: "top"}
             )}>Toast with link</UnderlinedButton>),
         createComponentExample("Sticky", undefined,
           <UnderlinedButton onActivate={
@@ -1250,12 +1251,16 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),

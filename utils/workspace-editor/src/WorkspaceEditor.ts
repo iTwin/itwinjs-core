@@ -11,10 +11,10 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelHostConfiguration, IModelJsFs, IModelJsNative, ITwinWorkspaceContainer, ITwinWorkspaceDb,
-  SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb, SqliteStatement, WorkspaceAccount,
+  WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
-import { BentleyError, DbResult, Logger, LogLevel, StopWatch } from "@itwin/core-bentley";
+import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 
 // cspell:ignore nodir nocase
@@ -124,9 +124,10 @@ function showMessage(msg: string) {
 }
 
 /** perform a vacuum on a database, with a message while it's happening */
-function doVacuum(fileName: string, cloudContainer?: IModelJsNative.CloudContainer) {
-  process.stdout.write(`Vacuuming ${fileName} ... `);
-  IModelHost.platform.DgnDb.vacuum(fileName, cloudContainer);
+function doVacuum(dbName: string, container?: CloudSqlite.CloudContainer) {
+  process.stdout.write(`Vacuuming ${dbName} ... `);
+  const db = new SQLiteDb();
+  db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, () => db.vacuum());
   process.stdout.write("done");
   showMessage("");
 }
@@ -146,7 +147,7 @@ async function createWorkspaceDb(args: WorkspaceDbOpt) {
   const wsFile = new EditableWorkspaceDb(args, IModelHost.appWorkspace.getContainer(args, args));
   await wsFile.createDb();
   showMessage(`created WorkspaceDb ${wsFile.sqliteDb.nativeDb.getFilePath()}`);
-  await wsFile.close();
+  wsFile.close();
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
@@ -156,7 +157,7 @@ async function processWorkspace<W extends ITwinWorkspaceDb, T extends WorkspaceD
   try {
     await fn(ws, args);
   } finally {
-    await ws.close();
+    ws.close();
   }
 }
 
@@ -167,7 +168,7 @@ function getContainer(args: EditorOpts) {
 }
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
-function getCloudContainer(args: EditorOpts): IModelJsNative.CloudContainer {
+function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
   args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
@@ -206,7 +207,7 @@ async function listWorkspaceDb(args: ListOptions) {
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
-    let prefetch: IModelJsNative.CloudPrefetch | undefined;
+    let prefetch: CloudSqlite.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
       prefetch = file.prefetch({ nRequests: args.nRequests });
@@ -361,7 +362,7 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 }
 
 /** Either upload or download a WorkspaceDb to/from a cloud WorkspaceContainer. Shows progress % during transfer */
-async function performTransfer(container: IModelJsNative.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
+async function performTransfer(container: CloudSqlite.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
   fixVersionArg(args);
   const localFileName = args.localFileName;
 
@@ -438,7 +439,7 @@ async function initializeWorkspace(args: InitializeOpts) {
     if (yesNo[0].toUpperCase() !== "Y")
       return;
   }
-  const container = new IModelHost.platform.CloudContainer(args as CloudSqlite.ContainerAccessProps);
+  const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
   container.initializeContainer({ checksumBlockNames: true });
   showMessage(`container "${args.containerId} initialized`);
 }
@@ -484,7 +485,7 @@ async function preFetchWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = getCloudContainer(args);
   const timer = new StopWatch("prefetch", true);
-  const prefetch = new IModelHost.platform.CloudPrefetch(container, args.dbFileName);
+  const prefetch = CloudSqlite.startCloudPrefetch(container, args.dbFileName);
   await prefetch.promise;
   showMessage(`preFetched WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
 }
@@ -543,20 +544,19 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       return cmd(args);
 
     try {
-      const config = new IModelHostConfiguration();
-      config.workspace = {
+      const workspace = {
         containerDir: args.directory,
         cloudCacheProps: {
           nRequests: args.nRequests,
           curlDiagnostics: args.curlDiagnostics,
         },
       };
-      await IModelHost.startup(config);
+      await IModelHost.startup({ workspace });
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
         IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
-        logTimer = setInterval(() => flushLog(), 20); // logging from other threads is buffered. This causes it to appear every 1/4 second.
+        logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
       await cmd(args);

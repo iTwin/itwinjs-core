@@ -16,6 +16,7 @@ import { Geometry } from "../../Geometry";
 import { LineString3d } from "../LineString3d";
 import { CurveOffsetXYHandler } from "../internalContexts/CurveOffsetXYHandler";
 import { OffsetOptions } from "../internalContexts/PolygonOffsetContext";
+import { Range3d } from "../../geometry3d/Range";
 /**
  * This is the set of valid type names for "integrated" spirals
  * * Behavior is expressed by a `NormalizedTransition` snap function.
@@ -198,5 +199,22 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
     this.emitStrokableParts(handler, options.strokeOptions);
     return handler.claimResult();
+  }
+  /** extend the range by the strokes of the spiral */
+  public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
+    const myRange = this.rangeBetweenFractions (0.0, 1.0, transform);
+    rangeToExtend.extendRange (myRange);
+  }
+
+  /** return the range of spiral between fractions of the activeStrokes.
+   * * Use activeStrokes point count times interval factor for initial evaluation count, but do at least 5
+   */
+   public override rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d {
+    const strokes = this.activeStrokes;
+    if (undefined === strokes)
+      return Range3d.createNull ();
+    let count = Math.ceil (strokes.numPoints() * Math.abs (fractionB - fractionA));
+    count = Geometry.clamp (5, count, 30);
+    return this.rangeBetweenFractionsByCount (fractionA, fractionB, count, transform, 0.5);
   }
 }

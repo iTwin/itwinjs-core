@@ -8,7 +8,7 @@ import { ChildProcess } from "child_process";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as sinon from "sinon";
-import { CloudSqlite, IModelHost, IModelJsFs, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
+import { CloudSqlite, IModelHost, IModelJsFs, NativeCloudSqlite, SnapshotDb, V2CheckpointAccessProps, V2CheckpointManager } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/KnownTestLocations";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { ChangesetProps, IModelVersion } from "@itwin/core-common";
@@ -16,11 +16,13 @@ import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { HubUtility } from "../HubUtility";
 import { CloudSqliteTest } from "./CloudSqlite.test";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 describe("Checkpoints", () => {
   let daemon: ChildProcess;
   let accountProps: CloudSqlite.AccountAccessProps;
   let cacheProps: CloudSqlite.CacheProps;
-  let daemonProps: CloudSqlite.DaemonProps;
+  let daemonProps: NativeCloudSqlite.DaemonProps;
   let accessToken: AccessToken;
   let testIModelId: GuidString;
   let testITwinId: GuidString;
@@ -37,8 +39,8 @@ describe("Checkpoints", () => {
 
   const startDaemon = async () => {
     // Start daemon process and wait for it to be ready
-    fs.chmodSync((CloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
-    daemon = CloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
+    fs.chmodSync((NativeCloudSqlite.Daemon as any).exeName({}), 744);  // FIXME: This probably needs to be an imodeljs-native postinstall step...
+    daemon = NativeCloudSqlite.Daemon.start({ ...daemonProps, ...cacheProps, ...accountProps });
     while (!IModelJsFs.existsSync(path.join(cloudcacheDir, "portnumber.bcv"))) {
       await new Promise((resolve) => setImmediate(resolve));
     }

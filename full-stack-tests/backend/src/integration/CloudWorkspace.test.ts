@@ -4,10 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as fs from "fs-extra";
 import { join } from "path";
-import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
+import { BaseSettings, CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspace, SettingsPriority } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { CloudSqliteTest } from "./CloudSqlite.test";
+
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 describe("Cloud workspace containers", () => {
 
@@ -23,8 +26,19 @@ describe("Cloud workspace containers", () => {
       "cloudSqlite/containerId": containerId,
     };
 
-    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), cloudCacheProps: { name: "test1", clearContents: true } });
-    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), cloudCacheProps: { name: "test2", clearContents: true } });
+    const makeCloudCache = (name: string) => {
+      const cacheProps = {
+        rootDir: join(IModelHost.cacheDir, "cloud", name),
+        cacheSize: "20G",
+        name,
+      };
+      IModelJsFs.recursiveMkDirSync(cacheProps.rootDir);
+      fs.emptyDirSync(cacheProps.rootDir);
+      return CloudSqlite.createCloudCache(cacheProps);
+    };
+
+    const workspace1 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace1"), testCloudCache: makeCloudCache("test1") });
+    const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
     const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
 
@@ -46,7 +60,7 @@ describe("Cloud workspace containers", () => {
 
           wsDbEdit.addString("myVersion", wsDbEdit.dbFileName.split(":")[1]);
           wsDbEdit.addString("string 1", "value of string 1");
-          await wsDbEdit.close();
+          wsDbEdit.close();
         } finally {
           wsCont1.dropWorkspaceDb(wsDbEdit);
         }
@@ -82,7 +96,7 @@ describe("Cloud workspace containers", () => {
       const ws3 = new EditableWorkspaceDb({ dbName: testDbName, version: "1.1.4-beta" }, wsCont1);
       ws3.open();
       ws3.updateString("string 1", newVal);
-      await ws3.close();
+      ws3.close();
     });
 
     ws2Cloud.checkForChanges();
@@ -102,6 +116,8 @@ describe("Cloud workspace containers", () => {
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
     ws2.container.dropWorkspaceDb(ws2);
+    workspace1.close();
+    workspace2.close();
   });
 
 });

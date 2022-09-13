@@ -33,6 +33,7 @@ import type { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
+import { Range3d } from "../geometry3d/Range";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -228,6 +229,74 @@ export abstract class CurvePrimitive extends GeometryQuery {
     this.emitStrokableParts(context);
     return Math.abs(context.getSum());
   }
+
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    return this.rangeBetweenFractionsByClone (fraction0, fraction1, transform);
+    }
+
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    if (fraction0 === fraction1)
+      return Range3d.create (this.fractionToPoint (fraction0));
+    const fragment = this.clonePartialCurve (fraction0, fraction1);
+    if (fragment)
+      return fragment.range (transform);
+    return Range3d.createNull ();
+  }
+
+  /**
+   * Returns an approximate range based on a fixed number of evaluations
+   * * Default implementation returns a range determined by evaluating a specified number of points on the curve.
+   * * Optional evaluate again at interval midpoints and extrapolate any increase
+   * * For a smooth curve, Richardson extrapolation suggests each subdivision moves 3/4 of the way to final. So extrapolationFactor
+   *            of 1/3 gets speculatively moves closer to the tight range, and larger multipliers increase confidence in being safely larger.
+   * @param fraction0 start fraction for evaluation
+   * @param fraction1 end fraction for evaluation
+   * @param count number of points to evaluate
+   * @param extrapolationFactor if positive, evaluate again at interval midpoints and apply this fraction multiplier to any increase in size.
+   */
+   public rangeBetweenFractionsByCount(fraction0: number, fraction1: number, count: number, transform?: Transform,
+    extrapolationFactor: number = 0.0): Range3d {
+    const range = Range3d.createNull ();
+    const workPoint = Point3d.create ();
+    range.extendPoint (this.startPoint (workPoint));
+    range.extendPoint (this.endPoint (workPoint));
+    // Evaluate at count fractions (fraction0 + i * fractionStep)
+    const evaluateSteps = (fractionA: number, fractionStep: number, countA: number) => {
+      let f = fractionA;
+      for (let i = 0; i < countA; i++, f += fractionStep){
+        this.fractionToPoint (f, workPoint);
+        if (transform)
+          range.extendTransformedPoint (transform, workPoint);
+        else
+          range.extendPoint (workPoint);
+      }
+    };
+    const interiorCount = count - 2;
+    if (interiorCount > 0){
+      const localFraction0 = 1.0 / (interiorCount + 1);
+      const globalFractionStep = localFraction0 * (fraction1 - fraction0);
+      evaluateSteps (fraction0 + globalFractionStep, globalFractionStep, interiorCount);
+    }
+    if (extrapolationFactor > 0.0){
+      // Evaluate at midpoints.  Where this makes the range larger, apply extrapolationFactor to move it to safer excess value.
+      // same interior step, but shift to interval midpoints:.
+      const baseRange = range.clone ();
+      const interiorCount1 = interiorCount + 1;
+      const localFraction0 = 0.5 / interiorCount1;  // we only evaluate at new midpoints.
+      const globalFractionStep = 2 * localFraction0 * (fraction1 - fraction0); // same as above, but avoids special logic for interiorCount = 0
+      evaluateSteps (fraction0 + globalFractionStep * 0.5, globalFractionStep, interiorCount1);
+      range.extendWhenLarger (baseRange, extrapolationFactor);
+      }
+    return range;
+    }
 
   /**
    *

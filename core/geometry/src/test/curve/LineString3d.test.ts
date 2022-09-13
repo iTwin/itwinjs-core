@@ -492,5 +492,39 @@ describe("LineStringAnnotation", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("RangeAndLengthBetweenFractions", () => {
+    const ck = new Checker();
+    // equidistant points .... all breakpoints are at binary fractions
+    const p0 = Point3d.create(1, 0, 0);
+    const p1 = Point3d.create(2, 0, 0);
+    const p2 = Point3d.create(3, 0, 0);
+    const p3 = Point3d.create(4, 0, 0);
+    const p4 = Point3d.create(5, 0, 0);
+    // as a linestring which will have identical parameterization
+    const linestring = LineString3d.create (p0, p1, p2, p3, p4);
+    const segment = LineSegment3d.create (p0, p4);
+    // const fractions = [0.0, 0.1, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 0.8, 0.95, 1.0];
+    const fractions = [0.0, 0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0];
+    // all all fraction pairs, expect same result from
+    //    lineSegment3d between fractions
+    //    lineString3d between fractions
+    //    lineString3d clonePartial
+    //    lineSegment3d clonePartial
+    for (const f0 of fractions){
+      for (const f1 of fractions){
+        if (f0 !== f1){
+          const partialSegment = segment.clonePartialCurve (f0, f1);
+          const partialString = linestring.clonePartialCurve (f0, f1);
+          ck.testRange3d (partialSegment.range (), segment.rangeBetweenFractions (f0, f1), {title:"segment rangeBetweenFractions", f0, f1});
+          ck.testRange3d (partialString.range (), linestring.rangeBetweenFractions (f0, f1), {title:"Linestring rangeBetweenFractions", f0, f1});
+          ck.testRange3d (partialSegment.range (), partialString.range (), {title: "partial linestring, partial segment range", f0, f1});
+          ck.testCoordinate (partialSegment.curveLength (), segment.curveLengthBetweenFractions (f0, f1), {title:"segment length between fractions", f0, f1});
+          ck.testCoordinate (partialString.curveLength (), linestring.curveLengthBetweenFractions (f0, f1), {title:"linestring length between fractions", f0, f1});
+          ck.testCoordinate (partialSegment.curveLength (), partialString.curveLength (), {title:"partial linestring, partial segment  length", f0, f1});
+          }
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });

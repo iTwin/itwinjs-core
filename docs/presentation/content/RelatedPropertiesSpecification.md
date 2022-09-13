@@ -6,16 +6,18 @@ This specification allows including related instance properties into the content
 
 ## Attributes
 
-| Name                                                                              | Required? | Type                                                                                | Default             |
-| --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------------------- | ------------------- |
-| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md)              |                     |
-| [`instanceFilter`](#attribute-instancefilter)                                     | No        | [ECExpression](./ECExpressions.md#instance-filter)                                  | `""`                |
-| [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                                           | `false`             |
-| [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                               | `"RelatedInstance"` |
-| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`                         | `"*"`               |
-| [`autoExpand`](#attribute-autoexpand)                                             | No        | `boolean`                                                                           | `false`             |
-| [`skipIfDuplicate`](#attribute-skipifduplicate)                                   | No        | `boolean`                                                                           | `false`             |
-| [`nestedRelatedProperties`](#attribute-nestedrelatedproperties)                   | No        | [`RelatedPropertiesSpecification[]`](#related-properties-specification)             | `[]`                |
+| Name                                                                              | Required? | Type                                                                    | Default             |
+| --------------------------------------------------------------------------------- | --------- | ----------------------------------------------------------------------- | ------------------- |
+| [`propertiesSource`](#attribute-propertiessource)                                 | Yes       | [`RelationshipPathSpecification`](../RelationshipPathSpecification.md)  |                     |
+| [`instanceFilter`](#attribute-instancefilter)                                     | No        | [ECExpression](./ECExpressions.md#instance-filter)                      | `""`                |
+| [`handleTargetClassPolymorphically`](#attribute-handletargetclasspolymorphically) | No        | `boolean`                                                               | `false`             |
+| [`relationshipMeaning`](#attribute-relationshipmeaning)                           | No        | `"SameInstance" \| "RelatedInstance"`                                   | `"RelatedInstance"` |
+| [`properties`](#attribute-properties)                                             | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`             | `"*"`               |
+| [`autoExpand`](#attribute-autoexpand)                                             | No        | `boolean`                                                               | `false`             |
+| [`skipIfDuplicate`](#attribute-skipifduplicate)                                   | No        | `boolean`                                                               | `false`             |
+| [`nestedRelatedProperties`](#attribute-nestedrelatedproperties)                   | No        | [`RelatedPropertiesSpecification[]`](#related-properties-specification) | `[]`                |
+| [`relationshipProperties`](#attribute-relationshipproperties)                     | No        | `Array<string \| PropertySpecification> \| "_none_" \| "*"`             | `[]`                |
+| [`forceCreateRelationshipCategory`](#attribute-forcecreaterelationshipcategory)   | No        | `boolean`                                                               | `false`             |
 
 ### Attribute: `propertiesSource`
 
@@ -172,3 +174,40 @@ The attribute allows loading additional related properties that are related to t
 ```
 
 ![Example of using the "nested related properties" attribute](./media/relatedpropertiesspecification-with-nestedrelatedproperties-attribute.png)
+
+### Attribute: `relationshipProperties`
+
+Lists [ECRelationshipClass](../../bis/ec/ec-relationship-class.md) properties that should be included in the content. Only the properties from the last relationship of [`propertiesSource`](#attribute-propertiessource) path are accessible. In addition, a couple of special values are allowed:
+
+- `"_none_"` means none of the relationship properties should be picked up.
+- `"*"` means all relationship properties should be picked up.
+
+|                   |                                                             |
+| ----------------- | ----------------------------------------------------------- |
+| **Type**          | `Array<string \| PropertySpecification> \| "_none_" \| "*"` |
+| **Is Required**   | No                                                          |
+| **Default Value** | `[]`                                                        |
+
+```ts
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.RelationshipProperties.Ruleset]]
+```
+
+![Example of using the "relationship properties" attribute](./media/relatedpropertiesspecification-with-relationshipproperties-attribute.png)
+
+### Attribute: `forceCreateRelationshipCategory`
+
+Specifies whether a relationship category should be created regardless of whether any relationship properties were included.
+
+|                   |           |
+| ----------------- | --------- |
+| **Type**          | `boolean` |
+| **Is Required**   | No        |
+| **Default Value** | `false`   |
+
+```ts
+[[include:Presentation.Content.Customization.RelatedPropertiesSpecification.ForceCreateRelationshipCategory.Ruleset]]
+```
+
+| `forceCreateRelationshipCategory: false`                                                                                                                                               | `forceCreateRelationshipCategory: true`                                                                                                                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| ![Example of using the "force create relationship category" attribute set to "false"](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute-false.png) | ![Example of using the "force create relationship category" attribute set to "true"](./media/relatedpropertiesspecification-with-forcecreaterelationshipcategory-attribute-true.png) |

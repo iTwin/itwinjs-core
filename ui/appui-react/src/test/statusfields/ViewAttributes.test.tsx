@@ -16,7 +16,7 @@ import { WidgetDef } from "../../appui-react/widgets/WidgetDef";
 import TestUtils, { mount } from "../TestUtils";
 
 [true, false].forEach((withDeprecated) =>{
-  const testType = withDeprecated ? " (with deprecated openWidget props)" : "";
+  const testType = withDeprecated ? " (with deprecated StatusFields props)" : "";
 
   describe(`ViewAttributes${testType}`, () => {
     class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -28,7 +28,7 @@ import TestUtils, { mount } from "../TestUtils";
       public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
         return (
           <>
-            <ViewAttributesStatusField isInFooterMode={isInFooterMode} {...(withDeprecated ? {onOpenWidget, openWidget} : {})} />
+            <ViewAttributesStatusField {...(withDeprecated ? {isInFooterMode, onOpenWidget, openWidget} : {})} />
           </>
         );
       }
@@ -56,13 +56,13 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("should render", () => {
       mount(<Provider store={TestUtils.store}>
-        <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+        <StatusBar widgetControl={widgetControl} />
       </Provider>);
     });
 
     it("should open/close on click", () => {
       const wrapper = mount(<Provider store={TestUtils.store}>
-        <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+        <StatusBar widgetControl={widgetControl} />
       </Provider>);
 
       // Simulate a click to open the pop-up dialog
@@ -77,7 +77,7 @@ import TestUtils, { mount } from "../TestUtils";
 
     it("should process Checkbox clicks", () => {
       const wrapper = mount(<Provider store={TestUtils.store}>
-        <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+        <StatusBar widgetControl={widgetControl} />
       </Provider>);
 
       // Simulate a click to open the pop-up dialog

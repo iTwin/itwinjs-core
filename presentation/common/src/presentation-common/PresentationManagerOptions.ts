@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Id64String } from "@itwin/core-bentley";
+import { BeEvent, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SelectionInfo } from "./content/Descriptor";
 import { FieldDescriptor } from "./content/Fields";
@@ -267,3 +267,12 @@ export type Prioritized<TOptions extends {}> = TOptions & {
 export function isSingleElementPropertiesRequestOptions<TIModel>(options: ElementPropertiesRequestOptions<TIModel>): options is SingleElementPropertiesRequestOptions<TIModel> {
   return (options as SingleElementPropertiesRequestOptions<TIModel>).elementId !== undefined;
 }
+
+/**
+ * A wrapper type that injects cancelEvent into supplied type.
+ * @public
+ */
+export type WithCancelEvent<TOptions extends {}> = TOptions & {
+  /** Event which is triggered when the request is canceled */
+  cancelEvent?: BeEvent<() => void>;
+};

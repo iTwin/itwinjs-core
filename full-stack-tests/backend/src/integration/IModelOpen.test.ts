@@ -11,6 +11,8 @@ import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 describe("IModelOpen", () => {
   let accessToken: AccessToken;
   let testIModelId: GuidString;

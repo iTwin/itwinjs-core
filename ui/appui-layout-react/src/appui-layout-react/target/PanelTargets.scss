@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+.nz-target-panelTargets {
+  $offset: 0.75em;
+
+  position: absolute;
+  justify-content: center;
+
+  &.nz-wide {
+    gap: 6em;
+  }
+
+  &.nz-left,
+  &.nz-right {
+    grid-row: 2/3;
+    height: 100%;
+  }
+
+  &.nz-left {
+    grid-column: 1;
+    left: $offset;
+  }
+
+  &.nz-right {
+    grid-column: 3;
+    right: $offset;
+  }
+
+  &.nz-top,
+  &.nz-bottom {
+    grid-column: 2/3;
+    width: 100%;
+
+    &.nz-span {
+      grid-column: 1/4;
+    }
+  }
+
+  &.nz-top {
+    grid-row: 1;
+    top: $offset;
+  }
+
+  &.nz-bottom {
+    grid-row: 3;
+    bottom: $offset;
+  }
+}

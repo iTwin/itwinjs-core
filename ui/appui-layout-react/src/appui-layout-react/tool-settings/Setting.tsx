@@ -13,7 +13,7 @@ import { CommonProps, useResizeObserver } from "@itwin/core-react";
 import { useToolSettingsEntry } from "./Docked";
 
 /** Properties of [[ToolSetting]] component.
- * @internal future
+ * @internal
  */
 export interface ToolSettingProps extends CommonProps {
   /** Tool setting content. */
@@ -21,7 +21,7 @@ export interface ToolSettingProps extends CommonProps {
 }
 
 /** Used in a [[DockedToolSettings]] component to display a setting.
- * @internal future
+ * @internal
  */
 export function DockedToolSetting(props: ToolSettingProps) {
   const { onResize } = useToolSettingsEntry();

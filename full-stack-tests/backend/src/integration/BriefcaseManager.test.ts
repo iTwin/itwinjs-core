@@ -12,6 +12,8 @@ import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefc
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+
 // Configuration needed:
 //    IMJS_TEST_REGULAR_USER_NAME
 //    IMJS_TEST_REGULAR_USER_PASSWORD

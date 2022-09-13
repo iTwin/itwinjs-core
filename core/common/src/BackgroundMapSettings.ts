@@ -52,9 +52,9 @@ export interface BackgroundMapProps {
    */
   planarClipMask?: PlanarClipMaskProps;
 
-  /** @see [[DeprecatedBackgroundMapProps.providerName]]. */
+  /** See [[DeprecatedBackgroundMapProps.providerName]]. */
   providerName?: never;
-  /** @see [[DeprecatedBackgroundMapProps.providerData]]. */
+  /** See [[DeprecatedBackgroundMapProps.providerData]]. */
   providerData?: never;
 }
 

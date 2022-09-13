@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { assert, expect } from "chai";
 import { Base64 } from "js-base64";
 import * as path from "path";
@@ -32,8 +31,9 @@ import {
 } from "../../core-backend";
 import { BriefcaseDb } from "../../IModelDb";
 import { HubMock } from "../../HubMock";
-import { DisableNativeAssertions, IModelTestUtils } from "../index";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { DisableNativeAssertions } from "../TestUtils";
 
 // spell-checker: disable
 
@@ -305,14 +305,14 @@ describe("iModel", () => {
     const testMaterialName = "test material name";
     const testPaletteName = "test palette name";
     const testDescription = "test description";
-    const color = [25, 32, 9];
-    const specularColor = [99, 255, 1];
+    const color = [0.3, 0.7, 0.8];
+    const specularColor = [0.1, 1, 0];
     const finish = 0.4;
     const transmit = 0.1;
     const diffuse = 0.24;
     const specular = 0.9;
     const reflect = 0.3;
-    const reflectColor = [255, 0, 127];
+    const reflectColor = [1, 0, 0.5];
     /* eslint-disable @typescript-eslint/naming-convention */
     const textureMapProps: TextureMapProps = {
       pattern_angle: 3.0,
@@ -375,7 +375,7 @@ describe("iModel", () => {
     expect(patternMap.TextureId).to.equal(textureMapProps.TextureId);
   });
 
-  it.skip("attempt to apply material to new element in imodel5", () => {
+  it("attempt to apply material to new element in imodel5", () => {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
@@ -478,6 +478,7 @@ describe("iModel", () => {
     const styleId = imodel2.elements.insertElement(props);
     let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
+    expect(style.code.spec).equal(imodel2.codeSpecs.getByName(BisCodeSpec.displayStyle).id);
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
@@ -944,7 +945,7 @@ describe("iModel", () => {
     const categoryId = SpatialCategory.insert(imodel4, IModel.dictionaryId, "MyTestCategory", new SubCategoryAppearance());
     const category = imodel4.elements.getElement<SpatialCategory>(categoryId);
     const subCategory = imodel4.elements.getElement<SubCategory>(category.myDefaultSubCategoryId());
-    assert.throws(() => imodel4.elements.deleteElement(categoryId), IModelError);
+    assert.throws(() => imodel4.elements.deleteElement(categoryId), "error deleting element");
     assert.exists(imodel4.elements.getElement(categoryId), "Category deletes should be blocked in native code");
     assert.exists(imodel4.elements.getElement(subCategory.id), "Children should not be deleted if parent delete is blocked");
 
@@ -1945,6 +1946,39 @@ describe("iModel", () => {
     iModel2.close();
   });
 
+  it("should be able to create a snapshot IModel and set geolocation by ECEF with 0,0,0 rotation", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test iTwin" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 0, pitch: 0, roll: 0 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3_000.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
   it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test iTwin" },
@@ -2432,6 +2466,17 @@ describe("iModel", () => {
     });
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
+    const elProps = imodel1.elements.getElementProps({ id: elementId, onlyBaseProperties: true });
+    expect(elProps.userLabel).equal(element.userLabel);
+    expect(elProps.classFullName).equal(SpatialCategory.classFullName);
+    expect(elProps.model).equal(element.model);
+    expect(elProps.code.value).equal(element.code.value);
+    expect(elProps.code.scope).equal(element.code.scope);
+    expect(elProps.code.spec).equal(element.code.spec);
+    expect(elProps.federationGuid).equal(element.federationGuid);
+    expect((elProps as any).isPrivate).undefined;
+    expect((elProps as any).isInstanceOfEntity).undefined;
 
     // update UserLabel to undefined
     element.userLabel = undefined;

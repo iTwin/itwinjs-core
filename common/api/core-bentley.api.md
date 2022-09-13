@@ -4,10 +4,12 @@
 
 ```ts
 
-import { Attributes } from '@opentelemetry/api';
-import { SpanContext } from '@opentelemetry/api';
-import { SpanOptions } from '@opentelemetry/api';
-import { Tracer } from '@opentelemetry/api';
+/// <reference types="node" />
+
+import type { Attributes } from '@opentelemetry/api';
+import type { SpanContext } from '@opentelemetry/api';
+import type { SpanOptions } from '@opentelemetry/api';
+import type { Tracer } from '@opentelemetry/api';
 
 // @beta (undocumented)
 export class AbandonedError extends Error {
@@ -36,7 +38,7 @@ export type AsyncMethodsOf<T> = {
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
-    }
+}
 
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
@@ -92,7 +94,7 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
-    }
+}
 
 // @public
 export enum BentleyLoggerCategory {
@@ -182,7 +184,7 @@ export class ByteStream {
     readBytes(readPos: number, numBytes: number): Uint8Array;
     reset(): void;
     rewind(numBytes: number): boolean;
-    }
+}
 
 // @beta
 export enum ChangeSetStatus {
@@ -517,6 +519,9 @@ export abstract class ErrorCategory extends StatusCategory {
     // (undocumented)
     error: boolean;
 }
+
+// @beta
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;
 
 // @public
 export enum GeoServiceStatus {
@@ -1248,7 +1253,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     get ids(): CompressedId64Set;
     get isEmpty(): boolean;
     reset(ids?: CompressedId64Set): void;
-    }
+}
 
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
@@ -1276,7 +1281,7 @@ export class OneAtATimeAction<T> {
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
-    }
+}
 
 // @public
 export type OnUnexpectedError = (error: any) => void;
@@ -1337,7 +1342,7 @@ export class PerfLogger implements IDisposable {
     constructor(operation: string, metaData?: LoggingMetaData);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1533,7 +1538,7 @@ export class StopWatch {
     reset(): void;
     start(): void;
     stop(): BeDuration;
-    }
+}
 
 // @alpha
 export abstract class SuccessCategory extends StatusCategory {
@@ -1562,7 +1567,7 @@ export class UnexpectedErrors {
     static readonly reThrowDeferred: (e: any) => NodeJS.Timeout;
     static readonly reThrowImmediate: (e: any) => never;
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
-    }
+}
 
 // @public
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
@@ -1589,7 +1594,6 @@ export interface YieldManagerOptions {
     // (undocumented)
     iterationsBeforeYield?: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

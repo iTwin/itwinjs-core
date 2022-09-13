@@ -33,7 +33,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 
 // @beta (undocumented)
-export type AnyEnumerator = Enumerator<string | number>;
+export type AnyEnumerator = Enumerator_2<string | number>;
 
 // @beta (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
@@ -96,15 +96,19 @@ export class Constant extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(constantProps: ConstantProps): Promise<void>;
     // (undocumented)
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -474,7 +478,7 @@ export class ECVersion {
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
-    }
+}
 
 // @beta
 export class EntityClass extends ECClass {
@@ -527,9 +531,9 @@ export class Enumeration extends SchemaItem {
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
     fromJSONSync(enumerationProps: EnumerationProps): void;
-    getEnumerator(value: string): Enumerator<string> | undefined;
+    getEnumerator(value: string): Enumerator_2<string> | undefined;
     // (undocumented)
-    getEnumerator(value: number): Enumerator<number> | undefined;
+    getEnumerator(value: number): Enumerator_2<number> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     get isInt(): boolean;
@@ -590,7 +594,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 // @beta (undocumented)
-export interface Enumerator<T> {
+interface Enumerator_2<T> {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -600,6 +604,7 @@ export interface Enumerator<T> {
     // (undocumented)
     readonly value: T;
 }
+export { Enumerator_2 as Enumerator }
 
 // @beta (undocumented)
 export interface EnumeratorProps {
@@ -1669,7 +1674,7 @@ export class SchemaCache implements ISchemaLocater {
     getSchemaItems(): IterableIterator<SchemaItem>;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
@@ -1694,18 +1699,18 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
     // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+}
 
 // @beta
 export class SchemaGraph {
     constructor(schema: Schema);
     detectCycles(): ReferenceCycle[] | undefined;
-    }
+}
 
 // @internal
 export class SchemaGraphUtil {
     static buildDependencyOrderedSchemaList(insertSchema: Schema, schemas?: Schema[]): Schema[];
-    }
+}
 
 // @beta
 export abstract class SchemaItem {
@@ -1824,6 +1829,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1857,6 +1869,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
@@ -1912,12 +1931,15 @@ export interface SchemaProps {
     readonly version: string;
 }
 
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
+
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
-    }
+}
 
 // @beta (undocumented)
 export interface SchemaReferenceProps {
@@ -1935,13 +1957,13 @@ export class SchemaUnitProvider implements UnitsProvider {
     getAlternateDisplayLabels(unitName: string): Array<string>;
     getConversion(fromUnit: UnitProps_2, toUnit: UnitProps_2): Promise<UnitConversion_2>;
     getUnitsByFamily(phenomenon: string): Promise<Array<UnitProps_2>>;
-    }
+}
 
 // @internal
 export class SchemaWalker {
     constructor(visitor: ISchemaPartVisitor);
     traverseSchema<T extends Schema>(schema: T): Promise<T>;
-    }
+}
 
 // @beta (undocumented)
 export enum StrengthDirection {
@@ -2022,21 +2044,27 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(unitProps: UnitProps): Promise<void>;
     // (undocumented)
     fromJSONSync(unitProps: UnitProps): void;
+    // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
+    get hasOffset(): boolean;
     // @alpha (undocumented)
     static isUnit(object: any): object is Unit;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get offset(): number;
     // (undocumented)
-    protected _offset: number;
+    protected _offset?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -2079,7 +2107,7 @@ export class UnitConversion {
 export class UnitConverter {
     constructor(_context: SchemaContext);
     calculateConversion(fromUnit: string, toUnit: string): Promise<UnitConversion>;
-    }
+}
 
 // @beta (undocumented)
 export interface UnitProps extends SchemaItemProps {
@@ -2166,8 +2194,7 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): UnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
-    }
-
+}
 
 // (No @packageDocumentation comment for this package)
 

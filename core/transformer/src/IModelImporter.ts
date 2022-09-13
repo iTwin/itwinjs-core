@@ -36,7 +36,7 @@ export interface IModelImportOptions {
    * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
-  /** @see [IModelTransformOptions]($transformer) */
+  /** See [IModelTransformOptions]($transformer) */
   preserveElementIdsForFiltering?: boolean;
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
    * @default false
@@ -73,7 +73,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
-   * @see [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
+   * See [IModelTransformOptions.preserveElementIdsForFiltering]($transformer)
    * @deprecated Use [[IModelImporter.options.preserveElementIdsForFiltering]] instead
    */
   public get preserveElementIdsForFiltering(): boolean {
@@ -84,7 +84,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
   }
 
   /**
-   * @see [[IModelImportOptions.simplifyElementGeometry]]
+   * See [[IModelImportOptions.simplifyElementGeometry]]
    * @deprecated Use [[IModelImporter.options.simplifyElementGeometry]] instead
    */
   public get simplifyElementGeometry(): boolean {
@@ -270,6 +270,20 @@ export class IModelImporter implements Required<IModelImportOptions> {
       return;
     }
     this.onDeleteElement(elementId);
+  }
+
+  /** Delete the specified Model from the target iModel.
+   * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteModel`.
+   */
+  protected onDeleteModel(modelId: Id64String): void {
+    this.targetDb.models.deleteModel(modelId);
+    Logger.logInfo(loggerCategory, `Deleted model ${modelId}`);
+    this.trackProgress();
+  }
+
+  /** Delete the specified Model from the target iModel. */
+  public deleteModel(modelId: Id64String): void {
+    this.onDeleteModel(modelId);
   }
 
   /** Format an Element for the Logger. */

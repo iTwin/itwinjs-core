@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import { GrowableXYArray } from "../../core-geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -29,7 +30,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
   it("SizeChanges", () => {
     const ck = new Checker();
     const arr = new GrowableFloat64Array();
-    arr.ensureCapacity(16);
+    arr.ensureCapacity(16, false);
     const b = 5.4;
     const c = 12.9;
     ck.testExactNumber(arr.capacity(), 16);
@@ -714,5 +715,182 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("GrowableArray", () => {
+  it("growthFactor", () => {
+    const ck = new Checker();
+
+    // extend array types so we can cover protected copyData()
+    class MyGrowableBlockedArray extends GrowableBlockedArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
+    class MyGrowableFloat64Array extends GrowableFloat64Array { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
+    class MyGrowableXYZArray extends GrowableXYZArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
+    class MyGrowableXYArray extends GrowableXYArray { public callCopyData(source: Float64Array | number[], sourceCount?: number | undefined, destOffset?: number | undefined): {count: number, offset: number} { return this.copyData(source, sourceCount, destOffset); }}
+
+    // NOTE: copyData does not increase number of blocks/floats/points in use!
+    const coverCopyData = (array: MyGrowableBlockedArray | MyGrowableFloat64Array | MyGrowableXYZArray | MyGrowableXYArray) => {
+      const copyValues: number[] = [1,2,3,4,5,6,7,8,9,10,11];
+      const a1 = new Float64Array(copyValues);
+      const args: ((number | undefined)[])[] = [[undefined, undefined], [100, -1], [0, 100], [5, 58], [100, 7]];  // sourceCount, destOffset
+      for (let i = 0; i < args.length; ++i) {
+        const myCopyValues = copyValues.map((val) => (i + 1) * val);  // copy different values each iteration
+        let out = array.callCopyData(myCopyValues, args[i][0], args[i][1]);
+        compareContents(array, out.offset, myCopyValues, 0, out.count);
+        out = array.callCopyData(a1, args[i][0], args[i][1]);
+        compareContents(array, out.offset, copyValues, 0, out.count);
+      }
+    };
+
+    // Units of count and offsets are blocks/floats/points
+    const compareContents = (a0: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, offset0: number, a1: number[] | GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, offset1: number, count: number): boolean => {
+      if (count <= 0)
+        return true;
+      // handle a1:number[] by constructing a growable array of same type as a0, and recursing
+      if (Array.isArray(a1)) {
+        let a2: typeof a0;
+        if (!ck.testTrue(count * getStructSize(a0) <= a1.length))
+          return false;
+        if (a0 instanceof GrowableBlockedArray) {
+          a2 = new GrowableBlockedArray(a0.numPerBlock);
+          for (let iBlock = 0; iBlock < count; ++iBlock)
+            a2.addBlock(a1.slice(iBlock * a0.numPerBlock));
+        } else if (a0 instanceof GrowableFloat64Array) {
+          a2 = new GrowableFloat64Array();
+          a2.pushArray(a1);
+        } else if (a0 instanceof GrowableXYArray) {
+          a2 = new GrowableXYArray(count);
+          for (let iPoint = 0; iPoint < count; ++iPoint)
+            a2.pushXY(a1[iPoint * 2], a1[iPoint * 2 + 1]);
+        } else if (a0 instanceof GrowableXYZArray) {
+          a2 = new GrowableXYZArray(count);
+          for (let iPoint = 0; iPoint < count; ++iPoint)
+            a2.pushXYZ(a1[iPoint * 3], a1[iPoint * 3 + 1], a1[iPoint * 3 + 2]);
+        } else {
+          ck.testTrue(false, "Shouldn't get here");
+          return false;
+        }
+        return compareContents(a0, offset0, a2, offset1, count);
+      }
+      // handle arrays of same type
+      if (!ck.testTrue(count <= getCapacity(a0) && count <= getCapacity(a1)))
+        return false;
+      if (a0 instanceof GrowableBlockedArray && a1 instanceof GrowableBlockedArray) {
+        if (!ck.testTrue(a0.numPerBlock === a1.numPerBlock))
+          return false;
+        for (let iBlock = 0; iBlock < count ; ++iBlock)
+          for (let iComponent = 0; iComponent < a0.numPerBlock; ++iComponent)
+            if (!ck.testExactNumber(a0.component(offset0 + iBlock, iComponent), a1.component(offset1 + iBlock, iComponent), "Original array contents preserved"))
+              return false;
+      } else if (a0 instanceof GrowableFloat64Array && a1 instanceof GrowableFloat64Array) {
+        for (let i = 0; i < count; ++i)
+          if (!ck.testExactNumber(a0.atUncheckedIndex(offset0 + i), a1.atUncheckedIndex(offset1 + i), "Original array contents preserved"))
+            return false;
+      } else if (a0 instanceof GrowableXYArray && a1 instanceof GrowableXYArray) {
+        for (let iPoint = 0; iPoint < count; ++iPoint)
+          for(let iComponent = 0; iComponent < 2; ++iComponent)
+            if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
+              return false;
+      } else if (a0 instanceof GrowableXYZArray && a1 instanceof GrowableXYZArray) {
+        for (let iPoint = 0; iPoint < count; ++iPoint)
+          for(let iComponent = 0; iComponent < 3; ++iComponent)
+            if (!ck.testExactNumber(a0.component(offset0 + iPoint, iComponent), a1.component(offset1 + iPoint, iComponent), "Original array contents preserved"))
+              return false;
+      } else {
+        ck.testTrue(false, "Shouldn't get here");
+        return false;
+      }
+      return true;
+    };
+
+    const getCapacity = (array: number[] | GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray): number => {
+      if (array instanceof GrowableBlockedArray)
+        return array.blockCapacity();
+      if (array instanceof GrowableFloat64Array)
+        return array.capacity();
+      if (array instanceof GrowableXYArray)
+        return array.float64Data().length / 2;
+      if (array instanceof GrowableXYZArray)
+        return array.float64Data().length / 3;
+      return array.length;
+    };
+
+    const getStructSize = (array: number[] | GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray): number => {
+      if (array instanceof GrowableBlockedArray)
+        return array.numPerBlock;
+      if (array instanceof GrowableFloat64Array)
+        return 1;
+      if (array instanceof GrowableXYArray)
+        return 2;
+      if (array instanceof GrowableXYZArray)
+        return 3;
+      return 1;
+    };
+
+    const ensureCapacity = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, newCapacity: number, applyGrowthFactor: boolean) => {
+      if (array instanceof GrowableBlockedArray)
+        array.ensureBlockCapacity(newCapacity, applyGrowthFactor);
+      else
+        array.ensureCapacity(newCapacity, applyGrowthFactor);
+    };
+
+    /** ASSUME: array was constructed with growthFactor */
+    const testGrowthFactor = (array: GrowableBlockedArray | GrowableFloat64Array | GrowableXYZArray | GrowableXYArray, growthFactor: number | undefined) => {
+      const caps1: number[] = [4,7,15,33];
+      for (const newCap of caps1) {
+        const oldArray = array.clone();   // in general, preserves only active structs
+        const oldCap = getCapacity(array);
+        ensureCapacity(array, newCap, false);
+        if (ck.testExactNumber(Math.max(oldCap, newCap), getCapacity(array), "ensureCapacity without growthFactor yields expected capacity")) {
+          if (!compareContents(oldArray, 0, array, 0, oldArray.length))
+            return;
+        }
+      }
+      if (growthFactor === undefined || growthFactor < 1)
+        growthFactor = 1.5;   // the default growth factor in growable arrays
+
+      const caps2: number[] = [30,33,40,57];
+      for (const newCap of caps2) {
+        const oldArray = array.clone();   // in general, preserves only active structs
+        const oldCap = getCapacity(array);
+        ensureCapacity(array, newCap, true);
+        if (ck.testExactNumber(newCap <= oldCap ? oldCap : Math.trunc(growthFactor * newCap), getCapacity(array), "ensureCapacity with growthFactor yields expected capacity")) {
+          if (!compareContents(oldArray, 0, array, 0, oldArray.length))
+            return;
+        }
+      }
+    };
+
+    const initialCapacity = undefined;
+    const growthFactors: (number | undefined)[] = [undefined, -0.5, 0, .6, 1, 1.3, 1.5, 2, 2.7, 3];
+    const values: number[] = [-18, 3.14159265358979323, 2.718281828459045, 4.669201609102990];
+    for (const growthFactor of growthFactors) {
+      const a0 = new MyGrowableBlockedArray(5, initialCapacity, growthFactor);
+      a0.addBlock(values);
+      testGrowthFactor(a0, growthFactor);
+      coverCopyData(a0);
+
+      const a1 = new MyGrowableFloat64Array(initialCapacity, growthFactor);
+      a1.pushArray(values);
+      testGrowthFactor(a1, growthFactor);
+      coverCopyData(a1);
+      a1.resize(a1.length + 1, 0);
+      ck.testExactNumber(a1.back(), 0, "Resize > length fills with zero");
+
+      const a2 = new MyGrowableXYArray(initialCapacity, growthFactor);
+      for (const val of values) a2.pushXY(val, val);
+      testGrowthFactor(a2, growthFactor);
+      coverCopyData(a2);
+      a2.resize(a2.length + 1, true);
+      ck.testPoint2d(a2.back()!, Point2d.createZero(), "Resize > length fills with zero");
+
+      const a3 = new MyGrowableXYZArray(initialCapacity, growthFactor);
+      for (const val of values) a3.pushXYZ(val, val, val);
+      testGrowthFactor(a3, growthFactor);
+      coverCopyData(a3);
+      a3.resize(a3.length + 1, true);
+      ck.testPoint3d(a3.back()!, Point3d.createZero(), "Resize > length fills with zero");
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

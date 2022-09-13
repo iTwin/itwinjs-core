@@ -5,7 +5,7 @@ beta;AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | Relat
 beta;AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps
 beta;AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator
 beta;AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty
-beta;AnyEnumerator = Enumerator
+beta;AnyEnumerator = Enumerator_2
 beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
 beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
 beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
@@ -42,7 +42,6 @@ beta;EnumerationArrayProperty
 beta;EnumerationProperty 
 beta;EnumerationPropertyProps 
 beta;EnumerationProps 
-beta;Enumerator
 beta;EnumeratorProps
 beta;Format 
 beta;FormatProps 
@@ -119,12 +118,15 @@ beta;SchemaItemProps
 beta;SchemaItemType
 beta;schemaItemTypeToString(value: SchemaItemType): string
 internal;schemaItemTypeToXmlString(value: SchemaItemType): string
+alpha;SchemaJsonLocater 
 beta;SchemaKey
 beta;SchemaKeyProps
+alpha;SchemaLoader
 beta;SchemaMap 
 beta;SchemaMatchType
 beta;SchemaPartVisitorDelegate
 beta;SchemaProps
+alpha;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
 internal;SchemaReadHelper
 beta;SchemaReferenceProps
 alpha;SchemaUnitProvider 

@@ -98,3 +98,7 @@ export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P
  */
 export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
+/** Extracts a subset of literals `U` from a union of literals `T` in a type-safe way.
+ * @beta
+ */
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;

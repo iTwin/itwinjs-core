@@ -14,6 +14,7 @@ The supported release tags are:
 - `@internal`
 - `@deprecated`
 - `@extensions`
+- `@preview`
 
 Details about each tag are below.
 
@@ -62,7 +63,13 @@ More advanced linking syntax should not be used as it would distract in the lint
 
 The `@extensions` tag indicates that an API item is officially included in the `@twin/core-extension` API and can be used to develop *iTwin.js Extensions*.
 
-> Note: only *public* API items can have an `@extensions` tag (there is an lint rule to check).
+> Note: only *public* or *preview* API items can have an `@extensions` tag (there is an lint rule to check).
+
+### @preview
+
+The `@preview` tag indicates that an API item is officially included in the `@twin/core-extension` API **in preview** and can be used to develop *iTwin.js Extensions* but may be subject to change.
+
+> Note: only *extensions* API items can have an `@preview` tag (it is meaningless otherwise).
 
 ### Release Tag Summary
 
@@ -76,6 +83,7 @@ Release Tag | Affects Package Semantic Version | Included in Public SDK Document
 `@internal` | Yes | No
 `@deprecated` | Yes | Yes
 `@extensions` | No | -
+`@preview` | No | -
 
 ## API Items
 
@@ -178,6 +186,15 @@ Likewise, *deprecated* API items should include documentation that indicates wha
 ```ts
 /** Sample description of an exported API item.
  * @public
+ * @extensions
+ */
+```
+
+*Preview* API tag should be on its own line before the @extensions tag:
+
+```ts
+/** Sample description of an exported API item.
+ * @preview
  * @extensions
  */
 ```

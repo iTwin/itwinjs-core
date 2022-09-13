@@ -20,19 +20,19 @@ import { SubCategoryAppearance } from "./SubCategoryAppearance";
  * @public
  */
 export class SubCategoryOverride {
-  /** @see [[SubCategoryAppearance.color]] */
+  /** See [[SubCategoryAppearance.color]] */
   public readonly color?: ColorDef;
-  /** @see [[SubCategoryAppearance.invisible]] */
+  /** See [[SubCategoryAppearance.invisible]] */
   public readonly invisible?: boolean;
-  /** @see [[SubCategoryAppearance.weight]] */
+  /** See [[SubCategoryAppearance.weight]] */
   public readonly weight?: number;
   /** @internal Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
   public readonly style?: Id64String;
-  /** @see [[SubCategoryAppearance.priority]] */
+  /** See [[SubCategoryAppearance.priority]] */
   public readonly priority?: number;
-  /** @see [[SubCategoryAppearance.materialId]] */
+  /** See [[SubCategoryAppearance.materialId]] */
   public readonly material?: Id64String;
-  /** @see [[SubCategoryAppearance.transparency]] */
+  /** See [[SubCategoryAppearance.transparency]] */
   public readonly transparency?: number;
 
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */

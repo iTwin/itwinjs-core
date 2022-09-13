@@ -13,7 +13,8 @@ import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { TabState } from "../state/TabState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
@@ -45,7 +46,7 @@ export interface WidgetProps extends CommonProps {
 
 /** @internal */
 export interface WidgetComponent {
-  measure: () => SizeProps;
+  measure: () => Rectangle;
 }
 
 /** @internal */
@@ -60,7 +61,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       const activeTab = useActiveTab();
       const elementRef = React.useRef<HTMLDivElement>(null);
       const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
-      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition) => {
+      const onDragStart = React.useCallback<NonNullable<UseDragWidgetArgs["onDragStart"]>>((updateId, initialPointerPosition, pointerPosition) => {
         assert(!!elementRef.current);
         if (floatingWidgetId !== undefined)
           return;
@@ -82,6 +83,9 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
           const offset = initialPointerPosition.x - bounds.right + 20;
           bounds = bounds.offsetX(offset);
         }
+
+        const dragOffset = initialPointerPosition.getOffsetTo(pointerPosition);
+        bounds = bounds.offset(dragOffset);
 
         // Adjust bounds to be relative to 9z origin
         bounds = bounds.offset({ x: -nzBounds.left, y: -nzBounds.top });
@@ -116,7 +120,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
       }, [dispatch, floatingWidgetId]);
       const measure = React.useCallback<WidgetContextArgs["measure"]>(() => {
         const bounds = elementRef.current!.getBoundingClientRect();
-        return bounds;
+        return Rectangle.create(bounds);
       }, []);
       const widgetContextValue = React.useMemo<WidgetContextArgs>(() => ({
         measure,
@@ -153,12 +157,12 @@ export const WidgetStateContext = React.createContext<WidgetState | undefined>(u
 WidgetStateContext.displayName = "nz:WidgetStateContext";
 
 /** @internal */
-export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
+export const ActiveTabIdContext = React.createContext<TabState["id"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
 export interface WidgetContextArgs {
-  measure: () => SizeProps;
+  measure: () => Rectangle;
 }
 
 /** @internal */
@@ -180,9 +184,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 
 /** @internal */
 export function useActiveTab(): TabState | undefined {
-  const widget = React.useContext(WidgetStateContext);
+  const tabId = React.useContext(ActiveTabIdContext);
   const tabs = React.useContext(TabsStateContext);
-  assert(!!widget);
-  const tabId = widget.activeTabId;
   return tabs[tabId];
 }

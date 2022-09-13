@@ -44,6 +44,20 @@ Performance tests on iOS have more restrictions than performance tests run on ot
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* BRIEFCASE_CACHE_LOCATION
+  * iModelHost.cacheDir location
+* Authentication
+  * [Headless](https://github.com/iTwin/auth-clients/tree/main/packages/oidc-signin-tool)
+    * IMJS_OIDC_HEADLESS (any value, as long as it's set)
+    * IMJS_OIDC_CLIENT_ID
+    * IMJS_OIDC_REDIRECT_URI
+    * IMJS_OIDC_SCOPE
+    * IMJS_OIDC_EMAIL
+    * IMJS_OIDC_PASSWORD
+  * [Browser](https://github.com/iTwin/auth-clients/tree/main/packages/browser)/[Electron](https://github.com/iTwin/auth-clients/tree/main/packages/electron):
+    * IMJS_OIDC_CLIENT_ID
+    * IMJS_OIDC_SCOPE
+    * IMJS_OIDC_REDIRECT_URI
 
 ## Configuration json file
 
@@ -52,7 +66,6 @@ The default configuration file allows you to specify the following:
 * where you want to output the files created by the test program
 * what you want the test file(s) created to be named
 * where the imodels you want to use are located (i.e. using a local file path or using iModelHub)
-* if you want to force the test to sign in to iModelHub when the tests first start (i.e. set "signIn" to true to force user to sign in)
 * if you want to save a minimized version of the timing data (the minimized version only contains timing data for the 'CPU Total Time', 'GPU Total Time', 'Bound By', 'Effective Total Time', 'Effective FPS', 'Actual Total TIme', & 'Actual FPS'); the 'minimize' flag defaults to false
 * if you want to use the original csv format (the one described in this README) or the new one; 'csvFormat' defaults to "original"
 * what size you want the view screen to be
@@ -137,7 +150,7 @@ Specifying where the imodels are located:
 If given the option of using a local file path or using iModelHub, the program will first attempt to access the imodel using the local file path; if that fails, the program will then attempt to use the iModelHub location to access the imodel.
 
 * To specify a local file path to use for accessing an imodel, set the "iModelLocation" setting in the json configuration file (ex. "iModelLocation": "D:/models/").
-* To specify an iModelHub project to use, set the "iModelHubProject" setting in the json configuration file (ex. "iModelHubProject": "DisplayPerformanceTest").
+* To specify a remote iModel, set `iTwinId` and `iModelId`. External saved views will be downloaded as well.
 
 The json config file allows you to specify settings for the entire test run, for a specific model, and for a specific test performed on a given model. Priority for settings will be given first to those for a specific test, then for a specific model, and finally for the entire test run. For example: if transparency is set to true for the entire test run, but a specific test changes transparency to false, that specific test will NOT have transparency even though the rest of the tests run WILL have transparency.
 

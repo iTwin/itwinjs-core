@@ -1,0 +1,58 @@
+# For pull requests that only modify documentation, individual CI events may forego running.
+# (This is done by each action/pipeline/event's config.) The itwinjs-core repo requires some
+# of those events to have finished successfully or neutrally to allow a pull request to be
+# merged.
+#
+# This config will fake successful status checks for such events when it detects
+# *only* documentation changes in a pull request.
+#
+# Note: When Azure Pipeline builds (triggered by Azure DevOps webhooks) skip running due to
+# path exclusions, their status checks are set neutral by Azure DevOps. This satisfies
+# GitHub's "required" check and thus these status checks do not need to be faked below. 
+
+name: Skip Check
+
+on:
+  pull_request:
+    branches:
+      - master
+      - release/*
+    paths:
+      - "**.md"
+      - docs/**
+      - .github/CODEOWNERS
+
+jobs:
+  detect-if-skip:
+    name: Detect If Skip
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      # Check for certain paths having been modified
+      - name: Get specific changed files
+        id: changed-files-specific
+        uses: tj-actions/changed-files@v29.0.2    # See https://github.com/marketplace/actions/changed-files
+        with:
+          files: |
+            **/*.md
+            docs/**
+            .github/CODEOWNERS
+
+      # Fake required checks if neccessary
+      - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks
+        if: steps.changed-files-specific.outputs.only_modified == 'true'
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: extract-api
+          conclusion: success
+
+      # Add more status checks below if necessary
+
+      # TEMPLATE
+      # - uses: LouisBrunner/checks-action@v1.3.0
+      #   if: steps.changed-files-specific.outputs.only_modified == 'true'
+      #   with:
+      #     token: ${{ secrets.GITHUB_TOKEN }}
+      #     name: <name-of-any-status-check-to-simulate>
+      #     conclusion: success

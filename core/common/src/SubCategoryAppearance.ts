@@ -148,14 +148,14 @@ export class SubCategoryAppearance {
 /** @public */
 export namespace SubCategoryAppearance { // eslint-disable-line no-redeclare
   /** Properties used to create a SubCategoryAppearance
-   * @see [[SubCategoryAppearance]]
+   * See [[SubCategoryAppearance]]
    */
   export interface Props {
-    /** @see [[SubCategoryAppearance.color]]. Defaults to black. */
+    /** See [[SubCategoryAppearance.color]]. Defaults to black. */
     color?: ColorDefProps;
-    /** @see [[SubCategoryAppearance.fillColor]]. Defaults to [[SubCategoryAppearance.color]]. */
+    /** See [[SubCategoryAppearance.fillColor]]. Defaults to [[SubCategoryAppearance.color]]. */
     fill?: ColorDefProps;
-    /** @see [[SubCategoryAppearance.invisible]]. Defaults to false. */
+    /** See [[SubCategoryAppearance.invisible]]. Defaults to false. */
     invisible?: boolean;
     /** @internal */
     dontPlot?: boolean;
@@ -163,17 +163,17 @@ export namespace SubCategoryAppearance { // eslint-disable-line no-redeclare
     dontSnap?: boolean;
     /** @internal */
     dontLocate?: boolean;
-    /** @see [[SubCategoryAppearance.weight]]. Defaults to 0. */
+    /** See [[SubCategoryAppearance.weight]]. Defaults to 0. */
     weight?: number;
-    /** @see [[SubCategoryAppearance.styleId]]. Defaults to an invalid ID indicating "no line style". */
+    /** See [[SubCategoryAppearance.styleId]]. Defaults to an invalid ID indicating "no line style". */
     style?: Id64String;
-    /** @see [[SubCategoryAppearance.priority]]. Defaults to 0. */
+    /** See [[SubCategoryAppearance.priority]]. Defaults to 0. */
     priority?: number;
-    /** @see [[SubCategoryAppearance.materialId]]. Defaults to an invalid ID indicating "no material". */
+    /** See [[SubCategoryAppearance.materialId]]. Defaults to an invalid ID indicating "no material". */
     material?: Id64String;
-    /** @see [[SubCategoryAppearance.transparency]]. Defaults to 0. */
+    /** See [[SubCategoryAppearance.transparency]]. Defaults to 0. */
     transp?: number;
-    /** @see [[SubCategoryAppearance.fillTransparency]]. Defaults to [[SubCategoryAppearance.transparency]]. */
+    /** See [[SubCategoryAppearance.fillTransparency]]. Defaults to [[SubCategoryAppearance.transparency]]. */
     transpFill?: number;
   }
 }

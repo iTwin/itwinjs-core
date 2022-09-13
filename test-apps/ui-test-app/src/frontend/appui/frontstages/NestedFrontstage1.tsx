@@ -33,7 +33,6 @@ export class NestedFrontstage1 extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.rotateViewCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         contentManipulationTools={
           <Zone
             widgets={[

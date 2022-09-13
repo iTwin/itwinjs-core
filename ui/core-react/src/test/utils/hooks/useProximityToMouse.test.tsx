@@ -2,63 +2,47 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import userEvent from "@testing-library/user-event";
 import {
   calculateBackdropFilterBlur, calculateBoxShadowOpacity, calculateProximityScale, calculateToolbarOpacity,
   getToolbarBackdropFilter, getToolbarBackgroundColor, getToolbarBoxShadow,
   TOOLBAR_BACKDROP_FILTER_BLUR_DEFAULT, TOOLBAR_BOX_SHADOW_OPACITY_DEFAULT, TOOLBAR_OPACITY_DEFAULT,
   useProximityToMouse, WidgetElementSet,
 } from "../../../core-react/utils/hooks/useProximityToMouse";
-import { TestUtils } from "../../TestUtils";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const ProximityToMouse = (props: { children?: (proximity: number) => React.ReactNode }) => {
+const ProximityToMouse = () => {
   const ref = React.useRef<HTMLDivElement>(null);
   const elementSet = new WidgetElementSet();
   elementSet.add(ref);
-  useProximityToMouse(elementSet, true);
+  const scale = useProximityToMouse(elementSet, true);
 
   return (
     <div ref={ref} >
-      {props.children}
+      Scale: {scale}
     </div>
   );
 };
 
 describe("useProximityToMouse", () => {
-  const sandbox = sinon.createSandbox();
 
-  afterEach(() => {
-    sandbox.restore();
-  });
+  it("should trigger useEffect handler processing", async () => {
+    const theUserTo = userEvent.setup();
+    render(<ProximityToMouse />);
 
-  it("should add event listeners", () => {
-    const spy = sandbox.spy(document, "addEventListener");
-    mount(<ProximityToMouse />);
+    await theUserTo.pointer({coords: {x: 50, y: 50, pageX: 50, pageY: 50}});
+    expect(screen.getByText("Scale: 1")).to.exist;
 
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
-  });
+    // Due to this bug https://github.com/testing-library/user-event/issues/1037
+    // I "move" the reference element on top of moving the pointer, as pageX/pageY is always 0;
+    sinon.replace(Element.prototype, "getBoundingClientRect", () => DOMRect.fromRect({ x: 350, y: 350, height: 50, width: 50 }));
 
-  it("should remove event listeners", () => {
-    const spy = sandbox.spy(document, "removeEventListener");
-    const sut = mount(<ProximityToMouse />);
-    sut.unmount();
-
-    spy.calledOnceWithExactly("pointermove", sinon.match.any as any).should.true;
-  });
-
-  it("should trigger useEffect handler processing", () => {
-    const sut = mount(<ProximityToMouse />);
-
-    // trigger useEffect handler processing
-    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 50, pageY: 50 }));
-    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 60, pageY: 60 }));
-    document.dispatchEvent(TestUtils.createBubbledEvent("pointermove", { pageX: 150, pageY: 110 }));
-
-    sut.unmount();
+    await theUserTo.pointer({coords: {x: 0, y: 0, pageX: 0, pageY: 0}});
+    expect(screen.getByText("Scale: 0")).to.exist;
   });
 });
 

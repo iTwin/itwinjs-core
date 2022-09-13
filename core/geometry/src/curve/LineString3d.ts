@@ -713,6 +713,33 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
       return sum;
     }
   }
+/** Compute the range of points between fractional positions on the linestring. */
+public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+  const range = Range3d.create ();
+  if (this.points.length < 1)
+    return range;
+  if (fraction1 < fraction0)
+    return this.rangeBetweenFractions(fraction1, fraction0, transform);
+  const numSegments = this._points.length - 1;
+  const scaledFraction0 = fraction0 * numSegments;
+  const index0 = Math.max(0, Math.floor(scaledFraction0));
+  const localFraction0 = scaledFraction0 - index0;
+  const workPoint = Point3d.create();
+  this._points.interpolate (index0, localFraction0, index0 + 1, workPoint);
+  range.extendPoint (workPoint, transform);
+  if (fraction1 === fraction0)
+    return range; // 1-point range
+  const scaledFraction1 = fraction1 * numSegments;
+  const index1 = Math.min(Math.floor(scaledFraction1), numSegments - 1);
+  const localFraction1 = scaledFraction1 - index1;
+  this._points.interpolate (index1, localFraction1, index1 + 1, workPoint);
+  range.extendPoint (workPoint, transform);
+  for (let i = index0 + 1; i <= index1; i++){
+    this._points.getPoint3dAtUncheckedPointIndex (i, workPoint);
+    range.extendPoint (workPoint, transform);
+  }
+  return range;
+}
   /**
    * * Implementation of `CurvePrimitive.moveSignedDistanceFromFraction`.  (see comments there!)
    * * Find the segment that contains the start fraction
@@ -902,6 +929,31 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         this.addFraction(fraction);
     }
 
+  }
+
+  /** Compress out duplicate points (according to point.isAlmostEqual)
+   */
+   public removeDuplicatePoints(tolerance: number = Geometry.smallMetricDistance) {
+    const n = this._points.length;
+    if (n < 2)
+      return;
+    let n1 = 1;
+    for (let i = 1; i < n; i++){
+      const q = this._points.distanceIndexIndex (i, n1 - 1);
+      if (q !== undefined && q > tolerance){
+        this._points.moveIndexToIndex (i, n1);
+        if (this._fractions !== undefined)
+          this._fractions.setAtUncheckedIndex (n1, this._fractions.atUncheckedIndex(i));
+        if (this._derivatives)
+          this._derivatives.moveIndexToIndex (i, n1);
+          n1++;
+      }
+    }
+    this._points.resize (n1);
+    if (this._fractions)
+      this._fractions.resize (n1);
+    if (this._derivatives)
+      this._derivatives.resize (n1);
   }
 
   /** Append a suitable evaluation of a curve ..

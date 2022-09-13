@@ -16,9 +16,9 @@ import { Gradient } from "./Gradient";
  * @extensions
  */
 export interface AnalysisStyleDisplacementProps {
-  /** @see [[AnalysisStyleDisplacement.channelName]]. */
+  /** See [[AnalysisStyleDisplacement.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleDisplacement.scale]].
+  /** See [[AnalysisStyleDisplacement.scale]].
    * Default value: 1.
    */
   scale?: number;
@@ -68,11 +68,11 @@ export class AnalysisStyleDisplacement {
  * @extensions
  */
 export interface AnalysisStyleThematicProps {
-  /** @see [[AnalysisStyleThematic.channelName]]. */
+  /** See [[AnalysisStyleThematic.channelName]]. */
   channelName: string;
-  /** @see [[AnalysisStyleThematic.range]]. */
+  /** See [[AnalysisStyleThematic.range]]. */
   range: Range1dProps;
-  /** @see [[AnalysisStyleThematic.thematicSettings]].
+  /** See [[AnalysisStyleThematic.thematicSettings]].
    * Default value: [[ThematicGradientSettings.defaults]].
    */
   thematicSettings?: ThematicGradientSettingsProps;
@@ -139,13 +139,13 @@ export class AnalysisStyleThematic {
  * @extensions
  */
 export interface AnalysisStyleProps {
-  /** @see [[AnalysisStyle.displacement]]. */
+  /** See [[AnalysisStyle.displacement]]. */
   displacement?: AnalysisStyleDisplacementProps;
   /** JSON representation of [[AnalysisStyle.thematic]].
    * @note The name "scalar" is used instead of "thematic" for backwards compatibility.
    */
   scalar?: AnalysisStyleThematicProps;
-  /** @see [[AnalysisStyle.normalChannelName]]. */
+  /** See [[AnalysisStyle.normalChannelName]]. */
   normalChannelName?: string;
 }
 

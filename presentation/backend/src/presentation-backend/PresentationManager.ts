@@ -14,19 +14,17 @@ import {
   DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, MultiElementPropertiesRequestOptions, Node,
-  NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
-  SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
+  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
+  Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
-import {
-  bisElementInstanceKeysProcessor, getKeysForContentRequest, getRulesetIdObject, PresentationManagerDetail,
-} from "./PresentationManagerDetail";
+import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, getElementKey } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -208,12 +206,16 @@ export interface PresentationManagerProps {
   /**
    * A list of directories containing application's locale-specific localized
    * string files (in simplified i18next v3 format)
+   *
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   localeDirectories?: string[];
 
   /**
    * Sets the active locale to use when localizing presentation-related
    * strings. It can later be changed through [[PresentationManager.activeLocale]].
+   *
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
    */
   defaultLocale?: string;
 
@@ -296,6 +298,21 @@ export interface PresentationManagerProps {
 
   /** @internal */
   addon?: NativePlatformDefinition;
+
+  /**
+   * Localization function when only backend is used.
+   * @beta
+  */
+  getLocalizedString?: (key: string) => string;
+
+  /**
+   * Parameters for gathering diagnostics at the manager level. When supplied, they're used with every request
+   * made through the manager.
+   *
+   * @see [Diagnostics documentation page]($docs/presentation/advanced/Diagnostics.md)
+   * @beta
+   */
+  diagnostics?: BackendDiagnosticsOptions;
 }
 
 /**
@@ -307,6 +324,13 @@ export interface PresentationManagerProps {
 export class PresentationManager {
   private _props: PresentationManagerProps;
   private _detail: PresentationManagerDetail;
+  private _localizationHelper: LocalizationHelper;
+
+  /**
+   * Get / set active locale used for localizing presentation data
+   * @deprecated Use [[getLocalizedString]] to localize data returned by [[PresentationManager]].
+   */
+  public activeLocale: string | undefined;
 
   /**
    * Creates an instance of PresentationManager.
@@ -315,11 +339,10 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
-  }
+    this.activeLocale = this._props.defaultLocale; // eslint-disable-line deprecation/deprecation
 
-  /** Get / set active locale used for localizing presentation data */
-  public get activeLocale(): string | undefined { return this._detail.activeLocale; }
-  public set activeLocale(value: string | undefined) { this._detail.activeLocale = value; }
+    this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
+  }
 
   /** Get / set active unit system used to format property values with units */
   public get activeUnitSystem(): UnitSystemKey | undefined { return this._detail.activeUnitSystem; }
@@ -370,30 +393,17 @@ export class PresentationManager {
    * Retrieves nodes
    * @public
    */
-  public async getNodes(requestOptions: Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
-    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: parentKey ? NativePlatformRequestTypes.GetChildren : NativePlatformRequestTypes.GetRootNodes,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      nodeKey: parentKey,
-    };
-    return JSON.parse(await this._detail.request(params), Node.listReviver);
+  public async getNodes(requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Node[]> {
+    const nodes = await this._detail.getNodes(requestOptions);
+    return this._localizationHelper.getLocalizedNodes(nodes);
   }
 
   /**
    * Retrieves nodes count
    * @public
    */
-  public async getNodesCount(requestOptions: Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number> {
-    const { rulesetOrId, parentKey, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: parentKey ? NativePlatformRequestTypes.GetChildrenCount : NativePlatformRequestTypes.GetRootNodesCount,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      nodeKey: parentKey,
-    };
-    return JSON.parse(await this._detail.request(params));
+  public async getNodesCount(requestOptions: WithCancelEvent<Prioritized<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+    return this._detail.getNodesCount(requestOptions);
   }
 
   /**
@@ -401,15 +411,8 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getNodePaths(requestOptions: Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    const { rulesetOrId, instancePaths, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetNodePaths,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      paths: instancePaths.map((p) => p.map((s) => InstanceKey.toJSON(s))),
-    };
-    return JSON.parse(await this._detail.request(params), NodePathElement.listReviver);
+  public async getNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+    return this._detail.getNodePaths(requestOptions);
   }
 
   /**
@@ -417,34 +420,20 @@ export class PresentationManager {
    * TODO: Return results in pages
    * @public
    */
-  public async getFilteredNodePaths(requestOptions: Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
-    const { rulesetOrId, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetFilteredNodePaths,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-    };
-    return JSON.parse(await this._detail.request(params), NodePathElement.listReviver);
+  public async getFilteredNodePaths(requestOptions: WithCancelEvent<Prioritized<FilterByTextHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<NodePathElement[]> {
+    return this._detail.getFilteredNodePaths(requestOptions);
   }
 
   /** @beta */
-  public async getContentSources(requestOptions: Prioritized<ContentSourcesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContentSources,
-      rulesetId: "ElementProperties",
-      ...requestOptions,
-    };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
-    };
-    return JSON.parse(await this._detail.request(params), reviver);
+  public async getContentSources(requestOptions: WithCancelEvent<Prioritized<ContentSourcesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<SelectClassInfo[]> {
+    return this._detail.getContentSources(requestOptions);
   }
 
   /**
    * Retrieves the content descriptor which can be used to get content
    * @public
    */
-  public async getContentDescriptor(requestOptions: Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
+  public async getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined> {
     const response = await this._detail.getContentDescriptor(requestOptions);
     const reviver = (key: string, value: any) => key === "" ? Descriptor.fromJSON(value) : value;
     return JSON.parse(response, reviver);
@@ -454,32 +443,19 @@ export class PresentationManager {
    * Retrieves the content set size based on the supplied content descriptor override
    * @public
    */
-  public async getContentSetSize(requestOptions: Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<number> {
-    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContentSetSize,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    return JSON.parse(await this._detail.request(params));
+  public async getContentSetSize(requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<number> {
+    return this._detail.getContentSetSize(requestOptions);
   }
 
   /**
    * Retrieves the content based on the supplied content descriptor override.
    * @public
    */
-  public async getContent(requestOptions: Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
-    const { rulesetOrId, descriptor, ...strippedOptions } = requestOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetContent,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptions,
-      keys: getKeysForContentRequest(requestOptions.keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    return JSON.parse(await this._detail.request(params), Content.reviver);
+  public async getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined> {
+    const content = await this._detail.getContent(requestOptions);
+    if (!content)
+      return undefined;
+    return this._localizationHelper.getLocalizedContent(content);
   }
 
   /**
@@ -488,56 +464,34 @@ export class PresentationManager {
    * @return A promise object that returns either distinct values on success or an error string on error.
    * @public
    */
-  public async getPagedDistinctValues(requestOptions: Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
-    const { rulesetOrId, ...strippedOptions } = requestOptions;
-    const { descriptor, keys, ...strippedOptionsNoDescriptorAndKeys } = strippedOptions;
-    const params = {
-      requestId: NativePlatformRequestTypes.GetPagedDistinctValues,
-      rulesetId: this._detail.registerRuleset(rulesetOrId),
-      ...strippedOptionsNoDescriptorAndKeys,
-      keys: getKeysForContentRequest(keys, (map) => bisElementInstanceKeysProcessor(requestOptions.imodel, map)),
-      descriptorOverrides: createContentDescriptorOverrides(descriptor),
-    };
-    const reviver = (key: string, value: any) => {
-      return key === "" ? {
-        total: value.total,
-        items: value.items.map(DisplayValueGroup.fromJSON),
-      } : value;
-    };
-    return JSON.parse(await this._detail.request(params), reviver);
+  public async getPagedDistinctValues(requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<PagedResponse<DisplayValueGroup>> {
+    return this._detail.getPagedDistinctValues(requestOptions);
   }
 
   /**
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @beta
    */
-  public async getElementProperties(requestOptions: Prioritized<SingleElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
+  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined>;
   /**
    * Retrieves property data in simplified format for multiple elements specified by class or all element.
    * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
    * @alpha
    */
-  public async getElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
-  public async getElementProperties(requestOptions: Prioritized<ElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
+  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse>;
+  public async getElementProperties(requestOptions: WithCancelEvent<Prioritized<ElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<ElementProperties | undefined | MultiElementPropertiesResponse> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      const { elementId, ...optionsNoElementId } = requestOptions;
-      const content = await this.getContent({
-        ...optionsNoElementId,
-        descriptor: {
-          displayType: DefaultContentDisplayTypes.PropertyPane,
-          contentFlags: ContentFlags.ShowLabels,
-        },
-        rulesetOrId: "ElementProperties",
-        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-      });
-      const properties = buildElementsProperties(content);
-      return properties[0];
+      const elementProperties = await this._detail.getElementProperties(requestOptions);
+      // istanbul ignore if
+      if (!elementProperties)
+        return undefined;
+      return this._localizationHelper.getLocalizedElementProperties(elementProperties);
     }
 
     return this.getMultipleElementProperties(requestOptions);
   }
 
-  private async getMultipleElementProperties(requestOptions: Prioritized<MultiElementPropertiesRequestOptions<IModelDb>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse> {
+  private async getMultipleElementProperties(requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute): Promise<MultiElementPropertiesResponse> {
     const { elementClasses, ...optionsNoElementClasses } = requestOptions;
     const elementsCount = getElementsCount(requestOptions.imodel, requestOptions.elementClasses);
 
@@ -573,41 +527,18 @@ export class PresentationManager {
    * Retrieves display label definition of specific item
    * @public
    */
-  public async getDisplayLabelDefinition(requestOptions: Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
-    const params = {
-      requestId: NativePlatformRequestTypes.GetDisplayLabel,
-      ...requestOptions,
-      key: InstanceKey.toJSON(requestOptions.key),
-    };
-    return JSON.parse(await this._detail.request(params), LabelDefinition.reviver);
+  public async getDisplayLabelDefinition(requestOptions: WithCancelEvent<Prioritized<DisplayLabelRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition> {
+    const labelDefinition = await this._detail.getDisplayLabelDefinition(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinition(labelDefinition);
   }
 
   /**
    * Retrieves display label definitions of specific items
    * @public
    */
-  public async getDisplayLabelDefinitions(requestOptions: Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
-    const concreteKeys = requestOptions.keys.map((k) => {
-      if (k.className === "BisCore:Element")
-        return getElementKey(requestOptions.imodel, k.id);
-      return k;
-    }).filter<InstanceKey>((k): k is InstanceKey => !!k);
-    const contentRequestOptions: ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet> = {
-      ...requestOptions,
-      rulesetOrId: "RulesDrivenECPresentationManager_RulesetId_DisplayLabel",
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.List,
-        contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-      },
-      keys: new KeySet(concreteKeys),
-    };
-    const content = await this.getContent(contentRequestOptions);
-    return concreteKeys.map((key) => {
-      const item = content ? content.contentSet.find((it) => it.primaryKeys.length > 0 && InstanceKey.compare(it.primaryKeys[0], key) === 0) : undefined;
-      if (!item)
-        return { displayValue: "", rawValue: "", typeName: "" };
-      return item.label;
-    });
+  public async getDisplayLabelDefinitions(requestOptions: WithCancelEvent<Prioritized<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>> & BackendDiagnosticsAttribute): Promise<LabelDefinition[]> {
+    const labelDefinitions = await this._detail.getDisplayLabelDefinitions(requestOptions);
+    return this._localizationHelper.getLocalizedLabelDefinitions(labelDefinitions);
   }
 
   /**
@@ -669,12 +600,6 @@ export class PresentationManager {
     return JSON.parse(await this._detail.request(params), reviver);
   }
 }
-
-const createContentDescriptorOverrides = (descriptorOrOverrides: Descriptor | DescriptorOverrides): DescriptorOverrides => {
-  if (descriptorOrOverrides instanceof Descriptor)
-    return descriptorOrOverrides.createDescriptorOverrides();
-  return descriptorOrOverrides;
-};
 
 const ELEMENT_PROPERTIES_CONTENT_BATCH_SIZE = 100;
 async function buildElementsPropertiesInPages(className: string, ids: string[], getter: (keys: KeySet) => Promise<ElementProperties[]>) {

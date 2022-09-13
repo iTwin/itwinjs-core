@@ -59,9 +59,11 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
       <FooterIndicator
         className={classnames("uifw-statusFields-selectionScope", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode={this.props.isInFooterMode ?? true}
       >
-        {this.props.isInFooterMode &&
+        {// eslint-disable-next-line deprecation/deprecation
+          (this.props.isInFooterMode ?? true) &&
           <label className="uifw-statusFields-selectionScope-label">
             {this._label}:
           </label>

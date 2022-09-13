@@ -15,7 +15,7 @@ import {
 import TestUtils, { mount } from "../TestUtils";
 
 [true, false].forEach((withDeprecated) =>{
-  const testType = withDeprecated ? " (with deprecated openWidget props)" : "";
+  const testType = withDeprecated ? " (with deprecated StatusField props)" : "";
   describe(`MessageCenter${testType}`, () => {
 
     class AppStatusBarWidgetControl extends StatusBarWidgetControl {
@@ -27,7 +27,7 @@ import TestUtils, { mount } from "../TestUtils";
       public getReactNode({ isInFooterMode, onOpenWidget, openWidget, toastTargetRef }: StatusBarWidgetControlArgs): React.ReactNode {
         return (
           <>
-            <MessageCenterField isInFooterMode={isInFooterMode} {...(withDeprecated ? {onOpenWidget, openWidget} : {})} targetRef={toastTargetRef} />
+            <MessageCenterField {...(withDeprecated ? {isInFooterMode, onOpenWidget, openWidget} : {})} targetRef={toastTargetRef} />
           </>
         );
       }
@@ -68,7 +68,7 @@ import TestUtils, { mount } from "../TestUtils";
       MessageManager.addMessage(fatalMessage);
       expect(MessageManager.messages.length).to.eq(4);
 
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       wrapper.find("div.nz-balloon").simulate("click"); // Opens it
       wrapper.update();
@@ -92,7 +92,7 @@ import TestUtils, { mount } from "../TestUtils";
       MessageManager.addMessage(errorMessage);
       expect(MessageManager.messages.length).to.eq(2);
 
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       wrapper.find("div.nz-balloon").simulate("click");
       wrapper.update();
@@ -108,7 +108,7 @@ import TestUtils, { mount } from "../TestUtils";
     });
 
     it("Message Center should close on outside click", () => {
-      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
       const footerPopup = wrapper.find(FooterPopup);
       const messageCenterField = wrapper.find(MessageCenterField);
       const messageCenter = wrapper.find("div.nz-indicator");
@@ -133,7 +133,7 @@ import TestUtils, { mount } from "../TestUtils";
     });
 
     it("Message Center should not close on outside click", () => {
-      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
       const footerPopup = wrapper.find(FooterPopup);
 
       const statusBarInstance = wrapper.instance();
@@ -146,7 +146,7 @@ import TestUtils, { mount } from "../TestUtils";
     });
 
     it("Message Center should open on OpenMessageCenterEvent", () => {
-      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} isInFooterMode />);
+      const wrapper = mount<StatusBar>(<StatusBar widgetControl={widgetControl} />);
       const messageCenterField = wrapper.find(MessageCenterField);
 
       const statusBarInstance = wrapper.instance();

@@ -7,7 +7,7 @@ Spatial classification and planar clip masking are related ways of using one set
 Spatial classification uses one or more design models to contextualize a reality model by associating portions of the reality model with elements in the design models. Two types of classification are supported:
 
 - Planar classification: The design models are projected onto a plane. The region of the reality model that intersects the volume extruded from an element's footprint become classified by that element.
-- Volume classification: Regions of the reality model that intersect the 3d volume of an element become classified by that element.
+- Volume classification: Regions of the reality model that intersect the 3d volume of an element become classified by that element.  Geometry used for volume classification must be fully closed, non-intersecting volumes.
 
 The classified and unclassified portions of the reality model can be displayed as normal, hidden, or dimmed. The classified portions can additionally be recolored using the color of the classifying element, or hilited.
 

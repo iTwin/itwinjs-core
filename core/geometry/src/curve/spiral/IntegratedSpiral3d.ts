@@ -23,7 +23,6 @@ import { StrokeOptions } from "../StrokeOptions";
 import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandler";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
-import { Range3d } from "../../geometry3d/Range";
 import { GeometryQuery } from "../GeometryQuery";
 /**
  * An IntegratedSpiral3d is a curve defined by integrating its curvature.
@@ -422,10 +421,7 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
   }
-  /** extend the range by the strokes of the spiral */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    this.activeStrokes.extendRange(rangeToExtend, transform);
-  }
+
   /** compare various coordinate quantities */
   public override isAlmostEqual(other?: GeometryQuery): boolean {
     if (other instanceof IntegratedSpiral3d) {
@@ -438,7 +434,6 @@ export class IntegratedSpiral3d extends TransitionSpiral3d {
     }
     return false;
   }
-
 }
 // at load time, initialize gauss quadrature workspace
 IntegratedSpiral3d.initWorkSpace();

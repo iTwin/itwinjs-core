@@ -42,7 +42,8 @@
       "enableParallelism": true,
       "ignoreMissingScript": false,
       "ignoreDependencyOrder": false,
-      "allowWarningsInSuccessfulBuild": true
+      "allowWarningsInSuccessfulBuild": true,
+      "incremental": true
     },
     {
       "name": "cover",

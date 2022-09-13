@@ -17,6 +17,7 @@ import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { FilteredPresentationTreeDataProvider } from "@itwin/presentation-components";
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../appui-react/imodel-components/models-tree/ModelsVisibilityHandler";
+import { CachingElementIdsContainer } from "../../../appui-react/imodel-components/models-tree/Utils";
 import { TestUtils } from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
 
@@ -1644,4 +1645,32 @@ describe("ModelsVisibilityHandler", () => {
 
   });
 
+});
+
+describe("CachingElementIdsContainer", () => {
+  const ids = ["1", "2", "3", "4", "5"];
+  const generator = async function *generator() {
+    for (const id of ids) {
+      yield id;
+    }
+  };
+
+  it("returns correct ids if previously was not fully iterated", async () => {
+    const container = new CachingElementIdsContainer(generator());
+
+    let actualIds: string[] = [];
+    // validate first id
+    for await (const id of container.getElementIds()) {
+      actualIds.push(id);
+      break;
+    }
+    expect(actualIds).to.have.lengthOf(1);
+
+    actualIds = [];
+    // validated that all ids are still returned
+    for await (const id of container.getElementIds()) {
+      actualIds.push(id);
+    }
+    expect(actualIds).to.have.lengthOf(ids.length);
+  });
 });

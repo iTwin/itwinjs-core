@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
+import { assert, CompressedId64Set, Id64, Id64Arg, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { SubCategoryAppearance, SubCategoryResultRow } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** A cancelable paginated request for subcategory information.
@@ -64,35 +64,6 @@ export class SubCategoriesCache {
       promise,
       cancel: () => request.cancel(),
     };
-  }
-
-  /**
-   * Populates the notLoadedCategoryIds property of the HydrateViewStateRequestProps.
-   * notLoadedCategoryIds is a subset of categoryIds, filtering out any ids which already have an entry in the cache.
-   */
-  public preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void {
-    const missing = this.getMissing(categoryIds);
-
-    if (undefined === missing)
-      return;
-
-    this._missingAtTimeOfPreload = missing;
-    options.notLoadedCategoryIds = CompressedId64Set.sortAndCompress(missing);
-  }
-
-  /**
-   * Populates the SubCategoriesCache using the categoryIdsResult of the HydrateViewStateResponseProps
-   */
-  public postload(options: HydrateViewStateResponseProps): void {
-    if (options.categoryIdsResult === undefined)
-      return;
-
-    // missingAtTimeOfPreload shouldn't be undefined if options.categoryIdsResult is defined... but just to be safe we'll check
-    const missing = this._missingAtTimeOfPreload === undefined ? new Set<string>() : this._missingAtTimeOfPreload;
-    this.processResults(options.categoryIdsResult, missing);
-
-    // clear missing
-    this._missingAtTimeOfPreload = undefined;
   }
 
   /** Given categoryIds, return which of these are not cached. */
@@ -197,10 +168,10 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
   export class Request {
     private readonly _imodel: IModelConnection;
-    private readonly _ecsql: string[] = [];
+    private readonly _categoryIds: CompressedId64Set[] = [];
     private readonly _result: Result = [];
     private _canceled = false;
-    private _curECSqlIndex = 0;
+    private _curCategoryIdsIndex = 0;
 
     public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
 
@@ -208,34 +179,34 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       this._imodel = imodel;
 
       const catIds = [...categoryIds];
+      OrderedId64Iterable.sortArray(catIds); // sort categories, so that given the same set of categoryIds we will always create the same batches.
       while (catIds.length !== 0) {
         const end = (catIds.length > maxCategoriesPerQuery) ? maxCategoriesPerQuery : catIds.length;
-        const where = catIds.splice(0, end).join(",");
-        this._ecsql.push(`SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`);
+        const compressedIds = CompressedId64Set.compressArray(catIds.splice(0, end));
+        this._categoryIds.push(compressedIds);
       }
     }
 
     public cancel() { this._canceled = true; }
 
     public async dispatch(): Promise<Result | undefined> {
-      if (this.wasCanceled || this._curECSqlIndex >= this._ecsql.length) // handle case of empty category Id set...
+      if (this.wasCanceled || this._curCategoryIdsIndex >= this._categoryIds.length) // handle case of empty category Id set...
         return undefined;
 
       try {
-        const ecsql = this._ecsql[this._curECSqlIndex];
-        for await (const row of this._imodel.query(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
-          this._result.push(row as SubCategoryResultRow);
-          if (this.wasCanceled)
-            return undefined;
-        }
+        const catIds = this._categoryIds[this._curCategoryIdsIndex];
+        const result = await this._imodel.querySubCategories(catIds);
+        this._result.push(...result);
+        if (this.wasCanceled)
+          return undefined;
       } catch {
         // ###TODO: detect cases in which retry is warranted
         // Note that currently, if we succeed in obtaining some pages of results and fail to retrieve another page, we will end up processing the
         // incomplete results. Since we're not retrying, that's the best we can do.
       }
 
-      // Finished with current ECSql query. Dispatch the next if one exists.
-      if (++this._curECSqlIndex < this._ecsql.length) {
+      // Finished with current batch of categoryIds. Dispatch the next batch if one exists.
+      if (++this._curCategoryIdsIndex < this._categoryIds.length) {
         if (this.wasCanceled)
           return undefined;
         else
@@ -326,7 +297,7 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
         if (this._disposed)
           return;
 
-        // Invoke all the functions which were awaiting this set of categories.
+        // Invoke all the functions which were awaiting this set of IModelConnection.Categories.
         assert(undefined !== this._current);
         if (completed)
           for (const func of this._current.funcs)

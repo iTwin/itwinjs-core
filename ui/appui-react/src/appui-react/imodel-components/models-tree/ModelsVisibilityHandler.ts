@@ -15,6 +15,7 @@ import { IFilteredPresentationTreeDataProvider, IPresentationTreeDataProvider } 
 import { Presentation } from "@itwin/presentation-frontend";
 import { UiFramework } from "../../UiFramework";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus } from "../VisibilityTreeEventHandler";
+import { CachingElementIdsContainer } from "./Utils";
 
 /**
  * Visibility tree node types.
@@ -43,6 +44,8 @@ export interface ModelsVisibilityHandlerProps {
   rulesetId: string;
   viewport: Viewport;
   hierarchyAutoUpdateEnabled?: boolean;
+  /** @internal */
+  subjectModelIdsCache?: SubjectModelIdsCache;
 }
 
 /**
@@ -59,7 +62,7 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
 
   constructor(props: ModelsVisibilityHandlerProps) {
     this._props = props;
-    this._subjectModelIdsCache = new SubjectModelIdsCache(this._props.viewport.iModel);
+    this._subjectModelIdsCache = props.subjectModelIdsCache ?? new SubjectModelIdsCache(this._props.viewport.iModel);
     this._elementIdsCache = new ElementIdsCache(this._props.viewport.iModel, this._props.rulesetId);
     this._listeners.push(this._props.viewport.onViewedCategoriesPerModelChanged.addListener(this.onViewChanged));
     this._listeners.push(this._props.viewport.onViewedCategoriesChanged.addListener(this.onViewChanged));
@@ -405,7 +408,8 @@ export class ModelsVisibilityHandler implements IVisibilityHandler {
   }
 }
 
-class SubjectModelIdsCache {
+/** @internal */
+export class SubjectModelIdsCache {
   private _imodel: IModelConnection;
   private _subjectsHierarchy: Map<Id64String, Id64String[]> | undefined;
   private _subjectModels: Map<Id64String, Id64String[]> | undefined;
@@ -445,15 +449,19 @@ class SubjectModelIdsCache {
     this._subjectsHierarchy = new Map();
     const targetPartitionSubjects = new Map<Id64String, Id64String[]>();
     for await (const subject of querySubjects()) {
+      // istanbul ignore else
       if (subject.parentId)
         pushToMap(this._subjectsHierarchy, subject.parentId, subject.id);
+      // istanbul ignore if
       if (subject.targetPartitionId)
         pushToMap(targetPartitionSubjects, subject.targetPartitionId, subject.id);
     }
 
     this._subjectModels = new Map();
     for await (const model of queryModels()) {
+      // istanbul ignore next
       const subjectIds = targetPartitionSubjects.get(model.id) ?? [];
+      // istanbul ignore else
       if (!subjectIds.includes(model.parentId))
         subjectIds.push(model.parentId);
 
@@ -528,6 +536,7 @@ class ElementIdsCache {
   }
 }
 
+// istanbul ignore next
 async function* createInstanceIdsGenerator(imodel: IModelConnection, rulesetId: string, displayType: string, inputKeys: Keys) {
   const res = await Presentation.presentation.getContentInstanceKeys({
     imodel,
@@ -541,28 +550,11 @@ async function* createInstanceIdsGenerator(imodel: IModelConnection, rulesetId: 
 }
 
 // istanbul ignore next
-class CachingElementIdsContainer {
-  private _generator;
-  private _ids;
-  constructor(generator: AsyncGenerator<Id64String>) {
-    this._generator = generator;
-    this._ids = new Array<Id64String>();
-  }
-  public async* getElementIds() {
-    for (const id of this._ids) {
-      yield id;
-    }
-    for await (const id of this._generator) {
-      this._ids.push(id);
-      yield id;
-    }
-  }
-}
-
 function createAssemblyElementIdsContainer(imodel: IModelConnection, rulesetId: string, assemblyId: Id64String) {
   return new CachingElementIdsContainer(createInstanceIdsGenerator(imodel, rulesetId, "AssemblyElementsRequest", [{ className: "BisCore:Element", id: assemblyId }]));
 }
 
+// istanbul ignore next
 async function createGroupedElementsInfo(imodel: IModelConnection, rulesetId: string, groupingNodeKey: GroupingNodeKey) {
   const groupedElementIdsContainer = new CachingElementIdsContainer(createInstanceIdsGenerator(imodel, rulesetId, "AssemblyElementsRequest", [groupingNodeKey]));
   const elementId = await groupedElementIdsContainer.getElementIds().next();
