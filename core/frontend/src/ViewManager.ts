@@ -149,7 +149,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public hasViewport(vpToFind: Viewport) {
-    return this._viewports.includes(vpToFind);
+    return (this._viewports as Viewport[]).includes(vpToFind);
   }
 
   /** Called after the selected view changes.
