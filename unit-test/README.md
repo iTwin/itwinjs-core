@@ -10,5 +10,5 @@ Unit testing directory with bats-core
 * How to write a unit test
   * write a program you want to test in your local ./unit-test/
   * write a bat file to create a unit test (sample ./unit-test/validate-bump.bats)
-    For documentatoin - (<https://bats-core.readthedocs.io/en/stable/>)
-  * execute the command `unit-test/test_ahh.sh` to test
+    For documentation - (<https://bats-core.readthedocs.io/en/stable/>)
+  * execute the command `unit-test/test_all.sh` to test
