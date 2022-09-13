@@ -125,8 +125,6 @@ export class Entity {
     return referenceIds;
   }
 
-  // FIXME: test (in ClassRegistry?) that a class with its own implementation of this still gets the expected concrete and non-concrete ids
-
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
    * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.

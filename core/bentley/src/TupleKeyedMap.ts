@@ -7,11 +7,15 @@
  */
 
 /** A map similar to the standard JavaScript Map collection except that the keys must be a tuple
- * (javascript array), and value comparison is used on these tuple keys, without a user-provided hash function.
- * This means you can use array literals to store complicated data.
+ * (javascript array), and two keys are considered equal if their elements in order are strict-equal,
+ * and the tuples have the same amount of elements
+
+ * This means you can use array literals to key data in Maps that would otherwise be reference-compared
+ * if using Map
+ *
  * ```js
  * const map = new TupleKeyedMap([[1,"y"], "value"]);
- * const value = map.get([1, "y"]); // a normal map would identify these keys as different because they are independent objects!
+ * const value = map.get([1, "y"]); // a normal map would identify these keys as different because they are independent objects
  * ```
  * It is implemented by each index of the tuple key being used as a singular key into a submap
  * @note this only implements a subset of the Map interface
