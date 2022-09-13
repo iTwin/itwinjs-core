@@ -1,7 +1,6 @@
 parameters:
-  name: ''
-  pool: ''
-  nodeVersion: ''
+  - name: name
+  - name: pool
   - name: buildIos
     type: boolean
     default: false
