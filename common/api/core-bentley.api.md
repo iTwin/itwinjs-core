@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="node" />
+
 import type { Attributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1148,13 +1150,6 @@ export class Logger {
     static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
-    static makeCategorizedLogger(category: string): {
-        logTrace: (message: string, metaData?: LoggingMetaData) => void;
-        logError: (message: string, metaData?: LoggingMetaData) => void;
-        logWarning: (message: string, metaData?: LoggingMetaData) => void;
-        logException: (err: any, log?: LogFunction | undefined) => void;
-        logInfo: (message: string, metaData?: LoggingMetaData) => void;
-    };
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;

@@ -2811,25 +2811,6 @@ export interface EntityQueryParams {
 export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
 
 // @alpha
-export class EntityReferences {
-    // (undocumented)
-    static isElement(id: EntityReference): boolean;
-    // (undocumented)
-    static isElementAspect(id: EntityReference): boolean;
-    // (undocumented)
-    static isModel(id: EntityReference): boolean;
-    // (undocumented)
-    static isRelationship(id: EntityReference): boolean;
-    // @internal
-    static isValid(id: EntityReference): boolean;
-    // @internal
-    static makeInvalid(type: ConcreteEntityTypes): EntityReference;
-    static split(id: EntityReference): [ConcreteEntityTypes, Id64String];
-    // (undocumented)
-    static toId64(id: EntityReference): string;
-}
-
-// @alpha
 export class EntityReferenceSet extends Set<EntityReference> {
     // (undocumented)
     addAspect(id: Id64String): void;

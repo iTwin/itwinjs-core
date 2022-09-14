@@ -18,7 +18,6 @@ import { ElementUniqueAspect } from '@itwin/core-backend';
 import { Entity } from '@itwin/core-backend';
 import { EntityProps } from '@itwin/core-common';
 import { EntityReference } from '@itwin/core-common';
-import { EntityReference as EntityReference_2 } from '@itwin/core-backend';
 import { EntityReferenceSet } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
