@@ -47,7 +47,8 @@ function createConfig(shouldInstrument) {
       },
       alias: {
         "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
-        "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js"
+        "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js",
+        "@azure/logger$": "@azure/logger/dist-esm/src/index.js"
       }
     },
     module: {
