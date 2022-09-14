@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Transform } from "@itwin/core-geometry";
-import { ArcGisSymbologyRenderer } from "../internal";
+import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 
 export class ArcGisFeatureRenderer  {
   private _symbol: ArcGisSymbologyRenderer;

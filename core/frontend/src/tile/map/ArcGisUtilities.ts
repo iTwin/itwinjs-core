@@ -120,7 +120,8 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  public static async validateSource(url: string, capabilitiesFilter: string[], credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public static async validateSource(url: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    const credentials = userName && password ? {user: userName, password} : undefined;
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };

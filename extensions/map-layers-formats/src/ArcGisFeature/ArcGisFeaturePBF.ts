@@ -3,7 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisFeatureRenderer, esriPBuffer } from "../internal";
+import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { esriPBuffer } from "./FeatureCollectionGenerated";
+
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 
 export class ArcGisFeaturePBF  {

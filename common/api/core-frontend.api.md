@@ -1213,7 +1213,7 @@ export class ArcGisUtilities {
     // (undocumented)
     static hasTokenError(response: Response_2): boolean;
     // (undocumented)
-    static validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateSource(url: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal
@@ -5705,7 +5705,7 @@ export class MapLayerFormat {
     // (undocumented)
     static register(): void;
     // (undocumented)
-    static validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    static validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @internal (undocumented)
@@ -5731,8 +5731,8 @@ export class MapLayerFormatRegistry {
     register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
     // (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;
-    // (undocumented)
-    validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+    // @internal (undocumented)
+    validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
 
 // @beta (undocumented)

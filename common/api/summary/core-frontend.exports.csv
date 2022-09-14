@@ -441,6 +441,7 @@ public;ParticleProps
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
+beta;Props
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult

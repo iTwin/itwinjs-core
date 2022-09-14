@@ -574,7 +574,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
-      '@types/google-protobuf': ~3.15.6
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.7
@@ -589,7 +588,6 @@ importers:
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
-      google-protobuf: ~3.20.1
       lodash: ^4.17.10
       mocha: ^10.0.0
       nyc: ^15.1.0
@@ -610,7 +608,6 @@ importers:
       '@loaders.gl/draco': 3.2.6
       deep-assign: 2.0.0
       fuse.js: 3.6.1
-      google-protobuf: 3.20.1
       lodash: 4.17.21
       qs: 6.11.0
       semver: 7.3.7
@@ -631,7 +628,6 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/deep-assign': 0.1.1
-      '@types/google-protobuf': 3.15.6
       '@types/lodash': 4.14.182
       '@types/mocha': 8.2.3
       '@types/node': 16.11.7
@@ -1591,6 +1587,57 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.1
+      '@types/mocha': 8.2.3
+      '@types/sinon': 9.0.11
+      '@types/sinon-chai': 3.2.8
+      chai: 4.3.6
+      eslint: 7.32.0
+      jsdom: 19.0.0
+      jsdom-global: 3.0.2_jsdom@19.0.0
+      mocha: 10.0.0
+      nyc: 15.1.0
+      rimraf: 3.0.2
+      sinon: 9.2.4
+      sinon-chai: 3.7.0_chai@4.3.6+sinon@9.2.4
+      source-map-support: 0.5.21
+      typescript: 4.4.4
+
+  ../../extensions/map-layers-formats:
+    specifiers:
+      '@itwin/build-tools': workspace:*
+      '@itwin/core-bentley': workspace:*
+      '@itwin/core-common': workspace:*
+      '@itwin/core-frontend': workspace:*
+      '@itwin/core-geometry': workspace:*
+      '@itwin/eslint-plugin': workspace:*
+      '@types/chai': 4.3.1
+      '@types/google-protobuf': ~3.15.6
+      '@types/mocha': ^8.2.2
+      '@types/sinon': ^9.0.0
+      '@types/sinon-chai': ^3.2.0
+      chai: ^4.1.2
+      eslint: ^7.11.0
+      google-protobuf: ~3.20.1
+      jsdom: ^19.0.0
+      jsdom-global: 3.0.2
+      mocha: ^10.0.0
+      nyc: ^15.1.0
+      rimraf: ^3.0.2
+      sinon: ^9.0.2
+      sinon-chai: ^3.2.0
+      source-map-support: ^0.5.6
+      typescript: ~4.4.0
+    dependencies:
+      google-protobuf: 3.20.1
+    devDependencies:
+      '@itwin/build-tools': link:../../tools/build
+      '@itwin/core-bentley': link:../../core/bentley
+      '@itwin/core-common': link:../../core/common
+      '@itwin/core-frontend': link:../../core/frontend
+      '@itwin/core-geometry': link:../../core/geometry
+      '@itwin/eslint-plugin': link:../../tools/eslint-plugin
+      '@types/chai': 4.3.1
+      '@types/google-protobuf': 3.15.6
       '@types/mocha': 8.2.3
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
@@ -3721,6 +3768,7 @@ importers:
       '@itwin/itwinui-react': ^1.38.1
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
+      '@itwin/map-layers-formats': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3798,6 +3846,7 @@ importers:
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../extensions/map-layers-auth
+      '@itwin/map-layers-formats': link:../../extensions/map-layers-formats
       '@itwin/presentation-backend': link:../../presentation/backend
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-components': link:../../presentation/components

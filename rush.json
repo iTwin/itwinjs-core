@@ -419,6 +419,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@itwin/map-layers-formats",
+      "projectFolder": "extensions/map-layers-formats",
+      "reviewCategory": "extensions",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "internal-tools",
       "projectFolder": "tools/internal",
       "reviewCategory": "internal",

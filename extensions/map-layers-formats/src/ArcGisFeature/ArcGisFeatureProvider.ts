@@ -7,9 +7,14 @@
  */
 import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
-import { ArcGisErrorCode, ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureJSON, ArcGisFeaturePBF, ArcGisFeatureQuery, ArcGisFeatureRenderer, ArcGisSymbologyRenderer, ArcGisUtilities, esriPBuffer, FeatureQueryQuantizationParams, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation } from "../../internal";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
-import { request, RequestOptions, Response } from "../../../request/Request";
+import { ArcGisErrorCode, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation } from "@itwin/core-frontend";
+import { esriPBuffer } from "./FeatureCollectionGenerated";
+import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
+import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
+import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
+import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -62,7 +67,7 @@ class ArcGisFeatureReponse {
         return undefined;
 
       if (this.format === "PBF") {
-        const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+        const byteArray: Uint8Array = new Uint8Array(await tileResponse.arrayBuffer());
         if (!byteArray || (byteArray.length === 0))
           return undefined;
 
@@ -74,7 +79,7 @@ class ArcGisFeatureReponse {
         if (tileResponse.text === undefined)
           return undefined;
 
-        data  = JSON.parse(tileResponse.text);
+        data = await tileResponse.json();
         return {data, exceedTransferLimit: data?.exceededTransferLimit};
       }
 
@@ -260,8 +265,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       return undefined;
     }
 
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "JSON" ? "text" : "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
+    // const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "JSON" ? "text" : "arraybuffer" };
+    // tileRequestOptions.auth = this.getRequestAuthorization();
     const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, refineEnvelope);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
@@ -269,7 +274,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     // return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
-    return new ArcGisFeatureReponse(this.format, request(tileUrl.url, tileRequestOptions), tileUrl.envelope);
+    const response = fetch(tileUrl.url, { method: "GET" });
+    return new ArcGisFeatureReponse(this.format, response, tileUrl.envelope);
   }
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){

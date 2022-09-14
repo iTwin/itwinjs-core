@@ -11,21 +11,37 @@ import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps 
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "../../request/Request";
 
 /** @beta */
+/** Class representing a map-layer format.
+ * Each format has it's unique 'formatId' string, used to uniquely identify a format in the [[MapLayerFormatRegistry]].
+ * When creating an [[ImageMapLayerSettings]] object, a format needs to be specified this 'formatId'.
+ * The MapLayerFormat object can later be used to validate a source, or create a provider.
+ *
+* Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+ * @beta
+ */
 export class MapLayerFormat {
   public static formatId: string;
+
+  /** Register the current format in the [[MapLayerFormatRegistry]].
+  */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
-  /** @internal */
+  /** Allow a source of a specific to be validated before being attached as a map-layer.
+  */
+  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+
+  /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
+  */
   public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+
   /** @internal */
   public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;
   }
-  public static async validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+
 }
 
 /** @beta */
@@ -109,7 +125,6 @@ export class MapLayerFormatRegistry {
     return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
   }
 
-  /** @internal */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
@@ -121,9 +136,9 @@ export class MapLayerFormatRegistry {
     return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
   }
 
-  public async validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(formatId);
     const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, credentials, ignoreCache);
+    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
   }
 }

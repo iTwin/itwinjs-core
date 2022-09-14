@@ -15,25 +15,28 @@ import { getJson, request, RequestBasicCredentials, RequestOptions, Response } f
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
+/** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
 const earthRadius = 6378137;
-
 const doDebugToolTips = false;
 
-/** @internal */
+/** @beta */
 export enum MapLayerImageryProviderStatus {
   Valid,
   RequireAuth,
 }
 
 /** Base class for map layer imagery providers.
- * @internal
+ * @beta
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;
   public status: MapLayerImageryProviderStatus = MapLayerImageryProviderStatus.Valid;
   public readonly onStatusChanged = new BeEvent<(provider: MapLayerImageryProvider) => void>();
+
+  /** @internal */
   private readonly _mercatorTilingScheme = new WebMercatorTilingScheme();
+  /** @internal */
   private readonly _geographicTilingScheme = new GeographicTilingScheme();
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
@@ -44,6 +47,8 @@ export abstract class MapLayerImageryProvider {
   public get mutualExclusiveSubLayer(): boolean { return false; }
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
+
+  /** @internal */
   protected get _filterByCartoRange() { return true; }
   constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -57,7 +62,11 @@ export abstract class MapLayerImageryProvider {
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
   public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;  }
+
+  /** @internal */
   public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+
+  /** @internal */
   protected _missingTileData?: Uint8Array;
   public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
 
@@ -92,10 +101,12 @@ export abstract class MapLayerImageryProvider {
     featureInfos.push({layerName: this._settings.name});
   }
 
+  /** @internal */
   protected getRequestAuthorization(): RequestBasicCredentials | undefined {
     return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
   }
 
+  /** @internal */
   protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
     const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
     if (!byteArray || (byteArray.length === 0))
@@ -120,6 +131,7 @@ export abstract class MapLayerImageryProvider {
     return new ImageSource(byteArray, imageFormat);
   }
 
+  /** @internal */
   public setStatus(status: MapLayerImageryProviderStatus) {
     if (this.status !== status) {
       this.status = status;
@@ -127,6 +139,7 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** @internal */
   public async makeTileRequest(url: string) {
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     tileRequestOptions.auth = this.getRequestAuthorization();
@@ -164,6 +177,7 @@ export abstract class MapLayerImageryProvider {
     }
   }
 
+  /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
 
     const requestOptions: RequestOptions = {
@@ -180,6 +194,8 @@ export abstract class MapLayerImageryProvider {
     } catch {
     }
   }
+
+  /** @internal */
   protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
     try {
       const json = await getJson(url);
@@ -189,6 +205,7 @@ export abstract class MapLayerImageryProvider {
     } catch { }
   }
 
+  /** @internal */
   public matchesMissingTile(tileData: Uint8Array): boolean {
     if (!this._missingTileData)
       return false;
@@ -201,31 +218,36 @@ export abstract class MapLayerImageryProvider {
     }
     return true;
   }
+
+  /** @internal */
   // calculates the projected x cartesian coordinate in EPSG:3857from the longitude in EPSG:4326 (WGS84)
   public getEPSG3857X(longitude: number): number {
     return longitude * 20037508.34 / 180.0;
   }
 
+  /** @internal */
   // calculates the projected y cartesian coordinate in EPSG:3857from the latitude in EPSG:4326 (WGS84)
   public getEPSG3857Y(latitude: number): number {
     const y = Math.log(Math.tan((90.0 + latitude) * Math.PI / 360.0)) / (Math.PI / 180.0);
     return y * 20037508.34 / 180.0;
   }
 
+  /** @internal */
   // calculates the longitude in EPSG:4326 (WGS84) from the projected x cartesian coordinate in EPSG:3857
   public getEPSG4326Lon(x3857: number): number {
     return Angle.radiansToDegrees(x3857/earthRadius);
   }
 
+  /** @internal */
   // calculates the latitude in EPSG:4326 (WGS84) from the projected y cartesian coordinate in EPSG:3857
   public getEPSG4326Lat(y3857: number): number {
     const y = 2 * Math.atan(Math.exp(y3857 / earthRadius)) - (Math.PI/2);
     return Angle.radiansToDegrees(y);
   }
 
+  /** @internal */
   // Map tile providers like Bing and Mapbox allow the URL to be constructed directory from the zoom level and tile coordinates.
   // However, WMS-based servers take a bounding box instead. This method can help get that bounding box from a tile.
-
   public getEPSG4326Extent(row: number, column: number, zoomLevel: number): { longitudeLeft: number, longitudeRight: number, latitudeTop: number, latitudeBottom: number } {
     // Shift left (this.tileSize << zoomLevel) overflow when using 512 pixels tile at higher resolution,
     // so use Math.pow instead (I assume the performance lost to be minimal)
@@ -244,6 +266,7 @@ export abstract class MapLayerImageryProvider {
     return { longitudeLeft, longitudeRight, latitudeTop, latitudeBottom };
   }
 
+  /** @internal */
   public getEPSG3857Extent(row: number, column: number, zoomLevel: number): { left: number, right: number, top: number, bottom: number } {
     const epsg4326Extent = this.getEPSG4326Extent(row, column, zoomLevel);
 
@@ -255,11 +278,13 @@ export abstract class MapLayerImageryProvider {
     return { left, right, bottom, top };
   }
 
+  /** @internal */
   public getEPSG3857ExtentString(row: number, column: number, zoomLevel: number) {
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
     return `${tileExtent.left.toFixed(2)},${tileExtent.bottom.toFixed(2)},${tileExtent.right.toFixed(2)},${tileExtent.top.toFixed(2)}`;
   }
 
+  /** @internal */
   public getEPSG4326ExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
     if (latLongAxisOrdering) {
