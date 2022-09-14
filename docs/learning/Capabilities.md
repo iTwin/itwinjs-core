@@ -26,6 +26,7 @@ There are two forms of iModels:
 
 ### iModelHub
 
+TODO: 9/22 - Update Links below
 [iModelHub](./iModelHub/index) is the control center for Briefcase iModels and manages:
 
 - ✔️️ Authenticating access to iModels

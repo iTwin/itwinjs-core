@@ -134,6 +134,7 @@ An iTwin is an infrastructure digital twin. An iTwin incorporates different type
 
 #### iModelHub
 
+TODO: 9/22 - Update Links
 iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](./glossary#changeset). iTwin Connectors interact with iModelHub using the iTwin.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see [iModelHub](./iModelHub/index)
 
 #### iModel
@@ -163,6 +164,7 @@ A changeset represents a file containing changes corresponding to an iModel brie
 ![iTwin Connector Steps](./imodel_connector_steps.png)
 
 There are three main steps that a Connector needs to undertake to bring data into a digital twin
+TODO: 9/22 - Update Link
 
 - Extract data from the input source
 - Transform and align the data to the digital twin.
@@ -256,6 +258,7 @@ Refer to [Element Codes](../bis/guide/fundamentals/codes) in the "Introduction t
 
 ##### Detecting and pushing changes
 
+TODO: 9/22 - Update Link
 Rather than starting over when the source data changes, a Connector should be able to detect and convert only the differences. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the Connector should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the Connector should delete the results of the last conversion. Source data that has been added should be inserted.
@@ -691,7 +694,7 @@ Typical workflow to create iModel geometry is
 
 ### Authentication
 
-See this article on [AccessToken](./common/AccessToken.md)
+See this article on [AccessToken](./common/AccessToken.md) TODO: 9/22 - remove/update link?
 
 ### Locks & Codes
 

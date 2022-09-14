@@ -29,4 +29,4 @@ If the app has a custom backend, you must write a [Web-specific main](../learnin
 
 ## 3. Package and Deploy
 
-[Package and deploy to the Web](./PackageAndDeployToTheWeb.md)
+[Package and deploy to the Web](./PackageAndDeployToTheWeb.md) TODO: 9/22 - Update/remove Link

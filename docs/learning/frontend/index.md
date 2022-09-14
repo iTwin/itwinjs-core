@@ -23,7 +23,7 @@ The [common packages](../common/index.md) will also be required.
 
 These packages provide the following services:
 
-- [Log in and obtain AccessTokens](../common/AccessToken.md)
+- [Log in and obtain AccessTokens](../common/AccessToken.md) TODO: 9/22 - remove/update link?
 - [Open a "connection" to an iModel](./IModelConnection.md)
 - [Adminstration and configuration](./IModelApp.md) via the IModelApp class
 - [Localization](./Localization.md) of strings and user interface

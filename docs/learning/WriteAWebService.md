@@ -7,6 +7,6 @@ See [how to write backend code](./backend/index.md).
 To develop a Web Service, you will also:
 
 - [Write a simple Web server](./RpcInterface.md#serve-the-interfaces)
-- [Package and deploy to the Web](./PackageAndDeployToTheWeb.md)
+- [Package and deploy to the Web](./PackageAndDeployToTheWeb.md) TODO: 9/22 - Update/Remove Link?
 
 Note that a service typically does not open an iModel on its own initiative. Instead, normally, a client of the service will ask the service to open an iModel, and then the client will pass the resulting [IModelRpcProps]($common) to methods of the service. The service should therefore always initialize the [IModelReadRpcInterface]($common).

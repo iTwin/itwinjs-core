@@ -23,6 +23,7 @@ With the [iTwin.js Software architecture](./SoftwareArchitecture.md), from the s
 
 ## iTwin.js vs. iModelHub
 
+TODO: 9/22 - Update Links below (unless this section is going away)
 It is important to understand that iTwin.js applications do not _run on [iModelHub](./iModelHub/index)_. Instead, they can run _anywhere else_. iTwin.js applications always work on a copy of an iModel, either a _briefcase_ or _checkpoint_ obtained from iModelHub, or a [snapshot iModel](./backend/AccessingIModels.md) created by an iTwin.js application, and process it locally. This makes them _infinitely scalable_.
 
 iTwin.js applications can be:
@@ -48,7 +49,7 @@ The iTwin.js library requires a JavaScript engine with es2017 support.
 - [Classes packaged by both frontends and backends](./common/index)
 - [ECSQL](./ECSQL.md)
 - [Display system](./display/index.md)
-- [iModelHub](./iModelHub/index)
+- [iModelHub](./iModelHub/index) TODO: 9/22 - Update or remove link
 - [Snapshot iModels](./backend/AccessingIModels.md)
 - [GeoLocation in iModels](./GeoLocation.md)
 - [Change summaries](./ChangeSummaries.md)
