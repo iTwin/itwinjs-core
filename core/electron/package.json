@@ -46,7 +46,7 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
-    "@types/node": "18.7.18",
+    "@types/node": "^18.7.18",
     "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

@@ -43,7 +43,7 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "18.7.18",
+    "@types/node": "^18.7.18",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "eslint": "^7.11.0",

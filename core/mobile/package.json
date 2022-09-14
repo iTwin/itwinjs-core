@@ -59,7 +59,7 @@
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.7.18",
+    "@types/node": "^18.7.18",
     "@types/qs": "^6.5.0",
     "@types/superagent": "^4.1.14",
     "@types/ws": "^7.0.0",

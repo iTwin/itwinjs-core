@@ -22,7 +22,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/multiparty': ^0.0.31
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
       '@types/ws': ^7.0.0
@@ -100,7 +100,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       chai-as-promised: ^7
       eslint: ^7.11.0
@@ -133,7 +133,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       buffer: ^6.0.3
       chai: ^4.1.2
@@ -183,7 +183,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@xmldom/xmldom': ^0.7.0
       benchmark: ^2.1.4
@@ -233,7 +233,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
@@ -282,7 +282,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@xmldom/xmldom': ^0.7.0
       almost-equal: ^1.1.0
@@ -381,7 +381,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@openid/appauth': ^1.2.6
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       electron: ^17.0.0
       eslint: ^7.11.0
       open: ^7.0.0
@@ -417,7 +417,7 @@ importers:
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@types/supertest': ^2.0.4
       chai: ^4.1.2
@@ -493,7 +493,7 @@ importers:
       '@types/deep-assign': ^0.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/qs': ^6.5.0
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
@@ -574,7 +574,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/file-saver': ^2.0.1
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       cpx2: ^3.0.0
       eslint: ^7.11.0
       file-saver: ^2.0.2
@@ -604,7 +604,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       debug: ^2.6.9
       eslint: ^7.11.0
@@ -645,7 +645,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
@@ -688,7 +688,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       eslint: ^7.11.0
       i18next: ^21.2.6
       i18next-browser-languagedetector: ^6.1.2
@@ -725,7 +725,7 @@ importers:
       '@svgdotjs/svg.js': 3.0.13
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
@@ -774,7 +774,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/qs': ^6.5.0
       '@types/superagent': ^4.1.14
       '@types/ws': ^7.0.0
@@ -832,7 +832,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       cpx2: ^3.0.0
       debug: ^2.6.9
@@ -868,7 +868,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -906,7 +906,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       eslint: ^7.11.0
       mocha: ^10.0.0
@@ -944,7 +944,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
       chai: ^4.1.2
@@ -993,7 +993,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       eslint: ^7.11.0
       glob: ^7.1.2
@@ -1030,7 +1030,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       chai: ^4.1.2
       cpx2: ^3.0.0
@@ -1072,7 +1072,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       cpx2: ^3.0.0
       eslint: ^7.11.0
@@ -1139,7 +1139,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       eslint: ^7.11.0
       mocha: ^10.0.0
@@ -1197,7 +1197,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       chai: ^4.1.2
       eslint: ^7.11.0
@@ -1264,7 +1264,7 @@ importers:
       '@itwin/oidc-signin-tool': ^3.2.2
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       cpx2: ^3.0.0
       electron: ^17.0.0
@@ -1311,7 +1311,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1355,7 +1355,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       cpx2: ^3.0.0
       eslint: ^7.11.0
       rimraf: ^3.0.2
@@ -1397,7 +1397,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/enzyme': 3.9.3
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-beautiful-dnd': ^12.1.2
       '@types/sinon': ^9.0.0
@@ -1684,7 +1684,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       chai: ^4.1.2
@@ -1794,7 +1794,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       chai: ^4.1.2
@@ -1895,7 +1895,7 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/rimraf': ^2.0.2
@@ -2007,7 +2007,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/express': ^4.16.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/semver': 7.3.10
       '@types/spdy': ^3.4.4
       assert: ^2.0.0
@@ -2088,7 +2088,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
@@ -2183,7 +2183,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lolex': ^2.1.2
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/object-hash': ^1.3.0
       '@types/semver': 7.3.10
       '@types/sinon': ^9.0.0
@@ -2462,7 +2462,7 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
@@ -2531,7 +2531,7 @@ importers:
       '@opentelemetry/semantic-conventions': ^1.5.0
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       cpx2: ^3.0.0
       eslint: ^7.11.0
       mocha: ^10.0.0
@@ -2759,7 +2759,7 @@ importers:
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.7.0
       '@types/lorem-ipsum': ^1.0.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
@@ -2931,7 +2931,7 @@ importers:
       '@itwin/projects-client': ^0.6.0
       '@itwin/reality-data-client': 0.7.0
       '@types/lorem-ipsum': ^1.0.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
@@ -3076,7 +3076,7 @@ importers:
       '@itwin/reality-data-client': 0.7.0
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       body-parser: ^1.18.2
       child_process: ^1.0.2
       chrome-launcher: ^0.15.0
@@ -3272,7 +3272,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       rimraf: ^3.0.2
@@ -3303,7 +3303,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       chai: ^4.1.2
       eslint: ^7.11.0
@@ -3340,7 +3340,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -3375,7 +3375,7 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/fs-extra': ^4.0.7
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       rimraf: ^3.0.2
@@ -3408,7 +3408,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -3449,7 +3449,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/yargs': ^17.0.10
       cross-env: ^5.1.4
       dotenv: ^10.0.0
@@ -3696,7 +3696,7 @@ importers:
       '@itwin/reality-data-client': 0.7.0
       '@itwin/ui-items-providers-test': workspace:*
       '@types/lorem-ipsum': ^1.0.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
@@ -3842,7 +3842,7 @@ importers:
     specifiers:
       '@itwin/eslint-plugin': workspace:*
       '@microsoft/api-extractor': 7.23.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.1
@@ -3890,7 +3890,7 @@ importers:
       '@types/express': ^4.16.1
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/uuid': ^7.0.2
       '@types/yargs': ^17.0.10
       detect-port: ~1.3.0
@@ -3948,7 +3948,7 @@ importers:
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-string: ^1.5.0
@@ -3995,7 +3995,7 @@ importers:
     specifiers:
       '@types/eslint': ~7.2.13
       '@types/estree': ~0.0.48
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@typescript-eslint/eslint-plugin': ~4.31.0
       '@typescript-eslint/parser': ~4.31.0
       '@typescript-eslint/typescript-estree': ~4.31.0
@@ -4076,7 +4076,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       chai: ^4.1.2
       chai-as-promised: ^7
       chai-jest-snapshot: ^2.0.0
@@ -4140,7 +4140,7 @@ importers:
       '@types/chai-jest-snapshot': ^1.3.0
       '@types/chai-spies': ^1.0.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
@@ -4212,7 +4212,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-transition-group': ^4.4.4
@@ -4337,7 +4337,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/react-redux': ^7.1.18
@@ -4486,7 +4486,7 @@ importers:
       '@types/linkify-it': ~2.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': ^17.0.0
@@ -4650,7 +4650,7 @@ importers:
       '@types/dompurify': ^2.0.3
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': ^17.0.0
@@ -4766,7 +4766,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
-      '@types/node': 18.7.18
+      '@types/node': ^18.7.18
       '@types/react': ^17.0.37
       '@types/react-dom': ^17.0.0
       '@types/sinon': ^9.0.0
