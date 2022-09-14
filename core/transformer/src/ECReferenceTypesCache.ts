@@ -89,13 +89,13 @@ export class ECReferenceTypesCache {
       while ((status = stmt.step()) === DbResult.BE_SQLITE_ROW) {
         const schemaName = stmt.getValue(0).getString();
         const schema = schemaLoader.getSchema(schemaName);
-        await this.initSchema(schema);
+        await this.considerInitSchema(schema);
       }
       if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
     });
   }
 
-  private async initSchema(schema: Schema): Promise<void> {
+  private async considerInitSchema(schema: Schema): Promise<void> {
     if (this._initedSchemas.has(schema.name)) {
       const cachedSchemaKey = this._initedSchemas.get(schema.name);
       assert(cachedSchemaKey !== undefined);
@@ -104,7 +104,10 @@ export class ECReferenceTypesCache {
         return;
       }
     }
+    return this.initSchema(schema);
+  }
 
+  private async initSchema(schema: Schema): Promise<void> {
     for (const ecclass of schema.getClasses()) {
       for (const prop of await ecclass.getProperties()) {
         if (!prop.isNavigation()) continue;
