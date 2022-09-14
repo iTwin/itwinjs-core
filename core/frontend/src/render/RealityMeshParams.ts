@@ -197,14 +197,24 @@ export class RealityMeshParamsBuilder {
   }
 
   public addTriangle(i0: number, i1: number, i2: number): void {
-    this._indices.push(i0);
-    this._indices.push(i1);
-    this._indices.push(i2);
+    this.addIndex(i0);
+    this.addIndex(i1);
+    this.addIndex(i2);
   }
 
   public addQuad(i0: number, i1: number, i2: number, i3: number): void {
     this.addTriangle(i0, i1, i2);
     this.addTriangle(i1, i3, i2);
+  }
+
+  public addIndices(indices: Iterable<number>): void {
+    for (const index of indices)
+      this.addIndex(index);
+  }
+
+  private addIndex(index: number): void {
+    assert(index <= 0xffff, "RealityMeshParams supports no more than 64k vertices");
+    this._indices.push(index);
   }
 
   public finish(): RealityMeshParams {
