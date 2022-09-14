@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/geonames-extension",
+      "comment": "Updated Node types declaration to support v18",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/geonames-extension"
+}

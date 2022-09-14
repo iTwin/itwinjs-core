@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Updated Node types declaration to support v18",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
