@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-transformer",
-      "comment": "use EntityReferences to support deferring non-element entities",
+      "comment": "use EntityReference to support deferring non-element entities",
       "type": "none"
     }
   ],

@@ -131,7 +131,7 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
-alpha;EntityReferences 
+alpha;EntityReference 
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
