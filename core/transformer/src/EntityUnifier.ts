@@ -8,8 +8,8 @@
  * for entity-generic operations in the transformer
  */
 import * as assert from "assert";
-import { ConcreteEntityTypes, DbResult,  EntityReference, EntityReferences, IModelError } from "@itwin/core-common";
-import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Relationship } from "@itwin/core-backend";
+import { ConcreteEntityTypes, DbResult,  EntityReference, IModelError } from "@itwin/core-common";
+import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, EntityReferences, IModelDb, Relationship } from "@itwin/core-backend";
 
 /** @internal */
 export namespace EntityUnifier {

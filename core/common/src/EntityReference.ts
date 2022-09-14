@@ -6,7 +6,7 @@
  * @module Schema
  */
 
-import { Id64, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 
 /**
  * Types of concrete entities. Used for storing strings in JavaScript reference-equality containers which encode
@@ -48,50 +48,10 @@ export namespace ConcreteEntityTypes {
 /**
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
- * @note for additional utilities that require runtime backend classes, see [EntityReferences]($backend)
+ * @note for utilities that require runtime backend classes, see [EntityReferences]($backend)
  * @alpha
  */
 export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
-
-/** Utility functions for [[EntityReference]] which is a subset of string
- * @alpha
- */
-export class EntityReferences {
-  public static isModel(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Model;
-  }
-  public static isElement(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Element;
-  }
-  public static isElementAspect(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.ElementAspect;
-  }
-  public static isRelationship(id: EntityReference) {
-    return id[0] === ConcreteEntityTypes.Relationship;
-  }
-  public static toId64(id: EntityReference) {
-    return id.slice(1);
-  }
-
-  /** split a concrete entity id into its type and raw id */
-  public static split(id: EntityReference): [ConcreteEntityTypes, Id64String] {
-    return [id[0] as ConcreteEntityTypes, id.slice(1)];
-  }
-
-  /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
-   * @internal
-   */
-  public static isValid(id: EntityReference): boolean {
-    return Id64.isValid(EntityReferences.toId64(id));
-  }
-
-  /** create the invalid id for a concrete entity type
-   * @internal
-   */
-  public static makeInvalid(type: ConcreteEntityTypes): EntityReference {
-    return `${type}${Id64.invalid}`;
-  }
-}
 
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
  * @alpha

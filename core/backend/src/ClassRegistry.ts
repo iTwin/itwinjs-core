@@ -11,7 +11,7 @@ import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from 
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
-import { EntityReferences } from "./EntityReference";
+import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
 import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
 

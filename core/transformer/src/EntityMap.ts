@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
+import { EntityReference } from "@itwin/core-common";
+import { ConcreteEntity, EntityReferences } from "@itwin/core-backend";
 
 /** @internal */
 export type EntityKey = EntityReference;
