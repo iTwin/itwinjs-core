@@ -34,6 +34,9 @@ export abstract class TerrainMeshProvider {
     this.modelId = options.modelId;
   }
 
+  // public abstract requestMeshData(tile: MapTile, isCanceled: () => boolean): Promise<any>;
+  // public abstract loadMesh(meshData: any, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
+
   public constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;
