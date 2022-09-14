@@ -18,6 +18,7 @@ import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
 import { IModelConnection } from "../../IModelConnection";
+import { IModelApp } from "../../IModelApp";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
 import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
@@ -25,7 +26,7 @@ import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
-  getCesiumTerrainProvider, GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
+  GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
   MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
   RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
@@ -492,13 +493,14 @@ class MapTreeSupplier implements TileTreeSupplier {
     };
 
     if (id.applyTerrain) {
-      assert(id.terrainProviderName === "CesiumWorldTerrain");
       await ApproximateTerrainHeights.instance.initialize();
       const elevationProvider = new BingElevationProvider();
 
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
       geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-      terrainProvider = await getCesiumTerrainProvider(terrainOpts);
+      const provider = IModelApp.terrainProviderRegistry.find(id.terrainProviderName);
+      if (provider)
+        terrainProvider = await provider.createTerrainMeshProvider(terrainOpts);
 
       if (!terrainProvider) {
         applyTerrain = false;

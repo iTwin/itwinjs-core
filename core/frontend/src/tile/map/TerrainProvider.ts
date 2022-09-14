@@ -7,7 +7,7 @@
  */
 
 import { TerrainProviderName } from "@itwin/core-common";
-import { EllipsoidTerrainProvider, getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
+import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
 
 export interface TerrainProvider {
   createTerrainMeshProvider(options: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined>;
@@ -20,13 +20,13 @@ export class TerrainProviderRegistry {
     this.register("CesiumWorldTerrain", {
       createTerrainMeshProvider: (options) => getCesiumTerrainProvider(options),
     });
-
-    this.register("Ellipsoid", {
-      createTerrainMeshProvider: (options) => Promise.resolve(new EllipsoidTerrainProvider(options)),
-    });
   }
 
   public register(name: TerrainProviderName, provider: TerrainProvider): void {
     this._providers.set(name, provider);
+  }
+
+  public find(name: TerrainProviderName): TerrainProvider | undefined {
+    return this._providers.get(name);
   }
 }
