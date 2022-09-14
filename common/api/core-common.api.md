@@ -4201,7 +4201,7 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     connection: any;
     // (undocumented)
-    destroy(error?: Error): void;
+    destroy(error?: Error): any;
     // (undocumented)
     header: (field: string) => string | undefined;
     // (undocumented)
