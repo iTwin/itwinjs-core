@@ -159,13 +159,6 @@ function zigZagDeltaDecode(uBuffer: Uint16Array, vBuffer: Uint16Array, heightBuf
   }
 }
 
-function getIndexArray(vertexCount: number, streamBuffer: ByteStream, indexCount: number): Uint16Array | Uint32Array {
-  const indicesAre32Bit = vertexCount > 64 * 1024;
-  const indexArray = (indicesAre32Bit) ? new Uint32Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount) : new Uint16Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount);
-  streamBuffer.advance(indexCount * (indicesAre32Bit ? Uint32Array.BYTES_PER_ELEMENT : Uint16Array.BYTES_PER_ELEMENT));
-  return indexArray;
-}
-
 /** @internal */
 class CesiumTerrainProvider extends TerrainMeshProvider {
   private _accessToken: string;
@@ -297,7 +290,15 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const triangleCount = streamBuffer.nextUint32;
     const indexCount = triangleCount * triangleElements;
 
-    const indices = getIndexArray(pointCount, streamBuffer, indexCount);
+    const indicesAre32Bit = pointCount > 0xffff;
+    const typedArray = indicesAre32Bit ? Uint32Array : Uint16Array;
+    const getIndexArray = (indexCount: number) => {
+      const indexArray = new typedArray(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount);
+      streamBuffer.advance(indexCount * typedArray.BYTES_PER_ELEMENT);
+      return indexArray;
+    };
+
+    const indices = getIndexArray(indexCount);
     // High water mark decoding based on decompressIndices_ in webgl-loader's loader.js.
     // https://code.google.com/p/webgl-loader/source/browse/trunk/samples/loader.js?r=99#55
     // Copyright 2012 Google Inc., Apache 2.0 license.
@@ -320,16 +321,16 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const heightScale = uvScale * (maxHeight - minHeight);
 
     const westCount = streamBuffer.nextUint32;
-    const westIndices = getIndexArray(pointCount, streamBuffer, westCount);
+    const westIndices = getIndexArray(westCount);
 
     const southCount = streamBuffer.nextUint32;
-    const southIndices = getIndexArray(pointCount, streamBuffer, southCount);
+    const southIndices = getIndexArray(southCount);
 
     const eastCount = streamBuffer.nextUint32;
-    const eastIndices = getIndexArray(pointCount, streamBuffer, eastCount);
+    const eastIndices = getIndexArray(eastCount);
 
     const northCount = streamBuffer.nextUint32;
-    const northIndices = getIndexArray(pointCount, streamBuffer, northCount);
+    const northIndices = getIndexArray(northCount);
 
     // Extensions...
     let encodedNormalsBuffer;
@@ -368,7 +369,6 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
           streamBuffer.advance(extensionLength);
           break;
       }
-
     }
 
     const mesh = TerrainMeshPrimitive.create({ pointQParams, pointCount, indexCount, wantSkirts: this._wantSkirts, westCount, eastCount, southCount, northCount, wantNormals: undefined !== encodedNormalsBuffer });
