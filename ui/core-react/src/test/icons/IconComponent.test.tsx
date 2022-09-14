@@ -35,6 +35,24 @@ describe("IconComponent", () => {
     const { container } = render(<Icon iconSpec="webSvg:test.svg" />);
     const webComponent = container.querySelector("svg-loader");
     expect(webComponent).not.to.be.null;
+    expect(webComponent!.getAttribute("src")).to.be.eq("test.svg");
   });
 
+  it("should render base64 data uri web svg iconSpec", () => {
+    // eslint-disable-next-line deprecation/deprecation
+    const dataUri = `data:image/svg+xml;base64,${btoa(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M7,1v6H1v2h6v6h2V9h6V7H9V1H7z"/></svg>`)}`;
+    const { container } = render(<Icon iconSpec={`webSvg:${dataUri}`} />);
+    const webComponent = container.querySelector("svg-loader");
+    expect(webComponent).to.not.be.null;
+    expect(webComponent!.getAttribute("src")).to.be.eq(dataUri);
+  });
+
+  it("should not render base64 data uri which does not translate to svg", () => {
+    // eslint-disable-next-line deprecation/deprecation
+    const dataUri = `data:image/svg+xml;base64,${btoa("<div></div>")}`;
+    const { container } = render(<Icon iconSpec={`webSvg:${dataUri}`} />);
+    const webComponent = container.querySelector("svg-loader");
+    expect(webComponent).to.not.be.null;
+    expect(webComponent!.getAttribute("src")).to.be.null;
+  });
 });

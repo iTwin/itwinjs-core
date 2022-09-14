@@ -1,7 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ImageRenderer render renders svg 1`] = `
-"<div><i class=\\"icon core-svg-icon\\"><div><svg-loader encoding=\\"UTF-8\\" version=\\"1.0\\" src=\\"<?xml\\">
-    
-  &gt;</svg-loader></div></i></div>"
+"<div><i class=\\"icon core-svg-icon\\"><div><svg-loader src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZlcnNpb249IjEuMCIgd2lkdGg9IjQ4MCIgaGVpZ2h0PSI1NDMuMDMwMDMiIHZpZXdCb3g9IjAgMCAyNTcuMDAyIDI5Ny41IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KICAgICAgPGcgdHJhbnNmb3JtPSJtYXRyaXgoMC44NTI2ODExLDAsMCwwLjg1MjY4MTEsMTguOTMwNjMyLDIxLjkxMzI5OSkiPgogICAgICAgIDxwb2x5Z29uIHBvaW50cz0iOC4wMDMsMjE4LjQ5NiAwLDIyMi45OTggMCw3NC40OTcgOC4wMDMsNzguOTk5IDguMDAzLDIxOC40OTYgIi8+CiAgICAgIDwvZz4KICAgIDwvc3ZnPg=="></svg-loader></div></i></div>"
 `;

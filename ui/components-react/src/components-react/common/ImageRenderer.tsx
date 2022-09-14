@@ -34,9 +34,33 @@ export class ImageRenderer {
     return (<img src={`data:image/${format};base64,${dataAsBase64}`} alt="" />);
   }
 
+  private isSvg(input: string): boolean {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(input, "application/xml");
+
+    const errorNode = doc.querySelector("parsererror");
+    if (errorNode) {
+      return false;
+    }
+
+    const rootNode = doc.documentElement.nodeName.toLowerCase();
+    return "svg" === rootNode;
+  }
+
+  private convertSvgToDataUri(svg: string) {
+    if (!this.isSvg(svg)) {
+      return "";
+    }
+
+    // eslint-disable-next-line deprecation/deprecation
+    const svgAsBase64 = btoa(svg);
+    return `data:image/svg+xml;base64,${svgAsBase64}`;
+  }
+
   /** Render svg string into JSX */
   private renderSvg(svg: string) {
-    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svg);
+    const svgAsDataUri = this.convertSvgToDataUri(svg.trim());
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgAsDataUri);
     return (
       <div><Icon iconSpec={iconSpec} /></div>
     );
