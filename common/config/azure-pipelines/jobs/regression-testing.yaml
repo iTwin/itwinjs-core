@@ -129,7 +129,7 @@ jobs:
 
   steps:
   - checkout: self
-  - template: jobs/ci-core.yaml
+  - template: templates/core-build.yaml
       parameters:
         nodeVersion: $(node_version)
 
