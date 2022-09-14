@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-bentley",
-      "comment": "Add EntityReferences",
+      "comment": "Add EntityReference",
       "type": "none"
     }
   ],

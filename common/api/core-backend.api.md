@@ -78,7 +78,7 @@ import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
 import { EntityQueryParams } from '@itwin/core-common';
 import { EntityReference } from '@itwin/core-common';
-import { EntityReferences as EntityReferences_2 } from '@itwin/core-common';
+import { EntityReference as EntityReferences_2 } from '@itwin/core-common';
 import { EntityReferenceSet } from '@itwin/core-common';
 import { EntityReferenceSet as EntityReferenceSet_2 } from '@itwin/core-bentley/lib/cjs/EntityReference';
 import { ExternalSourceAspectProps } from '@itwin/core-common';
@@ -2017,7 +2017,7 @@ export type EntityClassType<T> = Function & {
 };
 
 // @alpha
-export class EntityReferences extends EntityReferences_2 {
+export class EntityReference extends EntityReferences_2 {
     static from(entity: ConcreteEntity): EntityReference;
     static fromClass(id: Id64String, entityClass: typeof Entity): EntityReference;
     static fromClassFullName(id: Id64String, classFullName: string): EntityReference;

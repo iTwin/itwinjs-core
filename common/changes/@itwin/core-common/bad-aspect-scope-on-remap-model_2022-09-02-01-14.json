@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "update RenderScheduleScript.discloseIds to use EntityReferences",
+      "comment": "update RenderScheduleScript.discloseIds to use EntityReference",
       "type": "none"
     }
   ],

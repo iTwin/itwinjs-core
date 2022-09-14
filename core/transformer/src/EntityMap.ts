@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
+import { ConcreteEntity, EntityReference, EntityReference } from "@itwin/core-backend";
 
 /** @internal */
 export type EntityKey = EntityReference;
@@ -15,7 +15,7 @@ export class EntityMap<V> {
   private _map = new Map<EntityKey, V>();
 
   public static makeKey(entity: ConcreteEntity): EntityKey {
-    return EntityReferences.from(entity);
+    return EntityReference.from(entity);
   }
 
   public clear(): void {
