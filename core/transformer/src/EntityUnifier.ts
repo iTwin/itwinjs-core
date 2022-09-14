@@ -8,7 +8,7 @@
  * for entity-generic operations in the transformer
  */
 import * as assert from "assert";
-import { ConcreteEntityTypes, DbResult,  EntityReference, EntityReference, IModelError } from "@itwin/core-common";
+import { ConcreteEntityTypes, DbResult,  EntityReference, EntityReferences, IModelError } from "@itwin/core-common";
 import { ConcreteEntity, ConcreteEntityProps, Element, ElementAspect, IModelDb, Relationship } from "@itwin/core-backend";
 
 /** @internal */
@@ -32,7 +32,7 @@ export namespace EntityUnifier {
 
   export function exists(db: IModelDb, arg: { entity: ConcreteEntity } | { entityReference: EntityReference }) {
     if ("entityReference" in arg) {
-      const [type, id] = EntityReference.split(arg.entityReference);
+      const [type, id] = EntityReferences.split(arg.entityReference);
       const bisCoreRootClassName = ConcreteEntityTypes.toBisCoreRootClassFullName(type);
       return db.withPreparedStatement(`SELECT 1 FROM ${bisCoreRootClassName} WHERE ECInstanceId=?`, (stmt) => {
         stmt.bindId(1, id);

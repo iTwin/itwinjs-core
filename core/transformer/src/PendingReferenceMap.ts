@@ -6,7 +6,7 @@
  * @module Utils
  */
 
-import { ConcreteEntity, EntityReference, EntityReference } from "@itwin/core-backend";
+import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
 
 /**
@@ -20,8 +20,8 @@ export interface PendingReference {
 
 export namespace PendingReference {
   export function from(referencer: ConcreteEntity | EntityReference, referenced: ConcreteEntity | EntityReference): PendingReference {
-    if (typeof referencer !== "string") referencer = EntityReference.from(referencer);
-    if (typeof referenced !== "string") referenced = EntityReference.from(referenced);
+    if (typeof referencer !== "string") referencer = EntityReferences.from(referencer);
+    if (typeof referenced !== "string") referenced = EntityReferences.from(referenced);
     return { referencer, referenced };
   }
 
