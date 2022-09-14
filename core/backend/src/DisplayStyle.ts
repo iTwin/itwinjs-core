@@ -9,12 +9,11 @@
 import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
-import { EntityReferenceSet } from "./EntityReference";
 import { DefinitionElement, RenderTimeline } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
+import { IModelElementCloneContext } from "./IModelElementCloneContext";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
@@ -61,7 +60,7 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
@@ -224,7 +223,7 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
       const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;

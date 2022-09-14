@@ -6,7 +6,8 @@
  * @module Utils
  */
 
-import { ConcreteEntity, EntityReference, EntityReferences } from "@itwin/core-backend";
+import { EntityReference } from "@itwin/core-common";
+import { ConcreteEntity, EntityReferences } from "@itwin/core-backend";
 import { EntityMap } from "./EntityMap";
 
 /**
