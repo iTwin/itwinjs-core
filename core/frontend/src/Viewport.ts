@@ -2564,7 +2564,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const externalTexLoader = ExternalTextureLoader.instance;
     let haveNewTiles = true;
     let haveExternalTexRequests = true;
-    while (haveNewTiles && haveExternalTexRequests && !this.isDisposed) {
+    while ((haveNewTiles || haveExternalTexRequests) && !this.isDisposed) {
       // Since this viewport is not being managed by the ViewManager, we must first manually invalidate the scene and re-render the frame each tick of the tile-wait loop.
       this.invalidateScene();
       this.renderFrame();
