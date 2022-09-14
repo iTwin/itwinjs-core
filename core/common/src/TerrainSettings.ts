@@ -13,7 +13,7 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
  * @public
  * @extensions
  */
-export type TerrainProviderName = "CesiumWorldTerrain";
+export type TerrainProviderName = string;
 
 /**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -95,7 +95,7 @@ export class TerrainSettings {
     if (undefined === json)
       return new TerrainSettings();
 
-    const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
+    const providerName = json?.providerName ?? "CesiumWorldTerrain";
     const settings = new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
     if (true === json.nonLocatable)
       settings._nonLocatable = true;
