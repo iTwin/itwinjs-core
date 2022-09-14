@@ -487,7 +487,7 @@ describe("ITwinLocalization", () => {
       await germanLocalization.initialize(["Default", "Test"]);
     });
 
-    describe("Given Namespace", () => {
+    describe("Keys Without Namespaces", () => {
 
       it("first level with no substitution", () => {
         assert.equal(localization.getLocalizedStringWithNamespace("Default", "FirstTrivial"), "First level string (default)");
@@ -549,7 +549,7 @@ describe("ITwinLocalization", () => {
       });
     });
 
-    describe("Given Namespace (German)", () => {
+    describe("Keys Without Namespaces (German)", () => {
 
       it("first level with no substitution", () => {
         assert.equal(germanLocalization.getLocalizedStringWithNamespace("Default", "FirstTrivial"), "First level string (default german)");
@@ -590,6 +590,34 @@ describe("ITwinLocalization", () => {
       });
     });
 
+    describe("Keys With Namespaces", () => {
+
+      it("key with same namespace works", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Default", "Default:FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getLocalizedStringWithNamespace("Test", "Test:SecondTrivial.Test1"), "Second level string 1 (test)");
+      });
+
+      it("key with different namespace overrides given namespace", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Default", "Test:FirstTrivial"), "First level string (test)");
+        assert.equal(localization.getLocalizedStringWithNamespace("Test", "Default:FirstTrivial"), "First level string (default)");
+      });
+
+      it("key with same namespace works with fallback keys", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Default", ["NotExist:FirstTrivial", "Default:FirstTrivial"]), "First level string (default)");
+        assert.equal(localization.getLocalizedStringWithNamespace("Test", ["NotExist:FirstTrivial", "Test:FirstTrivial"]), "First level string (test)");
+      });
+
+      it("key with different namespace overrides given namespace with fallback keys", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Default", ["NotExist:FirstTrivial", "Test:FirstTrivial"]), "First level string (test)");
+        assert.equal(localization.getLocalizedStringWithNamespace("Test", ["NotExist:FirstTrivial", "Default:FirstTrivial"]), "First level string (default)");
+      });
+
+      it("missing key does not find a value", () => {
+        assert.equal(germanLocalization.getLocalizedStringWithNamespace("Default", "Default:MissingKeyString"), "MissingKeyString");
+        assert.equal(germanLocalization.getLocalizedStringWithNamespace("Test", ["Missing1", "MissingKeyObject.MissingString"]), "MissingKeyObject.MissingString");
+      });
+    });
+
     describe("Nonexisting Namespace", () => {
 
       it("first level fails", () => {
@@ -602,14 +630,23 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting", "Missing.String"), "Missing.String");
       });
 
-      it("empty string namespace fails", () => {
-        assert.equal(localization.getLocalizedStringWithNamespace("", "FirstTrivial"), "FirstTrivial");
-        assert.equal(localization.getLocalizedStringWithNamespace("", "SecondTrivial.Test1"), "SecondTrivial.Test1");
+      it("empty string namespace falls back to default namespace", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("", "FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getLocalizedStringWithNamespace("", "SecondTrivial.Test1"), "Second level string 1 (default)");
       });
 
       it("fallback key fails", () => {
         assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting", ["FirstTrivial", "NotExist"]), "NotExist");
         assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting", ["NotExist", "Missing.String"]), "Missing.String");
+      });
+
+      it("use key with valid namespace instead", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting", "Default:FirstTrivial"), "First level string (default)");
+        assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting", "Test:FirstTrivial"), "First level string (test)");
+      });
+
+      it("providing key with invalid namespace fails", () => {
+        assert.equal(localization.getLocalizedStringWithNamespace("Nonexisting1", "Nonexisting2:FirstTrivial"), "FirstTrivial");
       });
     });
 
