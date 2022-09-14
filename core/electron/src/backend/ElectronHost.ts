@@ -101,7 +101,7 @@ export class ElectronHost {
   public static frontendURL: string;
   public static rpcConfig: RpcConfiguration;
   public static get ipcMain() { return this._electron.ipcMain; }
-  public static get app() { return this._electron.app; }
+  public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
 
   private constructor() { }

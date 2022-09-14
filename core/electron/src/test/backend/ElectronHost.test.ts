@@ -30,35 +30,36 @@ async function testStartWithoutOptions() {
   assert(!ElectronHost.isValid);
   assert(!NativeHost.isValid);
   assert(!IModelHost.isValid);
+  assert(ElectronHost.electron === undefined);
+  assert(ElectronHost.app === undefined);
 
   await ElectronHost.startup();
 
   assert(ElectronHost.isValid);
   assert(NativeHost.isValid);
   assert(IModelHost.isValid);
-
   assert(ElectronHost.electron !== undefined);
   assert(ElectronHost.app !== undefined);
 }
 
 async function testRegisterIpcHandler() {
-  class RpcHandlerMock extends IpcHandler {
-    public override get channelName() { return "RpcHandlerMock-channel"; }
+  class IpcHandlerMock extends IpcHandler {
+    public override get channelName() { return "IpcHandlerMock-channel"; }
     public static wasRegisterCalled = false;
 
     public static override register() {
-      RpcHandlerMock.wasRegisterCalled = true;
+      IpcHandlerMock.wasRegisterCalled = true;
       return () => undefined;
     }
   }
 
   await ElectronHost.startup({
     electronHost: {
-      ipcHandlers: [RpcHandlerMock],
+      ipcHandlers: [IpcHandlerMock],
     },
   });
 
-  assert(RpcHandlerMock.wasRegisterCalled);
+  assert(IpcHandlerMock.wasRegisterCalled);
 }
 
 async function testOpenMainWindow() {
