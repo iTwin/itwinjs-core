@@ -14,13 +14,26 @@ import { ScreenViewport } from "../../Viewport";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
 
+export interface TerrainMeshProviderOptions {
+  iModel: IModelConnection;
+  modelId: Id64String;
+  exaggeration: number;
+  wantSkirts: boolean;
+  wantNormals: boolean;
+}
+
 /** Abstract base class for terrain mesh providers responsible for producing geometry background map tiles.
- * @see [[EllipsoidTerrainMeshProvider]]
- * @see [[CesiumTerrainMeshProvider]]
- * @internal
+ * @beta
  */
 export abstract class TerrainMeshProvider {
-  constructor(protected _iModel: IModelConnection, protected _modelId: Id64String) { }
+  public readonly iModel: IModelConnection;
+  public readonly modelId: Id64String;
+
+  protected constructor(options: TerrainMeshProviderOptions) {
+    this.iModel = options.iModel;
+    this.modelId = options.modelId;
+  }
+
   public constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;

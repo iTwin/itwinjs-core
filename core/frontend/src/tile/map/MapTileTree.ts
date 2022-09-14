@@ -24,20 +24,11 @@ import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider,
-  createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, GraphicsCollectorDrawArgs,
-  ImageryMapLayerTreeReference,
-  ImageryMapTileTree,
-  MapCartoRectangle,
-  MapLayerFeatureInfo,
-  MapLayerTileTreeReference,
-  MapTile,
-  MapTileLoader,
-  MapTilingScheme,
-  ModelMapLayerTileTreeReference,
-  PlanarTilePatch,
-  QuadId,
-  RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
+  BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
+  getCesiumTerrainProvider, GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
+  MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
+  RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
+  TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
@@ -492,6 +483,14 @@ class MapTreeSupplier implements TileTreeSupplier {
     const modelId = iModel.transientIds.next;
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
+    const terrainOpts: TerrainMeshProviderOptions = {
+      iModel,
+      modelId,
+      wantSkirts: id.wantSkirts,
+      exaggeration: id.terrainExaggeration,
+      wantNormals: id.wantNormals,
+    };
+
     if (id.applyTerrain) {
       assert(id.terrainProviderName === "CesiumWorldTerrain");
       await ApproximateTerrainHeights.instance.initialize();
@@ -499,7 +498,7 @@ class MapTreeSupplier implements TileTreeSupplier {
 
       bimElevationBias = - await this.computeHeightBias(id.terrainHeightOrigin, id.terrainHeightOriginMode, id.terrainExaggeration, iModel, elevationProvider);
       geodeticOffset = await elevationProvider.getGeodeticToSeaLevelOffset(iModel.projectExtents.center, iModel);
-      terrainProvider = await getCesiumTerrainProvider(iModel, modelId, id.wantSkirts, id.wantNormals, id.terrainExaggeration);
+      terrainProvider = await getCesiumTerrainProvider(terrainOpts);
 
       if (!terrainProvider) {
         applyTerrain = false;
@@ -508,7 +507,7 @@ class MapTreeSupplier implements TileTreeSupplier {
     }
 
     if (!terrainProvider) {
-      terrainProvider = new EllipsoidTerrainProvider(iModel, modelId, id.wantSkirts);
+      terrainProvider = new EllipsoidTerrainProvider(terrainOpts);
       bimElevationBias = id.mapGroundBias;
     }
 

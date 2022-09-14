@@ -16,7 +16,7 @@ import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import {
-  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, Tile, TileAvailability,
+  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
 
 /** @internal */
@@ -80,7 +80,7 @@ function notifyTerrainError(detailedDescription?: string): void {
 }
 
 /** @internal */
-export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
+export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
@@ -122,17 +122,19 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
   }
 
   let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
-  if (wantNormals)
+  if (opts.wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumTerrainProvider(iModel, modelId, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, wantSkirts, tilingScheme, tileAvailability, layers.metadataAvailability, exaggeration);
+  return new CesiumTerrainProvider(opts, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
 }
+
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
 }
+
 /**
  * Decodes delta and ZigZag encoded vertices. This modifies the buffers in place.
  *
@@ -165,6 +167,15 @@ function getIndexArray(vertexCount: number, streamBuffer: ByteStream, indexCount
 
 /** @internal */
 class CesiumTerrainProvider extends TerrainMeshProvider {
+  private _accessToken: string;
+  private readonly _tileUrlTemplate: string;
+  private readonly _maxDepth: number;
+  private readonly _wantSkirts: boolean;
+  private readonly _tilingScheme: MapTilingScheme;
+  private readonly _tileAvailability?: TileAvailability;
+  private readonly _metaDataAvailableLevel?: number;
+  private readonly _exaggeration: number;
+
   private static _scratchQPoint2d = QPoint2d.fromScalars(0, 0);
   private static _scratchPoint2d = Point2d.createZero();
   private static _scratchPoint = Point3d.createZero();
@@ -179,9 +190,19 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
-  constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
-    private _maxDepth: number, private readonly _wantSkirts: boolean, private _tilingScheme: MapTilingScheme, private _tileAvailability: TileAvailability | undefined, private _metaDataAvailableLevel: number | undefined, private _exaggeration: number) {
-    super(iModel, modelId);
+  constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
+    tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
+    super(opts);
+    this._wantSkirts = opts.wantSkirts;
+    this._exaggeration = opts.exaggeration;
+
+    this._accessToken = accessToken;
+    this._tileUrlTemplate = tileUrlTemplate;
+    this._maxDepth = maxDepth;
+    this._tilingScheme = tilingScheme;
+    this._tileAvailability = tileAvailability;
+    this._metaDataAvailableLevel = metaDataAvailableLevel;
+
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 

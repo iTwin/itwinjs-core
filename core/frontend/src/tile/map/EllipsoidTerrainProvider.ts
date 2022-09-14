@@ -11,7 +11,9 @@ import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, T
 import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, WebMercatorTilingScheme } from "../internal";
+import {
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, WebMercatorTilingScheme,
+} from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
 const scratchPoint = Point3d.createZero();
@@ -29,8 +31,11 @@ let scratch8Params: Array<Point2d>;
  */
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   private _tilingScheme = new WebMercatorTilingScheme();
-  constructor(iModel: IModelConnection, modelId: Id64String, private _wantSkirts: boolean) {
-    super(iModel, modelId);
+  private readonly _wantSkirts: boolean;
+
+  public constructor(opts: TerrainMeshProviderOptions) {
+    super(opts);
+    this._wantSkirts = opts.wantSkirts;
   }
 
   public override get requiresLoadedContent() { return false; }
