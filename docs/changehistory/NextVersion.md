@@ -138,4 +138,4 @@ The existing beta implementation of cloud storage tile cache ([CloudStorageServi
 
 [CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
 
-A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and [IModelAppOptions.tileAdmin.tileStorage]($frontend), which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
