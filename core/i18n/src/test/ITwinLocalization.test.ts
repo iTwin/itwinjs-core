@@ -919,7 +919,7 @@ describe("ITwinLocalization", () => {
 
     it("english language list includes en and en-US", async () => {
       localization = new ITwinLocalization();
-      await localization.initialize(["Default", "Test"]);
+      await localization.initialize([]);
 
       languages = localization.getLanguageList();
       assert.isTrue(languages.includes("en-US"));
@@ -928,7 +928,7 @@ describe("ITwinLocalization", () => {
 
     it("when non-english language is set as default, that language and english are included in langauge list", async () => {
       germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
-      await germanLocalization.initialize(["Default", "Test"]);
+      await germanLocalization.initialize([]);
 
       languages = germanLocalization.getLanguageList();
       assert.isTrue(languages.includes("en"));
@@ -937,7 +937,32 @@ describe("ITwinLocalization", () => {
   });
 
   describe("#changeLanguage", () => {
-    // TODO
+
+    // before(async () => {
+    //   localization = new ITwinLocalization();
+    //   await localization.initialize(["Default", "Test"]);
+
+    //   germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
+    //   await germanLocalization.initialize(["Default", "Test"]);
+    // });
+
+    it("change from english to another language", async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize(["Default"]);
+
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default)"); // english
+      await localization.changeLanguage("de");
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default german)"); // german
+    });
+
+    it("change from another language to english", async () => {
+      localization = new ITwinLocalization({ initOptions: { lng: "de" } });
+      await localization.initialize(["Default"]);
+
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default german)"); // german
+      await localization.changeLanguage("en");
+      assert.equal(localization.getLocalizedString("FirstTrivial"), "First level string (default)"); // english
+    });
   });
 
   describe("#registerNamespace", () => {
