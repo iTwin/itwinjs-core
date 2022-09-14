@@ -12,7 +12,7 @@ import {
   PrimitiveTypeCode, RelatedElementProps,
 } from "@itwin/core-common";
 import {
-  ElementAspect, EntityReference, IModelDb, IModelElementCloneContext, SQLiteDb,
+  ElementAspect, EntityReferences, IModelDb, IModelElementCloneContext, SQLiteDb,
 } from "@itwin/core-backend";
 import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
 import { EntityUnifier } from "./EntityUnifier";
@@ -50,7 +50,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
    * @returns the target CodeSpecId or a [EntityReference]($bentley) containing [Id64.invalid]($bentley) if a mapping is not found.
    */
   public findTargetEntityId(sourceEntityId: EntityReference): EntityReference {
-    const [type, rawId] = EntityReference.split(sourceEntityId);
+    const [type, rawId] = EntityReferences.split(sourceEntityId);
     switch (type) {
       case ConcreteEntityTypes.Model: {
         const targetId = `m${this.findTargetElementId(rawId)}` as const;
@@ -58,7 +58,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
         // That can occur in the transformer since a submodeled element is imported before its submodel.
         return EntityUnifier.exists(this.targetDb, { entityReference: targetId })
           ? targetId
-          : EntityReference.makeInvalid(ConcreteEntityTypes.Model);
+          : EntityReferences.makeInvalid(ConcreteEntityTypes.Model);
       }
       case ConcreteEntityTypes.Element:
         return `e${this.findTargetElementId(rawId)}`;
@@ -123,8 +123,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
           WHERE SourceECInstanceId=?
             AND TargetECInstanceId=?
           `, (stmt) => {
-            stmt.bindId(1, EntityReference.toId64(relInTarget.sourceId));
-            stmt.bindId(2, EntityReference.toId64(relInTarget.targetId));
+            stmt.bindId(1, EntityReferences.toId64(relInTarget.sourceId));
+            stmt.bindId(2, EntityReferences.toId64(relInTarget.targetId));
             let status: DbResult;
             if ((status = stmt.step()) === DbResult.BE_SQLITE_ROW)
               return stmt.getValue(0).getId();
@@ -154,8 +154,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
             propertyName
           );
           assert(navPropRefType !== undefined,`nav prop ref type for '${propertyName}' was not in the cache, this is a bug.`);
-          const targetEntityReference = this.findTargetEntityId(EntityReference.fromEntityType(sourceNavProp.id, navPropRefType));
-          const targetEntityId = EntityReference.toId64(targetEntityReference);
+          const targetEntityReference = this.findTargetEntityId(EntityReferences.fromEntityType(sourceNavProp.id, navPropRefType));
+          const targetEntityId = EntityReferences.toId64(targetEntityReference);
           // spread the property in case toJSON did not deep-clone
           (targetElementAspectProps as any)[propertyName] = { ...(targetElementAspectProps as any)[propertyName], id: targetEntityId };
         }

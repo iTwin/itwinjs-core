@@ -16,7 +16,7 @@ import { Point3d, Transform } from "@itwin/core-geometry";
 import {
   ChangeSummaryManager,
   ChannelRootAspect, ConcreteEntity, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsExternalSourceAspects,
-  ElementRefersToElements, ElementUniqueAspect, Entity, EntityReference, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
+  ElementRefersToElements, ElementUniqueAspect, Entity, EntityReferences, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
   FolderLink, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
@@ -610,8 +610,8 @@ export class IModelTransformer extends IModelExportHandler {
     sourceEntity: ConcreteEntity
   ) {
     return () => {
-      const targetId = this.context.findTargetEntityId(EntityReference.from(sourceEntity));
-      if (!EntityReference.isValid(targetId))
+      const targetId = this.context.findTargetEntityId(EntityReferences.from(sourceEntity));
+      if (!EntityReferences.isValid(targetId))
         throw Error(`${sourceEntity.id} has not been inserted into the target yet, the completer is invalid. This is a bug.`);
       const onEntityTransform = IModelTransformer.transformCallbackFor(this, sourceEntity);
       const updateEntity = EntityUnifier.updaterFor(this.targetDb, sourceEntity);
@@ -620,7 +620,7 @@ export class IModelTransformer extends IModelExportHandler {
         (targetProps as RelationshipProps).sourceId = this.context.findTargetElementId(sourceEntity.sourceId);
         (targetProps as RelationshipProps).targetId = this.context.findTargetElementId(sourceEntity.targetId);
       }
-      updateEntity({ ...targetProps, id: EntityReference.toId64(targetId) });
+      updateEntity({ ...targetProps, id: EntityReferences.toId64(targetId) });
       this._partiallyCommittedEntities.delete(sourceEntity);
     };
   }
@@ -635,7 +635,7 @@ export class IModelTransformer extends IModelExportHandler {
     for (const referenceId of entity.getReferenceConcreteIds()) {
       // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
       const referenceIdInTarget = this.context.findTargetEntityId(referenceId);
-      const alreadyImported = EntityReference.isValid(referenceIdInTarget);
+      const alreadyImported = EntityReferences.isValid(referenceIdInTarget);
       if (alreadyImported)
         continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
@@ -664,7 +664,7 @@ export class IModelTransformer extends IModelExportHandler {
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
       missingReferences.add(referenceId);
-      const entityReference = EntityReference.from(entity);
+      const entityReference = EntityReferences.from(entity);
       this._pendingReferences.set({ referenced: referenceId, referencer: entityReference }, thisPartialElem);
     }
   }
@@ -745,7 +745,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   private getElemTransformState(elementId: Id64String) {
     const dbHasModel = (db: IModelDb, id: Id64String) => {
-      const maybeModelId = EntityReference.fromEntityType(id, ConcreteEntityTypes.Model);
+      const maybeModelId = EntityReferences.fromEntityType(id, ConcreteEntityTypes.Model);
       return EntityUnifier.exists(db, { entityReference: maybeModelId });
     };
     const isSubModeled = dbHasModel(this.sourceDb, elementId);
@@ -823,7 +823,7 @@ export class IModelTransformer extends IModelExportHandler {
       const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
       if (!pendingRef) continue;
-      pendingRef.resolveReference(EntityReference.from(entity));
+      pendingRef.resolveReference(EntityReferences.from(entity));
       this._pendingReferences.delete(key);
     }
   }

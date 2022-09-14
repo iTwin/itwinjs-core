@@ -2816,7 +2816,7 @@ export interface EntityQueryParams {
 export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
 
 // @alpha
-export class EntityReference {
+export class EntityReferences {
     // (undocumented)
     static isElement(id: EntityReference): boolean;
     // (undocumented)

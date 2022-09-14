@@ -7,7 +7,7 @@
  */
 
 import { Id64, Id64String, isSubclassOf } from "@itwin/core-bentley";
-import { EntityProps, EntityReference, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
+import { EntityProps, EntityReferences, EntityReferenceSet, PropertyCallback, PropertyMetaData } from "@itwin/core-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
 
@@ -140,8 +140,8 @@ export class Entity {
     const concreteEntityIds = this.getReferenceConcreteIds();
     for (const entity of concreteEntityIds) {
       // the old [[collectReferenceIds]] only supported elements/models, and the id spaces can overlap so dont include anything else
-      if (EntityReference.isElement(entity) || EntityReference.isModel(entity)) {
-        referenceIds.add(EntityReference.toId64(entity));
+      if (EntityReferences.isElement(entity) || EntityReferences.isModel(entity)) {
+        referenceIds.add(EntityReferences.toId64(entity));
       }
     }
   }

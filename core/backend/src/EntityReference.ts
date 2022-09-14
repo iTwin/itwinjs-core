@@ -6,8 +6,7 @@
  * @module Schema
  */
 
-import { ConcreteEntityTypes, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
-import type { EntityReference } from "@itwin/core-common";
+import { EntityReferences as BentleyEntityReferences, ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, ModelProps } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
 import type { Model } from "./Model";
@@ -32,61 +31,60 @@ export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps
  * Utility function namespace for the EntityReference type which is a string
  * @alpha
  */
-// eslint-disable-next-line @typescript-eslint/no-redeclare
-export namespace EntityReference {
+export class EntityReferences extends BentleyEntityReferences {
 
   // necessary to prevent cyclic dependencies, the required modules will be in the require cache already so I don't store
   /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
-  function _ElementClass() {
+  private static get _ElementClass() {
     // typescript doesn't seem to understand the types of these static relative imports
     return (require("./Element") as typeof import("./Element")).Element;
   }
-  function _ElementAspectClass() {
+  private static get _ElementAspectClass() {
     return (require("./ElementAspect") as typeof import("./ElementAspect")).ElementAspect;
   }
-  function _ModelClass() {
+  private static get _ModelClass() {
     return (require("./Model") as typeof import("./Model")).Model;
   }
-  function _RelationshipClass() {
+  private static get _RelationshipClass() {
     return (require("./Relationship") as typeof import("./Relationship")).Relationship;
   }
-  function _ClassRegistry() {
+  private static get _ClassRegistry() {
     return (require("./ClassRegistry") as typeof import("./ClassRegistry")).ClassRegistry;
   }
   /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
 
   /** create an EntityReference given an entity */
-  export function from(entity: ConcreteEntity): EntityReference {
-    const type = EntityReference.typeFromClass(entity.constructor as typeof Entity);
+  public static from(entity: ConcreteEntity): EntityReference {
+    const type = this.typeFromClass(entity.constructor as typeof Entity);
     return `${type}${entity.id}`;
   }
 
   /** create an EntityReference given an id and a JavaScript class */
-  export function fromClass(id: Id64String, entityClass: typeof Entity): EntityReference {
-    const type = EntityReference.typeFromClass(entityClass);
+  public static fromClass(id: Id64String, entityClass: typeof Entity): EntityReference {
+    const type = this.typeFromClass(entityClass);
     return `${type}${id}`;
   }
 
   /** Create an EntityReference given an id and a qualified EC class name
    * @note Searches for a class by name in the [ClassRegistry]($backend)
    */
-  export function fromClassFullName(id: Id64String, classFullName: string): EntityReference {
-    const ecclass = _ClassRegistry().findRegisteredClass(classFullName);
+  public static fromClassFullName(id: Id64String, classFullName: string): EntityReference {
+    const ecclass = this._ClassRegistry.findRegisteredClass(classFullName);
     if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
-    return EntityReference.fromClass(id, ecclass);
+    return this.fromClass(id, ecclass);
   }
 
   /** Create an EntityReference quickly from an exact reference type and id */
-  export function fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
+  public static fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
     return `${type}${id}`;
   }
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
-  export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
-    if (entityClass.is(_ElementClass())) return ConcreteEntityTypes.Element;
-    else if (entityClass.is(_ElementAspectClass())) return ConcreteEntityTypes.ElementAspect;
-    else if (entityClass.is(_ModelClass())) return ConcreteEntityTypes.Model;
-    else if (entityClass.is(_RelationshipClass())) return ConcreteEntityTypes.Relationship;
-    else assert(false, "unknown or abstract entity type passed to EntityReference.from");
+  public static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
+    if (entityClass.is(this._ElementClass)) return ConcreteEntityTypes.Element;
+    else if (entityClass.is(this._ElementAspectClass)) return ConcreteEntityTypes.ElementAspect;
+    else if (entityClass.is(this._ModelClass)) return ConcreteEntityTypes.Model;
+    else if (entityClass.is(this._RelationshipClass)) return ConcreteEntityTypes.Relationship;
+    else assert(false, "unknown or abstract entity type passed to EntityReferences.from");
   }
 }
