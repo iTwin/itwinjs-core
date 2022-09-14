@@ -227,6 +227,11 @@ export class QPoint2d {
   }
 }
 
+export interface QPoint2dBuffer {
+  params: QParams2d;
+  points: Uint16Array;
+}
+
 /** A list of [[QPoint2d]]s all quantized to the same range.
  * @public
  */
@@ -570,6 +575,11 @@ export class QPoint3d {
 
     return diff;
   }
+}
+
+export interface QPoint3dBuffer {
+  params: QParams3d;
+  points: Uint16Array;
 }
 
 /** A list of [[QPoint3d]]s all quantized to the same range.
