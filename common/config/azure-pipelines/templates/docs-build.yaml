@@ -8,16 +8,15 @@ parameters:
   - name: stagingDir
     type: string
     default: $(System.ArtifactsDirectory)/staging
+  - name: tempDocsLocation
+    type: string
+    default: $(Pipeline.Workspace)/tempDocsBuild
   - name: outputDir
     type: string
     default: $(Pipeline.Workspace)/tempDocsBuild/public_build
   - name: downloadCurrentBuildArtifacts
     type: boolean
     default: false
-
-variables:
-  - name: tempDocsLocation
-    value: $(Pipeline.Workspace)/tempDocsBuild
 
 steps:
   - checkout: self
