@@ -182,6 +182,9 @@ export class RealityMeshParamsBuilder {
     this.addQuantizedVertex(this._q3d, uv, normal);
   }
 
+  public get uvQParams(): QParams2d { return this._uvs.params; }
+  public get positionQParams(): QParams3d { return this._positions.params; }
+
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): void {
     assert(this._positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
     assert((undefined === normal) === (undefined === this._normals), "RealityMeshParams requires all vertices to have normals, or none.");

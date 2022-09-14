@@ -11,6 +11,7 @@ import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, T
 import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
 } from "../internal";
@@ -90,6 +91,64 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     assert(mesh.isCompleted);
     return mesh;
   }
+
+  private createSkirtlessPlanarMesh(tile: MapTile): RealityMeshParams {
+    const projection = tile.getProjection();
+    const builder = new RealityMeshParamsBuilder({
+      positionRange: projection.localRange,
+      initialVertexCapacity: 4,
+      initialIndexCapacity: 6,
+    });
+
+    const uv = new Point2d();
+    const pos = new Point3d();
+    for (let v = 0; v < 2; v++) {
+      for (let u = 0; u < 2; u++) {
+        Point2d.create(u, 1 - v, uv);
+        builder.addUnquantizedVertex(projection.getPoint(u, v, 0, pos), uv);
+      }
+
+      builder.addQuad(0, 1, 2, 3);
+    }
+
+    return builder.finish();
+  }
+
+  private createSkirtedPlanarMesh(tile: MapTile): RealityMeshParams {
+    const projection = tile.getProjection();
+    const positions: Point3d[] = [];
+    const uvs: Point2d[] = [];
+
+    const skirtHeight = tile.range.xLength() / 20;
+    for (let v = 0, i = 0; v < 2; v++) {
+      for (let u = 0; u < 2; u++) {
+        for (let h = 0; h < 2; h++) {
+          positions.push(projection.getPoint(u, v, h * skirtHeight));
+          uvs[i] = new Point2d(u, 1 - v);
+          i++;
+        }
+      }
+    }
+
+    const builder = new RealityMeshParamsBuilder({
+      initialVertexCapacity: 8,
+      initialIndexCapacity: 30,
+      positionRange: Range3d.createArray(positions),
+    });
+
+    for (let i = 0; i < 8; i++)
+      builder.addUnquantizedVertex(positions[i], uvs[i]);
+
+    builder.addQuad(0, 2, 4, 6);
+    const  reorder = [0, 2, 6, 4, 0];
+    for (let i = 0; i < 4; i++) {
+      const iThis = reorder[i], iNext = reorder[i + 1];
+      builder.addQuad(iThis, iNext, iThis + 1, iNext + 1);
+    }
+
+    return builder.finish();
+  }
+
   private getGlobeMesh(tile: MapTile): TerrainMeshPrimitive | undefined {
     const globeMeshDimension = 10;
     const projection = tile.getProjection();
