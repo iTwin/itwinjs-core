@@ -12,6 +12,7 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
  * @see [[TerrainProps]]
  * @public
  * @extensions
+ * @deprecated Use string instead.
  */
 export type TerrainProviderName = string;
 
@@ -58,7 +59,7 @@ export enum TerrainHeightOriginMode {
 export class TerrainSettings {
   private _nonLocatable: true | undefined;
   /** Identifies the provider currently only CesiumWorldTerrain supported. */
-  public readonly providerName: TerrainProviderName;
+  public readonly providerName: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled. 1.0 indicates no exaggeration. Default value: 1.0 */
   public readonly exaggeration: number;
   /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
@@ -75,7 +76,7 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
+  constructor(providerName: string = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;

@@ -6,7 +6,6 @@
  * @module Tiles
  */
 
-import { TerrainProviderName } from "@itwin/core-common";
 import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
 
 export interface TerrainProvider {
@@ -14,7 +13,7 @@ export interface TerrainProvider {
 }
 
 export class TerrainProviderRegistry {
-  private readonly _providers = new Map<TerrainProviderName, TerrainProvider>();
+  private readonly _providers = new Map<string, TerrainProvider>();
 
   public constructor() {
     this.register("CesiumWorldTerrain", {
@@ -22,11 +21,11 @@ export class TerrainProviderRegistry {
     });
   }
 
-  public register(name: TerrainProviderName, provider: TerrainProvider): void {
+  public register(name: string, provider: TerrainProvider): void {
     this._providers.set(name, provider);
   }
 
-  public find(name: TerrainProviderName): TerrainProvider | undefined {
+  public find(name: string): TerrainProvider | undefined {
     return this._providers.get(name);
   }
 }

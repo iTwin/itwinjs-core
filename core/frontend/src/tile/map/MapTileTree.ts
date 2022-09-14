@@ -9,7 +9,6 @@
 import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
-  TerrainProviderName,
 } from "@itwin/core-common";
 import {
   Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
@@ -366,7 +365,7 @@ export class MapTileTree extends RealityTileTree {
 interface MapTreeId {
   tileUserId: number;
   applyTerrain: boolean;
-  terrainProviderName: TerrainProviderName;
+  terrainProviderName: string;
   terrainHeightOrigin: number;
   terrainHeightOriginMode: number;
   terrainExaggeration: number;
