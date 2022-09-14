@@ -67,7 +67,7 @@
     "@types/deep-assign": "^0.1.0",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.7",
+    "@types/node": "18.7.18",
     "@types/qs": "^6.5.0",
     "@types/semver": "7.3.10",
     "@types/superagent": "^4.1.14",
