@@ -7,7 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
+import {
+  Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
+} from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -169,8 +171,8 @@ export class QPoint2d {
   /** Construct with `x` and `y` initialized to zero. */
   public constructor() { }
 
-  /** Initialize this point by quantizing the supplied Point2d using the specified params */
-  public init(pos: Point2d, params: QParams2d) {
+  /** Initialize this point by quantizing the supplied { x, y } using the specified params */
+  public init(pos: XAndY, params: QParams2d) {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
   }
@@ -487,8 +489,8 @@ export class QPoint3d {
   /** Construct with all components initialized to zero. */
   public constructor() { }
 
-  /** Initialize this point by quantizing the supplied Point3d using the specified params */
-  public init(pos: Point3d, params: QParams3d): void {
+  /** Initialize this point by quantizing the supplied { x, y, z } using the specified params */
+  public init(pos: XYAndZ, params: QParams3d): void {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
     this.z = Quantization.quantize(pos.z, params.origin.z, params.scale.z);

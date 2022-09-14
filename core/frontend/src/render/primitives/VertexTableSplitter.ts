@@ -18,7 +18,7 @@ import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
 import { IModelApp } from "../../IModelApp";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 
-interface TypedArrayBuilderOptions {
+export interface TypedArrayBuilderOptions {
   growthFactor?: number;
   initialCapacity?: number;
 }
@@ -26,7 +26,7 @@ interface TypedArrayBuilderOptions {
 /** Incrementally builds an array of unsigned 8-, 16-, or 32-bit integers.
  * ###TODO move to core-bentley package?
  */
-class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
   protected readonly _constructor: Constructor<T>;
   protected _data: T;
   protected _length: number;
@@ -93,21 +93,19 @@ class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
   }
 }
 
-class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint8Array, options);
   }
 }
 
-/* not currently used.
-class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint16Array, options);
   }
 }
-*/
 
-class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
   public constructor(options?: TypedArrayBuilderOptions) {
     super(Uint32Array, options);
   }
