@@ -32,7 +32,7 @@
     "@itwin/oidc-signin-tool": "^3.2.2",
     "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/node": "^18.7.18",
+    "@types/node": "16.11.59",
     "chai": "^4.1.2",
     "cpx2": "^3.0.0",
     "eslint": "^7.11.0",
