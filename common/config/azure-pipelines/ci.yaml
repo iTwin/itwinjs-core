@@ -33,6 +33,14 @@ schedules:
 
 jobs:
 - job:
+  variables:
+  - name: linuxPool
+    value: 'iModeljs Linux'
+  - name: mac_pool
+    value: iModelTechCI
+  - name: win_pool
+    value: iModelTechCI
+
   strategy:
     matrix:
       "Windows_Node_16":
@@ -57,40 +65,10 @@ jobs:
     clean: all
 
   steps:
+  - checkout: self
   - template: jobs/ci-core.yaml
       parameters:
         nodeVersion: 16.13.0
-        gitRepo: self
-        gitBranch: master
 
-  # - job: Windows
-  #   pool:
-  #     vmImage: windows-latest
-  # steps:
-  # - template: jobs/ci-core.yaml
-  #     parameters:
-  #       nodeVersion: 16.13.0
-  #       gitRepo: self
-  #       gitBranch: master
-
-  # - job: Linux
-  #   pool:
-  #     vmImage: ubuntu-latest
-  # steps:
-  # - template: jobs/ci-core.yaml
-  #     parameters:
-  #       nodeVersion: 16.13.0
-  #       gitRepo: self
-  #       gitBranch: master
-
-  # - job: Mac
-  #   pool:
-  #     vmImage: macOS-latest
-  # steps:
-  # - template: jobs/ci-core.yaml
-  #     parameters:
-  #       nodeVersion: 16.13.0
-  #       gitRepo: self
-  #       gitBranch: master
 
 
