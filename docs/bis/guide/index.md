@@ -1,4 +1,4 @@
-# [BIS](../../index.md) Guide
+# [BIS](../index.md) Guide
 
 - [Introduction](./intro/index.md)
 - [Fundamentals](./fundamentals/index.md)
