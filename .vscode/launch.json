@@ -4,8 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "name": "Attach to node process",
       "presentation": {
@@ -48,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/{backend,common}/lib/**/*.js"
+        "${workspaceFolder}/core/{backend,common,geometry}/lib/**/*.js"
       ]
     },
     {
@@ -368,23 +366,6 @@
         "order": 7
       },
       "cwd": "${workspaceFolder}/core/quantity",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "iTwin Client Tests (Offline)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/clients/itwin",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",

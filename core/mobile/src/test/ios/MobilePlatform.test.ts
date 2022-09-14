@@ -9,7 +9,7 @@ import * as path from "path";
 
 const outputDir = path.join(os.tmpdir(), "output");
 
-describe.skip("IOS Platform Test", () => {
+describe("IOS Platform Test", () => {
   it("Filesystem (Uint8Array) - writeFileSync, appendFileSync and readFileSync", () => {
     const testDir = path.join(outputDir, "mobile-introp");
     const testFile = path.join(testDir, "test.bin");

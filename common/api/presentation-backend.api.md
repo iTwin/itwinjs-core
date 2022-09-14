@@ -53,16 +53,16 @@ import { VariableValue } from '@itwin/presentation-common';
 import { VariableValueTypes } from '@itwin/presentation-common';
 import { WithCancelEvent } from '@itwin/presentation-common';
 
-// @public (undocumented)
+// @public
 export interface BackendDiagnosticsAttribute {
-    // @alpha (undocumented)
+    // @beta
     diagnostics?: BackendDiagnosticsOptions;
 }
 
-// @alpha (undocumented)
+// @beta
 export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
 
-// @alpha (undocumented)
+// @beta
 export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
     // (undocumented)
     handler: BackendDiagnosticsHandler;
@@ -74,8 +74,8 @@ export interface ContentCacheConfig {
     size?: number;
 }
 
-// @internal (undocumented)
-export const createContentDescriptorOverrides: (descriptorOrOverrides: Descriptor | DescriptorOverrides) => DescriptorOverrides;
+// @public
+export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -86,6 +86,9 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 // @internal (undocumented)
 export function getElementKey(imodel: IModelDb, id: Id64String): InstanceKey | undefined;
+
+// @internal (undocumented)
+export function getLocalizedStringEN(key: string): any;
 
 // @beta
 export type HierarchyCacheConfig = MemoryHierarchyCacheConfig | DiskHierarchyCacheConfig | HybridCacheConfig;
@@ -190,8 +193,7 @@ export enum PresentationBackendNativeLoggerCategory {
 export class PresentationManager {
     constructor(props?: PresentationManagerProps);
     // @deprecated
-    get activeLocale(): string | undefined;
-    set activeLocale(value: string | undefined);
+    activeLocale: string | undefined;
     get activeUnitSystem(): UnitSystemKey | undefined;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     compareHierarchies(requestOptions: HierarchyCompareOptions<IModelDb, NodeKey>): Promise<HierarchyCompareInfo>;
@@ -252,9 +254,11 @@ export interface PresentationManagerProps {
     // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
+    // (undocumented)
+    diagnosticsCallback?: DiagnosticsCallback;
     // @deprecated
     enableSchemasPreload?: boolean;
-    // @internal (undocumented)
+    // @beta
     getLocalizedString?: (key: string) => string;
     // @internal
     id?: string;

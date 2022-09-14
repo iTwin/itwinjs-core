@@ -14,7 +14,7 @@ import {
   DefaultContentDisplayTypes,
   Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
-  FilterByTextHierarchyRequestOptions, getLocalizedStringEN, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
+  FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
   isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper, MultiElementPropertiesRequestOptions,
   Node,
   NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
@@ -26,7 +26,7 @@ import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationMan
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute } from "./Utils";
+import { BackendDiagnosticsAttribute, DiagnosticsCallback, getLocalizedStringEN } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -307,6 +307,12 @@ export interface PresentationManagerProps {
    * @beta
   */
   getLocalizedString?: (key: string) => string;
+
+  /*
+   * A function that will be called after receiving diagnostics.
+   * @beta
+   */
+  diagnosticsCallback?: DiagnosticsCallback;
 }
 
 /**
