@@ -60,11 +60,14 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
 
     } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
 
+      if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.setupWalkCamera)
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.setupCameraWalkTool));
+
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.walk)
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.walkViewCommand));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.walkViewCommand));
 
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.toggleCamera)
-        items.push(ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.toggleCameraViewCommand));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(30, CoreTools.toggleCameraViewCommand));
     }
     return items;
   }
