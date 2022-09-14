@@ -37,7 +37,6 @@ export interface HttpServerRequest extends Readable {
   statusMessage?: string;
   socket: any;
   destroy(error?: Error): this;
-  destroy(error?: Error): void;
   body: string | Buffer;
   path: string;
   method: string;
