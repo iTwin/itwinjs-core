@@ -78,9 +78,7 @@ import { EntityMetaData } from '@itwin/core-common';
 import { EntityProps } from '@itwin/core-common';
 import { EntityQueryParams } from '@itwin/core-common';
 import { EntityReference } from '@itwin/core-common';
-import { EntityReferences as EntityReferences_2 } from '@itwin/core-common';
 import { EntityReferenceSet } from '@itwin/core-common';
-import { EntityReferenceSet as EntityReferenceSet_2 } from '@itwin/core-bentley/lib/cjs/EntityReference';
 import { ExternalSourceAspectProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentProps } from '@itwin/core-common';
 import { ExternalSourceAttachmentRole } from '@itwin/core-common';
@@ -1281,12 +1279,12 @@ export abstract class DisplayStyle extends DefinitionElement {
     // @internal (undocumented)
     static get className(): string;
     // @alpha (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet_2): void;
+    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
 }
@@ -1310,11 +1308,11 @@ export class DisplayStyle3d extends DisplayStyle {
     // @internal (undocumented)
     static get className(): string;
     // @alpha (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet_2): void;
+    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
+    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
 }
@@ -1760,7 +1758,7 @@ class Element_2 extends Entity {
     removeUserProperties(nameSpace: string): void;
     // @beta
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @beta
+    // @alpha
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
@@ -2017,13 +2015,28 @@ export type EntityClassType<T> = Function & {
 };
 
 // @alpha
-export class EntityReferences extends EntityReferences_2 {
-    static from(entity: ConcreteEntity): EntityReference;
-    static fromClass(id: Id64String, entityClass: typeof Entity): EntityReference;
-    static fromClassFullName(id: Id64String, classFullName: string): EntityReference;
-    static fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference;
+export namespace EntityReferences {
+    export function from(entity: ConcreteEntity): EntityReference;
+    export function fromClass(id: Id64String, entityClass: typeof Entity): EntityReference;
+    export function fromClassFullName(id: Id64String, classFullName: string): EntityReference;
+    export function fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference;
+    // (undocumented)
+    export function isElement(id: EntityReference): boolean;
+    // (undocumented)
+    export function isElementAspect(id: EntityReference): boolean;
+    // (undocumented)
+    export function isModel(id: EntityReference): boolean;
+    // (undocumented)
+    export function isRelationship(id: EntityReference): boolean;
     // @internal
-    static typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
+    export function isValid(id: EntityReference): boolean;
+    // @internal
+    export function makeInvalid(type: ConcreteEntityTypes): EntityReference;
+    export function split(id: EntityReference): [ConcreteEntityTypes, Id64String];
+    // (undocumented)
+    export function toId64(id: EntityReference): string;
+    // @internal
+    export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
 }
 
 // @public
@@ -2448,7 +2461,7 @@ export abstract class GeometricElement extends Element_2 {
     abstract get placement(): Placement2d | Placement3d;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @beta (undocumented)
+    // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     toJSON(): GeometricElementProps;
 }
@@ -4745,7 +4758,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     modelSelectorId: Id64String;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @beta (undocumented)
+    // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
@@ -5307,7 +5320,7 @@ export abstract class ViewDefinition extends DefinitionElement {
     protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @beta (undocumented)
+    // @alpha (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)
@@ -5475,9 +5488,6 @@ export const WorkspaceSetting: {
     Containers: string;
     Databases: string;
 };
-
-
-export * from "@itwin/core-bentley/lib/cjs/EntityReference";
 
 // (No @packageDocumentation comment for this package)
 

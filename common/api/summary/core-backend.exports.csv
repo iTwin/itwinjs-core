@@ -137,7 +137,10 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
-alpha;EntityReferences 
+alpha;EntityReferences
+internal;isValid(id: EntityReference): boolean
+internal;makeInvalid(type: ConcreteEntityTypes): EntityReference
+internal;typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo

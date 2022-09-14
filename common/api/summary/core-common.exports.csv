@@ -234,7 +234,6 @@ beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
 alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
-alpha;EntityReferences
 alpha;EntityReferenceSet 
 public;Environment
 public;EnvironmentProperties = NonFunctionPropertiesOf
