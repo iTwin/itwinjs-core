@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/imodel-components-react",
-      "comment": "Updated Node types declaration to support v18",
+      "comment": "Updated Node types declaration to support latest v16",
       "type": "none"
     }
   ],

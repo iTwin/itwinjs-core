@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-i18n",
-      "comment": "Updated Node types declaration to support v18",
+      "comment": "Updated Node types declaration to support latest v16",
       "type": "none"
     }
   ],
