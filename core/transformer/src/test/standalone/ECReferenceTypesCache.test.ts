@@ -100,7 +100,7 @@ describe("ECReferenceTypesCache", () => {
     });
   });
 
-  it("should add new schema data when encountering a schema of a higher version", async () => {
+  it.only("should add new schema data when encountering a schema of a higher version", async () => {
     const thisTestRefCache = new ECReferenceTypesCache();
 
     const pathForEmpty = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
@@ -123,7 +123,7 @@ describe("ECReferenceTypesCache", () => {
     expect(thisTestRefCache.getNavPropRefType("BisCore", "PhysicalType", "PhysicalMaterial")).to.equal(ConcreteEntityTypes.Element);
   });
 
-  it("should not init schemas of a lower or equal version", async () => {
+  it.only("should not init schemas of a lower or equal version", async () => {
     const thisTestRefCache = new ECReferenceTypesCache();
 
     const pathForEmpty1 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");

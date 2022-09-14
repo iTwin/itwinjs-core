@@ -12,7 +12,7 @@ import {
   PrimitiveTypeCode, RelatedElementProps,
 } from "@itwin/core-common";
 import {
-  ElementAspect, EntityReferences, IModelDb, IModelElementCloneContext, SQLiteDb,
+  ElementAspect, EntityReferences, IModelElementCloneContext, SQLiteDb,
 } from "@itwin/core-backend";
 import { ECReferenceTypesCache } from "./ECReferenceTypesCache";
 import { EntityUnifier } from "./EntityUnifier";
