@@ -12,7 +12,7 @@ import { QParams3d, QPoint2d } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, WebMercatorTilingScheme,
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
@@ -38,8 +38,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     this._wantSkirts = opts.wantSkirts;
   }
 
-  public override get requiresLoadedContent() { return false; }
-  public override constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
   public isTileAvailable(_quadId: QuadId): boolean { return true; }
   public get maxDepth(): number { return 22; }
   public getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
@@ -157,7 +155,12 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     assert(mesh.isCompleted);
     return mesh;
   }
-  public override async getMesh(tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
+
+  public override async requestMeshData(): Promise<TileRequest.Response> {
+    return { data: "" };
+  }
+
+  public override async loadMesh(_data: TileRequest.ResponseData, _isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined> {
     return tile.isPlanar ? this.getPlanarMesh(tile) : this.getGlobeMesh(tile);
   }
 }

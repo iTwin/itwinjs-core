@@ -12,7 +12,9 @@ import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { ScreenViewport } from "../../Viewport";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
+import {
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile, TileRequest,
+} from "../internal";
 
 export interface TerrainMeshProviderOptions {
   iModel: IModelConnection;
@@ -34,17 +36,13 @@ export abstract class TerrainMeshProvider {
     this.modelId = options.modelId;
   }
 
-  // public abstract requestMeshData(tile: MapTile, isCanceled: () => boolean): Promise<any>;
-  // public abstract loadMesh(meshData: any, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
+  public abstract requestMeshData(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract loadMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
 
-  public constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;
-  public get requestOptions(): RequestOptions { return { method: "GET", responseType: "arraybuffer" }; }
   public abstract get maxDepth(): number;
-  public async getMesh(_tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> { return undefined; }
   public abstract getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
   public abstract get tilingScheme(): MapTilingScheme;
   public forceTileLoad(_tile: Tile): boolean { return false; }
-  public get requiresLoadedContent() { return true; }
 }

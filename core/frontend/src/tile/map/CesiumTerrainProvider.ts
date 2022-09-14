@@ -17,6 +17,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import {
   GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, Tile, TileAvailability,
+  TileRequest,
 } from "../internal";
 
 /** @internal */
@@ -225,13 +226,29 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
-  public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
+  public override async requestMeshData(tile: MapTile): Promise<Uint8Array | undefined> {
+    const quadId = tile.quadId;
+    const tileUrl = this.constructUrl(quadId.row, quadId.column, quadId.level);
+    const requestOptions: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+      headers: { authorization: `Bearer ${this._accessToken}` },
+      accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01",
+    };
+
+    try {
+      const response = await request(tileUrl, requestOptions);
+      return response.status === 200 ? new Uint8Array(response.body) : undefined;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  public override async loadMesh(data: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined> {
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
       const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-      if (!accessTokenAndEndpointUrl.token) {
-        assert(false);
+      if (!accessTokenAndEndpointUrl.token || isCanceled())
         return undefined;
-      }
 
       this._accessToken = accessTokenAndEndpointUrl.token;
       this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
@@ -239,6 +256,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
+
     const blob = data;
     const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
@@ -411,11 +429,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       }
     }
   }
-  public override get requestOptions(): RequestOptions {
-    return { method: "GET", responseType: "arraybuffer", headers: { authorization: `Bearer ${this._accessToken}` }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
-  }
 
-  public override constructUrl(row: number, column: number, zoomLevel: number): string {
+  public constructUrl(row: number, column: number, zoomLevel: number): string {
     return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
