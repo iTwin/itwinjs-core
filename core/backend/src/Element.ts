@@ -17,8 +17,8 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
+import { IModelElementCloneContext } from "./IModelElementCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
@@ -296,7 +296,7 @@ export class Element extends Entity {
    * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
+  protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void { }
 
   /** Called when a *root* element in a subgraph is changed and before its outputs are processed.
    * This special callback is made when:
@@ -1595,7 +1595,7 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void {
     super.onCloned(context, sourceProps, targetProps);
     if (context.isBetweenIModels)
       targetProps.script = JSON.stringify(this.remapScript(context, this.parseScriptProps(targetProps.script)));
@@ -1604,7 +1604,7 @@ export class RenderTimeline extends InformationRecordElement {
   /** Remap Ids when cloning a RenderSchedule.Script between iModels on a DisplayStyle or RenderTimeline.
    * @internal
    */
-  public static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
+  public static remapScript(context: IModelElementCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps {
     const scriptProps: RenderSchedule.ScriptProps = [];
     if (!Array.isArray(input))
       return scriptProps;
