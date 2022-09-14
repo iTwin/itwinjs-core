@@ -1605,6 +1605,8 @@ export class CoreTools {
     // (undocumented)
     static get selectElementCommand(): ToolItemDef;
     // (undocumented)
+    static get setupCameraWalkTool(): ToolItemDef;
+    // (undocumented)
     static get toggleCameraViewCommand(): ToolItemDef;
     // (undocumented)
     static get viewRedoCommand(): ToolItemDef;
@@ -1945,6 +1947,7 @@ export interface DefaultNavigationTools {
     vertical?: {
         walk?: boolean;
         toggleCamera?: boolean;
+        setupWalkCamera?: boolean;
     };
 }
 
