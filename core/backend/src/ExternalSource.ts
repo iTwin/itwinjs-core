@@ -59,7 +59,8 @@ export class ExternalSource extends InformationReferenceElement {
   }
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (this.repository) referenceIds.addElement(this.repository.id);
+    if (this.repository)
+      referenceIds.addElement(this.repository.id);
   }
 }
 

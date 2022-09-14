@@ -219,7 +219,8 @@ export class Model extends Entity {
   // NOTE: non-element entities do not yet have a concept of required references
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (this.parentModel) referenceIds.addModel(this.parentModel);
+    if (this.parentModel)
+      referenceIds.addModel(this.parentModel);
     referenceIds.addElement(this.modeledElement.id);
   }
 }

@@ -365,7 +365,6 @@ export class Element extends Entity {
     return this.getReferenceIds();
   }
 
-  // FIXME: since this is beta, replace it with an array of objects containing the reference type
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
    * This is the list of property keys on this element that store references to those elements
    * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
@@ -514,7 +513,8 @@ export abstract class GeometricElement3d extends GeometricElement {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition) { referenceIds.addElement(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition)
+      referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -556,7 +556,8 @@ export abstract class GeometricElement2d extends GeometricElement {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.typeDefinition) { referenceIds.addElement(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition)
+      referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -922,7 +923,8 @@ export class SheetTemplate extends Document {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.border) { referenceIds.addElement(this.border); }
+    if (undefined !== this.border)
+      referenceIds.addElement(this.border);
   }
 }
 
@@ -947,7 +949,8 @@ export class Sheet extends Document {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.sheetTemplate) { referenceIds.addElement(this.sheetTemplate); }
+    if (undefined !== this.sheetTemplate)
+      referenceIds.addElement(this.sheetTemplate);
   }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
@@ -1084,7 +1087,8 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
-    if (undefined !== this.recipe) { referenceIds.addElement(this.recipe.id); }
+    if (undefined !== this.recipe)
+      referenceIds.addElement(this.recipe.id);
   }
 }
 
