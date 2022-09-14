@@ -910,4 +910,42 @@ describe("ITwinLocalization", () => {
 
   });
 
+  describe("#getNamespacePromise", () => {
+    // TODO
+  });
+
+  describe("#getLanguageList", () => {
+    let languages: readonly string[];
+
+    it("english language list includes en and en-US", async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize(["Default", "Test"]);
+
+      languages = localization.getLanguageList();
+      assert.isTrue(languages.includes("en-US"));
+      assert.isTrue(languages.includes("en"));
+    });
+
+    it("when non-english language is set as default, that language and english are included in langauge list", async () => {
+      germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
+      await germanLocalization.initialize(["Default", "Test"]);
+
+      languages = germanLocalization.getLanguageList();
+      assert.isTrue(languages.includes("en"));
+      assert.isTrue(languages.includes("de"));
+    });
+  });
+
+  describe("#changeLanguage", () => {
+    // TODO
+  });
+
+  describe("#registerNamespace", () => {
+    // TODO
+  });
+
+  describe("#unregisterNamespace", () => {
+    // TODO
+  });
+
 });
