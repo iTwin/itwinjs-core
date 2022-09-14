@@ -17,6 +17,7 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
+- [SELECT * FROM Link Tables](#select-*-from-link-tables)
 
 ## Ambient Occlusion Improvements
 
@@ -86,7 +87,7 @@ Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
 
 ### Localization Changes
 
-Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed. 
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
 In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
 
@@ -137,3 +138,8 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ### @itwin/core-geometry
 
 `BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
+
+## SELECT * FROM Link Tables
+
+Previously when we did SELECT * on a link table, it would only return ECInstanceId, ECClassId, SourceECInstanceId and TargetECInstanceId. We were skipping SourceECClassId and TargetECClassId. This behavior was dropped as technically SELECT * on a link table should also return SourceECClassId and TargetECClassId.
+The new behavior is that we would return ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceId, TargetECClassId when we do SELECT * on a link table.
