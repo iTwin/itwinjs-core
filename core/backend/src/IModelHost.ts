@@ -16,7 +16,6 @@ import { TelemetryManager } from "@itwin/core-telemetry";
 import { Container } from "inversify";
 import * as os from "os";
 import * as path from "path";
-import * as semver from "semver";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
