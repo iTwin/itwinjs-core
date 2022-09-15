@@ -20,7 +20,7 @@ jobs:
         platform: Darwin
         name: $(mac_pool)
 
-  timeoutInMinutes: 120
+  timeoutInMinutes: 60
 
   pool: ${{ parameters.pool }}
 
