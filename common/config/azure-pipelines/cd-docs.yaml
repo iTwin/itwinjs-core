@@ -18,7 +18,7 @@ stages:
   - stage: Build
     displayName: Build Docs
     jobs:
-    - template: ./docs/docs-build.yaml
+    - template: ./docs/jobs/docs-build.yaml
       parameters:
         workingDir: $(Pipeline.Workspace)/itwinjs-core
         outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
