@@ -2569,6 +2569,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.invalidateScene();
       this.renderFrame();
 
+      haveExternalTexRequests = externalTexLoader.numActiveRequests > 0 || externalTexLoader.numPendingRequests > 0;
       haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
       if (!haveNewTiles) {
         // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
@@ -2591,8 +2592,6 @@ export abstract class Viewport implements IDisposable, TileUser {
         IModelApp.tileAdmin.process();
 
       await BeDuration.wait(100);
-
-      haveExternalTexRequests = externalTexLoader.numActiveRequests > 0 || externalTexLoader.numPendingRequests > 0;
     }
   }
 
