@@ -26,6 +26,7 @@ import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType,
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshParams } from "./RealityMeshParams";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
@@ -420,6 +421,11 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined { return undefined; }
+  /** @internal */
+  public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined {
+    return undefined;
+  }
+
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */

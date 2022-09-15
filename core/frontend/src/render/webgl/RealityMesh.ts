@@ -12,6 +12,7 @@ import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshParams } from "../RealityMeshParams";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -211,6 +212,13 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
     return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
   }
 
+  public static fromRealityMesh(params: RealityMeshParams) {
+    const posBuf = QBufferHandle3d.create(params.positions.params, params.positions.points);
+    const uvParamBuf = QBufferHandle2d.create(params.uvs.params, params.uvs.points);
+    const normalBuf = params.normals ? BufferHandle.createArrayBuffer(params.normals) : undefined;
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, params.indices, normalBuf, params.featureID ?? 0);
+  }
+
   public override get isDisposed(): boolean {
     return super.isDisposed && this.uvParams.isDisposed;
   }
@@ -271,6 +279,20 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined, disableTextureDisposal = false) {
     const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
     return params ? new RealityMeshGeometry({realityMeshParams: params, transform, baseIsTransparent: false, isTerrain: true, disableTextureDisposal}) : undefined;
+  }
+
+  public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
+    const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
+    if (!params)
+      return undefined;
+
+    return new RealityMeshGeometry({
+      realityMeshParams: params,
+      transform,
+      baseIsTransparent: false,
+      isTerrain: true,
+      disableTextureDisposal,
+    });
   }
 
   public static createFromRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RealityMeshGeometry | undefined {

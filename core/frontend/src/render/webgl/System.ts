@@ -29,6 +29,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 import { RenderMemory } from "../RenderMemory";
+import { RealityMeshParams } from "../RealityMeshParams";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
@@ -530,6 +531,10 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform, disableTextureDisposal = false): RealityMeshGeometry | undefined {
     return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform, disableTextureDisposal);
+  }
+
+  public override createTerrainMesh(params: RealityMeshParams, transform?: Transform, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createForTerrain(params, transform, disableTextureDisposal);
   }
 
   public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
