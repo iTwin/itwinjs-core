@@ -8,17 +8,33 @@ import { execFileSync } from 'child_process';
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
 
+// Constants used in the script for convenience
 const appName = "imodeljs-test-app"
 const bundleId = `bentley.${appName}`;
 const bimFile = "mirukuru.ibim";
+const desiredDevice = "iPad Pro (11-inch) (1st generation)";
+const desiredRuntime = "13"; // so that it runs on Intel and M1 without requiring the iOS arm64 simulator binaries
+
+// Sort function that compares strings numerically from high to low
+const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
 // Similar to the launchApp function but doesn't retry, adds the --console option, and allows for args.
 Simctl.prototype.launchAppWithConsole = async function (bundleId: string, ...args: [string]) {
-  const {stdout} = await this.exec('launch', {
-    args: ["--console", this.requireUdid('launch'), bundleId, ...args],
-  });
+  const {stdout} = await this.exec('launch', { args: ["--console", this.requireUdid('launch'), bundleId, ...args] });
   return stdout.trim();
 }
+
+Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = 'iOS') {
+  const {stdout} = await this.exec('list', { args: ['runtimes', '--json'] });
+  const runtimes: [{version: string, identifier: string, name: string}] = JSON.parse(stdout).runtimes;
+  runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
+  for (const {version, name} of runtimes) {
+    if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
+      return version;
+    }
+  }
+  throw new Error(`Could not find runtime: major version: ${majorVersion} platform: ${platform}`);
+};
 
 async function main() {
   const simctl = new Simctl();
@@ -27,30 +43,35 @@ async function main() {
   console.log("Getting iOS devices");
   const results = await simctl.getDevices(undefined, 'iOS');
   var device: { name: string; sdk: string; udid: string; state: string; } | undefined;
-  const keys = Object.keys(results).filter(key => key.startsWith("13"));
-  if (!keys.length) {
-    console.log("No simulators for iOS 13 found.");
-    return;
+  const keys = Object.keys(results).filter(key => key.startsWith(desiredRuntime)).sort(numericCompareDescending);   
+  keys.length = 0;
+  if (keys.length) {
+    // Look for a booted simulator
+    for (const key of keys) {
+      device = results[key].find((curr: { state: string; }) => curr.state === "Booted");
+      if (device)
+        break;
+    }
+    // If none are booted, use the desiredDevice or fall back to the first one
+    if (!device) {
+      device = results[keys[0]].find((device: { name: string; }) => device.name === desiredDevice) ?? results[keys[0]][0];
+    }
+  } else {
+    // try to create a simulator
+    const sdk = await simctl.getLatestRuntimeVersion(desiredRuntime);
+    if (!sdk) {
+      console.log(`No runtimes for iOS ${desiredRuntime} found.`);
+      return;
+    }
+    console.log(`Creating simulator: ${desiredDevice} sdk: ${sdk}`);
+    const udid = await simctl.createDevice("TODD" + desiredDevice, desiredDevice, sdk);
+    if (udid) {
+      device = { name: desiredDevice, sdk, udid, state: 'Inactive'};
+    }
   }
 
-  // Sort by version, newest first
-  if (keys.length > 1)
-    keys.sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
-  
-  // Look for a booted simulator
-  for (const key of keys) {
-    device = results[key].find((curr: { state: string; }) => curr.state === "Booted");
-    if (device)
-      break;
-  }
-
-  // If none are booted, use the iPad Pro (ii-inch) if available, otherwise the first one listed
   if (!device) {
-    device = results[keys[0]].find((device: { name: string; }) => device.name.startsWith("iPad Pro (11")) ?? results[keys[0]][0];
-  }
-
-  if (!device) {
-    console.log("Unable to find an iOS 13.x simulator.")
+    console.log(`Unable to find an iOS ${desiredRuntime} simulator.`)
     return;
   }
 
@@ -62,6 +83,7 @@ async function main() {
   if (device.state !== "Booted") {
     console.log(`Booting simulator: ${device.name}`);
     await simctl.bootDevice();
+    // TODO: might need to somehow wait until we know the simulator is fully booted otherwise the launch can sometimes fire too soon and fail.
   }
 
   // Install the app
@@ -84,6 +106,7 @@ async function main() {
 
   // Launch the app instructing it to open the model and exit
   console.log("Launching app");
+  simctl.execTimeout = 2 * 60 * 1000; // two minutes
   const launchOutput = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
   if (launchOutput.includes("iModel opened")) {
     process.exitCode = 0;
