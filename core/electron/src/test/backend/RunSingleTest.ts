@@ -22,14 +22,15 @@ async function run() {
   if (testToRun === undefined)
     process.exit(TestResult.InvalidArguments);
 
+  let exitCode = TestResult.Success;
   try {
     await testToRun.func();
   } catch (e: unknown) {
     console.error(e); // eslint-disable-line no-console
-    process.exit(TestResult.Failure);
+    exitCode = TestResult.Failure;
   }
 
-  process.exit(TestResult.Success);
+  process.exit(exitCode);
 }
 
 void run();
