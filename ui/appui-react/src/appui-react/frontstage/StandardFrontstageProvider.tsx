@@ -104,7 +104,6 @@ export class StandardFrontstageProvider extends FrontstageProvider {
         version={this.props.version ?? 1.0}
         defaultTool={this.props.defaultTool ?? CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={true}
         usage={this.props.usage}
         applicationData={this.props.applicationData}
 

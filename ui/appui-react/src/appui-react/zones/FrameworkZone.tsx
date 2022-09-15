@@ -28,7 +28,6 @@ export interface FrameworkZoneProps extends CommonProps {
   fillZone?: boolean;
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
-  isInFooterMode: boolean;
   openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds?: RectangleProps;
@@ -56,7 +55,6 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
               style={this.props.style}
               isFloating={!!this.props.zone.floating}
               isHidden={this.props.isHidden}
-              isInFooterMode={this.props.isInFooterMode}
               id={this.props.zone.id}
               safeAreaInsets={safeAreaInsets}
             >
@@ -65,7 +63,6 @@ export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
             <NZ_Zone
               bounds={this.props.zone.bounds}
               id={this.props.zone.id}
-              isInFooterMode={this.props.isInFooterMode}
               safeAreaInsets={safeAreaInsets}
             >
               <ZoneTargets

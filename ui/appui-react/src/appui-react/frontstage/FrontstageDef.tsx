@@ -57,7 +57,6 @@ export class FrontstageDef {
   private _initialProps?: FrontstageProps;
   private _defaultTool?: ToolItemDef;
   private _defaultContentId: string = "";
-  private _isInFooterMode: boolean = true;
   private _isStageClosing = false;
   private _isReady = false;
   private _isApplicationClosing = false;
@@ -90,7 +89,6 @@ export class FrontstageDef {
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
   public get defaultContentId(): string { return this._defaultContentId; }
-  public get isInFooterMode(): boolean { return this._isInFooterMode; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get usage(): string { return this._usage !== undefined ? this._usage : StageUsage.General; }
   public get version(): number { return this._version; }
@@ -632,8 +630,6 @@ export class FrontstageDef {
       this._contentGroup = props.contentGroup;
     }
 
-    if (props.isInFooterMode !== undefined)
-      this._isInFooterMode = props.isInFooterMode;
     if (props.applicationData !== undefined)
       this._applicationData = props.applicationData;
 

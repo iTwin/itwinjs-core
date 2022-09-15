@@ -7,7 +7,7 @@ import * as React from "react";
 import { StandardContentLayouts, WidgetState } from "@itwin/appui-abstract";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  MessageCenterField, StatusBarWidgetControl, StatusBarWidgetControlArgs, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
+  MessageCenterField, StatusBarWidgetControl, Widget, WidgetControl, Zone, ZoneLocation, ZoneState,
 } from "../../appui-react";
 import { ToolItemDef } from "../../appui-react/shared/ToolItemDef";
 
@@ -50,10 +50,10 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     super(info, options);
   }
 
-  public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+  public getReactNode(): React.ReactNode {
     return (
       <>
-        <MessageCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+        <MessageCenterField />
       </>
     );
   }
@@ -97,7 +97,6 @@ export class TestFrontstage extends FrontstageProvider {
         defaultTool={this.defaultToolDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
-        isInFooterMode={false}
         applicationData={{ key: "value" }}
         usage="MyUsage"
         topLeft={
@@ -188,7 +187,6 @@ export class TestFrontstage2 extends FrontstageProvider {
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
-        isInFooterMode={false}
         applicationData={{ key: "value" }}
         usage="MyUsage"
         contentManipulationTools={
@@ -277,7 +275,6 @@ export class TestFrontstage3 extends FrontstageProvider {
         defaultTool={new ToolItemDef({ toolId: "test" })}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
-        isInFooterMode={false}
       />
     );
   }

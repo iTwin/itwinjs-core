@@ -144,7 +144,6 @@ export * from "./appui-react/safearea/SafeAreaContext";
 
 export * from "./appui-react/selection/SelectionContextItemDef";
 export * from "./appui-react/selection/HideIsolateEmphasizeManager";
-export * from "./appui-react/selection/ClearEmphasisStatusField";
 
 export * from "./appui-react/settings/ui/UiSettingsPage";
 export * from "./appui-react/settings/quantityformatting/QuantityFormat";
@@ -176,23 +175,17 @@ export * from "./appui-react/statusbar/StatusBarItem";
 export * from "./appui-react/statusbar/StatusBarItemsManager";
 export * from "./appui-react/statusbar/StatusBarItemUtilities";
 export * from "./appui-react/statusbar/StatusBarComposer";
-export * from "./appui-react/statusbar/withMessageCenterFieldProps";
 export * from "./appui-react/statusbar/useUiItemsProviderStatusBarItems";
 export * from "./appui-react/statusbar/useDefaultStatusBarItems";
-export * from "./appui-react/statusbar/withStatusFieldProps";
 
 export * from "./appui-react/statusfields/tileloading/TileLoadingIndicator";
 export * from "./appui-react/statusfields/ActivityCenter";
-export * from "./appui-react/statusfields/ConditionalField";
-export * from "./appui-react/statusfields/FooterModeField";
 export * from "./appui-react/statusfields/Indicator";
 export * from "./appui-react/statusfields/MessageCenter";
-export * from "./appui-react/statusfields/PromptField";
 export * from "./appui-react/statusfields/SectionsField";
 export * from "./appui-react/statusfields/SelectionInfo";
 export * from "./appui-react/statusfields/SelectionScope";
 export * from "./appui-react/statusfields/SnapMode";
-export * from "./appui-react/statusfields/StatusFieldProps";
 export * from "./appui-react/statusfields/ViewAttributes";
 export * from "./appui-react/statusfields/toolassistance/ToolAssistanceField";
 

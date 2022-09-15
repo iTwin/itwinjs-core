@@ -14,7 +14,7 @@ import { Dialog, TitleBar } from "@itwin/appui-layout-react";
 import { Checkbox } from "@itwin/itwinui-react";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { CommonProps } from "@itwin/core-react";
 
 interface ViewAttributesStatusFieldState {
   viewFlags: ViewFlagProps;
@@ -25,11 +25,10 @@ interface ViewAttributesStatusFieldState {
 /** Widget for showing Checkboxes for View Attributes
  * @beta
  */
-export class ViewAttributesStatusField extends React.Component<StatusFieldProps, ViewAttributesStatusFieldState> {
-  private _className: string;
+export class ViewAttributesStatusField extends React.Component<CommonProps, ViewAttributesStatusFieldState> {
   private _title = UiFramework.translate("listTools.viewAttributes");
 
-  constructor(props: StatusFieldProps) {
+  constructor(props: CommonProps) {
     super(props);
 
     this.state = {
@@ -37,8 +36,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
       viewFlags: {},
       target: null,
     };
-
-    this._className = this.constructor.name;
   }
 
   public override componentDidMount() {
@@ -108,13 +105,10 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
   }
 
   public override render() {
-    // eslint-disable-next-line deprecation/deprecation
-    const isOpen = this.props.openWidget === this._className;
     return (
       <>
         <Indicator
           iconName="icon-window-settings"
-          opened={isOpen}
           toolTip={this._title}
           dialog={<Dialog
             titleBar={
@@ -122,8 +116,6 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
             }>
             {this.getViewFlags()}
           </Dialog>}
-          // eslint-disable-next-line deprecation/deprecation
-          isInFooterMode={this.props.isInFooterMode ?? true}
         />
       </>
     );

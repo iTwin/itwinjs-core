@@ -43,10 +43,6 @@ export interface FrontstageProps extends CommonProps {
   contentGroup: ContentGroup | ContentGroupProvider;
   /** Id of the Content View to be activated initially */
   defaultContentId?: string;
-  /** Indicated whether the StatusBar is in footer mode or widget mode. Defaults to true.
-   * @deprecated In upcoming version, widget mode will be removed and footer mode will always be true.
-  */
-  isInFooterMode?: boolean;                     // Default - true
   /** Any application data to attach to this Frontstage. */
   applicationData?: any;
   /** Usage type for this Frontstage. */
@@ -127,11 +123,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   private _contentRefs = new Map<WidgetZoneId, React.Ref<HTMLDivElement>>(); // eslint-disable-line deprecation/deprecation
   private _zonesMeasurer = React.createRef<HTMLDivElement>();
   private _floatingZonesMeasurer = React.createRef<HTMLDivElement>();
-  private _zonesStyle: React.CSSProperties = {
-    pointerEvents: "none",
-  };
   private _zonesFooterModeStyle: React.CSSProperties = {
-    ...this._zonesStyle,
+    pointerEvents: "none",
     display: "flex",
     flexFlow: "column",
   };
@@ -350,7 +343,6 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         const panelRuntimeProps: StagePanelRuntimeProps = {
           draggedWidgetId: draggedWidget ? /* istanbul ignore next */ draggedWidget.id : undefined,
           getWidgetContentRef: this._getContentRef,
-          isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
           isTargeted: !!runtimeProps.nineZone.zones.target,
           panel,
           panelDef,
@@ -406,9 +398,8 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiShowHideManager.showHideFooter)) ?
+        isHidden: (zoneDef.isStatusBar && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiShowHideManager.showHideFooter)) ?
           /* istanbul ignore next */ false : !this.state.isUiVisible,
-        isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
         targetChangeHandler: runtimeProps.targetChangeHandler,
         widgetChangeHandler: runtimeProps.widgetChangeHandler,
@@ -482,7 +473,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
 
     return (
       <div style={ninezoneStyle} id="uifw-ninezone-area" className={this.props.className}>
-        <NZ_Zones style={runtimeProps.nineZone.zones.isInFooterMode ? this._zonesFooterModeStyle : this._zonesStyle} >
+        <NZ_Zones style={this._zonesFooterModeStyle} >
           <StagePanels
             bottomPanel={this.cloneStagePanelElement(frontstageDef.bottomMostPanel, runtimeProps)} // eslint-disable-line deprecation/deprecation
             topPanel={this.cloneStagePanelElement(frontstageDef.topMostPanel, runtimeProps)} // eslint-disable-line deprecation/deprecation

@@ -6,8 +6,8 @@ import "./AppStatusBar.scss";
 import * as React from "react";
 import { ConditionalBooleanValue, StatusBarSection } from "@itwin/appui-abstract";
 import {
-  ActivityCenterField, ClearEmphasisStatusField, ConfigurableUiManager, MessageCenterField, SectionsStatusField, SelectionInfoField,
-  SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs,
+  ActivityCenterField, ConfigurableUiManager, MessageCenterField, SectionsStatusField, SelectionInfoField,
+  SelectionScopeField, SnapModeField, StatusBarComposer, StatusBarItem, StatusBarItemUtilities, StatusBarWidgetControl,
   TileLoadingIndicator, ToolAssistanceField, ViewAttributesStatusField,
 } from "@itwin/appui-react";
 import { FooterSeparator } from "@itwin/appui-layout-react";
@@ -30,8 +30,6 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
         StatusBarItemUtilities.createStatusBarItem("ActivityCenter", StatusBarSection.Center, 10, <ActivityCenterField />),
         StatusBarItemUtilities.createStatusBarItem("ViewAttributes", StatusBarSection.Center, 60, <ViewAttributesStatusField />),
         StatusBarItemUtilities.createStatusBarItem("Sections", StatusBarSection.Center, 50, <SectionsStatusField hideWhenUnused={true} />),
-        // eslint-disable-next-line deprecation/deprecation
-        StatusBarItemUtilities.createStatusBarItem("ClearEmphasis", StatusBarSection.Center, 40, <ClearEmphasisStatusField hideWhenUnused={true} />),
         StatusBarItemUtilities.createStatusBarItem("SnapMode", StatusBarSection.Center, 30, <SnapModeField />, { isHidden: isHiddenCondition }),
         StatusBarItemUtilities.createStatusBarItem("TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadingIndicator />),
         StatusBarItemUtilities.createStatusBarItem("SelectionInfo", StatusBarSection.Right, 30, <SelectionInfoField />),
@@ -41,7 +39,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
     return this._statusBarItems;
   }
 
-  public getReactNode(_args: StatusBarWidgetControlArgs): React.ReactNode {
+  public getReactNode(): React.ReactNode {
     return (
       <StatusBarComposer items={this.statusBarItems} />
     );

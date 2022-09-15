@@ -29,7 +29,6 @@ exports[`Frontstage local storage wrapper ModalFrontstageComposer ActiveFrontsta
         "_defaultContentId": "",
         "_id": "",
         "_isApplicationClosing": false,
-        "_isInFooterMode": true,
         "_isReady": false,
         "_isStageClosing": false,
         "_timeTracker": TimeTracker {
@@ -456,7 +455,6 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1
       "_defaultContentId": "",
       "_id": "",
       "_isApplicationClosing": false,
-      "_isInFooterMode": true,
       "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {
@@ -484,7 +482,6 @@ exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render m
       "_defaultContentId": "",
       "_id": "",
       "_isApplicationClosing": false,
-      "_isInFooterMode": true,
       "_isReady": false,
       "_isStageClosing": false,
       "_timeTracker": TimeTracker {

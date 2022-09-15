@@ -22,8 +22,6 @@ export interface ZoneProps extends CommonProps {
   bounds?: RectangleProps;
   /** Zone content. I.e. [[Stacked]], [[Footer]], [[ToolSettings]], [[ToolSettingsTab]], [[Outline]] */
   children?: React.ReactNode;
-  /** Describes if the zone is in footer mode. */
-  isInFooterMode?: boolean;
   /** Describes if the zone is floating. */
   isFloating?: boolean;
   /** Describes if the zone is hidden. */
@@ -43,7 +41,7 @@ export class Zone extends React.PureComponent<ZoneProps> {
       "nz-zones-zone",
       this.props.isFloating && "nz-floating",
       this.props.isHidden && "nz-hidden",
-      this.props.isInFooterMode && "nz-footer-mode",
+      "nz-footer-mode",
       this.props.safeAreaInsets && SafeAreaInsetsHelpers.getCssClassNames(this.props.safeAreaInsets),
       `nz-zone-${this.props.id}`,
       this.props.className);

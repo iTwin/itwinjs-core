@@ -6,6 +6,5 @@ exports[`WidgetPanelsFrontstageContent should render 1`] = `
 <ContentLayout
   contentGroup={Object {}}
   contentLayout={Object {}}
-  isInFooterMode={true}
 />
 `;

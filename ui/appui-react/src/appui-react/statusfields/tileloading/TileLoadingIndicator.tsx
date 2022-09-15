@@ -13,7 +13,7 @@ import { Logger } from "@itwin/core-bentley";
 import { IModelApp, ScreenViewport, Viewport } from "@itwin/core-frontend";
 import { ProgressLinear } from "@itwin/itwinui-react";
 import { UiFramework } from "../../UiFramework";
-import { StatusFieldProps } from "../StatusFieldProps";
+import { CommonProps } from "@itwin/core-react";
 
 /** State for the [[TileLoadingIndicator]] component
  * @internal
@@ -28,11 +28,11 @@ interface TileLoadingIndicatorState {
 /** TileLoadingIndicator React component
  * @public
  */
-export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
+export class TileLoadingIndicator extends React.PureComponent<CommonProps, TileLoadingIndicatorState> {
   private _removeViewOpenListener?: () => void;
   private _removeOnRenderListener?: () => void;
 
-  constructor(props: StatusFieldProps) {
+  constructor(props: CommonProps) {
     super(props);
     this.state = { label: "", progress: 0, enabled: false, finished: true };
   }
@@ -112,8 +112,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     const classes = classnames(
       "uifw-tile-loading-bar",
       this.state.enabled && "uifw-tile-loading-bar-visible",
-      // eslint-disable-next-line deprecation/deprecation
-      (this.props.isInFooterMode ?? true) && "nz-footer-mode",
+      "nz-footer-mode",
       this.props.className,
     );
     return (

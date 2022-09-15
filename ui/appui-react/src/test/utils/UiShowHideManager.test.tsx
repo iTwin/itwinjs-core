@@ -186,7 +186,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         UiShowHideManager.inactivityTime = 20;
         expect(UiShowHideManager.isUiVisible).to.eq(false);
 
-        const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+        const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
         const container = component.getByTestId("single-content-container");
         container.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window }));
 
@@ -203,7 +203,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         UiShowHideManager.autoHideUi = false;
         expect(UiShowHideManager.isUiVisible).to.eq(false);
 
-        const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+        const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
         const container = component.getByTestId("single-content-container");
         container.dispatchEvent(new MouseEvent("mousemove", { bubbles: true, cancelable: true, view: window }));
 
@@ -218,7 +218,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         UiShowHideManager.autoHideUi = true;
         expect(UiShowHideManager.isUiVisible).to.eq(false);
 
-        // const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+        // const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
         // const container = component.getByTestId("single-content-container");
         // container.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true, cancelable: true, view: window }));
 
@@ -234,7 +234,7 @@ describe("UiShowHideManager localStorage Wrapper", () => {
         UiShowHideManager.autoHideUi = false;
         expect(UiShowHideManager.isUiVisible).to.eq(false);
 
-        // const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+        // const component = render(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
         // const container = component.getByTestId("single-content-container");
         // container.dispatchEvent(new MouseEvent("mouseenter", { bubbles: true, cancelable: true, view: window }));
 

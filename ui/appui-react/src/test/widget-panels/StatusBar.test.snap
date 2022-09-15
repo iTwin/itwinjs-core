@@ -5,13 +5,11 @@ exports[`WidgetPanelsStatusBar should not render 1`] = `""`;
 exports[`WidgetPanelsStatusBar should not render widget control 1`] = `
 <StatusBar
   className="uifw-widgetPanels-statusBar"
-  isInFooterMode={true}
 />
 `;
 
 exports[`WidgetPanelsStatusBar should render 1`] = `
 <StatusBar
   className="uifw-widgetPanels-statusBar"
-  isInFooterMode={true}
 />
 `;

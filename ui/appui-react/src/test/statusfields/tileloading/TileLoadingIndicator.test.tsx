@@ -31,18 +31,6 @@ describe("TileLoadingIndicator", () => {
     cleanup();
   });
 
-  it("should render correctly footer (deprecated)", () => {
-    shallow(
-      <TileLoadingIndicator isInFooterMode={true} />,
-    ).should.matchSnapshot();
-  });
-
-  it("should render correctly not footer (deprecated)", () => {
-    shallow(
-      <TileLoadingIndicator isInFooterMode={false} />,
-    ).should.matchSnapshot();
-  });
-
   it("should unmount correctly", () => {
     const sut = mount(<TileLoadingIndicator />);
     sut.unmount();

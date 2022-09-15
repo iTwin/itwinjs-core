@@ -13,7 +13,7 @@ import { Footer } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
-import { StatusBarFieldId, StatusBarWidgetControl, StatusBarWidgetControlArgs } from "./StatusBarWidgetControl";
+import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
 
 // cspell:ignore safearea
@@ -22,7 +22,6 @@ import { CustomActivityMessageRenderer } from "../messages/ActivityMessage";
  * @internal
  */
 interface StatusBarState {
-  openWidget: StatusBarFieldId;
   activityMessageInfo: ActivityMessageEventArgs | undefined;
 }
 
@@ -31,10 +30,6 @@ interface StatusBarState {
  */
 export interface StatusBarProps extends CommonProps {
   widgetControl?: StatusBarWidgetControl;
-  /** Indicates whether the StatusBar is in footer mode
-   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
-  */
-  isInFooterMode?: boolean;
 }
 
 /** Message type for the [[StatusBar]] React component
@@ -56,50 +51,25 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     super(props);
 
     this.state = {
-      openWidget: null,
       activityMessageInfo: undefined,
     };
   }
 
   public override render(): React.ReactNode {
-    let footerSections: React.ReactNode = null;
-    const widgetControl = this.props.widgetControl;
-
-    // istanbul ignore else
-    if (widgetControl && widgetControl.getReactNode) {
-      footerSections = widgetControl.getReactNode({
-        // eslint-disable-next-line deprecation/deprecation
-        isInFooterMode: this.props.isInFooterMode ?? true,
-        openWidget: this.state.openWidget,
-        toastTargetRef: this._handleToastTargetRef,
-        onOpenWidget: this._handleOpenWidget,
-      });
-    }
-
     return (
-      <StatusBarContext.Provider value={{
-        // eslint-disable-next-line deprecation/deprecation
-        isInFooterMode: this.props.isInFooterMode ?? true,
-        openWidget: this.state.openWidget,
-        toastTargetRef: this._handleToastTargetRef,
-        onOpenWidget: this._handleOpenWidget,
-      }}>
-        <SafeAreaContext.Consumer>
-          {(safeAreaInsets) => (
-            <Footer // eslint-disable-line deprecation/deprecation
-              className={this.props.className}
-              messages={this.getFooterMessages()}
-              // eslint-disable-next-line deprecation/deprecation
-              isInFooterMode={this.props.isInFooterMode ?? true}
-              onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
-              safeAreaInsets={safeAreaInsets}
-              style={this.props.style}
-            >
-              {footerSections}
-            </Footer>
-          )}
-        </SafeAreaContext.Consumer>
-      </StatusBarContext.Provider>
+      <SafeAreaContext.Consumer>
+        {(safeAreaInsets) => (
+          <Footer // eslint-disable-line deprecation/deprecation
+            className={this.props.className}
+            messages={this.getFooterMessages()}
+            onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
+            safeAreaInsets={safeAreaInsets}
+            style={this.props.style}
+          >
+            {this.props.widgetControl?.getReactNode?.() ?? null}
+          </Footer>
+        )}
+      </SafeAreaContext.Consumer>
     );
   }
 
@@ -178,19 +148,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.endActivityMessage(false);
   };
 
-  private _handleOpenWidget = (openWidget: StatusBarFieldId) => {
-    this.setState({
-      openWidget,
-    });
-  };
-
   private _closeMessage = (id: string) => {
     MessageManager.activeMessageManager.remove(id);
     MessageManager.updateMessages();
-  };
-
-  private _handleToastTargetRef = (toastTarget: HTMLElement | null) => {
-    MessageManager.registerAnimateOutToElement(toastTarget);
   };
 }
 
@@ -225,13 +185,3 @@ export function StatusBarRightSection(props: CommonDivProps) {
   const { className, ...divProps } = props;
   return <Div {...divProps} mainClassName={className ? className : "uifw-statusbar-right"} />;
 }
-
-/** Context providing values for StatusFieldProps and MessageCenterFieldProps
- *  @internal
- */
-export const StatusBarContext = React.createContext<StatusBarWidgetControlArgs>({ // eslint-disable-line @typescript-eslint/naming-convention
-  isInFooterMode: true,
-  onOpenWidget: /* istanbul ignore next */ () => { },
-  openWidget: "",
-  toastTargetRef: { current: null },
-});

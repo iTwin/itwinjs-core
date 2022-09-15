@@ -95,7 +95,6 @@ export function DisplayStyleField(props: CommonProps) {
     <FooterIndicator
       className={classnames("uifw-statusFields-displayStyle", props.className)}
       style={props.style}
-      isInFooterMode={true}
     >
       <Select options={styleEntries} value={displayStyleId} onChange={handleDisplayStyleSelected}
         title={tooltip} aria-label={label}

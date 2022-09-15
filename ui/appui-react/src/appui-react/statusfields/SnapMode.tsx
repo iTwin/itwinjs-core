@@ -12,13 +12,13 @@ import { SnapMode } from "@itwin/core-frontend";
 import { Snap, SnapModePanel } from "@itwin/appui-layout-react";
 import { ConfigurableUiActions } from "../configurableui/state";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
 import { Indicator } from "./Indicator";
+import { CommonProps } from "@itwin/core-react";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component.
  */
-interface SnapModeFieldProps extends StatusFieldProps {
+interface SnapModeFieldProps extends CommonProps {
   snapMode: number;
   setSnapMode: (mode: number) => any;
 }

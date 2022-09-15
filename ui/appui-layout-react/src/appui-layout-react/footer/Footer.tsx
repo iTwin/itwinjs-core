@@ -22,8 +22,6 @@ export interface FooterProps extends CommonProps {
    * [[MessageCenter]], [[ToolAssistance]], [[SnapMode]]
    */
   children?: React.ReactNode;
-  /** Describes whether the footer is in footer or widget mode.  */
-  isInFooterMode?: boolean;
   /** Footer messages. I.e. [[Message]], [[Toast]] */
   messages?: React.ReactNode;
   /** Handler for mouse enter */
@@ -42,7 +40,7 @@ export class Footer extends React.PureComponent<FooterProps> {
   public override render() {
     const className = classnames(
       "nz-footer-footer",
-      this.props.isInFooterMode && "nz-footer-mode",
+      "nz-footer-mode",
       this.props.safeAreaInsets && SafeAreaInsetsHelpers.getCssClassNames(this.props.safeAreaInsets),
       this.props.className);
 

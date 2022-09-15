@@ -20,10 +20,6 @@ describe("<Zone />", () => {
     mount(<Zone id={1} bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
   });
 
-  it("renders correctly in footer mode", () => {
-    shallow(<Zone id={1} isInFooterMode />).should.matchSnapshot();
-  });
-
   it("renders floating correctly", () => {
     shallow(<Zone id={1} isFloating />).should.matchSnapshot();
   });

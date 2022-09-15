@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
+  ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarWidgetControl, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -17,11 +17,10 @@ describe("StatusBarWidgetControl", () => {
       super(info, options);
     }
 
-    // eslint-disable-next-line deprecation/deprecation
-    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode(): React.ReactNode {
       return (
         <>
-          <MessageCenterField isInFooterMode={isInFooterMode} />
+          <MessageCenterField />
         </>
       );
     }
@@ -50,7 +49,7 @@ describe("StatusBarWidgetControl", () => {
     if (widgetControl)
       expect(widgetControl.getType()).to.eq(ConfigurableUiControlType.StatusBarWidget);
 
-    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    mount(<StatusBar widgetControl={widgetControl} />);
   });
 
 });

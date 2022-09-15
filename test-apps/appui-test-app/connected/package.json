@@ -6,10 +6,10 @@
   "version": "0.0.0",
   "homepage": "http://localhost:3000/",
   "scripts": {
-    "build": "",
-    "build:ci": "",
     "build": "npm run -s build:backend & tsc",
-    "build:ci": "npm run -s build:backend && npm run -s build:frontend",
+    "build:ci": "",
+    "buildapp": "npm run -s build:backend & tsc",
+    "build:ci:optional": "npm run -s build:backend && npm run -s build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
     "build:frontend": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",

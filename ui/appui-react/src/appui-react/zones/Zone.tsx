@@ -76,7 +76,6 @@ export interface ZoneRuntimeProps {
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   ghostOutline: RectangleProps | undefined;
   isHidden: boolean;
-  isInFooterMode: boolean;
   openWidgetId: WidgetZoneId | undefined; // eslint-disable-line deprecation/deprecation
   targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   widget: WidgetManagerProps | undefined;
@@ -180,7 +179,6 @@ export class Zone extends React.Component<ZoneProps> {
             className={this.props.className}
             dropTarget={runtimeProps.dropTarget}
             isHidden={runtimeProps.isHidden}
-            isInFooterMode={runtimeProps.isInFooterMode}
             style={this.props.style}
             targetChangeHandler={runtimeProps.targetChangeHandler}
             targetedBounds={runtimeProps.ghostOutline}
@@ -212,7 +210,6 @@ export class Zone extends React.Component<ZoneProps> {
         fillZone={zoneDef.shouldFillZone}
         getWidgetContentRef={runtimeProps.getWidgetContentRef}
         isHidden={runtimeProps.isHidden}
-        isInFooterMode={runtimeProps.isInFooterMode}
         openWidgetId={runtimeProps.openWidgetId}
         style={this.props.style}
         targetedBounds={runtimeProps.ghostOutline}

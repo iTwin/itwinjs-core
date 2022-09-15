@@ -33,10 +33,6 @@ interface IndicatorProps extends CommonProps {
   onClick?: () => void;
   /** If dialog prop is set, used to determine initial state. */
   opened?: boolean;
-  /** Describes whether the footer is in footer or widget mode.
-   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
-  */
-  isInFooterMode?: boolean;
   /** Tooltip text if not specified label is used */
   toolTip?: string;
   /** ContentType is used to determine color of popup arrow. If not set defaults to FooterPopupContentType.Dialog */
@@ -48,7 +44,7 @@ interface IndicatorProps extends CommonProps {
  */
 export function Indicator(props: IndicatorProps) {
   // eslint-disable-next-line deprecation/deprecation
-  const { className, contentType, dialog, iconName, iconSpec, isInFooterMode, isLabelVisible, label, labelSide, onClick, opened, style, toolTip } = props;
+  const { className, contentType, dialog, iconName, iconSpec, isLabelVisible, label, labelSide, onClick, opened, style, toolTip } = props;
   const hasClickAction = React.useMemo(() => !!onClick || !!dialog, [dialog, onClick]);
   const [isOpen, setIsOpen] = React.useState(!!opened);
   const handleOnIndicatorClick = React.useCallback(() => {
@@ -57,13 +53,12 @@ export function Indicator(props: IndicatorProps) {
     }
     onClick && onClick();
   }, [dialog, isOpen, onClick]);
-  const inFooter = React.useMemo(() => false === isInFooterMode ? false : true, [isInFooterMode]);
   const target = React.useRef<HTMLDivElement>(null);
   const icon = React.useMemo(() => iconSpec ?? iconName, [iconSpec, iconName]);
   const title = React.useMemo(() => toolTip ?? label, [toolTip, label]);
   const classNames = classnames(
     "uifw-footer-label-left", "uifw-footer-indicator",
-    inFooter && "nz-footer-mode",
+    "nz-footer-mode",
     hasClickAction && "uifw-footer-action",
     labelSide === StatusBarLabelSide.Right && "uifw-footer-label-reversed",
     className);

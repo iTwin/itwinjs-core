@@ -16,10 +16,6 @@ describe("<FooterIndicator />", () => {
     shallow(<FooterIndicator />).should.matchSnapshot();
   });
 
-  it("renders correctly in footer mode (deprecated)", () => {
-    shallow(<FooterIndicator isInFooterMode />).should.matchSnapshot();
-  });
-
   it("renders correctly with additional class names", () => {
     shallow(<FooterIndicator className="test-class-name" />).should.matchSnapshot();
   });

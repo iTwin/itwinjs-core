@@ -15,12 +15,12 @@ import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { useActiveViewport } from "../hooks/useActiveViewport";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { CommonProps } from "@itwin/core-react";
 
 /** Sections Status Field Props
  * @beta
  */
-export interface SectionsStatusFieldProps extends StatusFieldProps {
+export interface SectionsStatusFieldProps extends CommonProps {
   hideWhenUnused?: boolean;
 }
 
@@ -28,9 +28,10 @@ export interface SectionsStatusFieldProps extends StatusFieldProps {
  * @beta
  */
 export function SectionsStatusField(props: SectionsStatusFieldProps) {
-  const [toolTip] = React.useState(UiFramework.translate("tools.sectionTools"));
-  const [clearLabel] = React.useState(UiFramework.translate("tools.sectionClear"));
-  const [showHandlesLabel] = React.useState(UiFramework.translate("tools.sectionShowHandles"));
+  const [toolTip, clearLabel, showHandlesLabel] = React.useMemo(() => [
+    UiFramework.translate("tools.sectionTools"),
+    UiFramework.translate("tools.sectionClear"),
+    UiFramework.translate("tools.sectionShowHandles")], []);
   const activeViewport = useActiveViewport();
   const [showIndicator, setShowIndicator] = React.useState(false);
   const [isPopupOpen, setPopupOpen] = React.useState(false);
@@ -83,8 +84,6 @@ export function SectionsStatusField(props: SectionsStatusFieldProps) {
               iconName="icon-section-tool"
               onClick={() => setPopupOpen(!isPopupOpen)}
               opened={isPopupOpen}
-              // eslint-disable-next-line deprecation/deprecation
-              isInFooterMode={props.isInFooterMode ?? true}
             />
           </div>
           <FooterPopup

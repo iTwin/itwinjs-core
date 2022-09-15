@@ -18,7 +18,7 @@ import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";
-import { StatusBarCenterSection, StatusBarContext, StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween } from "./StatusBar";
+import { StatusBarCenterSection, StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween } from "./StatusBar";
 import { isStatusBarItem } from "./StatusBarItem";
 import { useDefaultStatusBarItems } from "./useDefaultStatusBarItems";
 import { useUiItemsProviderStatusBarItems } from "./useUiItemsProviderStatusBarItems";
@@ -130,11 +130,9 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
 }
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarLabelItem */
-function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFooterMode: boolean): React.ReactNode {
+function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem): React.ReactNode {
   const iconPaddingClass = item.labelSide === StatusBarLabelSide.Left ? "nz-icon-padding-right" : "nz-icon-padding-left";
-  return (<FooterIndicator
-    isInFooterMode={isInFooterMode}
-  >
+  return (<FooterIndicator>
     {item.icon && <Icon iconSpec={item.icon} />}
     {item.label && <span className={iconPaddingClass}>{ConditionalStringValue.getValue(item.label)}</span>}
   </FooterIndicator>
@@ -142,9 +140,8 @@ function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFoo
 }
 
 /** function to produce a StatusBarItem component from an AbstractStatusBarActionItem */
-function generateActionStatusBarItem(item: AbstractStatusBarActionItem, isInFooterMode: boolean): React.ReactNode {
-  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon}
-    isInFooterMode={isInFooterMode} />;
+function generateActionStatusBarItem(item: AbstractStatusBarActionItem): React.ReactNode {
+  return <Indicator toolTip={ConditionalStringValue.getValue(item.tooltip)} opened={false} onClick={item.execute} iconSpec={item.icon} />;
 }
 
 /** local function to combine items from Stage and from Extensions */
@@ -253,7 +250,6 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
   const syncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(defaultItems), [defaultItems]);
   useStatusBarItemSyncEffect(defaultItemsManager, syncIdsOfInterest);
 
-  const statusBarContext = React.useContext(StatusBarContext);
   const [addonItemsManager] = React.useState(() => new StatusBarItemsManager());
   const addonItems = useUiItemsProviderStatusBarItems(addonItemsManager);
   const addonSyncIdsOfInterest = React.useMemo(() => StatusBarItemsManager.getSyncIdsOfInterest(addonItems), [addonItems]);
@@ -325,15 +321,12 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       >
         <DockedStatusBarItem key={key} itemId={item.id} itemPriority={itemPriority} providerId={providerId} section={getSectionName(section)} >
           {isStatusBarItem(item) && item.reactNode}
-          {// eslint-disable-next-line deprecation/deprecation
-            isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
-          {// eslint-disable-next-line deprecation/deprecation
-            isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
+          {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item)}
+          {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item)}
         </DockedStatusBarItem>
       </DockedStatusBarEntry>
     );
-    // eslint-disable-next-line deprecation/deprecation
-  }, [statusBarContext.isInFooterMode, handleEntryResize]);
+  }, [handleEntryResize]);
 
   const getSectionItems = React.useCallback((section: StatusBarSection): React.ReactNode[] => {
     const sectionItems = statusBarItems

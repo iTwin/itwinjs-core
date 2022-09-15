@@ -57,16 +57,6 @@ describe("StatusBar", () => {
     TestUtils.terminateUiFramework();
   });
 
-  [true, false, undefined].map((isInFooterMode) => {
-    it(`StatusBar should handle isInFooterMode=${isInFooterMode}${isInFooterMode !== undefined ? " (deprecated)" : ""}`, async () => {
-      const spy = sinon.spy(widgetControl as StatusBarWidgetControl, "getReactNode");
-      render(<StatusBar widgetControl={widgetControl} isInFooterMode={isInFooterMode} />);
-
-      expect(spy.alwaysCalledWith(sinon.match({isInFooterMode: isInFooterMode ?? true}))).to.be.true;
-      spy.restore();
-    });
-  });
-
   it("StatusBar should render a Toast message", async () => {
     render(<StatusBar widgetControl={widgetControl} />);
 

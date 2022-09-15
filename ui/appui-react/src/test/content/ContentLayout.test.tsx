@@ -85,19 +85,19 @@ describe("ContentLayout", () => {
   });
 
   it("SingleContent should render", () => {
-    mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+    mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
   });
 
   it("SingleContent renders correctly", () => {
-    shallow(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />).should.matchSnapshot();
+    shallow(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />).should.matchSnapshot();
   });
 
   it("TwoHalvesVertical should render", () => {
-    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />);
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} />);
   });
 
   it("TwoHalvesVertical renders correctly", () => {
-    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />).should.matchSnapshot();
+    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} />).should.matchSnapshot();
   });
 
   const contentLayout3: ContentLayoutDef = new ContentLayoutDef({
@@ -107,11 +107,11 @@ describe("ContentLayout", () => {
   });
 
   it("TwoHalvesHorizontal should render", () => {
-    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={false} />);
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} />);
   });
 
   it("TwoHalvesHorizontal renders correctly", () => {
-    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={false} />).should.matchSnapshot();
+    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} />).should.matchSnapshot();
   });
 
   const fourQuadrantsVerticalLayoutDef: ContentLayoutDef = new ContentLayoutDef(
@@ -130,11 +130,11 @@ describe("ContentLayout", () => {
   );
 
   it("FourQuadrantsVertical should render", () => {
-    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} isInFooterMode={false} />);
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} />);
   });
 
   it("FourQuadrantsVertical renders correctly", () => {
-    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} isInFooterMode={false} />).should.matchSnapshot();
+    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsVerticalLayoutDef} />).should.matchSnapshot();
   });
 
   const fourQuadrantsHorizontalLayoutDef: ContentLayoutDef = new ContentLayoutDef(
@@ -153,15 +153,15 @@ describe("ContentLayout", () => {
   );
 
   it("FourQuadrantsHorizontal should render", () => {
-    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} isInFooterMode={false} />);
+    mount(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} />);
   });
 
   it("FourQuadrantsVertical renders correctly", () => {
-    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} isInFooterMode={false} />).should.matchSnapshot();
+    shallow(<ContentLayout contentGroup={contentGroup2} contentLayout={fourQuadrantsHorizontalLayoutDef} />).should.matchSnapshot();
   });
 
   it("ContentLayoutDiv mouse down and up", () => {
-    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
     const layoutDiv = wrapper.find("#uifw-contentlayout-div");
     layoutDiv.simulate("mouseDown");
     expect(ContentViewManager.isMouseDown).to.be.true;
@@ -170,7 +170,7 @@ describe("ContentLayout", () => {
   });
 
   it("ContentWrapper mouse down", () => {
-    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />);
+    const wrapper = mount(<ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} />);
 
     const layoutWrappers = wrapper.find("div.uifw-contentlayout-wrapper");
     expect(layoutWrappers.length).to.eq(2);
@@ -184,7 +184,7 @@ describe("ContentLayout", () => {
   it("Vertical SplitPane onChanged", () => {
     const wrapper = mount(
       <div>
-        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} isInFooterMode={true} />
+        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout2} />
       </div>);
 
     const splitPanel = wrapper.find(SplitPane);
@@ -198,7 +198,7 @@ describe("ContentLayout", () => {
   it("Horizontal SplitPane onChanged", () => {
     const wrapper = mount(
       <div>
-        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} isInFooterMode={true} />
+        <ContentLayout contentGroup={contentGroup2} contentLayout={contentLayout3} />
       </div>);
 
     const splitPanel = wrapper.find(SplitPane);
@@ -312,7 +312,7 @@ describe("SingleContentLayout", () => {
     const floatingControl = new TestFloatingContentControl();
     ContentViewManager.addFloatingContentControl(floatingControl);
 
-    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} isInFooterMode={true} />);
+    const wrapper = mount(<ContentLayout contentGroup={myContentGroup} contentLayout={myContentLayout} />);
     const layoutWrappers = wrapper.find("div.uifw-contentlayout-wrapper");
     expect(layoutWrappers.length).to.eq(1);
     layoutWrappers.at(0).simulate("mouseDown");

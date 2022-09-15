@@ -38,15 +38,4 @@ describe("Indicator", () => {
     expect(wrapper.container.querySelector("span")).to.be.null;
     expect(wrapper.container.querySelector(".nz-footer-mode")).not.to.be.null;
   });
-
-  it("Should support isInfooterMode=false (deprecated)", () => {
-    const wrapper = render(
-      <Indicator iconSpec={"test-icon"} label="test-label" isLabelVisible={false} labelSide={StatusBarLabelSide.Right} isInFooterMode={false} />);
-    expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelector(".uifw-footer-label-reversed")).not.to.be.null;
-    expect(wrapper.container.querySelector(".icon.test-icon")).not.to.be.null;
-    expect(wrapper.container.querySelector("span")).to.be.null;
-    expect(wrapper.container.querySelector(".nz-footer-mode")).to.be.null;
-  });
-
 });

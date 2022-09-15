@@ -13,7 +13,7 @@ import {
 import { fireEvent, render } from "@testing-library/react";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, CoreTools, FrontstageDef, FrontstageManager, FrontstageProps, MessageCenterField, StatusBar, StatusBarComposer, StatusBarItem,
-  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef, withMessageCenterFieldProps, withStatusFieldProps,
+  StatusBarItemUtilities, StatusBarWidgetControl, SyncUiEventDispatcher, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 
@@ -101,7 +101,7 @@ describe("StatusBarComposer", () => {
       if (widgetControl)
         expect(widgetControl.getType()).to.eq(ConfigurableUiControlType.StatusBarWidget);
 
-      const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+      const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
       const statusBarComposer = wrapper.find(StatusBarComposer);
       expect(statusBarComposer.length).to.eq(1);
@@ -176,11 +176,8 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withStatusBarField components ", () => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-      const ActivityCenter = withStatusFieldProps(ActivityCenterField);
-
       const items: StatusBarItem[] = [
-        StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <ActivityCenter />),
+        StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <ActivityCenterField />),
       ];
 
       expect(items.length).to.eq(1);
@@ -192,11 +189,8 @@ describe("StatusBarComposer", () => {
     });
 
     it("StatusBarComposer should support withMessageCenter components ", () => {
-      // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
-      const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-
       const items: StatusBarItem[] = [
-        StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <MessageCenter />),
+        StatusBarItemUtilities.createStatusBarItem("item1", StatusBarSection.Left, 10, <MessageCenterField />),
       ];
 
       expect(items.length).to.eq(1);

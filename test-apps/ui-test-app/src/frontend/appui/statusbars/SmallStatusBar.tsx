@@ -6,7 +6,7 @@ import * as React from "react";
 import { ConditionalBooleanValue, StatusBarSection } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ConfigurableUiManager, MessageCenterField, SnapModeField, StatusBarComposer, StatusBarItem,
-  StatusBarItemUtilities, StatusBarWidgetControl, StatusBarWidgetControlArgs, ToolAssistanceField,
+  StatusBarItemUtilities, StatusBarWidgetControl, ToolAssistanceField,
 } from "@itwin/appui-react";
 import { FooterSeparator } from "@itwin/appui-layout-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
@@ -30,7 +30,7 @@ export class SmallStatusBarWidgetControl extends StatusBarWidgetControl {
     return this._statusBarItems;
   }
 
-  public getReactNode(_args: StatusBarWidgetControlArgs): React.ReactNode {
+  public getReactNode(): React.ReactNode {
     return (
       <StatusBarComposer items={this.statusBarItems} />
     );

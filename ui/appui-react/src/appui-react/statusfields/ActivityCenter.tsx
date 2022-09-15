@@ -8,12 +8,11 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { Centered } from "@itwin/core-react";
+import { Centered, CommonProps } from "@itwin/core-react";
 import { MessageLayout, MessageProgress, Status } from "@itwin/appui-layout-react";
 import { ActivityMessageEventArgs, MessageManager } from "../messages/MessageManager";
 import { NotifyMessageType } from "../messages/ReactNotifyMessageDetails";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
 
 /** State for the [[ActivityCenterField]] component
  * @internal
@@ -27,8 +26,8 @@ interface ActivityCenterState {
 /** Activity Center Field React component.
  * @public
  */
-export class ActivityCenterField extends React.Component<StatusFieldProps, ActivityCenterState> {
-  constructor(p: StatusFieldProps) {
+export class ActivityCenterField extends React.Component<CommonProps, ActivityCenterState> {
+  constructor(p: CommonProps) {
     super(p);
     this.state = {
       message: "",

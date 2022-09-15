@@ -11,9 +11,7 @@ import { CommonStatusBarItem, StatusBarSection, UiItemsProvider } from "@itwin/a
 import { FooterSeparator } from "@itwin/appui-layout-react";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { ToolAssistanceField } from "../statusfields/toolassistance/ToolAssistanceField";
-import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
 import { MessageCenterField } from "../statusfields/MessageCenter";
-import { withMessageCenterFieldProps } from "../statusbar/withMessageCenterFieldProps";
 import { ActivityCenterField } from "../statusfields/ActivityCenter";
 import { SnapModeField } from "../statusfields/SnapMode";
 import { SelectionInfoField } from "../statusfields/SelectionInfo";
@@ -50,27 +48,21 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.messageCenter) {
-      // eslint-disable-next-line deprecation/deprecation
-      const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenterField />));
     }
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.toolAssistance) {
       if (!this._defaultItems || this._defaultItems.preToolAssistanceSeparator)
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <FooterSeparator />));
 
-      // eslint-disable-next-line deprecation/deprecation
-      const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 20, <ToolAssistanceField />));
 
       if (!this._defaultItems || this._defaultItems.postToolAssistanceSeparator)
         statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
     }
     // istanbul ignore else
     if (this._defaultItems?.activityCenter) {
-      // eslint-disable-next-line deprecation/deprecation
-      const ActivityCenter = withStatusFieldProps(ActivityCenterField);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ActivityCenter", StatusBarSection.Left, 30, <ActivityCenter />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ActivityCenter", StatusBarSection.Left, 30, <ActivityCenterField />));
     }
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.accuSnapModePicker) {
@@ -79,23 +71,17 @@ export class StandardStatusbarUiItemsProvider implements UiItemsProvider {
 
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.tileLoadIndicator) {
-      // eslint-disable-next-line deprecation/deprecation
-      const TileLoadIndicator = withStatusFieldProps(TileLoadingIndicator);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadIndicator />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.TileLoadIndicator", StatusBarSection.Right, 10, <TileLoadingIndicator />));
     }
 
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.selectionScope) {
-      // eslint-disable-next-line deprecation/deprecation
-      const SelectionScope = withStatusFieldProps(SelectionScopeField);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionScope", StatusBarSection.Right, 20, <SelectionScope />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionScope", StatusBarSection.Right, 20, <SelectionScopeField />));
     }
 
     // istanbul ignore else
     if (!this._defaultItems || this._defaultItems.selectionInfo) {
-      // eslint-disable-next-line deprecation/deprecation
-      const SelectionInfo = withStatusFieldProps(SelectionInfoField);
-      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionInfo", StatusBarSection.Right, 30, <SelectionInfo />));
+      statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.SelectionInfo", StatusBarSection.Right, 30, <SelectionInfoField />));
     }
 
     return statusBarItems;

@@ -9,7 +9,7 @@ import { fireEvent, render } from "@testing-library/react";
 import { MockRender, SnapMode } from "@itwin/core-frontend";
 import { WidgetState } from "@itwin/appui-abstract";
 import {
-  ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, StatusBarWidgetControlArgs, UiFramework,
+  ConfigurableCreateInfo, ConfigurableUiControlType, SnapModeField, StatusBar, StatusBarWidgetControl, UiFramework,
   WidgetDef,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
@@ -21,11 +21,10 @@ describe("SnapModeField", () => {
       super(info, options);
     }
 
-    // eslint-disable-next-line deprecation/deprecation
-    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode(): React.ReactNode {
       return (
         <>
-          <SnapModeField isInFooterMode={isInFooterMode} />
+          <SnapModeField />
         </>
       );
     }
@@ -62,7 +61,7 @@ describe("SnapModeField", () => {
       "icon-snaps-origin", "icon-snaps-midpoint", "icon-snaps-bisector"];
 
     const wrapper = render(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+      <StatusBar widgetControl={widgetControl} />
     </Provider>);
 
     const button = wrapper.container.querySelector(".uifw-footer-indicator");
@@ -98,7 +97,7 @@ describe("SnapModeField", () => {
     const snapMode = UiFramework.getAccudrawSnapMode();
     expect(snapMode).to.be.equal(SnapMode.Intersection | SnapMode.NearestKeypoint);
     const wrapper = render(<Provider store={TestUtils.store}>
-      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
+      <StatusBar widgetControl={widgetControl} />
     </Provider>);
     const iconContainer = wrapper.container.querySelector(".uifw-indicator-icon");
     expect(iconContainer).not.to.be.null;

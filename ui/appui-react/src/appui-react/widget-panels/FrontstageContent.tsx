@@ -17,6 +17,5 @@ export function WidgetPanelsFrontstageContent() {
   return (<ContentLayout
     contentLayout={frontstageDef.contentLayoutDef}
     contentGroup={frontstageDef.contentGroup}
-    isInFooterMode
   />);
 }

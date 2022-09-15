@@ -169,7 +169,6 @@ describe("FrontstageDef", () => {
             defaultTool={CoreTools.selectElementCommand}
             contentGroup={TestUtils.TestContentGroup1}
             defaultContentId="defaultContentId"
-            isInFooterMode={false}
             applicationData={{ key: "value" }}
           />
         );

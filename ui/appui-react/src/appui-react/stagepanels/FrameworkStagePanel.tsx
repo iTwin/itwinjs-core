@@ -34,7 +34,6 @@ export interface FrameworkStagePanelProps {
   getWidgetContentRef: (id: WidgetZoneId) => React.Ref<HTMLDivElement>; // eslint-disable-line deprecation/deprecation
   header?: React.ReactNode;
   initialSize?: number;
-  isInFooterMode: boolean;
   isTargeted: boolean;
   maxSize?: number;
   minSize?: number;
@@ -93,8 +92,7 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
     return (
       <SafeAreaContext.Consumer>
         {(safeAreaInsets) => {
-          if (this.props.isInFooterMode)
-            safeAreaInsets &= ~SafeAreaInsets.Bottom;
+          safeAreaInsets &= ~SafeAreaInsets.Bottom;
           return (
             <NZ_StagePanel
               className={className}

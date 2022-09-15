@@ -25,7 +25,6 @@ import { ZoneTargets } from "../dragdrop/ZoneTargets";
 export interface StatusBarZoneProps extends CommonProps {
   dropTarget: ZoneTargetType | undefined; // eslint-disable-line deprecation/deprecation
   isHidden: boolean;
-  isInFooterMode: boolean;
   targetChangeHandler: TargetChangeHandler; // eslint-disable-line deprecation/deprecation
   targetedBounds: RectangleProps | undefined;
   widgetChangeHandler: WidgetChangeHandler; // eslint-disable-line deprecation/deprecation
@@ -38,23 +37,19 @@ export interface StatusBarZoneProps extends CommonProps {
  */
 export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
   public override render(): React.ReactNode {
-    const bounds = getFloatingZoneBounds(this.props.zoneProps);
     return (
       <SafeAreaContext.Consumer>
         {(safeAreaInsets) => (
           <>
             <Zone
-              bounds={this.props.isInFooterMode ? undefined : bounds}
               className={this.props.className}
               id={this.props.zoneProps.id}
               isHidden={this.props.isHidden}
-              isInFooterMode={this.props.isInFooterMode}
               safeAreaInsets={safeAreaInsets}
             >
               {
                 this.props.widgetControl &&
                 <StatusBar
-                  isInFooterMode={this.props.isInFooterMode}
                   widgetControl={this.props.widgetControl}
                 />
               }
@@ -62,7 +57,6 @@ export class StatusBarZone extends React.PureComponent<StatusBarZoneProps> {
             <Zone
               bounds={this.props.zoneProps.bounds}
               id={this.props.zoneProps.id}
-              isInFooterMode={this.props.isInFooterMode}
               safeAreaInsets={safeAreaInsets}
             >
               <ZoneTargets

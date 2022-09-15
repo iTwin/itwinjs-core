@@ -10,14 +10,13 @@ import "./SelectionInfo.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { connect } from "react-redux";
-import { Icon } from "@itwin/core-react";
+import { CommonProps, Icon } from "@itwin/core-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
 
 /** Defines properties supported by the SelectionInfo Field Component.
  */
-interface SelectionInfoFieldProps extends StatusFieldProps {
+interface SelectionInfoFieldProps extends CommonProps {
   selectionCount: number;
 }
 
@@ -36,8 +35,6 @@ class SelectionInfoFieldComponent extends React.Component<SelectionInfoFieldProp
       <FooterIndicator
         className={classnames("uifw-statusFields-selectionInfo", this.props.className)}
         style={this.props.style}
-        // eslint-disable-next-line deprecation/deprecation
-        isInFooterMode={this.props.isInFooterMode ?? true}
       >
         {<Icon iconSpec={"icon-cursor"} />}
         {this.props.selectionCount.toString()}

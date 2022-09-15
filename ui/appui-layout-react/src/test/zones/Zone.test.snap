@@ -2,15 +2,6 @@
 
 exports[`<Zone /> renders correctly 1`] = `
 <div
-  className="nz-zones-zone nz-zone-1"
-  style={Object {}}
->
-  <div />
-</div>
-`;
-
-exports[`<Zone /> renders correctly in footer mode 1`] = `
-<div
   className="nz-zones-zone nz-footer-mode nz-zone-1"
   style={Object {}}
 >
@@ -20,7 +11,7 @@ exports[`<Zone /> renders correctly in footer mode 1`] = `
 
 exports[`<Zone /> renders floating correctly 1`] = `
 <div
-  className="nz-zones-zone nz-floating nz-zone-1"
+  className="nz-zones-zone nz-floating nz-footer-mode nz-zone-1"
   style={Object {}}
 >
   <div />
@@ -29,7 +20,7 @@ exports[`<Zone /> renders floating correctly 1`] = `
 
 exports[`<Zone /> renders hidden correctly 1`] = `
 <div
-  className="nz-zones-zone nz-hidden nz-zone-1"
+  className="nz-zones-zone nz-hidden nz-footer-mode nz-zone-1"
   style={Object {}}
 >
   <div />
@@ -38,7 +29,7 @@ exports[`<Zone /> renders hidden correctly 1`] = `
 
 exports[`<Zone /> renders safe area aware correctly 1`] = `
 <div
-  className="nz-zones-zone nz-safe-area-bottom nz-safe-area-left nz-safe-area-right nz-safe-area-top nz-zone-1"
+  className="nz-zones-zone nz-footer-mode nz-safe-area-bottom nz-safe-area-left nz-safe-area-right nz-safe-area-top nz-zone-1"
   style={Object {}}
 >
   <div />

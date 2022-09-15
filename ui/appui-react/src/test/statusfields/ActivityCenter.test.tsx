@@ -7,7 +7,7 @@ import * as React from "react";
 import { WidgetState } from "@itwin/appui-abstract";
 import {
   ActivityCenterField, ConfigurableCreateInfo, ConfigurableUiControlType, MessageManager, StatusBar, StatusBarWidgetControl,
-  StatusBarWidgetControlArgs, WidgetDef,
+  WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
@@ -19,11 +19,10 @@ describe("ActivityCenter", () => {
       super(info, options);
     }
 
-    // eslint-disable-next-line deprecation/deprecation
-    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
+    public getReactNode(): React.ReactNode {
       return (
         <>
-          <ActivityCenterField isInFooterMode={isInFooterMode} />
+          <ActivityCenterField />
         </>
       );
     }
@@ -50,11 +49,11 @@ describe("ActivityCenter", () => {
   });
 
   it("Status Bar with ActivityCenterField should mount", () => {
-    mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    mount(<StatusBar widgetControl={widgetControl} />);
   });
 
   it("MessageManager.onActivityMessageUpdatedEvent should be handled", async () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
     const message = "Test";
     const percentage = 50;
     MessageManager.setupActivityMessageValues(message, percentage);
@@ -66,7 +65,7 @@ describe("ActivityCenter", () => {
   });
 
   it("MessageManager.onActivityMessageCancelledEvent should be handled", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
     MessageManager.setupActivityMessageValues("Test", 50);
     const field = wrapper.find(ActivityCenterField).at(0);
@@ -77,7 +76,7 @@ describe("ActivityCenter", () => {
   });
 
   it("click should be handled", () => {
-    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} />);
 
     MessageManager.setupActivityMessageValues("Test", 50);
     wrapper.update();

@@ -163,9 +163,8 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     if (frontstageDef && frontstageDef.nineZone)
       nineZone = { ...frontstageDef.nineZone };
     else {
-      const isInFooterMode = frontstageDef ? frontstageDef.isInFooterMode : false;
       nineZone = {
-        zones: FrontstageManager.NineZoneManager.getZonesManager().setIsInFooterMode(isInFooterMode, getDefaultZonesManagerProps()),
+        zones: getDefaultZonesManagerProps(),
         nested: {
           panels: {
             inner: getDefaultNineZoneStagePanelsManagerProps(),

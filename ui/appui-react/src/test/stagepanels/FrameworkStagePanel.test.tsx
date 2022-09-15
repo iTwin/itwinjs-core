@@ -22,7 +22,6 @@ describe("FrameworkStagePanel", () => {
     changeHandler: changeHandler.object,
     draggedWidgetId: undefined,
     getWidgetContentRef: getWidgetContentRef.object,
-    isInFooterMode: false,
     isTargeted: false,
     renderPane: renderPane.object,
     resizable: false,

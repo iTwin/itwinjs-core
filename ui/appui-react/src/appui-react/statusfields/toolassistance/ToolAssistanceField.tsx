@@ -17,6 +17,7 @@ import {
 } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
+  CommonProps,
   FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
@@ -28,9 +29,7 @@ import { HorizontalTabs, ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
-import { StatusBarFieldId } from "../../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
-import { StatusFieldProps } from "../StatusFieldProps";
 import { UiStateStorageContext } from "../../uistate/useUiStateStorage";
 
 import acceptPointIcon from "./accept-point.svg";
@@ -55,7 +54,7 @@ import touchCursorTapIcon from "./touch-cursor-point.svg";
 /** Properties of [[ToolAssistanceField]] component.
  * @public
  */
-export interface ToolAssistanceFieldProps extends StatusFieldProps {
+export interface ToolAssistanceFieldProps extends CommonProps {
   /** Indicates whether to include promptAtCursor Checkbox. Defaults to true. */
   includePromptAtCursor: boolean;
   /** Optional parameter for persistent UI settings. Defaults to UiStateStorageContext.
@@ -87,7 +86,7 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
-  openWidget: string | null;
+  isOpen: boolean;
 }
 
 /** Tool Assistance Field React component.
@@ -105,7 +104,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   private _showPromptAtCursorSetting: UiStateEntry<boolean>;
   private _mouseTouchTabIndexSetting: UiStateEntry<number>;
   private _target: HTMLElement | null = null;
-  private _className: string;
   private _indicator = React.createRef<HTMLDivElement>();
   private _cursorPrompt: CursorPrompt;
   private _isMounted = false;
@@ -123,9 +121,6 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   constructor(p: ToolAssistanceFieldProps) {
     super(p);
 
-    const instance = this.constructor;
-    this._className = instance.name;
-
     const mobile = UiFramework.isMobile();
 
     this.state = {
@@ -139,7 +134,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
-      openWidget: null,
+      isOpen: false,
     };
 
     this._uiSettingsStorage = new LocalStateStorage();
@@ -391,15 +386,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             indicatorRef={this._indicator}
             className={classnames("uifw-statusFields-toolassistance", this.props.className)}
             style={this.props.style}
-            isInFooterMode={this.props.isInFooterMode ?? true}
             onClick={this._handleToolAssistanceIndicatorClick}
             title={tooltip}
           >
-            {(this.props.isInFooterMode ?? true) ? prompt : undefined}
+            {prompt}
           </ToolAssistance>
         </div>
         <FooterPopup
-          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className}
+          isOpen={this.state.isOpen}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this._target}
@@ -444,7 +438,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private _handleClose = () => {
-    this.setOpenWidget(null);
+    this.setIsOpen(false);
   };
 
   private _handleOutsideClick = (e: MouseEvent) => {
@@ -461,11 +455,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private _handleToolAssistanceIndicatorClick = () => {
-    const isOpen = (this.props.openWidget ?? this.state.openWidget) === this._className;
-    if (isOpen) {
-      this.setOpenWidget(null);
-    } else
-      this.setOpenWidget(this._className);
+    this.setIsOpen(!this.state.isOpen);
   };
 
   private _handlePinButtonClick = () => {
@@ -478,12 +468,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this._handleClose();
   };
 
-  private setOpenWidget(openWidget: StatusBarFieldId) {
-    this.props.onOpenWidget?.(openWidget);
+  private setIsOpen(isOpen: boolean) {
     let newState = {
-      openWidget,
+      isOpen,
     };
-    if (!openWidget && this.state.isPinned && this._isMounted) {
+    if (!isOpen && this.state.isPinned && this._isMounted) {
       newState = {...newState, ...{isPinned: false}};
     }
     this.setState(newState);

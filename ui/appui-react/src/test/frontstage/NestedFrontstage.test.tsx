@@ -52,7 +52,6 @@ class TestNestedFrontstage extends FrontstageProvider {
         defaultTool={this.defaultToolDef}
         contentGroup={myContentGroup}
         defaultContentId="defaultContentId"
-        isInFooterMode={false}
         applicationData={{ key: "value" }}
         topLeft={
           <Zone defaultState={ZoneState.Open} allowsMerging={true} applicationData={{ key: "value" }}

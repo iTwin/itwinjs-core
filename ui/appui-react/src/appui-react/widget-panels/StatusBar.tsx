@@ -30,7 +30,6 @@ export function WidgetPanelsStatusBar(props: CommonProps) {
     <StatusBar
       className={className}
       style={props.style}
-      isInFooterMode
       widgetControl={widget?.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl}
     />
   );

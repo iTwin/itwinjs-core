@@ -6,7 +6,7 @@
   "version": "0.0.0",
   "homepage": "http://localhost:3000/",
   "scripts": {
-    "build": "",
+    "build": "npm run -s build:backend & tsc",
     "build:ci": "",
     "buildapp": "npm run -s build:backend & tsc",
     "build:ci:optional": "npm run -s build:backend && npm run -s build:frontend",

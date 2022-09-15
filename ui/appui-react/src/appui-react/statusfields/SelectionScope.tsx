@@ -14,12 +14,12 @@ import { FooterIndicator } from "@itwin/appui-layout-react";
 import { Select, SelectOption } from "@itwin/itwinui-react";
 import { PresentationSelectionScope } from "../redux/SessionState";
 import { UiFramework } from "../UiFramework";
-import { StatusFieldProps } from "./StatusFieldProps";
+import { CommonProps } from "@itwin/core-react";
 
 /** Defines properties supported by the SelectionScopeField Component.
  * @public
  */
-interface SelectionScopeFieldProps extends StatusFieldProps {
+interface SelectionScopeFieldProps extends CommonProps {
 
   activeSelectionScope: string;
   availableSelectionScopes: PresentationSelectionScope[];
@@ -59,15 +59,10 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
       <FooterIndicator
         className={classnames("uifw-statusFields-selectionScope", this.props.className)}
         style={this.props.style}
-        // eslint-disable-next-line deprecation/deprecation
-        isInFooterMode={this.props.isInFooterMode ?? true}
       >
-        {// eslint-disable-next-line deprecation/deprecation
-          (this.props.isInFooterMode ?? true) &&
-          <label className="uifw-statusFields-selectionScope-label">
-            {this._label}:
-          </label>
-        }
+        <label className="uifw-statusFields-selectionScope-label">
+          {this._label}:
+        </label>
         <Select
           className="uifw-statusFields-selectionScope-selector"
           value={this.props.activeSelectionScope}

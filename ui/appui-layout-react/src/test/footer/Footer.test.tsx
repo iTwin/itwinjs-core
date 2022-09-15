@@ -16,10 +16,6 @@ describe("<Footer />", () => {
     shallow(<Footer />).should.matchSnapshot();
   });
 
-  it("renders correctly in footer mode", () => {
-    shallow(<Footer isInFooterMode />).should.matchSnapshot();
-  });
-
   it("renders safe area aware correctly", () => {
     shallow(<Footer safeAreaInsets={SafeAreaInsets.All} />).should.matchSnapshot();
   });
