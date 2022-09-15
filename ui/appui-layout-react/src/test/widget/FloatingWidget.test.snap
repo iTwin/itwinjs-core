@@ -4,7 +4,7 @@ exports[`FloatingWidget should render 1`] = `
 <div
   class="nz-widget-widget nz-widget-floatingWidget"
   data-widget-id="w1"
-  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+  style="transform: translate(20px, 20px); max-height: 60%; max-width: 60%;"
 >
   <div
     class="nz-widget-tabBar nz-separator"
@@ -93,7 +93,7 @@ exports[`FloatingWidget should render dragged 1`] = `
 <div
   class="nz-widget-widget nz-widget-floatingWidget nz-dragged nz-minimized"
   data-widget-id="w1"
-  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+  style="transform: translate(20px, 20px); max-height: 60%; max-width: 60%;"
 >
   <div
     class="nz-widget-tabBar"
@@ -182,7 +182,7 @@ exports[`FloatingWidget should render hidden 1`] = `
 <div
   class="nz-widget-widget nz-widget-floatingWidget"
   data-widget-id="w1"
-  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+  style="transform: translate(20px, 20px); max-height: 60%; max-width: 60%;"
 >
   <div
     class="nz-widget-tabBar nz-separator"
@@ -271,7 +271,7 @@ exports[`FloatingWidget should render hidden when hideWithUiWhenFloating is true
 <div
   class="nz-widget-widget nz-widget-floatingWidget nz-hidden"
   data-widget-id="w1"
-  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+  style="transform: translate(20px, 20px); max-height: 60%; max-width: 60%;"
 >
   <div
     class="nz-widget-tabBar nz-separator"
@@ -360,7 +360,7 @@ exports[`FloatingWidget should render minimized 1`] = `
 <div
   class="nz-widget-widget nz-widget-floatingWidget nz-minimized"
   data-widget-id="w1"
-  style="transform: translate(0px, 0px); max-height: 60%; max-width: 60%;"
+  style="transform: translate(20px, 20px); max-height: 60%; max-width: 60%;"
 >
   <div
     class="nz-widget-tabBar"

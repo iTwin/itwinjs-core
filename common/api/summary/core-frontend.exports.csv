@@ -90,6 +90,7 @@ public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
+beta;ComputeDisplayTransformArgs
 public;connectViewportFrusta(viewports: Iterable
 public;connectViewports(viewports: Iterable
 public;connectViewportViews(viewports: Iterable

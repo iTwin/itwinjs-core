@@ -135,6 +135,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
     }
 
+
     func setupFrontend(bimFile: URL?, iModelId: String? = nil, iTwinId: String? = nil) {
         let config = WKWebViewConfiguration()
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
@@ -151,7 +152,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             webView.topAnchor.constraint(equalTo: self.view.topAnchor),
         ])
         self.view.setNeedsLayout()
-    
+
         let host = IModelJsHost.sharedInstance()
         var hashParams = "#port=\(host.getPort())&platform=ios"
 
@@ -169,7 +170,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
     }
-    
+
     /// Show alert for webkit alert
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
@@ -178,11 +179,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         })
         self.present(alert, animated: true)
     }
-    
+
     @IBAction func onOpenSnapshotIModel(_ sender: Any) {
         pickSnapshot()
     }
-    
+
     func pickSnapshot() {
         let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.bim-imodel"], in: .open)
         picker.modalPresentationStyle = .fullScreen
@@ -191,15 +192,15 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         picker.delegate = self
         self.present(picker, animated: true)
     }
-    
+
     func getDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-    
+
     func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
         setupFrontend(bimFile: nil)
     }
-  
+
     func copyExternalFileWithPrompt(srcUrl: URL, destUrl: URL, handler: @escaping () -> ()) {
         if FileManager.default.fileExists(atPath: destUrl.path) {
             // File exists, check if it is the same
@@ -264,7 +265,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             }
         }
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
