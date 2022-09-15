@@ -11,6 +11,8 @@ import { ColorByName, ColorDef, FrustumPlanes, GlobeMode, PackedFeatureTable, Re
 import { AxisOrder, BilinearPatch, ClipPlane, ClipPrimitive, ClipShape, ClipVector, Constant, ConvexClipPlaneSet, EllipsoidPatch, LongitudeLatitudeNumber, Matrix3d, Point3d, PolygonOps, Range1d, Range2d, Range3d, Ray3d, Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
+import { RealityMeshParams } from "../../render/RealityMeshParams";
+import { upsampleRealityMeshParams } from "../../render/UpsampleRealityMeshParams";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
@@ -101,7 +103,7 @@ export interface TerrainTileContent extends TileContent {
   terrain?: {
     renderGeometry?: RenderTerrainGeometry;
     /** Used on leaves to support up-sampling. */
-    mesh?: TerrainMeshPrimitive;
+    mesh?: RealityMeshParams;
   };
 }
 
@@ -123,7 +125,7 @@ export class MapTile extends RealityTile {
   public everLoaded = false;                    // If the tile is only required for availability metadata, load it once and then allow it to be unloaded.
   protected _heightRange: Range1d | undefined;
   protected _renderGeometry?: RenderTerrainGeometry;
-  protected _mesh?: TerrainMeshPrimitive;     // Primitive retained on leaves only for upsampling.
+  protected _mesh?: RealityMeshParams; // Primitive retained on leaves only for upsampling.
   public override get isReady(): boolean { return super.isReady && this.baseImageryIsReady; }
   public override get hasGraphics(): boolean { return this._renderGeometry !== undefined; }
   public get renderGeometry() { return this._renderGeometry; }
@@ -447,7 +449,13 @@ export class MapTile extends RealityTile {
     super._collectStatistics(stats);
 
     this._renderGeometry?.collectStatistics(stats);
-    this._mesh?.collectStatistics(stats);
+    if (this._mesh) {
+      stats.addTerrain(this._mesh.indices.byteLength
+        + this._mesh.positions.points.byteLength
+        + this._mesh.uvs.points.byteLength
+        + (this._mesh.normals ? this._mesh.normals.byteLength : 0)
+      );
+    }
   }
 
   /** Height range is along with the tile corners to detect if tile intersects view frustum.
@@ -617,7 +625,7 @@ export class MapTile extends RealityTile {
       const iModelTransform = this.mapTree.iModelTransform;
       const geometryTransform =  content.terrain?.renderGeometry?.transform;
       const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
-      const polyface = content.terrain?.mesh?.createPolyface(transform);
+      const polyface = content.terrain?.mesh ? RealityMeshParams.toPolyface(content.terrain.mesh, { transform }) : undefined;
       this._geometry = polyface ? { polyfaces: [polyface] } : undefined;
 
     } else {
@@ -667,7 +675,7 @@ export class UpsampledMapTile extends MapTile {
     const thisRow = thisId.row - (parentId.row << levelDelta);
     const scale = 1.0 / (1 << levelDelta);
     const parentParameterRange = Range2d.createXYXY(scale * thisColumn, scale * thisRow, scale * (thisColumn + 1), scale * (thisRow + 1));
-    const upsample = parentMesh.upsample(parentParameterRange);
+    const upsample = upsampleRealityMeshParams(parentMesh, parentParameterRange);
     this.adjustHeights(upsample.heightRange.low, upsample.heightRange.high);
     return upsample;
   }
@@ -677,7 +685,7 @@ export class UpsampledMapTile extends MapTile {
       const upsample = this.upsampleFromParent();
       const projection = this.loadableTerrainTile.getProjection(this.heightRange);
       if (upsample)
-        this._renderGeometry = IModelApp.renderSystem.createRealityMeshFromTerrain(upsample.mesh, projection.transformFromLocal, true);
+        this._renderGeometry = IModelApp.renderSystem.createTerrainMesh(upsample.mesh, projection.transformFromLocal, true);
     }
     return this._renderGeometry;
   }
