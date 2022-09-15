@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
-import { esriPBuffer } from "./FeatureCollectionGenerated";
+import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 

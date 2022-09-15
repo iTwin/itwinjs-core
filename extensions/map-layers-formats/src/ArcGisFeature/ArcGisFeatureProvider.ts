@@ -9,7 +9,7 @@ import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } fr
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
 import { ArcGisErrorCode, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation } from "@itwin/core-frontend";
-import { esriPBuffer } from "./FeatureCollectionGenerated";
+import { esriPBuffer } from "./esriPBuffer.gen";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";

@@ -4,9 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./mapLayersFormats";
-export * from "./ArcGisFeature/FeatureCollectionGenerated";
-export * from "./ArcGisFeature/ArcGisFeatureQuery";
-export * from "./ArcGisFeature/ArcGisSymbologyRenderer";
-export * from "./ArcGisFeature/ArcGisFeatureRenderer";
-export * from "./ArcGisFeature/ArcGisFeatureJSON";
-export * from "./ArcGisFeature/ArcGisFeaturePBF";
+export * from "./ArcGisFeature/ArcGisFeatureProvider";
+
