@@ -48,12 +48,8 @@ export class RpcMultipart {
     form.append("objects", value.objects);
 
     for (let i = 0; i !== value.data.length; ++i) {
-      if (typeof (Blob) !== "undefined") {
-        form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
-      } else {
-        const buf = value.data[i];
-        form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
-      }
+      const buf = value.data[i];
+      form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
     }
   }
 }
