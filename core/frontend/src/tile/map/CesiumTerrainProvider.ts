@@ -463,7 +463,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     const getIndexArray = (numIndices: number) => {
       const indexArray = new typedArray(streamBuffer.arrayBuffer, streamBuffer.curPos, numIndices);
-      streamBuffer.advance(bytesPerIndex);
+      streamBuffer.advance(numIndices * bytesPerIndex);
       return indexArray;
     };
 
@@ -597,8 +597,9 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
         builder.addVertex(projection.getPoint(uv.x, uv.y, height - skirtHeight), quv, oen);
 
         if (i !== 0) {
-          builder.addTriangle(index, indices[i - 1], builder.indices.length - 2);
-          builder.addTriangle(index, builder.indices.length - 2, builder.indices.length - 1);
+          const nextPointIndex = builder.positions.length;
+          builder.addTriangle(index, indices[i - 1], nextPointIndex - 2);
+          builder.addTriangle(index, nextPointIndex - 2, nextPointIndex - 1);
         }
       }
     };
