@@ -149,6 +149,14 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
+  public override async readMesh(_data: TileRequest.ResponseData, _isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined> {
+    if (tile.isPlanar)
+      return this._wantSkirts ? this.createSkirtedPlanarMesh(tile) : this.createSkirtlessPlanarMesh(tile);
+
+    // ###TODO
+    return undefined;
+  }
+
   private getGlobeMesh(tile: MapTile): TerrainMeshPrimitive | undefined {
     const globeMeshDimension = 10;
     const projection = tile.getProjection();

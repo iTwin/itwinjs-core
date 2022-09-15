@@ -11,6 +11,7 @@ import { Range1d } from "@itwin/core-geometry";
 import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { ScreenViewport } from "../../Viewport";
+import { RealityMeshParams } from "../../render/RealityMeshParams";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile, TileRequest,
@@ -38,6 +39,7 @@ export abstract class TerrainMeshProvider {
 
   public abstract requestMeshData(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract loadMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
+  public abstract readMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined>;
 
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;

@@ -407,7 +407,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return mesh;
   }
 
-  public async createRealityMeshParams(data: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined> {
+  public override async readMesh(data: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined> {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
