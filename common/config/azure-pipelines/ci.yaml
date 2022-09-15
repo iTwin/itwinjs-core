@@ -67,8 +67,8 @@ jobs:
   steps:
   - checkout: self
   - template: templates/core-build.yaml
-      parameters:
-        nodeVersion: 16.13.0
+    parameters:
+      nodeVersion: 16.13.0
 
 
 
