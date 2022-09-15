@@ -90,6 +90,7 @@ export * from "./render/InstancedGraphicParams";
 export * from "./render/MockRender";
 export * from "./render/ParticleCollectionBuilder";
 export * from "./render/Pixel";
+export * from "./render/RealityMeshGraphicParams";
 export * from "./render/RealityMeshParams";
 export * from "./render/RenderClipVolume";
 export * from "./render/RenderGraphic";

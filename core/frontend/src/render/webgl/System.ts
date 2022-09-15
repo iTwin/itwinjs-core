@@ -19,7 +19,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { RealityMeshGraphicParams } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams } from "../primitives/PointStringParams";
 import { PolylineParams } from "../primitives/PolylineParams";

@@ -9,21 +9,9 @@
 import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, Transform } from "@itwin/core-geometry";
 import { ColorDef, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
-import { GltfMeshData, MapCartoRectangle, MapTileProjection } from "../../../tile/internal";
-import { RenderMemory } from "../../RenderMemory";
-import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "../../RenderSystem";
-import { Mesh } from "./MeshPrimitives";
-
-export interface RealityMeshProps {
-  readonly indices: Uint16Array;
-  readonly pointQParams: QParams3d;
-  readonly points: Uint16Array;
-  readonly normals?: Uint16Array;
-  readonly uvQParams: QParams2d;
-  readonly uvs: Uint16Array;
-  readonly featureID: number;
-  readonly texture?: RenderTexture;
-}
+import { GltfMeshData, MapCartoRectangle, MapTileProjection } from "../tile/internal";
+import { RenderMemory } from "./RenderMemory";
+import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "./RenderSystem";
 
 /** @internal */
 export interface RealityMeshGraphicParams {

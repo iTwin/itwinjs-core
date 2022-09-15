@@ -11,7 +11,7 @@ import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley"
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
-import { RealityMeshGraphicParams } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { RealityMeshParams } from "../RealityMeshParams";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
