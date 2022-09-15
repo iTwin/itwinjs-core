@@ -93,7 +93,7 @@ describe("StandardNavigationToolsUiItemsProvider", () => {
       vertical: {
         walk: true,
         toggleCamera: true,
-        setupWalkCamera: true
+        setupWalkCamera: true,
       },
     });
     UiItemsManager.register(provider, { stageIds: ["test"] });

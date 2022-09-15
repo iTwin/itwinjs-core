@@ -91,7 +91,7 @@ describe("StandardNavigationToolsProvider", () => {
       vertical: {
         walk: true,
         toggleCamera: true,
-        setupWalkCamera: true
+        setupWalkCamera: true,
       },
     }, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return "test" === stageId;
