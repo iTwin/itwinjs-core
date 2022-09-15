@@ -11,7 +11,7 @@ import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range1d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
 import {
-  OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dBuffer, QPoint3d, QPoint3dBuffer, Quantization, RenderTexture,
+  OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, Quantization, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
@@ -91,71 +91,6 @@ export namespace RealityMeshParams {
   }
 }
 
-class QPoint2dBufferBuilder {
-  public readonly params: QParams2d;
-  public readonly buffer: Uint16ArrayBuilder;
-
-  public constructor(range: Range2d, initialCapacity = 0) {
-    this.params = QParams2d.fromRange(range);
-    this.buffer = new Uint16ArrayBuilder({ initialCapacity: 2 * initialCapacity });
-  }
-
-  public pushXY(x: number, y: number): void {
-    this.buffer.push(x);
-    this.buffer.push(y);
-  }
-
-  public push(pt: XAndY): void {
-    this.pushXY(pt.x, pt.y);
-  }
-
-  public get length(): number {
-    const len = this.buffer.length;
-    assert(len % 2 === 0);
-    return len / 2;
-  }
-
-  public finish(): QPoint2dBuffer {
-    return {
-      params: this.params,
-      points: this.buffer.toTypedArray(),
-    };
-  }
-}
-
-class QPoint3dBufferBuilder {
-  public readonly params: QParams3d;
-  public readonly buffer: Uint16ArrayBuilder;
-
-  public constructor(range: Range3d, initialCapacity = 0) {
-    this.params = QParams3d.fromRange(range);
-    this.buffer = new Uint16ArrayBuilder({ initialCapacity: 3 * initialCapacity });
-  }
-
-  public pushXYZ(x: number, y: number, z: number): void {
-    this.buffer.push(x);
-    this.buffer.push(y);
-    this.buffer.push(z);
-  }
-
-  public push(pt: XYAndZ): void {
-    this.pushXYZ(pt.x, pt.y, pt.z);
-  }
-
-  public get length(): number {
-    const len = this.buffer.length;
-    assert(len % 3 === 0);
-    return len / 3;
-  }
-
-  public finish(): QPoint3dBuffer {
-    return {
-      params: this.params,
-      points: this.buffer.toTypedArray(),
-    };
-  }
-}
-
 export interface RealityMeshParamsBuilderOptions {
   positionRange: Range3d;
   uvRange?: Range2d; // default [0..1]
@@ -176,10 +111,18 @@ export class RealityMeshParamsBuilder {
 
   public constructor(options: RealityMeshParamsBuilderOptions) {
     this.indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
-    this.positions = new QPoint3dBufferBuilder(options.positionRange, options.initialVertexCapacity);
-    this.uvs = new QPoint2dBufferBuilder(options.uvRange ?? new Range2d(0, 0, 1, 1), options.initialVertexCapacity);
     if (options.wantNormals)
       this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
+
+    this.positions = new QPoint3dBufferBuilder({
+      range: options.positionRange,
+      initialCapacity: options.initialVertexCapacity,
+    });
+
+    this.uvs = new QPoint2dBufferBuilder({
+      range: options.uvRange ?? new Range2d(0, 0, 1, 1),
+      initialCapacity: options.initialVertexCapacity,
+    });
   }
 
   public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): void {

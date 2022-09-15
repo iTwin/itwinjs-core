@@ -6,7 +6,7 @@
  * @module Geometry
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import {
   Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -710,5 +710,90 @@ export class QPoint3dList {
   /** An iterator over the points in the list. */
   public [Symbol.iterator]() {
     return this.list[Symbol.iterator]();
+  }
+}
+
+interface QPoint2dBufferBuilderOptions {
+  range: Range2d;
+  initialCapacity?: number;
+  growthFactor?: number;
+}
+
+export class QPoint2dBufferBuilder {
+  public readonly params: QParams2d;
+  public readonly buffer: Uint16ArrayBuilder;
+
+  public constructor(options: QPoint2dBufferBuilderOptions) {
+    this.params = QParams2d.fromRange(options.range);
+    const initialCapacity = options.initialCapacity ?? 0;
+    this.buffer = new Uint16ArrayBuilder({
+      growthFactor: options.growthFactor,
+      initialCapacity: 2 * initialCapacity,
+    });
+  }
+
+  public pushXY(x: number, y: number): void {
+    this.buffer.push(x);
+    this.buffer.push(y);
+  }
+
+  public push(pt: XAndY): void {
+    this.pushXY(pt.x, pt.y);
+  }
+
+  public get length(): number {
+    const len = this.buffer.length;
+    assert(len % 2 === 0);
+    return len / 2;
+  }
+
+  public finish(): QPoint2dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
+  }
+}
+
+interface QPoint3dBufferBuilderOptions {
+  range: Range3d;
+  initialCapacity?: number;
+  growthFactor?: number;
+}
+
+export class QPoint3dBufferBuilder {
+  public readonly params: QParams3d;
+  public readonly buffer: Uint16ArrayBuilder;
+
+  public constructor(options: QPoint3dBufferBuilderOptions) {
+    this.params = QParams3d.fromRange(options.range);
+    const initialCapacity = options.initialCapacity ?? 0;
+    this.buffer = new Uint16ArrayBuilder({
+      growthFactor: options.growthFactor,
+      initialCapacity: 3 * initialCapacity,
+    });
+  }
+
+  public pushXYZ(x: number, y: number, z: number): void {
+    this.buffer.push(x);
+    this.buffer.push(y);
+    this.buffer.push(z);
+  }
+
+  public push(pt: XYAndZ): void {
+    this.pushXYZ(pt.x, pt.y, pt.z);
+  }
+
+  public get length(): number {
+    const len = this.buffer.length;
+    assert(len % 3 === 0);
+    return len / 3;
+  }
+
+  public finish(): QPoint3dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
   }
 }
