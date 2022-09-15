@@ -6,22 +6,17 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
-import { QParams3d, QPoint2d } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
 const scratchPoint = Point3d.createZero();
-const scratchQPoint2d = new QPoint2d();
 const scratchEllipsoid = Ellipsoid.create(Transform.createIdentity());
 const scratchZeroRange = Range1d.createXX(0, 0);
-let scratch8Points: Array<Point3d>;
-let scratch8Params: Array<Point2d>;
 
 /** Terrain provider that produces geometry that represents a smooth ellipsoid without any height perturbations.
  * The area within the project extents are represented as planar tiles and other tiles are facetted approximations
@@ -126,7 +121,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     const dimensionM1 = globeMeshDimension - 1;
     const dimensionM2 = globeMeshDimension - 2;
 
-    const transformRef = ellipsoidPatch.ellipsoid.transformRef.clone();
+    ellipsoidPatch.ellipsoid.transformRef.clone(scratchEllipsoid.transformRef);
     const skirtPatch = EllipsoidPatch.createCapture(scratchEllipsoid, ellipsoidPatch.longitudeSweep, ellipsoidPatch.latitudeSweep);
     const scaleFactor = Math.max(0.99, 1 - Math.sin(ellipsoidPatch.longitudeSweep.sweepRadians * delta));
     skirtPatch.ellipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);

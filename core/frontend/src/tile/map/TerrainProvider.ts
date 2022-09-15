@@ -31,7 +31,7 @@ export class TerrainProviderRegistry {
   /** @internal */
   public constructor() {
     this.register("CesiumWorldTerrain", {
-      createTerrainMeshProvider: (options) => getCesiumTerrainProvider(options),
+      createTerrainMeshProvider: async (options) => getCesiumTerrainProvider(options),
     });
   }
 

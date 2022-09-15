@@ -6,15 +6,14 @@
  * @module Tiles
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
-import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile, TileRequest,
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TileRequest,
 } from "../internal";
 
 /** Options used to construct a [[TerrainMeshProvider]].

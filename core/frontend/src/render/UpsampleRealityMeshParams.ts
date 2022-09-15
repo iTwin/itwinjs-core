@@ -6,15 +6,12 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range1d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
+  Range1d, Range2d, Vector3d,
 } from "@itwin/core-geometry";
 import {
-  OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dBuffer, QPoint3d, QPoint3dBuffer, Quantization, RenderTexture,
+  OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization,
 } from "@itwin/core-common";
-import { GltfMeshData } from "../tile/internal";
-import { Mesh } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {

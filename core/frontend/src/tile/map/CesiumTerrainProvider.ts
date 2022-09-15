@@ -6,18 +6,17 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
-  TerrainMeshProviderOptions, Tile, TileAvailability, TileRequest,
+  GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
+  TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
 
 /** @internal */
@@ -412,23 +411,23 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
     southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
 
-    const generateSkirts = (indices: Uint16Array | Uint32Array) => {
+    const generateSkirts = (indexes: Uint16Array | Uint32Array) => {
       const quv = new QPoint2d();
-      const uv = new Point2d();
-      for (let i = 0; i < indices.length; i++) {
-        const index = indices[i];
+      const param = new Point2d();
+      for (let i = 0; i < indexes.length; i++) {
+        const index = indexes[i];
         const uvIndex = index * 2;
         const height = minHeight + heightBuffer[index] * heightScale;
 
         quv.setFromScalars(builder.uvs.buffer.at(uvIndex), builder.uvs.buffer.at(uvIndex + 1));
-        builder.uvs.params.unquantize(quv.x, quv.y, uv);
+        builder.uvs.params.unquantize(quv.x, quv.y, param);
 
         const oen = wantNormals && builder.normals ? builder.normals.at(index) : undefined;
-        builder.addVertex(projection.getPoint(uv.x, uv.y, height - skirtHeight), quv, oen);
+        builder.addVertex(projection.getPoint(param.x, param.y, height - skirtHeight), quv, oen);
 
         if (i !== 0) {
           const nextPointIndex = builder.positions.length;
-          builder.addTriangle(index, indices[i - 1], nextPointIndex - 2);
+          builder.addTriangle(index, indexes[i - 1], nextPointIndex - 2);
           builder.addTriangle(index, nextPointIndex - 2, nextPointIndex - 1);
         }
       }

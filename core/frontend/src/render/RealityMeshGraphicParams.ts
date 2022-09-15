@@ -6,11 +6,8 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
-import { IndexedPolyface, Polyface, Transform } from "@itwin/core-geometry";
-import { ColorDef, OctEncodedNormal, PackedFeatureTable, QParams2d, QParams3d, RenderTexture } from "@itwin/core-common";
-import { GltfMeshData, MapCartoRectangle, MapTileProjection } from "../tile/internal";
-import { RenderMemory } from "./RenderMemory";
+import { ColorDef, PackedFeatureTable } from "@itwin/core-common";
+import { MapCartoRectangle, MapTileProjection } from "../tile/internal";
 import { MapLayerClassifiers,  RenderTerrainGeometry,  TerrainTexture } from "./RenderSystem";
 
 /** @internal */

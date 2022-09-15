@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert, Constructor, Uint8ArrayBuilder, Uint32ArrayBuilder } from "@itwin/core-bentley";
+import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, ComputeNodeId, PackedFeatureTable } from "@itwin/core-common";
 import {
   computeDimensions, MeshParams, VertexIndices, VertexTable, VertexTableProps, VertexTableWithIndices,

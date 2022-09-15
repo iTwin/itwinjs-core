@@ -6,12 +6,12 @@
  * @module Rendering
  */
 
-import { assert, TypedArrayBuilderOptions, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range1d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
+  IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
 import {
-  OctEncodedNormal, QParams2d, QParams3d, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, Quantization, RenderTexture,
+  OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
@@ -64,8 +64,8 @@ export namespace RealityMeshParams {
 
     if (includeNormals) {
       const normal = new Vector3d();
-      for (let i = 0; i < normals.length; i++)
-        polyface.addNormal(OctEncodedNormal.decodeValue(normals[i], normal));
+      for (const oen of normals)
+        polyface.addNormal(OctEncodedNormal.decodeValue(oen, normal));
     }
 
     if (includeParams) {

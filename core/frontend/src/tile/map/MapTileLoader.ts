@@ -9,7 +9,6 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import { Polyface, Range1d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
-import { request } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
@@ -49,7 +48,7 @@ export class MapTileLoader extends RealityTileLoader {
   public async requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     assert(tile instanceof MapTile);
     try {
-      return this.terrainProvider.requestMeshData({ tile, isCanceled });
+      return await this.terrainProvider.requestMeshData({ tile, isCanceled });
     } catch (_) {
       return undefined;
     }
