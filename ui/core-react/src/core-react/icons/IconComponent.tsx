@@ -30,26 +30,6 @@ export interface IconProps extends CommonProps {
   iconSpec?: IconSpec;
 }
 
-function isSafeSvgSrc(src: string): boolean {
-  const dataUriParts = src.split(",");
-  if (2 !== dataUriParts.length) {
-    return false;
-  }
-
-  if ("data:image/svg+xml;base64" !== dataUriParts[0]) {
-    return false;
-  }
-
-  try {
-    const svg = atob(dataUriParts[1]);
-    const sanitizer = DOMPurify ?? DOMPurifyNS;
-    const sanitizedSvg = sanitizer.sanitize(svg, { USE_PROFILES: { svg: true } });
-    return new DOMParser().parseFromString(svg, "application/xml").isEqualNode(new DOMParser().parseFromString(sanitizedSvg, "application/xml"));
-  } catch {
-    return false;
-  }
-}
-
 /** Icon Functional component displays an icon based on an [[IconSpec]].
  * @public
  */
@@ -80,7 +60,7 @@ export function Icon(props: IconProps) {
 
       const sanitizerConfig = {
         ALLOWED_TAGS: ["svg-loader"],
-        ADD_URI_SAFE_ATTR: isSafeSvgSrc(webComponentString) ? ["src"] : [],
+        ADD_URI_SAFE_ATTR: ["src"],
       };
 
       const sanitizedIconString = sanitizer.sanitize(svgDiv, sanitizerConfig);
