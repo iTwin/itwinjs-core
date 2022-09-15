@@ -18,8 +18,6 @@ parameters:
     type: boolean
     default: false
 
-variables:
-  tempDocsLocation: $(Pipeline.Workspace)/tempDocsBuild
 
 jobs:
   - job:
@@ -28,91 +26,92 @@ jobs:
     pool:
       name: iModelTechCI
       demands: Agent.OS -equals Windows_NT
+    variables:
+      tempDocsLocation: $(Pipeline.Workspace)/tempDocsBuild
+    steps:
+      - checkout: self
+        path: itwinjs-core
+        clean: true
 
-steps:
-  - checkout: self
-    path: itwinjs-core
-    clean: true
+      - task: NodeTool@0
+        displayName: Use Node 14
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
 
-  - task: NodeTool@0
-    displayName: Use Node 14
-    inputs:
-      versionSpec: 14.17.4
-      checkLatest: true
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: Setup git config
 
-  - script: |
-      git config --local user.email imodeljs-admin@users.noreply.github.com
-      git config --local user.name imodeljs-admin
-    displayName: Setup git config
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+        workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js install
-    displayName: rush install
-    workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js build:ci
+        displayName: rush build
+        workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js build:ci
-    displayName: rush build
-    workingDirectory: ${{ parameters.workingDir }}
+      - script: node common/scripts/install-run-rush.js docs
+        displayName: rush docs
+        workingDirectory: ${{ parameters.workingDir }}
 
-  - script: node common/scripts/install-run-rush.js docs
-    displayName: rush docs
-    workingDirectory: ${{ parameters.workingDir }}
+      # Gathers all the pieces to run BeMetalsmith
+      - template: ../../templates/gather-docs.yaml
+        parameters:
+          workingDir: ${{ parameters.workingDir }}
+          stagingDir: ${{ parameters.stagingDir }}
+          downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
 
-  # Gathers all the pieces to run BeMetalsmith
-  - template: ../../templates/gather-docs.yaml
-    parameters:
-      workingDir: ${{ parameters.workingDir }}
-      stagingDir: ${{ parameters.stagingDir }}
-      downloadCurrentBuildArtifacts: ${{ parameters.downloadCurrentBuildArtifacts }}
+      # Currently BeMetalsmith is an internal only tool
+      - script: npm install @bentley/bemetalsmith@4.x
+        displayName: Install BeMetalsmith
+        workingDirectory: ${{ parameters.workingDir }}
 
-  # Currently BeMetalsmith is an internal only tool
-  - script: npm install @bentley/bemetalsmith@4.x
-    displayName: Install BeMetalsmith
-    workingDirectory: ${{ parameters.workingDir }}
+      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
+        displayName: Run bmsBuild
+        workingDirectory: ${{ parameters.workingDir }}
 
-  - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
-    displayName: Run bmsBuild
-    workingDirectory: ${{ parameters.workingDir }}
+      # Update the .updated.json file after the bmsBuild
+      - publish: ${{ parameters.stagingDir }}/config/.updated.json
+        artifact: .updated.json
+        displayName: Publish Pipeline Artifact - .updated.json
+        condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-  # Update the .updated.json file after the bmsBuild
-  - publish: ${{ parameters.stagingDir }}/config/.updated.json
-    artifact: .updated.json
-    displayName: Publish Pipeline Artifact - .updated.json
-    condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+      - publish: $(tempDocsLocation)
+        artifact: DocsBuild
+        displayName: Publish Pipeline Artifact - DocsBuild
+        condition: and(succeeded(), {{ parameters.shouldPublish }})
 
-  - publish: $(tempDocsLocation)
-    artifact: DocsBuild
-    displayName: Publish Pipeline Artifact - DocsBuild
-    condition: and(succeeded(), {{ parameters.shouldPublish }})
+      # Extra stuff
 
-  # Extra stuff
+      - task: DownloadPipelineArtifact@2
+        displayName: 'Download Pipeline Artifact - Nuget Spec'
+        inputs:
+          buildType: specific
+          project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
+          definition: 1830
+          buildVersionToDownload: specific
+          pipelineId: 1234689
 
-  - task: DownloadPipelineArtifact@2
-    displayName: 'Download Pipeline Artifact - Nuget Spec'
-    inputs:
-      buildType: specific
-      project: '2c48216e-e72f-48b4-a4eb-40ff1c04e8e4'
-      definition: 1830
-      buildVersionToDownload: specific
-      pipelineId: 1234689
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+        displayName: 'Replace tokens in NugetPackage.nuspec'
+        inputs:
+          targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
 
-  - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-    displayName: 'Replace tokens in NugetPackage.nuspec'
-    inputs:
-      targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      - task: DeleteFiles@1
+        displayName: 'Delete landing page '
+        inputs:
+          SourceFolder: '$(tempDocsLocation)\public_build'
+          Contents: index.html
 
-  - task: DeleteFiles@1
-    displayName: 'Delete landing page '
-    inputs:
-      SourceFolder: '$(tempDocsLocation)\public_build'
-      Contents: index.html
+      - task: NuGetToolInstaller@1
+        inputs:
+          versionSpec: 4.9.2
 
-  - task: NuGetToolInstaller@1
-    inputs:
-      versionSpec: 4.9.2
-
-  - task: NuGetCommand@2
-    displayName: 'NuGet pack'
-    inputs:
-      command: pack
-      packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
-      versioningScheme: byBuildNumber
+      - task: NuGetCommand@2
+        displayName: 'NuGet pack'
+        inputs:
+          command: pack
+          packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+          versioningScheme: byBuildNumber
