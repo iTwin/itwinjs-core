@@ -20,6 +20,7 @@ import {
  * These routines are chiefly used by classes like [[QPoint2d]] and [[QPoint3d]] to reduce the space required to store
  * coordinate values for [RenderGraphic]($frontend)s.
  * @public
+ * @extensions
  */
 export namespace Quantization {
   export const rangeScale16 = 0xffff;
@@ -64,6 +65,7 @@ export namespace Quantization {
  * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
  * @public
+ * @extensions
  */
 export class QParams2d {
   /** The origin of the quantization range. */
@@ -149,6 +151,7 @@ export class QParams2d {
  * @see [[QParams2d]] to define quantization parameters for a range of points.
  * @see [[QPoint2dList]] for a list of points all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint2d {
   private _x: number = 0;
@@ -236,6 +239,7 @@ export interface QPoint2dBuffer {
 
 /** A list of [[QPoint2d]]s all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint2dList {
   /** Parameters used to quantize the points. */
@@ -342,6 +346,7 @@ export class QPoint2dList {
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
  * @public
+ * @extensions
  */
 export class QParams3d {
   /** The origin of the quantization range. */
@@ -459,6 +464,7 @@ export class QParams3d {
  * @see [[QParams3d]] to define quantization parameters for a range of points.
  * @see [[QPoint3dList]] for a list of points all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint3d {
   private _x: number = 0;
@@ -586,6 +592,7 @@ export interface QPoint3dBuffer {
 
 /** A list of [[QPoint3d]]s all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint3dList {
   /** Parameters used to quantize the points. */
