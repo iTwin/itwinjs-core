@@ -15,7 +15,6 @@ import {
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
-import { TypedArrayBuilderOptions, Uint16ArrayBuilder } from "./primitives/VertexTableSplitter";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {

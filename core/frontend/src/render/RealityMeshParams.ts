@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, TypedArrayBuilderOptions, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import {
   IndexedPolyface, Point2d, Point3d, Polyface, Range1d, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
 } from "@itwin/core-geometry";
@@ -15,7 +15,6 @@ import {
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
-import { TypedArrayBuilderOptions, Uint16ArrayBuilder } from "./primitives/VertexTableSplitter";
 
 export interface RealityMeshParams {
   positions: QPoint3dBuffer;
