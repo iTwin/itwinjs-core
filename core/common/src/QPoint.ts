@@ -232,8 +232,17 @@ export class QPoint2d {
   }
 }
 
+/** A compact representation of a list of [[QPoint2d]]s stored in a [[Uint16Array]].
+ * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.uvs]($frontend).
+ * @public
+ * @extensions
+ */
 export interface QPoint2dBuffer {
+  /** The parameters used to quantize the [[points]]. */
   params: QParams2d;
+  /** The [[QPoint2d]]s as pairs of unsigned 16-bit integers. The length must be a multiple of 2; the number of points in the array is half the array's length.
+   * To obtain the `n`th point, use `QPoint2d.fromScalars(buffer.points[n * 2], buffer.points[n * 2 + 1])`.
+   */
   points: Uint16Array;
 }
 
@@ -585,8 +594,17 @@ export class QPoint3d {
   }
 }
 
+/** A compact representation of a list of [[QPoint3d]]s stored in a [[Uint16Array]].
+ * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.positions]($frontend).
+ * @public
+ * @extensions
+ */
 export interface QPoint3dBuffer {
+  /** The parameters used to quantize the [[points]]. */
   params: QParams3d;
+  /** The [[QPoint3d]]s as pairs of unsigned 16-bit integers. The length must be a multiple of 3; the number of points in the array is half the array's length.
+   * To obtain the `n`th point, use `QPoint3d.fromScalars(buffer.points[n * 3], buffer.points[n * 3 + 1], buffer.points[n * 3 + 2])`.
+   */
   points: Uint16Array;
 }
 
@@ -720,16 +738,34 @@ export class QPoint3dList {
   }
 }
 
+/** Options used to construct a [[QPoint2dBufferBuilder]].
+ * @beta
+ * @extensions
+ */
 interface QPoint2dBufferBuilderOptions {
+  /** The range to which the points will be quantized. This must be large enough to contain all of the points that will be added to the buffer. */
   range: Range2d;
+  /** The number of points for which to allocate space.
+   * @see [TypedArrayBuilderOptions.initialCapacity]($bentley).
+   */
   initialCapacity?: number;
+  /** Multiplier used to compute new capacity when resizing the buffer.
+   * @see [TypedArrayBuilderOptions.growthFactor]($bentley).
+   */
   growthFactor?: number;
 }
 
+/** Constructs a [[QPoint2dBuffer]] using a [Uint16ArrayBuilder]($bentley).
+ * @public
+ * @extensions
+ */
 export class QPoint2dBufferBuilder {
+  /** The parameters used to quantize the points in the [[buffer]]. */
   public readonly params: QParams2d;
+  /** The buffer that holds the points. */
   public readonly buffer: Uint16ArrayBuilder;
 
+  /** Construct a new buffer with a [[length]] of zero. */
   public constructor(options: QPoint2dBufferBuilderOptions) {
     this.params = QParams2d.fromRange(options.range);
     const initialCapacity = options.initialCapacity ?? 0;
@@ -739,21 +775,25 @@ export class QPoint2dBufferBuilder {
     });
   }
 
+  /** Append a point with the specified quantized coordinates. */
   public pushXY(x: number, y: number): void {
     this.buffer.push(x);
     this.buffer.push(y);
   }
 
+  /** Append a point with the specified quantized coordinates. */
   public push(pt: XAndY): void {
     this.pushXY(pt.x, pt.y);
   }
 
+  /** The number of points currently in the [[buffer]]. */
   public get length(): number {
     const len = this.buffer.length;
     assert(len % 2 === 0);
     return len / 2;
   }
 
+  /** Obtain a [[QPoint2dBuffer]] containing all of the points that have been appended by this builder. */
   public finish(): QPoint2dBuffer {
     return {
       params: this.params,
@@ -762,16 +802,34 @@ export class QPoint2dBufferBuilder {
   }
 }
 
+/** Options used to construct a [[QPoint3dBufferBuilder]].
+ * @beta
+ * @extensions
+ */
 interface QPoint3dBufferBuilderOptions {
+  /** The range to which the points will be quantized. This must be large enough to contain all of the points that will be added to the buffer. */
   range: Range3d;
+  /** The number of points for which to allocate space.
+   * @see [TypedArrayBuilderOptions.initialCapacity]($bentley).
+   */
   initialCapacity?: number;
+  /** Multiplier used to compute new capacity when resizing the buffer.
+   * @see [TypedArrayBuilderOptions.growthFactor]($bentley).
+   */
   growthFactor?: number;
 }
 
+/** Constructs a [[QPoint3dBuffer]] using a [Uint16ArrayBuilder]($bentley).
+ * @public
+ * @extensions
+ */
 export class QPoint3dBufferBuilder {
+  /** The parameters used to quantize the points in the [[buffer]]. */
   public readonly params: QParams3d;
+  /** The buffer that holds the points. */
   public readonly buffer: Uint16ArrayBuilder;
 
+  /** Construct a new buffer with a [[length]] of zero. */
   public constructor(options: QPoint3dBufferBuilderOptions) {
     this.params = QParams3d.fromRange(options.range);
     const initialCapacity = options.initialCapacity ?? 0;
@@ -781,22 +839,26 @@ export class QPoint3dBufferBuilder {
     });
   }
 
+  /** Append a point with the specified quantized coordinates. */
   public pushXYZ(x: number, y: number, z: number): void {
     this.buffer.push(x);
     this.buffer.push(y);
     this.buffer.push(z);
   }
 
+  /** Append a point with the specified quantized coordinates. */
   public push(pt: XYAndZ): void {
     this.pushXYZ(pt.x, pt.y, pt.z);
   }
 
+  /** The number of points currently in the [[buffer]]. */
   public get length(): number {
     const len = this.buffer.length;
     assert(len % 3 === 0);
     return len / 3;
   }
 
+  /** Obtain a [[QPoint3dBuffer]] containing all of the points that have been appended by this builder. */
   public finish(): QPoint3dBuffer {
     return {
       params: this.params,

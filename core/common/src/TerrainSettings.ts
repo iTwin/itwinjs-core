@@ -8,8 +8,8 @@
 
 import { BackgroundMapProps } from "./BackgroundMapSettings";
 
-/** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
- * @see [[TerrainProps]]
+/** Identifies a [TerrainProvider]($frontend).
+ * @see [[TerrainSettings.providerName]] and [[TerrainProps.providerName]].
  * @public
  * @extensions
  * @deprecated Use string instead.
@@ -23,7 +23,9 @@ export type TerrainProviderName = string;
  * @extensions
  */
 export interface TerrainProps {
-  /** Identifies the provider currently only CesiumWorldTerrain is supported. */
+  /** Identifies the [TerrainProvider]($frontend) that will supply terrain meshes.
+   * If omitted, it defaults to "CesiumWorldTerrain".
+   */
   providerName?: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration. Default value: 1.0 */
   exaggeration?: number;
@@ -58,7 +60,9 @@ export enum TerrainHeightOriginMode {
  */
 export class TerrainSettings {
   private _nonLocatable: true | undefined;
-  /** Identifies the provider currently only CesiumWorldTerrain supported. */
+  /** Identifies the [TerrainProvider]($frontend) that will supply terrain meshes.
+   * Defaults to "CesiumWorldTerrain".
+   */
   public readonly providerName: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled. 1.0 indicates no exaggeration. Default value: 1.0 */
   public readonly exaggeration: number;
