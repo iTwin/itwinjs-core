@@ -12,7 +12,6 @@ import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
-import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile, TileRequest,
 } from "../internal";
@@ -49,7 +48,6 @@ export abstract class TerrainMeshProvider {
   }
 
   public abstract requestMeshData(args: RequestMeshDataArgs): Promise<TileRequest.Response>;
-  public abstract loadMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
   public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }

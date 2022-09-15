@@ -13,7 +13,6 @@ import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geo
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { RealityMeshParams } from "../RealityMeshParams";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
@@ -274,11 +273,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     dispose(this._realityMeshParams);
     if (true !== this._disableTextureDisposal)
       dispose(this.textureParams);
-  }
-
-  public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined, disableTextureDisposal = false) {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
-    return params ? new RealityMeshGeometry({realityMeshParams: params, transform, baseIsTransparent: false, isTerrain: true, disableTextureDisposal}) : undefined;
   }
 
   public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {

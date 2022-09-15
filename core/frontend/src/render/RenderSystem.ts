@@ -27,7 +27,6 @@ import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphic
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { RealityMeshParams } from "./RealityMeshParams";
-import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
 import { PolylineParams } from "./primitives/PolylineParams";
@@ -419,8 +418,6 @@ export abstract class RenderSystem implements IDisposable {
     return this.createGraphicFromGeometry((origin) => this.createPointStringGeometry(params, origin), instances);
   }
 
-  /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
   public createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined {
     return undefined;

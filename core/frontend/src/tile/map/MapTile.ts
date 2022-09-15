@@ -13,7 +13,6 @@ import { IModelApp } from "../../IModelApp";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
 import { upsampleRealityMeshParams } from "../../render/UpsampleRealityMeshParams";
-import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem, RenderTerrainGeometry, TerrainTexture } from "../../render/RenderSystem";
