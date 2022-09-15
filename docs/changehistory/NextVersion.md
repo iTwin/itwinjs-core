@@ -29,3 +29,18 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
 awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
 changes instead of the full source contents.
+
+## AppUI
+
+AppUI goes major changes with 4.0, here is a non exhaustive list of the changes:
+
+### StatusBarContext and HOC
+
+`ConditionalFiled` and `FooterModeField`components, `withMessageCenterFieldProps` and `withStatusFieldProps` HOC were removed, along all the props they were providing, which were stored in the `StatusBarContext` react context.
+
+`isInFooterMode` prop was removed from all `appui-react` packages as Widget mode is completely removed (isInFooterMode is always true now).
+
+`StatusBar` is no longer control state of the fields contained in it, so each individual field is responsible to handle it's "open" state, removing the need for the `openWidget` and `onOpenWidget` props.
+
+`targetRef` is no longer used, the message center is now using `MessageManager`, which allow direct registration of the "flyTo" element, which was the reason for `targetRef` to exist.
+

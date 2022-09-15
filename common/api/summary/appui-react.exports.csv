@@ -112,8 +112,6 @@ alpha;CategoryVisibilityHandlerParams
 public;ChildWindowLocationProps
 public;ChildWindowManager
 beta;ClassGroupingOption
-beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
-deprecated;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
 public;ColorTheme
 public;CombinedReducerState
@@ -125,9 +123,6 @@ public;CommandLaunchBackstageItem
 deprecated;CommandLaunchBackstageItem 
 public;CommandLaunchBackstageItemProps 
 deprecated;CommandLaunchBackstageItemProps 
-public;ConditionalField 
-deprecated;ConditionalField 
-public;ConditionalFieldProps 
 public;ConfigurableBase 
 public;ConfigurableCreateInfo
 public;ConfigurableUiActionId
@@ -234,9 +229,6 @@ beta;FloatingViewportContent(props: FloatingViewportContentProps): JSX.Element
 beta;FloatingViewportContentControl 
 beta;FloatingViewportContentProps
 alpha;FocusToolSettings 
-public;FooterModeField(props: FooterModeFieldProps): JSX.Element
-deprecated;FooterModeField(props: FooterModeFieldProps): JSX.Element
-public;FooterModeFieldProps 
 beta;FrameworkAccuDraw 
 public;FrameworkReducer: (state: CombinedReducerState
 beta;FrameworkRootState
@@ -382,7 +374,6 @@ public;MenuItemProps = AbstractMenuItemProps
 public;MessageAddedEvent 
 public;MessageAddedEventArgs
 public;MessageCenterField 
-public;MessageCenterFieldProps 
 public;MessageManager
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
@@ -461,8 +452,6 @@ beta;PositionPopup
 beta;PositionPopupContent(props: CommonDivProps): JSX.Element
 beta;PositionPopupProps 
 public;PresentationSelectionScope
-public;PromptField: ConnectedComponent
-deprecated;PromptField: ConnectedComponent
 public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
@@ -562,7 +551,6 @@ public;StatusBar
 public;StatusBarCenterSection(props: CommonDivProps): JSX.Element
 public;StatusBarComposer(props: StatusBarComposerProps): JSX.Element
 public;StatusBarComposerProps 
-internal;StatusBarContext: React_2.Context
 public;StatusBarFieldId = string | null
 public;StatusBarItem 
 internal;StatusBarItemProps 
@@ -575,10 +563,8 @@ public;StatusBarRightSection(props: CommonDivProps): JSX.Element
 public;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
 public;StatusBarWidgetComposerControl 
 public;class StatusBarWidgetControl 
-public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
-public;StatusFieldProps 
 public;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
 deprecated;StatusMessageRenderer({ closeMessage, cancelActivityMessage: cancelActivityMessageProp, dismissActivityMessage, }: StatusMessageRendererProps): JSX.Element
 public;StatusMessageRendererProps 
@@ -793,11 +779,7 @@ public;WidgetStateFunc = (state: Readonly
 internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
-public;withMessageCenterFieldProps: 
-deprecated;withMessageCenterFieldProps: 
 public;withSafeArea: 
-public;withStatusFieldProps: 
-deprecated;withStatusFieldProps: 
 internal;Workflow 
 deprecated;Workflow 
 internal;WorkflowActivatedEvent 

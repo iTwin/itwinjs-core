@@ -720,8 +720,6 @@ export function FooterIndicator(props: FooterIndicatorProps): JSX.Element;
 // @beta
 export interface FooterIndicatorProps extends CommonProps {
     children?: React_2.ReactNode;
-    // @deprecated
-    isInFooterMode?: boolean;
     onClick?: (event: React_2.MouseEvent) => void;
     title?: string;
 }
@@ -751,7 +749,6 @@ export interface FooterPopupProps extends Partial<PopupProps> {
 // @internal @deprecated
 export interface FooterProps extends CommonProps {
     children?: React_2.ReactNode;
-    isInFooterMode?: boolean;
     messages?: React_2.ReactNode;
     onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     onMouseLeave?: (event: React_2.MouseEvent<HTMLDivElement, MouseEvent>) => void;
@@ -3776,7 +3773,6 @@ export interface ZoneProps extends CommonProps {
     id: WidgetZoneId;
     isFloating?: boolean;
     isHidden?: boolean;
-    isInFooterMode?: boolean;
     safeAreaInsets?: SafeAreaInsets;
 }
 
