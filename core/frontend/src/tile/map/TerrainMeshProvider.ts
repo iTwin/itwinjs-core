@@ -25,6 +25,17 @@ export interface TerrainMeshProviderOptions {
   wantNormals: boolean;
 }
 
+export interface RequestMeshDataArgs {
+  tile: MapTile;
+  isCanceled(): boolean;
+}
+
+export interface ReadMeshArgs {
+  data: TileRequest.ResponseData;
+  tile: MapTile;
+  isCanceled(): boolean;
+}
+
 /** Abstract base class for terrain mesh providers responsible for producing geometry background map tiles.
  * @beta
  */
@@ -37,9 +48,9 @@ export abstract class TerrainMeshProvider {
     this.modelId = options.modelId;
   }
 
-  public abstract requestMeshData(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract requestMeshData(args: RequestMeshDataArgs): Promise<TileRequest.Response>;
   public abstract loadMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<TerrainMeshPrimitive | undefined>;
-  public abstract readMesh(meshData: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined>;
+  public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
   public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;

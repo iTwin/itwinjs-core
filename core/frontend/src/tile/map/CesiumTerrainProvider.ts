@@ -17,8 +17,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, Tile, TileAvailability,
-  TileRequest,
+  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
+  TerrainMeshProviderOptions, Tile, TileAvailability, TileRequest,
 } from "../internal";
 
 /** @internal */
@@ -220,7 +220,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
-  public override async requestMeshData(tile: MapTile): Promise<Uint8Array | undefined> {
+  public override async requestMeshData(args: RequestMeshDataArgs): Promise<Uint8Array | undefined> {
+    const tile = args.tile;
     const quadId = tile.quadId;
     const tileUrl = this.constructUrl(quadId.row, quadId.column, quadId.level);
     const requestOptions: RequestOptions = {
@@ -407,18 +408,19 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return mesh;
   }
 
-  public override async readMesh(data: TileRequest.ResponseData, isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined> {
+  public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
     // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
       const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-      if (!accessTokenAndEndpointUrl.token || isCanceled())
+      if (!accessTokenAndEndpointUrl.token || args.isCanceled())
         return undefined;
 
       this._accessToken = accessTokenAndEndpointUrl.token;
       this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
     }
 
+    const { data, tile } = args;
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
 

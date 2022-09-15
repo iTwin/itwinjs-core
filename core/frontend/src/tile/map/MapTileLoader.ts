@@ -49,7 +49,7 @@ export class MapTileLoader extends RealityTileLoader {
   public async requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     assert(tile instanceof MapTile);
     try {
-      return this.terrainProvider.requestMeshData(tile, isCanceled);
+      return this.terrainProvider.requestMeshData({ tile, isCanceled });
     } catch (_) {
       return undefined;
     }

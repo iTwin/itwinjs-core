@@ -13,7 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
@@ -149,7 +149,8 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
-  public override async readMesh(_data: TileRequest.ResponseData, _isCanceled: () => boolean, tile: MapTile): Promise<RealityMeshParams | undefined> {
+  public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
+    const tile = args.tile;
     if (tile.isPlanar)
       return this._wantSkirts ? this.createSkirtedPlanarMesh(tile) : this.createSkirtlessPlanarMesh(tile);
 
