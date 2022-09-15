@@ -432,15 +432,15 @@ describe("ITwinLocalization", () => {
     describe("With Options", () => {
 
       it("returnDetails throws error", () => {
-        assert.throws(() => { localization.getLocalizedString("X", { returnDetails: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedString("X", { returnDetails: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnObjects throws error", () => {
-        assert.throws(() => { localization.getLocalizedString("X", { returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedString("X", { returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnDetails and returnObjects throws error", () => {
-        assert.throws(() => { localization.getLocalizedString("X", { returnDetails: true, returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedString("X", { returnDetails: true, returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("default value", () => {
@@ -475,7 +475,6 @@ describe("ITwinLocalization", () => {
       */
     });
   });
-
 
   describe("#getLocalizedStringWithNamespace", () => {
 
@@ -654,15 +653,15 @@ describe("ITwinLocalization", () => {
     describe("With Options", () => {
 
       it("returnDetails throws error", () => {
-        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnDetails: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnDetails: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnObjects throws error", () => {
-        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnDetails and returnObjects throws error", () => {
-        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnDetails: true, returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getLocalizedStringWithNamespace("Default", "X", { returnDetails: true, returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("default value", () => {
@@ -863,15 +862,15 @@ describe("ITwinLocalization", () => {
     describe("With Options", () => {
 
       it("returnDetails throws error", () => {
-        assert.throws(() => { localization.getEnglishString("Default", "X", { returnDetails: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getEnglishString("Default", "X", { returnDetails: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnObjects throws error", () => {
-        assert.throws(() => { localization.getEnglishString("Default", "X", { returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getEnglishString("Default", "X", { returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("returnDetails and returnObjects throws error", () => {
-        assert.throws(() => { localization.getEnglishString("Default", "X", { returnDetails: true, returnObjects: true }) }, "Translation key must map to a string, but the given options will result in an object");
+        assert.throws(() => { localization.getEnglishString("Default", "X", { returnDetails: true, returnObjects: true }); }, "Translation key must map to a string, but the given options will result in an object");
       });
 
       it("default value", () => {
