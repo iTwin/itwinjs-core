@@ -1507,6 +1507,27 @@
         "generate"
       ],
     },
+    {
+      "name": "Electron Backend Tests",
+      "presentation": {
+        "group": "0_CoreTests"
+      },
+      "cwd": "${workspaceFolder}/core/electron/",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
+      "args": [
+        "lib/cjs/test/backend/RunElectronBackendTests.js"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "outFiles": [
+        "${workspaceFolder}/core/electron/lib/**/*.js",
+        "${workspaceFolder}/core/backend/lib/**/*.js"
+      ],
+      "autoAttachChildProcesses": true
+    },
   ],
   "compounds": [
     {
