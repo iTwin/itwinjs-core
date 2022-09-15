@@ -466,6 +466,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     };
 
     const indices = getIndexArray(indexCount);
+
     // High water mark decoding based on decompressIndices_ in webgl-loader's loader.js.
     // https://code.google.com/p/webgl-loader/source/browse/trunk/samples/loader.js?r=99#55
     // Copyright 2012 Google Inc., Apache 2.0 license.
@@ -579,30 +580,31 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
     southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
 
-    /* ###TODO
     const generateSkirts = (indices: Uint16Array | Uint32Array) => {
+      const quv = new QPoint2d();
+      const uv = new Point2d();
       for (let i = 0; i < indices.length; i++) {
         const index = indices[i];
-        const paramIndex = index * 2;
+        const uvIndex = index * 2;
         const height = minHeight + heightBuffer[index] * heightScale;
-        uv.setFromScalars(builder.uvs.points[paramIndex], builder.uvs.points[paramIndex + 1]);
-        let oen;
-        if (wantNormals) {
-          assert(undefined !== builder.normals);
-          oen = builder.normals[index];
-        }
 
-        builder.addVertex(projection.getPoint(uv.x, uv.y, height - skirtHeight), uv, oen);
+        quv.setFromScalars(builder.uvs.buffer.at(uvIndex), builder.uvs.buffer.at(uvIndex + 1));
+        builder.uvs.params.unquantize(quv.x, quv.y, uv);
+
+        const oen = wantNormals && builder.normals ? builder.normals.at(index) : undefined;
+        builder.addVertex(projection.getPoint(uv.x, uv.y, height - skirtHeight), quv, oen);
+
         if (i !== 0) {
-          builder.addTriangle(index, indices[i - 1], builder.
-
+          builder.addTriangle(index, indices[i - 1], builder.indices.length - 2);
+          builder.addTriangle(index, builder.indices.length - 2, builder.indices.length - 1);
+        }
+      }
     };
 
     generateSkirts(westIndices);
     generateSkirts(eastIndices);
     generateSkirts(southIndices);
     generateSkirts(northIndices);
-    */
 
     return builder.finish();
   }

@@ -49,6 +49,16 @@ export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array>
     return this._data.length;
   }
 
+  /** https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypedArray/at */
+  public at(index: number): number {
+    if (index < 0)
+      index = this.length - index;
+
+    const value = this._data[index];
+    assert(value !== undefined, "index out of bounds");
+    return value;
+  }
+
   /** Ensure that [[capacity]] is at least equal to `newCapacity`. */
   public ensureCapacity(newCapacity: number): number {
     if (this.capacity >= newCapacity)
