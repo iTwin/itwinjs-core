@@ -55,7 +55,7 @@ export class MapTileLoader extends RealityTileLoader {
     }
   }
 
-  public override forceTileLoad(tile: Tile): boolean {
+  public override forceTileLoad(tile: MapTile): boolean {
     return this._terrainProvider.forceTileLoad(tile);
   }
 

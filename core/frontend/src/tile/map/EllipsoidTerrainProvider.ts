@@ -40,7 +40,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
 
   public isTileAvailable(_quadId: QuadId): boolean { return true; }
   public get maxDepth(): number { return 22; }
-  public getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
+  public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
 
   private createSkirtlessPlanarMesh(tile: MapTile): RealityMeshParams {

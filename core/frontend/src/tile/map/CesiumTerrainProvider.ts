@@ -446,9 +446,6 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
-  public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
-  }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will
    * ensure that adjacent heightmap vertices are separated by no more than
