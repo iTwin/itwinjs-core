@@ -14,6 +14,20 @@ parameters:
   - name: downloadCurrentBuildArtifacts
     type: boolean
     default: false
+  - name: shouldPublish
+    type: boolean
+    default: false
+
+variables:
+  tempDocsLocation: $(Pipeline.Workspace)/tempDocsBuild
+
+jobs:
+  - job:
+    workspace:
+      clean: all
+    pool:
+      name: iModelTechCI
+      demands: Agent.OS -equals Windows_NT
 
 steps:
   - checkout: self
@@ -44,7 +58,7 @@ steps:
     workingDirectory: ${{ parameters.workingDir }}
 
   # Gathers all the pieces to run BeMetalsmith
-  - template: ../templates/gather-docs.yaml
+  - template: ../../templates/gather-docs.yaml
     parameters:
       workingDir: ${{ parameters.workingDir }}
       stagingDir: ${{ parameters.stagingDir }}
@@ -64,6 +78,11 @@ steps:
     artifact: .updated.json
     displayName: Publish Pipeline Artifact - .updated.json
     condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
+
+  - publish: $(tempDocsLocation)
+    artifact: DocsBuild
+    displayName: Publish Pipeline Artifact - DocsBuild
+    condition: and(succeeded(), {{ parameters.shouldPublish }})
 
   # Extra stuff
 

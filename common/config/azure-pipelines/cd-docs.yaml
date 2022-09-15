@@ -18,19 +18,10 @@ stages:
   - stage: Build
     displayName: Build Docs
     jobs:
-      - job:
-        workspace:
-          clean: all
-        pool:
-          name: iModelTechCI
-          demands: Agent.OS -equals Windows_NT
-        variables:
-          tempDocsLocation: $(Pipeline.Workspace)/tempDocsBuild
-        steps:
-          - template: ./templates/docs-build.yaml
-            parameters:
-              workingDir: $(Pipeline.Workspace)/itwinjs-core
-              outputDir: $(tempDocsLocation)/public_build
+    - template: ./docs/docs-build.yaml
+      parameters:
+        workingDir: $(Pipeline.Workspace)/itwinjs-core
+        outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
 
   # - stage: CreateOctopusRelease
   #   displayName: Create Octopus release
