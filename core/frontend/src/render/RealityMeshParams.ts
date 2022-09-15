@@ -115,6 +115,13 @@ class QPoint2dBufferBuilder {
     assert(len % 2 === 0);
     return len / 2;
   }
+
+  public finish(): QPoint2dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
+  }
 }
 
 class QPoint3dBufferBuilder {
@@ -141,6 +148,13 @@ class QPoint3dBufferBuilder {
     assert(len % 3 === 0);
     return len / 3;
   }
+
+  public finish(): QPoint3dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
+  }
 }
 
 export interface RealityMeshParamsBuilderOptions {
@@ -152,48 +166,45 @@ export interface RealityMeshParamsBuilderOptions {
 }
 
 export class RealityMeshParamsBuilder {
-  private readonly _indices: Uint16ArrayBuilder;
-  private readonly _positions: QPoint3dBufferBuilder;
-  private readonly _uvs: QPoint2dBufferBuilder;
-  private readonly _normals?: Uint16ArrayBuilder;
+  public readonly indices: Uint16ArrayBuilder;
+  public readonly positions: QPoint3dBufferBuilder;
+  public readonly uvs: QPoint2dBufferBuilder;
+  public readonly normals?: Uint16ArrayBuilder;
 
   // Scratch variables
   private readonly _q3d = new QPoint3d();
   private readonly _q2d = new QPoint2d();
 
   public constructor(options: RealityMeshParamsBuilderOptions) {
-    this._indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
-    this._positions = new QPoint3dBufferBuilder(options.positionRange, options.initialVertexCapacity);
-    this._uvs = new QPoint2dBufferBuilder(options.uvRange ?? new Range2d(0, 0, 1, 1), options.initialVertexCapacity);
+    this.indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
+    this.positions = new QPoint3dBufferBuilder(options.positionRange, options.initialVertexCapacity);
+    this.uvs = new QPoint2dBufferBuilder(options.uvRange ?? new Range2d(0, 0, 1, 1), options.initialVertexCapacity);
     if (options.wantNormals)
-      this._normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
+      this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
   }
 
   public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): void {
-    this._q3d.init(position, this._positions.params);
-    this._q2d.init(uv, this._uvs.params);
+    this._q3d.init(position, this.positions.params);
+    this._q2d.init(uv, this.uvs.params);
     const oen = normal ? OctEncodedNormal.encode(normal) : undefined;
     this.addQuantizedVertex(this._q3d, this._q2d, oen);
   }
 
   // Original API had weird mix of quantized and unquantized, used by CesiumTerrainProvider.
   public addVertex(position: Point3d, uv: QPoint2d, normal?: number): void {
-    this._q3d.init(position, this._positions.params);
+    this._q3d.init(position, this.positions.params);
     this.addQuantizedVertex(this._q3d, uv, normal);
   }
 
-  public get uvQParams(): QParams2d { return this._uvs.params; }
-  public get positionQParams(): QParams3d { return this._positions.params; }
-
   public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): void {
-    assert(this._positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
-    assert((undefined === normal) === (undefined === this._normals), "RealityMeshParams requires all vertices to have normals, or none.");
+    assert(this.positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
+    assert((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
 
-    this._positions.push(position);
-    this._uvs.push(uv);
+    this.positions.push(position);
+    this.uvs.push(uv);
     if (undefined !== normal) {
-      assert(undefined !== this._normals, "Set RealityMeshParamsBuilderOptions.wantNormals");
-      this._normals.push(normal);
+      assert(undefined !== this.normals, "Set RealityMeshParamsBuilderOptions.wantNormals");
+      this.normals.push(normal);
     }
   }
 
@@ -215,22 +226,16 @@ export class RealityMeshParamsBuilder {
 
   private addIndex(index: number): void {
     assert(index <= 0xffff, "RealityMeshParams supports no more than 64k vertices");
-    this._indices.push(index);
+    this.indices.push(index);
   }
 
   public finish(): RealityMeshParams {
-    assert(this._positions.length >= 3 && this._indices.length >= 3, "RealityMeshParams requires at least one triangle");
+    assert(this.positions.length >= 3 && this.indices.length >= 3, "RealityMeshParams requires at least one triangle");
     return {
-      positions: {
-        params: this._positions.params,
-        points: this._positions.buffer.toTypedArray(),
-      },
-      uvs: {
-        params: this._uvs.params,
-        points: this._uvs.buffer.toTypedArray(),
-      },
-      normals: this._normals?.toTypedArray(),
-      indices: this._indices.toTypedArray(),
+      positions: this.positions.finish(),
+      uvs: this.uvs.finish(),
+      normals: this.normals?.toTypedArray(),
+      indices: this.indices.toTypedArray(),
     };
   }
 }
