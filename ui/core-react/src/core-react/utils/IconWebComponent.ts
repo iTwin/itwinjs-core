@@ -45,11 +45,11 @@ export class IconWebComponent extends HTMLElement {
 
       const parsedSvg = new window.DOMParser().parseFromString(sanitizedSvg, "text/xml");
       const errorNode = parsedSvg.querySelector("parsererror");
-      if (errorNode) {
+      if (errorNode || "svg" !== parsedSvg.documentElement.nodeName.toLowerCase()) {
         throw new UiError (UiCore.loggerCategory(this), "Unable to load icon.");
-      } else {
-        !this.childNodes.length && this.append(parsedSvg.documentElement);
       }
+
+      !this.childNodes.length && this.append(parsedSvg.documentElement);
       return;
     }
 

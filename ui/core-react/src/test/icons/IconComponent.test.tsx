@@ -46,13 +46,4 @@ describe("IconComponent", () => {
     expect(webComponent).to.not.be.null;
     expect(webComponent!.getAttribute("src")).to.be.eq(dataUri);
   });
-
-  it("should not render base64 data uri which does not translate to svg", () => {
-    // eslint-disable-next-line deprecation/deprecation
-    const dataUri = `data:image/svg+xml;base64,${btoa("<div></div>")}`;
-    const { container } = render(<Icon iconSpec={`webSvg:${dataUri}`} />);
-    const webComponent = container.querySelector("svg-loader");
-    expect(webComponent).to.not.be.null;
-    expect(webComponent!.getAttribute("src")).to.be.null;
-  });
 });
