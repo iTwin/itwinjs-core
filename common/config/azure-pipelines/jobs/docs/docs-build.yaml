@@ -81,7 +81,7 @@ jobs:
       - publish: $(tempDocsLocation)
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
-        condition: and(succeeded(), {{ parameters.shouldPublish }})
+        condition: and(succeeded(), eq('{{ parameters.shouldPublish }}', true))
 
       # Extra stuff
 
