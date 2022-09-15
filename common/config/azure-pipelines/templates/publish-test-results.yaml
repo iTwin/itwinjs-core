@@ -59,6 +59,13 @@ steps:
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
   - task: PublishTestResults@2
+    displayName: "Publish i18n Test Results"
+    inputs:
+      testResultsFiles: "core/i18n/lib/test/junit_results.xml"
+      testRunTitle: "Core - i18n Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
     displayName: "Publish Quantity Test Results"
     inputs:
       testResultsFiles: "core/quantity/lib/test/junit_results.xml"

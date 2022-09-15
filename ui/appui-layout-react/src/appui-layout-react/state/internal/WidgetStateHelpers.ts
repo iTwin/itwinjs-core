@@ -12,7 +12,7 @@ import { NineZoneState } from "../NineZoneState";
 import { FloatingWidgetState, PopoutWidgetState, WidgetState } from "../WidgetState";
 import { getTabLocation } from "../TabLocation";
 import { getWidgetLocation, isFloatingWidgetLocation, isPanelWidgetLocation, isPopoutWidgetLocation, PanelWidgetLocation } from "../WidgetLocation";
-import { Rectangle } from "@itwin/core-react";
+import { Point, Rectangle, RectangleProps } from "@itwin/core-react";
 import { category, setRectangleProps } from "./NineZoneStateHelpers";
 import { updatePanelState } from "./PanelStateHelpers";
 import { updateTabState } from "./TabStateHelpers";
@@ -233,4 +233,47 @@ export function floatingWidgetClearUserSizedFlag(state: NineZoneState, floatingW
     const tab = draft.tabs[widget.activeTabId];
     tab.userSized = false;
   });
+}
+
+/** @internal */
+export function getNewFloatingWidgetBounds(state: NineZoneState): RectangleProps {
+  // Matches min size (to handle auto-sized floating widgets correctly).
+  const size = { height: 120, width: 200 };
+  const initialPosition = new Point(360, 340);
+
+  const nzBounds = Rectangle.createFromSize(state.size);
+  const widgetsBounds = nzBounds.inset(20, 20, 20, 20);
+  const offset = new Point(40, 40);
+
+  let bounds = Rectangle.createFromSize(size);
+  if (state.floatingWidgets.allIds.length === 0) {
+    // Initial floating widget position.
+    bounds = bounds.offset(initialPosition);
+  } else {
+    // Position is relative to last floating widget if available.
+    const widgetId = state.floatingWidgets.allIds[state.floatingWidgets.allIds.length - 1];
+    const widget = state.floatingWidgets.byId[widgetId];
+    const widgetBounds = Rectangle.create(widget.bounds);
+
+    // Bounds relative to top left of a last floating widget.
+    const topLeft = widgetBounds.topLeft().offset(offset);
+    bounds = bounds.offset(topLeft);
+
+    // Bottom right of new bounds should also be outside of a floating widget.
+    const widgetBottomRight = new Point(widgetBounds.right, widgetBounds.bottom);
+    const minBottomRight = widgetBottomRight.offset(offset);
+    const x = Math.max(0, minBottomRight.x - bounds.right);
+    const y = Math.max(0, minBottomRight.y - bounds.bottom);
+    bounds = bounds.offset({ x, y });
+  }
+
+  // TODO: might still end up with a bunch of overlapping widgets.
+  if (bounds.bottom >= widgetsBounds.bottom) {
+    bounds = bounds.setPosition({ x: bounds.left, y: widgetsBounds.top });
+  }
+  if (bounds.right >= widgetsBounds.right) {
+    bounds = bounds.setPosition({ x: widgetsBounds.left, y: widgetsBounds.top });
+  }
+  bounds = bounds.containIn(widgetsBounds);
+  return bounds.toProps();
 }
