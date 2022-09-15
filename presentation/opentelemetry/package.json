@@ -1,0 +1,77 @@
+{
+  "name": "@itwin/presentation-opentelemetry",
+  "version": "3.4.0-dev.43",
+  "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iTwin/itwinjs-core/tree/master/presentation/opentelemetry"
+  },
+  "keywords": [
+    "Bentley",
+    "EC",
+    "Presentation",
+    "iTwin",
+    "iTwin.js",
+    "OpenTelemetry"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "main": "lib/cjs/presentation-opentelemetry.js",
+  "typings": "lib/cjs/presentation-opentelemetry",
+  "scripts": {
+    "build": "npm run -s build:cjs",
+    "build:ci": "npm run -s build",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:watch": "npm run -s build:cjs -- -w",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "nyc npm -s test",
+    "docs": "npm run -s docs:reference && npm run -s extract && npm run -s docs:changelog",
+    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-opentelemetry",
+    "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-opentelemetry/file.json --tsIndexFile=presentation-opentelemetry.ts --onlyJson",
+    "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
+    "extract-api": "betools extract-api --entry=presentation-opentelemetry",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "mocha --config ../.mocharc.json \"./lib/cjs/test/**/*.test.js\"",
+    "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch"
+  },
+  "peerDependencies": {
+    "@itwin/presentation-common": "workspace:*",
+    "@opentelemetry/api": "^1.0.4",
+    "@opentelemetry/resources": "^1.5.0",
+    "@opentelemetry/sdk-trace-base": "^1.5.0",
+    "@opentelemetry/semantic-conventions": "^1.5.0"
+  },
+  "devDependencies": {
+    "@itwin/build-tools": "workspace:*",
+    "@itwin/eslint-plugin": "workspace:*",
+    "@itwin/presentation-common": "workspace:*",
+    "@opentelemetry/api": "^1.0.4",
+    "@opentelemetry/resources": "^1.5.0",
+    "@opentelemetry/sdk-trace-base": "^1.5.0",
+    "@opentelemetry/semantic-conventions": "^1.5.0",
+    "@types/chai": "4.3.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.59",
+    "cpx2": "^3.0.0",
+    "eslint": "^7.11.0",
+    "mocha": "^10.0.0",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "typescript": "~4.4.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@itwin/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@itwin"
+    ],
+    "extends": "plugin:@itwin/itwinjs-recommended"
+  }
+}

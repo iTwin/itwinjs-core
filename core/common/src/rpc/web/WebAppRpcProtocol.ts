@@ -6,11 +6,13 @@
  * @module RpcInterface
  */
 
+import { BentleyError, Logger } from "@itwin/core-bentley";
 import { Readable, Writable } from "stream";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
-import { RpcProtocol } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
@@ -34,7 +36,7 @@ export interface HttpServerRequest extends Readable {
   statusCode?: number;
   statusMessage?: string;
   socket: any;
-  destroy(error?: Error): void;
+  destroy(error?: Error): this;
   body: string | Buffer;
   path: string;
   method: string;
@@ -64,7 +66,16 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 
   /** Convenience handler for an RPC operation post request for an HTTP server. */
   public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
-    const request = await WebAppRpcRequest.parseRequest(this, req);
+    let request: SerializedRpcRequest;
+    try {
+      request = await WebAppRpcRequest.parseRequest(this, req);
+    } catch (error) {
+      const message = BentleyError.getErrorMessage(error);
+      Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, `Failed to parse request: ${message}`, BentleyError.getErrorMetadata(error));
+      res.status(400);
+      res.send(JSON.stringify({ message, isError: true }));
+      return;
+    }
     const fulfillment = await this.fulfill(request);
     await WebAppRpcRequest.sendResponse(this, request, fulfillment, req, res);
   }
@@ -111,6 +122,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case 502: return RpcRequestStatus.BadGateway;
       case 503: return RpcRequestStatus.ServiceUnavailable;
       case 504: return RpcRequestStatus.GatewayTimeout;
+      case 408: return RpcRequestStatus.RequestTimeout;
+      case 429: return RpcRequestStatus.TooManyRequests;
       default: return RpcRequestStatus.Unknown;
     }
   }
@@ -126,6 +139,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case RpcRequestStatus.BadGateway: return 502;
       case RpcRequestStatus.ServiceUnavailable: return 503;
       case RpcRequestStatus.GatewayTimeout: return 504;
+      case RpcRequestStatus.RequestTimeout: return 408;
+      case RpcRequestStatus.TooManyRequests: return 429;
       default: return 501;
     }
   }

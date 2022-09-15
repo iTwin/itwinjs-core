@@ -74,14 +74,14 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
           <tbody>
             <tr>
               <td>Model</td>
-              <td><select title="Active Model" value={this.activeModelName} onChange={(e) => this.onSelectModel(e)} >
+              <td><select title="Active Model" value={this.activeModelName} onBlur={(e) => this.onSelectModel(e)} >
                 {this.getAllModels()}
               </select>
               </td>
             </tr>
             <tr>
               <td>Category</td>
-              <td><select title="Active Category" value={this.activeCategoryName} onChange={(e) => this.onSelectCategory(e)} >
+              <td><select title="Active Category" value={this.activeCategoryName} onBlur={(e) => this.onSelectCategory(e)} >
                 {this.getAllCategories()}
               </select>
               </td>

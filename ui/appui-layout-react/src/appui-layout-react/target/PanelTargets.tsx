@@ -12,11 +12,11 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { PanelStateContext } from "../widget-panels/Panel";
 import { TargetContainer } from "./TargetContainer";
-import { isHorizontalPanelState } from "../base/NineZoneState";
 import { PanelTarget } from "./PanelTarget";
 import { SectionTarget, useTargetDirection } from "./SectionTarget";
 import { withTargetVersion } from "./TargetOptions";
 import { MergeTarget } from "./MergeTarget";
+import { isHorizontalPanelState } from "../state/PanelState";
 
 /** @internal */
 export const PanelTargets = withTargetVersion("2", function PanelTargets() {

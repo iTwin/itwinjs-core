@@ -2,25 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { withIsPressed } from "../../core-react";
 
 describe("withIsPressed", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   const WithIsPressedDiv = withIsPressed((props) => (<div {...props} />)); // eslint-disable-line @typescript-eslint/naming-convention
 
-  it("should render", () => {
-    mount(<WithIsPressedDiv isPressed={false} />);
-  });
-
-  it("renders correctly", () => {
-    shallow(<WithIsPressedDiv isPressed={false} />).should.matchSnapshot();
-  });
-
-  it("mousedown event", () => {
+  it("mousedown event", async () => {
     let iAmPressed = false;
     const spyMethod = sinon.spy();
 
@@ -29,16 +26,14 @@ describe("withIsPressed", () => {
       spyMethod();
     }
 
-    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
-    const div = wrapper.find("div.withispressed-wrapper");
+    render(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} data-testid="tested" />);
+    await theUserTo.pointer({keys: "[MouseLeft>]", target: screen.getByTestId("tested")});
 
-    const e1 = new MouseEvent("mousedown", { clientX: 0, clientY: 0 });
-    div.simulate("mousedown", e1);
     expect(spyMethod.calledOnce).to.be.true;
     expect(iAmPressed).to.eq(true);
   });
 
-  it("mouseup event", () => {
+  it("mouseup event", async () => {
     let iAmPressed = true;
     const spyMethod = sinon.spy();
 
@@ -47,16 +42,18 @@ describe("withIsPressed", () => {
       spyMethod();
     }
 
-    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
-    const div = wrapper.find("div.withispressed-wrapper");
+    render(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} data-testid="tested" />);
+    await theUserTo.pointer({keys: "[MouseLeft>]", target: screen.getByTestId("tested")});
 
-    const e1 = new MouseEvent("mouseup", { clientX: 0, clientY: 0 });
-    div.simulate("mouseup", e1);
+    spyMethod.resetHistory();
+
+    await theUserTo.pointer("[/MouseLeft]");
+
     expect(spyMethod.calledOnce).to.be.true;
     expect(iAmPressed).to.eq(false);
   });
 
-  it("mouseup event when not pressed", () => {
+  it("mouseup event when not pressed", async () => {
     let iAmPressed = false;
     const spyMethod = sinon.spy();
 
@@ -65,16 +62,14 @@ describe("withIsPressed", () => {
       spyMethod();
     }
 
-    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
-    const div = wrapper.find("div.withispressed-wrapper");
+    render(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} data-testid="tested" />);
+    await theUserTo.pointer(["[MouseLeft>]", {target: screen.getByTestId("tested")}, "[/MouseLeft]"]);
 
-    const e1 = new MouseEvent("mouseup", { clientX: 0, clientY: 0 });
-    div.simulate("mouseup", e1);
     expect(spyMethod.calledOnce).to.be.false;
     expect(iAmPressed).to.eq(false);
   });
 
-  it("mouseleave event", () => {
+  it("mouseleave event", async () => {
     let iAmPressed = true;
     const spyMethod = sinon.spy();
 
@@ -83,13 +78,10 @@ describe("withIsPressed", () => {
       spyMethod();
     }
 
-    const wrapper = mount(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} />);
-    const div = wrapper.find("div.withispressed-wrapper");
+    render(<WithIsPressedDiv isPressed={iAmPressed} onIsPressedChange={handlePressedChange} data-testid="tested" />);
+    await theUserTo.hover(screen.getByTestId("tested"));
+    await theUserTo.unhover(screen.getByTestId("tested"));
 
-    const e1 = new MouseEvent("mouseenter", { clientX: 0, clientY: 0 });
-    div.simulate("mouseenter", e1);
-    const e2 = new MouseEvent("mouseleave", { clientX: 0, clientY: 0 });
-    div.simulate("mouseleave", e2);
     expect(spyMethod.calledOnce).to.be.true;
     expect(iAmPressed).to.eq(false);
   });

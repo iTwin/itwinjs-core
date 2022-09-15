@@ -2296,6 +2296,62 @@ export class ECJsNames {
     static toJsName(propName: string, isSystemProperty?: boolean): string;
 }
 
+// @public (undocumented)
+export interface ECSchemaItemProps {
+    // (undocumented)
+    readonly $schema?: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
+    // (undocumented)
+    readonly schema?: string;
+    // (undocumented)
+    readonly schemaItemType?: string;
+    // (undocumented)
+    readonly schemaVersion?: string;
+}
+
+// @public
+export interface ECSchemaProps {
+    // (undocumented)
+    readonly $schema: string;
+    // (undocumented)
+    readonly alias: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly items?: {
+        [name: string]: ECSchemaItemProps;
+    };
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly references?: ECSchemaReferenceProps[];
+    // (undocumented)
+    readonly version: string;
+}
+
+// @public (undocumented)
+export interface ECSchemaReferenceProps {
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly version: string;
+}
+
 // @beta (undocumented)
 export class ECSqlReader {
     // @internal
@@ -4145,7 +4201,7 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     connection: any;
     // (undocumented)
-    destroy(error?: Error): void;
+    destroy(error?: Error): this;
     // (undocumented)
     header: (field: string) => string | undefined;
     // (undocumented)
@@ -5131,11 +5187,11 @@ export type LocalFileName = string;
 // @public
 export interface Localization {
     changeLanguage(language: string): Promise<void>;
-    getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
-    getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
@@ -7969,11 +8025,15 @@ export enum RpcRequestStatus {
     // (undocumented)
     Rejected = 5,
     // (undocumented)
+    RequestTimeout = 13,
+    // (undocumented)
     Resolved = 4,
     // (undocumented)
     ServiceUnavailable = 11,
     // (undocumented)
     Submitted = 2,
+    // (undocumented)
+    TooManyRequests = 14,
     // (undocumented)
     Unknown = 0
 }
@@ -9204,6 +9264,16 @@ export interface TileTreeProps {
 // @public
 export interface TileVersionInfo {
     formatVersion: number;
+}
+
+// @public
+export interface TranslationOptions {
+    [key: string]: any;
+    context?: any;
+    count?: number;
+    defaultValue?: any;
+    fallbackLng?: string;
+    lngs?: string[];
 }
 
 // @alpha

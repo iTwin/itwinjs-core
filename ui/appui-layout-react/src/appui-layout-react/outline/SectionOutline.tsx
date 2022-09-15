@@ -12,10 +12,11 @@ import * as React from "react";
 import { assert } from "@itwin/core-bentley";
 import { CommonProps } from "@itwin/core-react";
 import { useTargeted } from "../base/DragManager";
-import { isHorizontalPanelState, isSectionDropTargetState } from "../base/NineZoneState";
 import { PanelSideContext, PanelStateContext } from "../widget-panels/Panel";
 import { useTargetDirection } from "../target/SectionTarget";
 import { withTargetVersion } from "../target/TargetOptions";
+import { isSectionDropTargetState } from "../state/DropTargetState";
+import { isHorizontalPanelState } from "../state/PanelState";
 
 /** @internal */
 export interface SectionOutlineProps extends CommonProps {

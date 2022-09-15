@@ -546,7 +546,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (undefined === ev.viewport)
       return 0.0;
 
-    // NOTE: Compute a world coordinate radius for ray test, try getting aperature size at point on element...
+    // NOTE: Compute a world coordinate radius for ray test, try getting aperture size at point on element...
     const hit = IModelApp.accuSnap.currHit;
     const vec: Point3d[] = [];
 
@@ -857,7 +857,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   public override changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
     super.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
 
-    // Keep showing locate circle when identifing sub-entities even if done locating elements...
+    // Keep showing locate circle when identifying sub-entities even if done locating elements...
     if (!IModelApp.toolAdmin.isLocateCircleOn && this.wantAdditionalSubEntities)
       IModelApp.toolAdmin.setLocateCircleOn(true);
   }
