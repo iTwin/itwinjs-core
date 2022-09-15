@@ -60,7 +60,7 @@ export function Icon(props: IconProps) {
 
       const sanitizerConfig = {
         ALLOWED_TAGS: ["svg-loader"],
-        ADD_URI_SAFE_ATTR: ["src"],
+        ADD_URI_SAFE_ATTR: webComponentString.startsWith("data:") ? ["src"] : [],
       };
 
       const sanitizedIconString = sanitizer.sanitize(svgDiv, sanitizerConfig);
