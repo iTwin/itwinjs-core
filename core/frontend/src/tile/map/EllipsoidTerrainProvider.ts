@@ -154,8 +154,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     if (tile.isPlanar)
       return this._wantSkirts ? this.createSkirtedPlanarMesh(tile) : this.createSkirtlessPlanarMesh(tile);
 
-    // ###TODO
-    return undefined;
+    return this.createGlobeMesh(tile);
   }
 
   private getGlobeMesh(tile: MapTile): TerrainMeshPrimitive | undefined {
@@ -222,6 +221,78 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     }
     assert(mesh.isCompleted);
     return mesh;
+  }
+
+  private createGlobeMesh(tile: MapTile): RealityMeshParams | undefined {
+    const globeMeshDimension = 10;
+    const projection = tile.getProjection();
+    const ellipsoidPatch = projection.ellipsoidPatch;
+    assert(undefined !== ellipsoidPatch);
+    if (!ellipsoidPatch)
+      return undefined;
+
+    const bordersSouthPole = tile.quadId.bordersSouthPole(this._tilingScheme);
+    const bordersNorthPole = tile.quadId.bordersNorthPole(this._tilingScheme);
+
+    const range = projection.localRange.clone();
+    const delta = 1 / (globeMeshDimension - 3);
+    const skirtFraction = delta / 2;
+
+    const dimensionM1 = globeMeshDimension - 1;
+    const dimensionM2 = globeMeshDimension - 2;
+
+    const transformRef = ellipsoidPatch.ellipsoid.transformRef.clone();
+    const skirtPatch = EllipsoidPatch.createCapture(scratchEllipsoid, ellipsoidPatch.longitudeSweep, ellipsoidPatch.latitudeSweep);
+    const scaleFactor = Math.max(0.99, 1 - Math.sin(ellipsoidPatch.longitudeSweep.sweepRadians * delta));
+    skirtPatch.ellipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);
+
+    const pointCount = globeMeshDimension * globeMeshDimension;
+    const rowMin = (bordersNorthPole || this._wantSkirts) ? 0 : 1;
+    const rowMax = (bordersSouthPole || this._wantSkirts) ? dimensionM1 : dimensionM2;
+    const colMin = this._wantSkirts ? 0 : 1;
+    const colMax = this._wantSkirts ? dimensionM1 : dimensionM2;
+    const indexCount = 6 * (rowMax - rowMin) * (colMax - colMin);
+
+    const builder = new RealityMeshParamsBuilder({
+      positionRange: range,
+      initialVertexCapacity: pointCount,
+      initialIndexCapacity: indexCount,
+    });
+
+    for (let iRow = 0, index = 0; iRow < globeMeshDimension; iRow++) {
+      for (let iColumn = 0; iColumn < globeMeshDimension; iColumn++, index++) {
+        let u = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
+        let v = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
+        scratchPoint2d.set(u, 1 - v);
+
+        if (iRow === 0 || iRow === dimensionM1 || iColumn === 0 || iColumn === dimensionM1) {
+          if (bordersSouthPole && iRow === dimensionM1)
+            skirtPatch.ellipsoid.radiansToPoint(0, -Angle.piOver2Radians, scratchPoint);
+          else if (bordersNorthPole && iRow === 0)
+            skirtPatch.ellipsoid.radiansToPoint(0, Angle.piOver2Radians, scratchPoint);
+          else {
+            u += (iColumn === 0) ? -skirtFraction : (iColumn === dimensionM1 ? skirtFraction : 0);
+            v += (iRow === 0) ? -skirtFraction : (iRow === dimensionM1 ? skirtFraction : 0);
+            skirtPatch.uvFractionToPoint(u, v, scratchPoint);
+          }
+        } else {
+          projection.getPoint(u, v, 0, scratchPoint);
+        }
+
+        builder.addUnquantizedVertex(scratchPoint, scratchPoint2d);
+      }
+    }
+
+    for (let iRow = rowMin; iRow < rowMax; iRow++) {
+      for (let iColumn = colMin; iColumn < colMax; iColumn++) {
+        const base = iRow * globeMeshDimension + iColumn;
+        const top = base + globeMeshDimension;
+        builder.addTriangle(base, base + 1, top);
+        builder.addTriangle(top, base + 1, top + 1);
+      }
+    }
+
+    return builder.finish();
   }
 
   public override async requestMeshData(): Promise<TileRequest.Response> {
