@@ -13,7 +13,6 @@ import { TargetChangeHandler, WidgetChangeHandler } from "../frontstage/Frontsta
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { StatusBar } from "../statusbar/StatusBar";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
-import { getFloatingZoneBounds } from "./FrameworkZone";
 import { Outline } from "./Outline";
 import { ZoneTargets } from "../dragdrop/ZoneTargets";
 
