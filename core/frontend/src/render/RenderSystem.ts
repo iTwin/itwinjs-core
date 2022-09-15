@@ -25,7 +25,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams } from "./primitives/mesh/RealityMeshPrimitive";
 import { RealityMeshParams } from "./RealityMeshParams";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
@@ -426,7 +426,7 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */

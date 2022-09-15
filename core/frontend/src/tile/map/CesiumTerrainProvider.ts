@@ -279,7 +279,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
 
-    // ###TODO: This alleges to handle 32-bit indices, but RealityMeshPrimitive uses a Uint16Array to store indices...
+    // ###TODO: This alleges to handle 32-bit indices, but RealityMeshParams uses a Uint16Array to store indices...
     const typedArray = pointCount > 0xffff ? Uint32Array : Uint16Array;
     const bytesPerIndex = typedArray.BYTES_PER_ELEMENT;
     const triangleElements = 3;

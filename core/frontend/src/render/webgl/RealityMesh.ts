@@ -11,7 +11,7 @@ import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley"
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams } from "../primitives/mesh/RealityMeshPrimitive";
 import { RealityMeshParams } from "../RealityMeshParams";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -204,13 +204,6 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 
   }
 
-  public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
-    const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
-    const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
-    const normalBuf = mesh.normals ? BufferHandle.createArrayBuffer(mesh.normals) : undefined;
-    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
-  }
-
   public static fromRealityMesh(params: RealityMeshParams) {
     const posBuf = QBufferHandle3d.create(params.positions.params, params.positions.points);
     const uvParamBuf = QBufferHandle2d.create(params.uvs.params, params.uvs.points);
@@ -289,11 +282,11 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
     });
   }
 
-  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RealityMeshGeometry | undefined {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
+  public static createFromRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
     if (!params)
       return undefined;
-    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
+    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     return new RealityMeshGeometry({realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal});
   }

@@ -19,7 +19,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams } from "../primitives/mesh/RealityMeshPrimitive";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams } from "../primitives/PointStringParams";
 import { PolylineParams } from "../primitives/PolylineParams";
@@ -535,7 +535,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
     return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
-  public override createRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RenderGraphic | undefined {
+  public override createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
     return geom ? Primitive.create(geom) : undefined;
   }
