@@ -11,7 +11,7 @@ Table of contents:
 - [Display](#display)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Improved display transform support](#improved-display-transform-support)
-  - [Wait for scene completion API](#wait-for-scene-completion-api)
+  - [Wait for scene completion](#wait-for-scene-completion)
 - [Presentation](#presentation)
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
@@ -76,9 +76,16 @@ In some cases, geometry is displayed within a [Viewport]($frontend) at a differe
 
 Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
 
-### Wait for Scene Completion API
+### Wait for scene completion
 
-[Viewport]($frontend) now has a [Viewport.waitForSceneCompletion]($frontend) method. This method returns a promise which will resolve when all tiles finish loading and are rendered for this viewport. Awaiting on this method before attempting to read an image out of the viewport will ensure that a complete rendering of the current scene is retrieved.
+As you navigate inside a [Viewport]($frontend), [Tile]($frontend)s, texture images, and other resources are streamed in asynchronously to display the contents of the view. Sometimes, you may want to wait until the scene has been fully rendered - for example, so that you can capture a complete image of the viewport's contents. [Viewport.waitForSceneCompletion]($frontend) provides a `Promise` that resolves when the scene has been fully rendered. Here's an example that captures an image of the fully-rendered scene:
+
+```ts
+async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
+  await vp.waitForSceneCompletion();
+  return vp.readImageBuffer();
+}
+```
 
 ## Presentation
 
