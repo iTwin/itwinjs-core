@@ -381,7 +381,10 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
       '@openid/appauth': ^1.2.6
+      '@types/chai': 4.3.1
+      '@types/mocha': ^8.2.2
       '@types/node': 18.7.7
+      chai: ^4.1.2
       electron: ^17.0.0
       eslint: ^7.11.0
       mocha: ^10.0.0
@@ -401,7 +404,10 @@ importers:
       '@itwin/core-frontend': link:../frontend
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../../presentation/common
+      '@types/chai': 4.3.1
+      '@types/mocha': 8.2.3
       '@types/node': 18.7.7
+      chai: 4.3.6
       electron: 17.4.11
       eslint: 7.32.0
       mocha: 10.0.0
