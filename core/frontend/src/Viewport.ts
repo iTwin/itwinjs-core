@@ -63,7 +63,6 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
-import { ExternalTextureLoader } from "./render/webgl/Texture";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -293,7 +292,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
-  private _hasMissingTiles = false;
+  /** @internal */
+  protected _hasMissingTiles = false;
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -2498,70 +2498,21 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.readImageToCanvas();
   }
 
-  private async _waitForSceneCompletionWithViewManager() {
-    const externalTexLoader = ExternalTextureLoader.instance;
-
-    // Let the ViewManager/TileAdmin initiate all further requests for tiles until no more requests are pending.
-    // We will latch onto the onRender event in order to know when tile requests are finished and the promise is fulfilled.
-    const promise = new Promise<void>((resolve, _reject) => {
-      const removeOnRender = this.onRender.addListener(() => {
-        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener((vp: ScreenViewport) => {
-          if (vp as Viewport === this) {
-            removeOnViewClose();
-            removeOnRender();
-            resolve();
-            return;
-          }
-        });
-
-        if (this.isDisposed) {
-          removeOnViewClose();
-          removeOnRender();
-          resolve();
-          return;
-        }
-
-        let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
-        if (!haveNewTiles) {
-          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-          for (const vp of this.view.secondaryViewports) {
-            if (vp.numRequestedTiles > 0) {
-              haveNewTiles = true;
-              break;
-            }
-
-            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-            if (tiles && tiles.external.requested > 0) {
-              haveNewTiles = true;
-              break;
-            }
-          }
-        }
-
-        const haveExternalTexRequests = externalTexLoader.numActiveRequests > 0 || externalTexLoader.numPendingRequests > 0;
-        if (!haveNewTiles && !haveExternalTexRequests) {
-          removeOnViewClose();
-          removeOnRender();
-          resolve();
-          return;
-        }
-      });
-    });
-
-    // Must first wait to ensure all tile trees are loaded -- tile requests will not happen before then; it may look like we have no requests pending, but in reality no requests even began.
-    while (!this.areAllTileTreesLoaded) {
-      await BeDuration.wait(100);
-    }
-
-    // After all tile trees have loaded, kick off an initial request for tiles.
-    this.invalidateScene();
-    this.renderFrame();
-
-    return promise;
-  }
-
-  private async _waitForSceneCompletionWithoutViewManager(): Promise<void> {
-    const externalTexLoader = ExternalTextureLoader.instance;
+  /** Returns a Promise that resolves after the contents of this viewport are fully loaded and rendered.
+   * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
+   * ```ts
+   *  async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
+   *    try {
+   *      await vp.waitForSceneCompletion();
+   *      return vp.readImageBuffer();
+   *    } catch (_) {
+   *      return undefined;
+   *    }
+   *  }
+   * ```
+   */
+  public async waitForSceneCompletion(): Promise<void> {
+    const system = this.target.renderSystem;
     let haveNewTiles = true;
     let haveExternalTexRequests = true;
     while ((haveNewTiles || haveExternalTexRequests) && !this.isDisposed) {
@@ -2569,7 +2520,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.invalidateScene();
       this.renderFrame();
 
-      haveExternalTexRequests = externalTexLoader.numActiveRequests > 0 || externalTexLoader.numPendingRequests > 0;
+      haveExternalTexRequests = system.hasExternalTextureRequests;
       haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
       if (!haveNewTiles) {
         // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
@@ -2593,17 +2544,6 @@ export abstract class Viewport implements IDisposable, TileUser {
 
       await BeDuration.wait(100);
     }
-  }
-
-  /** Waits for all tiles to load and render for this viewport.
-   * @returns A promise which will resolve when all tiles finish loading and are rendered for this viewport.
-   */
-  public async waitForSceneCompletion(): Promise<void> {
-    // First wait for scene completion, which varies depending on if the viewport is managed or unmanaged.
-    const promise = IModelApp.viewManager.hasViewport(this)
-      ? this._waitForSceneCompletionWithViewManager()
-      : this._waitForSceneCompletionWithoutViewManager();
-    await promise;
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
@@ -3485,6 +3425,71 @@ export class ScreenViewport extends Viewport {
       this.invalidateController();
     }
     this.invalidateRenderPlan();
+  }
+
+  /** @internal override */
+  public override async waitForSceneCompletion(): Promise<void> {
+    if (!IModelApp.viewManager.hasViewport(this))
+      return super.waitForSceneCompletion();
+
+    const system = this.target.renderSystem;
+
+    // Let the ViewManager/TileAdmin initiate all further requests for tiles until no more requests are pending.
+    // We will latch onto the onRender event in order to know when tile requests are finished and the promise is fulfilled.
+    const promise = new Promise<void>((resolve, _reject) => {
+      const removeOnRender = this.onRender.addListener(() => {
+        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener((vp: ScreenViewport) => {
+          if (vp as Viewport === this) {
+            removeOnViewClose();
+            removeOnRender();
+            resolve();
+            return;
+          }
+        });
+
+        if (this.isDisposed) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+
+        let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
+        if (!haveNewTiles) {
+          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+          for (const vp of this.view.secondaryViewports) {
+            if (vp.numRequestedTiles > 0) {
+              haveNewTiles = true;
+              break;
+            }
+
+            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+            if (tiles && tiles.external.requested > 0) {
+              haveNewTiles = true;
+              break;
+            }
+          }
+        }
+
+        if (!haveNewTiles && !system.hasExternalTextureRequests) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+      });
+    });
+
+    // Must first wait to ensure all tile trees are loaded -- tile requests will not happen before then; it may look like we have no requests pending, but in reality no requests even began.
+    while (!this.areAllTileTreesLoaded) {
+      await BeDuration.wait(100);
+    }
+
+    // After all tile trees have loaded, kick off an initial request for tiles.
+    this.invalidateScene();
+    this.renderFrame();
+
+    return promise;
   }
 }
 

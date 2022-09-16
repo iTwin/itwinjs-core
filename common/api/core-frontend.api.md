@@ -8934,6 +8934,8 @@ export abstract class RenderSystem implements IDisposable {
     findTexture(_key: TextureCacheKey, _imodel: IModelConnection): RenderTexture | undefined;
     getGradientTexture(_symb: Gradient.Symb, _imodel?: IModelConnection): RenderTexture | undefined;
     // @internal (undocumented)
+    get hasExternalTextureRequests(): boolean;
+    // @internal (undocumented)
     get isMobile(): boolean;
     // @internal (undocumented)
     abstract get isValid(): boolean;
@@ -9383,6 +9385,8 @@ export class ScreenViewport extends Viewport {
     set viewCmdTargetCenter(center: Point3d | undefined);
     get viewRect(): ViewRect;
     readonly vpDiv: HTMLDivElement;
+    // @internal
+    waitForSceneCompletion(): Promise<void>;
 }
 
 // @public
@@ -12846,8 +12850,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     get grabbingCursor(): string;
     // (undocumented)
     get grabCursor(): string;
-    // @internal (undocumented)
-    hasViewport(vpToFind: Viewport): boolean;
+    hasViewport(viewport: ScreenViewport): boolean;
     // (undocumented)
     inDynamicsMode: boolean;
     // @beta
@@ -13157,6 +13160,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     // @internal (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     getWorldFrustum(box?: Frustum): Frustum;
+    // @internal (undocumented)
+    protected _hasMissingTiles: boolean;
     hasTiledGraphicsProvider(provider: TiledGraphicsProvider): boolean;
     get hilite(): Hilite.Settings;
     set hilite(hilite: Hilite.Settings);
