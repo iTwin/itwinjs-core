@@ -5,7 +5,7 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
@@ -514,44 +514,7 @@ export class TestRunner {
 
   private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
     const timer = new StopWatch(undefined, true);
-    let haveNewTiles = true;
-    while (haveNewTiles) {
-      viewport.requestRedraw();
-      viewport.invalidateScene();
-      viewport.renderFrame();
-
-      // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
-      const context = viewport.createSceneContext();
-      viewport.createScene(context);
-      context.requestMissingTiles();
-
-      haveNewTiles = !viewport.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
-      if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of viewport.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
-
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
-          }
-        }
-      }
-
-      // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler.
-      if (haveNewTiles)
-        IModelApp.tileAdmin.process();
-
-      await BeDuration.wait(100);
-    }
-
-    await IModelApp.renderSystem.waitForAllExternalTextures();
-
-    viewport.renderFrame();
+    await viewport.waitForSceneCompletion();
     timer.stop();
 
     const selectedTiles = getSelectedTileStats(viewport);
