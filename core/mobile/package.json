@@ -4,7 +4,7 @@
   "description": "iTwin.js MobileHost and MobileApp",
   "license": "MIT",
   "engines": {
-    "node": ">=12.22.0 < 14.0 || >=14.17.0 <19.0"
+    "node": ">=12.22.0 < 14.0 || >=14.17.0 <17.0 || >= 18.9.0 < 19.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs",
