@@ -518,6 +518,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
   public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
+  /** @internal */
+  public get hasExternalTextureRequests(): boolean { return false; }
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
