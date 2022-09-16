@@ -87,7 +87,7 @@ test.describe("popout widget", () => {
     await expect(tab).toHaveClass(/nz-active/);
 
     await expectSavedFrontstageState(context, (state) => {
-      return state.nineZone.widgets.leftStart.activeTabId === "appui-test-providers:ViewAttributesWidget";
+      return state.nineZone.widgets.leftStart.activeTabId === "WL-A";
     });
 
     await page.reload();

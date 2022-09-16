@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "Moved React-specific rules out of itwinjs-recommended and into the ui config",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}

@@ -10,6 +10,7 @@ enum WidgetState {
   Open = 0,
   Closed = 1,
   Hidden = 2,
+  Floating = 3,
 }
 
 async function setWidgetState(page: Page, widgetId: string, widgetState: WidgetState) {
@@ -230,5 +231,14 @@ test.describe("widget state", () => {
     await setWidgetState(page, "WL-A", WidgetState.Open);
     await expect(panel).toBeVisible();
     await expect(widget).toHaveCount(2);
+  });
+
+
+  test("should float a widget that is hidden by default", async ({ context, page }) => {
+    const tab = tabLocator(page, "FW-H1");
+    await expect(tab).toBeHidden();
+
+    setWidgetState(page, "FW-H1", WidgetState.Floating);
+    await expect(tab).toBeVisible();
   });
 });

@@ -15,7 +15,7 @@ import { Size, UiStateStorageResult, UiStateStorageStatus } from "@itwin/core-re
 import { addFloatingWidget, addPanelWidget, addTab, createNineZoneState, getUniqueId, NineZone, NineZoneState, toolSettingsTabId } from "@itwin/appui-layout-react";
 import { createDraggedTabState } from "@itwin/appui-layout-react/lib/cjs/appui-layout-react/state/internal/TabStateHelpers";
 import {
-  ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
+  ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, appendWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
   packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelZoneDef, StagePanelZonesDef,
   UiFramework, UiStateStorageHandler, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
@@ -1478,7 +1478,7 @@ describe("Frontstage local storage wrapper", () => {
         let nineZone = createNineZoneState();
         nineZone = addTab(nineZone, "t1");
         nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-        const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+        const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Unloaded);
         sut.should.eq(nineZone);
       });
 
@@ -1651,6 +1651,31 @@ describe("Frontstage local storage wrapper", () => {
         });
       });
 
+      describe("WidgetState.Floating", () => {
+        it("should float a panel widget", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.floatingWidgets.allIds.should.length(1);
+          sut.panels.left.widgets.should.length(0);
+        });
+
+        it("should float a hidden widget", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.floatingWidgets.allIds.should.length(1);
+        });
+
+        it("should not update if widget is floating", () => {
+          let nineZone = createNineZoneState();
+          nineZone = addTab(nineZone, "t1");
+          nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
+          const sut = setWidgetState(nineZone, new WidgetDef({ id: "t1" }), WidgetState.Floating);
+          sut.should.eq(nineZone);
+        });
+      });
     });
 
     describe("showWidget ", () => {
@@ -2134,6 +2159,29 @@ describe("Frontstage local storage wrapper", () => {
         widgetIds.should.eql(["leftStart"]);
         tabs.should.eql(["w1"]);
         newState.widgets.leftStart.tabs.should.eql(["w1"]);
+      });
+    });
+
+    describe("appendWidgets", () => {
+      it("should append widgets to a new panel section", () => {
+        let state = createNineZoneState();
+        state = addTab(state, "t1");
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
+        const widgetDef = new WidgetDef({ id: "t2" });
+        const newState = appendWidgets(state, [widgetDef], "left", 1);
+        expect(newState.panels.left.widgets).to.eql(["w1", "leftEnd"]);
+        expect(newState.widgets.leftEnd.tabs).to.eql(["t2"]);
+      });
+
+      it("should append widgets to an existing panel section (by preferredWidgetIndex)", () => {
+        let state = createNineZoneState();
+        state = addTab(state, "t1");
+        state = addTab(state, "t2");
+        state = addPanelWidget(state, "left", "w1", ["t1"]);
+        state = addPanelWidget(state, "left", "w2", ["t2"]);
+        const widgetDef = new WidgetDef({ id: "t3" });
+        const newState = appendWidgets(state, [widgetDef], "left", 1);
+        expect(newState.widgets.w2.tabs).to.eql(["t2", "t3"]);
       });
     });
 
