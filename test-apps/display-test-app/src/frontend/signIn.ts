@@ -6,15 +6,9 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
-import { DtaConfiguration } from "../common/DtaConfiguration";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-
-let configuration: DtaConfiguration = {};
-
-export function setSignInConfiguration(value: DtaConfiguration) {
-  configuration = value;
-}
+import { getConfigurationBoolean, getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -32,7 +26,7 @@ export async function signIn(): Promise<boolean> {
   }
 
   let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | TestFrontendAuthorizationClient | undefined;
-  if (configuration.headless) {
+  if (getConfigurationBoolean("headless")) {
     const token = await DtaRpcInterface.getClient().getAccessToken();
     authClient = new TestFrontendAuthorizationClient(token);
   } else if (ProcessDetector.isElectronAppFrontend) {
@@ -42,9 +36,9 @@ export async function signIn(): Promise<boolean> {
     const accessToken = await IModelApp.authorizationClient?.getAccessToken();
     return accessToken !== undefined && accessToken.length > 0;
   } else {
-    const clientId = configuration.oidcClientId ?? "imodeljs-spa-test";
-    const redirectUri = configuration.oidcRedirectUri ?? "http://localhost:3000/signin-callback";
-    const scope = configuration.oidcScope ?? "openid email profile organization itwinjs";
+    const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
+    const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
+    const scope = getConfigurationString("oidcScope") ?? "openid email profile organization itwinjs";
     const responseType = "code";
     authClient = new BrowserAuthorizationClient({
       clientId,
