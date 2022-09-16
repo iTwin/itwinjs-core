@@ -99,6 +99,9 @@ jobs:
         inputs:
           targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
 
+      - script: 'cat $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+        displayName: Debug nuspec
+
       - task: DeleteFiles@1
         displayName: 'Delete landing page '
         inputs:
@@ -108,6 +111,9 @@ jobs:
       - task: NuGetToolInstaller@1
         inputs:
           versionSpec: 4.9.2
+
+      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
+        displayName: Debug build contents
 
       - task: NuGetCommand@2
         displayName: 'NuGet pack'
