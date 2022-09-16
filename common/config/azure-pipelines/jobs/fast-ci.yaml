@@ -3,6 +3,7 @@
 trigger:
   - master
   - release/*
+  - appui-4.0
 
 variables:
   - group: Rush Build Cache SAS Token
