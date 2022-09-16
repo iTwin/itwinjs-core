@@ -2502,12 +2502,8 @@ export abstract class Viewport implements IDisposable, TileUser {
    * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
    * ```ts
    *  async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
-   *    try {
-   *      await vp.waitForSceneCompletion();
-   *      return vp.readImageBuffer();
-   *    } catch (_) {
-   *      return undefined;
-   *    }
+   *    await vp.waitForSceneCompletion();
+   *    return vp.readImageBuffer();
    *  }
    * ```
    */
