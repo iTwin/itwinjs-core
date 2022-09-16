@@ -86,7 +86,9 @@ export abstract class TerrainMeshProvider {
   /** Obtain a representation of the terrain for a specific [[MapTile]]. The result will subsequently be supplied to [[readMesh]] to produce the mesh. */
   public abstract requestMeshData(args: RequestMeshDataArgs): Promise<TileRequest.Response>;
 
-  /** Convert the terrain data supplied by [[requestMeshData]] into a terrain mesh. */
+  /** Convert the terrain data supplied by [[requestMeshData]] into a terrain mesh.
+   * @see [[RealityMeshParamsBuilder]] to simplify the process of creating the mesh.
+   */
   public abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
 
   /** Add attribution logo cards for the terrain data supplied by this provider to the [[Viewport]]'s logo div.

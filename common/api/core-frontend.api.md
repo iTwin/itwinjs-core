@@ -120,7 +120,6 @@ import { GeometryContainmentResponseProps } from '@itwin/core-common';
 import { GeometryQuery } from '@itwin/core-geometry';
 import { GeometryStreamProps } from '@itwin/core-common';
 import { GeometrySummaryRequestProps } from '@itwin/core-common';
-import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GlobeMode } from '@itwin/core-common';
 import { Gradient } from '@itwin/core-common';
 import { GraphicParams } from '@itwin/core-common';
@@ -128,8 +127,6 @@ import { GridOrientationType } from '@itwin/core-common';
 import { GuidString } from '@itwin/core-bentley';
 import { HiddenLine } from '@itwin/core-common';
 import { Hilite } from '@itwin/core-common';
-import * as https from 'https';
-import { HttpStatus } from '@itwin/core-bentley';
 import { HydrateViewStateRequestProps } from '@itwin/core-common';
 import { HydrateViewStateResponseProps } from '@itwin/core-common';
 import { Id64 } from '@itwin/core-bentley';
@@ -232,7 +229,10 @@ import { PropertyValue } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
 import { QParams3d } from '@itwin/core-common';
 import { QPoint2d } from '@itwin/core-common';
-import { QPoint3d } from '@itwin/core-common';
+import { QPoint2dBuffer } from '@itwin/core-common';
+import { QPoint2dBufferBuilder } from '@itwin/core-common';
+import { QPoint3dBuffer } from '@itwin/core-common';
+import { QPoint3dBufferBuilder } from '@itwin/core-common';
 import { QPoint3dList } from '@itwin/core-common';
 import { QuantityParseResult } from '@itwin/core-quantity';
 import { QueryBinder } from '@itwin/core-common';
@@ -289,7 +289,6 @@ import { SubCategoryResultRow } from '@itwin/core-common';
 import { SubLayerId } from '@itwin/core-common';
 import { SyncMode } from '@itwin/core-common';
 import { TelemetryManager } from '@itwin/core-telemetry';
-import { TerrainProviderName } from '@itwin/core-common';
 import { TextureData } from '@itwin/core-common';
 import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapping } from '@itwin/core-common';
@@ -308,6 +307,7 @@ import { TransientIdSequence } from '@itwin/core-bentley';
 import { Tweens } from '@itwin/core-common';
 import { TxnNotifications } from '@itwin/core-common';
 import { UiAdmin } from '@itwin/appui-abstract';
+import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { UnitConversion } from '@itwin/core-quantity';
 import { UnitProps } from '@itwin/core-quantity';
 import { UnitsProvider } from '@itwin/core-quantity';
@@ -2916,19 +2916,17 @@ export class ElementState extends EntityState implements ElementProps {
 
 // @internal
 export class EllipsoidTerrainProvider extends TerrainMeshProvider {
-    constructor(iModel: IModelConnection, modelId: Id64String, _wantSkirts: boolean);
-    // (undocumented)
-    constructUrl(_row: number, _column: number, _zoomLevel: number): string;
+    constructor(opts: TerrainMeshProviderOptions);
     // (undocumented)
     getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // (undocumented)
-    getMesh(tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined>;
     // (undocumented)
     isTileAvailable(_quadId: QuadId): boolean;
     // (undocumented)
     get maxDepth(): number;
     // (undocumented)
-    get requiresLoadedContent(): boolean;
+    readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
+    // (undocumented)
+    requestMeshData(): Promise<TileRequest.Response>;
     // (undocumented)
     get tilingScheme(): MapTilingScheme;
 }
@@ -3519,7 +3517,7 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 export function getCesiumOSMBuildingsUrl(): string | undefined;
 
 // @internal (undocumented)
-export function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined>;
+export function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined>;
 
 // @public
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined;
@@ -4745,6 +4743,8 @@ export class IModelApp {
     static readonly telemetry: TelemetryManager;
     // @internal (undocumented)
     static get tentativePoint(): TentativePoint;
+    // (undocumented)
+    static get terrainProviderRegistry(): TerrainProviderRegistry;
     static get tileAdmin(): TileAdmin;
     static get toolAdmin(): ToolAdmin;
     static readonly tools: ToolRegistry;
@@ -6053,9 +6053,9 @@ export class MapTile extends RealityTile {
     // (undocumented)
     markUsed(args: TileDrawArgs): void;
     // (undocumented)
-    get mesh(): TerrainMeshPrimitive | undefined;
+    get mesh(): RealityMeshParams | undefined;
     // (undocumented)
-    protected _mesh?: TerrainMeshPrimitive;
+    protected _mesh?: RealityMeshParams;
     // (undocumented)
     produceGraphics(): RenderGraphic | undefined;
     // (undocumented)
@@ -6106,7 +6106,7 @@ export class MapTileLoader extends RealityTileLoader {
     // (undocumented)
     readonly featureTable: FeatureTable;
     // (undocumented)
-    forceTileLoad(tile: Tile): boolean;
+    forceTileLoad(tile: MapTile): boolean;
     // (undocumented)
     getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined;
     // (undocumented)
@@ -6138,7 +6138,7 @@ export class MapTileLoader extends RealityTileLoader {
     // (undocumented)
     get priority(): TileLoadPriority;
     // (undocumented)
-    requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response>;
+    requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
     get terrainProvider(): TerrainMeshProvider;
 }
@@ -8010,6 +8010,13 @@ export interface ReadImageBufferArgs {
     upsideDown?: boolean;
 }
 
+// @beta
+export interface ReadMeshArgs {
+    data: TileRequest.ResponseData;
+    isCanceled(): boolean;
+    tile: MapTile;
+}
+
 // @internal
 export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
     constructor(user?: TileUser);
@@ -8059,6 +8066,97 @@ export namespace RealityDataSource {
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
     export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+}
+
+// @internal (undocumented)
+export interface RealityMeshGraphicParams {
+    // (undocumented)
+    readonly baseColor: ColorDef | undefined;
+    // (undocumented)
+    readonly baseTransparent: boolean;
+    // (undocumented)
+    readonly featureTable: PackedFeatureTable;
+    // (undocumented)
+    readonly layerClassifiers?: MapLayerClassifiers;
+    // (undocumented)
+    readonly projection: MapTileProjection;
+    // (undocumented)
+    readonly realityMesh: RenderTerrainGeometry;
+    // (undocumented)
+    readonly textures?: TerrainTexture[];
+    // (undocumented)
+    readonly tileId: string | undefined;
+    // (undocumented)
+    readonly tileRectangle: MapCartoRectangle;
+}
+
+// @public (undocumented)
+export interface RealityMeshParams {
+    // (undocumented)
+    featureID?: number;
+    // (undocumented)
+    indices: Uint16Array;
+    // (undocumented)
+    normals?: Uint16Array;
+    // (undocumented)
+    positions: QPoint3dBuffer;
+    // (undocumented)
+    texture?: RenderTexture;
+    // (undocumented)
+    uvs: QPoint2dBuffer;
+}
+
+// @public (undocumented)
+export namespace RealityMeshParams {
+    // (undocumented)
+    export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined;
+    // (undocumented)
+    export function toPolyface(params: RealityMeshParams, options?: {
+        transform?: Transform;
+        wantNormals?: boolean;
+        wantParams?: boolean;
+    }): Polyface | undefined;
+}
+
+// @public (undocumented)
+export class RealityMeshParamsBuilder {
+    constructor(options: RealityMeshParamsBuilderOptions);
+    // (undocumented)
+    addIndices(indices: Iterable<number>): void;
+    // (undocumented)
+    addQuad(i0: number, i1: number, i2: number, i3: number): void;
+    // (undocumented)
+    addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): void;
+    // (undocumented)
+    addTriangle(i0: number, i1: number, i2: number): void;
+    // (undocumented)
+    addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): void;
+    // (undocumented)
+    addVertex(position: Point3d, uv: QPoint2d, normal?: number): void;
+    // (undocumented)
+    finish(): RealityMeshParams;
+    // (undocumented)
+    readonly indices: Uint16ArrayBuilder;
+    // (undocumented)
+    readonly normals?: Uint16ArrayBuilder;
+    // (undocumented)
+    readonly positions: QPoint3dBufferBuilder;
+    // (undocumented)
+    readonly uvs: QPoint2dBufferBuilder;
+}
+
+// @public (undocumented)
+export interface RealityMeshParamsBuilderOptions {
+    // (undocumented)
+    initialIndexCapacity?: number;
+    // (undocumented)
+    initialVertexCapacity?: number;
+    // (undocumented)
+    positionRange: Range3d;
+    // (undocumented)
+    uvRange?: Range2d;
+    // (undocumented)
+    wantNormals?: boolean;
 }
 
 // @internal (undocumented)
@@ -8891,9 +8989,7 @@ export abstract class RenderSystem implements IDisposable {
     // @internal (undocumented)
     createPolylineGeometry(_params: PolylineParams, _viewIndependentOrigin?: Point3d): RenderGeometry | undefined;
     // @internal (undocumented)
-    createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
-    // @internal (undocumented)
-    createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
+    createRealityMesh(_realityMesh: RealityMeshParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal (undocumented)
     createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal?: boolean): RenderGraphic | undefined;
     // @internal
@@ -8904,6 +9000,8 @@ export abstract class RenderSystem implements IDisposable {
     createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined;
     // @internal (undocumented)
     abstract createTarget(canvas: HTMLCanvasElement): RenderTarget;
+    // @internal (undocumented)
+    createTerrainMesh(_params: RealityMeshParams, _transform?: Transform, _disableTextureDisposal?: boolean): RenderTerrainGeometry | undefined;
     // (undocumented)
     createTexture(_args: CreateTextureArgs): RenderTexture | undefined;
     // @internal
@@ -9126,6 +9224,12 @@ export abstract class RenderTextureDrape implements IDisposable {
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
     // (undocumented)
     abstract dispose(): void;
+}
+
+// @beta
+export interface RequestMeshDataArgs {
+    isCanceled(): boolean;
+    tile: MapTile;
 }
 
 // @internal (undocumented)
@@ -10501,33 +10605,41 @@ export class TerrainDisplayOverrides {
     wantSkirts?: boolean;
 }
 
-// @internal
+// @beta
 export abstract class TerrainMeshProvider {
-    constructor(_iModel: IModelConnection, _modelId: Id64String);
-    // (undocumented)
+    protected constructor(options: TerrainMeshProviderOptions);
     addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void;
-    // (undocumented)
-    constructUrl(_row: number, _column: number, _zoomLevel: number): string;
-    // (undocumented)
-    forceTileLoad(_tile: Tile): boolean;
-    // (undocumented)
-    abstract getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined;
-    // (undocumented)
-    getMesh(_tile: MapTile, _data: Uint8Array): Promise<TerrainMeshPrimitive | undefined>;
-    // (undocumented)
-    protected _iModel: IModelConnection;
-    // (undocumented)
+    forceTileLoad(_tile: MapTile): boolean;
+    getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined;
+    readonly iModel: IModelConnection;
     abstract isTileAvailable(quadId: QuadId): boolean;
-    // (undocumented)
     abstract get maxDepth(): number;
-    // (undocumented)
-    protected _modelId: Id64String;
-    // (undocumented)
-    get requestOptions(): RequestOptions;
-    // (undocumented)
-    get requiresLoadedContent(): boolean;
-    // (undocumented)
+    readonly modelId: Id64String;
+    abstract readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined>;
+    abstract requestMeshData(args: RequestMeshDataArgs): Promise<TileRequest.Response>;
     abstract get tilingScheme(): MapTilingScheme;
+}
+
+// @beta
+export interface TerrainMeshProviderOptions {
+    exaggeration: number;
+    iModel: IModelConnection;
+    modelId: Id64String;
+    wantNormals: boolean;
+    wantSkirts: boolean;
+}
+
+// @beta
+export interface TerrainProvider {
+    createTerrainMeshProvider(options: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined>;
+}
+
+// @beta
+export class TerrainProviderRegistry {
+    // @internal
+    constructor();
+    find(name: string): TerrainProvider | undefined;
+    register(name: string, provider: TerrainProvider): void;
 }
 
 // @internal (undocumented)
@@ -10558,7 +10670,7 @@ export interface TerrainTileContent extends TileContent {
     // (undocumented)
     terrain?: {
         renderGeometry?: RenderTerrainGeometry;
-        mesh?: TerrainMeshPrimitive;
+        mesh?: RealityMeshParams;
     };
 }
 
@@ -11176,8 +11288,12 @@ export class TileRequest {
 export namespace TileRequest {
     export type Response = Uint8Array | ArrayBuffer | string | ImageSource | {
         content: TileContent;
+    } | {
+        data: any;
     } | undefined;
-    export type ResponseData = Uint8Array | ImageSource;
+    export type ResponseData = Uint8Array | ImageSource | {
+        data: any;
+    };
     export enum State {
         Completed = 3,
         Dispatched = 1,

@@ -202,7 +202,7 @@ internal;GeoServices
 public;getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect
 public;getCesiumAssetUrl(osmAssetId: number, requestKey: string): string
 internal;getCesiumOSMBuildingsUrl(): string | undefined
-internal;getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise
+internal;getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise
 public;getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes?: number, minCompressionQuality?: number): string | undefined
 internal;getFrustumPlaneIntersectionDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal): Range1d
 internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
@@ -477,6 +477,7 @@ public;readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId:
 public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
+beta;ReadMeshArgs
 internal;ReadonlyTileUserSet 
 internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
 alpha;RealityDataError 
@@ -487,6 +488,11 @@ alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider,
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
 alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+internal;RealityMeshGraphicParams
+public;RealityMeshParams
+public;RealityMeshParams
+public;RealityMeshParamsBuilder
+public;RealityMeshParamsBuilderOptions
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
@@ -525,6 +531,7 @@ internal;class RenderTarget
 internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
+beta;RequestMeshDataArgs
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
 alpha;ResolveFunc = () => Promise
 alpha;ResolveManifestFunc = () => Promise
@@ -593,7 +600,10 @@ internal;class Target
 internal;TentativeOrAccuSnap
 public;TentativePoint
 internal;TerrainDisplayOverrides
-internal;class TerrainMeshProvider
+beta;class TerrainMeshProvider
+beta;TerrainMeshProviderOptions
+beta;TerrainProvider
+beta;TerrainProviderRegistry
 internal;TerrainTexture
 internal;TerrainTileContent 
 public;TextInputFormatPropEditorSpec 

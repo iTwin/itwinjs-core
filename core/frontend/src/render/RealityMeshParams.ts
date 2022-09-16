@@ -16,16 +16,23 @@ import {
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
 
+/**
+ * @beta
+ */
 export interface RealityMeshParams {
   positions: QPoint3dBuffer;
   uvs: QPoint2dBuffer;
   normals?: Uint16Array;
   indices: Uint16Array;
+  /** @alpha unused by terrain meshes */
   featureID?: number; // default 0
+  /** @alpha unused by terrain meshes */
   texture?: RenderTexture;
 }
 
+/** @beta */
 export namespace RealityMeshParams {
+  /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
     // The specialized reality mesh shaders expect a mesh with 16-bit indices, uvs, and no edges.
     if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices || !(mesh.indices instanceof Uint16Array))
@@ -47,6 +54,7 @@ export namespace RealityMeshParams {
     };
   }
 
+  /** @alpha */
   export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
