@@ -13,7 +13,7 @@ import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TileRequest,
+  MapCartoRectangle, MapTile, MapTilingScheme, QuadId,
 } from "../internal";
 
 /** Options used to construct a [[TerrainMeshProvider]].
@@ -59,7 +59,7 @@ export interface RequestMeshDataArgs {
  */
 export interface ReadMeshArgs {
   /** The mesh data obtained from [[TerrainMeshProvider.requestMeshData]]. */
-  data: TileRequest.ResponseData;
+  data: any;
   /** The tile for which the terrain mesh is being generated. */
   tile: MapTile;
   /** Returns true if the request has been cancelled. Check this after performing an asynchronous action, and abort `readMesh` if it returns true. */
@@ -83,8 +83,10 @@ export abstract class TerrainMeshProvider {
     this.modelId = options.modelId;
   }
 
-  /** Obtain a representation of the terrain for a specific [[MapTile]]. The result will subsequently be supplied to [[readMesh]] to produce the mesh. */
-  public abstract requestMeshData(args: RequestMeshDataArgs): Promise<TileRequest.Response>;
+  /** Obtain a representation of the terrain for a specific [[MapTile]]. The result will subsequently be supplied to [[readMesh]] to produce the mesh.
+   * Return `undefined` if no mesh data could be obtained.
+   */
+  public abstract requestMeshData(args: RequestMeshDataArgs): Promise<any>;
 
   /** Convert the terrain data supplied by [[requestMeshData]] into a terrain mesh.
    * @see [[RealityMeshParamsBuilder]] to simplify the process of creating the mesh.

@@ -176,6 +176,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   }
 
   public override async requestMeshData(): Promise<TileRequest.Response> {
-    return { data: "" };
+    return "";
   }
 }

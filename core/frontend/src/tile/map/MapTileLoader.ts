@@ -48,7 +48,8 @@ export class MapTileLoader extends RealityTileLoader {
   public async requestTileContent(tile: MapTile, isCanceled: () => boolean): Promise<TileRequest.Response> {
     assert(tile instanceof MapTile);
     try {
-      return await this.terrainProvider.requestMeshData({ tile, isCanceled });
+      const data = await this.terrainProvider.requestMeshData({ tile, isCanceled });
+      return undefined !== data ? { data } : undefined;
     } catch (_) {
       return undefined;
     }
@@ -59,10 +60,11 @@ export class MapTileLoader extends RealityTileLoader {
   }
 
   public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
+    assert("data" in data);
     isCanceled = isCanceled ?? (() => !tile.isLoading);
 
     const quadId = tile.quadId;
-    const mesh = await this._terrainProvider.readMesh({ data, isCanceled, tile });
+    const mesh = await this._terrainProvider.readMesh({ data: data.data, isCanceled, tile });
     if (!mesh || isCanceled())
       return {};
 
