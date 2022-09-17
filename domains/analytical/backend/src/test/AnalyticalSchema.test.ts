@@ -49,7 +49,7 @@ describe("AnalyticalSchema", () => {
   const assetsDir = path.join(__dirname, "assets");
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: path.join(__dirname, ".cache") });
     AnalyticalSchema.registerSchema();
     TestAnalyticalSchema.registerSchema();
     if (!IModelJsFs.existsSync(outputDir)) {

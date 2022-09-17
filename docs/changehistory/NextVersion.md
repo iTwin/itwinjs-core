@@ -1,136 +1,132 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
 
-- [Display system](#display-system)
-  - [Dynamic schedule scripts](#dynamic-schedule-scripts)
-  - [Hiliting models and subcategories](#hiliting-models-and-subcategories)
-  - [Improved symbology overrides for animated views](#improved-symbology-overrides-for-animated-views)
-- [Frontend category APIs](#frontend-category-apis)
-- [AppUi](#appui)
-  - [Auto-hiding floating widgets](#auto-hiding-floating-widgets)
-  - [Tool Settings title](tool-settings-title)
-- [ElectronApp changes](#electronapp-changes)
-- [IModelHostOptions](#imodelhostoptions)
-- [Progress API for downloading changesets](#progress-api-for-downloading-changesets)
-- [Deprecations](#deprecations)
+- [Electron 17 support](#electron-17-support)
+- [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Display](#display)
+  - [Ambient occlusion improvements](#ambient-occlusion-improvements)
+  - [Improved display transform support](#improved-display-transform-support)
 - [Presentation](#presentation)
+  - [Restoring presentation tree state](#restoring-presentation-tree-state)
+  - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
+  - [Localization changes](#localization-changes)
+- [Geometry](#geometry)
+  - [Coplanar facet consolidation](#coplanar-facet-consolidation)
+  - [Filling mesh holes](#filling-mesh-holes)
+- [Deprecations](#deprecations)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
-## Display system
+## Electron 17 support
 
-### Dynamic schedule scripts
+In addition to the already supported Electron 14, iTwin.js now supports Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), and [17](https://www.electronjs.org/blog/electron-17-0). At the moment, support for Electron 18 and 19 is blocked due to a [bug in the V8 javascript engine](https://github.com/electron/electron/issues/35043).
 
-[Timeline animation](../learning/display/TimelineAnimation.md) enables the visualization of change within an iModel over a period of time. This can be a valuable tool for, among other things, animating the contents of a viewport to show the progress of an asset through the phases of its construction. However, one constraint has always limited the utility of this feature: the instructions for animating the view were required to be stored on a persistent element - either a [DisplayStyle]($backend) or a [RenderTimeline]($backend) - in the [IModel]($common).
+## IModelSchemaLoader replaced
 
-That constraint has now been lifted. This makes it possible to create and apply ad-hoc animations entirely on the frontend. For now, support for this capability must be enabled when calling [IModelApp.startup]($frontend) by setting [TileAdmin.Props.enableFrontendScheduleScripts]($frontend) to `true`, as in this example:
+The `IModelSchemaLoader` class has been replaced with [SchemaLoader]($ecschema-metadata) for obtaining schemas from an iModel. This allows us to remove the @itwin/ecschema-metadata dependency from @itwin/core-backend.
 
-```ts
-   await IModelApp.startup({
-     tileAdmin: {
-      enableFrontendScheduleScripts: true,
-    },
-  });
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
+const schema = loader.getSchema("BisCore");
 ```
 
-Then, you can create a new schedule script using [RenderSchedule.ScriptBuilder]($common) or [RenderSchedule.Script.fromJSON]($common) and apply it by assigning to [DisplayStyleState.scheduleScript]($frontend). For example, given a JSON representation of the script:
+[SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
-```ts
-  function updateScheduleScript(viewport: Viewport, props: RenderSchedule.ScriptProps): void {
-    viewport.displayStyle.scheduleScript = RenderSchedule.Script.fromJSON(props);
-  }
-```
+## Display
 
-### Hiliting models and subcategories
+### Ambient occlusion improvements
 
-Support for hiliting models and subcategories using [HiliteSet]($frontend) has been promoted from `@beta` to `@public`. This allows applications to toggle hiliting of all elements belonging to a set of [Model]($backend)s and/or [SubCategory]($backend)'s. This feature can work in one of two modes, specified by [HiliteSet.modelSubCategoryMode]($frontend):
+The ambient occlusion effect has undergone some quality improvements.
 
-- Union - an element will be hilited if either its model or its subcategory is hilited; or
-- Intersection - an element will be hilited if both its model and its subcategory are hilited.
+Changes:
 
-Applications often work with [Category]($backend)'s instead of subcategories. You can use the new [Categories API](#frontend-category-apis) to obtain the Ids of the subcategories belonging to one or more categories.
+- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
+- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
+- The effect will now fade as it approaches the maximum distance.
 
-## Frontend category APIs
+Old effect, as shown below:
 
-A [Category]($backend) provides a way to organize groups of [GeometricElement]($backend)s. Each category contains at least one [SubCategory]($backend) which defines the appearance of geometry belonging to that subcategory. This information is important for frontend code - for example, the display system needs access to subcategory appearances so that it can draw elements correctly, and applications may want to [hilite subcategories](#hiliting-models-and-subcategories) in a [Viewport]($frontend).
+![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
 
-[IModelConnection.categories]($frontend) now provides access to APIs for querying this information. The information is cached upon retrieval so that repeated requests need not query the backend.
+New effect, shown below:
 
-- [IModelConnection.Categories.getCategoryInfo]($frontend) provides the Ids and appearance properties of all subcategories belonging to one or more categories.
-- [IModelConnection.Categories.getSubCategoryInfo]($frontend) provides the appearance properties of one or more subcategories belonging to a specific category.
+![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
 
-### Improved symbology overrides for animated views
+For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
 
-The appearances of elements within a view can be [customized](../learning/display/SymbologyOverrides.md) in a variety of ways. Two such sources of customization are a [FeatureOverrideProvider]($frontend) like [EmphasizeElements]($frontend), which can change the color, transparency, and/or emphasis effect applied to any number of elements; and a [RenderSchedule.Script]($common), which can modify the color and transparency of groups of elements over time. Previously, when these two sources of appearance overrides came into conflict, the results were less than ideal:
+### Improved display transform support
 
-- If any aspect of the element's appearance was overridden by a [FeatureOverrideProvider]($frontend), then **none** of the schedule script's appearance overrides would be applied to that element.
-- If some elements were being emphasized in the view (e.g., via [EmphasizeElements.emphasizeElements]($frontend)), any non-emphasized elements whose appearance was modified by the schedule script would not be drawn using the de-emphasized (typically, light transparent grey) appearance, making it difficult for the emphasized elements to stand out.
+In some cases, geometry is displayed within a [Viewport]($frontend) at a different location, orientation, and/or scale than that with which it is persisted in the iModel. For example:
 
-Both of these problems are addressed in iTwin.js 3.3.0.
+- A [DisplayStyle]($backend) may use [PlanProjectionSettings.elevation]($common) to adjust a plan projection model's position on the Z axis.
+- A [ModelDisplayTransformProvider]($frontend) may supply [Transform]($core-geometry)s to be applied to specific models.
+- A [RenderSchedule.Script]($common) may apply [Transform]($core-geometry)s to groups of elements belonging to a [RenderSchedule.ElementTimeline]($common).
 
-- The schedule script's overrides are now combined with the element's overrides, but at a lower priority such that if a FeatureOverrideProvider changes the color of the element to red, and the script wants to change its color to green and make it semi-transparent, the element will be drawn as semi-transparent red.
-- [EmphasizeElements]($frontend) now ignores the schedule script's color and transparency overrides for non-emphasized elements when other elements are being emphasized. Other [FeatureOverrideProvider]($frontend)s can do the same - or otherwise customize to which elements the script's overrides are applied - by supplying a function to do so to [FeatureOverrides.ignoreAnimationOverrides]($common).
-
-## AppUi
-
-### Auto-hiding floating widgets
-
-When a widget is in floating state, it will not automatically hide when the rest of the UI auto-hides. To create a widget that will automatically hide with the in-viewport tool widgets, set the prop [AbstractWidgetProps.hideWithUiWhenFloating]($appui-abstract) to `true` in your UiProvider.
-
-Auto-hide UI feature will ignore dragged floating widgets and keep them visible until drag interaction is complete. Floating widgets are also animated correctly when hiding.
-
-### Tool Settings title
-
-By default, when the Tool Settings widget is floating, the title will read "Tool Settings". To use the name of the active tool as the title instead, you can now use [UiFramework.setUseToolAsToolSettingsLabel]($appui-react) when your app starts.
-
-```ts
-  UiFramework.setUseToolAsToolSettingsLabel(true);
-```
-
-## ElectronApp changes
-
-Reduced API surface of an `ElectronApp` class to only allow white-listed APIs from `electron` modules to be called. `ElectronApp` is updated to reflect the change: `callShell` and `callApp` methods are removed, `callDialog` is updated to only show dialogs and a message box.
-
-## IModelHostOptions
-
-The argument for [IModelHost.startup]($backend) has been changed from [IModelHostConfiguration]($backend) to the [IModelHostOptions]($backend) interface. This matches the approach on the frontend for [IModelApp.startup]($frontend) and makes it easier to supply startup options. `IModelHostConfiguration` implements `IModelHostOptions`, so existing code will continue to work without changes.
-
-## Progress API for downloading changesets
-
-[BackendHubAccess]($core-backend) interface now supports progress reporting and cancellation of changeset(s) download. [BackendHubAccess.downloadChangeset]($core-backend) and [BackendHubAccess.downloadChangesets]($core-backend) take optional argument `progressCallback` of type [ProgressFunction]($core-backend). If function is passed, it is regularly called to report download progress. Changeset(s) download can be cancelled by returning [ProgressStatus.Abort]($core-backend) from said function.
-
-## RPC over IPC
-
-When a web application is using IPC communication between its frontend and backend, the RPC protocols now delegate request and response transportation to the IPC system.
-After the initial "handshake" request, there are now no further HTTP requests. All traffic (both IPC and RPC) is sent over the WebSocket.
-This change yields security benefits by reducing the surface area of our frontend/backend communication and provides performance consistency for the application.
-
-## Deprecations
-
-### @itwin/core-bentley
-
-The AuthStatus enum has been removed. This enum has fallen out of use since the authorization refactor in 3.0.0, and is no longer a member of [BentleyError]($core-bentley).
-
-The beta functions [Element.collectPredecessorIds]($core-backend) and [Element.getPredecessorIds]($core-backend) have been deprecated and replaced with [Element.collectReferenceIds]($core-backend) and [Element.getReferenceIds]($core-backend), since the term "predecessor" has been inaccurate since 3.2.0, when the transformer became capable of handling cyclic references and not just references to elements that were inserted before itself (predecessors).
-
-### @itwin/core-geometry
-
-Growable array constructors now take an optional growth factor to control additional capacity during memory reallocations (default 1.5). This can make repeated additions to these arrays more efficient. Affected classes are [GrowableBlockedArray]($core-geometry), [GrowableFloat64Array]($core-geometry), [GrowableXYArray]($core-geometry), and [GrowableXYZArray]($core-geometry). In addition, loops in `ensureCapacity`, `pushBlockCopy`, `resize`, `clone`, etc. have been replaced with more efficient calls to typed array `set`, `copyWithin`, `fill`.
-
-The [GrowableXYArray]($core-geometry) method `setXYZAtCheckedPointIndex` is deprecated in favor of the more appropriately named new method `setXYAtCheckedPointIndex`.
-
-### @itwin/core-mobile
-
-IOSApp, IOSAppOpts, and AndroidApp have been removed in favor of [MobileApp]($core-mobile) and [MobileAppOpts]($core-mobile). Developers were previously discouraged from making direct use of [MobileApp]($core-mobile), which was a base class of the two platform specific mobile apps. This distinction has been removed, as the implementation of the two apps was the same. IOSAppOpts, now [MobileAppOpts]($core-mobile), is an extension of [NativeAppOpts]($core-frontend) with the added condition that an [AuthorizationClient]($core-common) is never provided.
-
-IOSHost, IOSHostOpts, AndroidHost, and AndroidHostOpts have been removed in favor of [MobileHost]($core-mobile) for the same reasons described above.
+Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
 
 ## Presentation
 
-### Relationship properties
+### Restoring presentation tree state
 
-Properties that are defined on [ECRelationshipClass](../bis/ec/ec-relationship-class.md) can now be included in content using newly added [`RelatedPropertiesSpecification.relationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-relationshipproperties) attribute.
+It is now possible to restore previously saved Presentation tree state on component mount.
 
-When relationship properties are shown, or [`RelatedPropertiesSpecification.forceCreateRelationshipProperties`](../presentation/content/RelatedPropertiesSpecification.md#attribute-forcecreaterelationshipcategory) attribute is set to `true`, all information coming from that relationship, including related instance properties, will be organized within a category named after the relationship class.
+```ts
+// Save current tree state
+const { nodeLoader } = usePresentationTreeNodeLoader(args);
+useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
+
+// Restore tree state on component mount
+const seedTreeModel = exampleRetrieveStoredTreeModel();
+const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
+```
+
+### Diagnostics improvements and OpenTelemetry
+
+The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has been upgraded from `@alpha` to `@beta`. Several new features have also been added:
+
+- Ability to retrieve backend version when sending a request from the frontend. See [Getting request diagnostics on the frontend](../presentation/advanced/Diagnostics.md#getting-request-diagnostics-on-the-frontend) section for an example.
+- Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
+- Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
+
+### Localization Changes
+
+Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
+
+In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
+
+**Deprecated APIs:**
+
+- PresentationManagerProps.localeDirectories
+- PresentationManagerProps.defaultLocale
+- PresentationManager.activeLocale
+
+## Geometry
+
+### Coplanar facet consolidation
+
+A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can identify groups of adjacent coplanar facets in a mesh and produce a new mesh in which each group is consolidated into a single facet. The consolidated facets are necessarily not triangular and various bridge edges will be present in non-convex facets.
+
+![maximalPlanarFacets](assets/Geometry-maximalPlanarFacets.png "Mesh with many coplanar facets; new mesh with consolidation of coplanar facets")
+
+### Filling mesh holes
+
+A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
+
+![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+
+## Deprecations
+
+### @itwin/core-transformer
+
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.

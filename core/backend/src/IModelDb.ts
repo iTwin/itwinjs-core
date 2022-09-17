@@ -14,20 +14,23 @@ import {
 } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
-  CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
   MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
-  QueryOptions, QueryOptionsBuilder, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps,
-  TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
+  QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
+  SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
+  ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CloudSqlite } from "./CloudSqlite";
+import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -36,6 +39,7 @@ import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./Elemen
 import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
+import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
@@ -47,8 +51,8 @@ import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 import { BaseSettings, SettingDictionary, SettingName, SettingResolver, SettingsPriority, SettingType } from "./workspace/Settings";
 import { ITwinWorkspace, Workspace } from "./workspace/Workspace";
-import { GeoCoordConfig } from "./GeoCoordConfig";
-import { SQLiteDb } from "./SQLiteDb";
+
+// spell:ignore fontid fontmap
 
 const loggerCategory: string = BackendLoggerCategory.IModelDb;
 
@@ -217,6 +221,13 @@ export abstract class IModelDb extends IModel {
 
   /** @internal */
   protected _locks?: LockControl = new NoLocks();
+
+  /** @internal */
+  protected _codeService?: CodeService;
+
+  /** @alpha */
+  public get codeService() { return this._codeService; }
+
   /**
    * Get the [[LockControl]] for this iModel.
    * @beta
@@ -229,7 +240,7 @@ export abstract class IModelDb extends IModel {
    */
   public get workspace(): Workspace {
     if (undefined === this._workspace)
-      this._workspace = new ITwinWorkspace(new IModelSettings(), IModelHost.appWorkspace);
+      this._workspace = new ITwinWorkspace(new IModelSettings());
     return this._workspace;
   }
 
@@ -328,6 +339,8 @@ export abstract class IModelDb extends IModel {
     this._workspace?.close();
     this.locks.close();
     this._locks = undefined;
+    this._codeService?.close();
+    this._codeService = undefined;
     this.nativeDb.closeIModel();
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
@@ -605,6 +618,27 @@ export abstract class IModelDb extends IModel {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this.nativeDb, logErrors);
     return stmt;
+  }
+
+  /**
+   * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds
+   * @param categoryIds categoryIds to query
+   * @returns array of SubCategoryResultRow
+   * @internal
+   */
+  public async querySubCategories(categoryIds: Iterable<Id64String>): Promise<SubCategoryResultRow[]> {
+    const result: SubCategoryResultRow[] = [];
+
+    const where = [...categoryIds].join(",");
+    const query = `SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (${where})`;
+    try {
+      for await (const row of this.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+        result.push(row);
+      }
+    } catch {
+      // We can ignore the error here, and just return whatever we were able to query.
+    }
+    return result;
   }
 
   /** Query for a set of entity ids, given an EntityQueryParams
@@ -997,6 +1031,15 @@ export abstract class IModelDb extends IModel {
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+  }
+
+  /** Returns the full schema for the input name.
+   * @param name The name of the schema e.g. 'BisCore'
+   * @returns The SchemaProps for the requested schema
+   * @throws if the schema can not be found or loaded.
+   */
+  public getSchemaProps(name: string): ECSchemaProps {
+    return this.nativeDb.getSchemaProps(name);
   }
 
   /** Query if this iModel contains the definition of the specified class.
@@ -1483,11 +1526,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @throws [[IModelError]] if the element is not found or cannot be loaded.
      * @see tryGetElementProps
      */
-    public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
-      const elementProps = this.tryGetElementProps<T>(elementId);
-      if (undefined === elementProps)
-        throw new IModelError(IModelStatus.NotFound, `reading element=${elementId}`);
-      return elementProps;
+    public getElementProps<T extends ElementProps>(props: Id64String | GuidString | Code | ElementLoadProps): T {
+      if (typeof props === "string") {
+        props = Id64.isId64(props) ? { id: props } : { federationGuid: props };
+      } else if (props instanceof Code) {
+        props = { code: props };
+      }
+      return this._iModel.nativeDb.getElement(props) as T;
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1531,6 +1576,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
         elementId = { code: elementId };
+      else
+        elementId.onlyBaseProperties = false; // we must load all properties to construct the element.
 
       const elementProps = this.tryGetElementJson<ElementProps>(elementId);
       if (undefined === elementProps)
@@ -1554,7 +1601,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @returns The element that uses the code or undefined if the code is not used.
      * @throws IModelError if the code is invalid
      */
-    public queryElementIdByCode(code: Code): Id64String | undefined {
+    public queryElementIdByCode(code: Required<CodeProps>): Id64String | undefined {
       if (Id64.isInvalid(code.spec))
         throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec");
 
@@ -1600,7 +1647,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         return elProps.id = this._iModel.nativeDb.insertElement(elProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `insertElement with class=${elProps.classFullName}: ${err.message}`,);
+        err.message = `error inserting element: ${err.message}`;
+        throw err;
       }
     }
 
@@ -1615,7 +1663,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       try {
         this._iModel.nativeDb.updateElement(elProps);
       } catch (err: any) {
-        throw new IModelError(err.errorNumber, `Error updating element [${err.message}], id:${elProps.id}`);
+        err.message = `error updating element: ${err.message}`;
+        throw err;
       }
     }
 
@@ -1630,7 +1679,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         try {
           iModel.nativeDb.deleteElement(id);
         } catch (err: any) {
-          throw new IModelError(err.errorNumber, `Error deleting element [${err.message}], id:${id}`);
+          err.message = `error deleting element: ${err.message}`;
+          throw err;
         }
       });
     }
@@ -1711,6 +1761,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
           childIds.push(statement.getValue(0).getId());
         }
         return childIds;
+      });
+    }
+
+    /** Query for the parent of the specified element.
+     * @param elementId The element to check for a parent
+     * @returns The identifier of the element's parent or undefined if the element has no parent
+     * @throws [[IModelError]] if the element does not exist
+     */
+    public queryParent(elementId: Id64String): Id64String | undefined {
+      return this._iModel.withPreparedStatement(`select parent.id from ${Element.classFullName} where ecinstanceid=?`, (stmt) => {
+        stmt.bindId(1, elementId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new IModelError(IModelStatus.NotFound, `Element=${elementId}`);
+        const value = stmt.getValue(0);
+        return value.isNull ? undefined : value.getId();
       });
     }
 
@@ -2097,7 +2162,7 @@ export interface TokenArg {
  */
 export interface CloudContainerArgs {
   /** @internal */
-  container?: SQLiteDb.CloudContainer;
+  container?: CloudSqlite.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).
@@ -2146,6 +2211,9 @@ export class BriefcaseDb extends IModelDb {
    * ```
    */
   public static readonly onOpened = new BeEvent<(_iModelDb: BriefcaseDb, _args: OpenBriefcaseArgs) => void>();
+
+  /** @alpha */
+  public static readonly onCodeServiceCreated = new BeEvent<(service: CodeService) => void>();
 
   public static override findByKey(key: string): BriefcaseDb {
     return super.findByKey(key) as BriefcaseDb;
@@ -2229,6 +2297,17 @@ export class BriefcaseDb extends IModelDb {
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode, undefined, args);
     const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
+
+    if (openMode === OpenMode.ReadWrite && CodeService.createForIModel) {
+      try {
+        const codeService = CodeService.createForIModel(briefcaseDb);
+        briefcaseDb._codeService = codeService;
+        this.onCodeServiceCreated.raiseEvent(codeService);
+      } catch (e: any) {
+        if (e.errorId !== "NoCodeIndex") // no code index means iModel isn't enforcing codes.
+          throw e;
+      }
+    }
 
     BriefcaseManager.logUsage(briefcaseDb);
     this.onOpened.raiseEvent(briefcaseDb, args);

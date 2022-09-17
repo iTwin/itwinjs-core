@@ -166,12 +166,14 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
             <span>({this.state.topRow})</span>
           </label>
           <Gap />
+          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label style={{ display: "flex" }}>
             <BodyText>Filtering:</BodyText>
             &nbsp;
             <ToggleSwitch checked={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
           <Gap />
+          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label style={{ display: "flex" }}>
             <BodyText>UTC:</BodyText>
             &nbsp;

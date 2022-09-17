@@ -58,6 +58,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
     const classes = classnames("navnode", isActive && "active");
     const icon = classnames("icon", this.props.icon);
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
       <li className={classes} onClick={this._onClick}>
         <span className={icon} />
         <span className="label">{this.props.label}</span>
@@ -72,6 +73,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
     const classes = classnames(isActive && "active");
     const icon = classnames("icon", this.props.icon);
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
       <li className={classes} onClick={this._onClick}>
         <span className={icon} />
         <span className="label">{this.props.label}</span>
@@ -150,8 +152,11 @@ export class NavigationList extends React.Component<NavigationListProps, Navigat
     return (
       <div className={classNavbar}>
         <div className="expander">
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <span className="icon icon-chevron-right" onClick={this._handleExpandClick} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <span className="icon icon-pin" title="Pin the navigation pane" onClick={this._handleExpandClick} />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <span className="icon icon-chevron-left" onClick={this._handleExpandClick} />
         </div>
         <ul>

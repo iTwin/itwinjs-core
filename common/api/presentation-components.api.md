@@ -88,6 +88,7 @@ import { TableDataProvider } from '@itwin/components-react';
 import { TableProps } from '@itwin/components-react';
 import { TreeEditingParams } from '@itwin/components-react';
 import { TreeEventHandler } from '@itwin/components-react';
+import { TreeModel } from '@itwin/components-react';
 import { TreeModelChanges } from '@itwin/components-react';
 import { TreeModelSource } from '@itwin/components-react';
 import { TreeNodeItem } from '@itwin/components-react';
@@ -600,6 +601,8 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
+    // @alpha
+    seedTreeModel?: TreeModel;
 }
 
 // @public

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.3.0-dev.82",
+  "version": "3.4.0-dev.42",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -51,7 +51,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/imodel-components-react": "workspace:*",
     "@itwin/itwinui-css": "0.x",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "@itwin/presentation-common": "workspace:*",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^7.0.2",
@@ -89,17 +89,17 @@
     "react-beautiful-dnd": "^13.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.82",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.82",
-    "@itwin/core-common": "workspace:^3.3.0-dev.82",
-    "@itwin/core-frontend": "workspace:^3.3.0-dev.82",
-    "@itwin/core-quantity": "workspace:^3.3.0-dev.82",
-    "@itwin/appui-abstract": "workspace:^3.3.0-dev.82",
-    "@itwin/components-react": "workspace:^3.3.0-dev.82",
-    "@itwin/core-react": "workspace:^3.3.0-dev.82",
-    "@itwin/appui-react": "workspace:^3.3.0-dev.82",
-    "@itwin/imodel-components-react": "workspace:^3.3.0-dev.82",
-    "@itwin/appui-layout-react": "workspace:^3.3.0-dev.82",
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.42",
+    "@itwin/core-geometry": "workspace:^3.4.0-dev.42",
+    "@itwin/core-common": "workspace:^3.4.0-dev.42",
+    "@itwin/core-frontend": "workspace:^3.4.0-dev.42",
+    "@itwin/core-quantity": "workspace:^3.4.0-dev.42",
+    "@itwin/appui-abstract": "workspace:^3.4.0-dev.42",
+    "@itwin/components-react": "workspace:^3.4.0-dev.42",
+    "@itwin/core-react": "workspace:^3.4.0-dev.42",
+    "@itwin/appui-react": "workspace:^3.4.0-dev.42",
+    "@itwin/imodel-components-react": "workspace:^3.4.0-dev.42",
+    "@itwin/appui-layout-react": "workspace:^3.4.0-dev.42",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -111,7 +111,7 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/ui"
   },
   "mocha": {
     "require": [

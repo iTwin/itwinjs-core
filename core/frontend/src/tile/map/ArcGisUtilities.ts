@@ -198,31 +198,6 @@ export class ArcGisUtilities {
     }
   }
 
-  private static _footprintCache = new Map<string, any>();
-  public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
-    const cached = ArcGisUtilities._footprintCache.get(url);
-    if (cached !== undefined)
-      return cached;
-
-    try {
-      const tmpUrl = new URL(url);
-      tmpUrl.searchParams.append("f", "json");
-      tmpUrl.searchParams.append("option", "footprints");
-      tmpUrl.searchParams.append("outSR", "4326");
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
-      if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
-      }
-
-      const json = await getJson(tmpUrl.toString());
-      ArcGisUtilities._footprintCache.set(url, json);
-      return json;
-    } catch (_error) {
-      ArcGisUtilities._footprintCache.set(url, undefined);
-      return undefined;
-    }
-  }
-
   // return the appended access token if available.
   public static async appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
 

@@ -21,7 +21,7 @@ import {
   getDefaultWidgetManagerProps, getDefaultWidgetVerticalAnchor, ToolSettingsWidgetManagerProps, ToolSettingsWidgetMode, WidgetManagerProps,
 } from "./Widget";
 import { getDefaultZoneManagerProps, getWindowResizeSettings, ZoneManager, ZoneManagerProps } from "./Zone";
-import { setRectangleProps } from "../../base/NineZoneState";
+import { setRectangleProps } from "../../state/internal/NineZoneStateHelpers";
 
 /** Widget zone id.
  *

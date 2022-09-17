@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-electron",
-  "version": "3.3.0-dev.82",
+  "version": "3.4.0-dev.42",
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
@@ -31,12 +31,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^3.3.0-dev.82",
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.82",
-    "@itwin/core-common": "workspace:^3.3.0-dev.82",
-    "@itwin/core-frontend": "workspace:^3.3.0-dev.82",
-    "@itwin/presentation-common": "workspace:^3.3.0-dev.82",
-    "electron": "^14.0.0"
+    "@itwin/core-backend": "workspace:^3.4.0-dev.42",
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.42",
+    "@itwin/core-common": "workspace:^3.4.0-dev.42",
+    "@itwin/core-frontend": "workspace:^3.4.0-dev.42",
+    "@itwin/presentation-common": "workspace:^3.4.0-dev.42",
+    "electron": ">=14.0.0 <18.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -47,7 +47,7 @@
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@types/node": "16.11.7",
-    "electron": "^14.0.0",
+    "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

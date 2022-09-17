@@ -82,7 +82,7 @@ export class AmbientOcclusionEditor {
       id: "viewAttr_AOMaxDistance",
       min: "1.0",
       step: "10.0",
-      max: "2000.0",
+      max: "50000.0",
       value: "0.0",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.maxDistance = parseFloat(slider.value);
@@ -93,7 +93,7 @@ export class AmbientOcclusionEditor {
       parent: slidersDiv,
       name: "Intensity: ",
       id: "viewAttr_AOIntensity",
-      min: "1.0",
+      min: "0.1",
       step: "0.1",
       max: "16.0",
       value: "0.0",
@@ -108,7 +108,7 @@ export class AmbientOcclusionEditor {
       id: "viewAttr_AOTexelStepSize",
       min: "1.0",
       step: "0.005",
-      max: "5.0",
+      max: "50.0",
       value: "0.0",
       handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
         aoProps.texelStepSize = parseFloat(slider.value);

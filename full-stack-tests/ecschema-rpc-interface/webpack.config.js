@@ -12,7 +12,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, "lib/dist"),
     filename: "bundled-tests.js",
-    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
   },
   devtool: "nosources-source-map",
   module: {
@@ -21,28 +21,33 @@ module.exports = {
       // requires for fs that cause it to fail even though the fs dependency
       // is not used.
       /draco_decoder_nodejs.js$/,
-      /draco_encoder_nodejs.js$/
+      /draco_encoder_nodejs.js$/,
     ],
     rules: [
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /azure-storage|AzureFileHandler|UrlFileHandler|dotenv/,
-        use: "null-loader"
+        use: "null-loader",
       },
-    ]
+    ],
   },
   stats: "errors-only",
   optimization: {
-    nodeEnv: "production"
+    nodeEnv: "production",
   },
   externals: {
     electron: "commonjs electron",
   },
-  node: {
-    process: false
-  }
+  resolve: {
+    fallback: {
+      assert: require.resolve("assert"),
+      path: require.resolve("path-browserify"),
+      stream: require.resolve("stream-browserify"),
+      zlib: require.resolve("browserify-zlib"),
+    },
+  },
 };

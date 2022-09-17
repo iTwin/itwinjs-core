@@ -12,10 +12,11 @@ import * as React from "react";
 import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { WidgetDropTargetState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { WidgetIdContext } from "../widget/Widget";
 import { TabOutline } from "../outline/TabOutline";
 import { withTargetVersion } from "./TargetOptions";
+import { WidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export const TitleBarTarget = withTargetVersion("2", function TitleBarTarget() {

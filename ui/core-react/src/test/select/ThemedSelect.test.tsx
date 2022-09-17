@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
 import { expect } from "chai";
-import { mount, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { ThemedSelect } from "../../core-react";
+import TestUtils from "../TestUtils";
 
 describe("<ThemedSelect />", () => {
   enum ColorOptions {
@@ -22,74 +23,59 @@ describe("<ThemedSelect />", () => {
     { label: "Blue", value: ColorOptions.Blue },
     { label: "Yellow", value: ColorOptions.Yellow },
   ];
-
-  describe("mounted", () => {
-    let sut: ReactWrapper;
-
-    afterEach(() => {
-      sut.unmount();
-    });
-
-    it("should render", () => {
-      sut = mount(<ThemedSelect options={[]} />);
-    });
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
-
-  it("renders correctly", () => {
-    shallow(<ThemedSelect options={[]} />).should.matchSnapshot();
-  });
-
-  it("renders status correctly", () => {
-    shallow(<ThemedSelect options={[]} defaultValue={colorChoices[0]} />).should.matchSnapshot();
+  before(async () => {
+    await TestUtils.initializeUiCore();
   });
 
   it("renders defaultValue correctly", () => {
-    shallow(<ThemedSelect options={[]} defaultValue={colorChoices[1]} />).should.matchSnapshot();
+    render(<ThemedSelect options={[]} defaultValue={colorChoices[1]} />);
+
+    expect(screen.getByText("White")).to.exist;
   });
 
   it("renders value correctly", () => {
-    shallow(<ThemedSelect options={[]} value={colorChoices[1]} />).should.matchSnapshot();
+    render(<ThemedSelect options={[]} value={colorChoices[1]} />);
+
+    expect(screen.getByText("White")).to.exist;
   });
 
   it("renders placeholder correctly", () => {
-    shallow(<ThemedSelect options={[]} placeholder="test" />).should.matchSnapshot();
+    render(<ThemedSelect options={[]} placeholder="placeholder-test" />);
+
+    expect(screen.getByText("placeholder-test")).to.exist;
   });
 
-  it("renders array options correctly", () => {
-    shallow(<ThemedSelect options={colorChoices} />).should.matchSnapshot();
+  it("renders with default menu in portal", async () => {
+    render(<ThemedSelect options={colorChoices} value={colorChoices[0]} />);
+
+    await theUserTo.type(screen.getByRole("textbox"), "R");
+    expect(screen.getByText("Red").matches("#portal *")).to.be.true;
   });
 
-  it("renders object options correctly", () => {
-    shallow(<ThemedSelect options={colorChoices} />).should.matchSnapshot();
+  it("renders with fixed menu correctly", async () => {
+    render(<ThemedSelect options={colorChoices} value={colorChoices[0]} isMenuFixed={true}/>);
+
+    await theUserTo.type(screen.getByRole("textbox"), "R");
+    expect(screen.getByText("Red").matches("#portal *")).to.be.false;
   });
 
-  it("renders placeholder correctly when options are provided", () => {
-    shallow(<ThemedSelect options={colorChoices} placeholder="place-holder-text" />).should.matchSnapshot();
+  it("renders with no options correctly", async () => {
+    render(<ThemedSelect options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "Test empty options"} />);
+
+    await theUserTo.type(screen.getByRole("textbox"), "xxx");
+    expect(screen.getByText("Test empty options")).to.exist;
   });
 
-  it("renders default value correctly when options are provided ", () => {
-    shallow(<ThemedSelect options={colorChoices} defaultValue={colorChoices[1]} />).should.matchSnapshot();
-  });
+  it("renders with default no options correctly", async () => {
+    render(<ThemedSelect options={colorChoices} value={colorChoices[0]} />);
 
-  it("renders initial value correctly", () => {
-    shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} />).should.matchSnapshot();
+    await theUserTo.type(screen.getByRole("textbox"), "xxx");
+    expect(screen.getByText("reactselect.noSelectOption")).to.exist;
   });
-
-  it("renders with fixed menu correctly", () => {
-    shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} isMenuFixed={true} />).should.matchSnapshot();
-  });
-
-  it("renders with no options correctly", () => {
-    shallow(<ThemedSelect options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
-  });
-
-  it("renders with no options correctly", () => {
-    const className = "uicore-reactSelect.width100";
-    shallow(<ThemedSelect className={className} options={colorChoices} value={colorChoices[0]} noOptionsMessage={() => "No options"} />).should.matchSnapshot();
-  });
-});
-
-describe("<ThemedSelect - React Testing Library />", () => {
 
   const cityChoices = [
     { label: "London", value: "London" },
@@ -114,10 +100,6 @@ describe("<ThemedSelect - React Testing Library />", () => {
   it("selects defaultValue correctly even when placeholder text is provided (uncontrolled)", () => {
     const { container } = render(<ThemedSelect options={cityChoices} defaultValue={cityChoices[4]} placeholder="place-holder-text" />);
     expect(container.querySelector(".react-select__control")!.textContent).to.eq("Mumbai");
-  });
-  it("placeholder text is provided", () => {
-    const { container } = render(<ThemedSelect options={cityChoices} placeholder="type here..." />);
-    expect(container.querySelector(".react-select__control")!.textContent).to.eq("type here...");
   });
   it("open menu", () => {
     const { container } = render(<ThemedSelect options={cityChoices} menuIsOpen={true} />);

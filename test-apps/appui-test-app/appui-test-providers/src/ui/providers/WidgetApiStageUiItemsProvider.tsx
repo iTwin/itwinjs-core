@@ -13,6 +13,7 @@ import { ToolbarHelper } from "@itwin/appui-react";
 import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
+import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
 
 /**
  * WidgetApiStageUiItemsProvider provides widget in the bottom panel that can exercise the Widget API on Widgets in the other panels.
@@ -24,6 +25,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
 
   public static register(localizationNamespace: string) {
     UiItemsManager.register(new WidgetApiStageUiItemsProvider(localizationNamespace), { stageIds: [WidgetApiStage.stageId] });
+    SetWidgetStateTool.register(localizationNamespace);
   }
 
   constructor(_localizationNamespace: string) {
@@ -38,72 +40,38 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
-      widgets.push(
-        {
-          id: "WL-A",
-          label: "WL-A",
-          icon: "icon-app-1",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left WL-A</h2>,
-          isFloatingStateSupported: true,
-          hideWithUiWhenFloating: true,
-        });
-      widgets.push(
-        {
-          id: "WL-B",
-          label: "WL-B",
-          canPopout: true,
-          icon: "icon-app-2",
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left WL-B</h2>,
-          isFloatingStateSupported: true,
-          hideWithUiWhenFloating: true,
-        }
-      );
-      // eslint-disable-next-line deprecation/deprecation
+      widgets.push({
+        id: "WL-A",
+        label: "WL-A",
+        icon: "icon-app-1",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Left WL-A</h2>,
+        hideWithUiWhenFloating: true,
+      });
     } else if (section === StagePanelSection.End) {
-      widgets.push(
-        {
-          id: "WL-1",
-          label: "WL-1",
-          icon: "icon-smiley-happy",
-          canPopout: false,
-          getWidgetContent: () => <h2>Left WL-1</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WL-2",
-          label: "WL-2",
-          icon: "icon-smiley-sad",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Left WL-2</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
-
-      widgets.push(
-        {
-          id: "WL-3",
-          label: "WL-3",
-          icon: "icon-smiley-happy-very",
-          canPopout: true,
-          getWidgetContent: () => <h2>Left WL-3</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WL-4",
-          label: "WL-4",
-          icon: "icon-smiley-sad-very",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Left WL-4</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "WL-1",
+        label: "WL-1",
+        icon: "icon-smiley-happy",
+        canPopout: false,
+        getWidgetContent: () => <h2>Left WL-1</h2>,
+      });
+      widgets.push({
+        id: "WL-2",
+        label: "WL-2",
+        icon: "icon-smiley-sad",
+        defaultState: WidgetState.Open,
+        canPopout: true,
+        getWidgetContent: () => <h2>Left WL-2</h2>,
+      });
+      widgets.push({
+        id: "WL-3",
+        label: "WL-3",
+        icon: "icon-smiley-happy-very",
+        canPopout: true,
+        getWidgetContent: () => <h2>Left WL-3</h2>,
+      });
     }
     return widgets;
   }
@@ -112,70 +80,53 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
-      widgets.push(
-        {
-          id: "WR-A",
-          label: "WR-A",
-          icon: "icon-text-align-text-align-left",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Right WR-A</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WR-B",
-          label: "WR-B",
-          icon: "icon-text-align-text-align-right",
-          canPopout: true,
-          defaultState: WidgetState.Hidden,
-          getWidgetContent: () => <h2>Right WR-B</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
-      // eslint-disable-next-line deprecation/deprecation
+      widgets.push({
+        id: "WR-A",
+        label: "WR-A",
+        icon: "icon-text-align-text-align-left",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Right WR-A</h2>,
+      });
+      widgets.push({
+        id: "WR-B",
+        label: "WR-B",
+        icon: "icon-text-align-text-align-right",
+        canPopout: true,
+        defaultState: WidgetState.Hidden,
+        getWidgetContent: () => <h2>Right WR-B</h2>,
+      });
     } else if (section === StagePanelSection.End) {
-      widgets.push(
-        {
-          id: "WR-1",
-          label: "WR-1",
-          icon: "icon-text-align-text-align-center",
-          canPopout: false,
-          getWidgetContent: () => <h2>Right WR-1</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WR-2",
-          label: "WR-2",
-          icon: "icon-text-align-text-align-justify",
-          defaultState: WidgetState.Open,
-          canPopout: true,
-          getWidgetContent: () => <h2>Right WR-2</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
-
-      widgets.push(
-        {
-          id: "WR-3",
-          label: "WR-3",
-          icon: "icon-user",
-          canPopout: true,
-          getWidgetContent: () => <h2>Right WR-3</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WR-4",
-          label: "WR-4",
-          icon: "icon-users",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Right WR-4</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "WR-1",
+        label: "WR-1",
+        icon: "icon-text-align-text-align-center",
+        canPopout: false,
+        getWidgetContent: () => <h2>Right WR-1</h2>,
+      });
+      widgets.push({
+        id: "WR-2",
+        label: "WR-2",
+        icon: "icon-text-align-text-align-justify",
+        defaultState: WidgetState.Open,
+        canPopout: true,
+        getWidgetContent: () => <h2>Right WR-2</h2>,
+      });
+      widgets.push({
+        id: "WR-3",
+        label: "WR-3",
+        icon: "icon-user",
+        canPopout: true,
+        getWidgetContent: () => <h2>Right WR-3</h2>,
+      });
+      widgets.push({
+        id: "WR-4",
+        label: "WR-4",
+        icon: "icon-users",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Right WR-4</h2>,
+      });
     }
     return widgets;
   }
@@ -184,45 +135,35 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
-      widgets.push(
-        {
-          id: "WT-A",
-          label: "WT-A",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Top WT-A</h2>,
-          isFloatingStateSupported: true,
-          defaultFloatingSize: { width: 400, height: 600 },
-          isFloatingStateWindowResizable: true,
-        });
-      widgets.push(
-        {
-          id: "WT-B",
-          label: "WT-B",
-          canPopout: true,
-          getWidgetContent: () => <h2>Top WT-B</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "WT-A",
+        label: "WT-A",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Top WT-A</h2>,
+        defaultFloatingSize: { width: 400, height: 600 },
+        isFloatingStateWindowResizable: true,
+      });
+      widgets.push({
+        id: "WT-B",
+        label: "WT-B",
+        canPopout: true,
+        getWidgetContent: () => <h2>Top WT-B</h2>,
+      });
     } else if (section === StagePanelSection.End) {
-      widgets.push(
-        {
-          id: "WT-1",
-          label: "WT-1",
-          canPopout: true,
-          getWidgetContent: () => <h2>Top WT-1</h2>,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "WT-2",
-          label: "WT-2",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <h2>Top WT-2</h2>,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "WT-1",
+        label: "WT-1",
+        canPopout: true,
+        getWidgetContent: () => <h2>Top WT-1</h2>,
+      });
+      widgets.push({
+        id: "WT-2",
+        label: "WT-2",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <h2>Top WT-2</h2>,
+      });
     }
     return widgets;
   }
@@ -231,35 +172,26 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
 
     if (section === StagePanelSection.Start) {
-      widgets.push(
-        {
-          id: "widget-info-Floating",
-          label: "Floating Info",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <FloatingLayoutInfo />,
-          isFloatingStateSupported: true,
-        });
-      widgets.push(
-        {
-          id: "widget-layout-info",
-          label: "Layout Info",
-          canPopout: true,
-          getWidgetContent: () => <LayoutInfo />,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "widget-info-Floating",
+        label: "Floating Info",
+        canPopout: true,
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <FloatingLayoutInfo />,
+      });
+      widgets.push({
+        id: "widget-layout-info",
+        label: "Layout Info",
+        canPopout: true,
+        getWidgetContent: () => <LayoutInfo />,
+      });
     } else if (section === StagePanelSection.End) {
-      widgets.push(
-        {
-          id: "widget-layout-controls",
-          label: "Layout Controls",
-          canPopout: true,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <LayoutControls />,
-          isFloatingStateSupported: true,
-        }
-      );
+      widgets.push({
+        id: "widget-layout-controls",
+        label: "Layout Controls",
+        defaultState: WidgetState.Open,
+        getWidgetContent: () => <LayoutControls />,
+      });
     }
     return widgets;
   }

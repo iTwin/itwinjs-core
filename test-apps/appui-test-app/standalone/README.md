@@ -70,3 +70,9 @@ To set the environment variables, either set them directly within the terminal y
 
 * IMJS_UITESTAPP_SNAPSHOT_FILEPATH
   * Set to folder containing .bim or .ibim files. Since file picker in browser only returns the file name and not the path, this variable defines the directory that holds bim files and will be pre-pended to the select file name. This is required in running app in browser and IMJS_UITESTAPP_SNAPSHOT_FULLPATH is not defined.
+
+### URL parameters
+
+*Optionally* used to load an application in a specific configuration:
+
+* `frontstage` - opens a frontstage by specified frontstage id, uses a blank connection. I.e. <http://localhost:3000/?frontstage=appui-test-providers:WidgetApi>

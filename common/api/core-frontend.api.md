@@ -1201,8 +1201,6 @@ export class ArcGisUtilities {
     // (undocumented)
     static getEndpoint(url: string): Promise<any | undefined>;
     // (undocumented)
-    static getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any>;
-    // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
@@ -1927,6 +1925,14 @@ export enum CompassMode {
 export interface ComputeChordToleranceArgs {
     readonly computeRange: () => Range3d;
     readonly graphic: GraphicBuilder;
+}
+
+// @beta
+export interface ComputeDisplayTransformArgs {
+    elementId?: Id64String;
+    modelId: Id64String;
+    output?: Transform;
+    timePoint?: number;
 }
 
 // @public
@@ -4850,6 +4856,8 @@ export abstract class IModelConnection extends IModel {
     query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
     queryRowCount(ecsql: string, params?: QueryBinder): Promise<number>;
+    // @internal
+    querySubCategories(compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     queryTextureData(textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // @internal
     requestSnap(props: SnapRequestProps): Promise<SnapResponseProps>;
@@ -6982,8 +6990,7 @@ export interface ModalReturn {
 
 // @beta
 export interface ModelDisplayTransformProvider {
-    // (undocumented)
-    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
+    getModelDisplayTransform(modelId: Id64String): Transform | undefined;
 }
 
 // @internal (undocumented)
@@ -7623,6 +7630,14 @@ export namespace PerModelCategoryVisibility {
         clearOverrides(modelIds?: Id64Arg): void;
         getOverride(modelId: Id64String, categoryId: Id64String): Override;
         setOverride(modelIds: Id64Arg, categoryIds: Id64Arg, override: Override): void;
+        // @beta
+        setOverrides(perModelCategoryVisibility: Props[], iModel?: IModelConnection): Promise<void>;
+    }
+    // @beta
+    export interface Props {
+        categoryIds: Iterable<Id64String>;
+        modelId: string;
+        visOverride: PerModelCategoryVisibility.Override;
     }
 }
 
@@ -10092,8 +10107,6 @@ export class SubCategoriesCache {
     load(categoryIds: Id64Arg): SubCategoriesRequest | undefined;
     // (undocumented)
     onIModelConnectionClose(): void;
-    postload(options: HydrateViewStateResponseProps): void;
-    preload(options: HydrateViewStateRequestProps, categoryIds: Id64Arg): void;
 }
 
 // @internal
@@ -12107,7 +12120,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     // (undocumented)
     protected _alwaysUseRange: boolean;
     // (undocumented)
-    protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean): Promise<boolean>;
+    protected doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange?: boolean, modelId?: Id64String): Promise<boolean>;
     // @internal (undocumented)
     doClipToSelectedElements(viewport: Viewport): Promise<boolean>;
     // (undocumented)
@@ -13489,6 +13502,8 @@ export abstract class ViewState extends ElementState {
     collectNonTileTreeStatistics(_stats: RenderMemory.Statistics): void;
     // @internal
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // @beta
+    computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
     abstract computeFitRange(): Range3d;
     // @internal (undocumented)
     computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio?: boolean): {
@@ -13538,8 +13553,6 @@ export abstract class ViewState extends ElementState {
     getGridsPerRef(): number;
     getIsViewingProject(): boolean;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @beta
-    getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
     // @internal
     getModelElevation(_modelId: Id64String): number;
     abstract getOrigin(): Point3d;
@@ -13614,10 +13627,6 @@ export abstract class ViewState extends ElementState {
     setViewClip(clip?: ClipVector): void;
     toJSON(): ViewDefinitionProps;
     toProps(): ViewStateProps;
-    // @internal (undocumented)
-    transformNormalByModelDisplayTransform(modelId: string | undefined, normal: Vector3d): void;
-    // @internal (undocumented)
-    transformPointByModelDisplayTransform(modelId: string | undefined, pnt: Point3d, inverse: boolean): void;
     // (undocumented)
     protected _updateMaxGlobalScopeFactor(): void;
     get viewFlags(): ViewFlags;

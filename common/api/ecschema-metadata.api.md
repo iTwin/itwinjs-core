@@ -96,15 +96,19 @@ export class Constant extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(constantProps: ConstantProps): Promise<void>;
     // (undocumented)
     fromJSONSync(constantProps: ConstantProps): void;
     // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)
@@ -1825,6 +1829,13 @@ export function schemaItemTypeToString(value: SchemaItemType): string;
 // @internal (undocumented)
 export function schemaItemTypeToXmlString(value: SchemaItemType): string;
 
+// @alpha
+export class SchemaJsonLocater implements ISchemaLocater {
+    constructor(_getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<T | undefined>;
+    getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context?: SchemaContext | undefined): T | undefined;
+}
+
 // @beta
 export class SchemaKey {
     constructor(name: string, version: ECVersion);
@@ -1858,6 +1869,13 @@ export interface SchemaKeyProps {
     readonly name: string;
     readonly read: number;
     readonly write: number;
+}
+
+// @alpha
+export class SchemaLoader {
+    constructor(getSchema: SchemaPropsGetter);
+    getSchema<T extends Schema>(schemaName: string): T;
+    tryGetSchema<T extends Schema>(schemaName: string): T | undefined;
 }
 
 // @beta (undocumented)
@@ -1912,6 +1930,9 @@ export interface SchemaProps {
     // (undocumented)
     readonly version: string;
 }
+
+// @alpha
+export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 
 // @internal
 export class SchemaReadHelper<T = unknown> {
@@ -2023,21 +2044,27 @@ export class Unit extends SchemaItem {
     // (undocumented)
     get denominator(): number;
     // (undocumented)
-    protected _denominator: number;
+    protected _denominator?: number;
     // (undocumented)
     fromJSON(unitProps: UnitProps): Promise<void>;
     // (undocumented)
     fromJSONSync(unitProps: UnitProps): void;
+    // (undocumented)
+    get hasDenominator(): boolean;
+    // (undocumented)
+    get hasNumerator(): boolean;
+    // (undocumented)
+    get hasOffset(): boolean;
     // @alpha (undocumented)
     static isUnit(object: any): object is Unit;
     // (undocumented)
     get numerator(): number;
     // (undocumented)
-    protected _numerator: number;
+    protected _numerator?: number;
     // (undocumented)
     get offset(): number;
     // (undocumented)
-    protected _offset: number;
+    protected _offset?: number;
     // (undocumented)
     get phenomenon(): LazyLoadedPhenomenon | undefined;
     // (undocumented)

@@ -41,6 +41,7 @@ function runWebpackAsync(compiler) {
 async function runWebpackBuild(config, name) {
   const compiler = createCompiler(webpack, config, ` ${name} `, "Starting build...");
   const stats = await runWebpackAsync(compiler);
+  compiler.close(() => {});
   return stats;
 }
 

@@ -6,27 +6,25 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import {
-  createHorizontalPanelState, createNineZoneState, createPanelsState, createVerticalPanelState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
+  createNineZoneState, NineZoneDispatch, WidgetPanelExpander, WidgetPanelExpanders,
 } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("WidgetPanelExpanders", () => {
   it("should render", () => {
-    const nineZone = createNineZoneState({
-      panels: createPanelsState({
-        left: createVerticalPanelState("left", {
-          pinned: false,
-          collapsed: true,
-        }),
-        bottom: createHorizontalPanelState("bottom", {
-          pinned: false,
-          collapsed: true,
-        }),
-      }),
+    let state = createNineZoneState();
+    state = updatePanelState(state, "left", {
+      pinned: false,
+      collapsed: true,
+    });
+    state = updatePanelState(state, "bottom", {
+      pinned: false,
+      collapsed: true,
     });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelExpanders />
       </TestNineZoneProvider>,

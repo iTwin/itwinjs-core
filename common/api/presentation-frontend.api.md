@@ -79,10 +79,10 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
 // @internal (undocumented)
 export const buildPagedArrayResponse: <TItem>(requestedPage: PageOptions | undefined, getter: (page: Required<PageOptions>, requestIndex: number) => Promise<PagedResponse<TItem>>) => Promise<PagedResponse<TItem>>;
 
-// @alpha (undocumented)
+// @beta
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void;
 
-// @alpha (undocumented)
+// @beta
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void;
 
 // @public
@@ -301,7 +301,8 @@ export enum PresentationFrontendLoggerCategory {
 
 // @public
 export class PresentationManager implements IDisposable {
-    activeLocale: string | undefined;
+    get activeLocale(): string | undefined;
+    set activeLocale(locale: string | undefined);
     activeUnitSystem: UnitSystemKey | undefined;
     static create(props?: PresentationManagerProps): PresentationManager;
     // (undocumented)

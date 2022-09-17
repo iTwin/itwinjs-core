@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix display issue with ArcGIS server of 'Geologic Map of North America'",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

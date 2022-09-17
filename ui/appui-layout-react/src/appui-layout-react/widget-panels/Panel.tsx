@@ -10,11 +10,11 @@ import "./Panel.scss";
 import classnames from "classnames";
 import * as React from "react";
 import produce from "immer";
-import { RectangleProps, SizeProps} from "@itwin/core-react";
+import { RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
 import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { isHorizontalPanelState, PanelState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
 import { WidgetComponent } from "../widget/Widget";
@@ -24,6 +24,7 @@ import { PanelOutline } from "../outline/PanelOutline";
 import { WidgetTarget } from "../widget/WidgetTarget";
 import { PanelTarget } from "./PanelTarget";
 import { SectionTargets } from "../target/SectionTargets";
+import { isHorizontalPanelState, PanelState } from "../state/PanelState";
 
 /** @internal */
 export type TopPanelSide = "top";
@@ -47,20 +48,20 @@ export type VerticalPanelSide = LeftPanelSide | RightPanelSide;
 export type PanelSide = VerticalPanelSide | HorizontalPanelSide;
 
 // istanbul ignore next
-function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
+function PanelSplitter({ isHorizontal }: { isHorizontal: boolean }) {
   const dispatch = React.useContext(NineZoneDispatchContext);
   const panel = React.useContext(PanelStateContext);
   const containerRef = React.useRef<HTMLDivElement>(null);
   const splitterProcessingActiveRef = React.useRef<boolean>(false);
 
   const getPercentage = React.useCallback((min: number, max: number, current: number) => {
-    const range = max-min;
+    const range = max - min;
     const adjusted = Math.max(min, Math.min(max, current));
     if (adjusted === min)
       return 0;
     if (adjusted === max)
       return 100;
-    const percent = ((adjusted-min) * 100)/(range);
+    const percent = ((adjusted - min) * 100) / (range);
     return percent;
   }, []);
 
@@ -72,9 +73,9 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
         if (parentPanel && sectionToResize) {
           const rect = parentPanel.getBoundingClientRect();
           const percent = getPercentage(
-            isHorizontal ?  rect.left : rect.top,
-            isHorizontal ?  rect.right : rect.bottom,
-            isHorizontal ?  event.clientX : event.clientY,
+            isHorizontal ? rect.left : rect.top,
+            isHorizontal ? rect.right : rect.bottom,
+            isHorizontal ? event.clientX : event.clientY,
           );
 
           dispatch({
@@ -92,7 +93,7 @@ function PanelSplitter({isHorizontal}: {isHorizontal: boolean}) {
       event.stopPropagation();
       updatePanelSize(event as PointerEvent);
     }
-  },[updatePanelSize]);
+  }, [updatePanelSize]);
 
   const handlePointerUp = React.useCallback((event: Event) => {
     updatePanelSize(event as PointerEvent);
@@ -185,7 +186,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     return {
       width: `${size}px`,
     };
-  }, [panel.side, panel.size, panel.collapsed,  panel.minSize, panelSize]);
+  }, [panel.side, panel.size, panel.collapsed, panel.minSize, panelSize]);
   const contentStyle = React.useMemo(() => {
     if (contentSize === undefined)
       return undefined;
@@ -329,9 +330,9 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     transition && `nz-${transition}`,
   );
 
-  const splitterControlledPanelStyle = React.useMemo (()=>{
+  const splitterControlledPanelStyle = React.useMemo(() => {
     // istanbul ignore next
-    const splitterPercent = panel.splitterPercent??50;
+    const splitterPercent = panel.splitterPercent ?? 50;
     const styleToApply: React.CSSProperties = {};
     // istanbul ignore else
     if (splitterPercent) {
@@ -394,8 +395,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
               (last && 0 === index) && "nz-panel-section-full-size"
             );
 
-            const panelStyle = index===0 && panel.widgets.length > 1 ? splitterControlledPanelStyle : undefined;
-
+            const panelStyle = index === 0 && array.length > 1 ? splitterControlledPanelStyle : undefined;
             return (
               <React.Fragment key={widgetId}>
                 <div className={panelClassName} style={panelStyle}>
@@ -416,7 +416,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
                     position={last ? "last" : undefined}
                     widgetIndex={index + 1}
                   />}
-                  {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal}/>}
+                  {(!last && 0 === index) && <PanelSplitter isHorizontal={horizontal} />}
                 </div>
               </React.Fragment>
             );
@@ -498,8 +498,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.set(widgetId, { from: 0, to: undefined });
         continue;
       }
-      const size = ref.current.measure();
-      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, size), to: undefined });
+      const bounds = ref.current.measure();
+      widgetTransitions.current.set(widgetId, { from: getSize(horizontal.current, bounds.getSize()), to: undefined });
     }
     if (panel.widgets.length < prevPanelWidgets.length) {
       // Widget removed.
@@ -576,8 +576,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         break;
       }
-      const size = ref.current.measure();
-      widgetTransition.to = getSize(horizontal.current, size);
+      const bounds = ref.current.measure();
+      widgetTransition.to = getSize(horizontal.current, bounds.getSize());
 
       if (widgetTransition.from !== widgetTransition.to) {
         initTransition = true;
@@ -637,8 +637,8 @@ export function useAnimatePanelWidgets(): {
         widgetTransitions.current.clear();
         return;
       }
-      const size = ref.current.measure();
-      const from = getSize(horizontal.current, size);
+      const bounds = ref.current.measure();
+      const from = getSize(horizontal.current, bounds.getSize());
       widgetTransitions.current.set(wId, { from, to: undefined });
     }
   }, [panel.widgets]);
