@@ -78,6 +78,11 @@ steps:
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
+  - script: npm run test:integration
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Tests"
+    condition: succeededOrFailed()
+
   - task: PublishTestResults@2
     displayName: "Publish Backend Test Results"
     inputs:
@@ -119,4 +124,11 @@ steps:
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
       testRunTitle: "Presentation - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Electron Integration Test Results"
+    inputs:
+      testResultsFiles: core/electron/lib/test/junit_results.xml
+      testRunTitle: "Electron - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
