@@ -33,7 +33,7 @@
     "copy:config": "internal-tools copy-config",
     "build:ios-backend": "npm run -s build:backend && webpack --config ./ios/backend.config --env outdir=./lib/ios --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "copy:ios-frontend": "mkdir -p ./lib/ios && rm -rf ./lib/ios/www && cp -R ./build ./lib/ios/www",
-    "build:ios-app": "cd ios/imodeljs-test-app && xcodebuild build",
+    "build:ios-app": "cd ios/imodeljs-test-app && SYMROOT=`xcodebuild -showBuildSettings 2>/dev/null | egrep '^[ ]+BUILD_DIR' | sed 's/.Products$//; s/^[ ]*BUILD_DIR = //'` && xcodebuild build SYMROOT=${SYMROOT} CODE_SIGN_STYLE='Manual' CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER='' -arch x86_64 -sdk iphonesimulator -configuration Debug",
     "build:ios": "npm run -s build:frontend-webpack && npm run -s build:ios-backend && npm run -s copy:ios-frontend && npm run build:ios-env-json",
     "build:ios-env-json": "ts-node --skip-project ./buildEnvJson.ts",
     "build:android-backend": "npm run -s build:backend && webpack --config ./android/backend.config --env.outdir=./lib/android --env.entry=./lib/backend/MobileMain.js --env.bundlename=main",
