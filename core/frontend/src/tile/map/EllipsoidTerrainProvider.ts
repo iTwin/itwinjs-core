@@ -29,7 +29,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   private readonly _wantSkirts: boolean;
 
   public constructor(opts: TerrainMeshProviderOptions) {
-    super(opts);
+    super();
     this._wantSkirts = opts.wantSkirts;
   }
 

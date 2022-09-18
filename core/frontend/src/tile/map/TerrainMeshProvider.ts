@@ -20,10 +20,6 @@ import {
  * @beta
  */
 export interface TerrainMeshProviderOptions {
-  /** The iModel for which the terrain will be produced. */
-  iModel: IModelConnection;
-  /** A transient Id that will be used to identify the graphics produced from the provider's meshes. */
-  modelId: Id64String;
   /** A scale factor to be applied to the height of the terrain meshes.
    * @see [TerrainSettings.exaggeration]($common).
    */
@@ -72,17 +68,6 @@ export interface ReadMeshArgs {
  * @beta
  */
 export abstract class TerrainMeshProvider {
-  /** The iModel for which terrain will be produced. */
-  public readonly iModel: IModelConnection;
-  /** A transient Id used to identify the graphics produced from this provider's meshes. */
-  public readonly modelId: Id64String;
-
-  /** Construct a provider from the supplied options. */
-  protected constructor(options: TerrainMeshProviderOptions) {
-    this.iModel = options.iModel;
-    this.modelId = options.modelId;
-  }
-
   /** Obtain a representation of the terrain for a specific [[MapTile]]. The result will subsequently be supplied to [[readMesh]] to produce the mesh.
    * Return `undefined` if no mesh data could be obtained.
    */

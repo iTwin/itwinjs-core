@@ -185,7 +185,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
   constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
     tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
-    super(opts);
+    super();
     this._wantSkirts = opts.wantSkirts;
     this._exaggeration = opts.exaggeration;
 

@@ -484,8 +484,6 @@ class MapTreeSupplier implements TileTreeSupplier {
     const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
 
     const terrainOpts: TerrainMeshProviderOptions = {
-      iModel,
-      modelId,
       wantSkirts: id.wantSkirts,
       exaggeration: id.terrainExaggeration,
       wantNormals: id.wantNormals,
