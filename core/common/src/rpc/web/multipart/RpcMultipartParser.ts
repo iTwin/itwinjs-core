@@ -185,7 +185,7 @@ export class RpcMultipartParser {
               // empty header field
               throw new Error("Empty header field");
             }
-            this._onParseHeaderField(this._buffer.slice(this._headerFieldMark as number, i));
+            this._onParseHeaderField(this._buffer.subarray(this._headerFieldMark as number, i));
             this._headerFieldMark = null;
             state = HEADER_VALUE_START;
             break;
@@ -204,7 +204,7 @@ export class RpcMultipartParser {
         /* falls through */
         case HEADER_VALUE:
           if (c === CR) {
-            this._onParseHeaderValue(this._buffer.slice(this._headerValueMark as number, i));
+            this._onParseHeaderValue(this._buffer.subarray(this._headerValueMark as number, i));
             this._headerValueMark = null;
             this._onParseHeaderEnd();
             state = HEADER_VALUE_ALMOST_DONE;
@@ -240,7 +240,7 @@ export class RpcMultipartParser {
           if (index < boundaryLength) {
             if (boundary[index] === c) {
               if (index === 0) {
-                this._onParsePartData(this._buffer.slice(this._partDataMark as number, i));
+                this._onParsePartData(this._buffer.subarray(this._partDataMark as number, i));
                 this._partDataMark = null;
               }
               index++;
@@ -281,7 +281,7 @@ export class RpcMultipartParser {
           } else if (prevIndex > 0) {
             // if our boundary turned out to be rubbish, the captured lookbehind
             // belongs to partData
-            this._onParsePartData(lookbehind.slice(0, prevIndex));
+            this._onParsePartData(lookbehind.subarray(0, prevIndex));
             prevIndex = 0;
             this._partDataMark = i;
 
@@ -309,15 +309,15 @@ export class RpcMultipartParser {
     }
 
     if (this._headerFieldMark != null) {
-      this._onParseHeaderField(this._buffer.slice(this._headerFieldMark));
+      this._onParseHeaderField(this._buffer.subarray(this._headerFieldMark));
       this._headerFieldMark = 0;
     }
     if (this._headerValueMark != null) {
-      this._onParseHeaderValue(this._buffer.slice(this._headerValueMark));
+      this._onParseHeaderValue(this._buffer.subarray(this._headerValueMark));
       this._headerValueMark = 0;
     }
     if (this._partDataMark != null) {
-      this._onParsePartData(this._buffer.slice(this._partDataMark));
+      this._onParsePartData(this._buffer.subarray(this._partDataMark));
       this._partDataMark = 0;
     }
 
