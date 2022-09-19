@@ -221,7 +221,6 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     super.collectReferenceConcreteIds(referenceIds);
     referenceIds.addElement(this.scope.id);
     referenceIds.addElement(this.element.id);
-    referenceIds.addElement(this.element.id);
     if (this.source)
       referenceIds.addElement(this.source.id);
   }
