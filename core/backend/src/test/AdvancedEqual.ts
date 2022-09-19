@@ -84,7 +84,7 @@ export function advancedDeepEqual(
             : advancedDeepEqual(e[keyOfE], a[keyOfE], options)
       );
     default: // bigint unhandled
-      throw Error("unhandled deep compare type");
+      throw Error(`unhandled deep compare type code returned from typeof, "${typeof e}"`);
   }
 }
 
