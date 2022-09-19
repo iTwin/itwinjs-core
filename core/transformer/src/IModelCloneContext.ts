@@ -22,9 +22,11 @@ import { EntityUnifier } from "./EntityUnifier";
  */
 export class IModelCloneContext extends IModelElementCloneContext {
 
+  private refTypesCache = new ECReferenceTypesCache();
+
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
   public override async initialize() {
-    await ECReferenceTypesCache.globalCache.initAllSchemasInIModel(this.sourceDb);
+    await this.refTypesCache.initAllSchemasInIModel(this.sourceDb);
   }
 
   private _aspectRemapTable = new Map<Id64String, Id64String>();
@@ -148,7 +150,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
       if (propertyMetaData.isNavigation) {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
-          const navPropRefType = ECReferenceTypesCache.globalCache.getNavPropRefType(
+          const navPropRefType = this.refTypesCache.getNavPropRefType(
             sourceElementAspect.schemaName,
             sourceElementAspect.className,
             propertyName

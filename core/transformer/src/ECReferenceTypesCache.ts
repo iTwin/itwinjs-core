@@ -22,12 +22,12 @@ export class SchemaNotInCacheErr extends Error {
 /**
  * A cache of the entity types referenced by navprops in ecchemas, as well as the source and target entity types of
  * The transformer needs the referenced type to determine how to resolve references.
+ *
+ * Using multiple of these usually performs redundant computation, for static schemas at least. A possible future optimization
+ * would be to seed the computation from a global cache of non-dynamic schemas, but dynamic schemas can collide willy-nilly
  * @internal
  */
 export class ECReferenceTypesCache {
-  /** singleton because using multiple of these is mostly reinitializing duplicated info expensively */
-  public static globalCache = new ECReferenceTypesCache();
-
   /** nesting based tuple map keyed by qualified property path tuple [schemaName, className, propName] */
   private _propQualifierToRefType = new TupleKeyedMap<[string, string, string], ConcreteEntityTypes>();
   private _relClassNameEndToRefTypes = new TupleKeyedMap<[string, string], RelTypeInfo>();
