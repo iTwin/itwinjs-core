@@ -30,7 +30,8 @@ jobs:
   - job: Node_18_x
     condition: succeeded()
     pool:
-      vmImage: ubuntu-latest
+      # vmImage: ubuntu-latest
+      vmImage: windows-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
