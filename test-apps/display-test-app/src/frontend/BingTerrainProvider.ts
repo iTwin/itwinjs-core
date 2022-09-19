@@ -6,15 +6,15 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d } from "@itwin/core-geometry";
 import {
-  BingElevationProvider, IModelApp, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder, RequestMeshDataArgs,
-  TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider, WebMercatorTilingScheme,
+  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams,
+  RealityMeshParamsBuilder, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
 export class BingTerrainMeshProvider extends TerrainMeshProvider {
   private readonly _provider: BingElevationProvider;
   private readonly _exaggeration: number;
   private readonly _wantNormals: boolean;
-  public readonly tilingScheme = new WebMercatorTilingScheme();
+  public readonly tilingScheme = new GeographicTilingScheme();
 
   public constructor(options: TerrainMeshProviderOptions) {
     super();
@@ -24,15 +24,6 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
-    const doFakeHeights = true;
-    if (doFakeHeights) {
-      const fake = [];
-      for (let i = 0; i < 256; i++)
-        fake.push(0);
-
-      return fake;
-    }
-
     const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
@@ -59,7 +50,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     for (let row = 0, v = 0; row < size; row++, v += delta) {
       for (let col = 0, u = 0; col < size; col++, u += delta) {
         const height = heights[(sizeM1 - row) * size + col];
-        projection.getPoint(u, v, height, position);
+        projection.getPoint(u, 1 - v, height, position);
         uv.set(u, 1 - v);
         builder.addUnquantizedVertex(position, uv);
       }
