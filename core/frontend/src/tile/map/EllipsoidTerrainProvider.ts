@@ -33,7 +33,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     this._wantSkirts = opts.wantSkirts;
   }
 
-  public isTileAvailable(_quadId: QuadId): boolean { return true; }
   public get maxDepth(): number { return 22; }
   public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }

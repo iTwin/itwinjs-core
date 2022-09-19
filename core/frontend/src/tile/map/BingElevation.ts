@@ -50,8 +50,11 @@ export class BingElevationProvider {
       return 0.0;
     }
   }
-  /** @internal */
-  private async getHeights(range: Range2d) {
+  /** Returns 256 elevations in the specified range - 16 rows and 16 columns.
+   * The elevations are ordered starting with the southwest corner, then proceeding west to east and south to north.
+   * @internal
+   */
+  public async getHeights(range: Range2d): Promise<number[] | undefined> {
     const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
     const requestUrl = this._heightRangeRequestTemplate.replace("{boundingBox}", boundingBox);
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "json" };
@@ -96,8 +99,9 @@ export class BingElevationProvider {
       const carto = iModel.spatialToCartographicFromEcef(corner);
       latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
+
     const heights = await this.getHeights(latLongRange);
-    return Range1d.createArray(heights);
+    return heights ? Range1d.createArray(heights) : Range1d.createNull();
   }
 
   /** Get the average height (altitude) for a given iModel project extents.  The height values are geodetic (WGS84 ellipsoid).
@@ -110,8 +114,13 @@ export class BingElevationProvider {
       latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
     }
     const heights = await this.getHeights(latLongRange);
+    if (!heights || !heights.length)
+      return 0;
+
     let total = 0.0;
-    for (const height of heights) total += height;
+    for (const height of heights)
+      total += height;
+
     return total / heights.length;
   }
 }

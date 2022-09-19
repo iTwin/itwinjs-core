@@ -211,7 +211,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
 
-  public isTileAvailable(quadId: QuadId) {
+  public override isTileAvailable(quadId: QuadId) {
     if (quadId.level > this.maxDepth)
       return false;
 

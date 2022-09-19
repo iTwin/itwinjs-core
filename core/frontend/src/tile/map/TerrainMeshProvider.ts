@@ -86,8 +86,11 @@ export abstract class TerrainMeshProvider {
 
   /** Return whether terrain data can be obtained for the [[MapTile]] specified by `quadId`. If it returns false, a terrain mesh will instead be produced for
    * that tile by up-sampling the terrain mesh provided by its parent tile.
+   * The default implementation returns `true`.
    */
-  public abstract isTileAvailable(quadId: QuadId): boolean;
+  public isTileAvailable(_quadId: QuadId): boolean {
+    return true;
+  }
 
   /** Returns the maximum level of detail of the terrain meshes. */
   public abstract get maxDepth(): number;
