@@ -24,6 +24,15 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
+    const doFakeHeights = true;
+    if (doFakeHeights) {
+      const fake = [];
+      for (let i = 0; i < 256; i++)
+        fake.push(0);
+
+      return fake;
+    }
+
     const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
@@ -47,10 +56,11 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     const uv = new Point2d();
     const position = new Point3d();
     const delta = 1 / sizeM1;
-    for (let row = 0; row < size; row++, uv.y += delta) {
-      uv.x = 0;
-      for (let col = 0; col < size; col++, uv.x += delta) {
-        projection.getPoint(uv.x, uv.y, heights[(sizeM1 - row) * size + col], position);
+    for (let row = 0, v = 0; row < size; row++, v += delta) {
+      for (let col = 0, u = 0; col < size; col++, u += delta) {
+        const height = heights[(sizeM1 - row) * size + col];
+        projection.getPoint(u, v, height, position);
+        uv.set(u, 1 - v);
         builder.addUnquantizedVertex(position, uv);
       }
     }
