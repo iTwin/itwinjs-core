@@ -52,7 +52,7 @@ export class BingElevationProvider {
   }
   /** Returns 256 elevations in the specified range - 16 rows and 16 columns.
    * The elevations are ordered starting with the southwest corner, then proceeding west to east and south to north.
-   * @internal
+   * @beta
    */
   public async getHeights(range: Range2d): Promise<number[] | undefined> {
     const boundingBox = `${range.low.y},${range.low.x},${range.high.y},${range.high.x}`;
