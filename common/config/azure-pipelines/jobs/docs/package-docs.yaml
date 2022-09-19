@@ -1,0 +1,69 @@
+# The template defines the primary steps for creating the TypeDoc API files, gathering other md files,
+# and running a step to combine everything.
+
+jobs:
+  - job:
+    workspace:
+      clean: all
+    pool:
+      name: iModelTechCI
+      demands: Agent.OS -equals Windows_NT
+    variables:
+      tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs
+    steps:
+      - checkout: self
+        path: itwinjs-core
+        clean: true
+
+      - task: NodeTool@0
+        displayName: Use Node 14
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      # Extra stuff
+      - download: itwinjs-docs
+        artifact: DocsBuild
+        displayName: "Download itwinjs-docs artifacts"
+
+      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
+        displayName: Debug build contents
+
+      - task: DownloadPipelineArtifact@2
+        displayName: "Download Pipeline Artifact - Nuget Spec"
+        inputs:
+          buildType: specific
+          project: "2c48216e-e72f-48b4-a4eb-40ff1c04e8e4"
+          definition: 1830
+          buildVersionToDownload: specific
+          pipelineId: 1234689
+
+      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+        displayName: "Replace tokens in NugetPackage.nuspec"
+        inputs:
+          targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+
+      - script: 'type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+        displayName: Debug nuspec
+
+      - task: DeleteFiles@1
+        displayName: "Delete landing page "
+        inputs:
+          SourceFolder: '$(tempDocsLocation)\public_build'
+          Contents: index.html
+
+      - task: NuGetToolInstaller@1
+        inputs:
+          versionSpec: 4.9.2
+
+      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
+        displayName: Debug build contents
+
+      - task: NuGetCommand@2
+        displayName: "NuGet pack"
+        inputs:
+          command: pack
+          packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+          versioningScheme: byBuildNumber
+          configuration: Release
+          packDestination: '$(Build.ArtifactStagingDirectory)'

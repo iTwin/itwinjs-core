@@ -10,7 +10,7 @@ parameters:
     default: $(System.ArtifactsDirectory)/staging
   - name: outputDir
     type: string
-    default: $(Pipeline.Workspace)/tempDocsBuild/public_build
+    default: $(Pipeline.Workspace)/tempDocsBuild
   - name: downloadCurrentBuildArtifacts
     type: boolean
     default: false
@@ -25,8 +25,6 @@ jobs:
     pool:
       name: iModelTechCI
       demands: Agent.OS -equals Windows_NT
-    variables:
-      tempDocsLocation: $(Pipeline.Workspace)\tempDocsBuild
     steps:
       - checkout: self
         path: itwinjs-core
@@ -67,7 +65,7 @@ jobs:
         displayName: Install BeMetalsmith
         workingDirectory: ${{ parameters.workingDir }}
 
-      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }} --siteTitle iTwin.js"
+      - script: "./node_modules/.bin/bmsBuild --strictLinkChecking --topicsMustHaveDesc --source ${{ parameters.stagingDir }} --destination ${{ parameters.outputDir }}/public_build --siteTitle iTwin.js"
         displayName: Run bmsBuild
         workingDirectory: ${{ parameters.workingDir }}
 
@@ -77,48 +75,52 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      - publish: $(tempDocsLocation)
+      - publish: ${{ parameters.outputDir }}
         artifact: DocsBuild
         displayName: Publish Pipeline Artifact - DocsBuild
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
+      # Tag build if version is newer
+      - script: 'echo ##vso[build.addbuildtag]iTwinJsDocsRelease'
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
       # Extra stuff
 
-      - task: DownloadPipelineArtifact@2
-        displayName: "Download Pipeline Artifact - Nuget Spec"
-        inputs:
-          buildType: specific
-          project: "2c48216e-e72f-48b4-a4eb-40ff1c04e8e4"
-          definition: 1830
-          buildVersionToDownload: specific
-          pipelineId: 1234689
+      # - task: DownloadPipelineArtifact@2
+      #   displayName: "Download Pipeline Artifact - Nuget Spec"
+      #   inputs:
+      #     buildType: specific
+      #     project: "2c48216e-e72f-48b4-a4eb-40ff1c04e8e4"
+      #     definition: 1830
+      #     buildVersionToDownload: specific
+      #     pipelineId: 1234689
 
-      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-        displayName: "Replace tokens in NugetPackage.nuspec"
-        inputs:
-          targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      # - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+      #   displayName: "Replace tokens in NugetPackage.nuspec"
+      #   inputs:
+      #     targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
 
-      - script: 'type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
-        displayName: Debug nuspec
+      # - script: 'type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      #   displayName: Debug nuspec
 
-      - task: DeleteFiles@1
-        displayName: "Delete landing page "
-        inputs:
-          SourceFolder: '$(tempDocsLocation)\public_build'
-          Contents: index.html
+      # - task: DeleteFiles@1
+      #   displayName: "Delete landing page "
+      #   inputs:
+      #     SourceFolder: '$(tempDocsLocation)\public_build'
+      #     Contents: index.html
 
-      - task: NuGetToolInstaller@1
-        inputs:
-          versionSpec: 4.9.2
+      # - task: NuGetToolInstaller@1
+      #   inputs:
+      #     versionSpec: 4.9.2
 
-      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
-        displayName: Debug build contents
+      # - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
+      #   displayName: Debug build contents
 
-      - task: NuGetCommand@2
-        displayName: "NuGet pack"
-        inputs:
-          command: pack
-          packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
-          versioningScheme: byBuildNumber
-          configuration: Release
-          packDestination: '$(Build.ArtifactStagingDirectory)'
+      # - task: NuGetCommand@2
+      #   displayName: "NuGet pack"
+      #   inputs:
+      #     command: pack
+      #     packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      #     versioningScheme: byBuildNumber
+      #     configuration: Release
+      #     packDestination: '$(Build.ArtifactStagingDirectory)'
