@@ -5,13 +5,7 @@
 import { BentleyError, GuidString, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { BriefcaseDownloader, IModelError, LocalBriefcaseProps, SyncMode } from "@itwin/core-common";
 import { BriefcaseConnection, DownloadBriefcaseOptions, IModelConnection, NativeApp, SnapshotConnection } from "@itwin/core-frontend";
-import { DtaConfiguration } from "../common/DtaConfiguration";
-
-let configuration: DtaConfiguration = {};
-
-export function setOpenIModelConfiguration(value: DtaConfiguration) {
-  configuration = value;
-}
+import { getConfigurationBoolean } from "./DisplayTestApp";
 
 export interface OpenFileIModelProps {
   fileName: string;
@@ -90,7 +84,7 @@ async function openHubIModel(iModelId: GuidString, iTwinId: GuidString, writable
   const localBriefcases = await NativeApp.getCachedBriefcases(iModelId);
   if (localBriefcases.length > 0) {
     const fileName = await NativeApp.getBriefcaseFileName({ iModelId, briefcaseId: 0 });
-    if (configuration.ignoreCache) {
+    if (getConfigurationBoolean("ignoreCache")) {
       await NativeApp.deleteBriefcase(fileName);
     } else {
       return openIModel({ fileName, writable });

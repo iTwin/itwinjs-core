@@ -10,6 +10,7 @@ enum WidgetState {
   Open = 0,
   Closed = 1,
   Hidden = 2,
+  Floating = 3,
 }
 
 async function setWidgetState(page: Page, widgetId: string, widgetState: WidgetState) {
@@ -23,7 +24,7 @@ test.describe("widget state", () => {
   });
 
   test("should hide a floating widget", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:ViewAttributesWidget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:ViewAttributesWidget" });
     const tab = tabLocator(page, "View Attributes");
     await expect(tab).toBeVisible();
     await expect(widget).toBeVisible();
@@ -38,7 +39,7 @@ test.describe("widget state", () => {
   });
 
   test("should hide a floating widget (multiple tabs)", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const tab1 = tabLocator(page, "FW-1");
     const tab2 = tabLocator(page, "FW-2");
     const tab3 = tabLocator(page, "FW-3");
@@ -73,7 +74,7 @@ test.describe("widget state", () => {
   });
 
   test("should maintain active tab when widgets are hidden", async ({ page }) => {
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const activeTab = activeTabLocator(widget);
     await expect(activeTab).toHaveAttribute("data-item-id", "FW-1");
 
@@ -100,7 +101,7 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const widgetBounds = await widget.boundingBox();
     expect(widgetBounds).toBeDefined();
 
@@ -116,7 +117,7 @@ test.describe("widget state", () => {
     await setWidgetState(page, "FW-2", WidgetState.Hidden);
     await setWidgetState(page, "FW-3", WidgetState.Hidden);
 
-    const widget = floatingWidgetLocator(page, "appui-test-providers:floating-widget");
+    const widget = floatingWidgetLocator({ page, id: "appui-test-providers:floating-widget" });
     const widgetBounds = await widget.boundingBox();
     expect(widgetBounds).toBeDefined();
 
@@ -230,5 +231,14 @@ test.describe("widget state", () => {
     await setWidgetState(page, "WL-A", WidgetState.Open);
     await expect(panel).toBeVisible();
     await expect(widget).toHaveCount(2);
+  });
+
+
+  test("should float a widget that is hidden by default", async ({ context, page }) => {
+    const tab = tabLocator(page, "FW-H1");
+    await expect(tab).toBeHidden();
+
+    setWidgetState(page, "FW-H1", WidgetState.Floating);
+    await expect(tab).toBeVisible();
   });
 });
