@@ -26,7 +26,7 @@ jobs:
       name: iModelTechCI
       demands: Agent.OS -equals Windows_NT
     variables:
-      tempDocsLocation: $(Pipeline.Workspace)/tempDocsBuild
+      tempDocsLocation: $(Pipeline.Workspace)\tempDocsBuild
     steps:
       - checkout: self
         path: itwinjs-core
