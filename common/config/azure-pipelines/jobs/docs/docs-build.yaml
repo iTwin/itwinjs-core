@@ -121,3 +121,5 @@ jobs:
           command: pack
           packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
           versioningScheme: byBuildNumber
+          configuration: Release
+          packDestination: '$(Build.ArtifactStagingDirectory)'
