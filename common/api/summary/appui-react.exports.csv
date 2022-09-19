@@ -226,7 +226,7 @@ public;ElementTooltipChangedEventArgs
 public;EmphasizeElementsChangedArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
-internal;expandWidget: (base:
+internal;expandWidget(state: NineZoneState, id: TabState["id"]): NineZoneState
 public;ExtensibleToolbarProps
 beta;featureOverridesActiveStateFunc(state: Readonly
 beta;FloatingContentControl 
@@ -321,7 +321,7 @@ internal;INACTIVITY_TIME_DEFAULT = 3500
 beta;Indicator(props: IndicatorProps): JSX.Element
 public;InitialAppUiSettings
 internal;initializeNineZoneState(frontstageDef: FrontstageDef): NineZoneState
-internal;initializePanel(nineZone: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
+internal;initializePanel(state: NineZoneState, frontstageDef: FrontstageDef, panelSide: PanelSide): NineZoneState
 beta;InputEditorCommitHandler
 alpha;InputEditorPopup 
 beta;InputEditorPopupProps 
@@ -485,7 +485,8 @@ internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
 public;SafeAreaContext: React_2.Context
-internal;saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise
+internal;SavedWidget
+internal;SavedWidgets = ReadonlyArray
 public;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
@@ -505,8 +506,8 @@ beta;sessionStateMapDispatchToProps:
 public;SessionStateReducer(state: SessionState | undefined, action: SessionStateActionsUnion): DeepReadonly
 internal;setPanelSize: (base:
 beta;SettingsModalFrontstage 
-internal;setWidgetLabel: (base:
-internal;setWidgetState: (base:
+internal;setWidgetLabel(state: NineZoneState, id: TabState["id"], label: string): NineZoneState
+internal;setWidgetState(state: NineZoneState, widgetDef: WidgetDef, widgetState: WidgetState): NineZoneState
 alpha;SheetCard 
 alpha;SheetCardProps
 alpha;SheetData
@@ -514,7 +515,7 @@ alpha;SheetNavigationAid
 alpha;SheetNavigationAidControl 
 alpha;SheetNavigationProps 
 alpha;SheetsModalFrontstage 
-internal;showWidget: (base:
+internal;showWidget(state: NineZoneState, id: TabState["id"]): NineZoneState
 public;SnapModeField: ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element

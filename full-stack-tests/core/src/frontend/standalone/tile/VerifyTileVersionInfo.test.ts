@@ -4,8 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { CurrentImdlVersion, IModelTileRpcInterface } from "@itwin/core-common";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 
 describe("iMdl format version", () => {
+  before(async () => {
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.startup();
+  });
+
+  after(async () => {
+    if (ProcessDetector.isElectronAppFrontend)
+      await ElectronApp.shutdown();
+  });
+
   it("should match between frontend and backend", async () => {
     const intfc = IModelTileRpcInterface.getClient();
     const info = await intfc.queryVersionInfo();

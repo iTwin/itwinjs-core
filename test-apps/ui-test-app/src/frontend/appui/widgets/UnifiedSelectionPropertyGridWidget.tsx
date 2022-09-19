@@ -219,6 +219,7 @@ class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
 
   public override render() {
     return (
+      // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <div onClick={this._onActionButtonClicked}>
         {this.isFavorite() ?
           <Icon iconSpec="icon-star" /> :

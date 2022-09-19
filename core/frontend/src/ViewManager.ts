@@ -147,6 +147,13 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this._selectedView = undefined;
   }
 
+  /** Returns true if the specified viewport is currently being managed by this ViewManager.
+   * @see [[addViewport]] to enable management of a viewport and [[dropViewport]] to disable it.
+   */
+  public hasViewport(viewport: ScreenViewport) {
+    return this._viewports.includes(viewport);
+  }
+
   /** Called after the selected view changes.
    * @param old Previously selected viewport.
    * @param current Currently selected viewport.
@@ -262,7 +269,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @note raises onViewOpen event with newVp.
    */
   public addViewport(newVp: ScreenViewport): BentleyStatus {
-    if (this._viewports.includes(newVp)) // make sure its not already added
+    if (this.hasViewport(newVp)) // make sure its not already added
       return BentleyStatus.ERROR;
 
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport

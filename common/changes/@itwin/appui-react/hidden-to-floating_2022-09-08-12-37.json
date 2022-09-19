@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Ability to float a widget that is hidden by default.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

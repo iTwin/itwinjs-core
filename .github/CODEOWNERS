@@ -40,8 +40,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig
-/common/**/core-electron.*                    @wgoehrig
-/common/**/core-electron/                     @wgoehrig
+/common/**/core-electron.*                    @wgoehrig @GytisCepk @ben-polinsky
+/common/**/core-electron/                     @wgoehrig @GytisCepk @ben-polinsky
 /common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
 /common/**/express-server.*                   @calebmshafer @wgoehrig
 /common/**/express-server/                    @calebmshafer @wgoehrig
@@ -98,7 +98,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
-/core/electron                  @wgoehrig @ramanujam-raman
+/core/electron                  @wgoehrig @GytisCepk @ben-polinsky
 /core/express-server            @calebmshafer @wgoehrig
 /core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
@@ -108,7 +108,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
-/core/mobile                    @iTwin/itwinjs-core-admins
+/core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                   @iTwin/itwinjs-core-display
 /core/quantity                  @calebmshafer @ColinKerr
 /core/transformer               @MichaelBelousov @ColinKerr
@@ -133,17 +133,19 @@ rush.json       @iTwin/itwinjs-core-admins
 /extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
 /extensions/map-layers                @mdastous-bentley @MarcBedard8
 
-/full-stack-tests/core                @iTwin/itwinjs-core-admins
-/full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
-/full-stack-tests/rpc-interface @calebmshafer @wgoehrig
+/full-stack-tests/core                    @iTwin/itwinjs-core-admins
+/full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
+/full-stack-tests/presentation            @iTwin/itwinjs-core-presentation
+/full-stack-tests/rpc                     @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc-interface           @calebmshafer @wgoehrig
+/full-stack-tests/ui                      @iTwin/itwinjs-core-ui
 
 /presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
 /test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
+/test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @bbastings @dassaf4

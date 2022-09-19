@@ -647,7 +647,7 @@ describe("Viewport changed events", async () => {
 
       expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
       expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
+      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: () => Transform.createIdentity() });
     });
   });
 

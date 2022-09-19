@@ -188,6 +188,9 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+public;ECSchemaItemProps
+public;ECSchemaProps
+public;ECSchemaReferenceProps
 beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
@@ -751,6 +754,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 public;TileVersionInfo
+public;TranslationOptions
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

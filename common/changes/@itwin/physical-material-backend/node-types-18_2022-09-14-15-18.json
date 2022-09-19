@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/physical-material-backend",
+      "comment": "Updated Node types declaration to support latest v16",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/physical-material-backend"
+}

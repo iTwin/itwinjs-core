@@ -15,7 +15,7 @@ import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
-import { openIModel } from "./openIModel";
+import { openIModel, OpenIModelProps } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
@@ -123,7 +123,7 @@ export class Surface {
       iconUnicode: "\ue9cc", // "briefcases"
       tooltip: "Open iModel from disk",
       click: async () => {
-        await this.openIModel();
+        await this.openFileIModel();
       },
     }));
 
@@ -176,15 +176,19 @@ export class Surface {
     return viewer;
   }
 
-  private async openIModel(filename?: string): Promise<void> {
-    if (undefined === filename) {
-      filename = await selectFileName(this.browserFileSelector);
-      if (undefined === filename)
+  private async openFileIModel(fileName?: string): Promise<void> {
+    if (undefined === fileName) {
+      fileName = await this.selectFileName();
+      if (undefined === fileName) {
         return;
+      }
     }
+    await this.openIModel({ fileName, writable: this.openReadWrite });
+  }
 
+  private async openIModel(props: OpenIModelProps): Promise<void> {
     try {
-      const iModel = await openIModel(filename, this.openReadWrite);
+      const iModel = await openIModel(props);
       setTitle(iModel);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);
@@ -203,7 +207,7 @@ export class Surface {
 
   public async openFile(filename?: string): Promise<void> {
     const viewer = this.firstViewer;
-    return undefined !== viewer ? viewer.openFile(filename) : this.openIModel(filename);
+    return undefined !== viewer ? viewer.openFile(filename) : this.openFileIModel(filename);
   }
 
   private getKeyboardShortcutHandler(e: KeyboardEvent): (() => void) | undefined {
@@ -415,6 +419,12 @@ export class Surface {
 
   public async selectFileName(): Promise<string | undefined> {
     return selectFileName(this.browserFileSelector);
+  }
+
+  public async selectHubIModel(): Promise<OpenIModelProps | undefined> {
+    // TODO: Show dialog to allow user to input iModelId and iTwinId.
+    alert("Not Implemented.");
+    return undefined;
   }
 }
 

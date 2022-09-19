@@ -32,6 +32,7 @@ export const DockedToolSettingsHandle = React.memo(function DockedToolSettingsHa
   const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
     onDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "TOOL_SETTINGS_DRAG_START",
