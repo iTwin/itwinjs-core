@@ -65,18 +65,19 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
         imodel={initialViewState.iModel}
         viewState={initialViewState}
         onContextMenu={props.onContextMenu}
+        controlId={contentId}
       />
-    ) : undefined, [onViewportRef, props.onContextMenu, initialViewState]);
+    ) : undefined, [onViewportRef, props.onContextMenu, initialViewState, contentId]);
 
   React.useEffect(() => {
     if (viewport && contentControl.current) {
       contentControl.current.viewport = viewport;
       if (null === contentControl.current.reactNode) {
         contentControl.current.reactNode = viewPortControl;
-        if (initialViewState) {
-          // eslint-disable-next-line @typescript-eslint/no-floating-promises
-          contentControl.current.processViewSelectorChange(initialViewState.iModel, initialViewState.id, initialViewState, initialViewState.name);
-        }
+      }
+      if (initialViewState) {
+        // eslint-disable-next-line @typescript-eslint/no-floating-promises
+        contentControl.current.processViewSelectorChange(initialViewState.iModel, initialViewState.id, initialViewState, initialViewState.name);
       }
     }
   }, [initialViewState, viewPortControl, viewport]);

@@ -2,6 +2,72 @@
   "name": "@itwin/components-react",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/components-react_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/components-react_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated desktop toolbar width and height to 40px"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/components-react_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Add ability to specify locale and format of Data and Time shown by timeline component."
+          },
+          {
+            "comment": "Add children to render inside the node"
+          },
+          {
+            "comment": "Added 'PropertyFilterBuilder' component for building complex filters using properties list"
+          },
+          {
+            "comment": "Add support for undefined value in TypeConverter."
+          },
+          {
+            "comment": "Avoid creating \"NaN\" string in numeric type converters."
+          },
+          {
+            "comment": "Changed FloatTypeConverter and IntTypeConverter 'convertFromString' method to return 'undefined' if string is no a number."
+          },
+          {
+            "comment": "Fix processing of widget container dragging to empty panel."
+          },
+          {
+            "comment": "Update iTwinUI-react to 1.38.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/components-react_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/components-react_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.7",
       "tag": "@itwin/components-react_v3.2.7",
       "date": "Mon, 01 Aug 2022 13:36:56 GMT",

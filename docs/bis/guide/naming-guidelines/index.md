@@ -1,4 +1,4 @@
-# [BIS](../../index.md) naming guidelines
+# [BIS](../../index.md) Naming Guidelines
 
 - [Rules and Recommendations](./rules-and-recommendations.md)
 - [Special Terms](./special-terms.md)

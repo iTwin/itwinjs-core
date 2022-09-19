@@ -218,10 +218,9 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
   public override closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+    // seed at start point -- final point comes with final bezier perpendicular step.
     const point = this.fractionToPoint(0);
     const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
-    this.fractionToPoint(1.0, point);
-    result.updateIfCloserCurveFractionPointDistance(this, 1.0, point, spacePoint.distance(point));
 
     let span: BezierCurve3dH | undefined;
     const numSpans = this.numSpan;
@@ -229,7 +228,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       if (this._bcurve.knots.isIndexOfRealSpan(i)) {
         span = this.getSaturatedBezierSpan3dOr3dH(i, true, span) as BezierCurve3dH;
         if (span) {
-          if (span.updateClosestPointByTruePerpendicular(spacePoint, result)) {
+          // umm ... if the bspline is discontinuous, both ends should be tested.  Ignore that possibility ...
+          if (span.updateClosestPointByTruePerpendicular(spacePoint, result, false, true)) {
             // the detail records the span bezier -- promote it to the parent curve . ..
             result.curve = this;
             result.fraction = span.fractionToParentFraction(result.fraction);

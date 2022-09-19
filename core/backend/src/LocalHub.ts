@@ -236,7 +236,7 @@ export class LocalHub {
       stmt.bindString(3, changeset.description);
       stmt.bindInteger(4, stats.size);
       stmt.bindInteger(5, changeset.changesType ?? 0);
-      stmt.bindString(6, changeset.pushDate ?? new Date().toString());
+      stmt.bindString(6, changeset.pushDate ?? new Date().toISOString());
       stmt.bindString(7, changeset.userCreated ?? "");
       stmt.bindInteger(8, changeset.briefcaseId);
       const rc = stmt.step();

@@ -333,6 +333,26 @@ export class Sample {
     return result;
   }
 
+  /** Create various orders of non-rational B-spline curves with helical poles */
+   public static createBsplineCurveHelices(radius: number, height: number, numTurns: number, numSamplesPerTurn: number): BSplineCurve3d[] {
+    const pts: Point3d[] = [];
+    const zDelta = (height / numTurns) / numSamplesPerTurn;
+    const aDelta = 2 * Math.PI / numSamplesPerTurn;
+    for (let iTurn = 0; iTurn < numTurns; ++iTurn) {
+      for (let iSample = 0; iSample < numSamplesPerTurn; iSample++) {
+        pts.push(Point3d.create(radius * Math.cos(iSample * aDelta), radius * Math.sin(iSample * aDelta), pts.length * zDelta));
+      }
+    }
+    const result: BSplineCurve3d[] = [];
+    for (const order of [2, 3, 4, 9, 16, 25]) {
+      if (order > pts.length) continue;
+      const curve = BSplineCurve3d.createUniformKnots(pts, order);
+      if (curve !== undefined)
+        result.push(curve);
+    }
+    return result;
+  }
+
   /** Create weighted bsplines for circular arcs.
    */
   public static createBspline3dHArcs(): BSplineCurve3dH[] {
@@ -2496,4 +2516,36 @@ export class Sample {
     return point0;
   }
 
+/**
+ * Create a mesh with
+ *   * xy facets are 1x1 quads starting at origin
+ *   * acceptFunction is called to accept or reject each quad's lower left xy coordinates
+ * @param xzPoints array of points in the xz plane.  Expected to have increasing x and all integer coordinates.
+ * @param ySweep distance to sweep in y direction
+ * @param acceptFunction (x0: number, y0: number)=> boolean
+ */
+public static sweepXZLineStringToMeshWithHoles(xzPoints: number [][], ySweep: number,
+  acceptFunction: (x0: number, y0: number) => boolean){
+  const builder = PolyfaceBuilder.create();
+for (let i0 = 0; i0 + 1 < xzPoints.length; i0++){
+  const x0 = xzPoints[i0][0];
+  const z0 = xzPoints[i0][1];
+  const i1 = i0 + 1;
+  const x1 = xzPoints[i1][0];
+  const z1 = xzPoints[i1][1];
+  for (let xA = x0; xA + 1 <= x1; xA++){
+    const xB = xA + 1;
+    const sA = (xA-x0)/(x1 - x0);
+    const sB = (xB -x0)/ (x1-x0);
+    const zA = Geometry.interpolate (z0, sA, z1);
+    const zB = Geometry.interpolate (z0, sB, z1);
+    for (let yC = 0; yC +1 <= ySweep; yC++){
+      const yD = yC + 1;
+      if (acceptFunction (xA, yC))
+        builder.addPolygon ([Point3d.create (xA, yC, zA), Point3d.create (xB, yC, zB), Point3d.create (xB, yD, zB), Point3d.create (xA, yD, zA)]);
+      }
+    }
+  }
+  return builder.claimPolyface (true);
+  }
 }

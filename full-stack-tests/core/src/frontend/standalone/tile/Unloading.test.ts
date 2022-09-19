@@ -9,7 +9,7 @@ import {
   DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-import { createOnScreenTestViewport, testOffScreenViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
+import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 
 describe("Tile unloading", async () => {
   let imodel: IModelConnection;
@@ -128,71 +128,6 @@ describe("Tile unloading", async () => {
 
       expect(tree.isDisposed).to.be.false;
       expectLoadedChildren();
-    });
-  });
-
-  // This test sporadically fails on Linux during CI job, with no useful output.
-  it.skip("should dispose of undisplayed tiles", async () => {
-    await testOnScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
-      await vp.waitForAllTilesToRender();
-
-      const tree = getTileTree(vp);
-      (tree as IModelTileTree).debugMaxDepth = 1;
-      expect(tree.isDisposed).to.be.false;
-
-      vp.invalidateScene();
-      await vp.waitForAllTilesToRender();
-
-      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
-
-      const children = tree.rootTile.children!;
-      expect(children).not.to.be.undefined;
-      expect(children.length).to.equal(8);
-      for (const child of children)
-        expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
-
-      vp.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
-
-      await waitForExpiration(vp);
-
-      expect(tree.isDisposed).to.be.false;
-      expect(tree.rootTile.children).to.be.undefined;
-
-      for (const child of children)
-        expect(child.loadStatus).to.equal(TileLoadStatus.Abandoned);
-
-      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.true;
-    });
-
-    await testOffScreenViewport("0x41", imodel, 1854, 931, async (vp) => {
-      await vp.waitForAllTilesToRender();
-
-      const tree = getTileTree(vp);
-      (tree as IModelTileTree).debugMaxDepth = 1;
-      expect(tree.isDisposed).to.be.false;
-
-      vp.invalidateScene();
-      await vp.waitForAllTilesToRender();
-
-      const children = tree.rootTile.children!;
-      expect(children).not.to.be.undefined;
-      expect(children.length).to.equal(8);
-      for (const child of children)
-        expect(child.loadStatus).to.equal(TileLoadStatus.Ready);
-
-      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.false;
-
-      vp.scroll({ x: -9999, y: -9999 }, { animateFrustumChange: false });
-
-      await waitForExpiration(vp);
-
-      expect(tree.isDisposed).to.be.false;
-      expect(tree.rootTile.children).to.be.undefined;
-
-      for (const child of children)
-        expect(child.loadStatus).to.equal(TileLoadStatus.Abandoned);
-
-      expect(tree.rootTile.usageMarker.isExpired(BeTimePoint.now())).to.be.true;
     });
   });
 

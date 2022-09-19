@@ -60,7 +60,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
   });
 
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
+  const handleDragStart = React.useCallback((initialPointerPosition: Point, pointerPosition: Point) => {
     /* if floating widget extract the bounding rect and update state in case bounds are set by content.
       This is needed so the drag operation can keep widget inside ninezone container. */
     if (floatingWidgetId) {
@@ -77,6 +77,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     }
     handleWidgetDragStart({
       initialPointerPosition,
+      pointerPosition,
     });
   }, [dispatch, floatingWidgetId, handleWidgetDragStart]);
   const handleTouchStart = React.useCallback(() => {
@@ -110,7 +111,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
  * @internal
  */
 export function useDrag<T extends HTMLElement>(
-  onDragStart?: (initialPointerPosition: Point) => void,
+  onDragStart?: (initialPointerPosition: Point, pointerPosition: Point) => void,
   onDrag?: (position: Point) => void,
   onDragEnd?: () => void,
   onTouchStart?: () => void,
@@ -140,7 +141,7 @@ export function useDrag<T extends HTMLElement>(
   }, [onTouchStart]);
   const handlePointerMove = React.useCallback((args: PointerCaptorArgs) => {
     if (initialPointerPosition.current) {
-      onDragStart && onDragStart(initialPointerPosition.current);
+      onDragStart && onDragStart(initialPointerPosition.current, new Point(args.clientX, args.clientY));
       initialPointerPosition.current = undefined;
       return;
     }

@@ -7,13 +7,13 @@
  */
 
 import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey, SchemaLoader } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -265,14 +265,23 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
+    const deletedSubModels = new Set<Id64String>();
     // handle deletes
     if (this.visitElements) {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
+        const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
+        // must delete submodels first since they have a constraint on the element
+        if (subModelAlsoDeleted) {
+          this.handler.onDeleteModel(elementId);
+          deletedSubModels.add(elementId);
+        }
         this.handler.onDeleteElement(elementId);
       }
     }
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
+      const alreadyDeletedSubModel = deletedSubModels.has(modelId);
+      if (alreadyDeletedSubModel) continue;
       this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {
@@ -308,7 +317,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const schemaLoader = new SchemaLoader((name: string) => { return this.sourceDb.getSchemaProps(name); });
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);

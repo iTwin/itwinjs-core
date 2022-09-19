@@ -11,12 +11,14 @@ import { AccessToken, assert, DbResult, Guid, Id64, Id64Set, Id64String, IModelS
 import * as ECSchemaMetaData from "@itwin/ecschema-metadata";
 import { Point3d, Transform } from "@itwin/core-geometry";
 import {
+  ChangeSummaryManager,
   ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, Entity, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment,
-  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
+  FolderLink, GeometricElement2d, GeometricElement3d, IModelCloneContext, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, KnownLocations, Model,
   RecipeDefinitionElement, Relationship, RelationshipProps, Schema, SQLiteDb, Subject, SynchronizationConfigLink,
 } from "@itwin/core-backend";
 import {
+  ChangeOpCode,
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData, RelatedElement,
 } from "@itwin/core-common";
@@ -233,6 +235,14 @@ function mapId64<R>(
   return results;
 }
 
+/** Arguments you can pass to [[IModelTransformer.initExternalSourceAspects]]
+ * @beta
+ */
+export interface InitFromExternalSourceAspectsArgs {
+  accessToken?: AccessToken;
+  startChangesetId?: string;
+}
+
 /** Base class used to transform a source iModel into a different target iModel.
  * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md), [IModelExporter]($transformer), [IModelImporter]($transformer)
  * @beta
@@ -440,7 +450,7 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Iterate all matching ExternalSourceAspects in the target iModel and call a function for each one. */
+  /** Iterate all matching ExternalSourceAspects in the provenance iModel (target unless reverse sync) and call a function for each one. */
   private forEachTrackedElement(fn: (sourceElementId: Id64String, targetElementId: Id64String) => void): void {
     if (!this.provenanceDb.containsClass(ExternalSourceAspect.classFullName)) {
       throw new IModelError(IModelStatus.BadSchema, "The BisCore schema version of the target database is too old");
@@ -463,11 +473,75 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
    * @note This method is called from [[processChanges]] and [[processAll]], so it only needs to be called directly when processing a subset of an iModel.
+   * @note Passing an [[InitFromExternalSourceAspectsArgs]] is required when processing changes, to remap any elements that may have been deleted.
+   *       You must await the returned promise as well in this case. The synchronous behavior has not changed but is deprecated and won't process everything.
    */
-  public initFromExternalSourceAspects(): void {
+  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
+  /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
+  public initFromExternalSourceAspects(): void;
+  // eslint-disable-next-line @typescript-eslint/promise-function-async
+  public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void> {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
+    if (args) return this.remapDeletedSourceElements(args);
+  }
+
+  /** When processing deleted elements in a reverse synchronization, the [[provenanceDb]] (usually a branch iModel) has already
+   * deleted the [ExternalSourceAspect]($backend)s that tell us which elements in the reverse synchronization target (usually
+   * a master iModel) should be deleted. We must use the changesets to get the values of those before they were deleted.
+   */
+  private async remapDeletedSourceElements(args: InitFromExternalSourceAspectsArgs) {
+    // we need a connected iModel with changes to remap elements with deletions
+    if (this.sourceDb.iTwinId === undefined) return;
+
+    try {
+      const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
+      const firstChangesetIndex = (
+        await IModelHost.hubAccess.queryChangeset({
+          iModelId: this.sourceDb.iModelId,
+          changeset: { id: startChangesetId },
+          accessToken: args.accessToken,
+        })
+      ).index;
+      const changesetIds = await ChangeSummaryManager.createChangeSummaries({
+        accessToken: args.accessToken,
+        iModelId: this.sourceDb.iModelId,
+        iTwinId: this.sourceDb.iTwinId,
+        range: { first: firstChangesetIndex },
+      });
+
+      ChangeSummaryManager.attachChangeCache(this.sourceDb);
+      for (const changesetId of changesetIds) {
+        this.sourceDb.withPreparedStatement(
+          `
+          SELECT esac.Element.Id, esac.Identifier
+          FROM ecchange.change.InstanceChange ic
+          JOIN BisCore.ExternalSourceAspect.Changes(:changesetId, 'BeforeDelete') esac
+            ON ic.ChangedInstance.Id=esac.ECInstanceId
+          WHERE ic.OpCode=:opcode
+            AND ic.Summary.Id=:changesetId
+            AND esac.Scope.Id=:targetScopeElementId
+            -- not yet documented ecsql feature to check class id
+            AND ic.ChangedInstance.ClassId IS (ONLY BisCore.ExternalSourceAspect)
+          `,
+          (stmt) => {
+            stmt.bindInteger("opcode", ChangeOpCode.Delete);
+            stmt.bindInteger("changesetId", changesetId);
+            stmt.bindInteger("targetScopeElementId", this.targetScopeElementId);
+            while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+              const targetId = stmt.getValue(0).getId();
+              const sourceId: Id64String = stmt.getValue(1).getString(); // BisCore.ExternalSourceAspect.Identifier stores a hex Id64String
+              // TODO: maybe delete and don't just remap
+              this.context.remapElement(targetId, sourceId);
+            }
+          }
+        );
+      }
+    } finally {
+      if (ChangeSummaryManager.isChangeCacheAttached(this.sourceDb))
+        ChangeSummaryManager.detachChangeCache(this.sourceDb);
+    }
   }
 
   /** Returns `true` if *brute force* delete detections should be run.
@@ -768,8 +842,14 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($transformer) that is called when [IModelExporter]($transformer) detects that a [Model]($backend) has been deleted from the source iModel. */
-  public override onDeleteModel(_sourceModelId: Id64String): void {
-    // WIP: currently ignored
+  public override onDeleteModel(sourceModelId: Id64String): void {
+    // It is possible and apparently occasionally sensical to delete a model without deleting its underlying element.
+    // - If only the model is deleted, [[initFromExternalSourceAspects]] will have already remapped the underlying element since it still exists.
+    // - If both were deleted, [[remapDeletedSourceElements]] will find and remap the deleted element making this operation valid
+    const targetModelId: Id64String = this.context.findTargetElementId(sourceModelId);
+    if (Id64.isValidId64(targetModelId)) {
+      this.importer.deleteModel(targetModelId);
+    }
   }
 
   /** Cause the model container, contents, and sub-models to be exported from the source iModel and imported into the target iModel.
@@ -1102,7 +1182,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processAll()");
     this.logSettings();
     this.validateScopeProvenance();
-    this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspects();
     await this.exporter.exportCodeSpecs();
     await this.exporter.exportFonts();
     // The RepositoryModel and root Subject of the target iModel should not be transformed.
@@ -1331,7 +1411,7 @@ export class IModelTransformer extends IModelExportHandler {
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
-    this.initFromExternalSourceAspects();
+    await this.initFromExternalSourceAspects({accessToken, startChangesetId});
     await this.exporter.exportChanges(accessToken, startChangesetId);
     await this.processDeferredElements(); // eslint-disable-line deprecation/deprecation
 

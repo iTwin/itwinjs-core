@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as fs from "fs";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -38,6 +39,8 @@ import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceCl
 import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { IndexedPolyface } from "../../polyface/Polyface";
 
 /* eslint-disable no-console, no-trailing-spaces */
 
@@ -297,8 +300,6 @@ describe("ConvexClipPlaneSet", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  // ---------------------------------------------------------------------------------------------------
-
   it("ClipPointsOnOrInside", () => {
     for (let i = -50; i < 50; i += 15) {
       const clip1 = ClipPlane.createPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, 0), Vector3d.create(i, -i, i))!);
@@ -319,6 +320,43 @@ describe("ConvexClipPlaneSet", () => {
     }
 
     ck.checkpoint("IsPointOn&IsPointOnOrInside");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  function testConvertMeshToClipper(mesh: IndexedPolyface) {
+    const result = ConvexClipPlaneSet.createConvexPolyface(mesh);
+    if (ck.testDefined(result.clipper)) {
+      if (ck.testExactNumber(mesh.facetCount, result.clipper.planes.length, "# facets === # planes")) {
+        const xyz = Point3d.create();
+        for (let i = 0; i < mesh.pointCount; ++i) {
+          mesh.data.getPoint(i, xyz);
+          ck.testTrue(result.clipper.isPointOnOrInside(xyz), "mesh vertex is not outside clipper");
+          let isVertexOnClipper = false;
+          for (const plane of result.clipper.planes) {
+            if (plane.isPointOn(xyz)) {
+              isVertexOnClipper = true;
+              break;
+            }
+          }
+          ck.testTrue(isVertexOnClipper, "mesh vertex is *on* clipper");
+        }
+      }
+    }
+  }
+
+  // cspell:word rhombicosidodecahedron
+  it("CreateFromConvexPolyface", () => {
+    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
+    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
+    for (const mesh of inputs) {
+      if (ck.testDefined(mesh) && mesh instanceof IndexedPolyface) {
+        testConvertMeshToClipper(mesh);
+        // verify that the reversed closed mesh produces same clipper with inward plane normals
+        mesh.reverseIndices();
+        mesh.reverseNormals();
+        testConvertMeshToClipper(mesh);
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

@@ -6,26 +6,28 @@ import { should } from "chai";
 import produce from "immer";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Size } from "@itwin/core-react";
+import { Rectangle } from "@itwin/core-react";
 import { fireEvent, render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import {
-  addPanelWidget, addTab, createHorizontalPanelState, createNineZoneState, createPanelsState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
+  addPanelWidget, addTab, createNineZoneState, DraggedPanelSideContext, DragManager, NineZoneDispatch,
   NineZoneState, PanelSide, PanelStateContext, useAnimatePanelWidgets, WidgetPanelProvider,
 } from "../../appui-layout-react";
 import { createDragInfo, setRefValue, TestNineZoneProvider } from "../Providers";
+import { addTabs } from "../Utils";
+import { updatePanelState } from "../../appui-layout-react/state/internal/PanelStateHelpers";
 
 describe("WidgetPanelProvider", () => {
   it("should render vertical", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (stateDraft) => {
       stateDraft.panels.left.size = 200;
     });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="left"
@@ -36,15 +38,15 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render horizontal", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
+    state = produce(state, (stateDraft) => {
       stateDraft.panels.top.size = 200;
     });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="top"
@@ -55,15 +57,15 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render collapsed", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (stateDraft) => {
       stateDraft.panels.left.collapsed = true;
     });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="left"
@@ -74,12 +76,12 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render captured", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <DraggedPanelSideContext.Provider value="left">
           <WidgetPanelProvider
@@ -92,15 +94,15 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render spanned", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (stateDraft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
+    state = produce(state, (stateDraft) => {
       stateDraft.panels.top.span = true;
     });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="top"
@@ -111,18 +113,13 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render with top spanned", () => {
-    let nineZone = createNineZoneState({
-      panels: createPanelsState({
-        top: createHorizontalPanelState("top", {
-          span: true,
-        }),
-      }),
-    });
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = updatePanelState(state, "top", { span: true });
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="left"
@@ -133,18 +130,13 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render with span bottom", () => {
-    let nineZone = createNineZoneState({
-      panels: createPanelsState({
-        bottom: createHorizontalPanelState("bottom", {
-          span: true,
-        }),
-      }),
-    });
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = updatePanelState(state, "bottom", { span: true });
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="left"
@@ -156,13 +148,13 @@ describe("WidgetPanelProvider", () => {
 
   it("should dispatch PANEL_INITIALIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     sinon.stub(Element.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 300 }));
     render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
         <WidgetPanelProvider
@@ -178,14 +170,13 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should render multiple widgets", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addPanelWidget(nineZone, "left", "w2", ["t2"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = addTab(nineZone, "t2");
+    let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = addPanelWidget(state, "left", "w2", ["t2"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <WidgetPanelProvider
           side="left"
@@ -197,22 +188,22 @@ describe("WidgetPanelProvider", () => {
 
   it("should transition when collapsed", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { container, rerender } = render(
       <WidgetPanelProvider
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
     Array.from(panel.classList.values()).should.not.contain("nz-transition");
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.collapsed = true;
     });
 
@@ -236,10 +227,10 @@ describe("WidgetPanelProvider", () => {
 
   it("should transition to panel size when opened", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = true;
     });
@@ -248,13 +239,13 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.collapsed = false;
     });
 
@@ -275,10 +266,10 @@ describe("WidgetPanelProvider", () => {
 
   it("should transition when size changes", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
     });
     const { container, rerender } = render(
@@ -286,13 +277,13 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.size = 300;
     });
 
@@ -313,17 +304,17 @@ describe("WidgetPanelProvider", () => {
 
   it("should restart transition when initializing", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
     });
 
     const stub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 100 }));
     const dispatch: NineZoneDispatch = (action) => {
       if (action.type === "PANEL_INITIALIZE") {
-        nineZone = produce(nineZone, (draft) => {
+        state = produce(state, (draft) => {
           draft.panels.left.size = 150;
         });
 
@@ -342,13 +333,13 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} dispatch={dispatch} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} dispatch={dispatch} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.size = undefined;
     });
 
@@ -367,10 +358,10 @@ describe("WidgetPanelProvider", () => {
 
   it("should not transition when resizing", () => {
     const dragManager = React.createRef<DragManager>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
     });
 
@@ -380,7 +371,7 @@ describe("WidgetPanelProvider", () => {
       />,
       {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
-          state={nineZone}
+          state={state}
           dragManagerRef={dragManager}
           {...props}
         />,
@@ -389,7 +380,7 @@ describe("WidgetPanelProvider", () => {
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.size = 300;
     });
     dragManager.current!.handleDragStart({
@@ -410,10 +401,10 @@ describe("WidgetPanelProvider", () => {
 
   it("should not resize when collapsing", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
     });
 
@@ -423,14 +414,14 @@ describe("WidgetPanelProvider", () => {
       />,
       {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
-          state={nineZone}
+          state={state}
           {...props}
         />,
       },
     );
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
 
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.collapsed = true;
     });
     const stub = sinon.stub(panel, "getBoundingClientRect");
@@ -450,7 +441,7 @@ describe("WidgetPanelProvider", () => {
 
     stub.reset();
     stub.returns(DOMRect.fromRect({ width: 400 }));
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.size = 400;
     });
     rerender(<WidgetPanelProvider
@@ -462,10 +453,10 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should not transition when from === to", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
     });
 
@@ -475,14 +466,14 @@ describe("WidgetPanelProvider", () => {
       />,
       {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
-          state={nineZone}
+          state={state}
           {...props}
         />,
       },
     );
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.left.size = 300;
     });
     sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 200 }));
@@ -497,9 +488,9 @@ describe("WidgetPanelProvider", () => {
 
   it("should persist content size when collapsing", () => {
     const fakeTimers = sinon.useFakeTimers();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "top", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "top", "w1", ["t1"]);
 
     const { container, rerender } = render(
       <WidgetPanelProvider
@@ -507,7 +498,7 @@ describe("WidgetPanelProvider", () => {
       />,
       {
         wrapper: (props) => <TestNineZoneProvider // eslint-disable-line react/display-name
-          state={nineZone}
+          state={state}
           {...props}
         />,
       },
@@ -515,7 +506,7 @@ describe("WidgetPanelProvider", () => {
 
     const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
     const content = panel.getElementsByClassName("nz-content")[0] as HTMLElement;
-    nineZone = produce(nineZone, (draft) => {
+    state = produce(state, (draft) => {
       draft.panels.top.collapsed = true;
     });
     sinon.stub(panel, "getBoundingClientRect")
@@ -534,10 +525,10 @@ describe("WidgetPanelProvider", () => {
   });
 
   it("should measure panel bounds when resizing", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = true;
     });
@@ -546,7 +537,7 @@ describe("WidgetPanelProvider", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -595,9 +586,8 @@ describe("useAnimatePanelWidgets", () => {
     const fakeTimers = sinon.useFakeTimers();
 
     let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -606,19 +596,19 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 600))
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
       .onSecondCall().callsFake(() => {
         // New widget ref is only set in layout effect
         setRefValue(result.current.getRef("w2"), w2);
-        return new Size(0, 400);
+        return Rectangle.createFromSize({ width: 0, height: 400 });
       });
-    sinon.stub(w2, "measure").returns(new Size(0, 200));
+    sinon.stub(w2, "measure").returns(Rectangle.createFromSize({ width: 0, height: 200 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -645,12 +635,11 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should transition when widget is removed", () => {
     let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
+    state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
     state = addPanelWidget(state, "left", "w3", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -659,21 +648,21 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w3 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 700));
-    sinon.stub(w3, "measure").returns(new Size(0, 300));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
+    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -690,14 +679,13 @@ describe("useAnimatePanelWidgets", () => {
   });
 
   it("should transition when first widget is removed", () => {
-    const side: PanelSide = "top";
+    const side = "top" as const;
     let state = createNineZoneState();
+    state = updatePanelState(state, side, { maxWidgetCount: 3 });
+    state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, side, "w1", ["t1"]);
     state = addPanelWidget(state, side, "w2", ["t2"]);
     state = addPanelWidget(state, side, "w3", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -707,21 +695,21 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w3 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
-    sinon.stub(w1, "measure").returns(new Size(300, 0));
+    sinon.stub(w1, "measure").returns(Rectangle.createFromSize({ width: 300, height: 0 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(300, 0))
-      .onSecondCall().returns(new Size(700, 0));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 300, height: 0 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 700, height: 0 }));
     sinon.stub(w3, "measure")
-      .onFirstCall().returns(new Size(300, 0))
-      .onSecondCall().returns(new Size(200, 0));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 300, height: 0 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 200, height: 0 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -742,12 +730,11 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should fill upper not minimized widget when widget is removed", () => {
     let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
+    state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
     state = addPanelWidget(state, "left", "w3", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -756,21 +743,21 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w3 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 700));
-    sinon.stub(w3, "measure").returns(new Size(0, 300));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
+    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -788,12 +775,11 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should fill lower not minimized widget when widget is removed", () => {
     let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
+    state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"], { minimized: true });
     state = addPanelWidget(state, "left", "w3", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -802,22 +788,22 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w3 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
-    sinon.stub(w1, "measure").returns(new Size(0, 300));
+    sinon.stub(w1, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
 
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 700));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
     sinon.stub(w3, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -835,8 +821,8 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should not fail when last widget is removed", () => {
     let state = createNineZoneState();
-    state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -845,7 +831,7 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
 
     setRefValue(result.current.getRef("w1"), w1);
@@ -859,12 +845,11 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should not transition when from and to sizes are equal", () => {
     let state = createNineZoneState();
+    state = updatePanelState(state, "left", { maxWidgetCount: 3 });
+    state = addTabs(state, ["t1", "t2", "t3"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
     state = addPanelWidget(state, "left", "w3", ["t3"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -873,21 +858,21 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w3 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 300));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 600));
-    sinon.stub(w3, "measure").returns(new Size(0, 300));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }));
+    sinon.stub(w3, "measure").returns(Rectangle.createFromSize({ width: 0, height: 300 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -907,10 +892,9 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should init transition when handleBeforeTransition and handlePrepareTransition are invoked", () => {
     let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
     const { result } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -919,17 +903,17 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 600))
-      .onSecondCall().returns(new Size(0, 700));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -947,10 +931,9 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should not init transition with handlePrepareTransition when ref is unset", () => {
     let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
     const { result } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -959,17 +942,17 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 600))
-      .onSecondCall().returns(new Size(0, 700));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -984,9 +967,8 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should not init transition when ref is unset", () => {
     let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
         state,
@@ -995,17 +977,17 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     sinon.stub(w1, "measure")
-      .onFirstCall().returns(new Size(0, 300))
-      .onSecondCall().returns(new Size(0, 200));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 300 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 200 }));
     sinon.stub(w2, "measure")
-      .onFirstCall().returns(new Size(0, 600))
-      .onSecondCall().returns(new Size(0, 700));
+      .onFirstCall().returns(Rectangle.createFromSize({ width: 0, height: 600 }))
+      .onSecondCall().returns(Rectangle.createFromSize({ width: 0, height: 700 }));
 
     setRefValue(result.current.getRef("w1"), w1);
 
@@ -1017,10 +999,9 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should not re-measure on same render pass if panel.widgets have changed", () => {
     let state = createNineZoneState();
+    state = addTabs(state, ["t1", "t2"]);
     state = addPanelWidget(state, "left", "w1", ["t1"]);
     state = addPanelWidget(state, "left", "w2", ["t2"]);
-    state = addTab(state, "t1");
-    state = addTab(state, "t2");
 
     const { result, rerender } = renderHook(() => useAnimatePanelWidgets(), {
       initialProps: {
@@ -1031,10 +1012,10 @@ describe("useAnimatePanelWidgets", () => {
     });
 
     const w1 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     const w2 = {
-      measure: () => new Size(),
+      measure: () => new Rectangle(),
     };
     setRefValue(result.current.getRef("w1"), w1);
     setRefValue(result.current.getRef("w2"), w2);
@@ -1056,10 +1037,10 @@ describe("useAnimatePanelWidgets", () => {
 
   it("should transition to panel collapse when collapseUnpinned is set", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = false;
       draft.panels.left.pinned = false;
@@ -1069,7 +1050,7 @@ describe("useAnimatePanelWidgets", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
       },
     );
 
@@ -1078,16 +1059,16 @@ describe("useAnimatePanelWidgets", () => {
     sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 200 }));
     panel.style.width.should.eq("200px");
     fireEvent(panel, new MouseEvent("mouseleave"));
-    dispatch.calledWith({collapsed: true, side: "left", type: "PANEL_SET_COLLAPSED"}).should.be.true;
+    dispatch.calledWith({ collapsed: true, side: "left", type: "PANEL_SET_COLLAPSED" }).should.be.true;
   });
 
   it("should not transition to panel collapse when already collapsed and collapseUnpinned is set", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
 
-    let nineZone = createNineZoneState();
-    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
-    nineZone = produce(nineZone, (draft) => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addPanelWidget(state, "left", "w1", ["t1"]);
+    state = produce(state, (draft) => {
       draft.panels.left.size = 200;
       draft.panels.left.collapsed = true;
       draft.panels.left.pinned = false;
@@ -1097,7 +1078,7 @@ describe("useAnimatePanelWidgets", () => {
         side="left"
       />,
       {
-        wrapper: (props) => <TestNineZoneProvider state={nineZone} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
+        wrapper: (props) => <TestNineZoneProvider state={state} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
       },
     );
 

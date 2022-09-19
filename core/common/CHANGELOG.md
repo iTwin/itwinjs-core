@@ -1,6 +1,43 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Mon, 01 Aug 2022 13:36:56 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Update links to BIS documentation.
+- move reference of collectPredecessorIds from deprecated to new API getReferenceIds
+- Transport RPC requests over IPC when available.
+- Ensure IPC messages are processed sequentially on the backend
+- Remove AuthStatus from IModelError.
+- make getModelProps a GET request instead of a POST
+- Add cache headers to some rpc operations
+- Add option to quantize positions in GraphicsRequestProps.
+- FeatureOverrides now merges element overrides with script overrides and allows callers to specify criteria under which script overrides should be ignored.
+- DisplayStyleSettings.scheduleScriptProps is no longer deprecated. Add comparison methods for types in the RenderSchedule namespace.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
 
 ## 3.2.7
 Mon, 01 Aug 2022 13:36:56 GMT

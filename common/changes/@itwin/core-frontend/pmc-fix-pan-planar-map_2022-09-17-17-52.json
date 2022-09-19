@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix pan tool failing to work when zoomed out with planar globe mode.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -1212,7 +1212,7 @@ export class Code implements CodeProps {
     static fromJSON(json?: any): Code;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
-    scope: string;
+    scope: Id64String;
     spec: Id64String;
     // (undocumented)
     toJSON(): CodeProps;
@@ -1222,11 +1222,8 @@ export class Code implements CodeProps {
 
 // @public
 export interface CodeProps {
-    // (undocumented)
     scope: CodeScopeProps;
-    // (undocumented)
-    spec: Id64String;
-    // (undocumented)
+    spec: Id64String | string;
     value?: string;
 }
 
@@ -2299,6 +2296,62 @@ export class ECJsNames {
     static toJsName(propName: string, isSystemProperty?: boolean): string;
 }
 
+// @public (undocumented)
+export interface ECSchemaItemProps {
+    // (undocumented)
+    readonly $schema?: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name?: string;
+    // (undocumented)
+    readonly schema?: string;
+    // (undocumented)
+    readonly schemaItemType?: string;
+    // (undocumented)
+    readonly schemaVersion?: string;
+}
+
+// @public
+export interface ECSchemaProps {
+    // (undocumented)
+    readonly $schema: string;
+    // (undocumented)
+    readonly alias: string;
+    // (undocumented)
+    readonly customAttributes?: Array<{
+        [value: string]: any;
+    }>;
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly items?: {
+        [name: string]: ECSchemaItemProps;
+    };
+    // (undocumented)
+    readonly label?: string;
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly references?: ECSchemaReferenceProps[];
+    // (undocumented)
+    readonly version: string;
+}
+
+// @public (undocumented)
+export interface ECSchemaReferenceProps {
+    // (undocumented)
+    readonly name: string;
+    // (undocumented)
+    readonly version: string;
+}
+
 // @beta (undocumented)
 export class ECSqlReader {
     // @internal
@@ -2601,6 +2654,7 @@ export interface ElementIdsAndRangesProps {
 // @public
 export interface ElementLoadOptions {
     displayStyle?: DisplayStyleLoadProps;
+    onlyBaseProperties?: boolean;
     renderTimeline?: RenderTimelineLoadProps;
     wantBRepData?: boolean;
     wantGeometry?: boolean;
@@ -2608,7 +2662,6 @@ export interface ElementLoadOptions {
 
 // @public
 export interface ElementLoadProps extends ElementLoadOptions {
-    // (undocumented)
     code?: CodeProps;
     // (undocumented)
     federationGuid?: GuidString;
@@ -3764,6 +3817,11 @@ export namespace Gradient {
         Spherical = 4,
         Thematic = 6
     }
+    export interface ProduceImageArgs {
+        height: number;
+        includeThematicMargin?: boolean;
+        width: number;
+    }
     export class Symb {
         // (undocumented)
         angle?: Angle;
@@ -3787,6 +3845,7 @@ export namespace Gradient {
         mapColor(value: number): ColorDef;
         // (undocumented)
         mode: Mode;
+        produceImage(args: ProduceImageArgs): ImageBuffer;
         // (undocumented)
         shift: number;
         // (undocumented)
@@ -4142,7 +4201,7 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     connection: any;
     // (undocumented)
-    destroy(error?: Error): void;
+    destroy(error?: Error): this;
     // (undocumented)
     header: (field: string) => string | undefined;
     // (undocumented)
@@ -4197,7 +4256,7 @@ export interface HydrateViewStateRequestProps {
     acsId?: string;
     // (undocumented)
     baseModelId?: Id64String;
-    // (undocumented)
+    // @deprecated (undocumented)
     notLoadedCategoryIds?: CompressedId64Set;
     // (undocumented)
     notLoadedModelSelectorStateModels?: CompressedId64Set;
@@ -4215,7 +4274,7 @@ export interface HydrateViewStateResponseProps {
     acsElementProps?: ElementProps;
     // (undocumented)
     baseModelProps?: ModelProps;
-    // (undocumented)
+    // @deprecated (undocumented)
     categoryIdsResult?: SubCategoryResultRow[];
     // (undocumented)
     modelSelectorStateModels?: ModelProps[];
@@ -4597,6 +4656,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
     // (undocumented)
     queryRows(_iModelToken: IModelRpcProps, _request: DbQueryRequest): Promise<DbQueryResponse>;
+    // (undocumented)
+    querySubCategories(_iModelToken: IModelRpcProps, _categoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryTextureData(_iModelToken: IModelRpcProps, _textureLoadProps: TextureLoadProps): Promise<TextureData | undefined>;
     // (undocumented)
@@ -5126,11 +5187,11 @@ export type LocalFileName = string;
 // @public
 export interface Localization {
     changeLanguage(language: string): Promise<void>;
-    getEnglishString(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    getEnglishString(namespace: string, key: string | string[], options?: TranslationOptions): string;
     getLanguageList(): readonly string[];
     getLocalizedKeys(inputString: string): string;
-    getLocalizedString(key: string | string[], options?: LocalizationOptions): string;
-    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: LocalizationOptions): string;
+    getLocalizedString(key: string | string[], options?: TranslationOptions): string;
+    getLocalizedStringWithNamespace(namespace: string, key: string | string[], options?: TranslationOptions): string;
     // @internal (undocumented)
     getNamespacePromise(name: string): Promise<void> | undefined;
     initialize(namespaces: string[]): Promise<void>;
@@ -7964,11 +8025,15 @@ export enum RpcRequestStatus {
     // (undocumented)
     Rejected = 5,
     // (undocumented)
+    RequestTimeout = 13,
+    // (undocumented)
     Resolved = 4,
     // (undocumented)
     ServiceUnavailable = 11,
     // (undocumented)
     Submitted = 2,
+    // (undocumented)
+    TooManyRequests = 14,
     // (undocumented)
     Unknown = 0
 }
@@ -9199,6 +9264,16 @@ export interface TileTreeProps {
 // @public
 export interface TileVersionInfo {
     formatVersion: number;
+}
+
+// @public
+export interface TranslationOptions {
+    [key: string]: any;
+    context?: any;
+    count?: number;
+    defaultValue?: any;
+    fallbackLng?: string;
+    lngs?: string[];
 }
 
 // @alpha

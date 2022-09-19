@@ -45,7 +45,7 @@ export class CodeSpecs {
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId");
 
     // good chance it is already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
+    const found = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
     if (found !== undefined)
       return found;
 

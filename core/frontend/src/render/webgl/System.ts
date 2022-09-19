@@ -422,6 +422,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return promise;
   }
 
+  public override get hasExternalTextureRequests(): boolean {
+    const loader = ExternalTextureLoader.instance;
+    return loader.numActiveRequests > 0 || loader.numPendingRequests > 0;
+  }
+
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
   public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
@@ -771,7 +776,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   /** Attempt to create a texture using gradient symbology. */
   public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
-    const source = symb.getImage(0x100, 0x100);
+    let width = 0x100;
+    let height = 0x100;
+    if (symb.mode === Gradient.Mode.Thematic) {
+      // Pixels in each row are identical, no point in having width > 1.
+      width = 1;
+      // We want maximum height to minimize bleeding of margin color.
+      height = this.maxTextureSize;
+    }
+
+    const source = symb.produceImage({ width, height, includeThematicMargin: true });
     return this.createTexture({
       image: {
         source,

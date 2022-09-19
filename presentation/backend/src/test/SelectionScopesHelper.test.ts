@@ -11,11 +11,12 @@ import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/co
 import { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { join } from "path";
 
 describe("SelectionScopesHelper", () => {
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
   });
 
   after(async () => {

@@ -2,38 +2,52 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { InputStatus, LabeledSelect } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<LabeledSelect />", () => {
   it("should render", () => {
-    mount(<LabeledSelect label="select test" options={[]} />);
-  });
+    render(<LabeledSelect label="select test" options={[]} />);
 
-  it("renders correctly", () => {
-    shallow(<LabeledSelect label="select test" options={[]} />).should.matchSnapshot();
+    expect(screen.getByLabelText("select test")).to.eq(screen.getByRole("combobox"));
   });
 
   it("renders disabled correctly", () => {
-    shallow(<LabeledSelect label="select test" disabled options={[]} />).should.matchSnapshot();
+    const {container} = render(<LabeledSelect label="select test" disabled options={[]} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("uicore-disabled");
   });
 
   it("renders status correctly", () => {
-    shallow(<LabeledSelect label="select test" status={InputStatus.Success} options={[]} />).should.matchSnapshot();
+    const {container} = render(<LabeledSelect label="select test" status={InputStatus.Success} options={[]} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("success");
   });
 
   it("renders message correctly", () => {
-    shallow(<LabeledSelect label="select test" message={"Test message"} options={[]} />).should.matchSnapshot();
+    render(<LabeledSelect label="select test" message={"Test message"} options={[]} />);
+
+    expect(screen.getByText("Test message", {selector: ".uicore-message"})).to.exist;
   });
 
   it("renders array options correctly", () => {
-    shallow(<LabeledSelect label="select test" options={["Option 1", "Option 2", "Option 3"]} />).should.matchSnapshot();
+    render(<LabeledSelect label="select test" options={["Option 1", "Option 2", "Option 3"]} />);
+
+    expect(screen.getByRole("option", {name: "Option 1"})).to.exist;
+    expect(screen.getByRole("option", {name: "Option 2"})).to.exist;
+    expect(screen.getByRole("option", {name: "Option 3"})).to.exist;
   });
 
   it("renders object options correctly", () => {
-    shallow(<LabeledSelect label="select test" options={{ option1: "Option 1", option2: "Option 2", option3: "Option3" }} />).should.matchSnapshot();
+    render(<LabeledSelect label="select test" options={{ option1: "Option 1", option2: "Option 2", option3: "Option 3" }} />);
+
+    expect(screen.getByRole("option", {name: "Option 1"})).to.exist;
+    expect(screen.getByRole("option", {name: "Option 2"})).to.exist;
+    expect(screen.getByRole("option", {name: "Option 3"})).to.exist;
   });
 });

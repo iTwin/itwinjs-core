@@ -342,7 +342,7 @@ describe("IModelTransformerHub", () => {
     if (IModelJsFs.existsSync(masterSeedFileName))
       IModelJsFs.removeSync(masterSeedFileName); // make sure file from last run does not exist
 
-    const state0 = [1, 2];
+    const state0 = [1, 2, 20]; // 20 will be deleted by a branch
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
@@ -412,7 +412,7 @@ describe("IModelTransformerHub", () => {
 
       // push Branch1 State1
       const delta01 = [2, 3, 4]; // update 2, insert 3 and 4
-      const state1 = [1, 2, 3, 4];
+      const state1 = [1, 2, 3, 4, 20];
       maintainPhysicalObjects(branchDb1, delta01);
       assertPhysicalObjects(branchDb1, state1);
       await saveAndPushChanges(branchDb1, "State0 -> State1");
@@ -420,7 +420,7 @@ describe("IModelTransformerHub", () => {
       assert.notEqual(changesetBranch1State1, changesetBranch1State0);
 
       // push Branch1 State2
-      const delta12 = [1, -3, 5, 6]; // update 1, delete 3, insert 5 and 6
+      const delta12 = [1, -3, 5, 6, -20]; // update 1, delete 3, 20, insert 5 and 6
       const state2 = [1, 2, -3, 4, 5, 6];
       maintainPhysicalObjects(branchDb1, delta12);
       assertPhysicalObjects(branchDb1, state2);
@@ -665,6 +665,139 @@ describe("IModelTransformerHub", () => {
         // delete iModel briefcases
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
+      } catch (err) {
+        assert.fail(err, undefined, "failed to clean up");
+      }
+    }
+  });
+
+  it("should delete branch-deleted elements in reverse synchronization", async () => {
+    const masterIModelName = "ReSyncDeleteMaster";
+    const masterIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: masterIModelName, noLocks: true });
+    let branchIModelId!: GuidString;
+    assert.isTrue(Guid.isGuid(masterIModelId));
+
+    try {
+      const masterDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: masterIModelId });
+
+      // populate master
+      const categId = SpatialCategory.insert(masterDb, IModel.dictionaryId, "category", new SubCategoryAppearance());
+      const physModel1Id = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "phys-model-1");
+      const physObj1Id = new PhysicalObject({
+        classFullName: PhysicalObject.classFullName,
+        model: physModel1Id,
+        category: categId,
+        code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: "phys-obj1" }),
+        userLabel: "phys-obj-1",
+        geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
+        placement: {
+          origin: Point3d.create(0, 0, 0),
+          angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+        },
+      }, masterDb).insert();
+      const physModel2Id = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "phys-model-2");
+      masterDb.saveChanges();
+      await masterDb.pushChanges({ accessToken, description: "setup master" });
+
+      // create and initialize branch from master
+      const branchIModelName = "RevSyncDeleteBranch";
+      branchIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: branchIModelName, noLocks: true, version0: masterDb.pathName });
+      assert.isTrue(Guid.isGuid(branchIModelId));
+      const branchDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: branchIModelId });
+      await branchDb.importSchemas([BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      assert.isTrue(branchDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
+      const provenanceInitializer = new IModelTransformer(masterDb, branchDb, { wasSourceIModelCopiedToTarget: true });
+      await provenanceInitializer.processSchemas();
+      await provenanceInitializer.processAll();
+      provenanceInitializer.dispose();
+      branchDb.saveChanges();
+      await branchDb.pushChanges({ accessToken, description: "setup branch" });
+
+      // delete a model and an element in branch
+      const physObj1 = branchDb.elements.getElement<PhysicalObject>(physObj1Id, PhysicalObject);
+      const physModel2 = branchDb.models.getModel<PhysicalModel>(physModel2Id, PhysicalModel);
+      const physModel2Partition = branchDb.elements.getElement<PhysicalPartition>(physModel2Id, PhysicalPartition);
+      const physObj1Aspects = branchDb.elements.getAspects(physObj1.id);
+      const physModel2PartitionAspects = branchDb.elements.getAspects(physModel2Partition.id);
+      physObj1.delete();
+      physModel2.delete();
+      // deleting the model will dangle its partition, delete that too
+      physModel2Partition.delete();
+      branchDb.saveChanges();
+      await branchDb.pushChanges({ accessToken, description: "branch delete obj1 and model2" });
+
+      // verify the branch state
+      const keptModel = branchDb.models.tryGetModel<PhysicalModel>(physModel1Id, PhysicalModel);
+      expect(keptModel).not.to.be.undefined;
+      const deletedElem = branchDb.elements.tryGetElement<PhysicalObject>(physObj1Id, PhysicalObject);
+      expect(deletedElem).to.be.undefined;
+      const deletedModelElem = branchDb.elements.tryGetElement<PhysicalPartition>(physModel2Id, PhysicalPartition);
+      expect(deletedModelElem).to.be.undefined;
+      const deletedModel = branchDb.models.tryGetModel<PhysicalModel>(physModel2Id, PhysicalModel);
+      expect(deletedModel).to.be.undefined;
+
+      // expected extracted changed ids
+      const branchDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: branchIModelId, targetDir: BriefcaseManager.getChangeSetsPath(branchIModelId) });
+      expect(branchDbChangesets).to.have.length(2);
+      const latestChangeset = branchDbChangesets[1];
+      const extractedChangedIds = branchDb.nativeDb.extractChangedInstanceIdsFromChangeSets([latestChangeset.pathname]);
+      const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
+        aspect: {
+          delete: [...physModel2PartitionAspects, ...physObj1Aspects].map((a) => a.id),
+        },
+        element: { delete: [physObj1Id, physModel2Id] },
+        model: {
+          update: [IModelDb.rootSubjectId, physModel1Id], // containing model will also get last modification time updated
+          delete: [physModel2Id],
+        },
+      };
+      expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
+
+      // reverse synchronize
+      class IModelImporterInjected extends IModelImporter {
+        public didImportDeletedElem = false;
+        public override importElement(sourceElement: ElementProps): Id64String {
+          if (sourceElement.id === physModel2Id)
+            this.didImportDeletedElem = true;
+          return super.importElement(sourceElement);
+        }
+      }
+      class IModelTransformerInjected extends IModelTransformer {
+        public didExportDeletedElem = false;
+        public override async onExportElement(sourceElement: Element) {
+          if (sourceElement.id === physModel2Id)
+            this.didExportDeletedElem = true;
+          return super.onExportElement(sourceElement);
+        }
+      }
+
+      // FIXME: add known non-equal mapping in branch
+
+      const synchronizer = new IModelTransformerInjected(branchDb, new IModelImporterInjected(masterDb), {
+        // NOTE: not using a targetScopeElementId because this test deals with temporary dbs, but that is a bad practice, use one
+        isReverseSynchronization: true,
+      });
+      await synchronizer.processChanges(accessToken);
+      expect(synchronizer.didExportDeletedElem).to.be.false;
+      expect((synchronizer.importer as IModelImporterInjected).didImportDeletedElem).to.be.false;
+      branchDb.saveChanges();
+      await branchDb.pushChanges({ accessToken, description: "synchronize" });
+      synchronizer.dispose();
+
+      // check that the element was deleted in the master
+      const physModel2InBranchId = masterDb.elements.queryElementIdByCode(
+        PhysicalPartition.createCode(masterDb, IModelDb.rootSubjectId, "phys-model-2"),
+      );
+      expect(physModel2InBranchId).to.be.undefined;
+
+      // close iModel briefcases
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, masterDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, branchDb);
+    } finally {
+      try {
+        // delete iModel briefcases
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: masterIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId });
       } catch (err) {
         assert.fail(err, undefined, "failed to clean up");
       }

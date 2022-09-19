@@ -1,6 +1,49 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Mon, 01 Aug 2022 13:36:56 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- Support non-modifiable preview of a ClipVector that isn't a single ClipShape/ConvexClipPlaneSet.
+- upgrade mocha to version 10.0.0
+- Update links to BIS documentation.
+- Clear drag state when button let up outside view. Don't send tools drag events if they didn't get button down event.
+- Transport RPC requests over IPC when available.
+- Move ServiceExtensionProvider to the @itwin/extension-client package
+- Restore the possibility to attach any cesium asset using getCesiumAssetUrl
+- Prevent duplicate logo cards from displaying when clicking the iTwin.js logo in a viewport.
+- Add option to quantize positions in TileAdmin.requestElementGraphics.
+- Fix reality models failing to cast shadows.
+- Convert negative ViewRect coordinates to zero.
+- EmphasizeElements ignores script overrides for de-emphasized elements if other elements are being emphasized.
+- Promote Tool Settings APIs to public.
+- Add support for applying schedule scripts without requiring the script to be hosted by a persistent element.
+- Fixes for updateDynamics to supply ajusted point.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+### Updates
+
+- Add IModelConnection.categories for querying category information. Add support for hiliting the intersection of a set of models and a set of subcategories.
 
 ## 3.2.7
 Mon, 01 Aug 2022 13:36:56 GMT

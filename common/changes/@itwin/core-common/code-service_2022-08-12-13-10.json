@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "added \"onlyBaseProperties\" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
