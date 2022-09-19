@@ -79,9 +79,16 @@ export class ECReferenceTypesCache {
   public async initAllSchemasInIModel(imodel: IModelDb): Promise<void> {
     const schemaLoader = new SchemaLoader((name: string) => { return imodel.getSchemaProps(name); });
     await imodel.withPreparedStatement(`
-      SELECT Name FROM ECDbMeta.ECSchemaDef
-      -- schemas defined before biscore are system schemas and no such entities can be transformed so ignore them
-      WHERE ECInstanceId >= (SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore')
+      WITH RECURSIVE refs(SchemaId) AS (
+        SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore'
+        UNION ALL
+        SELECT sr.SourceECInstanceId
+        FROM ECDbMeta.SchemaHasSchemaReferences sr
+        JOIN refs ON sr.TargetECInstanceId = refs.SchemaId
+      )
+      SELECT s.Name
+      FROM refs
+      JOIN ECDbMeta.ECSchemaDef s ON refs.SchemaId=s.ECInstanceId
       -- ensure schema dependency order
       ORDER BY ECInstanceId
     `, async (stmt) => {
