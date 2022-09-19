@@ -200,8 +200,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
 * IMJS_URL_PREFIX
   * If defined, the URL prefix to use when accessing the iModel hub (eg "qa-").
-* IMJS_OIDC_HEADLESS
-  * If defined, run in headless mode. (Requires IMJS_OIDC_CLIENT_ID, IMJS_OIDC_SCOPE, IMJS_OIDC_REDIRECT_URI, IMJS_OIDC_EMAIL, and IMJS_OIDC_PASSWORD to also be defined, **or** for IMJS_OIDC_CLIENT_ID, IMJS_OIDC_CLIENT_SECRET, and IMJS_OIDC_SCOPE to be defined.)
 * IMJS_OIDC_CLIENT_ID
   * If defined, the client ID to use for OIDC auth.
 * IMJS_OIDC_SCOPE
@@ -209,19 +207,14 @@ You can use these environment variables to alter the default behavior of various
 * IMJS_OIDC_REDIRECT_URI
   * If defined, the redirect URI to be used for OIDC auth.
     * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "http://localhost:3000/signin-callback" for this.
-* IMJS_OIDC_EMAIL
-  * If defined, along with IMJS_OIDC_HEADLESS, the email address to be used for OIDC auth.
-* IMJS_OIDC_PASSWORD
-  * If defined, along with IMJS_OIDC_HEADLESS, the password to be used for OIDC auth.
 * IMJS_OIDC_CLIENT_SECRET
-  * If defined, along with IMJS_OIDC_HEADLESS, the client secret to be used for OIDC auth.
-    * NOTE: Unlike IMJS_OIDC_PASSWORD and IMJS_OIDC_CLIENT_SECRET, this is not required in order for IMJS_OIDC_HEADLESS to work.
-* IMJS_OIDC_AUTHORITY
-  * If defined, along with IMJS_OIDC_HEADLESS, the authority to use for service authorization.
+  * If defined in iOS, the client secret to be used for OIDC auth.
 * IMJS_BRIEFCASE_CACHE_LOCATION
   * If defined, the full path to the directory in which to store cached briefcases.
 * IMJS_IGNORE_CACHE
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
+* IMJS_DEBUG_URL
+  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
 
 ## Key-ins
 

@@ -16,12 +16,10 @@ import {
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
-// import { ServiceAuthorizationClient } from "@itwin/service-authorization";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -253,46 +251,12 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 };
 
 async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
-  if (process.env.IMJS_OIDC_HEADLESS) {
-    if (checkEnvVars(
-      "IMJS_OIDC_CLIENT_ID",
-      "IMJS_OIDC_SCOPE",
-      "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD"
-    )) {
-      // test-only authorization client with credentials from the environment.
-      return new TestBrowserAuthorizationClient({
-        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
-        scope: process.env.IMJS_OIDC_SCOPE!,
-        clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET,
-      }, {
-        email: process.env.IMJS_OIDC_EMAIL!,
-        password: process.env.IMJS_OIDC_PASSWORD!,
-      });
-    } else if (checkEnvVars(
-      "IMJS_OIDC_CLIENT_ID",
-      "IMJS_OIDC_CLIENT_SECRET",
-      "IMJS_OIDC_SCOPE",
-    )) {
-      // TODO: This throws a weird exception at run-time (ServiceAuthorizationClient is unable to load @itwin/core-bentley).
-      return undefined;
-      // // Setup a client using the service authorization workflow.
-      // return new ServiceAuthorizationClient({
-      //   clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-      //   clientSecret: process.env.IMJS_OIDC_CLIENT_SECRET!,
-      //   scope: process.env.IMJS_OIDC_SCOPE!,
-      //   authority: process.env.IMJS_OIDC_AUTHORITY,
-      // });
-    }
-  } else if (checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE")) {
-    if (ProcessDetector.isElectronAppBackend) {
-      return new ElectronMainAuthorization({
-        clientId: process.env.IMJS_OIDC_CLIENT_ID!,
-        scope: process.env.IMJS_OIDC_SCOPE!,
-        redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
-      });
-    }
+  if (ProcessDetector.isElectronAppBackend && checkEnvVars("IMJS_OIDC_CLIENT_ID", "IMJS_OIDC_SCOPE")) {
+    return new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      scope: process.env.IMJS_OIDC_SCOPE!,
+      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI ?? "http://localhost:3000/signin-callback",
+    });
   }
   // Note: Mobile's default auth client works, and will be used if we get here on mobile.
   return undefined;

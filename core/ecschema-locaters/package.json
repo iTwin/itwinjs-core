@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "3.4.0-dev.44",
+  "version": "3.4.0-dev.47",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -58,7 +58,7 @@
     "@xmldom/xmldom": "^0.7.0"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^3.4.0-dev.44"
+    "@itwin/ecschema-metadata": "workspace:^3.4.0-dev.47"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",
