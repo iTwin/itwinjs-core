@@ -255,10 +255,8 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     }
 
     private func callDocumentCompletion(_ url: URL?) {
-        if let completion = self.documentCompletion {
-            completion(url)
-            self.documentCompletion = nil
-        }
+        documentCompletion?(url)
+        documentCompletion = nil
     }
     
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
