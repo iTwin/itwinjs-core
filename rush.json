@@ -395,13 +395,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/geonames-extension",
-      "projectFolder": "extensions/geonames",
-      "reviewCategory": "extensions",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/map-layers",
       "projectFolder": "extensions/map-layers",
       "reviewCategory": "extensions",
