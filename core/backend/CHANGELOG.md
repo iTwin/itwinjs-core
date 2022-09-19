@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 06 Sep 2022 20:54:19 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Sep 2022 19:00:04 GMT and should not be manually modified.
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+### Updates
+
+- call container.checkForChanges before attempting to open a v2 checkpoint
 
 ## 3.3.3
 Tue, 06 Sep 2022 20:54:19 GMT
