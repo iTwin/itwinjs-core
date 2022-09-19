@@ -18,6 +18,8 @@ Table of contents:
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
+- [Deprecations](#deprecations)
+- [SELECT * FROM Link Tables](#select-*-from-link-tables)
 
 ## Ambient Occlusion Improvements
 
@@ -139,3 +141,14 @@ A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can 
 A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
 
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+
+## Deprecations
+
+### @itwin/core-geometry
+
+`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
+
+## SELECT * FROM Link Tables
+
+Previously when we did SELECT * on a link table, it would only return ECInstanceId, ECClassId, SourceECInstanceId and TargetECInstanceId. We were skipping SourceECClassId and TargetECClassId. This behavior was dropped as technically SELECT * on a link table should also return SourceECClassId and TargetECClassId.
+The new behavior is that we would return ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceId, TargetECClassId when we do SELECT * on a link table.
