@@ -315,6 +315,7 @@ function WidgetStateSelect({
   const [options] = React.useState([
     { label: WidgetState[WidgetState.Open], value: WidgetState[WidgetState.Open] },
     { label: WidgetState[WidgetState.Closed], value: WidgetState[WidgetState.Closed] },
+    { label: WidgetState[WidgetState.Floating], value: WidgetState[WidgetState.Floating] },
     { label: WidgetState[WidgetState.Hidden], value: WidgetState[WidgetState.Hidden] },
     { label: WidgetState[WidgetState.Unloaded], value: WidgetState[WidgetState.Unloaded] },
   ]);

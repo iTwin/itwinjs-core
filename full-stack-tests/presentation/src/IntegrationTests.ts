@@ -88,7 +88,6 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   const backendInitProps: PresentationBackendProps = {
     requestTimeout: props.backendTimeout ?? 0,
     rulesetDirectories: [path.join(libDir, "assets", "rulesets")],
-    localeDirectories: [path.join(libDir, "assets", "locales")],
     defaultLocale: "en-PSEUDO",
     workerThreadsCount: 1,
     caching: {
@@ -108,7 +107,12 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
     authorizationClient: props.useClientServices
       ? TestUtility.getAuthorizationClient(TestUsers.regular)
       : undefined,
-    localization: new ITwinLocalization({ urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}` }),
+    localization: new ITwinLocalization({
+      urlTemplate: `file://${path.join(path.resolve("lib/public/locales"), "{{lng}}/{{ns}}.json").replace(/\\/g, "/")}`,
+      initOptions: {
+        preload: ["test"],
+      },
+    }),
   };
 
   if (props.useClientServices)

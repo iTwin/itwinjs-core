@@ -71,6 +71,7 @@ export class ElectronApp {
   public static async shutdown() {
     this._ipc = undefined;
     await NativeApp.shutdown();
+    ElectronRpcManager.terminateFrontend();
   }
 
   /**

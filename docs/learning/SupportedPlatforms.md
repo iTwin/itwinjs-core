@@ -4,7 +4,7 @@
 
 iTwin.js **backends** are built and tested on the following:
 
-- Debian 9 "Stretch" and Debian 10 "Buster"
+- Debian 10 "Buster" and Debian 11 "Bullseye"
 - Windows 10 version 1803 (or greater)
 - MacOS 10.15 (or greater)
 

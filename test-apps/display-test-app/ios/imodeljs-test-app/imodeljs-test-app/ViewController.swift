@@ -162,7 +162,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             webView.topAnchor.constraint(equalTo: self.view.topAnchor),
         ])
         self.view.setNeedsLayout()
-    
+
         let host = IModelJsHost.sharedInstance()
         var hashParams = "#port=\(host.getPort())&platform=ios&standalone=true"
 
@@ -205,7 +205,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         picker.delegate = self
         self.present(picker, animated: true)
     }
-    
+
     func getDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }

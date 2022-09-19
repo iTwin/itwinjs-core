@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Fix an issue where maxWidgetCount of a panel is exceeded when adding a widget.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
