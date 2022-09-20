@@ -143,73 +143,64 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    if (!this._wantSkirts) {
-      assert(builder.positions.length === options.initialVertexCapacity);
-      assert(builder.uvs.length === options.initialVertexCapacity);
-      assert(builder.normals?.capacity === options.initialVertexCapacity);
-      assert(builder.positions.length === builder.uvs.length);
-      assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
-      assert(builder.indices.capacity === options.initialIndexCapacity);
+    if (this._wantSkirts) {
+      const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
+      for (let c = 0; c < size; c++) {
+        // top row
+        let height = heights[sizeM1 * size + c];
+        const u = c * delta;
+        projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
+        uv.set(u, 1);
+        const topIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
-      return builder.finish();
+        // bottom row
+        height = heights[c];
+        projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
+        uv.set(u, 0);
+        const bottomIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+        // left side
+        height = heights[(sizeM1 - c) * size];
+        projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+        uv.set(0, 1 - u);
+        const leftIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+        // right side
+        height = heights[(sizeM1 - c) * size + sizeM1];
+        projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+        uv.set(1, 1 - u);
+        const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+        if (c == sizeM1)
+          break;
+
+        // top row
+        builder.addTriangle(c, c + 1, topIndex + 4);
+        builder.addTriangle(c, topIndex + 4, topIndex);
+
+        // bottom row
+        const row = size * sizeM1;
+        builder.addTriangle(row + c, row + c + 1, bottomIndex + 4);
+        builder.addTriangle(row + c, bottomIndex + 4, bottomIndex);
+
+        // left side
+        const left = c * size;
+        builder.addTriangle(left, left + size, leftIndex + 4);
+        builder.addTriangle(left, leftIndex + 4, leftIndex);
+
+        // right side
+        const right = c * size + sizeM1;
+        builder.addTriangle(right, right +size, rightIndex + 4);
+        builder.addTriangle(right, rightIndex + 4, rightIndex);
+      }
     }
 
-    const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
-    for (let c = 0; c < size; c++) {
-      // top row
-      let height = heights[sizeM1 * size + c];
-      const u = c * delta;
-      projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
-      uv.set(u, 1);
-      const i0 = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-      // bottom row
-      height = heights[c];
-      projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
-      uv.set(u, 0);
-      const i1 = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-      // left side
-      height = heights[(sizeM1 - c) * size];
-      projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
-      uv.set(0, 1 - u);
-      const i2 = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-      // right side
-      height = heights[(sizeM1 - c) * size + sizeM1];
-      projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
-      uv.set(1, 1 - u);
-      const i3 = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-      if (c == sizeM1)
-        continue;
-
-      // top row
-      builder.addTriangle(c, c + 1, i0 + 4);
-      builder.addTriangle(c, i0 + 4, i0);
-
-      // bottom row
-      const row = size * sizeM1;
-      builder.addTriangle(row + c, row + c + 1, i1 + 4);
-      builder.addTriangle(row + c, i1 + 4, i1);
-
-      // left side
-      const left = c * size;
-      builder.addTriangle(left, left + size, i2 + 4);
-      builder.addTriangle(left, i2 + 4, i2);
-
-      // right side
-      const right = c * size + sizeM1;
-      builder.addTriangle(right, right +size, i3 + 4);
-      builder.addTriangle(right, i3 + 4, i3);
-
-      // const q0 = c;
-      // const q1 = q0 + 1;
-      // const q3 = builder.positions.length - 1;
-      // const q2 = q3 + 1;
-      // builder.addTriangle(q0, q1, q2);
-      // builder.addTriangle(q0, q2, q3);
-    }
+    assert(builder.positions.length === options.initialVertexCapacity);
+    assert(builder.uvs.length === options.initialVertexCapacity);
+    assert(builder.normals?.capacity === options.initialVertexCapacity);
+    assert(builder.positions.length === builder.uvs.length);
+    assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
+    assert(builder.indices.capacity === options.initialIndexCapacity);
 
     return builder.finish();
   }
