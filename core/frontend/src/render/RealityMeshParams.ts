@@ -208,17 +208,18 @@ export class RealityMeshParamsBuilder {
     });
   }
 
-  /** Add a vertex to the mesh.
+  /** Add a vertex to the mesh and return its index in [[positions]].
    * @param position The 3d position, which will be quantized to the [[RealityMeshParamsBuilderOptions.positionRange]] supplied to the builder's constructor.
    * @param uv The texture coordinates, which will be quantized to the [[RealityMeshParamsBuilderOptions.uvRange]] supplied to the builder's constructor.
    * @param the normal vector, to be supplied if and only if [[RealityMeshParamsBuilderOptions.wantNormals]] was `true` when the builder was constructed.
    * @see [[addQuantizedVertex]] if your vertex data is already quantized.
+   * @returns the index of the new vertex in [[positions]].
    */
-  public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): void {
+  public addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): number {
     this._q3d.init(position, this.positions.params);
     this._q2d.init(uv, this.uvs.params);
     const oen = normal ? OctEncodedNormal.encode(normal) : undefined;
-    this.addQuantizedVertex(this._q3d, this._q2d, oen);
+    return this.addQuantizedVertex(this._q3d, this._q2d, oen);
   }
 
   /** Original API had weird mix of quantized and unquantized, used by CesiumTerrainProvider.
@@ -229,14 +230,15 @@ export class RealityMeshParamsBuilder {
     this.addQuantizedVertex(this._q3d, uv, normal);
   }
 
-  /** Add a vertex t o the mesh.
+  /** Add a vertex to the mesh and return its index in [[positions]].
    * @param position The 3d position, quantized to the [[RealityMeshParamsBuilderOptions.positionRange]] supplied to the builder's constructor.
    * @param uv The texture coordinates, quantized to the [[RealityMeshParamsBuilderOptions.uvRange]] supplied to the builder's constructor.
    * @param normal The unsigned 16-bit [OctEncodedNormal]($common) integer representation of the normal vector, to be supplied if and only if
    * [[RealityMeshParamsBuilderOptions.wantNormals]] was `true` when the builder was constructed.
    * @see [[addUnquantizedVertex]] if your vertex data is not already quantized.
+   * @returns the index of the new vertex in [[positions]].
    */
-  public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): void {
+  public addQuantizedVertex(position: XYAndZ, uv: XAndY, normal?: number): number {
     assert(this.positions.length < 0xffff, "RealityMeshParams supports no more than 64k vertices");
     assert((undefined === normal) === (undefined === this.normals), "RealityMeshParams requires all vertices to have normals, or none.");
 
@@ -246,6 +248,8 @@ export class RealityMeshParamsBuilder {
       assert(undefined !== this.normals, "Set RealityMeshParamsBuilderOptions.wantNormals");
       this.normals.push(normal);
     }
+
+    return this.positions.length - 1;
   }
 
   /** Add a triangle corresponding to the three specified vertices. */

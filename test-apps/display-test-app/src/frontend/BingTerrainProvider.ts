@@ -156,21 +156,36 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
     for (let c = 0; c < size; c++) {
-      const height = heights[sizeM1 * size + c];
+      // top row
+      let height = heights[sizeM1 * size + c];
       const u = c * delta;
       projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
       uv.set(u, 1);
-      builder.addUnquantizedVertex(position, uv, skirtNormal);
+      const i0 = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      // bottom row
+      height = heights[c];
+      projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(u, 0);
+      const i1 = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
       if (c == sizeM1)
         continue;
 
-      const q0 = c;
-      const q1 = q0 + 1;
-      const q3 = builder.positions.length - 1;
-      const q2 = q3 + 1;
-      builder.addTriangle(q0, q1, q2);
-      builder.addTriangle(q0, q2, q3);
+      // top row
+      builder.addTriangle(c, c + 1, i0 + 2);
+      builder.addTriangle(c, i0 + 2, i0);
+
+      // bottom row
+      const row = size * sizeM1;
+      builder.addTriangle(row + c, row + c + 1, i1 + 2);
+      builder.addTriangle(row + c, i1 + 2, i1);
+      // const q0 = c;
+      // const q1 = q0 + 1;
+      // const q3 = builder.positions.length - 1;
+      // const q2 = q3 + 1;
+      // builder.addTriangle(q0, q1, q2);
+      // builder.addTriangle(q0, q2, q3);
     }
 
     return builder.finish();
