@@ -404,7 +404,7 @@ export class IModelHost {
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this.platform.setCrashReporting(options.crashReportingConfig);
 
-      Logger.logTrace(loggerCategory, "Configured iModel crash reporting", {
+      Logger.logTrace(loggerCategory, "Configured crash reporting", {
         enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
         wantFullMemoryDumps: options.crashReportingConfig?.wantFullMemoryDumps,
         enableNodeReport: options.crashReportingConfig?.enableNodeReport,
