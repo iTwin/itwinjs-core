@@ -54,6 +54,13 @@ describe("ITwinLocalization", () => {
         assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
       });
     });
+
+    it("register namespace upon initialization", async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize([]);
+      assert.equal(localization.getEnglishString("Default", "FirstTrivial"), "First level string (default)");
+      assert.equal(localization.getEnglishString("Test", "FirstTrivial"), "First level string (test)");
+    });
   });
 
   describe("#getLocalizedKeys", () => {
@@ -909,8 +916,46 @@ describe("ITwinLocalization", () => {
 
   });
 
-  describe("#getNamespacePromise", () => {
-    // TODO
+  // TODO
+  describe.only("#getNamespacePromise", () => {
+    before(async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize(["Default", "Test"]);
+
+      germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
+      await germanLocalization.initialize(["Default", "Test"]);
+    });
+
+    it("a", async () => {
+      localization.registerNamespace("Default").then((v) => console.log(v));
+      localization.registerNamespace("No").then((v) => console.log(v));
+      localization.changeLanguage("abc").then((v) => console.log(v));
+      console.log(localization.getNamespacePromise("Default"));
+      console.log(localization.getNamespacePromise("Test"));
+
+
+      console.log("-------");
+      console.log(localization.registerNamespace("Default"));
+      console.log(localization.registerNamespace("No"));
+      console.log(localization.changeLanguage("abc"));
+      console.log(localization.getNamespacePromise("Default"));
+      console.log(localization.getNamespacePromise("Test"));
+
+
+      assert.isTrue(true);
+    });
+
+    // it("", async () => {
+
+    // });
+
+    // it("", async () => {
+
+    // });
+
+    // it("", async () => {
+
+    // });
   });
 
   describe("#getLanguageList", () => {
@@ -937,14 +982,6 @@ describe("ITwinLocalization", () => {
 
   describe("#changeLanguage", () => {
 
-    // before(async () => {
-    //   localization = new ITwinLocalization();
-    //   await localization.initialize(["Default", "Test"]);
-
-    //   germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
-    //   await germanLocalization.initialize(["Default", "Test"]);
-    // });
-
     it("change from english to another language", async () => {
       localization = new ITwinLocalization();
       await localization.initialize(["Default"]);
@@ -965,11 +1002,102 @@ describe("ITwinLocalization", () => {
   });
 
   describe("#registerNamespace", () => {
-    // TODO
+    let itwinLocalization: ITwinLocalization;
+
+    beforeEach(async () => {
+      itwinLocalization = new ITwinLocalization();
+    });
+
+    it("can read from namespace after it is registered", async () => {
+      await itwinLocalization.initialize([]);
+
+      await itwinLocalization.registerNamespace("Test");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+    });
+
+    it("zero initial, register one", async () => {
+      await itwinLocalization.initialize([]);
+
+      await itwinLocalization.registerNamespace("test1");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+    });
+
+    it("zero initial, register two", async () => {
+      await itwinLocalization.initialize([]);
+
+      await itwinLocalization.registerNamespace("test1");
+      await itwinLocalization.registerNamespace("test2");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test2"));
+    });
+
+    it("one initial, register one", async () => {
+      await itwinLocalization.initialize(["initial1"]);
+
+      await itwinLocalization.registerNamespace("test1");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial1"));
+    });
+
+    it("one initial, register two", async () => {
+      await itwinLocalization.initialize(["initial1"]);
+
+      await itwinLocalization.registerNamespace("test1");
+      await itwinLocalization.registerNamespace("test2");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test2"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial1"));
+    });
+
+    it("two initial, register one", async () => {
+      await itwinLocalization.initialize(["initial1", "initial2"]);
+
+      await itwinLocalization.registerNamespace("test1");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial2"));
+    });
+
+    it("two initial, register two", async () => {
+      await itwinLocalization.initialize(["initial1", "initial2"]);
+
+      await itwinLocalization.registerNamespace("test1");
+      await itwinLocalization.registerNamespace("test2");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("test1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial1"));
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("initial2"));
+    });
+
+    it("register duplicate namespaces", async () => {
+      await itwinLocalization.initialize([]);
+
+      await itwinLocalization.registerNamespace("Test");
+      await itwinLocalization.registerNamespace("Test");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+    });
+
+    it("register duplicate namespace of initial namespace doesn't break anything", async () => {
+      await itwinLocalization.initialize(["Test"]);
+
+      await itwinLocalization.registerNamespace("Test");
+
+      assert.isTrue(itwinLocalization.i18next.hasLoadedNamespace("Test"));
+      assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+    });
   });
 
-  describe("#unregisterNamespace", () => {
-    // TODO
-  });
+  // unregisterNamespace() isn't used and basically does nothing
+  // describe("#unregisterNamespace", () => {
+  // });
 
 });
