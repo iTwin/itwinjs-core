@@ -167,7 +167,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
       const q0 = c;
       const q1 = q0 + 1;
-      const q3 = builder.positions.length;
+      const q3 = builder.positions.length - 1;
       const q2 = q3 + 1;
       builder.addTriangle(q0, q1, q2);
       builder.addTriangle(q0, q2, q3);
