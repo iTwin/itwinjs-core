@@ -32,12 +32,16 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
-    // ###TODO normals, exaggeration, skirts.
+    // ###TODO normals, skirts.
     const heights = args.data as number[];
     const size = 16;
     assert(heights.length === size * size);
 
     const heightRange = Range1d.createArray(heights);
+    heightRange.low *= this._exaggeration;
+    heightRange.high *= this._exaggeration;
+    args.tile.adjustHeights(heightRange.low, heightRange.high);
+
     const projection = args.tile.getProjection(heightRange);
     const sizeM1 = size - 1;
     const builder = new RealityMeshParamsBuilder({
@@ -52,7 +56,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     for (let row = 0, v = 0; row < size; row++, v += delta) {
       for (let col = 0, u = 0; col < size; col++, u += delta) {
         const height = heights[(sizeM1 - row) * size + col];
-        projection.getPoint(u, 1 - v, height, position);
+        projection.getPoint(u, 1 - v, height * this._exaggeration, position);
         uv.set(u, 1 - v);
         builder.addUnquantizedVertex(position, uv);
       }
