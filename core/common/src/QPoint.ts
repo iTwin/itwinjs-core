@@ -246,6 +246,30 @@ export interface QPoint2dBuffer {
   points: Uint16Array;
 }
 
+const scratchQPoint2d = new QPoint2d();
+
+/** @public
+ * @extensions
+ */
+export namespace QPoint2dBuffer {
+  export function getQPoint(buffer: QPoint2dBuffer, pointIndex: number, result?: QPoint2d): QPoint2d {
+    const index = pointIndex * 2;
+    const x = buffer.points[index + 0];
+    const y = buffer.points[index + 1];
+    if (undefined === x || undefined === y)
+      throw new Error("Index out of range");
+
+    result = result ?? new QPoint2d();
+    result.setFromScalars(x, y);
+    return result;
+  }
+
+  export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
+    const qpt = getQPoint(buffer, pointIndex, scratchQPoint2d);
+    return qpt.unquantize(buffer.params, result);
+  }
+}
+
 /** A list of [[QPoint2d]]s all quantized to the same range.
  * @public
  * @extensions
@@ -606,6 +630,31 @@ export interface QPoint3dBuffer {
    * To obtain the `n`th point, use `QPoint3d.fromScalars(buffer.points[n * 3], buffer.points[n * 3 + 1], buffer.points[n * 3 + 2])`.
    */
   points: Uint16Array;
+}
+
+const scratchQPoint3d = new QPoint3d();
+
+/** @public
+ * @extensions
+ */
+export namespace QPoint3dBuffer {
+  export function getQPoint(buffer: QPoint3dBuffer, pointIndex: number, result?: QPoint3d): QPoint3d {
+    const index = pointIndex * 3;
+    const x = buffer.points[index + 0];
+    const y = buffer.points[index + 1];
+    const z = buffer.points[index + 2];
+    if (undefined === x || undefined === y || undefined === z)
+      throw new Error("Index out of range");
+
+    result = result ?? new QPoint3d();
+    result.setFromScalars(x, y, z);
+    return result;
+  }
+
+  export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
+    const qpt = getQPoint(buffer, pointIndex, scratchQPoint3d);
+    return qpt.unquantize(buffer.params, result);
+  }
 }
 
 /** A list of [[QPoint3d]]s all quantized to the same range.

@@ -185,7 +185,7 @@ export class RealityMeshParamsBuilder {
    * specified as `true`.
    * The vectors are stored as [OctEncodedNormal]($common)s.
    */
-  public readonly normals?: Uint16ArrayBuilder;
+  public normals?: Uint16ArrayBuilder;
 
   // Scratch variables
   private readonly _q3d = new QPoint3d();

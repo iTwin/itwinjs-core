@@ -57,6 +57,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       positionRange: projection.localRange,
       initialVertexCapacity: size * size,
       initialIndexCapacity: size * sizeM1 * 3 * 2,
+      // We will compute the normals after computing the positions.
+      wantNormals: false,
     });
 
     const uv = new Point2d();
