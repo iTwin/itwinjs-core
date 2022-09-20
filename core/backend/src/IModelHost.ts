@@ -53,7 +53,7 @@ export interface CrashReportingConfig {
   enableCrashDumps?: boolean;
   /** If enableCrashDumps is true, do you want a full-memory dump? Defaults to false. */
   wantFullMemoryDumps?: boolean;
-  /** Enable node-report? If so, node-report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
+  /** Enable Node.js crash reporting? If so, report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
