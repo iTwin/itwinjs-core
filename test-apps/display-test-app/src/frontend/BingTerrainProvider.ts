@@ -7,7 +7,7 @@ import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
+  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
   RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
@@ -58,13 +58,13 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     heightRange.high *= this._exaggeration;
     args.tile.adjustHeights(heightRange.low, heightRange.high);
 
-    // 16 new vertices along each edge, but the 4 at the corners are shared by two edges.
-    const numSkirtVertices = this._wantSkirts ? size * 2 + (size - 2) * 2 : 0;
+    // 16 new vertices along each edge.
+    const numSkirtVertices = this._wantSkirts ? size * 4 : 0;
     // 15 new quads along each edge.
     const numSkirtIndices = this._wantSkirts ? sizeM1 * sizeM1 * 4 * 3 * 2 : 0;
     const projection = args.tile.getProjection(heightRange);
 
-    const options: RealityMeshParamsBuilderOptions = {
+    const options = {
       positionRange: projection.localRange,
       initialVertexCapacity: size * size + numSkirtVertices,
       initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2 + numSkirtIndices,
@@ -87,7 +87,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     }
 
     if (this._wantNormals)
-      this.addNormals(builder);
+      this.addNormals(builder, options.initialVertexCapacity);
 
     for (let row = 0; row < sizeM1; row++) {
       const rowIndex = row * size;
@@ -103,61 +103,12 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    if (this._wantSkirts) {
-      const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
-      for (let c = 0; c < size; c++) {
-        // top row
-        let height = heights[sizeM1 * size + c];
-        const u = c * delta;
-        projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
-        uv.set(u, 1);
-        const topIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-        // bottom row
-        height = heights[c];
-        projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
-        uv.set(u, 0);
-        const bottomIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-        // left side
-        height = heights[(sizeM1 - c) * size];
-        projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
-        uv.set(0, 1 - u);
-        const leftIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-        // right side
-        height = heights[(sizeM1 - c) * size + sizeM1];
-        projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
-        uv.set(1, 1 - u);
-        const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
-
-        if (c == sizeM1)
-          break;
-
-        // top row
-        builder.addTriangle(c, c + 1, topIndex + 4);
-        builder.addTriangle(c, topIndex + 4, topIndex);
-
-        // bottom row
-        const row = size * sizeM1;
-        builder.addTriangle(row + c, row + c + 1, bottomIndex + 4);
-        builder.addTriangle(row + c, bottomIndex + 4, bottomIndex);
-
-        // left side
-        const left = c * size;
-        builder.addTriangle(left, left + size, leftIndex + 4);
-        builder.addTriangle(left, leftIndex + 4, leftIndex);
-
-        // right side
-        const right = c * size + sizeM1;
-        builder.addTriangle(right, right +size, rightIndex + 4);
-        builder.addTriangle(right, rightIndex + 4, rightIndex);
-      }
-    }
+    if (this._wantSkirts)
+      this.addSkirts(builder, heights, skirtHeight, projection);
 
     assert(builder.positions.length === options.initialVertexCapacity);
     assert(builder.uvs.length === options.initialVertexCapacity);
-    assert(builder.normals?.capacity === options.initialVertexCapacity);
+    assert(undefined === builder.normals || builder.normals.capacity === options.initialVertexCapacity);
     assert(builder.positions.length === builder.uvs.length);
     assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
     assert(builder.indices.capacity === options.initialIndexCapacity);
@@ -165,7 +116,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     return builder.finish();
   }
 
-  private addNormals(builder: RealityMeshParamsBuilder): void {
+  private addNormals(builder: RealityMeshParamsBuilder, numVertices: number): void {
     const scratchP0 = new Point3d();
     const scratchP1 = new Point3d();
     const scratchP2 = new Point3d();
@@ -188,7 +139,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       sum.normalizeInPlace();
     };
 
-    builder.normals = new Uint16ArrayBuilder({ initialCapacity: builder.positions.length });
+    builder.normals = new Uint16ArrayBuilder({ initialCapacity: numVertices });
     const vertexNormal = Vector3d.createZero();
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
@@ -207,6 +158,62 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
         vertexNormal.normalizeInPlace();
         builder.normals.push(OctEncodedNormal.encode(vertexNormal));
       }
+    }
+  }
+
+  private addSkirts(builder: RealityMeshParamsBuilder, heights: number[], skirtHeight: number, projection: MapTileProjection): void {
+    const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
+    const uv = new Point2d();
+    const position = new Point3d();
+    const delta = 1 / sizeM1;
+
+    for (let c = 0; c < size; c++) {
+      // top row
+      let height = heights[sizeM1 * size + c];
+      const u = c * delta;
+      projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(u, 1);
+      const topIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      // bottom row
+      height = heights[c];
+      projection.getPoint(u, 0, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(u, 0);
+      const bottomIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      // left side
+      height = heights[(sizeM1 - c) * size];
+      projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(0, 1 - u);
+      const leftIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      // right side
+      height = heights[(sizeM1 - c) * size + sizeM1];
+      projection.getPoint(1, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(1, 1 - u);
+      const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      if (c == sizeM1)
+        break;
+
+      // top row
+      builder.addTriangle(c, c + 1, topIndex + 4);
+      builder.addTriangle(c, topIndex + 4, topIndex);
+
+      // bottom row
+      const row = size * sizeM1;
+      builder.addTriangle(row + c, row + c + 1, bottomIndex + 4);
+      builder.addTriangle(row + c, bottomIndex + 4, bottomIndex);
+
+      // left side
+      const left = c * size;
+      builder.addTriangle(left, left + size, leftIndex + 4);
+      builder.addTriangle(left, leftIndex + 4, leftIndex);
+
+      // right side
+      const right = c * size + sizeM1;
+      builder.addTriangle(right, right +size, rightIndex + 4);
+      builder.addTriangle(right, rightIndex + 4, rightIndex);
     }
   }
 
