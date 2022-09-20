@@ -14,7 +14,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   private readonly _provider: BingElevationProvider;
   private readonly _exaggeration: number;
   private readonly _wantNormals: boolean;
-  public readonly tilingScheme = new GeographicTilingScheme();
+  public readonly tilingScheme = new GeographicTilingScheme(1, 1);
 
   public constructor(options: TerrainMeshProviderOptions) {
     super();
