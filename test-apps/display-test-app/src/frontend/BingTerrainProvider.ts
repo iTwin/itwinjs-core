@@ -169,17 +169,28 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       uv.set(u, 0);
       const i1 = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
+      // left side
+      height = heights[(sizeM1 - c) * size];
+      projection.getPoint(0, 1 - u, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(0, 1 - u);
+      const i2 = builder.addUnquantizedVertex(position, uv, skirtNormal);
+
       if (c == sizeM1)
         continue;
 
       // top row
-      builder.addTriangle(c, c + 1, i0 + 2);
-      builder.addTriangle(c, i0 + 2, i0);
+      builder.addTriangle(c, c + 1, i0 + 3);
+      builder.addTriangle(c, i0 + 3, i0);
 
       // bottom row
       const row = size * sizeM1;
-      builder.addTriangle(row + c, row + c + 1, i1 + 2);
-      builder.addTriangle(row + c, i1 + 2, i1);
+      builder.addTriangle(row + c, row + c + 1, i1 + 3);
+      builder.addTriangle(row + c, i1 + 3, i1);
+
+      // left side
+      const left = c * size;
+      builder.addTriangle(left, left + size, i2 + 3);
+      builder.addTriangle(left, i2 + 3, i2);
       // const q0 = c;
       // const q1 = q0 + 1;
       // const q3 = builder.positions.length - 1;
