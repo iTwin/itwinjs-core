@@ -246,16 +246,16 @@ export interface QPoint2dBuffer {
   points: Uint16Array;
 }
 
-const scratchQPoint2d = new QPoint2d();
-
 /** @public
  * @extensions
  */
 export namespace QPoint2dBuffer {
-  export function getQPoint(buffer: QPoint2dBuffer, pointIndex: number, result?: QPoint2d): QPoint2d {
+  const scratchQPoint2d = new QPoint2d();
+
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d {
     const index = pointIndex * 2;
-    const x = buffer.points[index + 0];
-    const y = buffer.points[index + 1];
+    const x = points[index + 0];
+    const y = points[index + 1];
     if (undefined === x || undefined === y)
       throw new Error("Index out of range");
 
@@ -265,7 +265,7 @@ export namespace QPoint2dBuffer {
   }
 
   export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
-    const qpt = getQPoint(buffer, pointIndex, scratchQPoint2d);
+    const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint2d);
     return qpt.unquantize(buffer.params, result);
   }
 }
@@ -632,17 +632,17 @@ export interface QPoint3dBuffer {
   points: Uint16Array;
 }
 
-const scratchQPoint3d = new QPoint3d();
-
 /** @public
  * @extensions
  */
 export namespace QPoint3dBuffer {
-  export function getQPoint(buffer: QPoint3dBuffer, pointIndex: number, result?: QPoint3d): QPoint3d {
+  const scratchQPoint3d = new QPoint3d();
+
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d {
     const index = pointIndex * 3;
-    const x = buffer.points[index + 0];
-    const y = buffer.points[index + 1];
-    const z = buffer.points[index + 2];
+    const x = points[index + 0];
+    const y = points[index + 1];
+    const z = points[index + 2];
     if (undefined === x || undefined === y || undefined === z)
       throw new Error("Index out of range");
 
@@ -652,7 +652,7 @@ export namespace QPoint3dBuffer {
   }
 
   export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
-    const qpt = getQPoint(buffer, pointIndex, scratchQPoint3d);
+    const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
     return qpt.unquantize(buffer.params, result);
   }
 }
@@ -809,6 +809,8 @@ interface QPoint2dBufferBuilderOptions {
  * @extensions
  */
 export class QPoint2dBufferBuilder {
+  private readonly _scratchQPoint2d = new QPoint2d();
+
   /** The parameters used to quantize the points in the [[buffer]]. */
   public readonly params: QParams2d;
   /** The buffer that holds the points. */
@@ -842,6 +844,14 @@ export class QPoint2dBufferBuilder {
     return len / 2;
   }
 
+  public get(pointIndex: number, result?: QPoint2d): QPoint2d {
+    return QPoint2dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
+  }
+
+  public unquantize(pointIndex: number, result?: Point3d): Point3d {
+    return this.get(pointIndex, this._scratchQPoint2d).unquantize(this.params, result);
+  }
+
   /** Obtain a [[QPoint2dBuffer]] containing all of the points that have been appended by this builder. */
   public finish(): QPoint2dBuffer {
     return {
@@ -873,6 +883,8 @@ interface QPoint3dBufferBuilderOptions {
  * @extensions
  */
 export class QPoint3dBufferBuilder {
+  private readonly _scratchQPoint3d = new QPoint3d();
+
   /** The parameters used to quantize the points in the [[buffer]]. */
   public readonly params: QParams3d;
   /** The buffer that holds the points. */
@@ -905,6 +917,14 @@ export class QPoint3dBufferBuilder {
     const len = this.buffer.length;
     assert(len % 3 === 0);
     return len / 3;
+  }
+
+  public get(pointIndex: number, result?: QPoint3d): QPoint3d {
+    return QPoint3dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
+  }
+
+  public unquantize(pointIndex: number, result?: Point3d): Point3d {
+    return this.get(pointIndex, this._scratchQPoint3d).unquantize(this.params, result);
   }
 
   /** Obtain a [[QPoint3dBuffer]] containing all of the points that have been appended by this builder. */
