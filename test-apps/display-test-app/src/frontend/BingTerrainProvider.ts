@@ -25,8 +25,14 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
     const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
+
+    // Latitudes outside the range [-85, 85] produce HTTP 400 as specified by
+    // [documentation](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/get-elevations)
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
     latLongRange.high.y = Math.min(85, latLongRange.high.y);
+
+    // Longitudes outside the range [0, 180) produce HTTP 500. Documentation makes no mention of this and if that's
+    // a client error I'd expect 400, not 500.
     if (latLongRange.high.x === 180)
       latLongRange.high.x = 0;
 
