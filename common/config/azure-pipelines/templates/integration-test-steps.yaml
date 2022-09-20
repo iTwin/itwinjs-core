@@ -78,7 +78,8 @@ steps:
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: npm run test:integration
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "core/electron"
     displayName: "Run Electron Tests"
     condition: succeededOrFailed()
