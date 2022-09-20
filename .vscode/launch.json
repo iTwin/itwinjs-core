@@ -1482,7 +1482,7 @@
       ]
     },
     { /* PARTIAL */
-      "name": "[BACKEND] Electron Frontend Integration Tests",
+      "name": "[BACKEND] Electron Frontend Tests",
       "presentation": {
         "hidden": true
       },
@@ -1503,11 +1503,11 @@
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/electron/src/test/frontend/utils/certa.json
       "cascadeTerminateToConfigurations": [
-        "[FRONTEND] Electron Frontend Integration Tests"
+        "[FRONTEND] Electron Frontend Tests"
       ]
     },
     { /* PARTIAL */
-      "name": "[FRONTEND] Electron Frontend Integration Tests",
+      "name": "[FRONTEND] Electron Frontend Tests",
       "presentation": {
         "hidden": true
       },
@@ -1520,7 +1520,7 @@
         "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
-        "[BACKEND] Electron Frontend Integration Tests"
+        "[BACKEND] Electron Frontend Tests"
       ]
     },
     {
@@ -1550,7 +1550,7 @@
       ],
     },
     {
-      "name": "Electron Backend Integration Tests",
+      "name": "Electron Backend Tests",
       "presentation": {
         "group": "0_CoreTests"
       },
@@ -1559,7 +1559,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
       "args": [
-        "lib/cjs/test/backend/RunElectronBackendTests.js"
+        "--config",
+        "src/test/backend/.mocharc.json"
       ],
       "env": {
         "NODE_ENV": "development"
@@ -1794,13 +1795,13 @@
       ]
     },
     {
-      "name": "Electron Frontend Integration Tests",
+      "name": "Electron Frontend Tests",
       "presentation": {
         "group": "0_CoreTests"
       },
       "configurations": [
-        "[FRONTEND] Electron Frontend Integration Tests",
-        "[BACKEND] Electron Frontend Integration Tests"
+        "[FRONTEND] Electron Frontend Tests",
+        "[BACKEND] Electron Frontend Tests"
       ]
     },
   ],
