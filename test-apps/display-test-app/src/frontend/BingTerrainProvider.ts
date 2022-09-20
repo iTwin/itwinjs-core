@@ -11,6 +11,9 @@ import {
   RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
+const size = 16;
+const sizeM1 = size - 1;
+
 export class BingTerrainMeshProvider extends TerrainMeshProvider {
   private readonly _provider: BingElevationProvider;
   private readonly _exaggeration: number;
@@ -46,8 +49,6 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
     // ###TODO skirts.
     const heights = args.data as number[];
-    const size = 16;
-    const sizeM1 = size - 1;
     assert(heights.length === size * size);
 
     const skirtHeight = this._wantSkirts ? args.tile.range.xLength() / 20 : 0;
@@ -85,49 +86,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    if (this._wantNormals) {
-      const scratchP1 = new Point3d();
-      const scratchP2 = new Point3d();
-      const scratchFaceNormal = new Vector3d();
-      const addNormal = (sum: Vector3d, p0: Point3d, r1: number, c1: number, r2: number, c2: number): void => {
-        if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= size || c1 >= size || r2 >= size || c2 >= size) {
-          // To properly compute normals on the edges of the tile, requestMeshData would need to request additional elevations
-          // for points adjacent to the tile. For now, just ignore them
-          return;
-        }
-
-        const p1 = builder.positions.unquantize(r1 * size + c1, scratchP1);
-        const p2 = builder.positions.unquantize(r2 * size + c2, scratchP2);
-
-        const faceNormal = Vector3d.createCrossProductToPoints(p0, p1, p2, scratchFaceNormal);
-        faceNormal.normalizeInPlace();
-
-        sum.plus(faceNormal, sum);
-        sum.normalizeInPlace();
-      };
-
-      builder.normals = new Uint16ArrayBuilder({ initialCapacity: builder.positions.length });
-      const scratchP0 = new Point3d();
-      const vertexNormal = Vector3d.createZero();
-      for (let row = 0; row < size; row++) {
-        for (let col = 0; col < size; col++) {
-          Vector3d.createZero(vertexNormal);
-          const p0 = builder.positions.unquantize(row * size + col, scratchP0);
-          // ###TODO turn this into a loop
-          addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
-          addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
-          addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
-          addNormal(vertexNormal, p0, row+1, col-1, row+0, col-1);
-          addNormal(vertexNormal, p0, row+0, col-1, row-1, col-1);
-          addNormal(vertexNormal, p0, row-1, col-1, row-1, col+0);
-          addNormal(vertexNormal, p0, row-1, col+0, row-1, col+1);
-          addNormal(vertexNormal, p0, row-1, col+1, row+0, col+1);
-
-          vertexNormal.normalizeInPlace();
-          builder.normals.push(OctEncodedNormal.encode(vertexNormal));
-        }
-      }
-    }
+    if (this._wantNormals)
+      this.addNormals(builder);
 
     for (let row = 0; row < sizeM1; row++) {
       const rowIndex = row * size;
@@ -203,6 +163,51 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     assert(builder.indices.capacity === options.initialIndexCapacity);
 
     return builder.finish();
+  }
+
+  private addNormals(builder: RealityMeshParamsBuilder): void {
+    const scratchP0 = new Point3d();
+    const scratchP1 = new Point3d();
+    const scratchP2 = new Point3d();
+    const scratchFaceNormal = new Vector3d();
+
+    const addNormal = (sum: Vector3d, p0: Point3d, r1: number, c1: number, r2: number, c2: number): void => {
+      if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= size || c1 >= size || r2 >= size || c2 >= size) {
+        // To properly compute normals on the edges of the tile, requestMeshData would need to request additional elevations
+        // for points adjacent to the tile. For now, just ignore them
+        return;
+      }
+
+      const p1 = builder.positions.unquantize(r1 * size + c1, scratchP1);
+      const p2 = builder.positions.unquantize(r2 * size + c2, scratchP2);
+
+      const faceNormal = Vector3d.createCrossProductToPoints(p0, p1, p2, scratchFaceNormal);
+      faceNormal.normalizeInPlace();
+
+      sum.plus(faceNormal, sum);
+      sum.normalizeInPlace();
+    };
+
+    builder.normals = new Uint16ArrayBuilder({ initialCapacity: builder.positions.length });
+    const vertexNormal = Vector3d.createZero();
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        Vector3d.createZero(vertexNormal);
+        const p0 = builder.positions.unquantize(row * size + col, scratchP0);
+        // ###TODO turn this into a loop
+        addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
+        addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
+        addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
+        addNormal(vertexNormal, p0, row+1, col-1, row+0, col-1);
+        addNormal(vertexNormal, p0, row+0, col-1, row-1, col-1);
+        addNormal(vertexNormal, p0, row-1, col-1, row-1, col+0);
+        addNormal(vertexNormal, p0, row-1, col+0, row-1, col+1);
+        addNormal(vertexNormal, p0, row-1, col+1, row+0, col+1);
+
+        vertexNormal.normalizeInPlace();
+        builder.normals.push(OctEncodedNormal.encode(vertexNormal));
+      }
+    }
   }
 
   public override get maxDepth(): number {
