@@ -7,8 +7,8 @@ import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams,
-  RealityMeshParamsBuilder, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
+  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
+  RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
 export class BingTerrainMeshProvider extends TerrainMeshProvider {
@@ -47,26 +47,35 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // ###TODO skirts.
     const heights = args.data as number[];
     const size = 16;
+    const sizeM1 = size - 1;
     assert(heights.length === size * size);
 
+    const skirtHeight = this._wantSkirts ? args.tile.range.xLength() / 20 : 0;
     const heightRange = Range1d.createArray(heights);
+    heightRange.low -= skirtHeight;
     heightRange.low *= this._exaggeration;
     heightRange.high *= this._exaggeration;
     args.tile.adjustHeights(heightRange.low, heightRange.high);
 
+    // 16 new vertices along each edge, but the 4 at the corners are shared by two edges.
+    const numSkirtVertices = this._wantSkirts ? size * 2 + (size - 2) * 2 : 0;
+    // 15 new quads along each edge.
+    const numSkirtIndices = this._wantSkirts ? sizeM1 * sizeM1 * 4 * 3 * 2 : 0;
     const projection = args.tile.getProjection(heightRange);
-    const sizeM1 = size - 1;
-    const builder = new RealityMeshParamsBuilder({
+
+    const options: RealityMeshParamsBuilderOptions = {
       positionRange: projection.localRange,
-      initialVertexCapacity: size * size,
-      initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2,
+      initialVertexCapacity: size * size + numSkirtVertices,
+      initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2 + numSkirtIndices,
       // We will compute the normals after computing the positions.
       wantNormals: false,
-    });
+    };
+
+    const builder = new RealityMeshParamsBuilder(options);
 
     const uv = new Point2d();
     const position = new Point3d();
-    const delta = 1 / sizeM1;
+    let delta = 1 / sizeM1;
     for (let row = 0, v = 0; row < size; row++, v += delta) {
       for (let col = 0, u = 0; col < size; col++, u += delta) {
         const height = heights[(sizeM1 - row) * size + col];
@@ -104,6 +113,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
         for (let col = 0; col < size; col++) {
           Vector3d.createZero(vertexNormal);
           const p0 = builder.positions.unquantize(row * size + col, scratchP0);
+          // ###TODO turn this into a loop
           addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
           addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
           addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
@@ -133,22 +143,35 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       }
     }
 
-    assert(builder.positions.buffer.capacity === builder.positions.buffer.length);
-    assert(builder.uvs.buffer.capacity === builder.uvs.buffer.length);
-    assert(builder.normals?.capacity === builder.normals?.length);
-    assert(builder.positions.length === builder.uvs.length);
-    assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
-    assert(builder.indices.capacity === builder.indices.length);
+    if (!this._wantSkirts) {
+      assert(builder.positions.length === options.initialVertexCapacity);
+      assert(builder.uvs.length === options.initialVertexCapacity);
+      assert(builder.normals?.capacity === options.initialVertexCapacity);
+      assert(builder.positions.length === builder.uvs.length);
+      assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
+      assert(builder.indices.capacity === options.initialIndexCapacity);
 
-    if (!this._wantSkirts)
       return builder.finish();
+    }
 
-    // const skirtHeight = args.tile.range.xLength() / 20;
-    // const skirtBaseIndex = builder.positions.length;
-    // for (let u = 0; u < size; u++) {
-    //   const h0 = heights[sizeM1 *1
-    //   projection.getPoint(u, 1, 
-    // }
+    const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
+    for (let c = 0; c < size; c++) {
+      const height = heights[sizeM1 * size + c];
+      const u = c * delta;
+      projection.getPoint(u, 1, (height - skirtHeight) * this._exaggeration, position);
+      uv.set(u, 1);
+      builder.addUnquantizedVertex(position, uv, skirtNormal);
+
+      if (c == sizeM1)
+        continue;
+
+      const q0 = c;
+      const q1 = q0 + 1;
+      const q3 = builder.positions.length;
+      const q2 = q3 + 1;
+      builder.addTriangle(q0, q1, q2);
+      builder.addTriangle(q0, q2, q3);
+    }
 
     return builder.finish();
   }
