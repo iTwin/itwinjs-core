@@ -9,7 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, assert, BeDuration, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -417,8 +417,7 @@ export class IModelHost {
           process.report.reportOnUncaughtException = true;
           process.report.directory = options.crashReportingConfig.crashDir;
           Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
-        }
-        else {
+        } else {
           Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
         }
       }
