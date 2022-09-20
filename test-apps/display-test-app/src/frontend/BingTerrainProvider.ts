@@ -27,6 +27,9 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
     latLongRange.high.y = Math.min(85, latLongRange.high.y);
+    if (latLongRange.high.x === 180)
+      latLongRange.high.x = 0;
+
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
   }
