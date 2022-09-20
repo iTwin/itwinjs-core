@@ -19,6 +19,7 @@ Table of contents:
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
+- [AppUi](#appui)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
 
@@ -136,6 +137,12 @@ A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can 
 A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
 
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+
+## AppUi
+
+### Setting Allowed Panel Zones for Widgets
+
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
 ## Deprecations
 

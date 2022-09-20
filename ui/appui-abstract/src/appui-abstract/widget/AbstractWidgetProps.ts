@@ -77,4 +77,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
   defaultFloatingSize?: { width: number, height: number };
   /** Optional prop that tells the widget system to fade this widget out with the rest of the UI when it is in floating state */
   hideWithUiWhenFloating?: boolean;
+  /** Optional prop specifying which Panel sides can be docking targets for this widget. If this prop is not specified, all sides are allowed.
+   *  An empty array is treated the same as an undefined prop, allowing all targets. */
+  allowedPanelTargets?:  ReadonlyArray<"left"|"right"|"bottom"|"top">;
 }

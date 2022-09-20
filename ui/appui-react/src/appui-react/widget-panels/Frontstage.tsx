@@ -342,6 +342,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       userSized,
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
+      allowedPanelTargets: widgetDef.allowedPanelTargets,
     });
 
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
