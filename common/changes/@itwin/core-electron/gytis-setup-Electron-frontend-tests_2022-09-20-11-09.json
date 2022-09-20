@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "Add setup for frontend code testing.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

@@ -127,8 +127,8 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Electron Integration Test Results"
+    displayName: "Publish Electron Test Results"
     inputs:
-      testResultsFiles: core/electron/lib/test/junit_results.xml
-      testRunTitle: "Electron - Integration Tests - ${{ parameters.Node_Version }}"
+      testResultsFiles: core/electron/lib/test/*_junit_results.xml
+      testRunTitle: "Core - Electron Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
