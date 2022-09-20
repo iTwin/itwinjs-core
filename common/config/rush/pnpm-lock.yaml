@@ -704,7 +704,7 @@ importers:
       eslint: ^7.11.0
       i18next: ^21.9.1
       i18next-browser-languagedetector: ^6.1.2
-      i18next-http-backend: ^1.4.1
+      i18next-http-backend: ^1.4.4
       rimraf: ^3.0.2
       source-map-loader: ^4.0.0
       typescript: ~4.4.0
@@ -712,7 +712,7 @@ importers:
     dependencies:
       i18next: 21.9.1
       i18next-browser-languagedetector: 6.1.5
-      i18next-http-backend: 1.4.1
+      i18next-http-backend: 1.4.4
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/certa': link:../../tools/certa
@@ -14389,8 +14389,8 @@ packages:
       '@babel/runtime': 7.19.0
     dev: false
 
-  /i18next-http-backend/1.4.1:
-    resolution: {integrity: sha512-s4Q9hK2jS29iyhniMP82z+yYY8riGTrWbnyvsSzi5TaF7Le4E7b5deTmtuaRuab9fdDcYXtcwdBgawZG+JCEjA==}
+  /i18next-http-backend/1.4.4:
+    resolution: {integrity: sha512-M4gLPe6JKZ2p1UmE6t4rzWV/sAxgrLThW7ztXAsTpFwFqXoyzhTzX8eYxVv9KjpCQh4K9nwxnEjEi+74C4Thbg==}
     dependencies:
       cross-fetch: 3.1.5
     transitivePeerDependencies:
