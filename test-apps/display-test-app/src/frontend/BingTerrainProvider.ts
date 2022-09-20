@@ -33,8 +33,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     // Longitudes outside the range [0, 180) produce HTTP 500. Documentation makes no mention of this and if that's
     // a client error I'd expect 400, not 500.
-    if (latLongRange.high.x === 180)
-      latLongRange.high.x = 0;
+    if (latLongRange.high.x >= 180)
+      latLongRange.high.x = latLongRange.high.x - 180;
 
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
