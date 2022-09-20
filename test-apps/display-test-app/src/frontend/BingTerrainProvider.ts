@@ -15,6 +15,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   private readonly _provider: BingElevationProvider;
   private readonly _exaggeration: number;
   private readonly _wantNormals: boolean;
+  private readonly _wantSkirts: boolean;
   public readonly tilingScheme = new GeographicTilingScheme(1, 1);
 
   public constructor(options: TerrainMeshProviderOptions) {
@@ -22,6 +23,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     this._provider = new BingElevationProvider();
     this._exaggeration = options.exaggeration;
     this._wantNormals = options.wantNormals;
+    this._wantSkirts = options.wantSkirts;
   }
 
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
@@ -42,7 +44,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
   }
 
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
-    // ###TODO normals, skirts.
+    // ###TODO skirts.
     const heights = args.data as number[];
     const size = 16;
     assert(heights.length === size * size);
@@ -57,7 +59,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     const builder = new RealityMeshParamsBuilder({
       positionRange: projection.localRange,
       initialVertexCapacity: size * size,
-      initialIndexCapacity: size * sizeM1 * 3 * 2,
+      initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2,
       // We will compute the normals after computing the positions.
       wantNormals: false,
     });
@@ -130,6 +132,23 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
         builder.addTriangle(q0, q2, q3);
       }
     }
+
+    assert(builder.positions.buffer.capacity === builder.positions.buffer.length);
+    assert(builder.uvs.buffer.capacity === builder.uvs.buffer.length);
+    assert(builder.normals?.capacity === builder.normals?.length);
+    assert(builder.positions.length === builder.uvs.length);
+    assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
+    assert(builder.indices.capacity === builder.indices.length);
+
+    if (!this._wantSkirts)
+      return builder.finish();
+
+    // const skirtHeight = args.tile.range.xLength() / 20;
+    // const skirtBaseIndex = builder.positions.length;
+    // for (let u = 0; u < size; u++) {
+    //   const h0 = heights[sizeM1 *1
+    //   projection.getPoint(u, 1, 
+    // }
 
     return builder.finish();
   }
