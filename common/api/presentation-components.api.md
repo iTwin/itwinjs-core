@@ -601,7 +601,7 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
-    // @alpha
+    // @beta
     seedTreeModel?: TreeModel;
 }
 
