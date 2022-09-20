@@ -9,7 +9,7 @@
 import * as os from "os";
 import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { BackendHubAccess } from "./BackendHubAccess";
@@ -404,7 +404,7 @@ export class IModelHost {
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
       this.platform.setCrashReporting(options.crashReportingConfig);
 
-      Logger.logTrace(loggerCategory, "Configured crash reporting", {
+      Logger.logTrace(loggerCategory, "Configured iModel crash reporting", {
         enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
         wantFullMemoryDumps: options.crashReportingConfig?.wantFullMemoryDumps,
         enableNodeReport: options.crashReportingConfig?.enableNodeReport,
@@ -412,15 +412,14 @@ export class IModelHost {
       });
 
       if (options.crashReportingConfig.enableNodeReport) {
-        try {
-          // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-          const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
-          nodereport.setEvents("exception+fatalerror+apicall");
-          nodereport.setDirectory(options.crashReportingConfig.crashDir);
-          nodereport.setVerbose("yes");
-          Logger.logTrace(loggerCategory, "Configured native crash reporting (node-report)");
-        } catch (err) {
-          Logger.logWarning(loggerCategory, "node-report is not installed.");
+        if (process.report !== undefined) {
+          process.report.reportOnFatalError = true;
+          process.report.reportOnUncaughtException = true;
+          process.report.directory = options.crashReportingConfig.crashDir;
+          Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
+        }
+        else {
+          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
         }
       }
     }
