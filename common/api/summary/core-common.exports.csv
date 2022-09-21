@@ -759,6 +759,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 public;TileVersionInfo
+public;TranslationOptions
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

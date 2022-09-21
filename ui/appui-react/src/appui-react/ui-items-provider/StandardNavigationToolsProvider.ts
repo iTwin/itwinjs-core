@@ -60,6 +60,9 @@ export class StandardNavigationToolsProvider extends BaseUiItemsProvider {
 
     } else if (toolbarUsage === ToolbarUsage.ViewNavigation && toolbarOrientation === ToolbarOrientation.Vertical) {
 
+      if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.setupWalkCamera)
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(5, CoreTools.setupCameraWalkTool));
+
       if (!this.defaultNavigationTools || !this.defaultNavigationTools.vertical || this.defaultNavigationTools.vertical.walk)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.walkViewCommand));
 

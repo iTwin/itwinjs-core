@@ -422,6 +422,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return promise;
   }
 
+  public override get hasExternalTextureRequests(): boolean {
+    const loader = ExternalTextureLoader.instance;
+    return loader.numActiveRequests > 0 || loader.numPendingRequests > 0;
+  }
+
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
   public static createContext(canvas: HTMLCanvasElement, useWebGL2: boolean, inputContextAttributes?: WebGLContextAttributes): WebGLContext | undefined {
     let contextAttributes: WebGLContextAttributes = { powerPreference: "high-performance" };
