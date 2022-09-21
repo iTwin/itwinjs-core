@@ -34,7 +34,6 @@ export interface DtaBooleanConfiguration {
   openReadWrite?: boolean; // default false
   devTools?: boolean; // default true
   cacheTileMetadata?: boolean; // default false
-  headless?: boolean; // default false
   ignoreCache?: boolean; // default is undefined, set to true to delete a cached version of a remote imodel before opening it.
 }
 
@@ -232,7 +231,6 @@ export const getConfig = (): DtaConfiguration => {
 
   configuration.iModelId = process.env.IMJS_IMODEL_ID;
   configuration.urlPrefix = process.env.IMJS_URL_PREFIX;
-  configuration.headless = undefined !== process.env.IMJS_OIDC_HEADLESS;
   configuration.oidcClientId = process.env.IMJS_OIDC_CLIENT_ID;
   configuration.oidcScope = process.env.IMJS_OIDC_SCOPE;
   configuration.oidcRedirectUri = process.env.IMJS_OIDC_REDIRECT_URI;

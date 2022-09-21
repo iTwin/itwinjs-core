@@ -6,9 +6,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
-import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { getConfigurationBoolean, getConfigurationString } from "./DisplayTestApp";
+import { getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -25,11 +23,8 @@ export async function signIn(): Promise<boolean> {
     });
   }
 
-  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | TestFrontendAuthorizationClient | undefined;
-  if (getConfigurationBoolean("headless")) {
-    const token = await DtaRpcInterface.getClient().getAccessToken();
-    authClient = new TestFrontendAuthorizationClient(token);
-  } else if (ProcessDetector.isElectronAppFrontend) {
+  let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
+  if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
   } else if (ProcessDetector.isMobileAppFrontend) {
     // The default auth client works on mobile
