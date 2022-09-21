@@ -1097,7 +1097,7 @@ class ViewPan extends HandleWithInertia {
     const thisWorld = vp.npcToWorld(thisPtNpc);
     const dist = thisWorld.vectorTo(lastWorld);
     if (view.is3d()) {
-      if (ViewStatus.Success !== (view.isGlobalView ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
+      if (ViewStatus.Success !== (vp.viewingGlobe ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
         return false;
 
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it

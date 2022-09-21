@@ -3158,9 +3158,7 @@ importers:
       '@itwin/imodels-access-frontend': ^1.0.1
       '@itwin/imodels-client-authoring': ^1.0.1
       '@itwin/imodels-client-management': ^1.0.1
-      '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/service-authorization': ^0.6.1
       '@itwin/webgl-compatibility': workspace:*
       '@types/express': ^4.16.1
       '@types/express-ws': ^3.0.1
@@ -3215,9 +3213,7 @@ importers:
       '@itwin/imodels-access-frontend': 1.0.2
       '@itwin/imodels-client-authoring': 1.1.0
       '@itwin/imodels-client-management': 1.1.0
-      '@itwin/oidc-signin-tool': 3.4.1_electron@17.4.11
       '@itwin/reality-data-client': 0.7.0
-      '@itwin/service-authorization': 0.6.2
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
       body-parser: 1.20.0
     devDependencies:

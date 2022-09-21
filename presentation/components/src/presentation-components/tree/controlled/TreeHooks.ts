@@ -37,14 +37,15 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
+   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes. Cannot be used together
+   * with `seedTreeModel`.
    * @alpha
    */
   enableHierarchyAutoUpdate?: boolean;
 
   /**
    * Initialize tree data with the provided tree model.
-   * @alpha
+   * @beta
    */
   seedTreeModel?: TreeModel;
 }
