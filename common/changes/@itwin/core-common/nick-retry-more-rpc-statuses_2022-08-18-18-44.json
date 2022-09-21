@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "add 408,429, and consider 408,429, and 500 transient fault",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
