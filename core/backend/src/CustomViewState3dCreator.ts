@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, Id64Array, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64Array, Id64String, Logger } from "@itwin/core-bentley";
 import { CustomViewState3dCreatorOptions, CustomViewState3dProps, IModelError, IModelStatus, QueryRowFormat } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
+import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
+
+const loggerCategory = BackendLoggerCategory.CustomViewState3dCreator;
 
 /**
  * Class which helps to generate a custom ViewState3d.
@@ -39,9 +42,10 @@ export class CustomViewState3dCreator {
 
   private async _getAllCategories(): Promise<Id64Array> {
     // Only use categories with elements in them
+    Logger.logInfo(loggerCategory, `Starting getAllCategories query.`)
     const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
     const categories: Id64Array = await this._executeQuery(query);
-
+    Logger.logInfo(loggerCategory, `Finished getAllCategories query.`)
     return categories;
   }
 
@@ -55,6 +59,7 @@ export class CustomViewState3dCreator {
     if (modelIdsList.length === 0)
       return modelExtents;
     const modelIds = new Set(modelIdsList);
+    Logger.logInfo(loggerCategory, `Starting getModelExtents query.`)
     for (const id of modelIds) {
       try {
         await new Promise((resolve) => setImmediate(resolve)); // Free up main thread temporarily. Ideally we get queryModelExtents off the main thread and do not need to do this.
@@ -69,6 +74,7 @@ export class CustomViewState3dCreator {
         continue;
       }
     }
+    Logger.logInfo(loggerCategory, `Finished getModelExtents query.`)
     return modelExtents;
   }
 
@@ -82,12 +88,13 @@ export class CustomViewState3dCreator {
     const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
     const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
     let models = [];
+    Logger.logInfo(loggerCategory, `Starting getAllModels query.`)
     try {
       models = await this._executeQuery(`${select} ${spatialCriterion}`);
     } catch {
       models = await this._executeQuery(select);
     }
-
+    Logger.logInfo(loggerCategory, `Finished getAllModels query.`)
     return models;
   }
   /**

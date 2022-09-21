@@ -20,6 +20,11 @@ export enum BackendLoggerCategory {
    */
   CodeSpecs = "core-backend.CodeSpecs",
 
+  /** The logger category used by the following classes:
+   * - [[CustomViewState3dCreator]]
+   */
+  CustomViewState3dCreator = "core-backend.CustomViewState3dCreator"
+
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */
