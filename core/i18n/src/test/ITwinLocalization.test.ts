@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Localization } from "@itwin/core-common";
 import { ITwinLocalization } from "../ITwinLocalization";
 
@@ -12,16 +12,103 @@ describe("ITwinLocalization", () => {
   let localization: Localization;
   let germanLocalization: Localization;
 
-  describe("#initialize", () => {
+  describe("#constructor", () => {
 
-    describe("with default namespace provided in constructor", () => {
-      let itwinLocalization: ITwinLocalization;
+    let itwinLocalization: ITwinLocalization;
+
+    it("set default namespace", async () => {
+      itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default" } });
+      await itwinLocalization.initialize([]);
+
+      assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
+    });
+
+    it("set default language as english", async () => {
+      itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", lng: "en" } });
+      await itwinLocalization.initialize([]);
+
+      assert.equal(itwinLocalization.i18next.options.lng, "en");
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
+    });
+
+    it("set default language as NOT english", async () => {
+      itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", lng: "de" } });
+      await itwinLocalization.initialize([]);
+
+      assert.equal(itwinLocalization.i18next.options.lng, "de");
+      assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default german)");
+    });
+
+    it("set fallback language as NOT english", async () => {
+      itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", fallbackLng: "de" } });
+      await itwinLocalization.initialize([]);
+
+      assert.equal(itwinLocalization.i18next.options.fallbackLng, "de");
+      assert.equal(itwinLocalization.getLocalizedString("OnlyGerman"), "Hallo");
+    });
+  });
+
+  describe("#initialize", () => {
+    let itwinLocalization: ITwinLocalization;
+
+    it("cannot fetch from unregistered namespaces", async () => {
+      localization = new ITwinLocalization();
+      await localization.initialize([]);
+      assert.equal(localization.getEnglishString("Default", "FirstTrivial"), "FirstTrivial");
+      assert.equal(localization.getLocalizedString("Test:FirstTrivial"), "FirstTrivial");
+    });
+
+    describe("with no default namespace predefined", () => {
+
+      before(() => {
+        itwinLocalization = new ITwinLocalization();
+      });
+
+      it("no default namespace set when initialized with empty array", async () => {
+        await itwinLocalization.initialize([]);
+
+        assert.equal(itwinLocalization.i18next.options.defaultNS, undefined);
+      });
+
+      it("initialize with single namespace", async () => {
+        await itwinLocalization.initialize(["Test"]);
+
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Test");
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Test"));
+        assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+      });
+
+      it("initialize with two namespaces recognizes both namespaces", async () => {
+        await itwinLocalization.initialize(["Default", "Test"]);
+
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Test"));
+        assert.equal(itwinLocalization.getLocalizedString("Default:FirstTrivial"), "First level string (default)");
+        assert.equal(itwinLocalization.getLocalizedString("Test:FirstTrivial"), "First level string (test)");
+      });
+
+      it("initialize with two namespaces sets first as default", async () => {
+        await itwinLocalization.initialize(["Default", "Test"]);
+
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+        assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
+      });
+
+      it("initialize with duplicate namespace values does not break anything", async () => {
+        await itwinLocalization.initialize(["Default", "Default"]);
+
+        assert.equal(itwinLocalization.i18next.options.defaultNS, "Default");
+        assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
+        assert.equal(itwinLocalization.getLocalizedString("FirstTrivial"), "First level string (default)");
+        assert.equal(itwinLocalization.getLocalizedString("Default:FirstTrivial"), "First level string (default)");
+      });
+    });
+
+    describe("with default namespace", () => {
+
       before(() => {
         itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default" } });
-        // itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", lng: "en" } });
-        // itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", lng: "de" } });
-        // itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", fallbackLng: "de" } });
-        // itwinLocalization = new ITwinLocalization({ initOptions: { defaultNS: "Default", supportedLngs: ["en", "de"] } });
       });
 
       it("default namespace set when initialized with empty array", async () => {
@@ -53,13 +140,6 @@ describe("ITwinLocalization", () => {
         await itwinLocalization.initialize(["Test"]);
         assert.isTrue(itwinLocalization.i18next.options.ns?.includes("Default"));
       });
-    });
-
-    it("register namespace upon initialization", async () => {
-      localization = new ITwinLocalization();
-      await localization.initialize([]);
-      assert.equal(localization.getEnglishString("Default", "FirstTrivial"), "First level string (default)");
-      assert.equal(localization.getEnglishString("Test", "FirstTrivial"), "First level string (test)");
     });
   });
 
@@ -916,47 +996,9 @@ describe("ITwinLocalization", () => {
 
   });
 
-  // TODO
-  describe.only("#getNamespacePromise", () => {
-    before(async () => {
-      localization = new ITwinLocalization();
-      await localization.initialize(["Default", "Test"]);
-
-      germanLocalization = new ITwinLocalization({ initOptions: { lng: "de" } });
-      await germanLocalization.initialize(["Default", "Test"]);
-    });
-
-    it("a", async () => {
-      localization.registerNamespace("Default").then((v) => console.log(v));
-      localization.registerNamespace("No").then((v) => console.log(v));
-      localization.changeLanguage("abc").then((v) => console.log(v));
-      console.log(localization.getNamespacePromise("Default"));
-      console.log(localization.getNamespacePromise("Test"));
-
-
-      console.log("-------");
-      console.log(localization.registerNamespace("Default"));
-      console.log(localization.registerNamespace("No"));
-      console.log(localization.changeLanguage("abc"));
-      console.log(localization.getNamespacePromise("Default"));
-      console.log(localization.getNamespacePromise("Test"));
-
-
-      assert.isTrue(true);
-    });
-
-    // it("", async () => {
-
-    // });
-
-    // it("", async () => {
-
-    // });
-
-    // it("", async () => {
-
-    // });
-  });
+  // Returned promises never have anything of substance, being only empty or resolving to null...
+  // describe("#getNamespacePromise", () => {
+  // });
 
   describe("#getLanguageList", () => {
     let languages: readonly string[];
