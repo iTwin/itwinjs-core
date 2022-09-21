@@ -31,7 +31,7 @@ export class SchemaFileUtility {
     const xml = serializer.serializeToString(xmlDoc);
 
     try {
-      fs.writeFileSync(baseFile, xml);
+      await fs.writeFile(baseFile, xml);
     } catch (err: any) {
       const msg = `An error occurred writing to file '${baseFile}': ${err.message}`;
       throw new Error(msg);
