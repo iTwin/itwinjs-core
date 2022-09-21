@@ -160,6 +160,7 @@ export class ITwinLocalization implements Localization {
   }
 
   /** Gets the English translation.
+   * @note Checks locales 'en', 'en-US' - in that order
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
@@ -171,7 +172,7 @@ export class ITwinLocalization implements Localization {
       throw new Error("Translation key must map to a string, but the given options will result in an object");
     }
 
-    const en = this.i18next.getFixedT("en", namespace);
+    const en = this.i18next.getFixedT(["en", "en-US"], namespace);
     const str = en(key, options);
     if (typeof str !== "string")
       throw new Error("Translation key(s) not found");

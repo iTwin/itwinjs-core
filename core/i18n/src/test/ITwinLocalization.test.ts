@@ -885,10 +885,8 @@ describe("ITwinLocalization", () => {
       });
 
       // White box test
-      // Only "en" is specified as a language, so it doesn't fallback to en-US
-      // TODO: consider intentionality of this
-      it("en-US is NOT a fallback", () => {
-        assert.equal(localization.getEnglishString("Default", "OnlyEnglishUS"), "OnlyEnglishUS");
+      it("en-US is an english fallback", () => {
+        assert.equal(localization.getEnglishString("Default", "OnlyEnglishUS"), "HelloUS");
       });
     });
 
