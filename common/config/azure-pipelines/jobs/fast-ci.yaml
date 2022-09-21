@@ -3,6 +3,7 @@
 trigger:
   - master
   - release/*
+  - appui-4.0
 
 variables:
   - group: Rush Build Cache SAS Token
@@ -27,6 +28,7 @@ jobs:
     parameters:
       name: Node_16
       nodeVersion: 16.13.0
+      buildIos: true
       pool:
         name: $(name)
         demands:

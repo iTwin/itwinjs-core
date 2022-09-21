@@ -10,12 +10,27 @@ import { Draft, produce } from "immer";
 import { PointProps } from "@itwin/appui-abstract";
 import { NineZoneState } from "../NineZoneState";
 import { FloatingWidgetHomeState, FloatingWidgetState } from "../WidgetState";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import { toolSettingsTabId } from "../ToolSettingsState";
 import { updateFloatingWidgetState } from "./WidgetStateHelpers";
 
 /** @internal */
 export const category = "appui-layout-react:layout";
+
+/** Helper that returns a plain object. Prevents from adding an instance that is not `immerable` to the state.
+ * @internal
+ */
+export function toRectangleProps(rectangle: RectangleProps | undefined): RectangleProps {
+  if (rectangle) {
+    return {
+      bottom: rectangle.bottom,
+      left: rectangle.left,
+      right: rectangle.right,
+      top: rectangle.top,
+    };
+  }
+  return new Rectangle().toProps();
+}
 
 /** @internal */
 export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps) {
