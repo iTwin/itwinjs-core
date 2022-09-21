@@ -934,9 +934,13 @@ describe("ITwinLocalization", () => {
       });
 
       // White box test
-      // Debatable if the way this functions is intentional
-      // TODO: Consider function intentionality
-      it("given namespace DOES NOT override namespace translation option", () => {
+      /* TODO:
+       * This functionality doesn't make sense. It should work the opposite like how getLocalizedStringWithNamespace() does.
+       * getEnglishString() shouldn't take in a namespace. The 'namespace' parameter should be removed.
+       * A getEnglishStringWithNamespace() method could be created.
+       * This is a breaking change, so is left as a to-do until discussed and approved.
+       */
+      it.skip("given namespace DOES NOT override namespace translation option", () => {
         assert.equal(localization.getEnglishString("Default", "FirstTrivial", { ns: "Test" }), "First level string (test)");
         assert.equal(localization.getEnglishString("Default", "FirstSubstitution1", { str: "CUSTOM1", ns: "Test" }), "First level CUSTOM1 (test)");
       });
