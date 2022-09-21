@@ -30,9 +30,20 @@ export class MapCartoRectangle extends Range2d {
    * @param north The northern latitude in radians, in [-pi/2, pi/2].
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public constructor(west = 0, south = 0, east = 0, north = 0) {
+  protected constructor(west: number, south: number, east: number, north: number) {
     super(west, Math.min(south, north), east, Math.max(south, north));
   }
+
+  /** Create a rectangle with all coordinates set to zero. */
+  public static createZero(): MapCartoRectangle {
+    return new MapCartoRectangle(0, 0, 0, 0);
+  }
+
+  /** Create a rectangle encompassing all points on the surface of the Earth. */
+  public static createMaximum(): MapCartoRectangle {
+    return new MapCartoRectangle(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians);
+  }
+
   /** Create a new rectangle with angles specified in radians.
    * @param west The western longitude in radians, in [-pi, pi].
    * @param south The southern latitude in radians, in [-pi/2, pi/2].
@@ -41,9 +52,9 @@ export class MapCartoRectangle extends Range2d {
    * @param result An optional preallocated rectangle to hold the result.
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public static create(west = -Angle.piRadians, south = -Angle.piOver2Radians, east = Angle.piRadians, north = Angle.piOver2Radians, result?: MapCartoRectangle): MapCartoRectangle {
-    result = result ?? new MapCartoRectangle();
-    result.init(west, south, east, north);
+  public static fromRadians(west: number, south: number, east: number, north: number, result?: MapCartoRectangle): MapCartoRectangle {
+    result = result ?? MapCartoRectangle.createZero();
+    result.setRadians(west, south, east, north);
     return result;
   }
 
@@ -55,8 +66,9 @@ export class MapCartoRectangle extends Range2d {
    * @param result An optional preallocated rectangle to hold the result.
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public static createFromDegrees(west = -180, south = -90, east = 180, north = 90, result?: MapCartoRectangle): MapCartoRectangle {
-    return MapCartoRectangle.create(west * Angle.radiansPerDegree, south * Angle.radiansPerDegree, east * Angle.radiansPerDegree, north * Angle.radiansPerDegree, result);
+  public static fromDegrees(west: number, south: number, east: number, north: number, result?: MapCartoRectangle): MapCartoRectangle {
+    const mult = Angle.radiansPerDegree;
+    return MapCartoRectangle.fromRadians(west * mult, south * mult, east * mult, north * mult, result);
   }
 
   /** The western longitude in radians. */
@@ -111,7 +123,7 @@ export class MapCartoRectangle extends Range2d {
    * @param north The northern latitude in radians, in [-pi/2, pi/2].
    * @note If `north` is less than `south`, they will be swapped.
    */
-  public init(west = 0, south = 0, east = 0, north = 0) {
+  public setRadians(west = 0, south = 0, east = 0, north = 0) {
     this.west = west;
     this.south = south;
     this.east = east;

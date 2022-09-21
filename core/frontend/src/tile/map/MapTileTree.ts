@@ -62,7 +62,7 @@ export class MapTileTree extends RealityTileTree {
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
-    const globalRectangle = MapCartoRectangle.create();
+    const globalRectangle = MapCartoRectangle.createMaximum();
 
     this.globeMode = id.globeMode;
     this.isOverlay = id.isOverlay;

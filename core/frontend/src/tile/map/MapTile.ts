@@ -537,8 +537,8 @@ export class MapTile extends RealityTile {
     }
   }
 
-  private static _scratchRectangle1 = new MapCartoRectangle();
-  private static _scratchRectangle2 = new MapCartoRectangle();
+  private static _scratchRectangle1 = MapCartoRectangle.createZero();
+  private static _scratchRectangle2 = MapCartoRectangle.createZero();
 
   /** The height range for terrain tiles is not known until the tiles are unloaded.  We use "ApproximateTerrainHeight" for first 6 levels but below
    * that the tiles inherit height range from parents.  This is problematic as tiles with large height range will be unnecessarily selected as

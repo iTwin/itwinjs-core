@@ -119,7 +119,7 @@ export abstract class MapTilingScheme {
   }
 
   public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    return level < 0 ? MapCartoRectangle.create() : MapCartoRectangle.create(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
+    return level < 0 ? MapCartoRectangle.createMaximum() : MapCartoRectangle.fromRadians(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
   }
   public tileBordersNorthPole(row: number, level: number) {
     return this.rowZeroAtNorthPole ? this.tileYToFraction(row, level) === 0.0 : this.tileYToFraction(row + 1, level) === 1.0;

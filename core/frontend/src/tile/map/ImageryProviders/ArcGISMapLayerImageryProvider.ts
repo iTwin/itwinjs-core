@@ -134,7 +134,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       for (let i = 0; i < childIds.length; i++) {
         const childExtent = this.getEPSG4326Extent(childIds[i].row, childIds[i].column, childIds[i].level);
 
-        const childRange = MapCartoRectangle.createFromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
+        const childRange = MapCartoRectangle.fromDegrees(childExtent.longitudeLeft, childExtent.latitudeBottom, childExtent.longitudeRight, childExtent.latitudeTop);
         if (childRange.intersectsRange(this.cartoRange)) {
           availableChildIds.push(childIds[i]);
         }
@@ -199,7 +199,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           const south = this.getEPSG4326Lat(range3857.yLow);
           const east = this.getEPSG4326Lon(range3857.xHigh);
           const north = this.getEPSG4326Lat(range3857.yHigh);
-          this.cartoRange = MapCartoRectangle.createFromDegrees(west, south, east, north);
+          this.cartoRange = MapCartoRectangle.fromDegrees(west, south, east, north);
         }
       }
 
