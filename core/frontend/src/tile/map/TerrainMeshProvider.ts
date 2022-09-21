@@ -6,9 +6,7 @@
  * @module Tiles
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
