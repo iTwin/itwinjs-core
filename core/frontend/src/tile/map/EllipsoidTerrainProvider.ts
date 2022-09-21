@@ -53,9 +53,9 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
         builder.addUnquantizedVertex(projection.getPoint(u, v, 0, pos), uv);
       }
 
-      builder.addQuad(0, 1, 2, 3);
     }
 
+    builder.addQuad(0, 1, 2, 3);
     return builder.finish();
   }
 
