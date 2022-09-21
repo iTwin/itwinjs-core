@@ -4201,7 +4201,7 @@ export interface HttpServerRequest extends Readable {
     // (undocumented)
     connection: any;
     // (undocumented)
-    destroy(error?: Error): void;
+    destroy(error?: Error): this;
     // (undocumented)
     header: (field: string) => string | undefined;
     // (undocumented)
@@ -8025,11 +8025,15 @@ export enum RpcRequestStatus {
     // (undocumented)
     Rejected = 5,
     // (undocumented)
+    RequestTimeout = 13,
+    // (undocumented)
     Resolved = 4,
     // (undocumented)
     ServiceUnavailable = 11,
     // (undocumented)
     Submitted = 2,
+    // (undocumented)
+    TooManyRequests = 14,
     // (undocumented)
     Unknown = 0
 }
