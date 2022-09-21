@@ -744,28 +744,10 @@ describe("ITwinLocalization", () => {
       });
 
       // White box test
-      // Debatable if the way this functions is intentional
       it("given namespace overrides namespace translation option", () => {
         assert.equal(localization.getLocalizedStringWithNamespace("Default", "FirstTrivial", { ns: "Test" }), "First level string (default)");
         assert.equal(localization.getLocalizedStringWithNamespace("Default", "FirstSubstitution1", { str: "CUSTOM1", ns: "Test" }), "First level CUSTOM1 (default)");
       });
-
-      /*
-      // TODO: Look into these to see if these work as expected
-      // localization = new ITwinLocalization({ initOptions: { supportedLngs: ["en", "de"] } });
-
-      it("override language", () => {
-        assert.equal(localization.getLocalizedStringWithNamespace("Default", "Test:FirstTrivial", { lng: "de" }), "First level string (german)");
-      });
-
-      it("override languages", () => {
-        assert.equal(localization.getLocalizedStringWithNamespace("Default", "Test:FirstTrivial", { lngs: ["de"] }), "First level string (german)");
-      });
-
-      it("fallback language to german", () => {
-        assert.equal(localization.getLocalizedStringWithNamespace("Default", "OnlyGerman", { fallbackLng: "de" }), "Hallo");
-      });
-      */
     });
   });
 
@@ -958,23 +940,6 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getEnglishString("Default", "FirstTrivial", { ns: "Test" }), "First level string (test)");
         assert.equal(localization.getEnglishString("Default", "FirstSubstitution1", { str: "CUSTOM1", ns: "Test" }), "First level CUSTOM1 (test)");
       });
-
-      /*
-      // TODO: Look into these to see if these work as expected
-      // localization = new ITwinLocalization({ initOptions: { supportedLngs: ["en", "de"] } });
-
-      it("override language", () => {
-        assert.equal(localization.getEnglishString("Default", "Test:FirstTrivial", { lng: "de" }), "First level string (german)");
-      });
-
-      it("override languages", () => {
-        assert.equal(localization.getEnglishString("Default", "Test:FirstTrivial", { lngs: ["de"] }), "First level string (german)");
-      });
-
-      it("fallback language to german", () => {
-        assert.equal(localization.getEnglishString("Default", "OnlyGerman", { fallbackLng: "de" }), "Hallo");
-      });
-      */
     });
 
   });
