@@ -7,8 +7,8 @@ import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, MapTilingScheme, QuadId, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
-  RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
+  BingElevationProvider, GeographicTilingScheme, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
+  RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions,
 } from "@itwin/core-frontend";
 
 const size = 16;
@@ -76,7 +76,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
     const uv = new Point2d();
     const position = new Point3d();
-    let delta = 1 / sizeM1;
+    const delta = 1 / sizeM1;
     for (let row = 0, v = 0; row < size; row++, v += delta) {
       for (let col = 0, u = 0; col < size; col++, u += delta) {
         const height = heights[(sizeM1 - row) * size + col];
@@ -193,7 +193,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       uv.set(1, 1 - u);
       const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
-      if (c == sizeM1)
+      if (c === sizeM1)
         break;
 
       // top row

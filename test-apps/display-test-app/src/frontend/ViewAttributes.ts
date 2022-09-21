@@ -662,9 +662,7 @@ export class ViewAttributes {
     settingsDiv.appendChild(exaggerationDiv);
 
     const bingCheckbox = this.addCheckbox("Use Bing elevation",
-      (enabled: boolean) => updateTerrainSettings({
-        providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain"
-      }),
+      (enabled: boolean) => updateTerrainSettings({ providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain" }),
       settingsDiv
     ).checkbox;
 

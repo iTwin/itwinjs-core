@@ -335,7 +335,7 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
     IModelApp.terrainProviderRegistry.register("DtaBingTerrain", {
-      createTerrainMeshProvider: (options: TerrainMeshProviderOptions) => Promise.resolve(new BingTerrainMeshProvider(options)),
+      createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => Promise.resolve(new BingTerrainMeshProvider(options)),
     });
 
     await FrontendDevTools.initialize();
