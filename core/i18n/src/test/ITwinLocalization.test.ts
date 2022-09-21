@@ -543,23 +543,6 @@ describe("ITwinLocalization", () => {
         assert.equal(localization.getLocalizedString("FirstTrivial", { ns: "Test" }), "First level string (test)");
         assert.equal(localization.getLocalizedString("FirstSubstitution1", { str: "CUSTOM1", ns: "Test" }), "First level CUSTOM1 (test)");
       });
-
-      /*
-      // TODO: Look into these to see if these work as expected
-      // localization = new ITwinLocalization({ initOptions: { supportedLngs: ["en", "de"] } });
-
-      it("override language", () => {
-        assert.equal(localization.getLocalizedString("Test:FirstTrivial", { lng: "de" }), "First level string (german)");
-      });
-
-      it("override languages", () => {
-        assert.equal(localization.getLocalizedString("Test:FirstTrivial", { lngs: ["de"] }), "First level string (german)");
-      });
-
-      it("fallback language to german", () => {
-        assert.equal(localization.getLocalizedString("OnlyGerman", { fallbackLng: "de" }), "Hallo");
-      });
-      */
     });
   });
 
