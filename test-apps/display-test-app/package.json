@@ -64,12 +64,10 @@
     "@itwin/editor-common": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
-    "@itwin/oidc-signin-tool": "^3.2.2",
     "@itwin/imodels-client-management": "^1.0.1",
     "@itwin/reality-data-client": "0.7.0",
     "@itwin/browser-authorization": "^0.5.1",
     "@itwin/electron-authorization": "^0.8.3",
-    "@itwin/service-authorization": "^0.6.1",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
