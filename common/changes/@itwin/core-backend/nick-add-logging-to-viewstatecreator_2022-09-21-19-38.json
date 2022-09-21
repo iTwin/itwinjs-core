@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add some logging in the customviewstate3dcreator.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
