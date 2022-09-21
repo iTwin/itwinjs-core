@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "createImageBitmap for reality data",
+      "comment": "Use createImageBitmap when creating textures for reality models (currently enabled for Chromium only)",
       "type": "none"
     }
   ],
