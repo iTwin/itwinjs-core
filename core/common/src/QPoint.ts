@@ -848,7 +848,7 @@ export class QPoint2dBufferBuilder {
     return QPoint2dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
   }
 
-  public unquantize(pointIndex: number, result?: Point3d): Point3d {
+  public unquantize(pointIndex: number, result?: Point2d): Point2d {
     return this.get(pointIndex, this._scratchQPoint2d).unquantize(this.params, result);
   }
 
