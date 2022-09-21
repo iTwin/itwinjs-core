@@ -15,7 +15,9 @@ export class SchemaXmlSerializer {
     // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML_Create
     const context = new SchemaContext();
     const sampleEditor = new SchemaContextEditor(context);
-    const sampleSchema = await sampleEditor.createSchema("sampleSchema", "sampleAlias", 1, 0, 0);
+    const results = await sampleEditor.createSchema("sampleSchema", "sampleAlias", 1, 0, 0);
+    const sampleSchema = await sampleEditor.getSchema(results.schemaKey!);
+    // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML
     let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
