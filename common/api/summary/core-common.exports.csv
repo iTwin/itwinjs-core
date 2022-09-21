@@ -540,9 +540,11 @@ public;QParams2d
 public;QParams3d
 public;QPoint2d
 public;QPoint2dBuffer
+public;QPoint2dBuffer
 public;QPoint2dBufferBuilder
 public;QPoint2dList
 public;QPoint3d
+public;QPoint3dBuffer
 public;QPoint3dBuffer
 public;QPoint3dBufferBuilder
 public;QPoint3dList

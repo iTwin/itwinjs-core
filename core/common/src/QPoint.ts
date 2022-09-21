@@ -234,6 +234,7 @@ export class QPoint2d {
 
 /** A compact representation of a list of [[QPoint2d]]s stored in a [[Uint16Array]].
  * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.uvs]($frontend).
+ * @see [[QPoint3dBuffer]] for 3d points.
  * @public
  * @extensions
  */
@@ -252,6 +253,13 @@ export interface QPoint2dBuffer {
 export namespace QPoint2dBuffer {
   const scratchQPoint2d = new QPoint2d();
 
+  /** Extracts the point at the specified index from a buffer.
+   * @param points The buffer in which each consecutive pair of integers is a 2d quantized point.
+   * @param pointIndex The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [[QPoint2d]] to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d {
     const index = pointIndex * 2;
     const x = points[index + 0];
@@ -264,6 +272,13 @@ export namespace QPoint2dBuffer {
     return result;
   }
 
+  /** Extracts and unquantizes the point at the specified index from a buffer.
+   * @param buffer The array of points and the quantization parameters.
+   * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [Point2d]($geometry-core) to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint2d);
     return qpt.unquantize(buffer.params, result);
@@ -638,6 +653,13 @@ export interface QPoint3dBuffer {
 export namespace QPoint3dBuffer {
   const scratchQPoint3d = new QPoint3d();
 
+  /** Extracts the point at the specified index from a buffer.
+   * @param points The buffer in which each consecutive pair of integers is a 3d quantized point.
+   * @param pointIndex The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [[QPoint3d]] to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d {
     const index = pointIndex * 3;
     const x = points[index + 0];
@@ -651,6 +673,13 @@ export namespace QPoint3dBuffer {
     return result;
   }
 
+  /** Extracts and unquantizes the point at the specified index from a buffer.
+   * @param buffer The array of points and the quantization parameters.
+   * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [Point3d]($geometry-core) to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
     const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
     return qpt.unquantize(buffer.params, result);
@@ -844,10 +873,22 @@ export class QPoint2dBufferBuilder {
     return len / 2;
   }
 
+  /** Returns the quantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [[QPoint2d]] to initialize with the result and return.
+   * @returns The quantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   public get(pointIndex: number, result?: QPoint2d): QPoint2d {
     return QPoint2dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
   }
 
+  /** Returns the unquantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [Point2d]($geometry-core) to initialize with the result and return.
+   * @returns The unquantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   public unquantize(pointIndex: number, result?: Point2d): Point2d {
     return this.get(pointIndex, this._scratchQPoint2d).unquantize(this.params, result);
   }
@@ -919,10 +960,22 @@ export class QPoint3dBufferBuilder {
     return len / 3;
   }
 
+  /** Returns the quantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [[QPoint3d]] to initialize with the result and return.
+   * @returns The quantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   public get(pointIndex: number, result?: QPoint3d): QPoint3d {
     return QPoint3dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
   }
 
+  /** Returns the unquantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [Point3d]($geometry-core) to initialize with the result and return.
+   * @returns The unquantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
   public unquantize(pointIndex: number, result?: Point3d): Point3d {
     return this.get(pointIndex, this._scratchQPoint3d).unquantize(this.params, result);
   }

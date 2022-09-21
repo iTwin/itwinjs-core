@@ -6557,15 +6557,23 @@ export interface QPoint2dBuffer {
     points: Uint16Array;
 }
 
+// @public (undocumented)
+export namespace QPoint2dBuffer {
+    export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d;
+    export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d;
+}
+
 // @public
 export class QPoint2dBufferBuilder {
     constructor(options: QPoint2dBufferBuilderOptions);
     readonly buffer: Uint16ArrayBuilder;
     finish(): QPoint2dBuffer;
+    get(pointIndex: number, result?: QPoint2d): QPoint2d;
     get length(): number;
     readonly params: QParams2d;
     push(pt: XAndY): void;
     pushXY(x: number, y: number): void;
+    unquantize(pointIndex: number, result?: Point2d): Point2d;
 }
 
 // @public
@@ -6611,15 +6619,23 @@ export interface QPoint3dBuffer {
     points: Uint16Array;
 }
 
+// @public (undocumented)
+export namespace QPoint3dBuffer {
+    export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d;
+    export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d;
+}
+
 // @public
 export class QPoint3dBufferBuilder {
     constructor(options: QPoint3dBufferBuilderOptions);
     readonly buffer: Uint16ArrayBuilder;
     finish(): QPoint3dBuffer;
+    get(pointIndex: number, result?: QPoint3d): QPoint3d;
     get length(): number;
     readonly params: QParams3d;
     push(pt: XYAndZ): void;
     pushXYZ(x: number, y: number, z: number): void;
+    unquantize(pointIndex: number, result?: Point3d): Point3d;
 }
 
 // @public
