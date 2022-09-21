@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import { Localization } from "@itwin/core-common";
 import { ITwinLocalization } from "../ITwinLocalization";
 
