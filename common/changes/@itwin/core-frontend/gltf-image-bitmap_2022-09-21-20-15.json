@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "createImageBitmap for reality data",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
