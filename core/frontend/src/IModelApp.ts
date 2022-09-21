@@ -227,6 +227,9 @@ export class IModelApp {
    * @internal
    */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  /** The [[TerrainProviderRegistry]] for this session.
+   * @beta
+   */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
