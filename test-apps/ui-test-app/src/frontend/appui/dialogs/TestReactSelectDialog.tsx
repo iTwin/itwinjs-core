@@ -78,7 +78,9 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       maxWidth={600}
     >
       <div className="modal-react-select-dialog">
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <div><label className="label-data">Color: </label><ThemedSelect options={colorChoices} /></div>
+        {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
         <div><label className="label-data">Choose Cities: </label><ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} /></div>
         <div><LabeledThemedSelect label={"Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} /></div>
       </div>

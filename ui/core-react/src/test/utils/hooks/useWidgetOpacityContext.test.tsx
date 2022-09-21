@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { render } from "@testing-library/react";
 import { expect } from "chai";
-import { mount } from "enzyme";
 import * as React from "react";
 import {
   useProximityToMouse, useWidgetOpacityContext, WidgetElementSet, WidgetOpacityContext,
@@ -51,7 +51,7 @@ describe("useWidgetOpacityContext", () => {
   it("should use the widget opacity context", () => {
     const elementSet = new WidgetElementSet();
 
-    mount(<WidgetOpacityParent elementSet={elementSet} />);
+    render(<WidgetOpacityParent elementSet={elementSet} />);
 
     expect(elementSet.size).to.eq(1);
   });

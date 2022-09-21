@@ -4,8 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "name": "Attach to node process",
       "presentation": {
@@ -263,6 +261,46 @@
         "[NODE] Certa Test Runner for Frontend Tests"
       ]
     },
+    { /* PARTIAL */
+      "name": "[NODE] Certa Test Runner for i18n Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/core/i18n/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:debug"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/i18n/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[BROWSER] i18n Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BROWSER] i18n Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/i18n/certa.json
+      "timeout": 20000,
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[NODE] Certa Test Runner for i18n Tests"
+      ]
+    },
     {
       "name": "Geometry Tests",
       "presentation": {
@@ -368,23 +406,6 @@
         "order": 7
       },
       "cwd": "${workspaceFolder}/core/quantity",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "test"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "iTwin Client Tests (Offline)",
-      "presentation": {
-        "group": "3_ClientsTests",
-        "order": 3
-      },
-      "cwd": "${workspaceFolder}/clients/itwin",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -962,39 +983,39 @@
       ]
     },
     { /* PARTIAL */
-    "name": "[BACKEND] appui-test-app/standalone (chrome)",
-    "presentation": {
-      "hidden": true
+      "name": "[BACKEND] appui-test-app/standalone (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/appui-test-app/standalone",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/backend/main.js",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] appui-test-app/standalone (chrome)"
+      ]
     },
-    "cwd": "${workspaceFolder}/test-apps/appui-test-app/standalone",
-    "type": "pwa-node",
-    "request": "launch",
-    "program": "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/backend/main.js",
-    "outFiles": [
-      "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
-      "${workspaceFolder}/{core,clients,editor,presentation}/*/lib/**/*.js"
-    ],
-    "cascadeTerminateToConfigurations": [
-      "[FRONTEND] appui-test-app/standalone (chrome)"
-    ]
-  },
-  { /* PARTIAL */
-    "name": "[FRONTEND] appui-test-app/standalone (chrome)",
-    "presentation": {
-      "hidden": true
+    { /* PARTIAL */
+      "name": "[FRONTEND] appui-test-app/standalone (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] appui-test-app/standalone (chrome)"
+      ]
     },
-    "type": "pwa-chrome",
-    "request": "launch",
-    "url": "http://localhost:3000/",
-    "outFiles": [
-      "${workspaceFolder}/test-apps/appui-test-app/standalone/lib/**/*.js",
-      "${workspaceFolder}/{core,clients,editor,ui,presentation}/*/lib/**/*.js"
-    ],
-    "cascadeTerminateToConfigurations": [
-      "[BACKEND] appui-test-app/standalone (chrome)"
-    ]
-  },
-{ /* PARTIAL */
+    { /* PARTIAL */
       "name": "[BACKEND] appui-test-app/standalone (electron)",
       "presentation": {
         "hidden": true
@@ -1486,6 +1507,27 @@
         "generate"
       ],
     },
+    {
+      "name": "Electron Backend Tests",
+      "presentation": {
+        "group": "0_CoreTests"
+      },
+      "cwd": "${workspaceFolder}/core/electron/",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
+      "args": [
+        "lib/cjs/test/backend/RunElectronBackendTests.js"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "outFiles": [
+        "${workspaceFolder}/core/electron/lib/**/*.js",
+        "${workspaceFolder}/core/backend/lib/**/*.js"
+      ],
+      "autoAttachChildProcesses": true
+    },
   ],
   "compounds": [
     {
@@ -1522,6 +1564,17 @@
       ]
     },
     {
+      "name": "i18n Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 2
+      },
+      "configurations": [
+        "[BROWSER] i18n Tests",
+        "[NODE] Certa Test Runner for i18n Tests"
+      ]
+    },
+    {
       "name": "display-test-app (chrome)",
       "presentation": {
         "group": "1_TestApps",
@@ -1555,28 +1608,28 @@
       ]
     },
     {
-    "name": "appui-test-app/connected (chrome)",
-    "presentation": {
-      "group": "1_TestApps",
-      "order": 1
+      "name": "appui-test-app/connected (chrome)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] appui-test-app/connected (chrome)",
+        "[FRONTEND] appui-test-app/connected (chrome)"
+      ]
     },
-    "configurations": [
-      "[BACKEND] appui-test-app/connected (chrome)",
-      "[FRONTEND] appui-test-app/connected (chrome)"
-    ]
-  },
-  {
-    "name": "appui-test-app/standalone (chrome)",
-    "presentation": {
-      "group": "1_TestApps",
-      "order": 1
+    {
+      "name": "appui-test-app/standalone (chrome)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] appui-test-app/standalone (chrome)",
+        "[FRONTEND] appui-test-app/standalone (chrome)"
+      ]
     },
-    "configurations": [
-      "[BACKEND] appui-test-app/standalone (chrome)",
-      "[FRONTEND] appui-test-app/standalone (chrome)"
-    ]
-  },
-  {
+    {
       "name": "appui-test-app/standalone (electron)",
       "presentation": {
         "group": "1_TestApps",
@@ -1587,7 +1640,7 @@
         "[FRONTEND] appui-test-app/standalone (electron)"
       ]
     },
-  {
+    {
       "name": "ui-test-app (chrome)",
       "presentation": {
         "group": "1_TestApps",

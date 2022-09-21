@@ -12,6 +12,8 @@ import Backend, { BackendOptions } from "i18next-http-backend";
 import { Logger } from "@itwin/core-bentley";
 import type { Localization } from "@itwin/core-common";
 
+const DEFAULT_MAX_RETRIES: number = 1; // a low number prevents wasted time and potential timeouts when requesting localization files throws an error
+
 /** Options for ITwinLocalization
  *  @public
  */
@@ -54,7 +56,7 @@ export class ITwinLocalization implements Localization {
     this._initOptions = {
       interpolation: { escapeValue: true },
       fallbackLng: "en",
-      maxRetries: 1, // prevents wasted time and potential timeouts when requesting localization files throws an error
+      maxRetries: DEFAULT_MAX_RETRIES,
       backend: this._backendOptions,
       detection: this._detectionOptions,
       ...options?.initOptions,
@@ -67,10 +69,19 @@ export class ITwinLocalization implements Localization {
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
+
+    // Also consider namespaces passed into constructor
+    const initNamespaces: string[] = [this._initOptions.ns || []].flat();
+    const combinedNamespaces: Set<string> = new Set([...namespaces, ...initNamespaces]); // without duplicates
+
+    const defaultNamespace: string | false | readonly string[] = this._initOptions.defaultNS ?? namespaces[0];
+    if (defaultNamespace)
+      combinedNamespaces.add(defaultNamespace as string); // Make sure default namespace is in namespaces list
+
     const initOptions: InitOptions = {
-      ... this._initOptions,
-      ns: namespaces,
-      defaultNS: namespaces[0],
+      ...this._initOptions,
+      defaultNS: defaultNamespace,
+      ns: [...combinedNamespaces],
     };
 
     // if in a development environment, set debugging
@@ -119,9 +130,15 @@ export class ITwinLocalization implements Localization {
    * @public
    */
   public getLocalizedString(key: string | string[], options?: TOptionsBase): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
     const value = this.i18next.t(key, options);
-    if (typeof value !== "string")
-      throw new Error("Translation key(s) not found");
+
+    if (typeof value !== "string") {
+      throw new Error("Translation key(s) string not found");
+    }
 
     return value;
   }
@@ -155,6 +172,10 @@ export class ITwinLocalization implements Localization {
    * @internal
    */
   public getEnglishString(namespace: string, key: string | string[], options?: TOptionsBase): string {
+    if (options?.returnDetails || options?.returnObjects) {
+      throw new Error("Translation key must map to a string, but the given options will result in an object");
+    }
+
     const en = this.i18next.getFixedT("en", namespace);
     const str = en(key, options);
     if (typeof str !== "string")

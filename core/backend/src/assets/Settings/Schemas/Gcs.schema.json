@@ -17,6 +17,16 @@
         "gcs/base",
         "gcs/entire-earth"
       ]
+    },
+    "gcs/disableWorkspaces": {
+      "type": "boolean",
+      "description": "If true, do not load any GCS workspaces",
+      "default": false
+    },
+    "gcs/noLocalData": {
+      "type": "boolean",
+      "description": "If true, do not attempt to load GCS data from local files",
+      "default": false
     }
   }
 }

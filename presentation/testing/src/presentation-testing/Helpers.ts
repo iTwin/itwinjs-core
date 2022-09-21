@@ -5,17 +5,19 @@
 /** @packageDocumentation
  * @module Helpers
  */
+import { join } from "path";
 import * as rimraf from "rimraf";
+import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
-import { IModelHost } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
-import { HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode } from "@itwin/presentation-backend";
+import {
+  HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode,
+} from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
-import { join } from "path";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -43,11 +45,13 @@ export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps }
 export interface PresentationTestingInitProps {
   /** Properties for backend initialization */
   backendProps?: PresentationBackendProps;
+  /** Properties for `IModelHost` */
+  backendHostProps?: IModelHostOptions;
   /** Properties for frontend initialization */
   frontendProps?: PresentationFrontendProps;
   /** IModelApp implementation */
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
-  /** IModelApp options */
+  /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
 }
 
@@ -74,7 +78,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
   props.backendProps = props.backendProps ?? {};
   if (!props.backendProps.id)
     props.backendProps.id = `test-${Guid.createValue()}`;
-  await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
+  await IModelHost.startup({ cacheDir: join(__dirname, ".cache"), ...props.backendHostProps });
   PresentationBackend.initialize(props.backendProps);
 
   // init frontend

@@ -10,8 +10,15 @@ import "./MapLayerManager.scss";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUI } from "../../mapLayers";
 
+interface MapLayerSettingsMenuProps {
+  mapLayerSettings: StyleMapLayerSettings;
+  onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
+  activeViewport: ScreenViewport;
+  disabled?: boolean;
+}
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport }: { mapLayerSettings: StyleMapLayerSettings, onMenuItemSelection: (action: string, mapLayerSettings: StyleMapLayerSettings) => void, activeViewport: ScreenViewport }) {
+export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, activeViewport, disabled }: MapLayerSettingsMenuProps) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const settingsRef = React.useRef<HTMLButtonElement>(null);
   const [labelDetach] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:LayerMenu.Detach"));
@@ -81,7 +88,7 @@ export function MapLayerSettingsMenu({ mapLayerSettings, onMenuItemSelection, ac
 
   return (
     <>
-      <Button size="small" styleType="borderless" data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></Button>
+      <Button disabled={disabled} size="small" styleType="borderless" data-testid="map-layer-settings" className="map-layer-settings icon icon-more-vertical-2" ref={settingsRef} onClick={onSettingsClick} ></Button>
       <ContextMenu opened={isSettingsOpen && (undefined !== hasRangeData)} onOutsideClick={handleCloseSetting} >
         <div className="map-manager-item-menu" >
           <ContextMenuItem hideIconContainer={true} key={0} className={hasRangeData ? "" : "core-context-menu-disabled"} onSelect={handleZoomToLayer}>{labelZoomToLayer}</ContextMenuItem>

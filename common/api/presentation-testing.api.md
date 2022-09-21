@@ -9,6 +9,7 @@ import { HierarchyCacheMode } from '@itwin/presentation-backend';
 import { IModelApp } from '@itwin/core-frontend';
 import { IModelAppOptions } from '@itwin/core-frontend';
 import { IModelConnection } from '@itwin/core-frontend';
+import { IModelHostOptions } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { Omit as Omit_2 } from '@itwin/presentation-common';
@@ -88,6 +89,7 @@ export { PresentationManagerMode }
 
 // @public (undocumented)
 export interface PresentationTestingInitProps {
+    backendHostProps?: IModelHostOptions;
     backendProps?: PresentationBackendProps;
     frontendApp?: {
         startup: (opts?: IModelAppOptions) => Promise<void>;

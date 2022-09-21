@@ -33,6 +33,7 @@ export class SaveImageTool extends Tool {
 
     const copy = opts?.copyToClipboard ?? false;
 
+    await vp.waitForSceneCompletion();
     const buffer = vp.readImageBuffer({ size: new Point2d(width, height) });
     if (!buffer) {
       alert("Failed to read image");
