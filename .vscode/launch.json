@@ -4,7 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
     {
       "name": "Attach to node process",
       "presentation": {
@@ -220,6 +219,23 @@
       ],
       "outFiles": [
         "${workspaceFolder}/extensions/map-layers-auth/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "MapLayers Formats Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers-formats/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/extensions/map-layers-formats/lib/**/*.js"
       ]
     },
     { /* PARTIAL */

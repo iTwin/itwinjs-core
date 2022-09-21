@@ -41,12 +41,17 @@ export abstract class MapLayerImageryProvider {
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
-  public get minimumZoomLevel(): number { return 0; }
-  public get maximumZoomLevel(): number { return 22; }
+  public get minimumZoomLevel(): number { return this.defaultMinimumZoomLevel; }
+  public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
+
+  // Those values are used internally for various computation,
+  // this not get overriden.
+  protected get defaultMinimumZoomLevel(): number { return 0; }
+  protected get defaultMaximumZoomLevel(): number { return 22; }
 
   /** @internal */
   protected get _filterByCartoRange() { return true; }
@@ -56,7 +61,7 @@ export abstract class MapLayerImageryProvider {
   }
 
   public async initialize(): Promise<void> {
-    this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
       if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
     });
   }

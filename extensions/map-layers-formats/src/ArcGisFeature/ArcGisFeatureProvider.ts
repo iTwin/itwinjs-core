@@ -102,6 +102,14 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
   private static readonly _nbSubTiles = 2;
 
+  private _maxDepthFromLod = 0;
+  private _minDepthFromLod = 0;
+
+  // We should not be making any request if layer is currently out of range,
+  // but since minimum LOD is not correctely supported by iTwin tile, we dont use it for now.
+  // public get minimumZoomLevel(): number { return this._minDepthFromLod; }
+  // public get maximumZoomLevel(): number { return this._maxDepthFromLod; }
+
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
@@ -110,8 +118,10 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     let json;
     try {
-      json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
-    } catch {
+      json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.userName, this._settings.password);
+
+    } catch (_e) {
+
     }
 
     if (json === undefined) {
@@ -128,16 +138,20 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
     this.serviceJson = json;
 
+    let  foundVisibleSubLayer = false;
     if (this._settings.subLayers.length >= 0) {
+      // There is more than sub-layer for this layer, pick the first visible one.
       for (const layer of this._settings.subLayers) {
-
         if (layer.visible && typeof layer.id === "number") {
           this._layerId = layer.id;
+          foundVisibleSubLayer = true;
           break;
         }
       }
-    } else if (json !== undefined) {
-      // No sublayers were specified on the layerSettings object, lets find a default one in the capabilities
+    }
+
+    if (!foundVisibleSubLayer && json !== undefined) {
+      // No suitable sublayer was specified on the layerSettings object, lets find a default one in the capabilities
 
       // Check layer metadata
       if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
@@ -170,40 +184,54 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
     }
+
     // Make sure we cache layer info (i.e. rendering info)
     if (!this._layerInfo) {
-      this._layerInfo = await this.getLayerMetadata(this._layerId);
-
-      // Check supported query formats: JSON and PBF are currently implemented by this provider
-      // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
-      if (this._layerInfo.supportedQueryFormats) {
-        const formats: string[] = this._layerInfo.supportedQueryFormats.split(", ");
-        if (formats.includes("PBF")) {
-          this._format = "PBF";
-        } else if (formats.includes ("JSON"))  {
-          this._format = "JSON";
-        } else {
-          Logger.logError(loggerCategory, "Could not get service JSON");
-          throw new ServerError(IModelStatus.ValidationFailed, "");
-        }
-      }
-
-      // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
-      // If not supported, transformation will be applied client side.
-      if (this._layerInfo.supportsCoordinatesQuantization) {
-        this._supportsCoordinatesQuantization = true;
+      try {
+        this._layerInfo = await this.getLayerMetadata(this._layerId);
+      } catch {
+        throw new ServerError(IModelStatus.ValidationFailed, "");
       }
     }
+
+    // Check supported query formats: JSON and PBF are currently implemented by this provider
+    // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
+    if (this._layerInfo.supportedQueryFormats) {
+      const formats: string[] = this._layerInfo.supportedQueryFormats.split(", ");
+      if (formats.includes("PBF")) {
+        this._format = "PBF";
+      } else if (formats.includes ("JSON"))  {
+        this._format = "JSON";
+      } else {
+        Logger.logError(loggerCategory, "Could not get service JSON");
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
+    }
+
+    // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
+    // If not supported, transformation will be applied client side.
+    if (this._layerInfo.supportsCoordinatesQuantization) {
+      this._supportsCoordinatesQuantization = true;
+    }
+
+    // Check for minScale / max scale
+    const minScale = this._layerInfo?.minScale || undefined;  // undefined, 0 -> undefined
+    const maxScale = this._layerInfo?.maxScale || undefined;  // undefined, 0 -> undefined
+    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
+    if (scales.minLod)
+      this._minDepthFromLod = scales.minLod;
+    if (scales.maxLod)
+      this._maxDepthFromLod = scales.maxLod;
 
     this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
   }
 
-  protected  async getLayerMetadata(layerId: number) {
+  protected async getLayerMetadata(layerId: number) {
     let json;
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      json = await ArcGisUtilities.getServiceJson(url.toString(), this.getRequestAuthorization());
+      json = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.userName, this._settings.password);
     } catch {
 
     }

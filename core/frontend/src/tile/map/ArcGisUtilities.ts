@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Angle } from "@itwin/core-geometry";
+import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
@@ -121,8 +121,7 @@ export class ArcGisUtilities {
   }
 
   public static async validateSource(url: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const credentials = userName && password ? {user: userName, password} : undefined;
-    const json = await this.getServiceJson(url, credentials, ignoreCache);
+    const json = await this.getServiceJson(url, userName, password, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
@@ -166,7 +165,7 @@ export class ArcGisUtilities {
 
   private static _serviceCache = new Map<string, any>();
 
-  public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
+  public static async getServiceJson(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
@@ -183,7 +182,7 @@ export class ArcGisUtilities {
       tmpUrl.searchParams.append("f", "json");
       const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
       if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
       }
       const data = await request(tmpUrl.toString(), options);
       const json = data.body ?? undefined;
@@ -240,6 +239,69 @@ export class ArcGisUtilities {
     }
 
     return undefined;
+  }
+
+  /**
+   * Compute scale, resolution values for requested zoom levels (WSG 84)
+   * Use a scale of 96 dpi for Google Maps scales
+   * Based on this article: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#Resolution_and_Scale
+   * @param startZoom Zoom level where scales begins to be computed
+   * @param endZoom Zoom level where scales ends to be computed
+   * @param latitude Latitude in degrees to use to compute scales (i.e 0 for Equator)
+   * @param tileSize Size of a tile in pixels (i.e 256)
+   * @param screenDpi Monitor resolution in dots per inch (i.e. typically 96dpi is used by Google Maps)
+  * @returns An array containing resolution and scale values for each requested zoom level
+   */
+  public static computeZoomLevelsScales(startZoom: number = 0, endZoom: number = 20, latitude: number = 0, tileSize: number = 256, screenDpi = 96 ): {zoom: number, resolution: number, scale: number}[] {
+    // Note: There is probably a more direct way to compute this, but I prefer to go for a simple and well documented approach.
+    if (startZoom <0 || endZoom < startZoom || tileSize < 0 || screenDpi < 1  || latitude < -90 || latitude > 90)
+      return [];
+
+    const inchPerMeter = 1 / 0.0254;
+    const results: {zoom: number, resolution: number, scale: number}[] = [];
+    const equatorLength = Constant.earthRadiusWGS84.equator * 2  * Math.PI;
+    const zoom0Resolution = equatorLength / tileSize; // in meters per pixel
+
+    const cosLatitude = Math.cos(latitude);
+    for (let zoom = startZoom;  zoom<= endZoom; zoom++) {
+      const resolution = zoom0Resolution * cosLatitude / Math.pow(2, zoom);
+      const scale =  screenDpi * inchPerMeter *  resolution;
+      results.push({zoom, resolution, scale});
+    }
+
+    return results;
+  }
+
+  /**
+   * Match the provided minScale,maxScale values to corresponding wgs84 zoom levels
+   * @param defaultMaxLod Value of the last LOD (i.e 22)
+   * @param tileSize Size of a tile in pixels (i.e 256)
+   * @param minScale Minimum scale value that needs to be matched to a LOD level
+   * @param maxScale Maximum  scale value that needs to be matched to a LOD level
+  * @returns minLod: LOD value matching minScale,  maxLod: LOD value matching maxScale
+   */
+  public static getZoomLevelsScales( defaultMaxLod: number, tileSize: number, minScale?: number, maxScale?: number): {minLod?: number, maxLod?: number} {
+
+    let minLod: number|undefined, maxLod: number|undefined;
+
+    const zoomScales = ArcGisUtilities.computeZoomLevelsScales(0, defaultMaxLod, 0 /* latitude 0 = Equator*/, tileSize);
+
+    if (zoomScales.length > 0) {
+
+      if (minScale) {
+        minLod = 0;
+        // We are looking for the largest scale value with a scale value smaller than minScale
+        for (; minLod < zoomScales.length && zoomScales[minLod].scale > minScale; minLod++);
+
+      }
+
+      if (maxScale) {
+        maxLod = defaultMaxLod;
+        // We are looking for the smallest scale value with a value greater than maxScale
+        for (; maxLod >= 0 && zoomScales[maxLod].scale < maxScale; maxLod--);
+      }
+    }
+    return {minLod, maxLod};
   }
 
 }

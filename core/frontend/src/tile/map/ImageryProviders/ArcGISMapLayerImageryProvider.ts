@@ -155,7 +155,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
 
-    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
+    const json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.userName, this._settings.password);
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
 
