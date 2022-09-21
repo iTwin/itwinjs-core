@@ -3812,7 +3812,7 @@ export abstract class GltfReader {
     protected readonly _glTF: Gltf;
     // (undocumented)
     protected get _images(): GltfDictionary<GltfImage & {
-        resolvedImage?: HTMLImageElement;
+        resolvedImage?: TextureImageSource;
     }>;
     // (undocumented)
     protected readonly _iModel: IModelConnection;
@@ -4493,6 +4493,9 @@ export class IdleTool extends InteractiveTool {
     // (undocumented)
     static toolId: string;
 }
+
+// @public
+export function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap>;
 
 // @public
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined;
@@ -10610,7 +10613,7 @@ export interface TextureImage {
 }
 
 // @public
-export type TextureImageSource = HTMLImageElement | ImageBuffer;
+export type TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap;
 
 // @public
 export type TextureOwnership = TextureCacheOwnership | "external";
