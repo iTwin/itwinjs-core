@@ -53,7 +53,7 @@ export class WebAppRpcRequest extends RpcRequest {
       applicationId: req.header(headerNames.applicationId) || "",
       applicationVersion: req.header(headerNames.applicationVersion) || "",
       sessionId: req.header(headerNames.sessionId) || "",
-      authorization: (headerNames.authorization ? req.header(headerNames.authorization) : "") ?? "",
+      authorization: req.header(headerNames.authorization) || "",
       accept: req.header(headerNames.accept) || "",
     };
     return parsedHeaders;
