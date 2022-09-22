@@ -14,7 +14,7 @@ import { MapTilingScheme } from "../internal";
 const scratchMercatorFractionRange = Range2d.createNull();
 const scratchPoint2d = Point2d.createZero();
 
-/** A specialization of [Range2d]($geometry-core) representing a [Cartographic]($common) region on the surface of the Earth,
+/** A specialization of [Range2d]($core-geometry) representing a [Cartographic]($common) region on the surface of the Earth,
  * used by [[MapTile]]s.
  * The `x` components of the `low` and `high` points refer to the western and eastern longitudes, respectively.
  * The `y` components of the `low` and `high` points refer to the southern and northern latitudes, respectively.
@@ -149,7 +149,7 @@ export class MapCartoRectangle extends Range2d {
   }
 
   /** Computes fractional coordinates of the specified position within this rectangle's area.
-   * @see [Range2d.worldToLocal]($geometry-core)
+   * @see [Range2d.worldToLocal]($core-geometry)
    */
   public fractionFromCartographic(carto: Cartographic): Point2d | undefined {
     const pt = Point2d.create(carto.longitude, carto.latitude, scratchPoint2d);

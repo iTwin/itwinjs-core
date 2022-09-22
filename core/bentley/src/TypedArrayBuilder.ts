@@ -86,7 +86,7 @@ export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array>
    * This is used internally by methods like [[push]] and [[append]] to ensure the array has room for the element(s) to be added.
    * It can also be useful when you know you intend to add some number of additional elements, to minimize reallocations.
    *
-   * If [[newCapacity]] is not greater than the current [[capacity]], this function does nothing.
+   * If `newCapacity` is not greater than the current [[capacity]], this function does nothing.
    * Otherwise, it allocates a new `TypedArray` with room for `newCapacity * growthFactor` elements, and copies the contents of the previous `TypedArray` into it.
    * [[length]] remains unchanged; [[capacity]] reflects the size of the new TypeArray.
    */

@@ -8,7 +8,7 @@
 
 import { getCesiumTerrainProvider, TerrainMeshProvider, TerrainMeshProviderOptions } from "../internal";
 
-/** Interface adopted by an object that can supply [[TerrainMeshProviders]] enabling the display of 3d terrain in a [[Viewport]].
+/** Interface adopted by an object that can supply [[TerrainMeshProvider]]s enabling the display of 3d terrain in a [[Viewport]].
  * @see [[TerrainProviderRegistry]] to register or look up a `TerrainProvider` by its name.
  * @see [TerrainSettings.providerName]($common) to specify the terrain provider used by a [DisplayStyle]($backend).
  * @beta

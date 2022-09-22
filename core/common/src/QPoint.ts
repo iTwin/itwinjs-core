@@ -232,7 +232,7 @@ export class QPoint2d {
   }
 }
 
-/** A compact representation of a list of [[QPoint2d]]s stored in a [[Uint16Array]].
+/** A compact representation of a list of [[QPoint2d]]s stored in a `Uint16Array`
  * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.uvs]($frontend).
  * @see [[QPoint3dBuffer]] for 3d points.
  * @public
@@ -275,7 +275,7 @@ export namespace QPoint2dBuffer {
   /** Extracts and unquantizes the point at the specified index from a buffer.
    * @param buffer The array of points and the quantization parameters.
    * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
-   * @param result If supplied, a preallocated [Point2d]($geometry-core) to initialize with the result and return.
+   * @param result If supplied, a preallocated [Point2d]($core-geometry) to initialize with the result and return.
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
@@ -633,7 +633,7 @@ export class QPoint3d {
   }
 }
 
-/** A compact representation of a list of [[QPoint3d]]s stored in a [[Uint16Array]].
+/** A compact representation of a list of [[QPoint3d]]s stored in a `Uint16Array`.
  * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.positions]($frontend).
  * @public
  * @extensions
@@ -676,7 +676,7 @@ export namespace QPoint3dBuffer {
   /** Extracts and unquantizes the point at the specified index from a buffer.
    * @param buffer The array of points and the quantization parameters.
    * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
-   * @param result If supplied, a preallocated [Point3d]($geometry-core) to initialize with the result and return.
+   * @param result If supplied, a preallocated [Point3d]($core-geometry) to initialize with the result and return.
    * @returns The point at `pointIndex`.
    * @throws Error if `pointIndex` is out of bounds.
    */
@@ -885,7 +885,7 @@ export class QPoint2dBufferBuilder {
 
   /** Returns the unquantized point at the specified index in [[buffer]].
    * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
-   * @param result If supplied, a [Point2d]($geometry-core) to initialize with the result and return.
+   * @param result If supplied, a [Point2d]($core-geometry) to initialize with the result and return.
    * @returns The unquantized point at the specified index in [[buffer]].
    * @throws Error if `pointIndex` is out of bounds.
    */
@@ -972,7 +972,7 @@ export class QPoint3dBufferBuilder {
 
   /** Returns the unquantized point at the specified index in [[buffer]].
    * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
-   * @param result If supplied, a [Point3d]($geometry-core) to initialize with the result and return.
+   * @param result If supplied, a [Point3d]($core-geometry) to initialize with the result and return.
    * @returns The unquantized point at the specified index in [[buffer]].
    * @throws Error if `pointIndex` is out of bounds.
    */

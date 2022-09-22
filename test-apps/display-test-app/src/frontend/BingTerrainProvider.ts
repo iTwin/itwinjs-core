@@ -8,7 +8,7 @@ import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
   BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
-  RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
+  RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
 // The number of elevation values per row/column within each tile.
@@ -87,8 +87,8 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // Given a 2d point in tile coordinates and an elevation, the projection can produce a 3d point in space.
     const projection = args.tile.getProjection(heightRange);
 
-    // TerrainMeshBuilderOptions for creating the TerrainMeshBuilder.
-    const options = {
+    // Options for creating the terrain mesh.
+    const options: RealityMeshParamsBuilderOptions = {
       // A range encompassing all possible 3d points in the mesh.
       positionRange: projection.localRange,
       // The exact number of vertices we will need - preallocated to avoid reallocating as we populate the array.
