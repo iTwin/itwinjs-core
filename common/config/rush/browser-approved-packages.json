@@ -475,6 +475,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "canonical-path",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
