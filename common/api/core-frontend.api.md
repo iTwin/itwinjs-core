@@ -228,7 +228,6 @@ import { PropertyRecord } from '@itwin/appui-abstract';
 import { PropertyValue } from '@itwin/appui-abstract';
 import { QParams2d } from '@itwin/core-common';
 import { QParams3d } from '@itwin/core-common';
-import { QPoint2d } from '@itwin/core-common';
 import { QPoint2dBuffer } from '@itwin/core-common';
 import { QPoint2dBufferBuilder } from '@itwin/core-common';
 import { QPoint3dBuffer } from '@itwin/core-common';
@@ -8088,7 +8087,7 @@ export class RealityMeshParamsBuilder {
     addTriangle(i0: number, i1: number, i2: number): void;
     addUnquantizedVertex(position: XYAndZ, uv: XAndY, normal?: XYAndZ): number;
     // @internal
-    addVertex(position: Point3d, uv: QPoint2d, normal?: number): void;
+    addVertex(position: XYAndZ, uv: XAndY, normal?: number): void;
     finish(): RealityMeshParams;
     readonly indices: Uint16ArrayBuilder;
     normals?: Uint16ArrayBuilder;
