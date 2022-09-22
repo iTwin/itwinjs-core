@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Range2d, Transform, Vector3d } from "@itwin/core-geometry";
+import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
@@ -115,7 +115,6 @@ export abstract class MapTilingScheme {
   public tileYToLatitude(y: number, level: number) {
     return this.yFractionToLatitude(this.tileYToFraction(y, level));
   }
-
 
   /** Given the components of a [[QuadId]], compute its fractional coordinates in the XY plane. */
   public tileXYToFraction(x: number, y: number, level: number, result?: Point2d): Point2d {

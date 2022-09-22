@@ -33,13 +33,13 @@ export class BingElevationProvider {
 
     this._heightRangeRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"
-      .replace("{BingMapsAPIKey}", bingKey);
+        .replace("{BingMapsAPIKey}", bingKey);
     this._seaLevelOffsetRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}"
-      .replace("{BingMapsAPIKey}", bingKey);
+        .replace("{BingMapsAPIKey}", bingKey);
     this._heightListRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}"
-      .replace("{BingMapsAPIKey}", bingKey);
+        .replace("{BingMapsAPIKey}", bingKey);
   }
 
   /** Return the height (altitude) at a given cartographic location.
@@ -52,8 +52,8 @@ export class BingElevationProvider {
 
     const requestUrl =
       this._heightListRequestTemplate
-      .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
-      .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+        .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
+        .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
 
     try {
       const tileResponse: Response = await request(requestUrl, {

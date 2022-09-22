@@ -281,7 +281,6 @@ export class RealityTile extends Tile {
   /** @internal */
   public forceSelectRealityTile(): boolean { return false; }
 
-
   /** @internal */
   public selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     const visibility = this.computeVisibilityFactor(args);
@@ -320,7 +319,6 @@ export class RealityTile extends Tile {
     }
   }
 
-
   /** @internal */
   public purgeContents(olderThan: BeTimePoint): void {
     // Discard contents of tiles that have not been "used" recently, where "used" may mean: selected/preloaded for display or content requested.
@@ -333,7 +331,6 @@ export class RealityTile extends Tile {
       for (const child of children)
         child.purgeContents(olderThan);
   }
-
 
   /** @internal */
   public computeVisibilityFactor(args: TileDrawArgs): number {
@@ -358,7 +355,6 @@ export class RealityTile extends Tile {
     return this.maximumSize / args.getPixelSize(this);
   }
 
-
   /** @internal */
   public preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number) {
     const visibility = this.computeVisibilityFactor(args);
@@ -378,7 +374,6 @@ export class RealityTile extends Tile {
       }
     }
   }
-
 
   /** @internal */
   protected get _anyChildNotFound(): boolean {
