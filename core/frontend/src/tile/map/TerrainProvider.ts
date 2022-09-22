@@ -20,7 +20,7 @@ export interface TerrainProvider {
 
 /** A registry of [[TerrainProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.terrainProviderRegistry]].
  * It always includes the built-in provider named "CesiumWorldTerrain", which obtains terrain meshes from [Cesium ION](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). That provider requires a valid [[TileAdmin.Props.cesiumIonKey]] to be supplied to [[IModelApp.startup]].
- * Any number of additional providers can be [[register]]red.
+ * Any number of additional providers can be [[register]]ed.
  *
  * When terrain is enabled for a [[Viewport]], the display system will attempt to look up the [[TerrainProvider]] corresponding to the [TerrainSettings.providerName]($common) specified by the [[Viewport]]'s [DisplayStyleSettings]($common). If a provider by that name is registered, it will be used to obtain terrain meshes; otherwise, the display system will produce flat terrain meshes.
  * @beta
