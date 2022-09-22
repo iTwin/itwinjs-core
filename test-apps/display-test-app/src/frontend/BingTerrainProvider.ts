@@ -88,11 +88,12 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     const projection = args.tile.getProjection(heightRange);
 
     // Options for creating the terrain mesh.
+    const initialVertexCapacity = size * size + numSkirtVertices;
     const options: RealityMeshParamsBuilderOptions = {
       // A range encompassing all possible 3d points in the mesh.
       positionRange: projection.localRange,
       // The exact number of vertices we will need - preallocated to avoid reallocating as we populate the array.
-      initialVertexCapacity: size * size + numSkirtVertices,
+      initialVertexCapacity,
       // The exact number of vertex indices we will need - preallocated to avoid reallocating as we populate the array.
       initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2 + numSkirtIndices,
       // We will compute the normals after computing the positions, if needed.
@@ -118,7 +119,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     }
 
     if (this._wantNormals)
-      this.addNormals(builder, options.initialVertexCapacity);
+      this.addNormals(builder, initialVertexCapacity);
 
     // Define the triangles for each quad.
     for (let row = 0; row < sizeM1; row++) {
