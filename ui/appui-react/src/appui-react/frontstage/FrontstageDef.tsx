@@ -12,9 +12,10 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@itwin/core-frontend";
 import { PointProps, StagePanelLocation, StageUsage, UiError, WidgetState } from "@itwin/appui-abstract";
-import { RectangleProps, SizeProps } from "@itwin/core-react";
+import { Rectangle, RectangleProps, SizeProps } from "@itwin/core-react";
 import {
-  dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
+  dockWidgetContainer,
+  floatWidget, getTabLocation, getWidgetLocation, isFloatingTabLocation, isPanelTabLocation, isPopoutTabLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, PanelSide, panelSides, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@itwin/appui-layout-react";
 import { ContentControl } from "../content/ContentControl";
@@ -35,9 +36,8 @@ import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
-import { setImmediate } from "timers";
-import { saveFrontstagePopoutWidgetSizeAndPosition } from "../widget-panels/Frontstage";
-import { BentleyStatus } from "@itwin/core-bentley";
+import { SavedWidgets } from "../widget-panels/Frontstage";
+import { assert, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import { ContentDialogManager } from "../dialog/ContentDialogManager";
 
 /** @internal */
@@ -87,6 +87,7 @@ export class FrontstageDef {
   private _nineZoneState?: NineZoneState;
   private _contentGroupProvider?: ContentGroupProvider;
   private _floatingContentControls?: ContentControl[];
+  private _savedWidgetDefs?: SavedWidgets;
 
   public get id(): string { return this._id; }
   public get defaultTool(): ToolItemDef | undefined { return this._defaultTool; }
@@ -244,6 +245,12 @@ export class FrontstageDef {
   }
 
   /** @internal */
+  public get savedWidgetDefs() { return this._savedWidgetDefs; }
+  public set savedWidgetDefs(widgets: SavedWidgets | undefined) {
+    this._savedWidgetDefs = widgets;
+  }
+
+  /** @internal */
   public get timeTracker(): TimeTracker { return this._timeTracker; }
 
   /** Created a [[FrontstageDef]] and initialize it */
@@ -296,6 +303,7 @@ export class FrontstageDef {
     // istanbul ignore else
     if (this.contentGroup)
       this.contentGroup.onFrontstageDeactivated();
+    // istanbul ignore next
     if (this.contentGroupProvider)
       await this.contentGroupProvider.onFrontstageDeactivated();
 
@@ -366,9 +374,13 @@ export class FrontstageDef {
   public startDefaultTool(): void {
     // Start the default tool
     // istanbul ignore next
-    if (this.defaultTool && IModelApp.toolAdmin && IModelApp.viewManager) {
-      IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
-      this.defaultTool.execute();
+    if (IModelApp.toolAdmin && IModelApp.viewManager) {
+      if (this.defaultTool) {
+        IModelApp.toolAdmin.defaultToolId = this.defaultTool.toolId;
+        this.defaultTool.execute();
+      } else {
+        IModelApp.toolAdmin.startDefaultTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      }
     }
   }
 
@@ -665,31 +677,26 @@ export class FrontstageDef {
   /** @internal */
   public updateWidgetDefs(): void {
     // Tracks provided widgets to prevent duplicates.
-    const widgetDefs: WidgetDef[] = [];
+    const allStageWidgetDefs: WidgetDef[] = [];
 
     // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
-    this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs, this.applicationData);
+    this.panelDefs.forEach((stagePanelDef: StagePanelDef) => {
+      stagePanelDef.updateDynamicWidgetDefs(this.id, this.usage, stagePanelDef.location, undefined, allStageWidgetDefs, this.applicationData);
     });
 
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs, this.applicationData);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, allStageWidgetDefs, this.applicationData);
     });
   }
 
   /** @beta */
   public restoreLayout() {
-    for (const zoneDef of this.zoneDefs) {
-      for (const widgetDef of zoneDef.widgetDefs) {
-        widgetDef.setWidgetState(widgetDef.defaultState);
-      }
-    }
     for (const panelDef of this.panelDefs) {
       panelDef.size = panelDef.defaultSize;
       panelDef.panelState = panelDef.defaultState;
-      for (const widgetDef of panelDef.widgetDefs) {
-        widgetDef.setWidgetState(widgetDef.defaultState);
-      }
+    }
+    for (const widgetDef of this.widgetDefs) {
+      widgetDef.setWidgetState(widgetDef.defaultState);
     }
     FrontstageManager.onFrontstageRestoreLayoutEvent.emit({ frontstageDef: this });
   }
@@ -700,13 +707,27 @@ export class FrontstageDef {
   public getWidgetCurrentState(widgetDef: WidgetDef): WidgetState | undefined {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetDef.id);
+      const location = getTabLocation(this.nineZoneState, widgetDef.id);
       // istanbul ignore next
       if (!location)
         return WidgetState.Hidden;
 
+      if (isFloatingTabLocation(location)) {
+        const floatingWidget = this.nineZoneState.floatingWidgets.byId[location.floatingWidgetId];
+        if (floatingWidget && floatingWidget.hidden)
+          return WidgetState.Hidden;
+        else
+          return WidgetState.Floating;
+      }
+
+      let collapsedPanel = false;
+      // istanbul ignore else
+      if ("side" in location) {
+        const panel = this.nineZoneState.panels[location.side];
+        collapsedPanel = panel.collapsed || undefined === panel.size || 0 === panel.size;
+      }
       const widgetContainer = this.nineZoneState.widgets[location.widgetId];
-      if (widgetDef.id === widgetContainer.activeTabId)
+      if (widgetDef.id === widgetContainer.activeTabId && !collapsedPanel)
         return WidgetState.Open;
       else
         return WidgetState.Closed;
@@ -732,10 +753,10 @@ export class FrontstageDef {
   public isPopoutWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (location)
-        return isPopoutLocation(location);
+        return isPopoutTabLocation(location);
     }
 
     return false;
@@ -744,10 +765,10 @@ export class FrontstageDef {
   public isFloatingWidget(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       // istanbul ignore else
       if (location)
-        return isFloatingLocation(location);
+        return isFloatingTabLocation(location);
     }
 
     return false;
@@ -764,10 +785,10 @@ export class FrontstageDef {
   public floatWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       if (location) {
         let popoutWidgetContainerId: string | undefined;
-        if (isPopoutLocation(location)) {
+        if (isPopoutTabLocation(location)) {
           popoutWidgetContainerId = location.popoutWidgetId;
         }
         const state = floatWidget(this.nineZoneState, widgetId, point, size);
@@ -781,28 +802,73 @@ export class FrontstageDef {
       }
     }
   }
+  /** Check widget and panel state to determine whether the widget is currently displayed
+   * @param widgetId case-sensitive Widget Id
+   * @public
+   */
+  public isWidgetDisplayed(widgetId: string) {
+    let widgetIsVisible = false;
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const tabLocation = getTabLocation(this.nineZoneState, widgetId);
+      // istanbul ignore else
+      if (tabLocation) {
+        if (isFloatingTabLocation(tabLocation)) {
+          const floatingWidget = this.nineZoneState.floatingWidgets.byId[tabLocation.floatingWidgetId];
+          // istanbul ignore else
+          if (!!!floatingWidget.hidden)
+            widgetIsVisible = true;
+        } else if (isPopoutTabLocation(tabLocation)) {
+          widgetIsVisible = true;
+        } else {
+          // istanbul ignore else
+          if (isPanelTabLocation(tabLocation)) {
+            const panel = this.nineZoneState.panels[tabLocation.side];
+            const widgetDef = this.findWidgetDef(widgetId);
+            if (widgetDef && widgetDef.state === WidgetState.Open && !panel.collapsed)
+              widgetIsVisible = true;
+          }
+        }
+      }
+    }
+    return widgetIsVisible;
+  }
 
   /** Opens window for specified PopoutWidget container. Used to reopen popout when running in Electron.
    * @internal */
   public openPopoutWidgetContainer(state: NineZoneState, widgetContainerId: string) {
-    const location = findWidget(state, widgetContainerId);
-    // istanbul ignore else
-    if (location && isPopoutWidgetLocation(location) && 1 === state.widgets[widgetContainerId].tabs.length) {
-      // NOTE: Popout Widget Container will only contain a single WidgetTab
-      const widgetDef = this.findWidgetDef(state.widgets[widgetContainerId].tabs[0]);
-      // istanbul ignore else
-      if (widgetDef) {
-        const tab = state.tabs[widgetDef.id];
-        const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
-        const position: ChildWindowLocationProps = {
-          width: tab.preferredPopoutWidgetSize?.width ?? 600,
-          height: tab.preferredPopoutWidgetSize?.height ?? 800,
-          left: tab.preferredPopoutWidgetSize?.x ?? 0,
-          top: tab.preferredPopoutWidgetSize?.y ?? 0,
-        };
-        UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
-      }
-    }
+    const location = getWidgetLocation(state, widgetContainerId);
+    // istanbul ignore next
+    if (!location)
+      return;
+    // istanbul ignore next
+    if (!isPopoutWidgetLocation(location))
+      return;
+
+    const widget = state.widgets[widgetContainerId];
+    const popoutWidget = state.popoutWidgets.byId[location.popoutWidgetId];
+
+    // Popout widget should only contain a single tab.
+    // istanbul ignore next
+    if (widget.tabs.length !== 1)
+      return;
+
+    const tabId = widget.tabs[0];
+    const widgetDef = this.findWidgetDef(tabId);
+    // istanbul ignore next
+    if (!widgetDef)
+      return;
+
+    const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+    const bounds = Rectangle.create(popoutWidget.bounds);
+
+    const position: ChildWindowLocationProps = {
+      width: bounds.getWidth(),
+      height: bounds.getHeight(),
+      left: bounds.left,
+      top: bounds.top,
+    };
+    UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
   }
 
   /** Create a new popout/child window that contains the widget specified by its Id. Supported only when in
@@ -814,43 +880,50 @@ export class FrontstageDef {
    * @beta
    */
   public popoutWidget(widgetId: string, point?: PointProps, size?: SizeProps) {
-    // istanbul ignore else
-    if (this.nineZoneState) {
-      let location = findTab(this.nineZoneState, widgetId);
-      // istanbul ignore else
-      if (location) {
-        if (isPopoutLocation(location))
-          return;
+    // istanbul ignore next
+    if (!this.nineZoneState)
+      return;
 
-        // get the state to apply that will pop-out the specified WidgetTab to child window.
-        const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, point, size);
-        // istanbul ignore else
-        if (state) {
-          // now that the state is updated get the id of the container that houses the widgetTab/widgetId
-          location = findTab(state, widgetId);
-          // istanbul ignore else
-          if (location && isPopoutLocation(location)) {
-            const widgetDef = this.findWidgetDef(widgetId);
-            // istanbul ignore else
-            if (widgetDef) {
-              const widgetContainerId = location.widgetId;
-              const tab = state.tabs[widgetId];
-              this.nineZoneState = state;
-              setImmediate(() => {
-                const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
-                const position: ChildWindowLocationProps = {
-                  width: tab.preferredPopoutWidgetSize!.width,  // preferredPopoutWidgetSize set in popoutWidgetToChildWindow method above
-                  height: tab.preferredPopoutWidgetSize!.height,
-                  left: tab.preferredPopoutWidgetSize!.x,
-                  top: tab.preferredPopoutWidgetSize!.y,
-                };
-                UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
-              });
-            }
-          }
-        }
-      }
-    }
+    let location = getTabLocation(this.nineZoneState, widgetId);
+    if (!location || isPopoutTabLocation(location))
+      return;
+
+    const widgetDef = this.findWidgetDef(widgetId);
+    // istanbul ignore next
+    if (!widgetDef)
+      return;
+
+    // get the state to apply that will pop-out the specified WidgetTab to child window.
+    let preferredBounds = Rectangle.createFromSize({ height: 800, width: 600 });
+    // istanbul ignore next
+    if (widgetDef.popoutBounds)
+      preferredBounds = widgetDef.popoutBounds;
+    if (size)
+      preferredBounds = preferredBounds.setSize(size);
+    if (point)
+      preferredBounds = preferredBounds.setPosition(point);
+
+    const state = popoutWidgetToChildWindow(this.nineZoneState, widgetId, preferredBounds);
+    this.nineZoneState = state;
+
+    // now that the state is updated get the id of the container that houses the widgetTab/widgetId
+    location = getTabLocation(state, widgetId);
+    assert(!!location && isPopoutTabLocation(location));
+
+    const widgetContainerId = location.widgetId;
+    const popoutWidget = state.popoutWidgets.byId[widgetContainerId];
+    const bounds = Rectangle.create(popoutWidget.bounds);
+
+    setTimeout(() => {
+      const popoutContent = (<PopoutWidget widgetContainerId={widgetContainerId} widgetDef={widgetDef} />);
+      const position: ChildWindowLocationProps = {
+        width: bounds.getWidth(),
+        height: bounds.getHeight(),
+        left: bounds.left,
+        top: bounds.top,
+      };
+      UiFramework.childWindowManager.openChildWindow(widgetContainerId, widgetDef.label, popoutContent, position, UiFramework.useDefaultPopoutUrl);
+    });
   }
 
   public get isStageClosing() {
@@ -866,12 +939,27 @@ export class FrontstageDef {
   }
 
   /** @internal */
-  public async saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
-    // istanbul ignore else
-    if (this.nineZoneState) {
-      const newState = await saveFrontstagePopoutWidgetSizeAndPosition(this.nineZoneState, this.id, this.version, childWindowId, childWindow);
-      this._nineZoneState = newState; // set without triggering new render as only preferred floating position set
-    }
+  public saveChildWindowSizeAndPosition(childWindowId: string, childWindow: Window) {
+    if (!this.nineZoneState)
+      return;
+
+    const location = getWidgetLocation(this.nineZoneState, childWindowId);
+    if (!location || !isPopoutWidgetLocation(location))
+      return;
+
+    const widget = this.nineZoneState.widgets[location.popoutWidgetId];
+    const tabId = widget.tabs[0];
+    const widgetDef = this.findWidgetDef(tabId);
+    if (!widgetDef)
+      return;
+
+    const adjustmentWidth = ProcessDetector.isElectronAppFrontend ? 16 : 0;
+    const adjustmentHeight = ProcessDetector.isElectronAppFrontend ? 39 : 0;
+
+    const width = childWindow.innerWidth + adjustmentWidth;
+    const height = childWindow.innerHeight + adjustmentHeight;
+    const bounds = Rectangle.createFromSize({ width, height }).offset({ x: childWindow.screenX, y: childWindow.screenY });
+    widgetDef.popoutBounds = bounds;
   }
 
   /** @internal */
@@ -891,16 +979,18 @@ export class FrontstageDef {
    *  @internal
    */
   public dockPopoutWidgetContainer(widgetContainerId: string) {
-    if (this.nineZoneState) {
-      const location = findWidget(this.nineZoneState, widgetContainerId);
-      // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
-      // an API call has moved the widget from a popout state to a floating state.
-      // istanbul ignore else
-      if (location && isPopoutWidgetLocation(location)) {
-        const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
-        state && (this.nineZoneState = state);
-      }
-    }
+    if (!this.nineZoneState)
+      return;
+
+    // Make sure the widgetContainerId is still in popout state. We don't want to set it to docked if the window is being closed because
+    // an API call has moved the widget from a popout state to a floating state.
+    // istanbul ignore else
+    const location = getWidgetLocation(this.nineZoneState, widgetContainerId);
+    if (!location || !isPopoutWidgetLocation(location))
+      return;
+
+    const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
+    this.nineZoneState = state;
   }
 
   /** Finds the container with the specified widget and re-docks all widgets
@@ -912,12 +1002,12 @@ export class FrontstageDef {
   public dockWidgetContainer(widgetId: string) {
     // istanbul ignore else
     if (this.nineZoneState) {
-      const location = findTab(this.nineZoneState, widgetId);
+      const location = getTabLocation(this.nineZoneState, widgetId);
       if (location) {
         const widgetContainerId = location.widgetId;
         const state = dockWidgetContainer(this.nineZoneState, widgetContainerId, true);
         state && (this.nineZoneState = state);
-        if (isPopoutLocation(location)) {
+        if (isPopoutTabLocation(location)) {
           UiFramework.childWindowManager.closeChildWindow(location.widgetId, true);
         }
       }
@@ -943,9 +1033,9 @@ export class FrontstageDef {
     if (!this.nineZoneState)
       return undefined;
 
-    const location = findTab(this.nineZoneState, widgetId);
+    const location = getTabLocation(this.nineZoneState, widgetId);
     // istanbul ignore else
-    if (location && isFloatingLocation(location)) {
+    if (location && isFloatingTabLocation(location)) {
       return location.floatingWidgetId;
     }
     // istanbul ignore next
@@ -967,5 +1057,32 @@ export class FrontstageDef {
       return this.nineZoneState.floatingWidgets.byId[floatingWidgetId].bounds;
     }
     return undefined;
+  }
+
+  private *_widgetDefs(): Iterator<WidgetDef> {
+    for (const zoneDef of this.zoneDefs) {
+      for (const widgetDef of zoneDef.widgetDefs) {
+        yield widgetDef;
+      }
+    }
+    for (const panelDef of this.panelDefs) {
+      for (const widgetDef of panelDef.widgetDefs) {
+        yield widgetDef;
+      }
+    }
+
+    return undefined;
+  }
+
+  /** Iterable of all widget definitions in a frontstage.
+   * @internal
+   */
+  public get widgetDefs() {
+    const defs = this._widgetDefs();
+    return {
+      [Symbol.iterator]() {
+        return defs;
+      },
+    };
   }
 }

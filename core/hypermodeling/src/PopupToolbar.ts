@@ -62,8 +62,9 @@ export class PopupToolbarManager {
     if (!this._current)
       return;
 
+    const delay = 1000;
     if (this._current.overToolbarHotspot || !IModelApp.toolAdmin.cursorView)
-      setTimeout(() => this.closeAfterTimeout(), 500); // Cursor not in view or over hotspot, check again
+      setTimeout(() => this.closeAfterTimeout(), delay); // Cursor not in view or over hotspot, check again
     else
       this.close();
   }

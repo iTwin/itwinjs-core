@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, Id64String } from "@itwin/core-bentley";
 import { Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@itwin/core-common";
+import { Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@itwin/core-common";
 import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@itwin/core-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { computeChordToleranceFromPoint, CreateElementTool, DynamicGraphicsProvider } from "./CreateElementTool";
+import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
 
@@ -28,13 +28,13 @@ export enum CreateCurvePhase {
 }
 
 /** @alpha Base class for creating open and closed paths. */
-export abstract class CreateOrContinuePathTool extends CreateElementTool {
+export abstract class CreateOrContinuePathTool extends CreateElementWithDynamicsTool {
+  protected _createCurvePhase = CreateCurvePhase.DefineOther;
   protected readonly accepted: Point3d[] = [];
   protected current?: CurvePrimitive;
   protected continuationData?: { props: GeometricElementProps, path: Path, params: GeometryParams };
   protected isClosed = false;
   protected isConstruction = false; // Sub-classes can set in createNewCurvePrimitive to bypass creating element graphics...
-  protected _graphicsProvider?: DynamicGraphicsProvider;
   protected _snapGeomId?: Id64String;
   protected _startedCmd?: string;
 
@@ -48,14 +48,11 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
-
-  protected get allowJoin(): boolean { return this.isControlDown; } // These could be tool settings...
+  protected get allowJoin(): boolean { return this.isControlDown; }
   protected get allowClosure(): boolean { return this.isControlDown; }
   protected get allowSimplify(): boolean { return true; }
 
-  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath; }
+  protected get wantSmartRotation(): boolean { return this.isContinueExistingPath || this.isControlDown; }
   protected get wantPickableDynamics(): boolean { return false; }
   protected get wantJoin(): boolean { return this.allowJoin; }
   protected get wantClosure(): boolean { return this.isContinueExistingPath && this.allowClosure; }
@@ -64,11 +61,10 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
   protected get showCurveConstructions(): boolean { return false; }
   protected get showJoin(): boolean { return this.isContinueExistingPath && CreateCurvePhase.DefineStart === this.createCurvePhase; }
   protected get showClosure(): boolean { return this.isClosed && CreateCurvePhase.DefineEnd === this.createCurvePhase; }
+  protected get createCurvePhase(): CreateCurvePhase { return this._createCurvePhase; }
 
-  /** Sub-classes should override unless first point changes startPoint and last point changes endPoint. */
-  protected get createCurvePhase(): CreateCurvePhase {
-    return (0 === this.accepted.length ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
-  }
+  /** Sub-classes should override unless they don't support join or closure. */
+  protected updateCurvePhase(): void { }
 
   /** Implemented by sub-classes to create the new curve or construction curve for placement dynamics.
  * @param ev The current button event from a click or motion event.
@@ -86,13 +82,31 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     return this.getCurrentRotation(ev).getColumn(2);
   }
 
-  protected async updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean, phase: CreateCurvePhase): Promise<void> {
+  protected async updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     this.isConstruction = false;
     this.current = this.createNewCurvePrimitive(ev, isDynamics);
-    if (CreateCurvePhase.DefineStart === phase)
+    if (CreateCurvePhase.DefineStart === this.createCurvePhase)
       await this.isValidForJoin(); // Updates this.continuationData...
-    else if (CreateCurvePhase.DefineEnd === phase)
+    else if (CreateCurvePhase.DefineEnd === this.createCurvePhase)
       await this.isValidForClosure(); // Updates this.isClosed...
+  }
+
+  protected override async updateElementData(ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
+    if (!isDynamics)
+      this.accepted.push(ev.point.clone());
+
+    await this.updateCurveAndContinuationData(ev, isDynamics);
+
+    if (!isDynamics)
+      this.updateCurvePhase();
+  }
+
+  protected override async updateDynamicData(ev: BeButtonEvent): Promise<boolean> {
+    // Need to update continuation data for first data point before dynamics has started...
+    await this.updateCurveAndContinuationData(ev, true);
+
+    // Don't need to create graphic if dynamics aren't yet active or showing construction geometry...
+    return (IModelApp.viewManager.inDynamicsMode && !this.isConstruction);
   }
 
   protected get isContinueExistingPath(): boolean { return undefined !== this.continuationData; }
@@ -270,36 +284,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     return true;
   }
 
-  protected clearGraphics(): void {
-    if (undefined === this._graphicsProvider)
-      return;
-    this._graphicsProvider.cleanupGraphic();
-    this._graphicsProvider = undefined;
-  }
-
-  protected async createGraphics(ev: BeButtonEvent): Promise<void> {
-    await this.updateCurveAndContinuationData(ev, true, this.createCurvePhase);
-    if (!IModelApp.viewManager.inDynamicsMode || this.isConstruction)
-      return; // Don't need to create graphic if dynamics aren't yet active...
-
-    const placement = this.getPlacementProps();
-    if (undefined === placement)
-      return;
-
-    const geometry = this.getGeometryProps(placement);
-    if (undefined === geometry)
-      return;
-
-    if (undefined === this._graphicsProvider)
-      this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
-
-    // Set chord tolerance for non-linear curve primitives...
-    if (ev.viewport)
-      this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
-
-    await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
-  }
-
   protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void {
     if (!showCurve) {
       switch (curve.curvePrimitiveType) {
@@ -383,12 +367,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     if (this.showConstructionGraphics(ev, context))
       return; // Don't display element graphics...
 
-    if (undefined !== this._graphicsProvider)
-      this._graphicsProvider.addGraphic(context);
-  }
-
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    return this.createGraphics(ev);
+    super.onDynamicFrame(ev, context);
   }
 
   protected showJoinIndicator(context: DecorateContext, pt: Point3d): void {
@@ -612,7 +591,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     if (undefined === continuePath)
       return;
 
-    const current = this.current.clone() as CurvePrimitive;
+    const current = this.current.clone();
     if (undefined === current)
       return;
 
@@ -657,40 +636,20 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     return { classFullName: "BisCore:DrawingGraphic", model, category, code: Code.createEmpty(), placement };
   }
 
-  protected async createElement(): Promise<void> {
-    const placement = this.getPlacementProps();
-    if (undefined === placement)
-      return;
-
-    const geometry = this.getGeometryProps(placement);
-    if (undefined === geometry)
-      return;
-
-    const elemProps = this.getElementProps(placement);
-    if (undefined === elemProps)
-      return;
-
-    let data;
-    if ("flatbuffer" === geometry.format) {
-      data = { entryArray: geometry.data };
-      delete elemProps.geom; // Leave unchanged until replaced by flatbuffer geometry...
-    } else {
-      elemProps.geom = geometry.data;
-    }
-
+  protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      if (undefined === elemProps.id)
-        await CreateOrContinuePathTool.callCommand("insertGeometricElement", elemProps, data);
+      if (undefined === props.id)
+        await CreateOrContinuePathTool.callCommand("insertGeometricElement", props, data);
       else
-        await CreateOrContinuePathTool.callCommand("updateGeometricElement", elemProps, data);
+        await CreateOrContinuePathTool.callCommand("updateGeometricElement", props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
     }
   }
 
-  protected setupAccuDraw(): void {
+  protected override setupAccuDraw(): void {
     const nPts = this.accepted.length;
     if (0 === nPts)
       return;
@@ -708,52 +667,28 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     hints.sendHints();
   }
 
-  protected override setupAndPromptForNextAction(): void {
-    this.setupAccuDraw();
-    super.setupAndPromptForNextAction();
-  }
-
-  protected async acceptPoint(ev: BeButtonEvent): Promise<boolean> {
-    const phase = this.createCurvePhase;
-    this.accepted.push(ev.point.clone());
-    await this.updateCurveAndContinuationData(ev, false, phase);
-    return true;
-  }
-
-  protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> { return true; }
-
-  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-    if (!await this.acceptPoint(ev))
-      return EventHandled.Yes;
-    return super.onDataButtonDown(ev);
-  }
-
-  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
-    if (!await this.cancelPoint(ev))
-      return EventHandled.Yes;
-    return super.onResetButtonUp(ev);
-  }
-
   public override async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this.accepted.length)
       return false;
 
     this.accepted.pop();
-    if (0 === this.accepted.length)
+    if (0 === this.accepted.length) {
       await this.onReinitialize();
-    else
+    } else {
+      this.updateCurvePhase();
       this.setupAndPromptForNextAction();
+    }
 
     return true;
   }
 
-  public override async onCleanup() {
-    this.clearGraphics();
-    return super.onCleanup();
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.updateCurvePhase();
   }
 }
 
-/** @alpha Creates a line string or shape. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a line string or shape. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateLineStringTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateLineString";
   public static override iconSpec = "icon-snaps"; // Need better icon...
@@ -790,6 +725,11 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     return this.allowClosure;
   }
 
+  protected override updateCurvePhase(): void {
+    // The first point changes startPoint and last point changes endPoint.
+    this._createCurvePhase = (0 === this.accepted.length ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
+  }
+
   protected override isComplete(ev: BeButtonEvent): boolean {
     // Accept on reset with at least 2 points...
     if (BeButton.Reset === ev.button)
@@ -814,7 +754,8 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
   protected override async cancelPoint(ev: BeButtonEvent): Promise<boolean> {
     // NOTE: Starting another tool will not create element...require reset or closure...
     if (this.isComplete(ev)) {
-      await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
+      this._createCurvePhase = CreateCurvePhase.DefineEnd;
+      await this.updateCurveAndContinuationData(ev, false);
       await this.createElement();
     }
     return true;
@@ -835,7 +776,7 @@ export enum ArcMethod {
   StartEndMid = 3,
 }
 
-/** @alpha Creates an arc. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates an arc. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateArcTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateArc";
   public static override iconSpec = "icon-three-points-circular-arc";
@@ -989,19 +930,22 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     return (3 === this.accepted.length);
   }
 
-  protected override get createCurvePhase(): CreateCurvePhase {
+  protected override updateCurvePhase(): void {
     switch (this.accepted.length) {
       case 0:
-        return ArcMethod.CenterStart === this.method ? CreateCurvePhase.DefineOther : CreateCurvePhase.DefineStart;
+        this._createCurvePhase = ArcMethod.CenterStart === this.method ? CreateCurvePhase.DefineOther : CreateCurvePhase.DefineStart;
+        break;
       case 1:
         if (ArcMethod.CenterStart === this.method)
-          return CreateCurvePhase.DefineStart;
+          this._createCurvePhase = CreateCurvePhase.DefineStart;
         else if (ArcMethod.StartEndMid === this.method)
-          return CreateCurvePhase.DefineEnd;
+          this._createCurvePhase = CreateCurvePhase.DefineEnd;
         else
-          return CreateCurvePhase.DefineOther;
+          this._createCurvePhase = CreateCurvePhase.DefineOther;
+        break;
       default:
-        return ArcMethod.StartEndMid === this.method ? CreateCurvePhase.DefineOther : CreateCurvePhase.DefineEnd;
+        this._createCurvePhase = ArcMethod.StartEndMid === this.method ? CreateCurvePhase.DefineOther : CreateCurvePhase.DefineEnd;
+        break;
     }
   }
 
@@ -1333,7 +1277,7 @@ export enum CircleMethod {
   Edge = 1,
 }
 
-/** @alpha Creates a circle. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a circle. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateCircleTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateCircle";
   public static override iconSpec = "icon-circle";
@@ -1342,8 +1286,6 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
   public static override get maxArgs() { return 2; } // method, radius - zero value unlocks associated "use" toggle...
 
   protected override get showCurveConstructions(): boolean { return !(CircleMethod.Center === this.method && this.useRadius); }
-
-  protected override get createCurvePhase(): CreateCurvePhase { return CreateCurvePhase.DefineOther; } // No join or closure checks...
 
   protected override provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     const nPts = this.accepted.length;
@@ -1453,7 +1395,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
       }
     } else {
       this.radius = radius;
-      this.syncToolSettingsRadius();
+      this.syncToolSettingPropertyValue(this.radiusProperty);
     }
 
     vector0.scaleToLength(radius, vector0);
@@ -1469,13 +1411,6 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
       return false;
     }
     return true;
-  }
-
-  private syncToolSettingsRadius(): void {
-    if (this.useRadius)
-      return;
-
-    this.syncToolSettingsProperties([this.radiusProperty.syncItem]);
   }
 
   protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
@@ -1594,7 +1529,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
   }
 }
 
-/** @alpha Creates an ellipse. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates an ellipse. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateEllipseTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateEllipse";
   public static override iconSpec = "icon-ellipse";
@@ -1602,8 +1537,6 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
   protected override isComplete(_ev: BeButtonEvent): boolean {
     return (3 === this.accepted.length);
   }
-
-  protected override get createCurvePhase(): CreateCurvePhase { return CreateCurvePhase.DefineOther; } // No join or closure checks...
 
   protected override provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void {
     const nPts = this.accepted.length;
@@ -1682,7 +1615,7 @@ export class CreateEllipseTool extends CreateOrContinuePathTool {
   }
 }
 
-/** @alpha Creates a rectangle by corner points. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a rectangle by corner points. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateRectangleTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateRectangle";
   public static override iconSpec = "icon-rectangle";
@@ -1736,8 +1669,6 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
   protected override isComplete(_ev: BeButtonEvent): boolean {
     return (2 === this.accepted.length);
   }
-
-  protected override get createCurvePhase(): CreateCurvePhase { return CreateCurvePhase.DefineOther; } // No join or closure checks...
 
   protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined {
     const numRequired = (isDynamics ? 1 : 2);
@@ -1860,7 +1791,7 @@ export enum BCurveMethod {
   ThroughPoints = 1,
 }
 
-/** @alpha Creates a bspline curve by poles or through points. Uses model and category from ToolAdmin.ActiveSettings. */
+/** @alpha Creates a bspline curve by poles or through points. Uses model and category from [[BriefcaseConnection.editorToolSettings]]. */
 export class CreateBCurveTool extends CreateOrContinuePathTool {
   public static override toolId = "CreateBCurve";
   public static override iconSpec = "icon-snaps-nearest"; // Need better icon...
@@ -1967,6 +1898,11 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       return CreateCurvePhase.DefineOther;
 
     return super.createCurvePhase;
+  }
+
+  protected override updateCurvePhase(): void {
+    // The first point changes startPoint and last point changes endPoint.
+    this._createCurvePhase = (0 === this.accepted.length ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
   }
 
   protected override isComplete(ev: BeButtonEvent): boolean {
@@ -2083,7 +2019,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
         break;
     }
 
-    await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineOther);
+    await this.updateCurveAndContinuationData(ev, false);
     return true;
   }
 
@@ -2095,7 +2031,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 
         switch (this._tangentPhase) {
           case CreateCurvePhase.DefineOther:
-            await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
+            this._createCurvePhase = CreateCurvePhase.DefineEnd;
+            await this.updateCurveAndContinuationData(ev, false);
             this._tangentPhase = (undefined === fitCurve.options.startTangent ? CreateCurvePhase.DefineStart : CreateCurvePhase.DefineEnd);
             IModelApp.toolAdmin.updateDynamics();
             this.setupAndPromptForNextAction();
@@ -2115,7 +2052,8 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
         }
       }
 
-      await this.updateCurveAndContinuationData(ev, false, CreateCurvePhase.DefineEnd);
+      this._createCurvePhase = CreateCurvePhase.DefineEnd;
+      await this.updateCurveAndContinuationData(ev, false);
       await this.createElement();
     }
     return true;

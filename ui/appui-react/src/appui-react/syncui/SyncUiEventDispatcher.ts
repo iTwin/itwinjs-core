@@ -238,7 +238,7 @@ export class SyncUiEventDispatcher {
     if (SyncUiEventDispatcher._unregisterListenerFunc)
       SyncUiEventDispatcher._unregisterListenerFunc();
 
-    if (iModelConnection.isBlankConnection()) {
+    if (iModelConnection.isBlankConnection() || !iModelConnection.isOpen) {
       UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 0);
       return;
     }
@@ -259,23 +259,26 @@ export class SyncUiEventDispatcher {
       UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, numSelected);
     });
 
-    Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      // istanbul ignore else
-      if (availableScopes) {
-        const presentationScopes: PresentationSelectionScope[] = [];
-        availableScopes.map((scope) => presentationScopes.push(scope));
-        UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, presentationScopes);
-      }
-    });
+    try {
+      Presentation.selection.scopes.getSelectionScopes(iModelConnection).then((availableScopes: SelectionScope[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
+        // istanbul ignore else
+        if (availableScopes) {
+          const presentationScopes: PresentationSelectionScope[] = [];
+          availableScopes.map((scope) => presentationScopes.push(scope));
+          UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, presentationScopes);
+        }
+      });
 
-    const activeSelectionScope = Presentation.selection.scopes.activeScope;
-    if (activeSelectionScope) {
-      if (typeof (activeSelectionScope) === "object") {
-        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope.id);
-      } else {
-        UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
+      const activeSelectionScope = Presentation.selection.scopes.activeScope;
+      if (activeSelectionScope) {
+        if (typeof (activeSelectionScope) === "object") {
+          UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope.id);
+        } else {
+          UiFramework.dispatchActionToStore(SessionStateActionId.SetSelectionScope, activeSelectionScope);
+        }
       }
-    }
+    } catch {}
+
   }
 
 }

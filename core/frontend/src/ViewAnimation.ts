@@ -19,6 +19,7 @@ import { Point3d } from "@itwin/core-geometry";
  * the viewport is closed, or viewing tools operate on it, etc.
  * @see [[Viewport.setAnimator]] to apply an animator to a viewport.
  * @public
+ * @extensions
  */
 export interface Animator {
   /** Apply animation to the viewport. Return true when animation is completed, causing the animator to be removed from the viewport. */
@@ -30,6 +31,7 @@ export interface Animator {
 
 /** Options that control how an Viewport animation behaves.
  * @public
+ * @extensions
  */
 export interface ViewAnimationOptions {
   /** Amount of time for animation, in milliseconds. Default is [[ScreenViewport.animation.time.normal]] */
@@ -44,6 +46,7 @@ export interface ViewAnimationOptions {
 
 /**  Options that control how a view is aligned with the globe.
  * @public
+ * @extensions
  */
 export interface GlobalAlignmentOptions {
   /** The target point about which the alignment occurs.  This point will remain stationary in the view */
@@ -56,6 +59,7 @@ export interface GlobalAlignmentOptions {
 
 /** A method to be called if an error occurs while adjusting a ViewState's extents
  * @public
+ * @extensions
  */
 export interface OnViewExtentsError {
   /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
@@ -64,6 +68,7 @@ export interface OnViewExtentsError {
 
 /** Options that control the margin around the edges of a volume for lookAt and Fit view operations
  * @public
+ * @extensions
  */
 export interface MarginOptions {
   /** The percentage of the view to leave blank around the edges. */
@@ -72,6 +77,7 @@ export interface MarginOptions {
 
 /** Options that control how operations that change a viewport behave.
  * @public
+ * @extensions
  */
 export interface ViewChangeOptions extends OnViewExtentsError, ViewAnimationOptions {
   /** Whether to save the result of this change into the view undo stack. Default is to save in undo. */

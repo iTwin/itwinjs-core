@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, FrontstageProps,
+  BackstageAppButton, ConfigurableUiManager, ContentGroup, ContentGroupProvider, CoreTools, FrontstageProps,
   IModelViewportControl, StandardContentToolsProvider, StandardFrontstageProps, StandardFrontstageProvider,
   StandardNavigationToolsProvider,
   StandardStatusbarItemsProvider,
@@ -61,6 +61,7 @@ export class FrontstageWithNoWidgets {
       cornerButton,
       usage: StageUsage.General,
       applicationData: undefined,
+      defaultTool: CoreTools.measureDistanceToolItemDef,
     };
 
     FrontstageWithNoWidgets.registerToolProviders();

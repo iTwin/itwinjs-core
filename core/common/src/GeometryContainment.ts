@@ -12,6 +12,7 @@ import { ClipPlaneContainment, ClipVectorProps } from "@itwin/core-geometry";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
  * @public
+ * @extensions
  */
 export interface GeometryContainmentRequestProps {
   candidates: Id64Array;
@@ -23,6 +24,7 @@ export interface GeometryContainmentRequestProps {
 
 /** Information returned from the back end to the front end holding the result of the geometry containment query.
  * @public
+ * @extensions
  */
 export interface GeometryContainmentResponseProps {
   status: BentleyStatus;

@@ -19,6 +19,8 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
 
   public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
 
+  public override async onStart() { return BasicManipulationCommand.commandId; }
+
   public async deleteElements(ids: CompressedId64Set): Promise<IModelStatus> {
     const idSet = CompressedId64Set.decompressSet(ids);
     await this.iModel.locks.acquireLocks({ exclusive: idSet });
@@ -176,7 +178,7 @@ export class BasicManipulationCommand extends EditCommand implements BasicManipu
       elementId,
     };
 
-    if (DbResult.BE_SQLITE_OK !== this.iModel.elementGeometryRequest(requestProps))
+    if (IModelStatus.Success !== this.iModel.elementGeometryRequest(requestProps))
       return undefined;
 
     return accepted;
@@ -361,7 +363,7 @@ interface ConnectedSubEntityRequestProps {
 interface LocateSubEntityRequestProps  {
   /** Space point for boresite origin */
   point: XYZProps;
-  /** Vector for bosite direction */
+  /** Vector for boresite direction */
   direction: XYZProps;
   /** The maximum number of faces, edges, and vertices to return */
   options: LocateSubEntityProps;
@@ -374,7 +376,7 @@ interface LocateFaceRequestProps {
   subEntity: SubEntityProps;
   /** Space point for boresite origin */
   point: XYZProps;
-  /** Vector for bosite direction */
+  /** Vector for boresite direction */
   direction: XYZProps;
   /** Callback for result */
   onResult: SubEntityLocationArrayFunction;
@@ -453,6 +455,8 @@ interface ElementGeometryCacheOperationRequestProps {
 /** @alpha */
 export class SolidModelingCommand extends BasicManipulationCommand implements SolidModelingCommandIpc {
   public static override commandId = editorBuiltInCmdIds.cmdSolidModeling;
+
+  public override async onStart() { return SolidModelingCommand.commandId; }
 
   private async updateElementGeometryCache(props: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps> {
     return this.iModel.nativeDb.updateElementGeometryCache(props);

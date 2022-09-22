@@ -121,6 +121,25 @@ export class SchemaCache implements ISchemaLocater {
 
     return foundSchema as T;
   }
+
+  /**
+   * Generator function that can iterate through each schema in _schema SchemaMap and items for each Schema
+   */
+  public* getSchemaItems(): IterableIterator<SchemaItem> {
+    for (const schema of this._schema) {
+      for (const schemaItem of schema.getItems()) {
+        yield schemaItem;
+      }
+    }
+  }
+
+  /**
+   * Gets all the schemas from the schema cache.
+   * @returns An array of Schema objects.
+   */
+  public getAllSchemas(): Schema [] {
+    return this._schema;
+  }
 }
 
 /**
@@ -238,5 +257,19 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     if (undefined === schema)
       return undefined;
     return schema.getItemSync<T>(schemaItemKey.name);
+  }
+
+  public getSchemaItems(): IterableIterator<SchemaItem> {
+    return this._knownSchemas.getSchemaItems();
+  }
+
+  /**
+   * Gets all the Schemas known by the context. This includes schemas added to the
+   * context using [[SchemaContext.addSchema]]. This does not include schemas that
+   * can be located by an ISchemaLocater instance added to the context.
+   * @returns An array of Schema objects.
+   */
+  public getKnownSchemas(): Schema [] {
+    return this._knownSchemas.getAllSchemas();
   }
 }

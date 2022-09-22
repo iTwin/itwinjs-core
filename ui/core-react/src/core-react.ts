@@ -187,6 +187,8 @@ export * from "./core-react/utils/hooks/useRefState";
 export * from "./core-react/utils/hooks/useResizeObserver";
 export * from "./core-react/utils/hooks/useTargeted";
 export * from "./core-react/utils/hooks/useWidgetOpacityContext";
+export * from "./core-react/utils/hooks/useInterval";
+export * from "./core-react/utils/hooks/useCrossOriginPopup";
 
 /** @docs-package-description
  * The core-react package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.

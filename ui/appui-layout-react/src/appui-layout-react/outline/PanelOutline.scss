@@ -1,0 +1,73 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "variables";
+
+.nz-outline-panelOutline {
+  background-color: $nz-outline-color;
+  position: absolute;
+  transform: scale(1);
+  transition: transform $iui-speed-fast ease-in;
+  width: 100%;
+  height: 100%;
+
+  &.nz-hidden {
+    transition: none;
+  }
+
+  &.nz-left,
+  &.nz-right {
+    grid-row: 2/3;
+    height: 100%;
+  }
+
+  &.nz-left {
+    grid-column: 1;
+    transform-origin: left;
+
+    &.nz-hidden {
+      transform: scale(0, 1);
+    }
+  }
+
+  &.nz-right {
+    grid-column: 3;
+    right: 0;
+    transform-origin: right;
+
+    &.nz-hidden {
+      transform: scale(0, 1);
+    }
+  }
+
+  &.nz-top,
+  &.nz-bottom {
+    grid-column: 2/3;
+    width: 100%;
+
+    &.nz-span {
+      grid-column: 1/4;
+    }
+  }
+
+  &.nz-top {
+    grid-row: 1;
+    transform-origin: top;
+
+    &.nz-hidden {
+      transform: scale(1, 0);
+    }
+  }
+
+  &.nz-bottom {
+    grid-row: 3;
+    bottom: 0;
+    transform-origin: bottom;
+
+    &.nz-hidden {
+      transform: scale(1, 0);
+    }
+  }
+}

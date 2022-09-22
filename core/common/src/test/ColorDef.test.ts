@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { ColorByName } from "../ColorByName";
 import { ColorDef } from "../ColorDef";
 
@@ -129,5 +129,47 @@ describe("ColorDef", () => {
     assert.equal(0, t2.b);
     assert.equal(100, t2.t);
 
+  });
+
+  it("determines whether string and numeric values represent valid colors", () => {
+    for (const [key, value] of Object.entries(ColorByName)) {
+      expect(ColorDef.isValidColor(key)).to.be.true;
+      expect(ColorDef.isValidColor(`${key}xx`)).to.be.false;
+
+      expect(ColorDef.isValidColor(value)).to.be.true;
+      expect(ColorDef.isValidColor(value + 0.5)).to.be.false;
+      expect(ColorDef.isValidColor(-value)).to.equal(0 === value);
+    }
+
+    expect(ColorDef.isValidColor(0x100000000)).to.be.false;
+  });
+
+  it("looks up name from numeric representation", () => {
+    interface Duplicates {
+      [key: string]: keyof typeof ColorByName | undefined;
+    }
+
+    const duplicates: Duplicates = {
+      cyan: "aqua",
+      darkGrey: "darkGray",
+      darkSlateGrey: "darkSlateGray",
+      dimGrey: "dimGray",
+      grey: "gray",
+      lightGrey: "lightGray",
+      lightSlateGrey: "lightSlateGray",
+      magenta: "fuchsia",
+      slateGrey: "slateGray",
+    };
+
+    for (const [key, value] of Object.entries(ColorByName)) {
+      const name = ColorDef.getName(value);
+      const duplicate = duplicates[key];
+      if (duplicate) {
+        expect(name).to.equal(duplicate);
+        expect(value).to.equal(ColorByName[duplicate]);
+      } else {
+        expect(name).to.equal(key);
+      }
+    }
   });
 });

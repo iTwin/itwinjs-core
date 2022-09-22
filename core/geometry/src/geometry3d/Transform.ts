@@ -96,7 +96,7 @@ export class Transform implements BeJSONFunctions {
    * the origin and matrix parts.
    * @param other Transform to compare to.
    */
-  public isAlmostEqual(other: Transform): boolean { return this._origin.isAlmostEqual(other._origin) && this._matrix.isAlmostEqual(other._matrix); }
+  public isAlmostEqual(other: Readonly<Transform>): boolean { return this.origin.isAlmostEqual(other.origin) && this.matrix.isAlmostEqual(other.matrix); }
 
   /**
    * Test for near equality with other Transform.  Comparison uses the isAlmostEqualAllowZRotation method of Matrix3d

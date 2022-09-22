@@ -12,4 +12,4 @@ The iTwin Snapshot app was designed with developers in mind. The free tool allow
 
 [!bwc tile heading="Download iTwin Snapshot" link="https://autoupdatecdn.bentley.com/itsnp/client/iTwinSnapshot.exe" contents=" " icon="download.svg" step="13" width="20%"]
 
-Further information on how to use iTwin Snapshot can be found in the ["Create a snapshot iModel"]($docs/learning/tutorials/create-test-imodel-offline.md) tutorial.
+Further information on how to use iTwin Snapshot can be found in the ["Create a snapshot iModel"](./create-test-imodel-offline.md) tutorial.

@@ -1,6 +1,7 @@
 {
   "name": "imodel-from-geojson",
   "//private": "NOTE: this is a private package that is never published",
+  "version": "0.0.0",
   "private": true,
   "license": "MIT",
   "scripts": {
@@ -19,15 +20,15 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "fs-extra": "^8.1.0",
-    "yargs": "^16.0.0"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/fs-extra": "^4.0.7",
     "@types/lodash": "^4.14.0",
-    "@types/node": "14.14.31",
-    "@types/yargs": "^12.0.5",
+    "@types/node": "16.11.59",
+    "@types/yargs": "^17.0.10",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"

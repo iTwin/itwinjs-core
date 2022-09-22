@@ -19,16 +19,16 @@ This article assumes that you already know that:
 
 - An iModel is a multi-user database
 - An app works with a [briefcase](../Glossary.md#Briefcase) using the [BriefcaseDb]($backend) class.
-- A briefcase has a unique [BriefcaseId]($common) that is issued and tracked by [iModelHub]($docs/learning/IModelHub/index.md).
-- Changes are captured and distributed in the form of [Changesets]($docs/learning/IModelHub/briefcases.md).
-- Changesets are ordered in a sequence that is called the [timeline]($docs/learning/IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel. A changeset's position on the timeline is indicated by its [ChangesetIndex]($common).
+- A briefcase has a unique [BriefcaseId]($common) that is issued and tracked by [iModelHub](../IModelHub/index.md).
+- Changes are captured and distributed in the form of [Changesets](../IModelHub/briefcases.md).
+- Changesets are ordered in a sequence that is called the [timeline](../IModelHub/index.md#the-timeline-of-changes-to-an-imodel) of the iModel. A changeset's position on the timeline is indicated by its [ChangesetIndex]($common).
 - Changesets are stored in iModelHub
 
 ## Concurrency Glossary
 
 | Term                                | Definition                                                                                                                                                                                                                                                          |
 | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Base**                            | Changeset B is _based_ on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
+| **Base**                            | Changeset B is *based* on Changeset A if B comes after A in the timeline.                                                                                                                                                                                           |
 | **Change-merging**                  | Same as merge.                                                                                                                                                                                                                                                      |
 | **Concurrency Control**             | How to coordinate simultaneous transactions while preserving data integrity.                                                                                                                                                                                        |
 | **Concurrency Control Policy**      | The rules that apps must follow when changing models and elements. May be [optimistic](#optimistic-concurrency-control) or [pessimistic](#pessimistic-concurrency-control).                                                                                         |
@@ -71,6 +71,7 @@ Rules for acquiring locks:
 - You may only obtain the Exclusive lock on an Element if your `BriefcaseDb.changeset.index` is equal or greater than the [ChangesetIndex]($common) specified the last time the lock was released. That is, you may only acquire the Exclusive lock on an Element if your briefcase holds its most recent state.
 - You cannot obtain a Shared lock on an Element while the Exclusive lock is held by another briefcase.
 - An attempt to obtain a lock on an Element (either Exclusive or Shared) requires also obtaining the Shared lock on its Model and its Parent, if it has one. This is both automatic and recursive. That is, a request to obtain a single lock may, in fact, require many locks all the way to the top of the hierarchy, if they are not already held. If any required lock is unavailable, no locks are obtained.
+- Acquiring the exclusive lock on a model (via its modeled element) implicitly acquires the exclusive lock on all its elements. Likewise, acquiring the exclusive lock on an element implicitly acquires the exclusive lock on its children.
 
 The "root" ElementId is the [IModel.repositoryModelId]($common). For convenience, the Exclusive lock on the root Element is called the **Schema Lock**. From the rules above you can tell that to obtain the Schema Lock of an iModel no other briefcase can be *holding any* locks. Further, while the Schema Lock is held, no other briefcases may *obtain any* locks.
 

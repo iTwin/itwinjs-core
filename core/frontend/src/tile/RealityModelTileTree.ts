@@ -547,7 +547,7 @@ export namespace RealityModelTileTree {
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
     public get modelId() { return this._modelId; }
-    public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+    // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
     public get planarClipMaskPriority(): number {
@@ -850,7 +850,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {
-    if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset) {
+    if (this._rdSourceKey.provider === RealityDataProvider.CesiumIonAsset && !cards.dataset.openStreetMapLogoCard) {
+      cards.dataset.openStreetMapLogoCard = "true";
       cards.appendChild(IModelApp.makeLogoCard({ heading: "OpenStreetMap", notice: `&copy;<a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> ${IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap:OpenStreetMapContributors")}` }));
     }
   }

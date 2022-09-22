@@ -5,9 +5,8 @@
 import { Angle } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
-import {
-  ArcGisTokenClientType, ArcGisTokenManager, MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
-} from "../internal";
+import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
+import { IModelApp } from "../../IModelApp";
 
 /** @packageDocumentation
  * @module Tiles
@@ -122,9 +121,6 @@ export class ArcGisUtilities {
   }
 
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-
-    let authMethod: MapLayerAuthType = MapLayerAuthType.None;
-
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
@@ -134,10 +130,22 @@ export class ArcGisUtilities {
       // and return information needed to initiate the authentification process... the end-user
       // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        authMethod = MapLayerAuthType.EsriToken;
-        return { status: MapLayerSourceStatus.RequireAuth, authInfo: { authMethod, tokenEndpoint: undefined } };
+        return { status: MapLayerSourceStatus.RequireAuth};
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo: { authMethod: MapLayerAuthType.EsriToken } };
+        return { status: MapLayerSourceStatus.InvalidCredentials};
+    }
+
+    // Check this service support map queries
+    let hasMapCapability = false;
+    try {
+      if (json.capabilities
+        && typeof json.capabilities === "string"
+        && json.capabilities.toLowerCase().includes("map")) {
+        hasMapCapability = true;
+      }
+    } catch { }
+    if (!hasMapCapability) {
+      return { status: MapLayerSourceStatus.InvalidFormat};
     }
 
     let subLayers;
@@ -155,6 +163,7 @@ export class ArcGisUtilities {
   }
 
   private static _serviceCache = new Map<string, any>();
+
   public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
@@ -167,16 +176,14 @@ export class ArcGisUtilities {
         method: "GET",
         responseType: "json",
       };
-      let tokenParam = "";
-      if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token?.token) {
-          tokenParam = `&token=${token.token}`;
-        } else if (token?.error)
-          return token;   // An error occurred, return immediately
+
+      const tmpUrl = new URL(url);
+      tmpUrl.searchParams.append("f", "json");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      if (accessClient) {
+        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
       }
-      const finalUrl = `${url}?f=json${tokenParam}`;
-      const data = await request(finalUrl, options);
+      const data = await request(tmpUrl.toString(), options);
       const json = data.body ?? undefined;
 
       // Cache the response only if it doesn't contain a token error.
@@ -191,25 +198,21 @@ export class ArcGisUtilities {
     }
   }
 
-  private static _footprintCache = new Map<string, any>();
-  public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
-    const cached = ArcGisUtilities._footprintCache.get(url);
-    if (cached !== undefined)
-      return cached;
+  // return the appended access token if available.
+  public static async appendSecurityToken(url: URL, accessClient: MapLayerAccessClient, accessTokenParams: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined> {
 
+    // Append security token if available
+    let accessToken: MapLayerAccessToken|undefined;
     try {
-      let tokenParam = "";
-      if (credentials) {
-        const token = await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer });
-        if (token?.token)
-          tokenParam = `&token=${token.token}`;
-      }
-      const json = await getJson(`${url}?f=json&option=footprints&outSR=4326${tokenParam}`);
-      ArcGisUtilities._footprintCache.set(url, json);
-      return json;
-    } catch (_error) {
-      ArcGisUtilities._footprintCache.set(url, undefined);
-      return undefined;
+      accessToken = await accessClient.getAccessToken(accessTokenParams);
+    } catch {}
+
+    if (accessToken?.token) {
+      url.searchParams.append("token", accessToken.token);
+      return accessToken;
     }
+
+    return undefined;
   }
+
 }

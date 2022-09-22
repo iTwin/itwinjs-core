@@ -14,6 +14,7 @@ import { IModelConnection } from "./IModelConnection";
 /** The state of a [ModelSelector]($backend). It holds a set of ids of GeometricModels for a [[SpatialViewState]].
  * It defines the set of [[ModelState]]s drawn within the view as a set of IDs.
  * @public
+ * @extensions
  */
 export class ModelSelectorState extends ElementState {
   /** @internal */

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
   BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
@@ -115,10 +114,10 @@ export interface TestConfigProps {
    * Default: "*"
    */
   iModelName?: string;
-  /** The name of the iTwin from which to obtain iModels. Currently not supported.
-   * Default: "iModel Testing"
-   */
-  iModelHubProject?: string;
+  /** The ID of the iModel if it should be downloaded from iModelHub. */
+  iModelId?: string;
+  /** The ID of the iTwin project from which to obtain the iModel. */
+  iTwinId?: string;
   /** The format in which to output the timing data. See DisplayPerfRpcImpl.saveCsv - only "original" is treated specially.
    * Default: "original".
    */
@@ -164,6 +163,7 @@ export interface TestConfigProps {
 export const defaultHilite = new Hilite.Settings();
 export const defaultEmphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
 export const isWindows = window.navigator.userAgent.toLowerCase().includes("win");
+export const separator = isWindows ? "\\" : "/";
 
 /** Configures how one or more tests are run. A Test belongs to a TestSet and can test multiple iModels and views thereof.
  * A single base config is supplied by the backend.
@@ -178,7 +178,8 @@ export class TestConfig {
   public readonly outputName: string;
   public readonly outputPath: string;
   public iModelName: string;
-  public readonly iTwin: string;
+  public readonly iModelId?: string;
+  public readonly iTwinId?: string;
   public viewName: string;
   public readonly testType: TestType;
   public readonly csvFormat: string;
@@ -214,9 +215,10 @@ export class TestConfig {
     this.outputPath = prevConfig?.outputPath ?? (isWindows ? "D:\\output\\performanceData\\" : "/Users/");
     this.iModelLocation = prevConfig?.iModelLocation ?? "";
     this.iModelName = props.iModelName ?? prevConfig?.iModelName ?? "*";
-    this.iTwin = props.iModelHubProject ?? prevConfig?.iTwin ?? "iModel Testing";
+    this.iModelId = props.iModelId ?? prevConfig?.iModelId;
+    this.iTwinId = props.iTwinId ?? prevConfig?.iTwinId;
     this.csvFormat = props.csvFormat ?? prevConfig?.csvFormat ?? "original";
-    this.viewName = props.viewName ?? prevConfig?.viewName ?? "*";
+    this.viewName = props.viewName ?? props.extViewName ?? prevConfig?.viewName ?? prevConfig?.extViewName ?? "*";
     this.extViewName = props.extViewName;
     this.testType = props.testType ?? prevConfig?.testType ?? "timing";
     this.savedViewType = (props.savedViewType?.toLowerCase() as SavedViewType) ?? prevConfig?.savedViewType ?? "both";
@@ -350,8 +352,7 @@ function merge<T extends object>(first: T | undefined, second: T | undefined): T
 function combineFilePaths(additionalPath: string, initialPath: string): string {
   if (initialPath.length === 0 || (isWindows && additionalPath[1] === ":") || (!isWindows && additionalPath[0] === "/"))
     return additionalPath;
-
-  return path.join(initialPath, additionalPath);
+  return `${initialPath}${separator}${additionalPath}`;
 }
 
 /** Compare two values for equality, recursing into arrays and object fields. */

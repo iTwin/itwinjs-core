@@ -1,0 +1,75 @@
+# iTwin.js iOS Testing
+
+trigger:
+  branches:
+    include:
+      - master
+      - releases/*
+  paths:
+    include:
+      - tools/internal/ios
+pr: none
+schedules:
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
+        - releases/*
+
+variables:
+  - group: iTwin.js ios and App Center variables
+
+jobs:
+  - job:
+    timeoutInMinutes: 120
+    pool:
+      vmImage: macos-latest
+    workspace:
+      clean: all
+
+    steps:
+      - task: InstallAppleProvisioningProfile@1
+        displayName: 'Install an Apple provisioning profile'
+        inputs:
+          provProfileSecureFile: '$(ProvisioningProfileSecureFile)'
+
+      - task: InstallAppleCertificate@2
+        displayName: 'Install an Apple certificate'
+        inputs:
+          certSecureFile: '$(CertificateSecureFile)'
+          certPwd: '$(CertificatePassword)'
+          setUpPartitionIdACLForPrivateKey: false
+
+      - checkout: self
+        clean: true
+
+      - task: NodeTool@0
+        displayName: "Use Node 14.17.4"
+        inputs:
+          versionSpec: 14.17.4
+          checkLatest: true
+
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: git config
+
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+
+      - script: node common/scripts/install-run-rush.js build -v -p max --to core-backend
+        displayName: rush build
+        condition: succeeded()
+
+      - script: 'npm run ios:build:tests'
+        workingDirectory: core/backend
+        displayName: 'Build imodeljs-backend-test-app'
+        failOnStderr: true
+        condition: succeeded()
+
+      - template: templates/app-center-test.yaml
+        parameters:
+          iosDirectory: tools/internal/ios
+          libDirectory: core/backend/lib
+          testSuiteName: "Core - Backend"

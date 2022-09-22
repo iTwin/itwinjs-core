@@ -14,6 +14,7 @@ import { Geometry } from "@itwin/core-geometry";
  *  with units as degrees.
  *  All other projection indicated a projected CRS.
  *  @public
+ *  @extensions
  */
 export type ProjectionMethod =
   "None" |
@@ -72,6 +73,7 @@ export type ProjectionMethod =
  *  Y1 = b1*X + b2*Y + translationY
  *  An affine representing no transformation will have: a1 = 1.0, a2 = 0.0, b1 = 0.0, b2 = 1.0.
  *  @public
+ *  @extensions
  */
 export interface AffineTransformProps {
   /** The X post translation */
@@ -146,17 +148,20 @@ export class AffineTransform implements AffineTransformProps {
 /** Type used in the definition of UTM Zoning projection. This projection only requires a zone number and
  *  the hemisphere North or South.
  *  @public
+ *  @extensions
  */
 export type HemisphereEnum = "South" | "North";
 
 /** The type to define the three zones of the Danish System 34 projections.
  *  @public
+ * @extensions
  */
 export type DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm";
 
 /** This class encapsulates the projection of the CRS. The projection relies on a projection method
  *  and a set of projection parameters specific to projection method selected.
  *  @public
+ *  @extensions
  */
 export interface ProjectionProps {
   /** The projection method. */
@@ -398,6 +403,7 @@ export class Projection implements ProjectionProps {
 
 /** A 2D cartographic point in degrees
  *  @public
+ *  @extensions
  */
 export interface Carto2DDegreesProps {
   /** Latitude value in degrees */

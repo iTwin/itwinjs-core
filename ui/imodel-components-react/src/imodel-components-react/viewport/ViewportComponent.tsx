@@ -70,16 +70,18 @@ export function ViewportComponent(props: ViewportProps) {
   const viewClassFullName = React.useRef("");
   const viewId = React.useRef("0");
 
+  // istanbul ignore next
   const handleViewChanged = (vp: Viewport) => {
+    // istanbul ignore next
+    if (!(vp.iModel.isOpen || vp.iModel.isBlank))
+      return;
     ViewportComponentEvents.setViewMatrix(vp);
-    // istanbul ignore else
     if (viewClassFullName.current !== vp.view.classFullName) {
       setTimeout(() => {
         ViewportComponentEvents.onViewClassFullNameChangedEvent.emit({ viewport: vp, oldName: viewClassFullName.current, newName: vp.view.classFullName });
         viewClassFullName.current = vp.view.classFullName;
       });
     }
-    // istanbul ignore else
     if (viewId.current !== vp.view.id) {
       setTimeout(() => {
         ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: viewId.current, newId: vp.view.id });
@@ -167,13 +169,24 @@ export function ViewportComponent(props: ViewportProps) {
     const screenViewport = screenViewportRef.current;
     if (screenViewport) {
       const viewManager = IModelApp.viewManager;
-      viewManager.dropViewport(screenViewport, true);
       screenViewport.onViewChanged.removeListener(handleViewChanged);
       screenViewportRef.current = null;
       screenViewportCreated.current = false;
       ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(handleDrawingViewportChangeEvent);
       ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(handleCubeRotationChangeEvent);
       ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(handleStandardRotationChangeEvent);
+      viewManager.dropViewport(screenViewport, true);
+    }
+  };
+
+  // istanbul ignore next
+  const handleWindowUnload = () => {
+    const parentDiv = viewportDiv.current;
+    if (parentDiv) {
+      const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+      if (parentWindow !== window) {
+        handleDisconnectFromViewManager();
+      }
     }
   };
 
@@ -181,7 +194,7 @@ export function ViewportComponent(props: ViewportProps) {
     // istanbul ignore next
     const screenViewportFactory = screenViewportOverride ? screenViewportOverride : ScreenViewport;
     const parentWindow = parentDiv.ownerDocument.defaultView as Window;
-    parentWindow.addEventListener("beforeunload", handleDisconnectFromViewManager, true); // listener clear after being called
+    parentWindow.addEventListener("unload", handleWindowUnload, true); // listener clear after being called
     ViewportComponentEvents.initialize();
     ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(handleDrawingViewportChangeEvent);
     ViewportComponentEvents.onCubeRotationChangeEvent.addListener(handleCubeRotationChangeEvent);
@@ -219,7 +232,6 @@ export function ViewportComponent(props: ViewportProps) {
   React.useEffect(() => {
     setInitialViewState(undefined);
   }, [viewDefinitionId, viewState]);
-
   React.useEffect(() => {
     async function fetchInitialViewstate() {
       let currentViewState: ViewState | undefined;
@@ -242,9 +254,10 @@ export function ViewportComponent(props: ViewportProps) {
       } else {
         Logger.logError("ViewportComponent", `A Viewstate or a viewId and imodel must be provided`);
       }
-      // istanbul ignore else
-      if (isMounted.current)
+      // istanbul ignore next
+      if (isMounted.current && (currentViewState?.iModel.isOpen || currentViewState?.iModel.isBlank)) {
         setInitialViewState(currentViewState?.clone());
+      }
     }
     if (undefined === initialViewState)
       fetchInitialViewstate(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -256,7 +269,8 @@ export function ViewportComponent(props: ViewportProps) {
   React.useEffect(() => {
     const parentDiv = viewportDiv.current;
     const viewManager = viewManagerRef.current;
-    if (parentDiv && initialViewState) {
+    // istanbul ignore next
+    if (parentDiv && initialViewState && (initialViewState?.iModel.isOpen || initialViewState?.iModel.isBlank)) {
       if (!screenViewportCreated.current) {
         const screenViewport = getScreenViewport(parentDiv, initialViewState);
         screenViewportRef.current = screenViewport;

@@ -6,11 +6,14 @@
  * @module Schema
  */
 
-import { DbResult, IModelStatus, Logger } from "@itwin/core-bentley";
-import { EntityMetaData, IModelError } from "@itwin/core-common";
+import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
+import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
+
+const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
 /** The mapping between a BIS class name (in the form "schema:class") and its JavaScript constructor function
  * @public
@@ -72,14 +75,71 @@ export class ClassRegistry {
     if (undefined === schema)
       schema = this.generateProxySchema(domainName, iModel); // no schema found, create it too
 
-    // this method relies on the caller having previously created/registered all superclasses
     const superclass = this._classMap.get(entityMetaData.baseClasses[0].toLowerCase());
     if (undefined === superclass)
       throw new IModelError(IModelStatus.NotFound, `cannot find superclass for class ${name}`);
 
-    const generatedClass = class extends superclass { public static override get className() { return className; } };
-    // the above line creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
+    // user defined class hierarchies may skip a class in the hierarchy, and therefore their JS base class cannot
+    // be used to tell if there are any generated classes in the hierarchy
+    let generatedClassHasNonGeneratedNonCoreAncestor = false;
+    let currentSuperclass = superclass;
+    const MAX_ITERS = 1000;
+    for (let i = 0; i < MAX_ITERS; ++i) {
+      if (currentSuperclass.schema.schemaName === "BisCore") break;
+      if (!currentSuperclass.isGeneratedClass) {
+        generatedClassHasNonGeneratedNonCoreAncestor = true;
+        break;
+      }
+      const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
+      if (superclassMetaData === undefined)
+        throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
+      const maybeNextSuperclass = this.getClass(superclassMetaData.baseClasses[0], iModel);
+      if (maybeNextSuperclass === undefined)
+        throw new IModelError(IModelStatus.BadSchema, `could not find the base class of '${currentSuperclass.name}', all generated classes must have a base class`);
+      currentSuperclass = maybeNextSuperclass;
+    }
+
+    const generatedClass = class extends superclass {
+      public static override get className() { return className; }
+      private static [isGeneratedClassTag] = true;
+      public static override get isGeneratedClass() { return this.hasOwnProperty(isGeneratedClassTag); }
+    };
+
+    // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
+
+    const navigationProps = Object.entries(entityMetaData.properties)
+      .filter(([_propName, prop]) => prop.isNavigation)
+      .map(([propName, _prop]) => propName);
+
+    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element); // Entity.is check but with type information to avoid casts later
+
+    // a class only gets an automatic `collectReferenceIds` implementation if:
+    // - it derives from `BisCore:Element`
+    // - it is not in the `BisCore` schema
+    // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
+    if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
+      Object.defineProperty(
+        generatedClass.prototype,
+        "collectReferenceIds",
+        {
+          // first prototype of `this` is its class
+          value(this: typeof generatedClass, referenceIds: Id64Set) {
+            // eslint-disable-next-line @typescript-eslint/dot-notation
+            const superImpl = superclass.prototype["collectReferenceIds"];
+            superImpl.call(this, referenceIds);
+            for (const navProp of navigationProps) {
+              const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
+              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
+              referenceIds.add(relatedElem.id);
+            }
+          },
+          // defaults for methods on a prototype (required for sinon to stub out methods on tests)
+          writable: true,
+          configurable: true,
+        }
+      );
+    }
 
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
     if (schema.missingRequiredBehavior) {

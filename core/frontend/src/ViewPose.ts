@@ -15,6 +15,7 @@ import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
  * plus the camera position/angle, if it is enabled.
  * @note a ViewPose is immutable.
  * @public
+ * @extensions
  */
 export abstract class ViewPose {
   public undoTime?: BeTimePoint; // the time this pose was created, if it is saved in the view undo stack.

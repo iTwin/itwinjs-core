@@ -118,8 +118,9 @@ export class IModelTile extends Tile {
     const reader = ImdlReader.create({
       stream: streamBuffer,
       type: tree.batchType,
-      loadEdges: tree.hasEdges,
+      loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
+      timeline: tree.timeline,
       iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
     });
 

@@ -10,6 +10,7 @@ import { assert, Id64String } from "@itwin/core-bentley";
 import { Range1d } from "@itwin/core-geometry";
 import { RequestOptions } from "../../request/Request";
 import { IModelConnection } from "../../IModelConnection";
+import { ScreenViewport } from "../../Viewport";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
 import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
 
@@ -21,7 +22,7 @@ import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../in
 export abstract class TerrainMeshProvider {
   constructor(protected _iModel: IModelConnection, protected _modelId: Id64String) { }
   public constructUrl(_row: number, _column: number, _zoomLevel: number): string { assert(false); return ""; }
-  public getLogo(): HTMLTableRowElement | undefined { return undefined; }
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
   public abstract isTileAvailable(quadId: QuadId): boolean;
   public get requestOptions(): RequestOptions { return { method: "GET", responseType: "arraybuffer" }; }
   public abstract get maxDepth(): number;

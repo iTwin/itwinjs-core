@@ -21,10 +21,11 @@ describe("SnapModeField", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    // eslint-disable-next-line deprecation/deprecation
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <SnapModeField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          <SnapModeField isInFooterMode={isInFooterMode} />
         </>
       );
     }

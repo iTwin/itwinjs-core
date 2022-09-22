@@ -8,13 +8,13 @@
 
 import { assert } from "@itwin/core-bentley";
 import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
-import { AnalysisStyleDisplacement } from "@itwin/core-common";
+import { AnalysisStyleDisplacement, Feature, QPoint3dList } from "@itwin/core-common";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
 import { MeshBuilderMap } from "../mesh/MeshBuilderMap";
-import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
+import { MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
@@ -30,6 +30,7 @@ export class GeometryAccumulator {
   public readonly tileRange: Range3d;
   public readonly geometries: GeometryList = new GeometryList();
   public readonly system: RenderSystem;
+  public currentFeature?: Feature;
 
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
   public get transform(): Transform { return this._transform; }
@@ -43,6 +44,7 @@ export class GeometryAccumulator {
     tileRange?: Range3d;
     analysisStyleDisplacement?: AnalysisStyleDisplacement;
     viewIndependentOrigin?: Point3d;
+    feature?: Feature;
   }) {
     this.system = options?.system ?? IModelApp.renderSystem;
     this.tileRange = options?.tileRange ?? Range3d.createNull();
@@ -50,6 +52,7 @@ export class GeometryAccumulator {
     this._transform = options?.transform ?? Transform.createIdentity();
     this._analysisDisplacement = options?.analysisStyleDisplacement;
     this._viewIndependentOrigin = options?.viewIndependentOrigin;
+    this.currentFeature = options?.feature;
   }
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
@@ -72,7 +75,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint));
+    return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint, this.currentFeature));
   }
 
   public addLineString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -83,7 +86,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams));
+    return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams, this.currentFeature));
   }
 
   public addPointString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -94,7 +97,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams));
+    return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams, this.currentFeature));
   }
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
@@ -103,7 +106,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint));
+    return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint, this.currentFeature));
   }
 
   public addPolyface(pf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
@@ -127,7 +130,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams));
+    return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams, this.currentFeature));
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
@@ -136,7 +139,7 @@ export class GeometryAccumulator {
       return false;
 
     const xform = this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams));
+    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams, this.currentFeature));
   }
 
   public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
@@ -149,20 +152,20 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: string): MeshBuilderMap {
+  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
 
     const range = geometries.computeRange();
     const is2d = !range.isNull && range.isAlmostZeroZ;
 
-    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickableId);
+    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickable);
   }
 
-  public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: string): MeshList {
+  public toMeshes(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList {
     if (this.geometries.isEmpty)
       return new MeshList();
 
-    const builderMap = this.toMeshBuilderMap(options, tolerance, pickableId);
+    const builderMap = this.toMeshBuilderMap(options, tolerance, pickable);
     return builderMap.toMeshes();
   }
 
@@ -170,36 +173,47 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickableId?: string): MeshList | undefined {
-    const meshes = this.toMeshes(options, tolerance, pickableId);
+  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList | undefined {
+    const meshes = this.toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
 
-    const args = new MeshGraphicArgs();
-
-    // All of the meshes are quantized to the same range.
-    // If that range is small relative to the distance from the origin, quantization errors can produce display artifacts.
-    // Remove the translation from the quantization parameters and apply it in the transform instead.
+    // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
+    // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
+    // it in the transform instead.
+    //
+    // If the positions are not quantized, they have already been transformed to be relative to the center of the meshes' range.
+    // Apply the inverse translation to put them back into model space.
     const branch = new GraphicBranch(true);
-    const qorigin = new Point3d();
+    let transformOrigin: Point3d | undefined;
 
     for (const mesh of meshes) {
       const verts = mesh.points;
       if (branch.isEmpty) {
-        qorigin.setFrom(verts.params.origin);
+        if (verts instanceof QPoint3dList) {
+          transformOrigin = verts.params.origin.clone();
+          verts.params.origin.setZero();
+        } else {
+          transformOrigin = verts.range.center;
+        }
       } else {
-        assert(verts.params.origin.isAlmostEqual(qorigin));
+        assert(undefined !== transformOrigin);
+        if (verts instanceof QPoint3dList) {
+          assert(transformOrigin.isAlmostEqual(verts.params.origin));
+          verts.params.origin.setZero();
+        } else {
+          assert(transformOrigin.isAlmostEqual(verts.range.center));
+        }
       }
 
-      verts.params.origin.setZero();
-
-      const graphic = mesh.getGraphics(args, this.system, this._viewIndependentOrigin);
+      const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
       if (undefined !== graphic)
         branch.add(graphic);
     }
 
     if (!branch.isEmpty) {
-      const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+      assert(undefined !== transformOrigin);
+      const transform = Transform.createTranslation(transformOrigin);
       graphics.push(this.system.createBranch(branch, transform));
     }
 

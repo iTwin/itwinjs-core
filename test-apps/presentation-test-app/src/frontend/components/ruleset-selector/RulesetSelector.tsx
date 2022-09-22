@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
-import { Select } from "@itwin/core-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 
 export interface RulesetSelectorProps {
@@ -12,7 +12,7 @@ export interface RulesetSelectorProps {
   activeRulesetId?: string;
 }
 export interface RulesetSelectorState {
-  availableRulesets?: string[];
+  availableRulesets?: SelectOption<string>[];
 }
 export class RulesetSelector extends React.Component<RulesetSelectorProps, RulesetSelectorState> {
   constructor(props: RulesetSelectorProps) {
@@ -25,12 +25,8 @@ export class RulesetSelector extends React.Component<RulesetSelectorProps, Rules
   }
   private async initAvailableRulesets() {
     const rulesetIds = await MyAppFrontend.getAvailableRulesets();
-    this.setState({ availableRulesets: rulesetIds });
+    this.setState({ availableRulesets: rulesetIds.map((id) => ({value: id, label:id})) });
   }
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onSelectedRulesetIdChanged = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    this.props.onRulesetSelected(e.target.value);
-  };
   public override render() {
     if (!this.state.availableRulesets)
       return (<div className="RulesetSelector">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.loading")}</div>);
@@ -38,12 +34,12 @@ export class RulesetSelector extends React.Component<RulesetSelectorProps, Rules
       return (<div className="RulesetSelector">{IModelApp.localization.getLocalizedString("Sample:controls.notifications.no-available-rulesets")}</div>);
     return (
       <div className="RulesetSelector">
-        {/* eslint-disable-next-line deprecation/deprecation */}
         <Select
           options={this.state.availableRulesets}
-          defaultValue={this.props.activeRulesetId}
+          value={this.props.activeRulesetId}
           placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-ruleset")}
-          onChange={this.onSelectedRulesetIdChanged}
+          onChange={this.props.onRulesetSelected}
+          size="small"
         />
       </div>
     );

@@ -7,6 +7,7 @@ import { expect } from "chai";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
@@ -17,8 +18,67 @@ import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* eslint-disable no-console */
+
+function exerciseClonePartialLineString3d(ck: Checker, allGeometry: GeometryQuery[], lsA: LineString3d, delta: Point3d) {
+  const expectValidResults = lsA.numPoints() > 1;
+  const yInc = 1.2 * lsA.range().yLength();
+  delta.x += 1.2 * lsA.range().xLength();
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, lsA, delta.x, delta.y = 0);
+  for (const extendFraction of [0.05, 0.721, 1.4, 3.96]) {
+    const cee0 = lsA.clonePartialCurve(-extendFraction, -extendFraction / 2);         // does not contain [0,1]
+    const ce0 = lsA.clonePartialCurve(-extendFraction, 0);                            // contains [0]
+    const ce01 = lsA.clonePartialCurve(-extendFraction, 1);                           // contains [0,1]
+    const ce01e = lsA.clonePartialCurve(-extendFraction, 1 + extendFraction);         // contains [0,1]
+    const c01e = lsA.clonePartialCurve(0, 1 + extendFraction);                        // contains [0,1]
+    const c1e = lsA.clonePartialCurve(1, 1 + extendFraction);                         // contains [1]
+    const c1ee = lsA.clonePartialCurve(1 + extendFraction / 2, 1 + extendFraction);   // does not contain [0,1]
+    if (ck.testPointer(cee0) && expectValidResults) {
+      ck.testExactNumber(cee0.numPoints(), 2, "isolated pre-extension is a segment");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(cee0.curveLength(), (extendFraction - (extendFraction / 2)) * lsA.points[0].distance(lsA.points[1]), "isolated pre-extension length is fraction of first segment");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, cee0, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(ce0) && expectValidResults) {
+      ck.testExactNumber(ce0.numPoints(), 2, "pre-extension is a segment");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(ce0.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extension length is fraction of first segment");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce0, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(ce01) && expectValidResults) {
+      ck.testExactNumber(ce01.numPoints(), lsA.numPoints(), "pre-extended linestring has same point count");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(ce01.curveLength(), lsA.curveLength() + extendFraction * lsA.points[0].distance(lsA.points[1]), "pre-extended linestring has expected length");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce01, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(ce01e) && expectValidResults) {
+      ck.testExactNumber(ce01e.numPoints(), lsA.numPoints(), "bi-extended linestring has same point count");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(ce01e.curveLength(), extendFraction * lsA.points[0].distance(lsA.points[1]) + lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "bi-extended linestring has expected length");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, ce01e, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(c01e) && expectValidResults) {
+      ck.testExactNumber(c01e.numPoints(), lsA.numPoints(), "post-extended linestring has same point count");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(c01e.curveLength(), lsA.curveLength() + extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extended linestring has expected length");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, c01e, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(c1e) && expectValidResults) {
+      ck.testExactNumber(c1e.numPoints(), 2, "post-extension is a segment");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(c1e.curveLength(), extendFraction * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "post-extension length is fraction of last segment");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, c1e, delta.x, delta.y += yInc);
+    }
+    if (ck.testPointer(c1ee) && expectValidResults) {
+      ck.testExactNumber(c1ee.numPoints(), 2, "isolated post-extension is a segment");
+      if (!lsA.isPhysicallyClosed)
+        ck.testCoordinate(c1ee.curveLength(), (extendFraction - (extendFraction / 2)) * lsA.points[lsA.numPoints() - 2].distance(lsA.points[lsA.numPoints() - 1]), "isolated post-extension length is fraction of last segment");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, c1ee, delta.x, delta.y += yInc);
+    }
+  }
+}
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
   const expectValidResults = lsA.numPoints() > 1;
@@ -46,15 +106,14 @@ function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
       }
     }
   }
+
   const splitFraction = 0.4203;
   const partA = lsA.clonePartialCurve(0.0, splitFraction);
   const partB = lsA.clonePartialCurve(1.0, splitFraction);  // reversed to exercise more code.  But length is absolute so it will add.
-  if (expectValidResults
-    && ck.testPointer(partA, "forward partial") && partA
-    && ck.testPointer(partA, "forward partial") && partB) {
+  if (ck.testPointer(partA, "forward partial") && ck.testPointer(partB, "backward partial"))
     ck.testCoordinate(lsA.curveLength(), partA.curveLength() + partB.curveLength(), "Partial curves sum to length", lsA, partA, partB);
-  }
 }
+
 describe("LineString3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -68,9 +127,7 @@ describe("LineString3d", () => {
     const point150 = Point3d.create(1, 5, 0);
     const lsA = LineString3d.create([point100, point420, point450, point150]);
     exerciseLineString3d(ck, lsA);
-    const lsB = LineString3d.createRectangleXY(
-      Point3d.create(1, 1),
-      3, 2, true);
+    const lsB = LineString3d.createRectangleXY(Point3d.create(1, 1), 3, 2, true);
     exerciseLineString3d(ck, lsB);
     const lsC = LineString3d.create([point100]);
     ck.testUndefined(lsC.quickUnitNormal(), "quickUnitNormal expected failure 1 point");
@@ -81,7 +138,6 @@ describe("LineString3d", () => {
     const normalA = lsA.quickUnitNormal();
     if (ck.testPointer(normalA, "quickUnitNormal") && normalA)
       ck.testCoordinate(1.0, normalA.magnitude(), "unit normal magnitude");
-
     ck.checkpoint("LineString3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -118,16 +174,11 @@ describe("LineString3d", () => {
 
   it("clonePartial", () => {
     const ck = new Checker();
-    // we know the length of this linestring is 'a'.
-    // make partials
-    const a = 5.0;
-    const interiorFraction = 0.24324;
-    const ls = LineString3d.createXY([Point2d.create(0, 1), Point2d.create(0.5 * a, 1), Point2d.create(a, 1)], 0);
-    ck.testExactNumber(3, ls.numPoints());
-    const ls1 = ls.clonePartialCurve(interiorFraction, 3.0)!;
-    const ls2 = ls.clonePartialCurve(-4, interiorFraction)!;
-    ck.testCoordinate(ls1.curveLength(), (1.0 - interiorFraction) * a, "clonePartial does not extrapolate up");
-    ck.testCoordinate(ls2.curveLength(), (interiorFraction) * a, "clonePartial does not extrapolate down");
+    const allGeometry: GeometryQuery[] = [];
+    const delta = Point3d.createZero();
+    const lsA = LineString3d.create([Point3d.create(1, 0, 0), Point3d.create(4, 2, 0), Point3d.create(4, 5, 0), Point3d.create(1, 5, 0)]);
+    exerciseClonePartialLineString3d(ck, allGeometry, lsA, delta);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "LineString3d", "ClonePartial");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -439,6 +490,40 @@ describe("LineStringAnnotation", () => {
     ck.testPointer(paramsA);
     ck.testPointer(surfaceNormalsA);
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("RangeAndLengthBetweenFractions", () => {
+    const ck = new Checker();
+    // equidistant points .... all breakpoints are at binary fractions
+    const p0 = Point3d.create(1, 0, 0);
+    const p1 = Point3d.create(2, 0, 0);
+    const p2 = Point3d.create(3, 0, 0);
+    const p3 = Point3d.create(4, 0, 0);
+    const p4 = Point3d.create(5, 0, 0);
+    // as a linestring which will have identical parameterization
+    const linestring = LineString3d.create (p0, p1, p2, p3, p4);
+    const segment = LineSegment3d.create (p0, p4);
+    // const fractions = [0.0, 0.1, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 0.8, 0.95, 1.0];
+    const fractions = [0.0, 0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.75, 0.8, 0.9, 1.0];
+    // all all fraction pairs, expect same result from
+    //    lineSegment3d between fractions
+    //    lineString3d between fractions
+    //    lineString3d clonePartial
+    //    lineSegment3d clonePartial
+    for (const f0 of fractions){
+      for (const f1 of fractions){
+        if (f0 !== f1){
+          const partialSegment = segment.clonePartialCurve (f0, f1);
+          const partialString = linestring.clonePartialCurve (f0, f1);
+          ck.testRange3d (partialSegment.range (), segment.rangeBetweenFractions (f0, f1), {title:"segment rangeBetweenFractions", f0, f1});
+          ck.testRange3d (partialString.range (), linestring.rangeBetweenFractions (f0, f1), {title:"Linestring rangeBetweenFractions", f0, f1});
+          ck.testRange3d (partialSegment.range (), partialString.range (), {title: "partial linestring, partial segment range", f0, f1});
+          ck.testCoordinate (partialSegment.curveLength (), segment.curveLengthBetweenFractions (f0, f1), {title:"segment length between fractions", f0, f1});
+          ck.testCoordinate (partialString.curveLength (), linestring.curveLengthBetweenFractions (f0, f1), {title:"linestring length between fractions", f0, f1});
+          ck.testCoordinate (partialSegment.curveLength (), partialString.curveLength (), {title:"partial linestring, partial segment  length", f0, f1});
+          }
+      }
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 

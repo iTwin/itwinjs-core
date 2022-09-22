@@ -36,7 +36,7 @@ class SignInControl extends ContentControl {
   };
 
   private _onRegister = () => {
-    window.open("https://www.itwinjs.org/getting-started/#developer-registration", "_blank");
+    window.open("https://ims.bentley.com/as/4bBVJ/resume/as/authorization.ping", "_blank");
   };
 }
 
@@ -62,7 +62,6 @@ export class SignInFrontstage extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={contentGroup}
-        isInFooterMode={false}
         isIModelIndependent={true}
         usage={StageUsage.Private}
       />

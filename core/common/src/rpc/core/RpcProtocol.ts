@@ -11,6 +11,7 @@ import { IModelRpcProps } from "../../IModel";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
+import { RpcNotFoundResponse } from "./RpcControl";
 import { RpcInvocation, SerializedRpcActivity } from "./RpcInvocation";
 import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcOperation } from "./RpcOperation";
@@ -37,6 +38,7 @@ export interface SerializedRpcRequest extends SerializedRpcActivity {
   caching: RpcResponseCacheControl;
   ip?: string;
   protocolVersion?: number;
+  parametersOverride?: any[];
 }
 
 /** An RPC operation request fulfillment.
@@ -60,6 +62,9 @@ export interface RpcRequestFulfillment {
 
   /* A protocol-specific value for retrying this request. */
   retry?: string;
+
+  /** Whether to compress the result with one of the client's supported encodings. */
+  allowCompression?: boolean;
 }
 
 /** @internal */
@@ -82,6 +87,25 @@ export namespace RpcRequestFulfillment {
  */
 export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void;
 
+/** Documents changes to the RPC protocol version.
+ * @internal
+ */
+export enum RpcProtocolVersion {
+  None = 0,
+  IntroducedNoContent = 1,
+  IntroducedStatusCategory = 2
+}
+
+/**
+ * A backend response that is handled internally by the RPC system.
+ * @internal
+ */
+export interface RpcManagedStatus {
+  iTwinRpcCoreResponse: true;
+  managedStatus: "pending" | "notFound" | "noContent";
+  responseValue: string | { message: string } | RpcNotFoundResponse;
+}
+
 /** An application protocol for an RPC interface.
  * @internal
  */
@@ -90,7 +114,7 @@ export abstract class RpcProtocol {
   public static readonly events: BeEvent<RpcProtocolEventHandler> = new BeEvent();
 
   /** A version code that identifies the RPC protocol capabilties of this endpoint. */
-  public static readonly protocolVersion = 1;
+  public static readonly protocolVersion: number = RpcProtocolVersion.IntroducedStatusCategory;
 
   /** The name of the RPC protocol version header. */
   public protocolVersionHeaderName = "";
@@ -135,6 +159,9 @@ export abstract class RpcProtocol {
 
   /** Used by protocols that can transmit IModelRpcProps values natively. */
   public checkToken: boolean = false;
+
+  /** Used by protocols that support user-defined status codes. */
+  public supportsStatusCategory: boolean = false;
 
   /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
   public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }

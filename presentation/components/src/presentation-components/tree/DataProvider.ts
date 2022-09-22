@@ -7,13 +7,13 @@
  */
 
 import memoize from "micro-memoize";
+import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  DiagnosticsOptionsWithHandler, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
+  ClientDiagnosticsOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, Node, NodeKey, NodePathElement, Paged, Ruleset,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { DelayLoadedTreeNodeItem, PageOptions, TreeNodeItem } from "@itwin/components-react";
 import { createDiagnosticsOptions, DiagnosticsProps } from "../common/Diagnostics";
 import { RulesetRegistrationHelper } from "../common/RulesetRegistrationHelper";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
@@ -55,6 +55,12 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
   appendChildrenCountForGroupingNodes?: boolean;
 
   /**
+   * Callback which provides a way to customize how data is mapped between [Node]($presentation-common) and [TreeNodeItem]($components-react).
+   * @beta
+   */
+  customizeTreeNodeItem?: (item: Partial<DelayLoadedTreeNodeItem>, node: Partial<Node>) => void;
+
+  /**
    * By default the provider uses [PresentationManager]($presentation-frontend) accessed through `Presentation.presentation` to request
    * node counts, nodes and filter them. The overrides allow swapping some or all of the data source entry points thus
    * making the provider request data from custom sources.
@@ -81,17 +87,21 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _imodel: IModelConnection;
   private _rulesetRegistration: RulesetRegistrationHelper;
   private _pagingSize?: number;
-  private _appendChildrenCountForGroupingNodes?: boolean;
   private _disposeVariablesChangeListener: () => void;
   private _dataSource: PresentationTreeDataProviderDataSourceEntryPoints;
-  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
+  private _diagnosticsOptions?: ClientDiagnosticsOptions;
+  private _nodesCreateProps: CreateTreeNodeItemProps;
 
   /** Constructor. */
   public constructor(props: PresentationTreeDataProviderProps) {
     this._rulesetRegistration = new RulesetRegistrationHelper(props.ruleset);
     this._imodel = props.imodel;
     this._pagingSize = props.pagingSize;
-    this._appendChildrenCountForGroupingNodes = props.appendChildrenCountForGroupingNodes;
+    this._nodesCreateProps = {
+      appendChildrenCountForGroupingNodes: props.appendChildrenCountForGroupingNodes,
+      customizeTreeNodeItem: props.customizeTreeNodeItem,
+    };
+
     this._dataSource = {
       getNodesCount: async (requestOptions: HierarchyRequestOptions<IModelConnection, NodeKey>) => Presentation.presentation.getNodesCount(requestOptions),
       getNodesAndCount: async (requestOptions: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>>) => Presentation.presentation.getNodesAndCount(requestOptions),
@@ -171,11 +181,8 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
   private _getNodesAndCount = memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<{ nodes: TreeNodeItem[], count: number }> => {
     const parentKey = parentNode ? this.getNodeKey(parentNode) : undefined;
     const requestOptions = { ...this.createRequestOptions(parentKey), paging: pageOptionsUiToPresentation(pageOptions) };
-    const nodesCreateProps: CreateTreeNodeItemProps = {
-      appendChildrenCountForGroupingNodes: this._appendChildrenCountForGroupingNodes,
-    };
     const result = await this._dataSource.getNodesAndCount(requestOptions);
-    return { nodes: createTreeNodeItems(result.nodes, parentNode?.id, nodesCreateProps), count: result.count };
+    return { nodes: createTreeNodeItems(result.nodes, parentNode?.id, this._nodesCreateProps), count: result.count };
   }, { isMatchingKey: MemoizationHelpers.areNodesRequestsEqual as any });
 
   /**

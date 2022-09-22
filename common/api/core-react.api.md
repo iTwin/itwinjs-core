@@ -4,6 +4,8 @@
 
 ```ts
 
+/// <reference types="react" />
+
 import { ActionMeta } from 'react-select/src/types';
 import { BadgeType } from '@itwin/appui-abstract';
 import { BeUiEvent } from '@itwin/core-bentley';
@@ -11,7 +13,7 @@ import { CheckboxProps as CheckboxProps_2 } from '@itwin/itwinui-react';
 import Component from 'react-select';
 import { ConditionalBooleanValue } from '@itwin/appui-abstract';
 import { ConditionalStringValue } from '@itwin/appui-abstract';
-import * as CSS from 'csstype';
+import { default as default_2 } from 'resize-observer-polyfill';
 import { DialogButtonDef as DialogButtonDef_2 } from '@itwin/appui-abstract';
 import { FocusEventHandler } from 'react-select/src/types';
 import { formatGroupLabel } from 'react-select/src/builtins';
@@ -21,14 +23,12 @@ import { IDisposable } from '@itwin/core-bentley';
 import { IMatch } from '@itwin/appui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
-import { Interaction } from 'scheduler/tracing';
 import { KeyboardEventHandler } from 'react-select/src/types';
-import { Localization } from '@itwin/core-common';
+import type { Localization } from '@itwin/core-common';
 import { MessageSeverity as MessageSeverity_2 } from '@itwin/appui-abstract';
 import { PointProps as PointProps_2 } from '@itwin/appui-abstract';
 import { ProgressRadialProps } from '@itwin/itwinui-react';
-import * as PropTypes from 'prop-types';
-import * as React from 'react';
+import * as React_2 from 'react';
 import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
@@ -85,7 +85,7 @@ export class Annulus {
 export type AsyncGetAutoSuggestDataFunc = (value: string) => Promise<AutoSuggestData[]>;
 
 // @public
-export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSuggestState> {
+export class AutoSuggest extends React_2.PureComponent<AutoSuggestProps, AutoSuggestState> {
     constructor(props: AutoSuggestProps);
     // @internal (undocumented)
     componentDidMount(): void;
@@ -95,7 +95,7 @@ export class AutoSuggest extends React.PureComponent<AutoSuggestProps, AutoSugge
     componentWillUnmount(): void;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface AutoSuggestData {
@@ -104,15 +104,15 @@ export interface AutoSuggestData {
 }
 
 // @public
-export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+export interface AutoSuggestProps extends React_2.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     // @internal (undocumented)
     alwaysRenderSuggestions?: boolean;
     getLabel?: (value: string | undefined) => string;
     getSuggestions?: AsyncGetAutoSuggestDataFunc;
-    onInputFocus?: (e: React.FocusEvent<HTMLInputElement>) => void;
-    onPressEnter?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-    onPressEscape?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
-    onPressTab?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onInputFocus?: (e: React_2.FocusEvent<HTMLInputElement>) => void;
+    onPressEnter?: (e: React_2.KeyboardEvent<HTMLInputElement>) => void;
+    onPressEscape?: (e: React_2.KeyboardEvent<HTMLInputElement>) => void;
+    onPressTab?: (e: React_2.KeyboardEvent<HTMLInputElement>) => void;
     onSuggestionsClearRequested?: () => void;
     onSuggestionSelected: (selected: AutoSuggestData) => void;
     options?: AutoSuggestData[] | GetAutoSuggestDataFunc;
@@ -125,7 +125,7 @@ export interface AutoSuggestProps extends React.InputHTMLAttributes<HTMLInputEle
 }
 
 // @internal
-export class Badge extends React.PureComponent<BadgeProps> {
+export class Badge extends React_2.PureComponent<BadgeProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -138,7 +138,7 @@ export interface BadgeProps extends CommonProps {
 
 // @internal
 export class BadgeUtilities {
-    static getComponentForBadgeType(badgeType?: BadgeType): React.ReactNode;
+    static getComponentForBadgeType(badgeType?: BadgeType): React_2.ReactNode;
 }
 
 // @internal
@@ -151,16 +151,16 @@ export function BlockText(props: TextProps): JSX.Element;
 export function BodyText(props: TextProps): JSX.Element;
 
 // @public @deprecated
-export class Button extends React.PureComponent<ButtonProps> {
+export class Button extends React_2.PureComponent<ButtonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public @deprecated
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
+export interface ButtonProps extends React_2.ButtonHTMLAttributes<HTMLButtonElement>, CommonProps {
     buttonType?: ButtonType;
     id?: string;
-    onClick?: ((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
+    onClick?: ((event: React_2.MouseEvent<HTMLButtonElement, MouseEvent>) => void);
     size?: ButtonSize;
 }
 
@@ -200,7 +200,7 @@ export const calculateToolbarOpacity: (proximityScale: number) => number;
 export function Centered(props: CommonDivProps): JSX.Element;
 
 // @public @deprecated
-export class Checkbox extends React.PureComponent<CheckboxProps> {
+export class Checkbox extends React_2.PureComponent<CheckboxProps> {
     // @internal
     constructor(props: CheckboxProps);
     // (undocumented)
@@ -209,7 +209,7 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {
     componentDidUpdate(_prevProps: CheckboxProps): void;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface CheckBoxInfo {
@@ -224,16 +224,16 @@ export interface CheckBoxInfo {
 }
 
 // @public @deprecated
-export interface CheckboxProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
+export interface CheckboxProps extends Omit_2<React_2.InputHTMLAttributes<HTMLInputElement>, "type" | "onClick" | "onBlur">, CommonProps {
     indeterminate?: boolean;
     inputClassName?: string;
-    inputRef?: React.Ref<HTMLInputElement>;
-    inputStyle?: React.CSSProperties;
+    inputRef?: React_2.Ref<HTMLInputElement>;
+    inputStyle?: React_2.CSSProperties;
     label?: string;
     labelClassName?: string;
-    labelStyle?: React.CSSProperties;
-    onBlur?: (e: React.FocusEvent) => void;
-    onClick?: (e: React.MouseEvent) => void;
+    labelStyle?: React_2.CSSProperties;
+    onBlur?: (e: React_2.FocusEvent) => void;
+    onClick?: (e: React_2.MouseEvent) => void;
     setFocus?: boolean;
     status?: InputStatus;
 }
@@ -249,13 +249,13 @@ export enum CheckBoxState {
 }
 
 // @public
-export class CheckListBox extends React.PureComponent<CommonProps> {
+export class CheckListBox extends React_2.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export class CheckListBoxItem extends React.PureComponent<CheckListBoxItemProps> {
+export class CheckListBoxItem extends React_2.PureComponent<CheckListBoxItemProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -265,7 +265,7 @@ export interface CheckListBoxItemProps extends CommonProps {
     checked?: boolean;
     disabled?: boolean;
     label: string;
-    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => any;
+    onChange?: (e: React_2.ChangeEvent<HTMLInputElement>) => any;
     onClick?: () => any;
 }
 
@@ -291,17 +291,17 @@ export class CloseSettingsContainerEvent extends BeUiEvent<ProcessSettingsContai
 }
 
 // @public
-export interface CommonDivProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+export interface CommonDivProps extends React_2.AllHTMLAttributes<HTMLDivElement>, CommonProps {
 }
 
 // @public
 export interface CommonProps extends ClassNameProps {
     itemId?: string;
-    style?: React.CSSProperties;
+    style?: React_2.CSSProperties;
 }
 
 // @public
-export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMenuState> {
+export class ContextMenu extends React_2.PureComponent<ContextMenuProps, ContextMenuState> {
     constructor(props: ContextMenuProps);
     // @internal (undocumented)
     static autoFlip: (dir: ContextMenuDirection, rect: DOMRectReadOnly, windowWidth: number, windowHeight: number) => ContextMenuDirection;
@@ -352,13 +352,13 @@ export enum ContextMenuDirection {
 }
 
 // @public
-export class ContextMenuDivider extends React.PureComponent<CommonProps> {
+export class ContextMenuDivider extends React_2.PureComponent<CommonProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
+export class ContextMenuItem extends React_2.PureComponent<ContextMenuItemProps, ContextMenuItemState> {
     constructor(props: ContextMenuItemProps);
     // (undocumented)
     componentDidMount(): void;
@@ -372,10 +372,10 @@ export class ContextMenuItem extends React.PureComponent<ContextMenuItemProps, C
     select: () => void;
     // @internal (undocumented)
     readonly state: Readonly<ContextMenuItemState>;
-    }
+}
 
 // @public
-export interface ContextMenuItemProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "disabled" | "hidden">, CommonProps {
+export interface ContextMenuItemProps extends Omit<React_2.AllHTMLAttributes<HTMLDivElement>, "disabled" | "hidden">, CommonProps {
     badgeType?: BadgeType;
     disabled?: boolean | ConditionalBooleanValue;
     hidden?: boolean | ConditionalBooleanValue;
@@ -415,7 +415,7 @@ export interface ContextMenuProps extends CommonProps {
 }
 
 // @public
-export class ContextSubMenu extends React.Component<ContextSubMenuProps, ContextSubMenuState> {
+export class ContextSubMenu extends React_2.Component<ContextSubMenuProps, ContextSubMenuState> {
     constructor(props: ContextSubMenuProps);
     // (undocumented)
     close: (propagate?: boolean | undefined) => void;
@@ -433,7 +433,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
     select: () => void;
     // @internal (undocumented)
     readonly state: Readonly<ContextSubMenuState>;
-    }
+}
 
 // @public
 export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label">, CommonProps {
@@ -458,7 +458,7 @@ export enum Corner {
 export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
 
 // @public
-export class Dialog extends React.Component<DialogProps, DialogState> {
+export class Dialog extends React_2.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
     componentDidMount(): void;
@@ -541,15 +541,15 @@ export enum DialogButtonType {
 }
 
 // @public
-export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
+export interface DialogProps extends Omit_2<React_2.AllHTMLAttributes<HTMLDivElement>, "title">, CommonProps {
     alignment?: DialogAlignment;
-    backgroundStyle?: React.CSSProperties;
+    backgroundStyle?: React_2.CSSProperties;
     buttonCluster?: DialogButtonDef_2[];
     contentClassName?: string;
-    contentStyle?: React.CSSProperties;
+    contentStyle?: React_2.CSSProperties;
     footer?: string | JSX.Element;
-    footerStyle?: React.CSSProperties;
-    header?: React.ReactNode;
+    footerStyle?: React_2.CSSProperties;
+    header?: React_2.ReactNode;
     height?: string | number;
     hideHeader?: boolean;
     inset?: boolean;
@@ -562,12 +562,12 @@ export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement
     movable?: boolean;
     onClose?: () => void;
     onEscape?: () => void;
-    onModelessPointerDown?: (event: React.PointerEvent, id: string) => void;
+    onModelessPointerDown?: (event: React_2.PointerEvent, id: string) => void;
     onOutsideClick?: (event: MouseEvent) => any;
     opened: boolean;
     resizable?: boolean;
     title?: string | JSX.Element;
-    titleStyle?: React.CSSProperties;
+    titleStyle?: React_2.CSSProperties;
     trapFocus?: boolean;
     width?: string | number;
     x?: number;
@@ -587,7 +587,7 @@ export interface DivProps extends CommonDivProps {
 
 // @public
 export const DivWithOutsideClick: {
-    new (props: (CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps) | Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
+    new (props: (CommonDivProps & WithOnOutsideClickProps) | Readonly<CommonDivProps & WithOnOutsideClickProps>): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -601,27 +601,27 @@ export const DivWithOutsideClick: {
         componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
-        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
-            children?: React.ReactNode;
+        readonly props: Readonly<CommonDivProps & WithOnOutsideClickProps> & Readonly<{
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
-        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
-        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
-        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
-        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
-        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
-        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
-        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context: any): {
+    new (props: CommonDivProps & WithOnOutsideClickProps, context: any): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -635,27 +635,27 @@ export const DivWithOutsideClick: {
         componentWillUnmount(): void;
         render(): JSX.Element;
         context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<CommonDivProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
-        readonly props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps> & Readonly<{
-            children?: React.ReactNode;
+        readonly props: Readonly<CommonDivProps & WithOnOutsideClickProps> & Readonly<{
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
-        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
-        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
-        componentDidUpdate?(prevProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
+        shouldComponentUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
-        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
-        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextContext: any): void;
-        componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
-        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React.Context<any> | undefined;
+    contextType?: React_2.Context<any> | undefined;
 };
 
 // @public
@@ -684,7 +684,7 @@ export interface ElementSeparatorProps extends CommonProps {
 export type ExecuteHandler = (this: void) => void;
 
 // @public @deprecated
-export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
+export class ExpandableBlock extends React_2.PureComponent<ExpandableBlockProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -693,15 +693,15 @@ export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {
 export interface ExpandableBlockProps extends CommonProps {
     caption?: string;
     isExpanded: boolean;
-    onClick: React.MouseEventHandler<HTMLDivElement>;
-    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
-    onKeyPress?: React.KeyboardEventHandler<HTMLDivElement>;
+    onClick: React_2.MouseEventHandler<HTMLDivElement>;
+    onKeyDown?: React_2.KeyboardEventHandler<HTMLDivElement>;
+    onKeyPress?: React_2.KeyboardEventHandler<HTMLDivElement>;
     title: string | JSX.Element;
     tooltip?: string;
 }
 
 // @public
-export class ExpandableList extends React.PureComponent<ExpandableListProps, ExpandableListState> {
+export class ExpandableList extends React_2.PureComponent<ExpandableListProps, ExpandableListState> {
     constructor(props: ExpandableListProps);
     // @internal (undocumented)
     componentDidUpdate(prevProps: ExpandableListProps): void;
@@ -709,7 +709,7 @@ export class ExpandableList extends React.PureComponent<ExpandableListProps, Exp
     static defaultProps: Partial<ExpandableListProps>;
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
 export interface ExpandableListProps extends CommonProps {
@@ -719,7 +719,7 @@ export interface ExpandableListProps extends CommonProps {
 }
 
 // @public
-export class ExpansionToggle extends React.PureComponent<ExpansionToggleProps> {
+export class ExpansionToggle extends React_2.PureComponent<ExpansionToggleProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -731,14 +731,14 @@ export interface ExpansionToggleProps extends CommonProps {
     // (undocumented)
     isExpanded?: boolean;
     // (undocumented)
-    onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
+    onClick?: (e: React_2.MouseEvent<HTMLDivElement>) => void;
 }
 
 // @beta @deprecated
 export function FeaturedTile(props: TileProps): JSX.Element;
 
 // @public @deprecated
-export class Field extends React.Component<FieldProps> {
+export class Field extends React_2.Component<FieldProps> {
     constructor(props: FieldProps);
     // (undocumented)
     render(): JSX.Element;
@@ -789,39 +789,39 @@ export function FilteredText(props: FilteredTextProps): JSX.Element;
 export interface FilteredTextProps extends CommonProps {
     matchClassName?: string;
     matches?: IMatch[];
-    matchStyle?: React.CSSProperties;
+    matchStyle?: React_2.CSSProperties;
     value: string;
 }
 
 // @internal
-export const flattenChildren: (children: React.ReactNode) => React.ReactNode;
+export const flattenChildren: (children: React_2.ReactNode) => React_2.ReactNode;
 
 // @public
 export function FlexWrapContainer(props: CommonDivProps): JSX.Element;
 
 // @internal
-export function focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject<HTMLElement> | string): boolean;
+export function focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React_2.RefObject<HTMLElement> | string): boolean;
 
 // @internal
 export function FocusTrap(props: FocusTrapProps): JSX.Element | null;
 
 // @internal
-export interface FocusTrapProps extends React.AllHTMLAttributes<any> {
+export interface FocusTrapProps extends React_2.AllHTMLAttributes<any> {
     active?: boolean;
-    children: React.ReactNode;
-    initialFocusElement?: React.RefObject<HTMLElement> | string;
+    children: React_2.ReactNode;
+    initialFocusElement?: React_2.RefObject<HTMLElement> | string;
     returnFocusOnDeactivate: boolean;
 }
 
 // @public
-export class Form extends React.Component<FormProps, FormState> {
+export class Form extends React_2.Component<FormProps, FormState> {
     constructor(props: FormProps);
     // (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public @deprecated
-export const FormContext: React.Context<FormContextState | undefined>;
+export const FormContext: React_2.Context<FormContextState | undefined>;
 
 // @public
 export interface FormContextState extends FormState {
@@ -861,7 +861,7 @@ export function getCssVariable(variableName: string, htmlElement?: HTMLElement):
 export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
 
 // @internal
-export const getDisplayName: (component: React.ComponentType<any>) => string;
+export const getDisplayName: (component: React_2.ComponentType<any>) => string;
 
 // @internal
 export const getToolbarBackdropFilter: (filterBlur: number) => string;
@@ -876,31 +876,31 @@ export const getToolbarBoxShadow: (opacity: number) => string;
 export function getUserColor(email: string): string;
 
 // @public
-export class GlobalContextMenu extends React.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
+export class GlobalContextMenu extends React_2.PureComponent<GlobalContextMenuProps, GlobalContextMenuState> {
     constructor(props: GlobalContextMenuProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
     // (undocumented)
     readonly state: GlobalContextMenuState;
 }
 
 // @public
 export interface GlobalContextMenuProps extends ContextMenuProps {
-    contextMenuComponent?: React.ComponentType<ContextMenuProps>;
+    contextMenuComponent?: React_2.ComponentType<ContextMenuProps>;
     identifier?: string;
     x: number | string;
     y: number | string;
 }
 
 // @public
-export class GlobalDialog extends React.Component<GlobalDialogProps, GlobalDialogState> {
+export class GlobalDialog extends React_2.Component<GlobalDialogProps, GlobalDialogState> {
     constructor(props: GlobalDialogProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
     // (undocumented)
     readonly state: GlobalDialogState;
 }
@@ -943,8 +943,8 @@ export function Icon(props: IconProps): JSX.Element | null;
 
 // @public
 export class IconHelper {
-    static getIconData(iconSpec: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): string | ConditionalStringValue;
-    static getIconReactNode(icon: string | ConditionalStringValue | React.ReactNode, internalData?: Map<string, any>): React.ReactNode;
+    static getIconData(iconSpec: IconSpec, internalData?: Map<string, any>): string | ConditionalStringValue;
+    static getIconReactNode(icon: string | ConditionalStringValue | React_2.ReactNode, internalData?: Map<string, any>): React_2.ReactNode;
     // (undocumented)
     static get reactIconKey(): string;
 }
@@ -955,8 +955,8 @@ export const IconInput: (props: IconInputProps) => JSX.Element | null;
 // @public
 export interface IconInputProps extends Omit<InputProps, "size"> {
     containerClassName?: string;
-    icon: React.ReactNode;
-    ref?: React.Ref<HTMLInputElement>;
+    icon: React_2.ReactNode;
+    ref?: React_2.Ref<HTMLInputElement>;
     size?: "small" | "large";
 }
 
@@ -966,10 +966,10 @@ export interface IconProps extends CommonProps {
 }
 
 // @public
-export type IconSpec = string | ConditionalStringValue | React.ReactNode;
+export type IconSpec = string | ConditionalStringValue | React_2.ReactNode;
 
 // @public
-export class ImageCheckBox extends React.PureComponent<ImageCheckBoxProps> {
+export class ImageCheckBox extends React_2.PureComponent<ImageCheckBoxProps> {
     // @internal (undocumented)
     render(): JSX.Element;
 }
@@ -979,11 +979,11 @@ export interface ImageCheckBoxProps extends CommonProps {
     border?: boolean;
     checked?: boolean;
     disabled?: boolean;
-    imageOff: string | React.ReactNode;
-    imageOn: string | React.ReactNode;
+    imageOff: string | React_2.ReactNode;
+    imageOn: string | React_2.ReactNode;
     inputClassName?: string;
-    inputRef?: React.Ref<HTMLInputElement>;
-    inputStyle?: React.CSSProperties;
+    inputRef?: React_2.Ref<HTMLInputElement>;
+    inputStyle?: React_2.CSSProperties;
     onClick?: (checked: boolean) => any;
     tooltip?: string;
 }
@@ -992,7 +992,7 @@ export interface ImageCheckBoxProps extends CommonProps {
 export const Input: (props: InputProps) => JSX.Element | null;
 
 // @public
-export class InputLabel extends React.PureComponent<InputLabelProps> {
+export class InputLabel extends React_2.PureComponent<InputLabelProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1004,9 +1004,9 @@ export interface InputLabelProps extends LabeledComponentProps, MessagedComponen
 }
 
 // @public @deprecated
-export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps {
+export interface InputProps extends React_2.InputHTMLAttributes<HTMLInputElement>, CommonProps {
     nativeKeyHandler?: (e: KeyboardEvent) => void;
-    ref?: React.Ref<HTMLInputElement>;
+    ref?: React_2.Ref<HTMLInputElement>;
     setFocus?: boolean;
 }
 
@@ -1039,8 +1039,8 @@ export class ItemKeyboardNavigator {
     set allowWrap(v: boolean);
     get crossAxisArrowKeyHandler(): CrossAxisArrowKeyFunc | undefined;
     set crossAxisArrowKeyHandler(v: CrossAxisArrowKeyFunc | undefined);
-    handleKeyDownEvent(event: React_2.KeyboardEvent, index: number): void;
-    handleKeyUpEvent(event: React_2.KeyboardEvent, index: number): void;
+    handleKeyDownEvent(event: React.KeyboardEvent, index: number): void;
+    handleKeyUpEvent(event: React.KeyboardEvent, index: number): void;
     get itemCount(): number;
     set itemCount(count: number);
     // (undocumented)
@@ -1049,15 +1049,15 @@ export class ItemKeyboardNavigator {
     onFocusItem: (index: number) => void;
     get orientation(): Orientation;
     set orientation(orientation: Orientation);
-    }
+}
 
 // @public
 export interface LabeledComponentProps {
     inputClassName?: string;
-    inputStyle?: React.CSSProperties;
+    inputStyle?: React_2.CSSProperties;
     label?: string;
     labelClassName?: string;
-    labelStyle?: React.CSSProperties;
+    labelStyle?: React_2.CSSProperties;
     status?: InputStatus;
 }
 
@@ -1069,7 +1069,7 @@ export interface LabeledInputProps extends InputProps, LabeledComponentProps, Me
 }
 
 // @public @deprecated
-export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
+export class LabeledSelect extends React_2.PureComponent<LabeledSelectProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1093,7 +1093,7 @@ export interface LabeledThemedSelectProps extends ThemedSelectProps, LabeledComp
 }
 
 // @public @deprecated
-export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
+export class LabeledToggle extends React_2.PureComponent<LabeledToggleProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1102,7 +1102,7 @@ export class LabeledToggle extends React.PureComponent<LabeledToggleProps> {
 export interface LabeledToggleProps extends ToggleSwitchProps {
     label?: string;
     labelClassName?: string;
-    labelStyle?: React.CSSProperties;
+    labelStyle?: React_2.CSSProperties;
 }
 
 // @public @deprecated
@@ -1125,7 +1125,7 @@ export class Line {
 export function Listbox(props: ListboxProps): JSX.Element;
 
 // @alpha
-export const ListboxContext: React.Context<ListboxContextProps>;
+export const ListboxContext: React_2.Context<ListboxContextProps>;
 
 // @alpha
 export interface ListboxContextProps {
@@ -1134,7 +1134,7 @@ export interface ListboxContextProps {
     // (undocumented)
     listboxId?: string;
     // (undocumented)
-    listboxRef?: React.RefObject<HTMLUListElement>;
+    listboxRef?: React_2.RefObject<HTMLUListElement>;
     // (undocumented)
     listboxValue?: ListboxValue;
     // (undocumented)
@@ -1145,13 +1145,13 @@ export interface ListboxContextProps {
 export function ListboxItem(props: ListboxItemProps): JSX.Element;
 
 // @alpha
-export interface ListboxItemProps extends React.DetailedHTMLProps<React.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement> {
+export interface ListboxItemProps extends React_2.DetailedHTMLProps<React_2.LiHTMLAttributes<HTMLLIElement>, HTMLLIElement> {
     disabled?: boolean;
     value: ListboxValue;
 }
 
 // @alpha
-export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLUListElement>, HTMLUListElement> {
+export interface ListboxProps extends React_2.DetailedHTMLProps<React_2.HTMLAttributes<HTMLUListElement>, HTMLUListElement> {
     // (undocumented)
     ariaLabel?: any;
     // (undocumented)
@@ -1168,7 +1168,7 @@ export interface ListboxProps extends React.DetailedHTMLProps<React.HTMLAttribut
 export type ListboxValue = string;
 
 // @public
-export class LoadingBar extends React.PureComponent<LoadingBarProps> {
+export class LoadingBar extends React_2.PureComponent<LoadingBarProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingBarProps>;
     // (undocumented)
@@ -1183,7 +1183,7 @@ export interface LoadingBarProps extends CommonProps {
 }
 
 // @public
-export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
+export class LoadingPrompt extends React_2.PureComponent<LoadingPromptProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingPromptProps>;
     // (undocumented)
@@ -1205,7 +1205,7 @@ export interface LoadingPromptProps extends CommonProps {
 }
 
 // @public
-export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
+export class LoadingSpinner extends React_2.PureComponent<LoadingSpinnerProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingSpinnerProps>;
     // (undocumented)
@@ -1220,7 +1220,7 @@ export interface LoadingSpinnerProps extends Omit<ProgressRadialProps, "size"> {
 }
 
 // @public
-export class LoadingStatus extends React.PureComponent<LoadingStatusProps> {
+export class LoadingStatus extends React_2.PureComponent<LoadingStatusProps> {
     // (undocumented)
     static defaultProps: Partial<LoadingStatusProps>;
     // (undocumented)
@@ -1255,10 +1255,10 @@ export interface MainTabsProps extends TabsProps {
 }
 
 // @internal
-export function mergeRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+export function mergeRefs<T>(...refs: ReadonlyArray<React_2.Ref<T>>): (instance: T | null) => void;
 
 // @public
-export class MessageBox extends React.PureComponent<MessageBoxProps> {
+export class MessageBox extends React_2.PureComponent<MessageBoxProps> {
     // (undocumented)
     static defaultProps: Partial<MessageBoxProps>;
     // (undocumented)
@@ -1269,7 +1269,7 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
 export interface MessageBoxProps extends CommonProps {
     buttonCluster: DialogButtonDef_2[];
     contentClassName?: string;
-    contentStyle?: React.CSSProperties;
+    contentStyle?: React_2.CSSProperties;
     height?: string | number;
     minHeight?: number;
     minWidth?: number;
@@ -1283,7 +1283,7 @@ export interface MessageBoxProps extends CommonProps {
 }
 
 // @public
-export class MessageContainer extends React.PureComponent<MessageContainerProps> {
+export class MessageContainer extends React_2.PureComponent<MessageContainerProps> {
     // (undocumented)
     static getIconClassName(severity: MessageSeverity_2, hollow?: boolean): string;
     // (undocumented)
@@ -1300,7 +1300,7 @@ export interface MessageContainerProps extends CommonProps {
 export interface MessagedComponentProps {
     message?: string;
     messageClassName?: string;
-    messageStyle?: React.CSSProperties;
+    messageStyle?: React_2.CSSProperties;
 }
 
 // @public
@@ -1358,12 +1358,12 @@ export interface NodeCheckboxProps {
 }
 
 // @public
-export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
+export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React_2.ReactNode;
 
 // @public
-export type NodeCheckboxRenderProps = Omit<CheckboxProps_2, "onChange" | "onClick"> & {
+export type NodeCheckboxRenderProps = Omit_2<CheckboxProps_2, "onChange" | "onClick"> & {
     onChange: (checked: boolean) => void;
-    onClick: (e: React.MouseEvent) => void;
+    onClick: (e: React_2.MouseEvent) => void;
 };
 
 // @public
@@ -1372,14 +1372,14 @@ export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 // @public
 export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "step" | "onChange"> {
     containerClassName?: string;
-    containerStyle?: React.CSSProperties;
+    containerStyle?: React_2.CSSProperties;
     format?: (num: number | null | undefined, formattedValue: string) => string;
     max?: number;
     min?: number;
     onChange?: (value: number | undefined, stringValue: string) => void;
     parse?: ((value: string) => number | null | undefined);
     precision?: number;
-    ref?: React.Ref<HTMLInputElement>;
+    ref?: React_2.Ref<HTMLInputElement>;
     showTouchButtons?: boolean;
     snap?: boolean;
     step?: StepFunctionProp;
@@ -1387,12 +1387,13 @@ export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "st
 }
 
 // @public
-export type Omit<T, K> = Pick<T, Exclude<keyof T, K>>;
+type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
+export { Omit_2 as Omit }
 
 // @public
 export type OmitChildrenProp<T extends {
-    children?: React.ReactNode;
-}> = Omit<T, "children">;
+    children?: React_2.ReactNode;
+}> = Omit_2<T, "children">;
 
 // @beta @deprecated
 export type OptionsType = Array<OptionType>;
@@ -1460,7 +1461,7 @@ export interface PointProps {
 }
 
 // @public
-export class Popup extends React.Component<PopupProps, PopupState> {
+export class Popup extends React_2.Component<PopupProps, PopupState> {
     constructor(props: PopupProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1471,8 +1472,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     // (undocumented)
     static defaultProps: Partial<PopupProps>;
     // (undocumented)
-    render(): React.ReactPortal | null;
-    }
+    render(): React_2.ReactPortal | null;
+}
 
 // @public
 export function PopupContextMenu(props: PopupContextMenuProps): JSX.Element;
@@ -1482,7 +1483,7 @@ export interface PopupContextMenuProps extends CommonProps {
     animate?: boolean;
     ariaLabel?: string;
     autoflip?: boolean;
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     edgeLimit?: boolean;
     hotkeySelect?: boolean;
     isOpen: boolean;
@@ -1490,10 +1491,10 @@ export interface PopupContextMenuProps extends CommonProps {
     offset?: number;
     onClose?: () => void;
     onEnter?: () => void;
-    onEsc?: (event: React.KeyboardEvent) => void;
+    onEsc?: (event: React_2.KeyboardEvent) => void;
     onOpen?: () => void;
     onOutsideClick?: (e: MouseEvent) => void;
-    onSelect?: (event: React.MouseEvent | undefined) => void;
+    onSelect?: (event: React_2.MouseEvent | undefined) => void;
     position?: RelativePosition;
     selectedIndex?: number;
     target?: HTMLElement | null;
@@ -1508,7 +1509,7 @@ export interface PopupProps extends CommonProps {
     closeOnEnter?: boolean;
     closeOnNestedPopupOutsideClick?: boolean;
     closeOnWheel?: boolean;
-    focusTarget?: React.RefObject<HTMLElement> | string;
+    focusTarget?: React_2.RefObject<HTMLElement> | string;
     isOpen: boolean;
     isPinned?: boolean;
     keepContentsMounted?: boolean;
@@ -1522,6 +1523,8 @@ export interface PopupProps extends CommonProps {
     onOutsideClick?: (e: MouseEvent) => void;
     onWheel?: (e: WheelEvent) => void;
     position: RelativePosition;
+    // @beta
+    repositionOnResize?: boolean;
     role?: "dialog" | "alert" | "alertdialog";
     showArrow: boolean;
     showShadow: boolean;
@@ -1570,7 +1573,7 @@ export function ProgressSpinner(props: ProgressSpinnerProps): JSX.Element;
 
 // @beta @deprecated
 export interface ProgressSpinnerProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     error?: boolean;
     indeterminate?: boolean;
     size?: SpinnerSize;
@@ -1582,7 +1585,7 @@ export interface ProgressSpinnerProps extends CommonProps {
 export const PROXIMITY_THRESHOLD_DEFAULT = 100;
 
 // @public
-export class RadialButton extends React.Component<RadialButtonProps, RadialButtonState> {
+export class RadialButton extends React_2.Component<RadialButtonProps, RadialButtonState> {
     constructor(props: RadialButtonProps);
     // (undocumented)
     render(): JSX.Element;
@@ -1602,7 +1605,7 @@ export interface RadialButtonProps extends CommonProps {
 }
 
 // @public
-export class RadialMenu extends React.Component<RadialMenuProps, RadialMenuState> {
+export class RadialMenu extends React_2.Component<RadialMenuProps, RadialMenuState> {
     constructor(props: RadialMenuProps);
     // (undocumented)
     componentDidMount(): void;
@@ -1636,13 +1639,13 @@ export interface RadialMenuProps extends CommonProps {
 export type RadialSizeType = ProgressRadialProps["size"];
 
 // @public @deprecated
-export class Radio extends React.PureComponent<RadioProps> {
+export class Radio extends React_2.PureComponent<RadioProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public @deprecated
-export interface RadioProps extends React.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
+export interface RadioProps extends React_2.InputHTMLAttributes<HTMLInputElement>, CommonProps, LabeledComponentProps {
 }
 
 // @public
@@ -1654,7 +1657,7 @@ export interface RatioChangeResult {
 // @public
 export interface ReactMessage {
     // (undocumented)
-    reactNode: React.ReactNode;
+    reactNode: React_2.ReactNode;
 }
 
 // @internal
@@ -1735,37 +1738,38 @@ export interface RenderPropsArgs {
 // @public
 export function ResizableContainerObserver({ onResize, children }: {
     onResize: (width: number, height: number) => void;
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }): JSX.Element;
 
 // @internal (undocumented)
-export const ResizeObserver: ResizeObserverType;
+const ResizeObserver_2: ResizeObserverType;
+export { ResizeObserver_2 as ResizeObserver }
 
 // @internal (undocumented)
-export type ResizeObserverType = typeof import("resize-observer-polyfill").default;
+export type ResizeObserverType = default_2;
 
 // @public
 export class ScrollPositionMaintainer implements IDisposable {
     constructor(el: Element);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @public
 export function ScrollView(props: CommonDivProps): JSX.Element;
 
 // @public
-export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
+export class SearchBox extends React_2.Component<SearchBoxProps, SearchBoxState> {
     constructor(props: SearchBoxProps);
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
     focus(): void;
     // @internal (undocumented)
-    render(): React.ReactNode;
+    render(): React_2.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<SearchBoxState>;
-    }
+}
 
 // @public
 export interface SearchBoxProps extends CommonProps {
@@ -1789,11 +1793,11 @@ export interface SelectOption {
 }
 
 // @public @deprecated
-export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
+export interface SelectProps extends React_2.SelectHTMLAttributes<HTMLSelectElement>, CommonProps {
     options: (string | SelectOption)[] | {
         [key: string]: (string | SelectOption);
     };
-    ref?: React.Ref<HTMLSelectElement>;
+    ref?: React_2.Ref<HTMLSelectElement>;
     setFocus?: boolean;
 }
 
@@ -1905,9 +1909,9 @@ export interface SliderProps extends CommonProps {
     getTickValues?: () => number[];
     includeTicksInWidth?: boolean;
     max: number;
-    maxImage?: React.ReactNode;
+    maxImage?: React_2.ReactNode;
     min: number;
-    minImage?: React.ReactNode;
+    minImage?: React_2.ReactNode;
     mode?: number | (() => number);
     onChange?: (values: ReadonlyArray<number>) => void;
     onSlideEnd?: (values: ReadonlyArray<number>) => void;
@@ -1937,7 +1941,7 @@ export enum SortDirection {
 }
 
 // @public @deprecated
-export class Spinner extends React.PureComponent<SpinnerProps> {
+export class Spinner extends React_2.PureComponent<SpinnerProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1957,7 +1961,7 @@ export enum SpinnerSize {
 }
 
 // @public @deprecated
-export class SplitButton extends React.Component<SplitButtonProps, SplitButtonState> {
+export class SplitButton extends React_2.Component<SplitButtonProps, SplitButtonState> {
     constructor(props: SplitButtonProps);
     // (undocumented)
     render(): JSX.Element;
@@ -1980,7 +1984,7 @@ export interface SplitButtonProps extends CommonProps {
     icon?: IconSpec;
     // @internal (undocumented)
     initialExpanded?: boolean;
-    label: string | React.ReactNode;
+    label: string | React_2.ReactNode;
     onClick?: (event: any) => any;
     onExecute?: () => any;
     popupPosition?: RelativePosition;
@@ -2005,7 +2009,7 @@ export function Subheading(props: TextProps): JSX.Element;
 export function Subheading2(props: TextProps): JSX.Element;
 
 // @public
-export class SvgPath extends React.PureComponent<SvgPathProps> {
+export class SvgPath extends React_2.PureComponent<SvgPathProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2017,13 +2021,13 @@ export interface SvgPathProps extends CommonProps {
     viewBoxWidth: number;
 }
 
-// @public
-export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
+// @public @deprecated
+export class SvgSprite extends React_2.PureComponent<SvgSpriteProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @public
+// @public @deprecated
 export interface SvgSpriteProps extends CommonProps {
     src: string;
 }
@@ -2044,7 +2048,7 @@ export interface TabLabel {
 }
 
 // @public
-export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
+export class Tabs extends React_2.PureComponent<MainTabsProps, TabsState> {
     constructor(props: MainTabsProps);
     // @internal (undocumented)
     componentDidMount(): void;
@@ -2052,10 +2056,10 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
     componentDidUpdate(prevProps: MainTabsProps): void;
     // @internal (undocumented)
     render(): JSX.Element;
-    }
+}
 
 // @public
-export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
+export interface TabsProps extends React_2.AllHTMLAttributes<HTMLUListElement>, CommonProps {
     activeIndex?: number;
     green?: boolean;
     labels: Array<string | TabLabel>;
@@ -2066,14 +2070,14 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
 export const Textarea: (props: TextareaProps) => JSX.Element | null;
 
 // @public @deprecated
-export interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
-    ref?: React.Ref<HTMLTextAreaElement>;
+export interface TextareaProps extends React_2.TextareaHTMLAttributes<HTMLTextAreaElement>, CommonProps {
+    ref?: React_2.Ref<HTMLTextAreaElement>;
     rows?: number;
     setFocus?: boolean;
 }
 
 // @public
-export interface TextProps extends React.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
+export interface TextProps extends React_2.AllHTMLAttributes<HTMLSpanElement>, CommonProps {
 }
 
 // @beta @deprecated
@@ -2094,11 +2098,11 @@ export type ThemedSelectProps = {
     controlShouldRenderValue?: boolean;
     defaultMenuIsOpen?: boolean;
     defaultValue?: ValueType<OptionType>;
-    divRef?: React.Ref<HTMLDivElement>;
+    divRef?: React_2.Ref<HTMLDivElement>;
     escapeClearsValue?: boolean;
     filterOption?: ((option: OptionType, rawInput: string) => boolean) | null;
     formatGroupLabel?: typeof formatGroupLabel;
-    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React.ReactNode;
+    formatOptionLabel?: (optionType: OptionType, formatLabelMeta: FormatOptionLabelMeta) => React_2.ReactNode;
     getOptionLabel?: typeof getOptionLabel;
     getOptionValue?: typeof getOptionValue;
     hideSelectedOptions?: boolean;
@@ -2130,22 +2134,22 @@ export type ThemedSelectProps = {
     onKeyDown?: KeyboardEventHandler;
     onMenuOpen?: () => void;
     onMenuClose?: () => void;
-    onMenuScrollToTop?: (e: React.SyntheticEvent<HTMLElement>) => void;
-    onMenuScrollToBottom?: (e: React.SyntheticEvent<HTMLElement>) => void;
+    onMenuScrollToTop?: (e: React_2.SyntheticEvent<HTMLElement>) => void;
+    onMenuScrollToBottom?: (e: React_2.SyntheticEvent<HTMLElement>) => void;
     openMenuOnFocus?: boolean;
     openMenuOnClick?: boolean;
     options: OptionsType;
     pageSize?: number;
     placeholder?: string;
-    ref?: React.Ref<Component>;
-    styles?: React.CSSProperties;
+    ref?: React_2.Ref<Component>;
+    styles?: React_2.CSSProperties;
     tabIndex?: string;
     tabSelectsValue?: boolean;
     value?: ValueType<OptionType>;
 };
 
 // @beta @deprecated
-export class Tile extends React.Component<TileProps> {
+export class Tile extends React_2.Component<TileProps> {
     // @internal (undocumented)
     static readonly defaultProps: TileDefaultProps;
     // @internal (undocumented)
@@ -2162,7 +2166,7 @@ export interface TileProps extends CommonDivProps {
     // (undocumented)
     href?: string;
     // (undocumented)
-    icon?: string | React.ReactNode;
+    icon?: string | React_2.ReactNode;
     // (undocumented)
     minimal?: boolean;
     // (undocumented)
@@ -2191,7 +2195,7 @@ export class Timer {
     setOnExecute(onExecute: ExecuteHandler | undefined): void;
     start(): void;
     stop(): void;
-    }
+}
 
 // @public @deprecated
 export function Title(props: TextProps): JSX.Element;
@@ -2215,9 +2219,9 @@ export interface ToggleProps extends CommonProps {
     disabled?: boolean;
     isOn?: boolean;
     large?: boolean;
-    onBlur?: (event: React.FocusEvent) => any;
+    onBlur?: (event: React_2.FocusEvent) => any;
     onChange?: (checked: boolean) => any;
-    ref?: React.Ref<HTMLInputElement>;
+    ref?: React_2.Ref<HTMLInputElement>;
     rounded?: boolean;
     setFocus?: boolean;
     showCheckmark?: boolean;
@@ -2241,14 +2245,14 @@ export type TooltipPlacement = "bottom" | "left" | "right" | "top";
 
 // @beta @deprecated
 export interface TooltipProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     placement?: TooltipPlacement;
     target?: HTMLElement;
     visible?: boolean;
 }
 
 // @public
-export class Tree extends React.PureComponent<TreeProps> {
+export class Tree extends React_2.PureComponent<TreeProps> {
     // (undocumented)
     getElementsByClassName(className: string): Element[];
     // (undocumented)
@@ -2257,28 +2261,28 @@ export class Tree extends React.PureComponent<TreeProps> {
     scrollToElement(element: Element): void;
     // (undocumented)
     setFocusByClassName(selector: string): boolean;
-    }
+}
 
 // @public
-export class TreeBranch extends React.PureComponent<TreeBranchProps> {
+export class TreeBranch extends React_2.PureComponent<TreeBranchProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
 export interface TreeBranchProps extends CommonProps {
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
 }
 
 // @public
-export class TreeNode extends React.Component<TreeNodeProps> {
+export class TreeNode extends React_2.Component<TreeNodeProps> {
     constructor(props: TreeNodeProps);
     // (undocumented)
     render(): JSX.Element;
 }
 
 // @public
-export class TreeNodePlaceholder extends React.PureComponent<TreeNodePlaceholderProps> {
+export class TreeNodePlaceholder extends React_2.PureComponent<TreeNodePlaceholderProps> {
     // (undocumented)
     render(): JSX.Element;
 }
@@ -2301,9 +2305,9 @@ export interface TreeNodeProps extends CommonProps {
     ["data-testid"]?: string;
     checkboxProps?: NodeCheckboxProps;
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
-    icon?: React.ReactChild;
+    icon?: React_2.ReactChild;
     // (undocumented)
     isExpanded?: boolean;
     // (undocumented)
@@ -2317,21 +2321,21 @@ export interface TreeNodeProps extends CommonProps {
     // (undocumented)
     isSelected?: boolean;
     // (undocumented)
-    label: React.ReactNode;
+    label: React_2.ReactNode;
     // (undocumented)
     level: number;
     // (undocumented)
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React_2.MouseEvent) => void;
     // (undocumented)
     onClickExpansionToggle?: () => void;
     // (undocumented)
-    onContextMenu?: (e: React.MouseEvent) => void;
+    onContextMenu?: (e: React_2.MouseEvent) => void;
     // (undocumented)
-    onMouseDown?: (e: React.MouseEvent) => void;
+    onMouseDown?: (e: React_2.MouseEvent) => void;
     // (undocumented)
-    onMouseMove?: (e: React.MouseEvent) => void;
+    onMouseMove?: (e: React_2.MouseEvent) => void;
     // (undocumented)
-    onMouseUp?: (e: React.MouseEvent) => void;
+    onMouseUp?: (e: React_2.MouseEvent) => void;
     renderOverrides?: {
         renderCheckbox?: NodeCheckboxRenderer;
     };
@@ -2340,17 +2344,17 @@ export interface TreeNodeProps extends CommonProps {
 // @public
 export interface TreeProps extends CommonProps {
     // (undocumented)
-    children?: React.ReactNode;
+    children?: React_2.ReactNode;
     // (undocumented)
-    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement>;
+    onKeyDown?: React_2.KeyboardEventHandler<HTMLDivElement>;
     // (undocumented)
-    onKeyUp?: React.KeyboardEventHandler<HTMLDivElement>;
+    onKeyUp?: React_2.KeyboardEventHandler<HTMLDivElement>;
     // (undocumented)
-    onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+    onMouseDown?: React_2.MouseEventHandler<HTMLDivElement>;
     // (undocumented)
-    onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
+    onMouseMove?: React_2.MouseEventHandler<HTMLDivElement>;
     // (undocumented)
-    onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
+    onMouseUp?: React_2.MouseEventHandler<HTMLDivElement>;
 }
 
 // @public
@@ -2435,12 +2439,15 @@ export function UnderlinedButton(props: UnderlinedButtonProps): JSX.Element;
 
 // @public
 export interface UnderlinedButtonProps {
-    children: string | React.ReactNode;
+    children: string | React_2.ReactNode;
     className?: string;
     onActivate?: () => void;
-    onClick?: (e: React.MouseEvent) => void;
+    onClick?: (e: React_2.MouseEvent) => void;
     title?: string;
 }
+
+// @beta
+export function useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void;
 
 // @public
 export function useDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable): TDisposable;
@@ -2451,12 +2458,15 @@ export function useEffectSkipFirst(callback: () => (void | (() => void | undefin
 // @internal
 export function useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void;
 
+// @beta
+export function useInterval(callback: (...args: any[]) => void, delay: number | undefined): void;
+
 // @internal
 export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
 
 // @public
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
-outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
+outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React_2.RefObject<T>;
 
 // @public
 export function useOptionalDisposable<TDisposable extends IDisposable>(createDisposable: () => TDisposable | undefined): TDisposable | undefined;
@@ -2468,10 +2478,10 @@ export const useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean,
 export function useRefEffect<T>(callback: (instance: T | null) => (void | (() => void)), deps: ReadonlyArray<any>): (instance: T | null) => void;
 
 // @internal
-export function useRefs<T>(...refs: ReadonlyArray<React.Ref<T>>): (instance: T | null) => void;
+export function useRefs<T>(...refs: ReadonlyArray<React_2.Ref<T>>): (instance: T | null) => void;
 
 // @internal
-export function useRefState<T>(): [React.Ref<T>, T | undefined];
+export function useRefState<T>(): [React_2.Ref<T>, T | undefined];
 
 // @internal
 export function useResizeObserver<T extends Element>(onResize?: (width: number, height: number) => void): (instance: Element | null) => void;
@@ -2483,7 +2493,7 @@ export function useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsM
 export function useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void;
 
 // @internal
-export const useTargeted: (ref: React.RefObject<Element>) => boolean;
+export const useTargeted: (ref: React_2.RefObject<Element>) => boolean;
 
 // @internal
 export function useWidgetOpacityContext(): WidgetOpacityContextProps;
@@ -2509,27 +2519,27 @@ export interface WebFontIconProps extends CommonProps {
     iconClassName?: string;
     iconName: string;
     iconSize?: "x-small" | "small" | "medium" | "large" | "x-large";
-    onClick?: React.MouseEventHandler<HTMLSpanElement>;
+    onClick?: React_2.MouseEventHandler<HTMLSpanElement>;
     title?: string;
 }
 
 // @internal (undocumented)
-export class WidgetElementSet extends Set<React.RefObject<Element>> {
+export class WidgetElementSet extends Set<React_2.RefObject<Element>> {
 }
 
 // @internal
-export const WidgetOpacityContext: React.Context<WidgetOpacityContextProps>;
+export const WidgetOpacityContext: React_2.Context<WidgetOpacityContextProps>;
 
 // @internal
 export interface WidgetOpacityContextProps {
     // (undocumented)
-    readonly onElementRef: (elementRef: React.RefObject<Element>) => void;
+    readonly onElementRef: (elementRef: React_2.RefObject<Element>) => void;
     // (undocumented)
     readonly proximityScale: number;
 }
 
 // @public
-export const withIsPressed: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
+export const withIsPressed: <ComponentProps extends {}>(Component: React_2.ComponentType<ComponentProps>) => {
     new (props: (ComponentProps & WithIsPressedProps) | Readonly<ComponentProps & WithIsPressedProps>): {
         handleOnPointerDown: () => void;
         handleOnPointerUp: () => void;
@@ -2540,16 +2550,16 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithIsPressedProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithIsPressedProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         componentDidMount?(): void;
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -2569,16 +2579,16 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithIsPressedProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithIsPressedProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         componentDidMount?(): void;
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithIsPressedProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -2588,7 +2598,7 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React.Context<any> | undefined;
+    contextType?: React_2.Context<any> | undefined;
 };
 
 // @public
@@ -2598,7 +2608,7 @@ export interface WithIsPressedProps {
 }
 
 // @public
-export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
+export const withOnOutsideClick: <ComponentProps extends {}>(Component: React_2.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
     new (props: (ComponentProps & WithOnOutsideClickProps) | Readonly<ComponentProps & WithOnOutsideClickProps>): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
@@ -2616,14 +2626,14 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithOnOutsideClickProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -2650,14 +2660,14 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithOnOutsideClickProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithOnOutsideClickProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>): any;
         componentDidUpdate?(prevProps: Readonly<ComponentProps & WithOnOutsideClickProps>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
@@ -2667,7 +2677,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React.Context<any> | undefined;
+    contextType?: React_2.Context<any> | undefined;
 };
 
 // @public
@@ -2677,7 +2687,7 @@ export interface WithOnOutsideClickProps {
 }
 
 // @public
-export const withTimeout: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
+export const withTimeout: <ComponentProps extends {}>(Component: React_2.ComponentType<ComponentProps>) => {
     new (props: (ComponentProps & WithTimeoutProps) | Readonly<ComponentProps & WithTimeoutProps>): {
         timer: Timer;
         componentDidMount(): void;
@@ -2689,14 +2699,14 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithTimeoutProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithTimeoutProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
@@ -2716,14 +2726,14 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<ComponentProps & WithTimeoutProps>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
         readonly props: Readonly<ComponentProps & WithTimeoutProps> & Readonly<{
-            children?: React.ReactNode;
+            children?: React_2.ReactNode;
         }>;
         state: Readonly<{}>;
         refs: {
-            [key: string]: React.ReactInstance;
+            [key: string]: React_2.ReactInstance;
         };
         shouldComponentUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): boolean;
-        componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+        componentDidCatch?(error: Error, errorInfo: React_2.ErrorInfo): void;
         getSnapshotBeforeUpdate?(prevProps: Readonly<ComponentProps & WithTimeoutProps>, prevState: Readonly<{}>): any;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
@@ -2732,7 +2742,7 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    contextType?: React.Context<any> | undefined;
+    contextType?: React_2.Context<any> | undefined;
 };
 
 // @public
@@ -2740,7 +2750,6 @@ export interface WithTimeoutProps {
     onTimeout?: () => void;
     timeout: number;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

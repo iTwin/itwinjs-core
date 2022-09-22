@@ -84,7 +84,7 @@ class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeMana
   };
 
   private _setWidgetOpacity = (opacity: number) => {
-    setImmediate(() =>
+    setTimeout(() =>
       document.documentElement.style.setProperty("--buic-widget-opacity", opacity.toString()));
   };
 

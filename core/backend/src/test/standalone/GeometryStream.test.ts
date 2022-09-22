@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { BentleyStatus, DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
   Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
@@ -12,16 +12,18 @@ import {
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AreaPattern, BackgroundFill, BRepEntity, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
+  AreaPattern, BackgroundFill, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
   ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  FillDisplay, FontProps, FontType, GeometricElement3dProps, GeometricElementProps, GeometryClass,
+  FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
   GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
   GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
   MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringProps, ThematicGradientMode,
   ThematicGradientSettings, ViewFlags,
 } from "@itwin/core-common";
-import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, Platform, SnapshotDb } from "../../core-backend";
-import { IModelTestUtils, Timer } from "../";
+import { GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb } from "../../core-backend";
+import { createBRepDataProps } from "../GeometryTestUtil";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { Timer } from "../TestUtils";
 
 function assertTrue(expr: boolean): asserts expr {
   assert.isTrue(expr);
@@ -110,22 +112,6 @@ function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angl
   polyBuilder.handleSphere(sphere);
 
   return polyBuilder.claimPolyface();
-}
-
-function createBRepDataProps(origin?: Point3d, angles?: YawPitchRollAngles): BRepEntity.DataProps {
-  // This brep has a face symbology attribute attached to one face, make it green.
-  const faceSymb: BRepEntity.FaceSymbologyProps[] = [
-    { color: ColorDef.blue.toJSON() }, // base symbology should match appearance...
-    { color: ColorDef.green.toJSON(), transparency: 0.5 },
-  ];
-
-  const brepProps: BRepEntity.DataProps = {
-    data: "encoding=base64;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",
-    faceSymbology: faceSymb,
-    transform: Transform.createOriginAndMatrix(origin, angles ? angles.toMatrix3d() : undefined).toJSON(),
-  };
-
-  return brepProps;
 }
 
 interface ExpectedElementGeometryEntry {
@@ -264,7 +250,7 @@ function validateGeometricElementProps(info: ElementGeometryInfo, expected: Geom
   assert.isFalse(bbox?.isNull);
 }
 
-function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): DbResult {
+function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): IModelStatus {
   const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
     if (undefined !== elementProps)
       validateGeometricElementProps(info, elementProps);
@@ -820,26 +806,18 @@ describe("GeometryStream", () => {
     assert.isTrue(usageInfo.usedIds!.includes(partId));
   });
 
-  it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
+  it("create GeometricElement3d from world coordinate text using a newly added font", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
+    const arialId = imodel.addNewFont("Arial");
 
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);
@@ -849,7 +827,7 @@ describe("GeometryStream", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1270,7 +1248,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const expected: ExpectedElementGeometryEntry[] = [{ opcode: ElementGeometryOpcode.SolidPrimitive, geometryCategory: "solid", geometrySubCategory: "sphere" }];
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, "0x1d", expected, false));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, "0x1d", expected, false));
   });
 
   it("create GeometricElement3d from local coordinate point and arc primitive flatbuffer data", async () => {
@@ -1328,7 +1306,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with local coordinate indexed polyface flatbuffer data", async () => {
@@ -1385,7 +1363,7 @@ describe("ElementGeometry", () => {
     timer = new Timer("elementGeometryRequest");
     const status = imodel.elementGeometryRequest({ onGeometry, elementId: newId });
     timer.end();
-    assert.isTrue(DbResult.BE_SQLITE_OK === status);
+    assert.isTrue(IModelStatus.Success === status);
   });
 
   it("create GeometricElement3d from local coordinate brep flatbuffer data", async () => {
@@ -1422,9 +1400,9 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedSkip, false, undefined, 2));
   });
 
   it("apply world coordinate transform directly to brep flatbuffer data", async () => {
@@ -1467,7 +1445,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expectedFacet, false, undefined, 1));
   });
 
   it("create GeometricElement3d from local coordinate text string flatbuffer data", async () => {
@@ -1477,19 +1455,10 @@ describe("ElementGeometry", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.fontMap.fonts.size); // file currently contains no fonts...
 
-    let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
-    try {
-      fontProps = imodel.embedFont(fontProps); // throws Error
-      assert.isTrue(fontProps.id !== 0);
-    } catch (error: any) {
-      if ("win32" === Platform.platformName)
-        assert.fail("Font embed failed");
-      return; // failure expected if not windows, skip remainder of test...
-    }
-
+    const arialId = imodel.addNewFont("Arial");
     assert.isTrue(0 !== imodel.fontMap.fonts.size);
     const foundFont = imodel.fontMap.getFont("Arial");
-    assert.isTrue(foundFont && foundFont.id === fontProps.id);
+    assert.isTrue(foundFont && foundFont.id === arialId);
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
@@ -1500,7 +1469,7 @@ describe("ElementGeometry", () => {
 
     const textProps: TextStringProps = {
       text: "ABC",
-      font: fontProps.id,
+      font: arialId,
       height: 2,
       bold: true,
       origin: testOrigin,
@@ -1517,7 +1486,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d from local coordinate image flatbuffer data", async () => {
@@ -1549,7 +1518,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with sub-graphic ranges flatbuffer data", async () => {
@@ -1592,7 +1561,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with part reference flatbuffer data", async () => {
@@ -1615,7 +1584,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(partId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, partId, expectedPart, false));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, partId, expectedPart, false));
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(90, 0, 0);
@@ -1649,7 +1618,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with appearance flatbuffer data", async () => {
@@ -1777,7 +1746,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("create GeometricElement3d with pattern flatbuffer data", async () => {
@@ -1891,7 +1860,7 @@ describe("ElementGeometry", () => {
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
-    assert(DbResult.BE_SQLITE_OK === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
+    assert(IModelStatus.Success === doElementGeometryValidate(imodel, newId, expected, false, elementProps));
   });
 
   it("should insert elements and parts with binary geometry stream", () => {
@@ -2050,7 +2019,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2061,7 +2030,7 @@ describe("BRepGeometry", () => {
     createProps.operation = BRepGeometryOperation.Intersect;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2071,7 +2040,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2083,7 +2052,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2122,7 +2091,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2132,7 +2101,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: -0.5 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2144,7 +2113,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = undefined;
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2182,7 +2151,7 @@ describe("BRepGeometry", () => {
     };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2214,21 +2183,21 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Subtract;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.operation = BRepGeometryOperation.Intersect;
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2250,7 +2219,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2275,7 +2244,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2298,7 +2267,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2307,7 +2276,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2316,7 +2285,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1 };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2325,7 +2294,7 @@ describe("BRepGeometry", () => {
     createProps.parameters = { distance: 1, bothDirections: true };
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2348,7 +2317,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2359,7 +2328,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -1.5), 2)));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2370,7 +2339,7 @@ describe("BRepGeometry", () => {
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -0.5), 2, AngleSweep.createStartSweepDegrees(0, -360))));
 
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2391,21 +2360,21 @@ describe("BRepGeometry", () => {
       parameters: { frontDistance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { backDistance: 0.25 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
 
     createProps.parameters = { frontDistance: 0.1, backDistance: 0.1 };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2426,7 +2395,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2447,7 +2416,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2468,7 +2437,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2489,7 +2458,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2513,7 +2482,7 @@ describe("BRepGeometry", () => {
       onResult,
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2534,7 +2503,7 @@ describe("BRepGeometry", () => {
       parameters: { radius: 1 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }
@@ -2581,7 +2550,7 @@ describe("BRepGeometry", () => {
       parameters: { distance: 0.25 },
     };
     try {
-      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+      assert(IModelStatus.Success === imodel.createBRepGeometry(createProps));
     } catch (error: any) {
       assert(false, error.message);
     }

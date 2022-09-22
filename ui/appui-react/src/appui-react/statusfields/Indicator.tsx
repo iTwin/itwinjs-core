@@ -10,7 +10,7 @@ import "./Indicator.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { ConditionalStringValue, StatusBarLabelSide } from "@itwin/appui-abstract";
-import { CommonProps, Icon } from "@itwin/core-react";
+import { CommonProps, Icon, IconSpec } from "@itwin/core-react";
 import { FooterPopup, FooterPopupContentType } from "@itwin/appui-layout-react";
 
 /** Properties of [[Indicator]] component. */
@@ -22,7 +22,7 @@ interface IndicatorProps extends CommonProps {
   /** Icon to use in the footer. @deprecated use iconSpec */
   iconName?: string;
   /** specification for Icon, overrides iconName specification */
-  iconSpec?: string | ConditionalStringValue;
+  iconSpec?: IconSpec;
   /** Describes if the indicator label is visible. */
   isLabelVisible?: boolean;
   /** Indicator label. */
@@ -33,7 +33,9 @@ interface IndicatorProps extends CommonProps {
   onClick?: () => void;
   /** If dialog prop is set, used to determine initial state. */
   opened?: boolean;
-  /** Describes whether the footer is in footer or widget mode. */
+  /** Describes whether the footer is in footer or widget mode.
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
   isInFooterMode?: boolean;
   /** Tooltip text if not specified label is used */
   toolTip?: string;
@@ -45,6 +47,7 @@ interface IndicatorProps extends CommonProps {
  * @beta
  */
 export function Indicator(props: IndicatorProps) {
+  // eslint-disable-next-line deprecation/deprecation
   const { className, contentType, dialog, iconName, iconSpec, isInFooterMode, isLabelVisible, label, labelSide, onClick, opened, style, toolTip } = props;
   const hasClickAction = React.useMemo(() => !!onClick || !!dialog, [dialog, onClick]);
   const [isOpen, setIsOpen] = React.useState(!!opened);

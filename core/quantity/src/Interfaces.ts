@@ -72,12 +72,21 @@ export interface PotentialParseUnit {
   altLabels?: string[];
 }
 
+/**
+ * This interface defines extra properties to be associated with Units from Units Schema by name
+ * @alpha
+ */
+export interface UnitExtraData {
+  readonly name: string;
+  readonly altDisplayLabels: string[];
+}
+
 /** This interface is implemented by the class that is responsible for locating units by name or label and providing conversion values between units.
  * The methods to be implemented are async allowing the UnitsProvider to query the backend when necessary to look up unit definition and conversion rules.
  * @beta
  */
 export interface UnitsProvider {
-  findUnit(unitLabel: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
+  findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
   getUnitsByFamily(phenomenon: string): Promise<UnitProps[]>;
   findUnitByName(unitName: string): Promise<UnitProps>;
   getConversion(fromUnit: UnitProps, toUnit: UnitProps): Promise<UnitConversion>;

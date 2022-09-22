@@ -7,17 +7,17 @@
  */
 
 import {
-  AuthStatus, BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
+  BentleyError, BentleyStatus, BriefcaseStatus, ChangeSetStatus, DbResult, GetMetaDataFunction, IModelStatus, RepositoryStatus,
   RpcInterfaceStatus,
 } from "@itwin/core-bentley";
 
-export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, AuthStatus, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@itwin/core-bentley";
+export { BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, GetMetaDataFunction, LogFunction, DbResult, RepositoryStatus, ChangeSetStatus, RpcInterfaceStatus } from "@itwin/core-bentley";
 
 /** The error type thrown by this module. See [[IModelStatus]] for `errorNumber` values.
  * @public
  */
 export class IModelError extends BentleyError {
-  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus | AuthStatus, message: string, getMetaData?: GetMetaDataFunction) {
+  public constructor(errorNumber: number | IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | RepositoryStatus | ChangeSetStatus | RpcInterfaceStatus, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
   }
 }

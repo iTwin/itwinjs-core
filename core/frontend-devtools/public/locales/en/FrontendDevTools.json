@@ -105,6 +105,9 @@
     "ChangeHiliteSettings": {
       "keyin": "fdt hilite settings"
     },
+    "ChangeHiliteMode": {
+      "keyin": "fdt hilite mode"
+    },
     "ChangeEmphasisSettings": {
       "keyin": "fdt emphasis settings"
     },
@@ -134,6 +137,9 @@
     },
     "SelectElementsById": {
       "keyin": "fdt select elements"
+    },
+    "DumpSelectionSet": {
+      "keyin": "fdt dump selection"
     },
     "AnimationInterval": {
       "keyin": "fdt animation interval"
@@ -200,6 +206,9 @@
     },
     "AttachTileURLMapLayerTool": {
       "keyin": "fdt attach tileurl maplayer"
+    },
+    "AttachModelMapLayerTool": {
+      "keyin": "fdt attach model maplayer"
     },
     "SetMapBaseTool": {
       "keyin": "fdt set map base url"
@@ -444,6 +453,12 @@
     },
     "QueryScheduleScript": {
       "keyin": "fdt query schedule script"
+    },
+    "ReverseScheduleScript": {
+      "keyin": "fdt reverse schedule script"
+    },
+    "SetScheduleScript": {
+      "keyin": "fdt set schedule script"
     },
     "ToggleTileTreeReferences": {
       "keyin": "fdt toggle treerefs"

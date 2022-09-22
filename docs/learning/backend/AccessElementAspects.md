@@ -1,6 +1,6 @@
 # Accessing ElementAspects
 
-An [ElementAspect]($backend) is an in-memory representation of a [BIS ElementAspect](../../bis/intro/elementaspect-fundamentals.md).
+An [ElementAspect]($backend) is an in-memory representation of a [BIS ElementAspect](../../bis/guide/fundamentals/elementaspect-fundamentals.md).
 
 There can be `[0..1]` instances of [ElementUniqueAspect]($backend) per ElementAspect class per Element instance.
 

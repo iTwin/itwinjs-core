@@ -6,20 +6,40 @@
  * @module MapLayers
  */
 
+import { BeEvent, Listener } from "@itwin/core-bentley";
+
 /** @beta */
-export enum MapLayerAuthType {
-  None = 1,
-  Basic = 2,
-  EsriToken = 3
-}
-/** @internal */
 export interface MapLayerTokenEndpoint {
-  getLoginUrl(stateData?: string): string|undefined;
+  getLoginUrl(stateData?: any): string|undefined;
   getUrl(): string;
 }
 
-/** @internal */
+/** @beta */
 export interface MapLayerAuthenticationInfo {
-  authMethod: MapLayerAuthType;
   tokenEndpoint?: MapLayerTokenEndpoint;
 }
+
+/** @beta */
+export interface MapLayerAccessToken {
+  // The generated token.
+  token: string;
+}
+
+/** @beta */
+export interface MapLayerAccessTokenParams {
+  mapLayerUrl: URL;
+
+  // credentials are used to generate non-oauth tokens (i.e ArcGIS legacy tokens)
+  userName?: string;
+  password?: string;
+}
+
+/** @beta */
+export interface MapLayerAccessClient {
+  getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined>;
+  getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
+  invalidateToken?(token: MapLayerAccessToken): boolean;
+
+  onOAuthProcessEnd?: BeEvent<Listener>;
+}
+

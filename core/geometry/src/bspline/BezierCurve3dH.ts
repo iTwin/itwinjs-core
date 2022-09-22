@@ -145,16 +145,8 @@ export class BezierCurve3dH extends BezierCurveBase {
     this._polygon.loadSpanPoles(data, spanIndex);
   }
   /** Clone the entire curve. */
-  public clone(): BezierCurve3dH {
+  public override clone(): BezierCurve3dH {
     return new BezierCurve3dH(this._polygon.clonePolygon());
-  }
-  /**
-   * Return a curve after transform.
-   */
-  public cloneTransformed(transform: Transform): BezierCurve3dH {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
   }
   /** Return a (deweighted) point on the curve. If deweight fails, returns 000 */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
@@ -228,7 +220,9 @@ export class BezierCurve3dH extends BezierCurveBase {
    * @param detail pre-allocated detail to record (evolving) closest point.
    * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
    */
-  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean {
+  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail,
+    testAt0: boolean = false,
+    testAt1: boolean = false): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
     if (this.isUnitWeight()) {
@@ -277,8 +271,17 @@ export class BezierCurve3dH extends BezierCurveBase {
         numUpdates += detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a) ? 1 : 0;
       }
     }
+    if (testAt0)
+      numUpdates += this.updateDetailAtFraction (detail, 0.0, spacePoint) ? 1 : 0;
+    if (testAt1)
+      numUpdates += this.updateDetailAtFraction (detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean{
+    const xyz = this.fractionToPoint(fraction);
+    const a = xyz.distance(spacePoint);
+    return detail.updateIfCloserCurveFractionPointDistance (this, fraction, xyz, a);
+      }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
    * * any internal extrema in x,y,z

@@ -9,9 +9,9 @@ import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
   BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
+  BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
+  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
+  MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
   SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
@@ -21,10 +21,10 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "./tile/internal";
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
+import { GeometricModelState } from "./ModelState";
 
 /** @internal */
 export class TerrainDisplayOverrides {
@@ -36,6 +36,7 @@ export class TerrainDisplayOverrides {
 /** Options controlling display of [OpenStreetMap Buildings](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/).
  * @see [[DisplayStyleState.setOSMBuildingDisplay]].
  * @public
+ * @extensions
  */
 export interface OsmBuildingDisplayOptions {
   /** If defined, enables or disables display of the buildings by attaching or detaching the OpenStreetMap Buildings reality model. */
@@ -46,18 +47,24 @@ export interface OsmBuildingDisplayOptions {
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]].
  * @public
+ * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
   public static override get className() { return "DisplayStyle"; }
-  private _scheduleState?: RenderScheduleState;
+  private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
   /** @internal */
   protected _queryRenderTimelinePropsPromise?: Promise<RenderTimelineProps | undefined>;
+  private _assigningScript = false;
 
-  /** Event raised just before the [[scheduleScriptReference]] property is changed. */
+  /** Event raised just before the [[scheduleScriptReference]] property is changed.
+   * @deprecated use [[onScheduleScriptChanged]].
+   */
   public readonly onScheduleScriptReferenceChanged = new BeEvent<(newScriptReference: RenderSchedule.ScriptReference | undefined) => void>();
+  /** Event raised just before the [[scheduleScript]] property is changed. */
+  public readonly onScheduleScriptChanged = new BeEvent<(newScript: RenderSchedule.Script | undefined) => void>();
   /** Event raised just after [[setOSMBuildingDisplay]] changes the enabled state of the OSM buildings. */
   public readonly onOSMBuildingDisplayChanged = new BeEvent<(osmBuildingDisplayEnabled: boolean) => void>();
 
@@ -77,7 +84,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const styles = this.jsonProperties.styles;
 
     if (source)
-      this._scheduleState = source._scheduleState;
+      this._scriptReference = source._scriptReference;
 
     if (styles) {
       // ###TODO Use DisplayStyleSettings.planarClipMasks
@@ -94,66 +101,69 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public async load(): Promise<void> {
     // If we were cloned, we may already have a valid schedule state, and our display style Id may be invalid / different.
     // Preserve it if still usable.
-    if (this._scheduleState) {
-      if (this.settings.renderTimeline === this._scheduleState.sourceId) {
+    if (this._scriptReference) {
+      if (this.settings.renderTimeline === this._scriptReference.sourceId) {
         // The script came from the same RenderTimeline element. Keep it.
         return;
       }
 
       if (undefined === this.settings.renderTimeline) {
-        // The script cam from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
-        if (this.id === this._scheduleState.sourceId || !Id64.isValidId64(this.id))
+        // The script came from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
+        if (this.id === this._scriptReference.sourceId || !Id64.isValidId64(this.id))
           return;
       }
     }
 
-    if (undefined !== this.settings.renderTimeline)
-      await this.loadScheduleStateFromTimeline(this.settings.renderTimeline);
+    // The schedule script stored in JSON properties takes precedence over the RenderTimeline if both are defined.
+    if (this.settings.scheduleScriptProps)
+      this.loadScriptReferenceFromScript(this.settings.scheduleScriptProps);
     else
-      this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
+      await this.loadScriptReferenceFromTimeline(this.settings.renderTimeline);
   }
 
-  private loadScheduleStateFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps> | undefined): void {
+  private loadScriptReferenceFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps>): void {
     let newState;
-    if (scriptProps) {
+    try {
+      const script = RenderSchedule.Script.fromJSON(scriptProps);
+      if (script)
+        newState = new RenderSchedule.ScriptReference(this.id, script);
+    } catch (_) {
+      // schedule state is undefined.
+    }
+
+    if (newState !== this._scriptReference) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(newState?.script);
+      this._scriptReference = newState;
+    }
+  }
+
+  private async loadScriptReferenceFromTimeline(timelineId: Id64String | undefined): Promise<void> {
+    let newState;
+    if (timelineId && Id64.isValidId64(timelineId)) {
       try {
-        const script = RenderSchedule.Script.fromJSON(scriptProps);
-        if (script)
-          newState = new RenderScheduleState(this.id, script);
+        // If a subsequent call to loadScriptReferenceFromTimeline is made while we're awaiting this one, we'll abort this one.
+        const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
+        const timeline = await promise;
+        if (promise !== this._queryRenderTimelinePropsPromise)
+          return;
+
+        if (timeline) {
+          const scriptProps = JSON.parse(timeline.script);
+          const script = RenderSchedule.Script.fromJSON(scriptProps);
+          if (script)
+            newState = new RenderSchedule.ScriptReference(timelineId, script);
+        }
       } catch (_) {
         // schedule state is undefined.
       }
     }
 
-    if (newState !== this._scheduleState) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
-      this._scheduleState = newState;
-    }
-  }
-
-  private async loadScheduleStateFromTimeline(timelineId: Id64String): Promise<void> {
-    let newState;
-    try {
-      // If a subsequent call to loadScheduleStateFromTimeline is made while we're awaiting this one, we'll abort this one.
-      const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
-      const timeline = await promise;
-      if (promise !== this._queryRenderTimelinePropsPromise)
-        return;
-
-      if (timeline) {
-        const scriptProps = JSON.parse(timeline.script);
-        const script = RenderSchedule.Script.fromJSON(scriptProps);
-        if (script)
-          newState = new RenderScheduleState(timelineId, script);
-      }
-    } catch (_) {
-      // schedule state is undefined.
-    }
-
     this._queryRenderTimelinePropsPromise = undefined;
-    if (newState !== this._scheduleState) {
-      this.onScheduleScriptReferenceChanged.raiseEvent(newState);
-      this._scheduleState = newState;
+    if (newState !== this._scriptReference) {
+      this.onScheduleScriptReferenceChanged.raiseEvent(newState); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(newState?.script);
+      this._scriptReference = newState;
     }
   }
 
@@ -174,10 +184,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
 
-  /** @internal */
-  public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
-
-  /** @beta */
+  /** Settings controlling how the base map is displayed within a view.
+   *  The base map can be provided by any map imagery source or set to be a single color.
+   */
   public get backgroundMapBase(): BaseLayerSettings {
     return this.settings.mapImagery.backgroundBase;
   }
@@ -185,6 +194,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.mapImagery.backgroundBase = base;
     this._synchBackgroundMapImagery();
   }
+
+  /** @internal */
+  public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
 
   /** @internal */
   public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
@@ -206,6 +218,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * ``` ts
    *  style.changeBackgroundMapProps({ groundBias: 16.2 });
    * ```
+   * @public
    */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     const newSettings = this.backgroundMapSettings.clone(props);
@@ -217,12 +230,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
-    const provider = BackgroundMapProvider.fromJSON(props);
     const base = this.settings.mapImagery.backgroundBase;
-    if (base instanceof ColorDef)
-      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(provider);
-    else
+    if (base instanceof ColorDef) {
+      this.settings.mapImagery.backgroundBase = BaseMapLayerSettings.fromProvider(BackgroundMapProvider.fromJSON(props));
+    } else {
+      const provider = base.provider ? base.provider.clone(props) : BackgroundMapProvider.fromJSON(props);
       this.settings.mapImagery.backgroundBase = base.cloneWithProvider(provider);
+    }
 
     this._synchBackgroundMapImagery();
   }
@@ -262,7 +276,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public get name(): string { return this.code.value; }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
-   * animating the contents of the view, and update [[scheduleScriptReference]] using the script associated with the [RenderTimeline]($backend) element.
+   * animating the contents of the view, and update [[scheduleScript]] using the script associated with the [RenderTimeline]($backend) element.
    * @see [DisplayStyleSettings.renderTimeline]($common).
    */
   public async changeRenderTimeline(timelineId: Id64String | undefined): Promise<void> {
@@ -270,7 +284,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.renderTimeline = timelineId;
 
     // Await async loading if necessary.
-    // Note the `await` in loadScheduleStateFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
+    // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
     if (this._queryRenderTimelinePropsPromise)
       await this._queryRenderTimelinePropsPromise;
   }
@@ -279,35 +293,35 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[changeRenderTimeline]] to change the script.
    */
   public get scheduleScript(): RenderSchedule.Script | undefined {
-    return this._scheduleState?.script;
+    return this._scriptReference?.script;
+  }
+
+  public set scheduleScript(script: RenderSchedule.Script | undefined) {
+    if (script === this.scheduleScript)
+      return;
+
+    try {
+      const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
+      this.onScheduleScriptReferenceChanged.raiseEvent(scriptRef); // eslint-disable-line deprecation/deprecation
+      this.onScheduleScriptChanged.raiseEvent(script);
+      this._scriptReference = scriptRef;
+
+      this._assigningScript = true;
+      this.settings.scheduleScriptProps = script?.toJSON();
+
+      if (!script)
+        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+    } finally {
+      this._assigningScript = false;
+    }
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any, along with the Id of the element that hosts the script.
    * @note The host element may be a [RenderTimeline]($backend) or a [DisplayStyle]($backend).
-   * @see [[changeRenderTimeline]] to change the script.
+   * @deprecated Use [[scheduleScript]].
    */
   public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
-    return this._scheduleState;
-  }
-
-  /** @internal */
-  public get scheduleState(): RenderScheduleState | undefined {
-    return this._scheduleState;
-  }
-
-  /** This is only used by [RealityTransitionTool]($frontend-devtools). It basically can only work if the script contains nothing that requires special tiles to be generated -
-   * no symbology changes, transforms, or clipping - because the backend tile generator requires a *persistent* element to host the script for those features to work.
-   * @internal
-   */
-  public setScheduleState(state: RenderScheduleState | undefined): void {
-    if (state === this._scheduleState)
-      return;
-
-    this.onScheduleScriptReferenceChanged.raiseEvent(state);
-    this._scheduleState = state;
-
-    // eslint-disable-next-line deprecation/deprecation
-    this.settings.scheduleScriptProps = state?.script.toJSON();
+    return this._scriptReference;
   }
 
   /** Attach a [ContextRealityModel]($common) to this display style.
@@ -387,12 +401,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
 
-  /** @internal */
-  public attachMapLayerSettings(settings: MapLayerSettings, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = settings.clone({});
+  /**
+   * Attach a map layer to display style.
+   * @param Settings representing the map layer.
+   * @param isOverlay true if layer is overlay, otherwise layer is background. Defaults to false.
+   * @param index where the layer should be inserted. Defaults to -1, appended to end.
+   * @public
+   *
+   */
+  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number}): void {
+    const layerSettings = options.settings.clone({});
     if (undefined === layerSettings)
       return;
 
+    const isOverlay = options.isOverlay ?? false;
+    const insertIndex = options.insertIndex ?? -1;
     const layers = this.getMapLayers(isOverlay);
 
     if (insertIndex < 0 || insertIndex > (layers.length - 1)) {
@@ -405,28 +428,28 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public attachMapLayer(props: MapLayerProps, isOverlay: boolean, insertIndex = -1): void {
-    const layerSettings = MapLayerSettings.fromJSON(props);
-    if (undefined === layerSettings)
+  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number}): void {
+    const settings = MapLayerSettings.fromJSON(options.props);
+    if (undefined === settings)
       return;
 
-    this.attachMapLayerSettings(layerSettings, isOverlay, insertIndex);
+    this.attachMapLayer({settings, isOverlay: options.isOverlay, insertIndex:options.insertIndex});
   }
 
   /** @internal */
-  public hasAttachedMapLayer(name: string, url: string, isOverlay: boolean): boolean {
-    return -1 !== this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public hasAttachedMapLayer(name: string, source: string, isOverlay: boolean): boolean {
+    return -1 !== this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
   }
 
   /** @internal */
-  public detachMapLayerByNameAndUrl(name: string, url: string, isOverlay: boolean): void {
-    const index = this.findMapLayerIndexByNameAndUrl(name, url, isOverlay);
+  public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
+    const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
     if (- 1 !== index)
       this.detachMapLayerByIndex(index, isOverlay);
   }
 
   /** Detach map layer at index (-1 to remove all layers)
-   * @internal
+   * @public
    */
   public detachMapLayerByIndex(index: number, isOverlay: boolean): void {
     const layers = this.getMapLayers(isOverlay);
@@ -438,25 +461,34 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
-  public findMapLayerIndexByNameAndUrl(name: string, url: string, isOverlay: boolean) {
-    return this.getMapLayers(isOverlay).findIndex((x) => x.matchesNameAndUrl(name, url));
+  /**
+   * Lookup a maplayer index by name and source.
+   * @param name Name of of the layer.
+   * @param source Unique string identifying the layer.
+   * @param isOverlay true if layer is overlay, otherwise layer is background. Defaults to false.
+   * @public
+   *
+   */
+  public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
+    return this.getMapLayers(isOverlay).findIndex((layer) => layer.matchesNameAndSource(name, source));
   }
 
-  /** @internal */
+  /** @public */
   public mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined {
     const layers = this.getMapLayers(isOverlay);
     return (index < 0 || index >= layers.length) ? undefined : layers[index];
   }
 
   /** Return map base transparency as a number between 0 and 1.
-   * @internal
+   * @public
    */
   public get baseMapTransparency(): number {
     return this.settings.mapImagery.baseTransparency;
   }
 
-  /** @internal  */
+  /** Change the map base transparency as a number between 0 and 1.
+   * @public
+   */
   public changeBaseMapTransparency(transparency: number) {
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
@@ -466,7 +498,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
-  /** @internal */
+  /** Modify a subset of a map layer settings.
+   * @param props props JSON representation of the properties to change. Any properties not present will retain their current values.
+   * @param index where the layer should be inserted.
+   * @param isOverlay true if layer is overlay, otherwise layer is background.
+   *
+   * Example that changes only the visibility of the first overlay map layer.
+   * ``` ts
+   *  style.changeMapLayerProps({ visible: false }, 0, false);
+   * ```
+   * @public
+   */
   public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
@@ -475,18 +517,35 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._synchBackgroundMapImagery();
   }
 
+  /** @public */
   public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
     const layers = this.getMapLayers(isOverlay);
     if (index < 0 || index >= layers.length)
       return;
-    layers[index].setCredentials(userName, password);
-    this._synchBackgroundMapImagery();
+    const layer = layers[index];
+    if (layer instanceof ImageMapLayerSettings) {
+      layer.setCredentials(userName, password);
+      this._synchBackgroundMapImagery();
+    }
   }
 
+  /** Modify a subset of a sub-layer settings.
+   * @param props props JSON representation of the properties to change. Any properties not present will retain their current values.
+   * @param subLayerId Id of the sub-layer that should be modified.
+   * @param layerIndex of the owning map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   *
+   * @public
+   */
   public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return;
+
+    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
+      assert (false);
+      return;
+    }
 
     const subLayers = new Array<MapSubLayerProps>();
     for (const subLayer of mapLayerSettings.subLayers) {
@@ -496,11 +555,34 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.changeMapLayerProps({ subLayers }, layerIndex, isOverlay);
   }
 
-  /** @internal */
+  /** Returns the cartographic range of map layer.
+   * @param layerIndex of the map layer.
+   * @param isOverlay true if the map layer is overlay, otherwise layer is background
+   *
+   * @internal
+   */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
     if (undefined === mapLayerSettings)
       return undefined;
+
+    if (mapLayerSettings instanceof ModelMapLayerSettings) {
+      const ecefTransform = this.iModel.ecefLocation?.getTransform();
+      if (!ecefTransform)
+        return undefined;
+      const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
+      if (!model || !(model instanceof GeometricModelState))
+        return undefined;
+
+      const modelRange = await model.queryModelRange();
+      const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
+
+      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+    }
+    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
+      assert(false);
+      return undefined;
+    }
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
     if (undefined === imageryProvider)
@@ -541,7 +623,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Move map layer to top.
    * @param index index of layer to move.
    * @param isOverlay true if layer is overlay.
-   * @internal
+   * @public
    *
    */
   public moveMapLayerToTop(index: number, isOverlay: boolean) {
@@ -557,7 +639,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Move map layer to bottom.
    * @param index index of layer to move.
    * @param isOverlay true if layer is overlay.
-   * @internal
+   * @public
    */
   public moveMapLayerToBottom(index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
@@ -572,7 +654,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * Reorder map layers
    * @param fromIndex index of map layer to move
    * @param toIndex insert index. If equal to length of map array the map layer is moved to end of array.
-   * @internal
+   * @public
    */
   public moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
@@ -721,20 +803,27 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   protected registerSettingsEventListeners(): void {
-    // eslint-disable-next-line deprecation/deprecation
     this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
-      if (undefined === this.settings.renderTimeline)
-        this.loadScheduleStateFromScript(scriptProps);
+      if (this._assigningScript)
+        return;
+
+      try {
+        this._assigningScript = true;
+        if (scriptProps)
+          this.loadScriptReferenceFromScript(scriptProps);
+        else
+          this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+      } finally {
+        this._assigningScript = false;
+      }
     });
 
     this.settings.onRenderTimelineChanged.addListener((newTimeline) => {
       // Cancel any in-progress loading of script from timeline.
       this._queryRenderTimelinePropsPromise = undefined;
 
-      if (undefined !== newTimeline)
-        this.loadScheduleStateFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
-      else
-        this.loadScheduleStateFromScript(this.settings.scheduleScriptProps); // eslint-disable-line deprecation/deprecation
+      if (!this.settings.scheduleScriptProps)
+        this.loadScriptReferenceFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {
@@ -759,6 +848,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
 /** A display style that can be applied to 2d views.
  * @public
+ * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
@@ -779,6 +869,7 @@ export class DisplayStyle2dState extends DisplayStyleState {
 
 /** A [[DisplayStyleState]] that can be applied to spatial views.
  * @public
+ * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */

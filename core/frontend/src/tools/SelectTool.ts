@@ -28,6 +28,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** The method for choosing elements with the [[SelectionTool]]
  * @public
+ * @extensions
  */
 export enum SelectionMethod {
   /** Identify element(s) by picking for drag selection (inside/overlap for drag box selection determined by point direction and shift key) */
@@ -40,6 +41,7 @@ export enum SelectionMethod {
 
 /** The mode for choosing elements with the [[SelectionTool]]
  * @public
+ * @extensions
  */
 export enum SelectionMode {
   /** Identified elements replace the current selection set (use control key to add or remove) */
@@ -52,6 +54,7 @@ export enum SelectionMode {
 
 /** The processing method to use to update the current selection.
  * @public
+ * @extensions
  */
 export enum SelectionProcessing {
   /** Add element to selection. */

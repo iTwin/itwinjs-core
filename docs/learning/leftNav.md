@@ -5,18 +5,18 @@
 - [Common](./common/index.md)
 - [iTwin service clients](./clients/index.md)
 - [Geometry](./geometry/index.md)
-- [Presentation]($docs/presentation/index.md)
+- [Presentation](../presentation/index.md)
 - [UI](./ui/index.md)
 
 ---
 
 &nbsp;
 
-### [BIS](../bis/index.md)
+### [Base Infrastructure Schemas (BIS)](../bis/index.md)
 
-- [Overview](../bis/index.md)
-- [Schema reference](../bis/domains/index.md)
-- [EC](../bis/ec/index.md)
+- [Guide](../bis/guide/intro/overview.md)
+- [Domain Schemas](../bis/domains/index.md)
+- [Engineering Content (EC)](../bis/ec/index.md)
 
 ---
 

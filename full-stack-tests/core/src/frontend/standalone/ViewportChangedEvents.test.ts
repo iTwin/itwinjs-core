@@ -240,9 +240,9 @@ describe("Viewport changed events", async () => {
       expectNoChange(() => settings.timePoint = 43);
 
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.scheduleScriptProps = undefined);
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = undefined);
       // If assignment to scheduleScriptProps produces no net change, no event.
       // eslint-disable-next-line deprecation/deprecation
       expectNoChange(() => settings.scheduleScriptProps = undefined);
@@ -277,7 +277,7 @@ describe("Viewport changed events", async () => {
 
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.applyOverrides({ viewflags: { backgroundMap: !settings.viewFlags.backgroundMap } }));
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => settings.applyOverrides({ backgroundColor: 0xabcdef }));
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
+      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
     });
   });
 
@@ -647,7 +647,7 @@ describe("Viewport changed events", async () => {
 
       expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.createEmpty());
       expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: (_id, _tf) => Transform.createIdentity() });
+      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = { getModelDisplayTransform: () => Transform.createIdentity() });
     });
   });
 

@@ -8,11 +8,13 @@ import * as React from "react";
 import { BeDuration, Logger } from "@itwin/core-bentley";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
+import moreWebSvg from "@bentley/icons-generic/icons/more-circular.svg";
+import moreVerticalWebSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
 } from "@itwin/core-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, getTraitString, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@itwin/appui-abstract";
 import {
   adjustDateToTimezone, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
@@ -38,13 +40,12 @@ import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExam
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { ButtonWithContextMenu, ContextMenuInPopup, GlobalContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { ButtonWithContextMenu, ButtonWithDropdownMenu, ContextMenuInPopup, DropdownMenuInPopup, GlobalContextMenuInPopup, GlobalItwinContextMenuInPopup, PopupContextMenuInPopup, SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { ExpandableBlock } from "@itwin/itwinui-react";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
 import { CurrentDateMarkedCustomIconSampleTimeline, CurrentDateMarkedSampleTimeline, ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
-
 function DualColorPickers() {
   const [colorDef, setColorDef] = React.useState(ColorDef.green);
   const onPopupClose = (color: ColorDef) => {
@@ -83,7 +84,7 @@ function MySettingsPage() {
 }
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
-  const traitStr = Format.getTraitString(trait);
+  const traitStr = getTraitString(trait);
   if (undefined === traitStr)
     return;
   let formatTraits: string[] | undefined;
@@ -391,7 +392,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export function ColorPickerToggle() {
+export function ColorPickerToggle({ hideRgb }: { hideRgb?: boolean }) {
   const [colorDialogTitle] = React.useState("Select Color");
   const [selectedColor, setSelectedColor] = React.useState(ColorDef.red);
   const handleBackgroundColorDialogOk = React.useCallback((newColorDef: ColorDef) => {
@@ -427,8 +428,8 @@ export function ColorPickerToggle() {
     e.preventDefault();
     ModalDialogManager.openDialog(<ColorPickerDialog dialogTitle={colorDialogTitle} color={newColor} colorPresets={presetColors.current}
       onOkResult={handleBackgroundColorDialogOk} onCancelResult={handleBackgroundColorDialogCancel}
-      colorInputType="rgb" />);
-  }, [presetColors, handleBackgroundColorDialogOk, colorDialogTitle, handleBackgroundColorDialogCancel]);
+      colorInputType={!!hideRgb ? undefined : "rgb"} />);
+  }, [colorDialogTitle, handleBackgroundColorDialogOk, handleBackgroundColorDialogCancel, hideRgb]);
 
   return (
     <ColorSwatch className="map-manager-base-item-color" colorDef={selectedColor} round={false} onColorPick={handleBgColorClick} />
@@ -564,6 +565,7 @@ export class ComponentExamplesProvider {
         createComponentExample("Color Picker Button", "Round with Caret",
           <ColorPickerButton initialColor={colorDef} onColorPick={handleColorPick} round showCaret />),
         createComponentExample("Color Picker Dialog", undefined, <ColorPickerToggle />),
+        createComponentExample("Color Picker Dialog no rgb", undefined, <ColorPickerToggle hideRgb />),
         createComponentExample("Color Picker Popup", undefined, <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} />),
         createComponentExample("Color Picker Popup", "with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} showCaret />),
         createComponentExample("Color Picker Popup", "disabled with Caret", <ColorPickerPopup initialColor={colorDef} onClose={onPopupClose} disabled showCaret />),
@@ -642,10 +644,13 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Abstract ContextMenu", undefined, <UnderlinedButton onActivate={() => SampleContextMenu.showContextMenu()}> Open ContextMenu</UnderlinedButton>),
         createComponentExample("ContextMenu", undefined, <ButtonWithContextMenu />),
+        createComponentExample("iTwinUI DropdownMenu", "similar to ContextMenu", <ButtonWithDropdownMenu />),
         createComponentExample("ContextMenu in Popup", undefined, <ContextMenuInPopup />),
+        createComponentExample("iTwinUi DropdownMenu in Popup", "similar to ContextMenu in Popup", <DropdownMenuInPopup />),
         createComponentExample("Popup ContextMenu", undefined, <SamplePopupContextMenu />),
         createComponentExample("PopupContextMenu in Popup", undefined, <PopupContextMenuInPopup />),
         createComponentExample("Global ContextMenu", undefined, <GlobalContextMenuInPopup />),
+        createComponentExample("iTwinUI Menu at cursor", "similar to GlobalContextMenu", <GlobalItwinContextMenuInPopup />),
       ],
     };
   }
@@ -812,7 +817,8 @@ export class ComponentExamplesProvider {
         createComponentExample("Labeled Textarea", "Labeled Textarea component", <LabeledTextarea label="Labeled Textarea" placeholder="Labeled Textarea" className="uicore-full-width" />),
 
         createComponentExample("Image Checkbox", "ImageCheckbox with WebFonts", <SampleImageCheckBox imageOn="icon-more-circular" imageOff="icon-more-vertical-circular" />),
-        createComponentExample("Image Checkbox", "ImageCheckbox with SVG fonts", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG (deprecate sprite)", <SampleImageCheckBox imageOn={IconSpecUtilities.createSvgIconSpec(moreSvg)} imageOff={IconSpecUtilities.createSvgIconSpec(moreVerticalSvg)} />),
+        createComponentExample("Image Checkbox", "ImageCheckbox with SVG using web component", <SampleImageCheckBox imageOn={IconSpecUtilities.createWebComponentIconSpec(moreWebSvg)} imageOff={IconSpecUtilities.createWebComponentIconSpec(moreVerticalWebSvg)} />),
 
         createComponentExample("Input Described By", "Input with aria-describedby",
           <div>
@@ -889,6 +895,7 @@ export class ComponentExamplesProvider {
   };
 
   private static get messageSamples(): ComponentExampleCategory {
+    MessageManager.registerAnimateOutToElement(null);
     return {
       title: "Messages",
       examples: [
@@ -898,7 +905,7 @@ export class ComponentExamplesProvider {
           }>Toast message</UnderlinedButton>),
         createComponentExample("Toast with link", undefined,
           <UnderlinedButton onActivate={
-            () => MessageManager.outputMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage)
+            () => MessageManager.displayMessage(new ReactNotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._reactMessage), undefined, {placement: "top"}
             )}>Toast with link</UnderlinedButton>),
         createComponentExample("Sticky", undefined,
           <UnderlinedButton onActivate={
@@ -1244,12 +1251,16 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),
@@ -1286,7 +1297,7 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Basic Listbox", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName}>
@@ -1296,7 +1307,7 @@ export class ComponentExamplesProvider {
           </Listbox>),
         createComponentExample("Listbox with disabled entries", undefined,
           <Listbox id="map-sources" className="map-manager-source-list" selectedValue={listItems[1]}
-            onKeyPress={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
+            onKeyDown={(event: React.KeyboardEvent<HTMLUListElement>) => console.log(`item: ${event.currentTarget?.dataset?.value}`)} >
             {
               listItems?.map((cityName, index) =>
                 <ListboxItem key={cityName} className="map-source-list-entry" value={cityName} disabled={0 === index % 2}>

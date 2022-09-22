@@ -11,6 +11,7 @@ import { BackgroundMapProps } from "./BackgroundMapSettings";
 /** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
  * @see [[TerrainProps]]
  * @public
+ * @extensions
  */
 export type TerrainProviderName = "CesiumWorldTerrain";
 
@@ -18,6 +19,7 @@ export type TerrainProviderName = "CesiumWorldTerrain";
  * @see [[DisplayStyleSettingsProps]]
  * @see [[BackgroundMapProps]]
  * @public
+ * @extensions
  */
 export interface TerrainProps {
   /** Identifies the provider currently only CesiumWorldTerrain is supported. */
@@ -39,6 +41,7 @@ export interface TerrainProps {
 /** Correction modes for terrain height
  * @see [[TerrainProps]]
  * @public
+ * @extensions
  */
 export enum TerrainHeightOriginMode {
   /** Height value indicates the geodetic height of the IModel origin (also referred to as ellipsoidal or GPS height) */

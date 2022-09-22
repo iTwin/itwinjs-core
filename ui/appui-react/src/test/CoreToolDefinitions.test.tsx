@@ -17,7 +17,7 @@ describe("CoreToolDefinitions", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
     await FrontstageManager.setActiveFrontstageDef(undefined);
 
     // Set in the before() after UiFramework.i18n is initialized

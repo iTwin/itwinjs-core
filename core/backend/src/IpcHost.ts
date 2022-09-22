@@ -14,7 +14,7 @@ import {
 } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
-import { IModelHost, IModelHostConfiguration } from "./IModelHost";
+import { IModelHost, IModelHostOptions } from "./IModelHost";
 import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
@@ -22,7 +22,7 @@ import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
   * @public
   */
 export interface IpcHostOpts {
-  iModelHost?: IModelHostConfiguration;
+  iModelHost?: IModelHostOptions;
   ipcHost?: {
     /** The Ipc socket to use for communications with frontend. Allows undefined only for headless tests. */
     socket?: IpcSocketBackend;
@@ -158,12 +158,12 @@ export abstract class IpcHandler {
           throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
 
         return { result: await func.call(impl, ...args) };
-      } catch (err) {
+      } catch (err: any) {
         const ret: IpcInvokeReturn = {
           error: {
-            name: (err && typeof (err) === "object") ? err.constructor.name : "Unknown Error",
+            name: (err && typeof err === "object") ? err.constructor.name : "Unknown Error",
             message: BentleyError.getErrorMessage(err),
-            errorNumber: (err as any).errorNumber ?? 0,
+            errorNumber: err.errorNumber ?? 0,
           },
         };
         if (!IpcHost.noStack)

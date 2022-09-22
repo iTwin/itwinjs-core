@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { ColorDef, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
 import { RenderGeometry } from "../../../render/RenderSystem";
 import { RenderGraphic } from "../../../render/RenderGraphic";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { MeshArgs, MeshArgsEdges } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
 import { Texture } from "../../../render/webgl/Texture";
 import { createBlankConnection } from "../../createBlankConnection";
@@ -23,27 +23,40 @@ function expectMemory(consumer: RenderMemory.Consumers, total: number, max: numb
 }
 
 function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
-  const args = new MeshArgs();
-  args.colors.initUniform(ColorDef.from(255, 0, 0, 0));
+  const colors = new ColorIndex();
+  colors.initUniform(ColorDef.from(255, 0, 0));
 
+  let textureMapping;
   if (opts?.texture) {
-    args.texture = opts.texture;
-    args.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+    textureMapping = {
+      texture: opts.texture,
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ],
+    };
   }
 
   const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
-  args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+  const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
-    args.points.add(point);
+    qpoints.add(point);
 
-  args.vertIndices = [0, 1, 2, 2, 1, 3];
-  args.isPlanar = true;
-
+  let edges;
   if (opts?.includeEdges) {
-    args.edges.edges.edges = [];
+    edges = new MeshArgsEdges();
+    edges.edges.edges = [];
     for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
-      args.edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
+      edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
   }
+
+  const args: MeshArgs = {
+    points: qpoints,
+    vertIndices: [0, 1, 2, 2, 1, 3],
+    isPlanar: true,
+    fillFlags: FillFlags.None,
+    edges,
+    features: new FeatureIndex(),
+    colors,
+    textureMapping,
+  };
 
   const params = MeshParams.create(args);
   const geom = IModelApp.renderSystem.createMeshGeometry(params);

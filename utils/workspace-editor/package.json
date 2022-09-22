@@ -1,9 +1,8 @@
 {
   "name": "@itwin/workspace-editor",
-  "private": false,
   "license": "MIT",
   "main": "lib/WorkspaceEditor.js",
-  "version": "3.1.0-dev.11",
+  "version": "3.4.0-dev.50",
   "bin": {
     "WorkspaceEditor": "./lib/WorkspaceEditor.js"
   },
@@ -13,10 +12,12 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "",
     "docs": "",
-    "lint": "eslint --max-warnings 0 \"./src/**/*.ts\" 1>&2",
-    "start": "node ./lib/Main.js",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
+  "files": [
+    "/lib/*.js"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/iTwin/itwinjs-core/tree/master/utils/workspace-editor"
@@ -26,17 +27,17 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "glob": "^7.1.2",
-    "yargs": "^16.0.0"
+    "yargs": "^17.4.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/mocha": "^8.2.2",
-    "@types/yargs": "^12.0.5",
+    "@types/yargs": "^17.0.10",
     "@types/glob": "^5.0.35",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
   },

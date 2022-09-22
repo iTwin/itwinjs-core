@@ -7,11 +7,11 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
-import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
-  ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
+  ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
 } from "@itwin/core-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -25,7 +25,7 @@ import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
-import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
+import { RealityMeshGraphicParams, RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { PointStringParams } from "./primitives/PointStringParams";
@@ -33,11 +33,12 @@ import { PolylineParams } from "./primitives/PolylineParams";
 import { MeshParams } from "./primitives/VertexTable";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "./RenderGraphic";
-import { RenderMemory } from "./RenderMemory";
-import { RenderTarget } from "./RenderTarget";
-import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
-import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
 import { CreateRenderMaterialArgs } from "./RenderMaterial";
+import { RenderMemory } from "./RenderMemory";
+import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
+import { RenderTarget } from "./RenderTarget";
+import { CreateTextureArgs, CreateTextureFromSourceArgs, TextureCacheKey } from "./RenderTexture";
+import { ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams } from "./ScreenSpaceEffectBuilder";
 
 /* eslint-disable no-restricted-syntax */
 // cSpell:ignore deserializing subcat uninstanced wiremesh qorigin trimesh
@@ -55,6 +56,9 @@ export abstract class RenderTextureDrape implements IDisposable {
 
 /** @internal */
 export type TextureDrapeMap = Map<Id64String, RenderTextureDrape>;
+
+/** @internal */
+export type MapLayerClassifiers = Map<number, RenderPlanarClassifier>;
 
 /** Describes a texture loaded from an HTMLImageElement
  * ###TODO Replace with TextureImage from RenderTexture.ts after we start returning transparency info from the backend.
@@ -155,8 +159,11 @@ export class TerrainTexture {
     public transparency: number,
     public readonly clipRectangle?: Range2d
   ) { }
-}
 
+  public cloneWithClip(clipRectangle: Range2d) {
+    return new TerrainTexture (this.texture, this.featureId, this.scale, this.translate, this.targetRectangle, this.layerIndex, this.transparency, clipRectangle);
+  }
+}
 /** @internal */
 export class DebugShaderFile {
   public constructor(
@@ -237,6 +244,7 @@ export type RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams
  * @see [Display system overview]($docs/learning/display/index.md)
  * @see [[IModelApp.renderSystem]].
  * @public
+ * @extensions
  */
 export abstract class RenderSystem implements IDisposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
@@ -273,6 +281,9 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public get supportsInstancing(): boolean { return true; }
+
+  /** @internal */
+  public get supportsCreateImageBitmap(): boolean { return false; }
 
   /** @internal */
   public get supportsIndexedEdges(): boolean { return true; }
@@ -411,11 +422,11 @@ export abstract class RenderSystem implements IDisposable {
   }
 
   /** @internal */
-  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderTerrainGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform, _disableTextureDisposal = false): RenderTerrainGeometry | undefined { return undefined; }
   /** @internal */
-  public createRealityMeshGraphic(_terrainGeometry: RenderTerrainGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_params: RealityMeshGraphicParams, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
+  public createRealityMesh(_realityMesh: RealityMeshPrimitive, _disableTextureDisposal = false): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public get maxRealityImageryLayers() { return 0; }
   /** @internal */
@@ -434,38 +445,39 @@ export abstract class RenderSystem implements IDisposable {
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
   public createTile(tileTexture: RenderTexture, corners: Point3d[], featureIndex?: number): RenderGraphic | undefined {
-    const rasterTile = new MeshArgs();
-
     // corners
     // [0] [1]
     // [2] [3]
     // Quantize the points according to their range
-    rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
-    for (let i = 0; i < 4; ++i)
-      rasterTile.points.add(corners[i]);
+    const points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
+    for (let i = 0; i < 4; i++)
+      points.add(corners[i]);
 
     // Now remove the translation from the quantized points and put it into a transform instead.
     // This prevents graphical artifacts when quantization origin is large relative to quantization scale.
     // ###TODO: Would be better not to create a branch for every tile.
-    const qorigin = rasterTile.points.params.origin;
+    const qorigin = points.params.origin;
     const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
     qorigin.setZero();
 
-    rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
-    rasterTile.textureUv = [
-      new Point2d(0.0, 0.0),
-      new Point2d(1.0, 0.0),
-      new Point2d(0.0, 1.0),
-      new Point2d(1.0, 1.0),
-    ];
-
-    rasterTile.texture = tileTexture;
-    rasterTile.isPlanar = true;
-
+    const features = new FeatureIndex();
     if (undefined !== featureIndex) {
-      rasterTile.features.featureID = featureIndex;
-      rasterTile.features.type = FeatureIndexType.Uniform;
+      features.featureID = featureIndex;
+      features.type = FeatureIndexType.Uniform;
     }
+
+    const rasterTile: MeshArgs = {
+      points,
+      vertIndices: [0, 1, 2, 2, 1, 3],
+      isPlanar: true,
+      features,
+      colors: new ColorIndex(),
+      fillFlags: FillFlags.None,
+      textureMapping: {
+        uvParams: [new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(1, 1)],
+        texture: tileTexture,
+      },
+    };
 
     const trimesh = this.createTriMesh(rasterTile);
     if (undefined === trimesh)
@@ -509,6 +521,8 @@ export abstract class RenderSystem implements IDisposable {
 
   /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
   public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
+  /** @internal */
+  public get hasExternalTextureRequests(): boolean { return false; }
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
@@ -844,6 +858,12 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      * @internal
      */
     contextAttributes?: WebGLContextAttributes;
+
+    /** If true, will cause exception when a shader uniform is missing (usually optimized out), otherwise will only log these.
+     * Default value: false
+     * @public
+     */
+    errorOnMissingUniform?: boolean;
 
     /** If true, and the `WEBGL_debug_shaders` extension is available, accumulate debug information during shader compilation.
      * This information can be accessed via `RenderSystemDebugControl.debugShaderFiles`.

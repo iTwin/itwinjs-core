@@ -359,6 +359,14 @@ export class FrontstageManager {
    */
   public static clearFrontstageDefs(): void {
     FrontstageManager._frontstageDefs.clear();
+    FrontstageManager._activeFrontstageDef = undefined;
+  }
+
+  /** Clears the Frontstage Providers and the defs that may have been created from them.
+   */
+  public static clearFrontstageProviders(): void {
+    FrontstageManager._frontstageProviders.clear();
+    FrontstageManager.clearFrontstageDefs();
   }
 
   private static getFrontstageKey(frontstageId: string) {
@@ -382,6 +390,7 @@ export class FrontstageManager {
 
   /** @internal */
   public static clearFrontstageDefsForIModelId(iModelId: string | undefined) {
+    // istanbul ignore next
     if (!iModelId)
       return;
     const keysToRemove: string[] = [];
@@ -398,6 +407,8 @@ export class FrontstageManager {
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
+    const key = FrontstageManager.getFrontstageKey(frontstageProvider.id);
+    key && FrontstageManager._frontstageDefs.delete(key);
     FrontstageManager._frontstageProviders.set(frontstageProvider.id, frontstageProvider);
   }
 

@@ -55,6 +55,9 @@ export function useStatusBarEntry() {
 export interface StatusBarItemProps extends CommonProps {
   /** Tool setting content. */
   children?: React.ReactNode;
+  itemPriority?: number;
+  providerId?: string;
+  section?: string;
 }
 
 /** Used in [[StatusBarComposer]] component to display a statusbar item.
@@ -71,6 +74,9 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
     <div
       data-item-id={props.itemId}
       data-item-type="status-bar-item"
+      data-item-location={props.section}
+      data-item-priority={props.itemPriority}
+      data-item-provider-id={props.providerId}
       className={className}
       ref={ref}
       style={props.style}
@@ -292,21 +298,41 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
     }
   }, [calculateOverflow]);
 
+  const getSectionName = (section: StatusBarSection) => {
+    switch (section) {
+      case StatusBarSection.Center:
+      case StatusBarSection.Stage:
+        return "status-bar-center";
+      case StatusBarSection.Context:
+        return "status-bar-right-start";
+      case StatusBarSection.Right:
+      case StatusBarSection.Selection:
+        return "status-bar-right-end";
+      case StatusBarSection.Left:
+      case StatusBarSection.Message:
+        return "status-bar-left";
+    }
+  };
+
   /** generate a wrapped status bar entry that will report its size. */
-  const getComponent = React.useCallback((item: CommonStatusBarItem, key: string): React.ReactNode => {
+  const getComponent = React.useCallback((item: CommonStatusBarItem, key: string, itemPriority: number,
+    section: StatusBarSection, providerId?: string): React.ReactNode => {
     return (
       <DockedStatusBarEntry
         key={key}
         entryKey={key}
         getOnResize={handleEntryResize}
       >
-        <DockedStatusBarItem key={key} itemId={item.id} >
+        <DockedStatusBarItem key={key} itemId={item.id} itemPriority={itemPriority} providerId={providerId} section={getSectionName(section)} >
           {isStatusBarItem(item) && item.reactNode}
-          {isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
-          {isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
+          {// eslint-disable-next-line deprecation/deprecation
+            isAbstractStatusBarActionItem(item) && generateActionStatusBarItem(item, statusBarContext.isInFooterMode)}
+          {// eslint-disable-next-line deprecation/deprecation
+            isAbstractStatusBarLabelItem(item) && generateActionStatusLabelItem(item, statusBarContext.isInFooterMode)}
         </DockedStatusBarItem>
       </DockedStatusBarEntry>
     );
+    // eslint-disable-next-line deprecation/deprecation
   }, [statusBarContext.isInFooterMode, handleEntryResize]);
 
   const getSectionItems = React.useCallback((section: StatusBarSection): React.ReactNode[] => {
@@ -316,7 +342,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
 
     return sectionItems.map((sectionItem) => (
       <React.Fragment key={sectionItem.id}>
-        {getComponent(sectionItem, sectionItem.id)}
+        {getComponent(sectionItem, sectionItem.id, sectionItem.itemPriority, sectionItem.section, sectionItem.providerId)}
       </React.Fragment>
     ));
   }, [statusBarItems, overflown, getComponent]);
@@ -328,7 +354,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
 
     return itemsInOverflow.map((item) => (
       <React.Fragment key={item.id}>
-        {getComponent(item, item.id)}
+        {getComponent(item, item.id, item.itemPriority, item.section, item.providerId)}
       </React.Fragment>
     ));
   }, [statusBarItems, overflown, getComponent]);

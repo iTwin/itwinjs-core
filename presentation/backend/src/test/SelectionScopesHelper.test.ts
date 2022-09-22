@@ -5,17 +5,18 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { DrawingGraphic, ECSqlStatement, ECSqlValue, Element, IModelDb, IModelHost } from "@itwin/core-backend";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { ElementProps, EntityMetaData, IModelError, ModelProps } from "@itwin/core-common";
 import { InstanceKey } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
+import { join } from "path";
 
 describe("SelectionScopesHelper", () => {
 
   before(async () => {
-    await IModelHost.startup();
+    await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
   });
 
   after(async () => {
@@ -38,7 +39,8 @@ describe("SelectionScopesHelper", () => {
     const modelsMock = moq.Mock.ofType<IModelDb.Models>();
 
     const setupIModelForElementKey = (key: InstanceKey) => {
-      imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
+      // this mock simulates the element key query returning a single row with results for the given key (`getElementKey` in Utils.ts)
+      imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((q) => (typeof q === "string" && q.includes("SELECT ECClassId FROM"))), moq.It.isAny())).callback((_q, cb) => {
         const valueMock = moq.Mock.ofType<ECSqlValue>();
         valueMock.setup((x) => x.getClassNameForClassId()).returns(() => key.className);
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
@@ -49,8 +51,8 @@ describe("SelectionScopesHelper", () => {
     };
 
     const setupIModelForInvalidId = () => {
-      // this mock simulates trying to bind an invalid id
-      imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
+      // this mock simulates trying to bind an invalid id to the element key query (`getElementKey` in Utils.ts)
+      imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((q) => (typeof q === "string" && q.includes("SELECT ECClassId FROM"))), moq.It.isAny())).callback((_q, cb) => {
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.bindId(moq.It.isAnyNumber(), moq.It.isAny())).throws(new IModelError(DbResult.BE_SQLITE_ERROR, "Error binding Id"));
         stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_ERROR);
@@ -59,6 +61,7 @@ describe("SelectionScopesHelper", () => {
     };
 
     const setupIModelForNoResultStatement = () => {
+      // this mock simulates any kind of query returning no results
       imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).callback((_q, cb) => {
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.step()).returns(() => DbResult.BE_SQLITE_DONE);
@@ -101,7 +104,8 @@ describe("SelectionScopesHelper", () => {
     const createTransientElementId = () => Id64.fromLocalAndBriefcaseIds(faker.random.number(), 0xffffff);
 
     const setupIModelForFunctionalKeyQuery = (props: { graphicalElementKey: InstanceKey, stepResult?: DbResult, functionalElementKey?: InstanceKey }) => {
-      imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const functionalKeyQueryIdentifier = "SELECT funcSchemaDef.Name || '.' || funcClassDef.Name funcElClassName, fe.ECInstanceId funcElId";
+      imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((q) => (typeof q === "string" && q.includes(functionalKeyQueryIdentifier))), moq.It.isAny())).returns((_q, cb) => {
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.step()).returns(() => props.stepResult ?? DbResult.BE_SQLITE_ROW);
         stmtMock.setup((x) => x.getRow()).returns(() => ({
@@ -112,17 +116,16 @@ describe("SelectionScopesHelper", () => {
       });
     };
 
-    const setupIModelForElementProps = (props?: { key?: InstanceKey, parentKey?: InstanceKey }) => {
+    const setupIModelForElementProps = (props?: { key?: InstanceKey, parentKey?: InstanceKey, isRemoved?: boolean }) => {
       const key = props?.key ?? createRandomECInstanceKey();
-      const elementProps = props?.parentKey ? createRandomElementProps(props.parentKey.id) : createRandomTopmostElementProps();
+      const elementProps = props?.isRemoved ? undefined : props?.parentKey ? createRandomElementProps(props.parentKey.id) : createRandomTopmostElementProps();
       elementsMock.setup((x) => x.tryGetElementProps(key.id)).returns(() => elementProps);
-      if (props?.parentKey)
-        setupIModelForElementKey(props.parentKey);
       return { key, props: elementProps };
     };
 
     const setupIModelDerivesFromClassQuery = (doesDeriveFromSuppliedClass: boolean) => {
-      imodelMock.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns((_q, cb) => {
+      const classDerivesFromQueryIdentifier = "SELECT 1";
+      imodelMock.setup((x) => x.withPreparedStatement(moq.It.is((q) => (typeof q === "string" && q.includes(classDerivesFromQueryIdentifier))), moq.It.isAny())).returns((_q, cb) => {
         const stmtMock = moq.Mock.ofType<ECSqlStatement>();
         stmtMock.setup((x) => x.step()).returns(() => doesDeriveFromSuppliedClass ? DbResult.BE_SQLITE_ROW : DbResult.BE_SQLITE_DONE);
         return cb(stmtMock.object);
@@ -183,6 +186,18 @@ describe("SelectionScopesHelper", () => {
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [validKeys[0].id, "not an id", validKeys[1].id], "element");
         expect(result.size).to.eq(2);
         validKeys.forEach((key) => expect(result.has(key)));
+      });
+
+      it("returns nth parent key", async () => {
+        const parent3 = setupIModelForElementProps({ key: createRandomECInstanceKey() });
+        const parent2 = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent3.key });
+        const parent1 = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent2.key });
+        const element = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: parent1.key });
+        setupIModelForElementKey(parent2.key);
+
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object, elementIds: [element.key.id], scope: { id: "element", ancestorLevel: 2 } });
+        expect(result.size).to.eq(1);
+        expect(result.has(parent2.key)).to.be.true;
       });
 
     });
@@ -546,6 +561,29 @@ describe("SelectionScopesHelper", () => {
         expect(result.has(graphicalElementKey)).to.be.true;
       });
 
+      it("skips removed GeometricElement2d parents when looking for closest functional element", async () => {
+        setupIModelDerivesFromClassQuery(false);
+
+        // set up one element with existing parent that has a related functional element
+        const functionalElement = setupIModelForElementProps({ key: createRandomECInstanceKey() });
+        const existingParent = setupIModelForElementProps({ key: createRandomECInstanceKey() });
+        const existingElement = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: existingParent.key });
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey: existingElement.key });
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey: existingParent.key, functionalElementKey: functionalElement.key });
+
+        // set up one element with removed parent
+        const removedParent = setupIModelForElementProps({ key: createRandomECInstanceKey(), isRemoved: true });
+        const elementWithRemovedParent = setupIModelForElementProps({ key: createRandomECInstanceKey(), parentKey: removedParent.key });
+        setupIModelForFunctionalKeyQuery({ graphicalElementKey: elementWithRemovedParent.key });
+        setupIModelForElementKey(elementWithRemovedParent.key);
+
+        // request
+        const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [existingElement.key.id, elementWithRemovedParent.key.id], "functional-element");
+        expect(result.size).to.eq(2);
+        expect(result.has(functionalElement.key)).to.be.true;
+        expect(result.has(elementWithRemovedParent.key)).to.be.true;
+      });
+
     });
 
     describe("scope: 'functional-assembly'", () => {
@@ -566,6 +604,7 @@ describe("SelectionScopesHelper", () => {
         const graphicalElementKey = createRandomECInstanceKey();
         setupIModelDerivesFromClassQuery(true);
         setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+        setupIModelForElementKey(graphicalParentElementKey);
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
@@ -580,6 +619,7 @@ describe("SelectionScopesHelper", () => {
         const graphicalElementKey = createRandomECInstanceKey();
         setupIModelDerivesFromClassQuery(true);
         setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
+        setupIModelForElementKey(graphicalParentElementKey);
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
@@ -647,6 +687,7 @@ describe("SelectionScopesHelper", () => {
         setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalParentElementKey, functionalElementKey });
         setupIModelForElementProps({ key: functionalElementKey, parentKey: functionalParentElementKey });
+        setupIModelForElementKey(functionalParentElementKey);
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-assembly");
         expect(result.size).to.eq(1);
@@ -676,6 +717,7 @@ describe("SelectionScopesHelper", () => {
         setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForElementProps({ key: graphicalGrandParentElementKey });
+        setupIModelForElementKey(graphicalGrandParentElementKey);
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");
@@ -692,6 +734,7 @@ describe("SelectionScopesHelper", () => {
         setupIModelForElementProps({ key: graphicalElementKey, parentKey: graphicalParentElementKey });
         setupIModelForElementProps({ key: graphicalParentElementKey, parentKey: graphicalGrandParentElementKey });
         setupIModelForElementProps({ key: graphicalGrandParentElementKey });
+        setupIModelForElementKey(graphicalGrandParentElementKey);
         setupIModelForFunctionalKeyQuery({ graphicalElementKey: graphicalGrandParentElementKey, functionalElementKey });
 
         const result = await SelectionScopesHelper.computeSelection({ imodel: imodelMock.object }, [graphicalElementKey.id], "functional-top-assembly");

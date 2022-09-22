@@ -22,6 +22,7 @@ import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
  * @see [[Viewport.viewingSpace]].
  * @public
+ * @extensions
  */
 export class ViewingSpace {
   private readonly _viewRange = new ViewRect(); // scratch variable

@@ -7,17 +7,17 @@
  * @module UiItemsProvider
  */
 
-import { BeEvent, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger, MarkRequired } from "@itwin/core-bentley";
 import { BackstageItem } from "./backstage/BackstageItem";
 import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
 import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 import { loggerCategory } from "./utils/misc";
-import { StageUsage } from "./items/StageUsage";
+import { UiItemsProvider } from "./UiItemsProvider";
 
 /** Action taken by the application on item provided by a UiItemsProvider
- * @public
+ * @public @deprecated this was only used by the previously removed UiItemsArbiter.
  */
 export enum UiItemsApplicationAction {
   /** Allow the change to the item */
@@ -28,102 +28,6 @@ export enum UiItemsApplicationAction {
   Update,
 }
 
-/** Describes interface of objects that want to provide UI component to the running IModelApp.
- * @public
- */
-export interface UiItemsProvider {
-  /** id of provider */
-  readonly id: string;
-
-  /** UiItemsManager calls following method to get items to populate specific toolbars */
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
-  /** UiItemsManager calls following method to augment base statusbar for stages that allow it. */
-  provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
-  /** UiItemsManager calls following method to augment backstage items. */
-  provideBackstageItems?: () => BackstageItem[];
-  /** UiItemsManager calls following method to augment Widget lists.
-   * @note Returned widgets must provide unique `AbstractWidgetProps["id"]` to correctly save/restore App layout.
-   */
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
-    zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
-  /** Function called when the provider is unregistered via `ItemsManager.unregister` to allow provider to do cleanup. */
-  onUnregister?: () => void;
-}
-
-/**
- * Base implementation of a UiItemsProvider. The base class allows the user to pass in a function that is used to determine if the
- * active stage should be provided items. Derived provider classes should override the `xxxInternal` methods to provide items.
- * @public
- */
-export class BaseUiItemsProvider implements UiItemsProvider {
-  /*
-   * @param providerId - unique identifier for this instance of the provider. This is required in case separate packages want
-   * to set up custom stage with their own subset of standard tools.
-   * @param isSupportedStage - optional function that will be called to determine if tools should be added to current stage. If not set and
-   * the current stage's `usage` is set to `StageUsage.General` then the provider will add items to frontstage.
-   */
-  constructor(protected _providerId: string, public isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) { }
-
-  public get id(): string { return this._providerId; }
-  public onUnregister(): void { }
-
-  public unregister() {
-    UiItemsManager.unregister(this._providerId);
-  }
-
-  /** Backstage items are not stage specific so no callback is used */
-  public provideBackstageItems(): BackstageItem[] {
-    return [];
-  }
-
-  public provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, _toolbarUsage: ToolbarUsage, _toolbarOrientation: ToolbarOrientation, _stageAppData?: any): CommonToolbarItem[] {
-    return [];
-  }
-  public provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[] {
-    let provideToStage = false;
-
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    return provideToStage ? this.provideToolbarButtonItemsInternal(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData) : [];
-  }
-
-  public provideStatusBarItemsInternal(_stageId: string, _stageUsage: string, _stageAppData?: any): CommonStatusBarItem[] {
-    return [];
-  }
-  public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
-    let provideToStage = false;
-
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    return provideToStage ? this.provideStatusBarItemsInternal(stageId, stageUsage, stageAppData) : [];
-  }
-
-  public provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[] {
-    return [];
-  }
-
-  public provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
-    _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps> {
-    let provideToStage = false;
-
-    if (this.isSupportedStage) {
-      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
-    } else {
-      provideToStage = (stageUsage === StageUsage.General);
-    }
-
-    return provideToStage ? this.provideWidgetsInternal(stageId, stageUsage, location, section, stageAppData) : [];
-  }
-}
-
 /** UIProvider Registered Event Args interface.
  * @public
  */
@@ -131,12 +35,55 @@ export interface UiItemProviderRegisteredEventArgs {
   providerId: string;
 }
 
+/** UiItemProviderOverrides allows the application that registers a provider to limit when it is allowed to provide items
+ *  @public
+ */
+export interface AllowedUiItemProviderOverrides {
+  /** allows providerId to be overridden in the items manager for cases where the same provider needs to provide different content to different stages
+   * @beta
+   */
+  providerId?: string;
+  /** if specified then the current stage's Usage will be compared before allowing any items to be provided
+   * @beta
+   */
+  stageUsages?: string[];
+  /** if specified then the current stage's Id will be compared before allowing any items to be provided
+   * @beta
+  */
+  stageIds?: string[];
+}
+
+/** Allowed overrides applied to a UiItemsProvider the application that registers a provider to limit when it is allowed to provide items.
+ * Note that if an override `providerId` is specified then either `stageIds` or `stageUsages` must be defined to limit when the provider's
+ * items are allowed.
+ *  @public
+ */
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> |
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> |                                                // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
+
+/** Interface that defines an instance of a UiItemsProvider and its application specified overrides.
+ *  @beta
+ */
+interface UiItemProviderEntry {
+  provider: UiItemsProvider;
+  overrides?: UiItemProviderOverrides;
+}
+
 /**
  * Controls registering of UiItemsProviders and calls the provider's methods when populating different parts of the User Interface.
  * @public
  */
 export class UiItemsManager {
-  private static _registeredUiItemsProviders: Map<string, UiItemsProvider> = new Map<string, UiItemsProvider>();
+  private static _registeredUiItemsProviders: Map<string, UiItemProviderEntry> = new Map<string, UiItemProviderEntry>();
+
+  /** For use in unit testing
+   * @internal */
+  public static clearAllProviders() {
+    UiItemsManager._registeredUiItemsProviders.clear();
+  }
 
   /** Event raised any time a UiProvider is registered or unregistered. */
   public static readonly onUiProviderRegisteredEvent = new BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>();
@@ -157,7 +104,7 @@ export class UiItemsManager {
    * @param providerId id of the UiItemsProvider to get
    */
   public static getUiItemsProvider(providerId: string): UiItemsProvider | undefined {
-    return UiItemsManager._registeredUiItemsProviders.get(providerId);
+    return UiItemsManager._registeredUiItemsProviders.get(providerId)?.provider;
   }
 
   private static sendRegisteredEvent(ev: UiItemProviderRegisteredEventArgs) {
@@ -168,14 +115,16 @@ export class UiItemsManager {
    * Registers a UiItemsProvider with the UiItemsManager.
    * @param uiProvider the UI items provider to register.
    */
-  public static register(uiProvider: UiItemsProvider): void {
-    if (UiItemsManager.getUiItemsProvider(uiProvider.id)) {
-      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProvider.id}) is already loaded`);
-    } else {
-      UiItemsManager._registeredUiItemsProviders.set(uiProvider.id, uiProvider);
-      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${uiProvider.id}) loaded`);
+  public static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void {
+    const providerId = overrides?.providerId ?? uiProvider.id;
 
-      UiItemsManager.sendRegisteredEvent({ providerId: uiProvider.id } as UiItemProviderRegisteredEventArgs);
+    if (UiItemsManager.getUiItemsProvider(providerId)) {
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider (${providerId}) is already loaded`);
+    } else {
+      UiItemsManager._registeredUiItemsProviders.set(providerId, { provider: uiProvider, overrides });
+      Logger.logInfo(loggerCategory(this), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
+
+      UiItemsManager.sendRegisteredEvent({ providerId } as UiItemProviderRegisteredEventArgs);
     }
   }
 
@@ -194,6 +143,16 @@ export class UiItemsManager {
     UiItemsManager.sendRegisteredEvent({ providerId: uiProviderId } as UiItemProviderRegisteredEventArgs);
   }
 
+  private static allowItemsFromProvider(entry: UiItemProviderEntry, stageId?: string, stageUsage?: string) {
+    // istanbul ignore else
+    const overrides = entry.overrides;
+    if (undefined !== stageId && overrides?.stageIds && !(overrides.stageIds.some((value: string) => value === stageId)))
+      return false;
+    if (undefined !== stageUsage && overrides?.stageUsages && !(overrides.stageUsages.some((value: string) => value === stageUsage)))
+      return false;
+    return true;
+  }
+
   /** Called when the application is populating a toolbar so that any registered UiItemsProvider can add tool buttons that either either execute
    * an action or specify a registered ToolId into toolbar.
    * @param stageId a string identifier the active stage.
@@ -208,11 +167,17 @@ export class UiItemsManager {
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return buttonItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
       // istanbul ignore else
-      if (uiProvider.provideToolbarButtonItems) {
+      if (uiProvider.provideToolbarButtonItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
-          .forEach((spec: CommonToolbarItem) => buttonItems.push({ ...spec, providerId: uiProvider.id }));
+          .forEach((spec: CommonToolbarItem) => {
+            // ignore duplicate ids
+            if (-1 === buttonItems.findIndex((existingItem)=> spec.id === existingItem.id ))
+              buttonItems.push({ ...spec, providerId });
+          });
       }
     });
 
@@ -230,13 +195,21 @@ export class UiItemsManager {
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return statusBarItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
+
       // istanbul ignore else
-      if (uiProvider.provideStatusBarItems) {
+      if (uiProvider.provideStatusBarItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData)
-          .forEach((item: CommonStatusBarItem) => statusBarItems.push({ ...item, providerId: uiProvider.id }));
+          .forEach((item: CommonStatusBarItem) => {
+            // ignore duplicate ids
+            if (-1 === statusBarItems.findIndex((existingItem)=> item.id === existingItem.id ))
+              statusBarItems.push({ ...item, providerId });
+          });
       }
     });
+
     return statusBarItems;
   }
 
@@ -249,11 +222,18 @@ export class UiItemsManager {
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return backstageItems;
 
-    UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
+
       // istanbul ignore else
-      if (uiProvider.provideBackstageItems) {
-        uiProvider.provideBackstageItems()
-          .forEach((item: BackstageItem) => backstageItems.push({ ...item, providerId: uiProvider.id }));
+      if (uiProvider.provideBackstageItems) { // Note: We do not call this.allowItemsFromProvider here as backstage items
+        uiProvider.provideBackstageItems()    //       should not be considered stage specific. If they need to be hidden
+          .forEach((item: BackstageItem) => { //       the isHidden property should be set to a ConditionalBooleanValue
+            // ignore duplicate ids
+            if (-1 === backstageItems.findIndex((existingItem)=> item.id === existingItem.id ))
+              backstageItems.push({ ...item, providerId });
+          });
       }
     });
     return backstageItems;
@@ -272,11 +252,18 @@ export class UiItemsManager {
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
       return widgets;
 
-    UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
+    UiItemsManager._registeredUiItemsProviders.forEach((entry: UiItemProviderEntry) => {
+      const uiProvider = entry.provider;
+      const providerId = entry.overrides?.providerId ?? uiProvider.id;
+
       // istanbul ignore else
-      if (uiProvider.provideWidgets) {
+      if (uiProvider.provideWidgets && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
         uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
-          .forEach((widget: AbstractWidgetProps) => widgets.push({ ...widget, providerId: uiProvider.id }));
+          .forEach((widget: AbstractWidgetProps) => {
+            // ignore duplicate ids
+            if (-1 === widgets.findIndex((existingItem)=> widget.id === existingItem.id ))
+              widgets.push({ ...widget, providerId });
+          });
       }
     });
     return widgets;

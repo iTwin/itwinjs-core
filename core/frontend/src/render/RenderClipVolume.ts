@@ -12,6 +12,7 @@ import { ClipVector } from "@itwin/core-geometry";
  * A RenderClipVolume is created from a [[ClipVector]] and takes ownership of that ClipVector, expecting that it will not be modified while the RenderClipVolume still references it.
  * @see [[RenderSystem.createClipVolume]] to create a clip volume.
  * @public
+ * @extensions
  */
 export abstract class RenderClipVolume {
   /** The ClipVector from which this volume was created. It must not be modified. */

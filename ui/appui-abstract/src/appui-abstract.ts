@@ -3,8 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+export * from "./appui-abstract/BaseUiItemsProvider";
 export * from "./appui-abstract/UiAdmin";
 export * from "./appui-abstract/UiItemsManager";
+export * from "./appui-abstract/UiItemsProvider";
 
 export * from "./appui-abstract/backstage/BackstageItem";
 export * from "./appui-abstract/backstage/BackstageItemsManager";

@@ -63,10 +63,6 @@ export class FeatureIndex {
   public featureID: number = 0;
   public featureIDs?: Uint32Array;
 
-  public constructor() {
-    this.reset();
-  }
-
   public get isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
   public get isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
   public reset(): void { this.type = FeatureIndexType.Empty; this.featureID = 0; this.featureIDs = undefined; }

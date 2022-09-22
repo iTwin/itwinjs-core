@@ -81,7 +81,7 @@ export class SaveRealityModelTool extends Tool {
 }
 
 function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureAppearanceProps, index: number): boolean {
-  if (index < 0){
+  if (index < 0) {
     for (const model of vp.displayStyle.settings.contextRealityModels.models)
       model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
 
@@ -116,7 +116,7 @@ export class SetRealityModelTransparencyTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { transparency }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to transparency: ${transparency}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to transparency: ${transparency}`));
 
     return true;
   }
@@ -142,7 +142,7 @@ export class SetRealityModelLocateTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { nonLocatable }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to locate: ${locate}`));
 
     return true;
   }
@@ -169,7 +169,7 @@ export class SetRealityModelEmphasizedTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { emphasized }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
 
     return true;
   }
@@ -193,16 +193,21 @@ export class DetachRealityModelTool extends Tool {
     if (vp === undefined)
       return false;
 
-    const model = vp.displayStyle.settings.contextRealityModels.models[index];
-    if (!model)
-      return false;
+    if (index < 0) {
+      vp.displayStyle.settings.contextRealityModels.models.forEach((model) => vp.displayStyle.settings.contextRealityModels.delete(model));
+      return true;
+    } else {
+      const model = vp.displayStyle.settings.contextRealityModels.models[index];
+      if (!model)
+        return false;
 
-    vp.displayStyle.settings.contextRealityModels.delete(model);
-    return true;
+      vp.displayStyle.settings.contextRealityModels.delete(model);
+      return true;
+    }
   }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
-    return this.run(args.length > 1 ? parseInt(args[0], 10) : -1);
+    return this.run(args.length > 0 ? parseInt(args[0], 10) : -1);
   }
 }
 
@@ -222,7 +227,7 @@ export class SetRealityModelColorTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { rgb }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info,`${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
 
     return true;
   }
@@ -271,7 +276,18 @@ export class AttachCesiumAssetTool extends Tool {
     if (vp === undefined)
       return false;
 
-    const props = { tilesetUrl: getCesiumAssetUrl(assetId, requestKey) };
+    // attach using getCesiumAssetUrl
+    const accessKey = requestKey ? requestKey : IModelApp.tileAdmin.cesiumIonKey ? IModelApp.tileAdmin.cesiumIonKey : "";
+    const props = {
+      tilesetUrl: getCesiumAssetUrl(
+        assetId,
+        accessKey
+      ),
+    };
+    // Alternative new way to attach using rdSourceKey
+    // const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(assetId, accessKey);
+    // const props: ContextRealityModelProps = { rdSourceKey, tilesetUrl: getCesiumAssetUrl(assetId, accessKey) };
+
     vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;

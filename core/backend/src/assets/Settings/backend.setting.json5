@@ -1,0 +1,139 @@
+{
+  "cloud/accounts": [
+    {
+      "name": "gcs/account",
+      "accessName": "https://geocoord-workspace.itwinjs.org",
+      "storageType": "azure?customuri=1&sas=1"
+    }
+  ],
+  "cloud/containers": [
+    {
+      "name": "gcs/container",
+      "accountName": "gcs/account",
+      "containerId": "gcs",
+      "isPublic": true
+    }
+  ],
+  "workspace/databases": [
+    {
+      "name": "gcs/base",
+      "dbName": "base",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 10000,
+      "prefetch": true
+    },
+    {
+      "name": "gcs/entire-earth",
+      "dbName": "allEarth",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 100
+    },
+    {
+      "name": "gcs/Australia",
+      "dbName": "Australia",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Brazil",
+      "dbName": "Brazil",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Canada",
+      "dbName": "Canada",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/France",
+      "dbName": "France",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Germany",
+      "dbName": "Germany",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Japan",
+      "dbName": "Japan",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/NewZealand",
+      "dbName": "NewZealand",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Portugal",
+      "dbName": "Portugal",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Slovakia",
+      "dbName": "Slovakia",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/SouthAfrica",
+      "dbName": "SouthAfrica",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Spain",
+      "dbName": "Spain",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Switzerland",
+      "dbName": "Switzerland",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/UK",
+      "dbName": "UK",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Usa",
+      "dbName": "Usa",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    },
+    {
+      "name": "gcs/Venezuela",
+      "dbName": "Venezuela",
+      "containerName": "gcs/container",
+      "version": "^1",
+      "priority": 500
+    }
+  ]
+}

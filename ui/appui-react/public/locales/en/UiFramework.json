@@ -164,8 +164,14 @@
       "widgetOpacityTitle": "Widget Opacity",
       "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets",
       "widgetIconTitle": "Show Icon on Widget Tab",
-      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab."
-    }
+      "widgetIconDescription": "If widget panel less 320 pixels wide then only icons will display on widget tab.",
+      "autoCollapseUnpinnedPanelsTitle": "Auto Collapse Unpinned Panels",
+      "autoCollapseUnpinnedPanelsDescription": "Collapse unpinned widget panels when mouse leaves panel boundary. If false, mouse down outside is required.",
+      "animateToolSettingsTitle": "Animate Docked Tool Settings on appear",
+      "animateToolSettingsDescription": "Animate tool settings when they appear in the docked bar.",
+      "useToolAsToolSettingsLabelTitle": "Use tool as tool settings label",
+      "useToolAsToolSettingsLabelDescription": "Use active tool name as the Tool Settings tab label, if false, will always be titled 'Tool Settings'."
+   }
   },
   "tools": {
     "clearSelection": "Clear Selection",
@@ -179,6 +185,7 @@
     "isolateModels": "Isolate Models",
     "emphasizeSelected": "Emphasize Selected",
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
+    "noToolSettings": "No settings for this tool." ,
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
     "sectionPanelLabel": "Section",
@@ -196,7 +203,9 @@
       },
       "ToggleCamera": {
         "description": "Turn on/off use of camera in active view",
-        "flyover": "Toggle Camera"
+        "flyover": "Toggle Camera",
+        "turnOnFlyover": "Turn Camera On",
+        "turnOffFlyover":"Turn Camera Off"
       }
     },
     "OpenSettings": {
@@ -296,6 +305,9 @@
     "pin": "Pin"
   },
   "widget": {
+    "labels": {
+      "toolSettings": "Tool Settings"
+    },
     "tooltips": {
       "dockToolSettings": "Dock to top",
       "moreWidgets": "More widgets",

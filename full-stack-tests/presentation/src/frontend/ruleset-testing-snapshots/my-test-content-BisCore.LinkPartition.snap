@@ -1,0 +1,60 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`BisCore.LinkPartition`] = `
+Array [
+  PropertyRecord {
+    "description": "DgnV8Bridge",
+    "isReadonly": true,
+    "property": Object {
+      "displayLabel": "Model",
+      "name": "pc_bis_Element_Model",
+      "typename": "navigation",
+    },
+    "value": Object {
+      "displayValue": "DgnV8Bridge",
+      "value": Object {
+        "className": "BisCore:RepositoryModel",
+        "id": "0x1",
+      },
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "description": "BisCore.RealityDataSources",
+    "property": Object {
+      "displayLabel": "Code",
+      "name": "pc_bis_Element_CodeValue",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "BisCore.RealityDataSources",
+      "value": "BisCore.RealityDataSources",
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "User Label",
+      "name": "pc_bis_Element_UserLabel",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+  PropertyRecord {
+    "property": Object {
+      "displayLabel": "Description",
+      "name": "pc_bis_InformationPartitionElement_Description",
+      "typename": "string",
+    },
+    "value": Object {
+      "displayValue": "",
+      "value": undefined,
+      "valueFormat": 0,
+    },
+  },
+]
+`;

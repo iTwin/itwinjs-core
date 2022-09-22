@@ -123,8 +123,8 @@ export interface BackstageComposerProps extends CommonProps {
   readonly header?: React.ReactNode;
   /** Indicates whether to place an overlay over the frontstage when the backstage is displayed */
   readonly showOverlay?: boolean;
-  /** List of backstage items to show */
-  readonly items: BackstageItem[];
+  /** List of static backstage items to show. Can be undefined in UiItemsProviders are used to populate backstage. */
+  readonly items?: BackstageItem[];
   /** If true and only one stage launcher item is found, do not show entry in backstage */
   readonly hideSoloStageEntry?: boolean;
 }

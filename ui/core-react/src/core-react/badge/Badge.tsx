@@ -9,8 +9,9 @@
 import "./Badge.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SvgSprite } from "../icons/SvgSprite";
 import { CommonProps } from "../utils/Props";
+import { IconSpecUtilities } from "@itwin/appui-abstract";
+import { Icon } from "../icons/IconComponent";
 
 /** Properties for the [[Badge]] React component
  * @internal
@@ -24,9 +25,10 @@ export interface BadgeProps extends CommonProps {
  */
 export class Badge extends React.PureComponent<BadgeProps> {
   public override render(): JSX.Element {
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(this.props.svg);
     return (
       <div className={classnames("core-badge", this.props.className)} style={this.props.style}>
-        <SvgSprite src={this.props.svg} />
+        <Icon iconSpec={iconSpec} />
       </div>
     );
   }

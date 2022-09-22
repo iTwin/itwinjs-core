@@ -1,20 +1,20 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.1.0-dev.11",
+  "version": "3.4.0-dev.50",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
   "typings": "lib/cjs/core-common",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-common/file.json --tsIndexFile=./core-common.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=core-common",
+    "extract-api": "betools extract-api --entry=core-common && npm run extract-extension-api",
+    "extract-extension-api": "eslint --no-eslintrc -c \"../../tools/eslint-plugin/dist/configs/extension-exports-config.js\" \"./src/**/*.ts\" 1>&2",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"
@@ -35,28 +35,29 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@ungap/url-search-params": "^0.1.2",
+    "buffer": "^6.0.3",
     "flatbuffers": "~1.12.0",
-    "semver": "^5.5.0",
+    "semver": "^7.3.5",
+    "string_decoder": "^1.3.0",
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.11",
-    "@itwin/core-geometry": "workspace:^3.1.0-dev.11"
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.50",
+    "@itwin/core-geometry": "workspace:^3.4.0-dev.50"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "14.14.31",
-    "@types/semver": "^5.5.0",
+    "@types/node": "16.11.59",
+    "@types/semver": "7.3.10",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.4.0"
@@ -69,6 +70,18 @@
     "plugins": [
       "@itwin"
     ],
-    "extends": "plugin:@itwin/itwinjs-recommended"
+    "extends": "plugin:@itwin/itwinjs-recommended",
+    "rules": {
+      "@itwin/public-extension-exports": [
+        "error",
+        {
+          "releaseTags": [
+            "public",
+            "preview"
+          ],
+          "outputApiFile": false
+        }
+      ]
+    }
   }
 }

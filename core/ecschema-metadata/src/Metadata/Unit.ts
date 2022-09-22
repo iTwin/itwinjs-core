@@ -28,25 +28,25 @@ export class Unit extends SchemaItem {
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
-  protected _numerator: number;
-  protected _denominator: number;
-  protected _offset: number;
+  protected _numerator?: number;
+  protected _denominator?: number;
+  protected _offset?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
-    this._numerator = 1.0;
-    this._denominator = 1.0;
-    this._offset = 0.0;
   }
 
   public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
   public get definition(): string { return this._definition; }
-  public get numerator(): number { return this._numerator; }
-  public get offset(): number { return this._offset; }
-  public get denominator(): number { return this._denominator; }
+  public get numerator(): number { return this._numerator ?? 1.0; }
+  public get offset(): number { return this._offset ?? 0.0; }
+  public get denominator(): number { return this._denominator ?? 1.0; }
+  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
+  public get hasOffset(): boolean { return (this._offset !== undefined); }
+  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -62,6 +62,13 @@ export class Unit extends SchemaItem {
   }
 
   /**
+   * @alpha
+   */
+  public static isUnit(object: any): object is Unit {
+    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.Unit;
+  }
+
+  /**
    * Save this Unit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
@@ -71,11 +78,11 @@ export class Unit extends SchemaItem {
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
     schemaJson.definition = this.definition;
-    if (undefined !== this.numerator)
+    if (this.hasNumerator)
       schemaJson.numerator = this.numerator;
-    if (undefined !== this.denominator)
+    if (this.hasDenominator)
       schemaJson.denominator = this.denominator;
-    if (undefined !== this.offset)
+    if (this.hasOffset)
       schemaJson.offset = this.offset;
     return schemaJson;
   }
@@ -97,9 +104,12 @@ export class Unit extends SchemaItem {
     }
 
     itemElement.setAttribute("definition", this.definition);
-    itemElement.setAttribute("numerator", this.numerator.toString());
-    itemElement.setAttribute("denominator", this.denominator.toString());
-    itemElement.setAttribute("offset", this.offset.toString());
+    if (this.hasNumerator)
+      itemElement.setAttribute("numerator", this.numerator.toString());
+    if (this.hasDenominator)
+      itemElement.setAttribute("denominator", this.denominator.toString());
+    if (this.hasOffset)
+      itemElement.setAttribute("offset", this.offset.toString());
 
     return itemElement;
   }

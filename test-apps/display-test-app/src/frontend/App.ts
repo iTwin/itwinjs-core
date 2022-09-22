@@ -6,6 +6,8 @@
 import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
@@ -16,7 +18,7 @@ import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
   ToolAdmin,
 } from "@itwin/core-frontend";
-import { AndroidApp, IOSApp } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
@@ -24,7 +26,7 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { ApplyModelTransformTool } from "./DisplayTransform";
-import { GenerateTileContentTool } from "./TileContentTool";
+import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
@@ -46,9 +48,10 @@ import {
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
-import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } from "./Viewer";
+import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
 import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
+import { SaveImageTool } from "./SaveImageTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -202,6 +205,14 @@ class ExitTool extends Tool {
   }
 }
 
+function createHubAccess(configuration: DtaConfiguration) {
+  if (configuration.urlPrefix) {
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+  } else {
+    return new FrontendIModelsAccess();
+  }
+}
+
 export class DisplayTestApp {
   private static _surface?: Surface;
   public static get surface() { return this._surface!; }
@@ -235,10 +246,11 @@ export class DisplayTestApp {
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapBoxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
+          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
           BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
+        hubAccess: createHubAccess(configuration),
       },
       localhostIpcApp: {
         socketUrl,
@@ -249,10 +261,8 @@ export class DisplayTestApp {
 
     if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup(opts);
-    } else if (ProcessDetector.isIOSAppFrontend) {
-      await IOSApp.startup(opts);
-    } else if (ProcessDetector.isAndroidAppFrontend) {
-      await AndroidApp.startup(opts);
+    } else if (ProcessDetector.isMobileAppFrontend) {
+      await MobileApp.startup(opts as MobileAppOpts);
     } else {
       const redirectUri = "http://localhost:3000/signin-callback";
       const urlObj = new URL(redirectUri);
@@ -286,6 +296,7 @@ export class DisplayTestApp {
       FenceClassifySelectedTool,
       FocusWindowTool,
       FrameStatsTool,
+      GenerateElementGraphicsTool,
       GenerateTileContentTool,
       GltfDecorationTool,
       IncidentMarkerDemoTool,

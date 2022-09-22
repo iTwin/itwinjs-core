@@ -2,6 +2,399 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-common_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-common_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-common_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Update links to BIS documentation."
+          },
+          {
+            "comment": "move reference of collectPredecessorIds from deprecated to new API getReferenceIds"
+          },
+          {
+            "comment": "Transport RPC requests over IPC when available."
+          },
+          {
+            "comment": "Ensure IPC messages are processed sequentially on the backend"
+          },
+          {
+            "comment": "Remove AuthStatus from IModelError."
+          },
+          {
+            "comment": "make getModelProps a GET request instead of a POST"
+          },
+          {
+            "comment": "Add cache headers to some rpc operations"
+          },
+          {
+            "comment": "Add option to quantize positions in GraphicsRequestProps."
+          },
+          {
+            "comment": "FeatureOverrides now merges element overrides with script overrides and allows callers to specify criteria under which script overrides should be ignored."
+          },
+          {
+            "comment": "DisplayStyleSettings.scheduleScriptProps is no longer deprecated. Add comparison methods for types in the RenderSchedule namespace."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-common_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-common_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-common_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-common_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/core-common_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/core-common_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/core-common_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Made public MapLayers related objects, methods."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/core-common_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/core-common_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add option to quantize positions to GraphicsRequestProps."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/core-common_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new additionalTransformPath property to GeodeticDatums"
+          },
+          {
+            "comment": "Introducing StatusCategory"
+          },
+          {
+            "comment": "Fix bugs in GeometryStreamIterator in which values for properties like color, transparency, and displayPriority were being ignored."
+          },
+          {
+            "comment": "Added \"getMassPropertiesPerCandidate\" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately."
+          },
+          {
+            "comment": "Added new grid file format identifier for OSTN02 and OSTN15"
+          },
+          {
+            "comment": "Add two new rpcinterfaces, hydrateViewState and getCustomViewState3dData"
+          },
+          {
+            "comment": "Improve edge generation for polyfaces that lack edge visibility information."
+          },
+          {
+            "comment": "Add methods to validate ColorDefProps and color strings; fix failure to find duplicate color names."
+          },
+          {
+            "comment": "Add support for Web RPC response compression."
+          },
+          {
+            "comment": "Add extension API generation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-common_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-common_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-common_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-common_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for map layers using model geometry."
+          },
+          {
+            "comment": "Deprecate IModelReadRpcInterface.getViewThumbnail"
+          },
+          {
+            "comment": "Deprecate RenderMaterial.Params in favor of CreateRenderMaterialArgs (core-frontend)."
+          },
+          {
+            "comment": "Remove IModelDb.elementGeometryUpdate."
+          },
+          {
+            "comment": "ElementGeometryBuilderParams"
+          },
+          {
+            "comment": "Web IPC fix (when reloading frontend)."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-common_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-common_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-common_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Migrated from deprecated MapBox api."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-common_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for producing larger tiles."
+          },
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Added additional documentation for ecefLocation iniModel"
+          },
+          {
+            "comment": "Add support for indexed edges in tile graphics."
+          },
+          {
+            "comment": "Added non-existent property to EntityProps to make the compiler discriminate between EntityProps and Entity."
+          },
+          {
+            "comment": "Add compare method to ThematicGradientSettings. Fix Gradient.Symb.compareSymb method to also compare thematicSettings."
+          },
+          {
+            "comment": "Clean up SkyBox and GroundPlane APIs."
+          },
+          {
+            "comment": "improve getMetaData() and provide extended error codes"
+          },
+          {
+            "comment": "Added support to LightSettings for Fresnel effect."
+          },
+          {
+            "comment": "Add new GeoServices class and first method to interpret WKT or complete GCS JSON.\""
+          },
+          {
+            "comment": "GeoCoordStatus documentation added"
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Fix frustum translate method."
+          },
+          {
+            "comment": "Make ViewFlags immutable. Simplify ViewFlagOverrides."
+          },
+          {
+            "comment": "Added LOCAL_ELLIPSOID vertical datum identifier."
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "MapLayerSettings.fromJSON, BaseLayerSettings.fromJSON and MapSubLayerSettings.fromJSON no longer return undefined."
+          },
+          {
+            "comment": "Fix problem with RealityDataSourceKey string convertion"
+          },
+          {
+            "comment": "Promote RealityDataSource and RealityDataSourceKey API to beta and update documentation"
+          },
+          {
+            "comment": "Removed internal tag from EGFBAccessors"
+          },
+          {
+            "comment": "Moved RealityDataAccessProps from core-frontend to core-common"
+          },
+          {
+            "comment": "FeatureOverrides now merge by default in case of conflicts."
+          },
+          {
+            "comment": "rename to @itwin/core-common"
+          },
+          {
+            "comment": "Fix an import which would cause consumers of core-common to fail during build"
+          },
+          {
+            "comment": "move js-base64 from devDeps to deps"
+          },
+          {
+            "comment": "Improve conformance with the glTF 2.0 spec when reading glb chunks."
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Added AuthorizationClient"
+          },
+          {
+            "comment": "Add support for inverting planar clip mask (inside vs outside)"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "Generalize the way to attach a reality data by adding a RealityDataSourceKey to ContextRealityModelProps"
+          },
+          {
+            "comment": "Enhance RealityDataSource class"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "GeometryContainmentRequestProps.clip and SnapRequestProps.viewFlags use stricter type than `any`."
+          },
+          {
+            "comment": "removed deprecated apis"
+          },
+          {
+            "comment": "Move map imagery provider from BackgroundMapSettings to MapImagerySettings.backgroundBase."
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "Rename AnalysisStyleScalar to AnalysisStyleThematic"
+          },
+          {
+            "comment": "Rename AnalysisStyleScalar to AnalysisStyleThematic."
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "rework locks"
+          },
+          {
+            "comment": "Fix for IModel._ecefTrans not being updated when setting IModel._ecefLocation."
+          },
+          {
+            "comment": "Deprecate RenderTexture.Params"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Support Open City Planner (OCP) that stores orbit point clouds (OPC) in their own azure environment."
+          },
+          {
+            "comment": "FeatureAppearance transparency override by default ignores render mode and transparency view flag."
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)"
+          },
+          {
+            "comment": "Concurrency fix within web IPC transport system."
+          },
+          {
+            "comment": "Add ViewFlags.wiremesh to control wiremesh display."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-common_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

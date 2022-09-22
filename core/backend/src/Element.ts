@@ -7,14 +7,15 @@
  */
 
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
-import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData,
-  GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
-  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
-  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
+  ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
+  RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
+  SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@itwin/core-common";
+import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
@@ -98,7 +99,7 @@ export interface OnSubModelIdArg extends OnElementArg {
  * uniqueness of id, code, and federationGuid.
  *
  * See:
- * * [Element Fundamentals]($docs/bis/intro/element-fundamentals.md)
+ * * [Element Fundamentals]($docs/bis/guide/fundamentals/element-fundamentals.md)
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  * @public
@@ -109,17 +110,17 @@ export class Element extends Entity {
   /** @internal */
   public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
 
-  /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   public code: Code;
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this element. */
   public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
@@ -146,6 +147,7 @@ export class Element extends Entity {
     iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
+    iModel.codeService?.verifyCode(arg);
   }
 
   /** Called after a new Element was inserted.
@@ -165,6 +167,7 @@ export class Element extends Entity {
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
     arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update"); // eslint-disable-line @typescript-eslint/no-non-null-assertion
+    arg.iModel.codeService?.verifyCode(arg);
   }
 
   /** Called after an Element was updated.
@@ -335,33 +338,58 @@ export class Element extends Entity {
     return val;
   }
 
-  /** Collect the Ids of this element's *predecessors* at this level of the class hierarchy.
-   * A *predecessor* is an element that had to be inserted before this element could have been inserted.
-   * This is important for cloning operations but can be useful in other situations as well.
-   * @param predecessorIds The Id64Set to populate with predecessor Ids.
-   * @note In order to clone/transform an element, all predecessor elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
-   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces predecessors.
-   * @see getPredecessorIds
+  /** Collect the Ids of this element's *references* at this level of the class hierarchy.
+   * @deprecated use [[collectReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
    * @beta
    */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
-    predecessorIds.add(this.model); // The modeledElement is a predecessor
-    if (this.code.scope && Id64.isValidId64(this.code.scope))
-      predecessorIds.add(this.code.scope); // The element that scopes the code is a predecessor
-    if (this.parent)
-      predecessorIds.add(this.parent.id); // A parent element is a predecessor
+    return this.collectReferenceIds(predecessorIds);
   }
 
-  /** Get the Ids of this element's *predecessors*. A *predecessor* is an element that had to be inserted before this element could have been inserted.
+  /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
+   * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.
-   * @see collectPredecessorIds
+   * @param referenceIds The Id64Set to populate with reference Ids.
+   * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
+   * @see getReferenceIds
    * @beta
    */
-  public getPredecessorIds(): Id64Set {
-    const predecessorIds = new Set<Id64String>();
-    this.collectPredecessorIds(predecessorIds);
-    return predecessorIds;
+  protected collectReferenceIds(referenceIds: Id64Set): void {
+    referenceIds.add(this.model); // The modeledElement is a reference
+    if (this.code.scope && Id64.isValidId64(this.code.scope))
+      referenceIds.add(this.code.scope); // The element that scopes the code is a reference
+    if (this.parent)
+      referenceIds.add(this.parent.id); // A parent element is a reference
   }
+
+  /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @beta
+   * @deprecated use [[getReferenceIds]] instead, the use of the term *predecessors* was confusing and became inaccurate when the transformer could handle cycles
+   */
+  public getPredecessorIds(): Id64Set {
+    return this.getReferenceIds();
+  }
+
+  /** Get the Ids of this element's *references*. A *reference* is an element that this element references.
+   * This is important for cloning operations but can be useful in other situations as well.
+   * @see collectReferenceIds
+   * @beta
+   */
+  public getReferenceIds(): Id64Set {
+    const referenceIds = new Set<Id64String>();
+    this.collectReferenceIds(referenceIds);
+    return referenceIds;
+  }
+
+  /** A *required reference* is an element that had to be inserted before this element could have been inserted.
+   * This is the list of property keys on this element that store references to those elements
+   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces required references.
+   * @note any property listed here must be added to the reference ids in [[collectReferenceIds]]
+   * @beta
+   */
+  public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -450,11 +478,14 @@ export abstract class GeometricElement extends Element {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.category);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    referenceIds.add(this.category);
     // TODO: GeometryPartIds?
   }
+
+  /** @beta */
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "category"];
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -484,9 +515,9 @@ export abstract class GeometricElement3d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.typeDefinition) { referenceIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -526,9 +557,9 @@ export abstract class GeometricElement2d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    if (undefined !== this.typeDefinition) { predecessorIds.add(this.typeDefinition.id); }
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.typeDefinition) { referenceIds.add(this.typeDefinition.id); }
   }
 }
 
@@ -892,9 +923,9 @@ export class SheetTemplate extends Document {
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    if (undefined !== this.border) { predecessorIds.add(this.border); }
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.border) { referenceIds.add(this.border); }
   }
 }
 
@@ -917,9 +948,9 @@ export class Sheet extends Document {
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    if (undefined !== this.sheetTemplate) { predecessorIds.add(this.sheetTemplate); }
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.sheetTemplate) { referenceIds.add(this.sheetTemplate); }
   }
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
@@ -1054,9 +1085,9 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    if (undefined !== this.recipe) { predecessorIds.add(this.recipe.id); }
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    if (undefined !== this.recipe) { referenceIds.add(this.recipe.id); }
   }
 }
 
@@ -1248,7 +1279,7 @@ export class TemplateRecipe2d extends RecipeDefinitionElement {
 
 /** An abstract base class for elements that establishes a particular modeling perspective for its parent Subject.
  * Instances are always sub-modeled by a specialization of Model of the appropriate modeling perspective.
- * @see [iModel Information Hierarchy]($docs/bis/intro/top-of-the-world), [[Subject]], [[Model]]
+ * @see [iModel Information Hierarchy]($docs/bis/guide/data-organization/top-of-the-world), [[Subject]], [[Model]]
  * @public
  */
 export abstract class InformationPartitionElement extends InformationContentElement {
@@ -1560,8 +1591,8 @@ export class RenderTimeline extends InformationRecordElement {
   }
 
   /** @alpha */
-  protected override collectPredecessorIds(ids: Id64Set): void {
-    super.collectPredecessorIds(ids);
+  protected override collectReferenceIds(ids: Id64Set): void {
+    super.collectReferenceIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
     script?.discloseIds(ids);
   }

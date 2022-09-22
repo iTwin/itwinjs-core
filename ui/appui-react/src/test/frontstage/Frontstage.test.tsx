@@ -24,7 +24,7 @@ describe("Frontstage", () => {
     await NoRenderApp.startup();
     await TestUtils.initializeUiFramework();
     UiFramework.setUiVersion("1");
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -61,6 +61,16 @@ describe("Frontstage", () => {
       FrontstageManager.setWidgetState("widget1", WidgetState.Hidden);
       expect(widgetDef.isVisible).to.eq(false);
     }
+  });
+
+  it("Expect cached frontstageDef to be replaced", async () => {
+    const frontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
+    const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    const newFrontstageProvider = new TestFrontstage();
+    FrontstageManager.addFrontstageProvider(newFrontstageProvider);
+    const newFrontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
+    expect(newFrontstageDef).to.not.eql(frontstageDef);
   });
 
   it("FrontstageProvider supplies Frontstage to FrontstageComposer", async () => {

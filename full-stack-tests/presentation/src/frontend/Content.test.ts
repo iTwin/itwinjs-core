@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid, Id64 } from "@itwin/core-bentley";
+import { assert, Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
@@ -226,7 +226,7 @@ describe("Content", () => {
         { className: "PCJ_TestSchema:TestClass", id: "0x71" },
       ]);
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
-      const field = getFieldByLabel(descriptor.fields, "Ñámê");
+      const field = getFieldByLabel(descriptor.fields, "Name");
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -394,6 +394,37 @@ describe("Content", () => {
       expect(content?.contentSet.length).to.eq(1);
       expect(content?.contentSet[0].values[field.name]).to.eq("Value");
       expect(content?.contentSet[0].displayValues[field.name]).to.eq("Value");
+    });
+
+  });
+
+  describe("Navigation Properties", () => {
+
+    it("creates navigation fields", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.SelectedNodeInstances,
+          }],
+        }],
+      };
+
+      const keys = new KeySet([
+        { className: "PCJ_TestSchema:TestClass", id: "0x70" },
+      ]);
+      const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys, displayType: "" }))!;
+      const field = getFieldByLabel(descriptor.fields, "Model");
+
+      assert(field.isPropertiesField());
+
+      expect(field.properties.length).to.eq(1);
+      expect(field.properties[0].property.navigationPropertyInfo).is.not.null;
+      expect(field.properties[0].property.navigationPropertyInfo?.isForwardRelationship).to.eq(false);
+      expect(field.properties[0].property.navigationPropertyInfo?.classInfo.id).to.eq("0x40");
+      expect(field.properties[0].property.navigationPropertyInfo?.targetClassInfo.id).to.eq("0x41");
+
     });
 
   });

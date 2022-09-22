@@ -7,7 +7,8 @@
 .nz-widget-popoutToggle {
   height: 16px;
   width: calc(16px + 0.5em);
-  padding: 0 0.5em 0 0;
+  padding: 0 0.5em 0 0.5em;
+  box-sizing: content-box;
   position: relative;
   border: 0;
   background: none;

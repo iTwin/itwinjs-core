@@ -19,6 +19,7 @@ import { Tile, TileDrawArgs, TileGeometryCollector, TileLoadPriority, TileTreePa
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
  * @see [[TileTreeOwner]].
  * @public
+ * @extensions
  */
 export enum TileTreeLoadStatus {
   /** No attempt to load the tile tree has yet been made. */
@@ -45,6 +46,7 @@ export enum TileTreeLoadStatus {
  * overridden instead to customize the behavior. For example, [[selectTiles]] should not be overridden; instead, override the[[_selectTiles]] method
  * that it calls.
  * @public
+ * @extensions
  */
 export abstract class TileTree {
   private _isDisposed = false;

@@ -2,6 +2,231 @@
   "name": "@itwin/presentation-components",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/presentation-components_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/presentation-components_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/presentation-components_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Renderer for nodes with too many children."
+          },
+          {
+            "comment": "Add filter button"
+          },
+          {
+            "comment": "Fix: set correct node's children count after hierarchy update"
+          },
+          {
+            "comment": "Added 'PresentationInstanceFilterBuilder' component for building complex filters to filter instances when requesting presentation data"
+          },
+          {
+            "comment": "usePresentationTreeNodeLoader: pass 'customizeTreeNodeItem' callback to 'PresentationTreeDataProvider'"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/presentation-components_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/presentation-components_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/presentation-components_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/presentation-components_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/presentation-components_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/presentation-components_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/presentation-components_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/presentation-components_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/presentation-components_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:57 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix excluding related properties without values"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/presentation-components_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added ability to customize TreeNodeItems produced by PresentationTreeDataProvider"
+          },
+          {
+            "comment": "Documentation updates."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/presentation-components_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/presentation-components_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/presentation-components_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/presentation-components_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/presentation-components_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/presentation-components_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/presentation-components_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/presentation-components_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "rename to @itwin/presentation-components"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Clean up deprecated APIs"
+          },
+          {
+            "comment": "Make property category grouping enabled by default."
+          },
+          {
+            "comment": "`usePresentationTreeNodeLoader`: Redesign the way tree component reloads when `enableHierarchyAutoUpdate` is set."
+          },
+          {
+            "comment": "Remove `IPresentationTreeDataProvider.loadHierarchy`."
+          },
+          {
+            "comment": "Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly."
+          },
+          {
+            "comment": "Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. "
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`."
+          },
+          {
+            "comment": "Remove `immer` dependency."
+          },
+          {
+            "comment": "Ignore lint errors for deprecated Table component."
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/presentation-components_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

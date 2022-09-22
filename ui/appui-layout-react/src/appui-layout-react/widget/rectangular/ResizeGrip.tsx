@@ -137,7 +137,6 @@ export class ResizeGrip extends React.PureComponent<ResizeGripProps, ResizeGripS
     this._lastPosition = new Point(e.clientX, e.clientY);
 
     this._isResizing = true;
-    e.preventDefault();
 
     const bounds = Rectangle.create(grip.getBoundingClientRect());
     this.props.onResizeStart && this.props.onResizeStart({

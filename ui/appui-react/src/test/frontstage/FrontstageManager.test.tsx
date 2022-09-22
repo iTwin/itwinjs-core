@@ -35,7 +35,7 @@ describe("FrontstageManager", () => {
     await MockRender.App.startup();
 
     FrontstageManager.initialize();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(async () => {
@@ -58,10 +58,12 @@ describe("FrontstageManager", () => {
   it("setActiveFrontstage should set active frontstage", async () => {
     const frontstageProvider = new TestFrontstage();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
+    expect(FrontstageManager.hasFrontstage(frontstageProvider.frontstage.props.id)).to.be.true;
     const frontstageDef = await FrontstageManager.getFrontstageDef(frontstageProvider.frontstage.props.id);
 
     expect(frontstageDef).to.not.be.undefined;
     if (frontstageDef) {
+      expect(FrontstageManager.hasFrontstage(frontstageDef.id)).to.be.true;
       await FrontstageManager.setActiveFrontstage(frontstageDef.id);
       expect(FrontstageManager.activeFrontstageId).to.eq(frontstageDef.id);
       expect(frontstageDef.applicationData).to.not.be.undefined;

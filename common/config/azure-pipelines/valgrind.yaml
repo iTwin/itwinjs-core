@@ -1,0 +1,96 @@
+# iTwin.js Valgrind Testing
+
+trigger: none
+pr: none
+schedules:
+  - cron: "0 5 * * Sat"
+    displayName: Weekly Saturday Valgrind Testing
+    branches:
+      include:
+        - master
+    always: false
+
+jobs:
+  - job:
+    timeoutInMinutes: 180
+    pool:
+      name: iModelTechCI
+      demands:
+      - Agent.OS -equals Linux
+    variables:
+      VALGRIND_RESULTS: $(Build.StagingDirectory)/valgrind-results/
+    workspace:
+      clean: all
+
+    steps:
+      - checkout: self
+        clean: true
+
+      - task: NodeTool@0
+        displayName: "Use Node 16"
+        inputs:
+          versionSpec: 16.15.0
+          checkLatest: true
+
+      - script: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+        displayName: git config
+
+      # - script: sudo apt-get update
+      #   displayName: apt update
+
+      # - script: sudo apt-get install valgrind
+      #   displayName: apt install valgrind
+
+      - script: node common/scripts/install-run-rush.js install
+        displayName: rush install
+
+      - script: node common/scripts/install-run-rush.js rebuild
+        displayName: rush rebuild
+        condition: succeeded()
+
+      - script: mkdir $(VALGRIND_RESULTS)
+
+      - script: 'valgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/valgrind.supp --leak-check=full --track-origins=yes --gen-suppressions=all --trace-children=yes node common/scripts/install-run-rush.js cover |& tee $(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'
+        displayName: 'Run Valgrind on rush cover'
+        failOnStderr: false
+
+      - task: archiveandpublishartifact@0
+        inputs:
+          rootFolderOrFile: '$(VALGRIND_RESULTS)'
+          archiveFolder: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'ValgrindReport-$(Build.BuildId)'
+
+      - task: PythonScript@0
+        inputs:
+          scriptSource: 'inline'
+          script: |
+            import sys, re
+
+            # ==6451== ERROR SUMMARY: 667 errors from 26 contexts (suppressed: 451 from 451)
+            pattern = re.compile (r"==\d+== ERROR SUMMARY: (\d+) errors from (\d+) contexts \(suppressed: (\d+) from (\d+)\)")
+
+            if len(sys.argv) < 2:
+                print ('Syntax: ' + sys.argv[0] + ' logFilePath)')
+                exit(1)
+
+            logFilePath = sys.argv[1]
+            numberOfErrors = 0
+            numberOfSuppressions = 0
+            with open(logFilePath, 'r') as f:
+                lines=f.readlines()
+                for line in lines:
+                    match = pattern.match(line)
+                    if not match:
+                        continue
+                    numberOfErrors += int(match.group(1))
+                    numberOfSuppressions += int(match.group(3))
+
+            msg = 'Found ' + str(numberOfErrors) + ' errors and ' + str(numberOfSuppressions) + ' suppressions.'
+            if numberOfErrors >= 1:
+                print('##vso[task.logissue type=error]' + msg)
+                sys.exit(1)
+            else:
+                print(msg)
+          arguments: '$(VALGRIND_RESULTS)memcheck$(Build.BuildId).txt'

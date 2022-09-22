@@ -1,6 +1,162 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:01 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Keep floating widget visible while dragged (with UI auto-hide enabled).
+- Fix an issue where a widget is not removed correctly in FLOATING_WIDGET_SEND_BACK action.
+- Fix styling of tab overflow menu.
+- Deprecated `isInFooterMode` for `FooterIndicator`, should always be considered true.
+- Fix widget duplication in send back action.
+- Fix processing of widget container dragging to empty panel.
+- Add hideWithUiWhenFloating prop to widgets so that an app can opt into hiding specific floating widgets when the UI automatically hides.
+- Save state of floating widgets when they are hidden
+- Add updated widget targets.
+- Update iTwinUI-react to 1.38.1
+- Allow tippy.js to close when tab is clicked.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Add option to auto-collapse unpinned widget panels.
+- Animate tool settings appearance in the docked tool settings bar.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:46 GMT
+
+### Updates
+
+- Add data attributes to identify item and its UI provider.
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:01 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Update Floating Widget to allow overflow so popups like from Select component will properly display.
+- rename to @itwin/appui-layout-react
+- Update snapshots
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- update immer to fix security warning
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Remove link to learning doc that's no longer delivered.
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Update styling on some status field items for better popup alignment.
+- Allow widgets supplied by a UiItemsProvider to specify a default state of floating.
+- Update to latest itwinui-react
+- Clean up css for status bar entries to avoid unwanted text wrapping
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Rename ui directories to match new package names.
+- Initialize popout window size and position when popping out from floating state to avoid crash.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Remove WidgetProvider and associated events.
+- fix bad styling on message center status bar item.
+- Replaced ui-core Slider with one from iTwinUi-react.
+- Update to latest types/react package
+- reset to use overflow hidden in floating widgets as it messes up auto-sizing and re-sizing.
+- Add support for widget tab icons in UI-2
+- Update widget tab styling to provide padding between icon and active stripe.
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -264,7 +420,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 - Update unit tests for resizeObserver fix.
 - Update test to account for different number of calls to getBoundingClientRect.
-- Update to latest classnames package
+- Update to latest classnames package 
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -595,7 +751,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.
+- Add drop shadow to toolsettings overflow popup.  
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -702,7 +858,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer.
+- Fix safe area insets for bottom zones w/o footer. 
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

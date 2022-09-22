@@ -1,11 +1,10 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.1.0-dev.11",
+  "version": "3.4.0-dev.50",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
   "typings": "lib/cjs/core-i18n",
-  "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -20,8 +19,11 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-i18n/file.json --tsIndexFile=./core-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-i18n",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "",
-    "cover": ""
+    "test": "npm run -s test:chrome",
+    "test:chrome": "certa -r chrome",
+    "test:debug": "certa -r chrome --debug",
+    "webpack:test": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
+    "cover": "npm -s test"
   },
   "keywords": [
     "Bentley",
@@ -33,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.11"
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.50"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -41,15 +43,21 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
+    "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "14.14.31",
+    "@types/chai": "4.3.1",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "16.11.59",
+    "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.4.0"
+    "source-map-loader": "^4.0.0",
+    "typescript": "~4.4.0",
+    "webpack": "^5.64.4"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to core-i18n",
@@ -57,10 +65,9 @@
     "NOTE: core-i18n should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "i18next": "^21.2.6",
+    "i18next": "^21.9.1",
     "i18next-browser-languagedetector": "^6.1.2",
-    "i18next-http-backend": "^1.3.1",
-    "i18next-xhr-backend": "^3.2.2"
+    "i18next-http-backend": "^1.4.1"
   },
   "eslintConfig": {
     "plugins": [

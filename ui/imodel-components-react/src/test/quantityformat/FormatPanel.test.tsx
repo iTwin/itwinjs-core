@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import * as React from "react";
 import { render } from "@testing-library/react";
 import { IModelApp, MockRender } from "@itwin/core-frontend";
-import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@itwin/core-quantity";
+import { Format, FormatProps, FormatterSpec, FormatTraits, getTraitString, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { Checkbox } from "@itwin/itwinui-react";
 import { TestUtils } from "../TestUtils";
 import { FormatPanel } from "../../imodel-components-react/quantityformat/FormatPanel";
@@ -15,7 +15,7 @@ import { FormatSample } from "../../imodel-components-react/quantityformat/Forma
 import { FormatPrecision } from "../../imodel-components-react/quantityformat/FormatPrecision";
 
 function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
-  const traitStr = Format.getTraitString(trait);
+  const traitStr = getTraitString(trait);
   if (undefined === traitStr)
     return;
   let formatTraits: string[] | undefined;

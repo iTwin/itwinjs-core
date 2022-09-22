@@ -36,7 +36,7 @@ When a user [subscribes to events](#creating-events-subscription), they have to 
 
 To receive `IModelHubEvent`s, user has to create an `EventSubscription`. Creating a subscription requires the user to specify an array of [event types](#event-types) they want to receive.
 
-Creating subscription requires user to have an [access token]($docs/learning/common/AccessToken.md) and have a valid [iModel id](./imodels/GetiModel.md).
+Creating subscription requires user to have an [access token](../common/AccessToken.md) and have a valid [iModel id](./imodels/GetiModel.md).
 
 Example:
 
@@ -58,7 +58,7 @@ If `EventHandler.getEvent` is called with a timeout duration specified, this req
 
 `EventHandler.createListener` can be used to handle repeated calls to `EventHandler.getEvent` and `EventHandler.getSASToken`.
 
-Authentication callback example, similar to [getting access token]($docs/learning/common/AccessToken.md). `AccessToken` could be retrieved from credentials stored somewhere else or refreshed before it expires.
+Authentication callback example, similar to [getting access token](../common/AccessToken.md). `AccessToken` could be retrieved from credentials stored somewhere else or refreshed before it expires.
 
 Listener callback example. This callback just logs the type of the `IModelHubEvent` received.
 

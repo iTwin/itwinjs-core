@@ -5,15 +5,56 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request, RequestOptions } from "./request/Request";
-import { AccessToken, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
-import { IModelError, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
+import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
+import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./IModelApp";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
+import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
+import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
+import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { Range3d } from "@itwin/core-geometry";
+
+const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
 /**
- * This interface provide methods used to access a reality data from a reality data provider
+ * Reality Data Operation error
+ * @alpha
+ */
+export class RealityDataError extends BentleyError {
+  public constructor(errorNumber: RealityDataStatus, message: string, getMetaData?: LoggingMetaData) {
+    super(errorNumber, message, getMetaData);
+  }
+}
+
+/** This interface provide spatial location and volume of interest, in meters, centered around `spatial location`
+ * @alpha
+ */
+export interface SpatialLocationAndExtents {
+  /** location of the point at the center of the reaity data */
+  location: Cartographic | EcefLocation;
+  /** extents of the volume around location */
+  worldRange: Range3d;
+  /** true if this reality data is geolocated
+   * A reality data is geolocated when we can compute a valid position relative to the earth surface.
+   * Note that some reality data contains custom coordinate system without any information on the relative position on earth.
+   * These reality data will have a location and worldRange but will be identified by the isGeoLocated set to false.
+   */
+  isGeolocated: boolean;
+}
+
+/** This interface provides information to identify the product and engine that create this reality data
+ * @alpha
+ */
+export interface PublisherProductInfo {
+  /** product that create this reality data */
+  product: string;
+  /** engine that create this reality data */
+  engine: string;
+  /** the version of the engine that create this reality data */
+  version: string;
+}
+
+/** This interface provide methods used to access a reality data from a reality data provider
  * @beta
  */
 export interface RealityDataSource {
@@ -24,40 +65,48 @@ export interface RealityDataSource {
   readonly realityData: RealityData | undefined;
   /** The reality data type (e.g.: "RealityMesh3DTiles", OPC, Terrain3DTiles, Cesium3DTiles, ... )*/
   readonly realityDataType: string | undefined;
-  /**
-   * This method returns the URL to obtain the Reality Data properties.
+  /** This method returns the URL to obtain the Reality Data properties.
    * @param iTwinId id of associated iTwin project
    * @returns string containing the URL to reality data.
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
 
-  /**
-   * Gets a reality data root document json
+  /** Gets a reality data root document json
    * @returns tile data json
    * @internal
    */
   getRootDocument(iTwinId: GuidString | undefined): Promise<any>;
-  /**
-   * Gets tile content
+  /** Gets tile content
    * @param name name or path of tile
    * @returns array buffer of tile content
    * @internal
    */
   getTileContent(name: string): Promise<any>;
-  /**
-   * Gets a tileset's app data json
+  /** Gets a tileset's app data json
    * @param name name or path of tile
    * @returns app data json object
    * @internal
    */
   getTileJson(name: string): Promise<any>;
+  /** Gets spatial location and extents of this reality data source.
+   * Will return undefined if cannot be resolved or is unbounded (cover entire earth eg: Open Street Map Building from Ion Asset)
+   * @returns spatial location and extents
+   * @throws [[RealityDataError]] if source is invalid or cannot be read
+   * @alpha
+   */
+  getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
+  /** Gets information to identify the product and engine that create this reality data
+   * Will return undefined if cannot be resolved
+   * @returns information to identify the product and engine that create this reality data
+   * @alpha
+   */
+  getPublisherProductInfo(): Promise<PublisherProductInfo | undefined>;
 }
 /** Utility functions for RealityDataSource
  * @beta
  */
 export namespace RealityDataSource {
-  /**
-   * Create a RealityDataSourceKey from a tilesetUrl.
+  /** Create a RealityDataSourceKey from a tilesetUrl.
    * @param tilesetUrl the reality data attachment url
    * @param inputProvider identify the RealityDataProvider if known, otherwise function will try to extract it from the tilesetUrl
    * @param inputFormat identify the RealityDataFormat if known, otherwise function will try to extract it from the tilesetUrl
@@ -67,8 +116,12 @@ export namespace RealityDataSource {
     let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
-      // Keep url hidden and use a dummy id
-      const cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId };
+      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id:  CesiumIonAssetProvider.osmBuildingId }; // default OSM building
+      // Parse URL to extract possible asset id and key if provided
+      const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(tilesetUrl);
+      if (cesiumAsset) {
+        cesiumIonAssetKey = RealityDataSource.createCesiumIonAssetKey(cesiumAsset.id, cesiumAsset.key);
+      }
       return cesiumIonAssetKey;
     }
 
@@ -121,262 +174,29 @@ export namespace RealityDataSource {
     };
     return orbitGtBlob;
   }
+  /** @internal - Is used by "fdt attach cesium asset" keyin*/
+  export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
+    const id = getCesiumAssetUrl(osmAssetId,requestKey);
+    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
+  }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
-   * @internal
+   * @alpha
    */
   export async function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    return RealityDataSourceImpl.fromKey(rdSourceKey, iTwinId);
-  }
-}
-
-/** This class provides access to the reality data provider services.
- * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
- * The key provided at the creation determines if this is ProjectWise Context Share reference.
- * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
- * There is a one to one relationship between a reality data and the instances of present class.
-* @beta
-*/
-class RealityDataSourceImpl implements RealityDataSource {
-  public readonly key: RealityDataSourceKey;
-  /** The URL that supplies the 3d tiles for displaying the reality model. */
-  private _tilesetUrl: string | undefined;
-  private _isUrlResolved: boolean = false;
-  private _rd: RealityData | undefined;
-  /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
-  private _baseUrl: string = "";
-  /** Request authorization for non PW ContextShare requests.*/
-  private _requestAuthorization?: string;
-
-  /** Construct a new reality data source.
-   * @param props JSON representation of the reality data source
-   */
-  protected constructor(props: RealityDataSourceProps) {
-    this.key = props.sourceKey;
-    this._isUrlResolved = false;
-  }
-
-  /** Construct a new reality data source.
-   * @param props JSON representation of the reality data source
-   */
-  public static fromProps(props: RealityDataSourceProps): RealityDataSource {
-    return new RealityDataSourceImpl(props);
-  }
-  /**
-   * Create an instance of this class from a source key and iTwin context/
-   */
-  public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    const rdSource = new RealityDataSourceImpl({ sourceKey });
-    let tilesetUrl: string | undefined;
-    try {
-      await rdSource.queryRealityData(iTwinId);
-      tilesetUrl = await rdSource.getServiceUrl(iTwinId);
-    } catch (e) {
+    switch(rdSourceKey.provider) {
+      case RealityDataProvider.CesiumIonAsset:
+        return RealityDataSourceCesiumIonAssetImpl.createFromKey(rdSourceKey, iTwinId);
+      case RealityDataProvider.TilesetUrl:
+        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
+      case RealityDataProvider.ContextShare:
+        return RealityDataSourceContextShareImpl.createFromKey(rdSourceKey, iTwinId);
+      case RealityDataProvider.OrbitGtBlob:
+        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
+      default:
+        Logger.logError(loggerCategory, `Error realityModelFromJson - region undefined`);
     }
-
-    return (tilesetUrl !== undefined) ? rdSource : undefined;
-  }
-  /** Return an instance of a RealityDataSource from a source key.
-   */
-  public static async fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    return RealityDataSourceImpl.createFromKey(rdSourceKey, iTwinId);
-  }
-  public get isContextShare(): boolean {
-    return (this.key.provider === RealityDataProvider.ContextShare);
-  }
-  /**
-   * Returns Reality Data if available
-  */
-  public get realityData(): RealityData | undefined {
-    return this._rd;
-  }
-  public get realityDataId(): string | undefined {
-    const realityDataId = this.isContextShare ? this.key.id : undefined;
-    return realityDataId;
-  }
-  /**
-   * Returns Reality Data type if available
-   */
-  public get realityDataType(): string | undefined {
-    return this._rd?.type;
-  }
-  public get iTwinId(): string | undefined {
-    return this.key.iTwinId;
-  }
-  /**
-   * Query Reality Data from provider
-   */
-  private async queryRealityData(iTwinId: GuidString | undefined) {
-    if (this.isContextShare && !this._rd) {
-      const token = await IModelApp.getAccessToken();
-      if (token && this.realityDataId) {
-        if (undefined === IModelApp.realityDataAccess)
-          throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
-        this._rd = await IModelApp.realityDataAccess.getRealityData(token, iTwinId, this.realityDataId);
-        // A reality data that has not root document set should not be considered.
-        const rootDocument: string = this._rd.rootDocument ?? "";
-        this.setBaseUrl(rootDocument);
-      }
-    }
-  }
-  // This is to set the root url from the provided root document path.
-  // If the root document is stored on PW Context Share then the root document property of the Reality Data is provided,
-  // otherwise the full path to root document is given.
-  // The base URL contains the base URL from which tile relative path are constructed.
-  // The tile's path root will need to be reinserted for child tiles to return a 200
-  private setBaseUrl(url: string): void {
-    const urlParts = url.split("/");
-    urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
-  }
-  private async _doRequest(url: string, responseType: string): Promise<any> {
-    let options: RequestOptions = {
-      method: "GET",
-      responseType,
-    };
-
-    const authToken = this._requestAuthorization;
-    if (authToken) {
-      options = {
-        ...options,
-        headers: {
-          authorization: authToken,
-        },
-      };
-    }
-
-    const data = await request(url, options);
-    return data.body;
-  }
-  /**
-   * Gets a tileset's app data json
-   * @param name name or path of tile
-   * @returns app data json object
-   * @internal
-   */
-  public async getRealityDataTileJson(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
-    const url = await realityData.getBlobUrl(accessToken, name);
-
-    const data = await request(url.toString(), {
-      method: "GET",
-      responseType: "json",
-    });
-    return data.body;
-  }
-
-  /**
-   * This method returns the URL to access the actual 3d tiles from the service provider.
-   * @returns string containing the URL to reality data.
-   */
-  public async getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined> {
-    // If url was not resolved - resolve it
-    if (this.isContextShare && !this._isUrlResolved) {
-      const rdSourceKey = this.key;
-      // we need to resolve tilesetURl from realityDataId and iTwinId
-      if (undefined === IModelApp.realityDataAccess)
-        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
-      try {
-        const resolvedITwinId = iTwinId ? iTwinId : rdSourceKey.iTwinId;
-
-        this._tilesetUrl = await IModelApp.realityDataAccess.getRealityDataUrl(resolvedITwinId, rdSourceKey.id);
-        this._isUrlResolved = true;
-      } catch (e) {
-        const errMsg = `Error getting URL from ContextShare using realityDataId=${rdSourceKey.id} and iTwinId=${iTwinId}`;
-        Logger.logError(FrontendLoggerCategory.RealityData, errMsg);
-      }
-    } else if (this.key.provider === RealityDataProvider.TilesetUrl) {
-      this._tilesetUrl = this.key.id;
-    } else if (this.key.provider === RealityDataProvider.CesiumIonAsset) {
-      this._tilesetUrl = this.key.id;
-      if (this.key.id === CesiumIonAssetProvider.osmBuildingId) {
-        this._tilesetUrl = getCesiumOSMBuildingsUrl();
-        this._isUrlResolved = true;
-      }
-    }
-    return this._tilesetUrl;
-  }
-  /** TODO: This probably required three different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium */
-  public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
-    const token = await IModelApp.getAccessToken();
-    if (this.isContextShare && token) {
-      const realityData = this.realityData;
-
-      if (!realityData)
-        throw new Error(`Reality Data not defined`);
-
-      if (!realityData.rootDocument)
-        throw new Error(`Root document not defined for reality data: ${realityData.id}`);
-
-      return this.getRealityDataTileJson(token, realityData.rootDocument, realityData);
-    }
-
-    let url = await this.getServiceUrl(iTwinId);
-    if (!url)
-      throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
-
-    // The following is only if the reality data is not stored on PW Context Share.
-    const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(url);
-    if (cesiumAsset) {
-      const tokenAndUrl = await getCesiumAccessTokenAndEndpointUrl(cesiumAsset.id, cesiumAsset.key);
-      if (tokenAndUrl.url && tokenAndUrl.token) {
-        url = tokenAndUrl.url;
-        this._requestAuthorization = `Bearer ${tokenAndUrl.token}`;
-      }
-    }
-
-    // The following is only if the reality data is not stored on PW Context Share.
-    this.setBaseUrl(url);
-    return this._doRequest(url, "json");
-  }
-
-  /**
-   * Gets tile content
-   * @param name name or path of tile
-   * @returns array buffer of tile content
-   */
-  public async getRealityDataTileContent(accessToken: AccessToken, name: string, realityData: RealityData): Promise<any> {
-    const url = await realityData.getBlobUrl(accessToken, name);
-    const options: RequestOptions = {
-      method: "GET",
-      responseType: "arraybuffer",
-    };
-    const data = await request(url.toString(), options);
-    return data.body;
-  }
-
-  /**
-   * TODO: This probably required different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
-   * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
-   */
-  public async getTileContent(name: string): Promise<any> {
-    const token = await IModelApp.getAccessToken();
-    const useRds = this.isContextShare && token !== undefined;
-    const tileUrl = this._baseUrl + name;
-
-    if (useRds && this.realityData) {
-      return this.getRealityDataTileContent(token, tileUrl, this.realityData);
-    }
-
-    return this._doRequest(tileUrl, "arraybuffer");
-  }
-
-  /**
-   * TODO: This probably required different realitydataSource implementations based on different provider -> locally hosted, RDS and cesium
-   * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
-   */
-  public async getTileJson(name: string): Promise<any> {
-    const token = await IModelApp.getAccessToken();
-    const useRds = this.isContextShare && token !== undefined;
-    const tileUrl = this._baseUrl + name;
-
-    if (useRds && this.realityData) {
-      return this.getRealityDataTileJson(token, tileUrl, this.realityData);
-    }
-
-    return this._doRequest(tileUrl, "json");
+    return undefined;
   }
 }
 

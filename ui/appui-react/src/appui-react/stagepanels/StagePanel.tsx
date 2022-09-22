@@ -60,7 +60,7 @@ export interface StagePanelZoneProps {
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
   start?: StagePanelZoneProps;
-  /** Properties for the Widgets in the Middle section. */
+  /** Properties for the Widgets in the Middle section. Deprecated - all widgets originally targeted for "middle" will now go to "end". */
   middle?: StagePanelZoneProps;
   /** Properties for the Widgets in the End section. */
   end?: StagePanelZoneProps;

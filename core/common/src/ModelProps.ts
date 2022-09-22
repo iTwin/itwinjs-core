@@ -12,8 +12,9 @@ import { CodeProps } from "./Code";
 import { RelatedElementProps } from "./ElementProps";
 import { EntityProps, EntityQueryParams } from "./EntityProps";
 
-/** Properties that define a [Model]($docs/bis/intro/model-fundamentals)
+/** Properties that define a [Model]($docs/bis/guide/fundamentals/model-fundamentals)
  * @public
+ * @extensions
  */
 export interface ModelProps extends EntityProps {
   modeledElement: RelatedElementProps;
@@ -26,6 +27,7 @@ export interface ModelProps extends EntityProps {
 
 /** Properties that specify what model should be loaded.
  * @public
+ * @extensions
  */
 export interface ModelLoadProps {
   id?: Id64String;
@@ -34,6 +36,7 @@ export interface ModelLoadProps {
 
 /** Parameters for performing a query on [Model]($backend) classes.
  * @public
+ * @extensions
  */
 export interface ModelQueryParams extends EntityQueryParams {
   wantTemplate?: boolean;
@@ -42,6 +45,7 @@ export interface ModelQueryParams extends EntityQueryParams {
 
 /** Properties that describe a [GeometricModel]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricModelProps extends ModelProps {
   /** A unique identifier that is updated each time a change affecting the appearance of a geometric element within this model
@@ -54,6 +58,7 @@ export interface GeometricModelProps extends ModelProps {
 
 /** Properties that define a [GeometricModel2d]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricModel2dProps extends GeometricModelProps {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
@@ -62,6 +67,7 @@ export interface GeometricModel2dProps extends GeometricModelProps {
 
 /** Properties that define a [GeometricModel3d]($backend)
  * @public
+ * @extensions
  */
 export interface GeometricModel3dProps extends GeometricModelProps {
   /** If true, then the elements in this GeometricModel3d are not in real-world coordinates and will not be in the spatial index. */

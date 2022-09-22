@@ -1,5 +1,4 @@
 --require ts-node/register
---require jsdom-global/register
 --require ignore-styles
 --file ./test/unit/setupTests.js
 --check-leaks

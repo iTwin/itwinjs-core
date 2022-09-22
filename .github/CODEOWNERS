@@ -18,8 +18,6 @@
 .gitignore      @iTwin/itwinjs-core-admins
 rush.json       @iTwin/itwinjs-core-admins
 
-/clients                        @calebmshafer @ramanujam-raman
-
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
 # Due to syntax requirements, both can't be covered in a single line
 #
@@ -36,18 +34,14 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/build-tools/                       @calebmshafer @wgoehrig
 /common/**/certa/                             @calebmshafer @wgoehrig
 
-# Covers most client libraries, all others with more specific reviewers should be after these two lines
-/common/**/*-client.*                         @calebmshafer @ramanujam-raman
-/common/**/*-client/                          @calebmshafer @ramanujam-raman
-
-/common/**/*-extension/                       @bsteinbk @calebmshafer
+/common/**/*-extension/                       @aruniverse @calebmshafer
 
 /common/**/ecschema-*.*                       @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-*/                        @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                      @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                       @calebmshafer @ColinKerr @wgoehrig
-/common/**/core-electron.*                    @wgoehrig @ramanujam-raman
-/common/**/core-electron/                     @wgoehrig @ramanujam-raman
+/common/**/core-electron.*                    @wgoehrig @GytisCepk @ben-polinsky
+/common/**/core-electron/                     @wgoehrig @GytisCepk @ben-polinsky
 /common/**/eslint-plugin/                     @calebmshafer @paulius-valiunas
 /common/**/express-server.*                   @calebmshafer @wgoehrig
 /common/**/express-server/                    @calebmshafer @wgoehrig
@@ -65,20 +59,21 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/core-common/                       @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /common/**/editor-*.*                         @bbastings @kabentley @pmconne
 /common/**/editor-*/                          @bbastings @kabentley @pmconne
+/common/**/core-extension.*                   @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
+/common/**/core-extension/                    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /common/**/core-frontend.*                    @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-frontend/                     @kabentley @bbastings @iTwin/itwinjs-core-display
 /common/**/core-i18n.*                        @calebmshafer @wgoehrig
 /common/**/core-i18n/                         @calebmshafer @wgoehrig
 /common/**/core-markup.*                      @kabentley @pmconne @bbastings
 /common/**/core-markup/                       @kabentley @pmconne @bbastings
-/common/**/core-quantity.*                    @bsteinbk @calebmshafer
-/common/**/core-quantity/                     @bsteinbk @calebmshafer
+/common/**/core-quantity.*                    @calebmshafer @ColinKerr
+/common/**/core-quantity/                     @calebmshafer @ColinKerr
 /common/**/linear-referencing-backend.*       @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-backend/        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*        @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/         @calebmshafer @diegoalexdiaz
 /common/**/map-layers/                        @mdastous-bentley @MarcBedard8
-/common/**/oidc-signin-tool/                  @calebmshafer @wgoehrig
 /common/**/core-orbitgt.*                     @iTwin/itwinjs-core-display
 /common/**/core-orbitgt/                      @iTwin/itwinjs-core-display
 /common/**/perf-tools.*                       @calebmshafer @wgoehrig
@@ -94,7 +89,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/*-react/                           @iTwin/itwinjs-core-ui
 /common/**/webgl-compatibility.*              @iTwin/itwinjs-core-display @Ellord207
 /common/**/webgl-compatibility/               @iTwin/itwinjs-core-display @Ellord207
-/common/**/core-webpack-tools/                @calebmshafer @wgoehrig @aruniverse
+/common/**/core-webpack-tools/                @aruniverse @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines  @calebmshafer @wgoehrig @ColinKerr
 
@@ -103,18 +98,19 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/common                    @iTwin/itwinjs-core-admins @iTwin/itwinjs-core-display
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-*                @calebmshafer @ColinKerr @wgoehrig
-/core/electron                  @wgoehrig @ramanujam-raman
-/core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
+/core/electron                  @wgoehrig @GytisCepk @ben-polinsky
+/core/express-server            @calebmshafer @wgoehrig
+/core/extension                 @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
-/core/frontend/src/extension    @calebmshafer @wgoehrig
+/core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
 /core/geometry                  @bbastings @mgooding @dassaf4
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
-/core/mobile                    @iTwin/itwinjs-core-admins
+/core/mobile                    @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                   @iTwin/itwinjs-core-display
-/core/quantity                  @bsteinbk @calebmshafer
+/core/quantity                  @calebmshafer @ColinKerr
 /core/transformer               @MichaelBelousov @ColinKerr
 /core/webgl-compatibility       @iTwin/itwinjs-core-display @Ellord207
 
@@ -133,20 +129,23 @@ rush.json       @iTwin/itwinjs-core-admins
 
 /example-code                         @iTwin/itwinjs-core-admins
 
-/extensions                           @bsteinbk @calebmshafer
-/extensions/map-layers                @bsteinbk @mdastous-bentley
+/extensions                           @aruniverse @calebmshafer
+/extensions/test-extension            @aruniverse @calebmshafer @wgoehrig
+/extensions/map-layers                @mdastous-bentley @MarcBedard8
 
-/full-stack-tests/core                @iTwin/itwinjs-core-admins
-/full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
-/full-stack-tests/presentation  @iTwin/itwinjs-core-presentation
-/full-stack-tests/rpc           @calebmshafer @wgoehrig @swbsi
-/full-stack-tests/rpc-interface @calebmshafer @wgoehrig
+/full-stack-tests/core                    @iTwin/itwinjs-core-admins
+/full-stack-tests/ecschema-rpc-interface  @calebmshafer @ColinKerr @wgoehrig
+/full-stack-tests/presentation            @iTwin/itwinjs-core-presentation
+/full-stack-tests/rpc                     @calebmshafer @wgoehrig @swbsi
+/full-stack-tests/rpc-interface           @calebmshafer @wgoehrig
+/full-stack-tests/ui                      @iTwin/itwinjs-core-ui
 
 /presentation                   @iTwin/itwinjs-core-presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
 /test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
+/test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @bbastings @dassaf4
@@ -163,7 +162,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/webpack-core @calebmshafer @wgoehrig
+/tools/webpack-core @calebmshafer @wgoehrig @aruniverse
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig

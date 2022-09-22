@@ -7,7 +7,7 @@
 # The current LTS is tested in all normal CI/PR builds so no need to test it here.
 
 trigger: none
-
+pr: none
 schedules:
   - cron: "0 5 * * *"
     displayName: Daily midnight build
@@ -37,7 +37,7 @@ jobs:
         demands: Agent.OS -equals $(platform)
   - template: ci-core.yaml
     parameters:
-      name: Node_12_20
-      nodeVersion: 12.20.0
+      name: Node_12_22
+      nodeVersion: 12.22.0
       pool:
         demands: Agent.OS -equals $(platform)

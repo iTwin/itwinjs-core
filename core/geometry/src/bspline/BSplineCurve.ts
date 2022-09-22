@@ -34,6 +34,8 @@ import { BSpline1dNd } from "./BSpline1dNd";
 import { BSplineCurveOps } from "./BSplineCurveOps";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
+import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "../curve/internalContexts/PolygonOffsetContext";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -216,10 +218,9 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
   public override closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+    // seed at start point -- final point comes with final bezier perpendicular step.
     const point = this.fractionToPoint(0);
     const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
-    this.fractionToPoint(1.0, point);
-    result.updateIfCloserCurveFractionPointDistance(this, 1.0, point, spacePoint.distance(point));
 
     let span: BezierCurve3dH | undefined;
     const numSpans = this.numSpan;
@@ -227,7 +228,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       if (this._bcurve.knots.isIndexOfRealSpan(i)) {
         span = this.getSaturatedBezierSpan3dOr3dH(i, true, span) as BezierCurve3dH;
         if (span) {
-          if (span.updateClosestPointByTruePerpendicular(spacePoint, result)) {
+          // umm ... if the bspline is discontinuous, both ends should be tested.  Ignore that possibility ...
+          if (span.updateClosestPointByTruePerpendicular(spacePoint, result, false, true)) {
             // the detail records the span bezier -- promote it to the parent curve . ..
             result.curve = this;
             result.fraction = span.fractionToParentFraction(result.fraction);
@@ -237,6 +239,52 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return result;
   }
+
+    /** Return a deep clone. */
+  public abstract override clone(): BSplineCurve3dBase;
+
+  /** Return a transformed deep clone. */
+  public override cloneTransformed(transform: Transform): BSplineCurve3dBase {
+    const curve1 = this.clone();
+    curve1.tryTransformInPlace(transform);
+    return curve1;
+  }
+
+  /** Return a curve primitive which is a portion of this curve.
+   * @param fractionA [in] start fraction
+   * @param fractionB [in] end fraction
+   */
+  public override clonePartialCurve(fractionA: number, fractionB: number): BSplineCurve3dBase {
+    const clone = this.clone();
+    const origNumKnots = clone._bcurve.knots.knots.length;
+    let knotA = clone._bcurve.knots.fractionToKnot(fractionA);
+    let knotB = clone._bcurve.knots.fractionToKnot(fractionB);
+    clone._bcurve.addKnot(knotA, clone.degree);
+    clone._bcurve.addKnot(knotB, clone.degree);
+
+    if (origNumKnots === clone._bcurve.knots.knots.length)
+      return clone;  // full curve
+    if (knotA > knotB) {
+      const tmp = knotA; knotA = knotB; knotB = tmp;
+    }
+
+    // choose first/last knot and pole such that knotA/knotB has degree multiplicity in the new knot sequence
+    const iStartKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotA) - clone.degree + 1;
+    const iStartPole = iStartKnot * clone._bcurve.poleLength;
+    const iLastKnot = clone._bcurve.knots.knotToLeftKnotIndex(knotB);
+    let iLastKnotLeftMultiple = iLastKnot - clone._bcurve.knots.getKnotMultiplicityAtIndex(iLastKnot) + 1;
+    if (clone._bcurve.knots.knots[iLastKnot] < knotB)
+      iLastKnotLeftMultiple = iLastKnot + 1;
+    const iEndPole = (iLastKnotLeftMultiple + 1) * clone._bcurve.poleLength;  // one past last pole
+    const iEndKnot = iLastKnotLeftMultiple + clone.degree;  // one past last knot
+
+    // trim the arrays (leave knots unnormalized!)
+    clone._bcurve.knots.setKnotsCapture(clone._bcurve.knots.knots.slice(iStartKnot, iEndKnot));
+    clone._bcurve.packedData = clone._bcurve.packedData.slice(iStartPole, iEndPole);
+    clone.setWrappable(BSplineWrapMode.None);  // always open
+    return clone;
+  }
+
   /** Implement `CurvePrimitive.appendPlaneIntersections`
    * @param plane A plane (e.g. specific type Plane3dByOriginAndUnitNormal or Point4d)
    * @param result growing array of plane intersections
@@ -293,6 +341,19 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
       }
     }
     return numFound;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 
 }
@@ -368,7 +429,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   }
 
   /** Create a smoothly closed B-spline curve with uniform knots.
-   *  Note that the curve does not start at the first pole.
+   *  Note that the curve does not start at the first pole, and first and last poles should be distinct.
   */
   public static createPeriodicUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
     const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
@@ -448,18 +509,13 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return curve;
   }
   /** Return a deep clone */
-  public clone(): BSplineCurve3d {
+  public override clone(): BSplineCurve3d {
     const knotVector1 = this._bcurve.knots.clone();
     const curve1 = new BSplineCurve3d(this.numPoles, this.order, knotVector1);
     curve1._bcurve.packedData = this._bcurve.packedData.slice();
     return curve1;
   }
-  /** Return a transformed deep clone. */
-  public cloneTransformed(transform: Transform): BSplineCurve3d {
-    const curve1 = this.clone();
-    curve1.tryTransformInPlace(transform);
-    return curve1;
-  }
+
   /** Evaluate at a position given by fractional position within a span. */
   public evaluatePointInSpan(spanIndex: number, spanFraction: number): Point3d {
     this._bcurve.evaluateBuffersInSpan(spanIndex, spanFraction);
@@ -499,33 +555,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       this._bcurve.poleBuffer1[0], this._bcurve.poleBuffer1[1], this._bcurve.poleBuffer1[2],
       this._bcurve.poleBuffer2[0], this._bcurve.poleBuffer2[1], this._bcurve.poleBuffer2[2], result);
   }
-  /** Evaluate the curve point at a fractional of the entire knot range. */
-  public override fractionToPoint(fraction: number, result?: Point3d): Point3d {
-    return this.knotToPoint(this._bcurve.knots.fractionToKnot(fraction), result);
-  }
 
-  /** Evaluate the curve point at a fractional of the entire knot range. */
-  public override fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
-    const knot = this._bcurve.knots.fractionToKnot(fraction);
-    result = this.knotToPointAndDerivative(knot, result);
-    result.direction.scaleInPlace(this._bcurve.knots.knotLength01);
-    return result;
-  }
-
-  /** Construct a plane with
-   * * origin at the fractional position along the arc
-   * * x axis is the first derivative, i.e. tangent along the arc
-   * * y axis is the second derivative, i.e. in the plane and on the center side of the tangent.
-   * If the arc is circular, the second derivative is directly towards the center
-   */
-  public override fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
-    const knot = this._bcurve.knots.fractionToKnot(fraction);
-    result = this.knotToPointAnd2Derivatives(knot, result);
-    const a = this._bcurve.knots.knotLength01;
-    result.vectorU.scaleInPlace(a);
-    result.vectorV.scaleInPlace(a * a);
-    return result;
-  }
   /** test if almost the same curve as `other` */
   public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineCurve3d) {

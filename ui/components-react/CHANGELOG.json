@@ -2,6 +2,357 @@
   "name": "@itwin/components-react",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/components-react_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/components-react_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated desktop toolbar width and height to 40px"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/components-react_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Add ability to specify locale and format of Data and Time shown by timeline component."
+          },
+          {
+            "comment": "Add children to render inside the node"
+          },
+          {
+            "comment": "Added 'PropertyFilterBuilder' component for building complex filters using properties list"
+          },
+          {
+            "comment": "Add support for undefined value in TypeConverter."
+          },
+          {
+            "comment": "Avoid creating \"NaN\" string in numeric type converters."
+          },
+          {
+            "comment": "Changed FloatTypeConverter and IntTypeConverter 'convertFromString' method to return 'undefined' if string is no a number."
+          },
+          {
+            "comment": "Fix processing of widget container dragging to empty panel."
+          },
+          {
+            "comment": "Update iTwinUI-react to 1.38.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/components-react_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/components-react_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/components-react_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/components-react_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/components-react_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/components-react_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/components-react_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/components-react_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix `useTreeModel` returning stale model for the given model source"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/components-react_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/components-react_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items."
+          },
+          {
+            "comment": "Update UI to new UX design to allow only 2 sections of widgets per panel."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/components-react_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/components-react_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/components-react_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/components-react_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add data attributes to identify item and its UI provider."
+          },
+          {
+            "comment": "Update to itwinui-css version \"0.44.0\"."
+          },
+          {
+            "comment": "Update to @itwin/itwinui-react: 1.32.0"
+          },
+          {
+            "comment": "Update to latest itwinui-react."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/components-react_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/components-react_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/components-react_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use ToolbarAutoHidePopupContext to monitor widgets' authoidden state."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/components-react_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Update CustomNumberEditor to use size='small' itwinUi style."
+          },
+          {
+            "comment": "rename to @itwin/components-react"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed SignIn component"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Update snapshots"
+          },
+          {
+            "comment": "Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation"
+          },
+          {
+            "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined."
+          },
+          {
+            "comment": "Add missing public/beta types to the barrel file."
+          },
+          {
+            "comment": "Updated recommendation for using Breadcrumbs from itwinui-react instead of deprecated Breadcrumb"
+          },
+          {
+            "comment": "Change `ControlledTree` to take `TreeModel` instead of `VisibleTreeNodes`."
+          },
+          {
+            "comment": "Replace `useVisibleTreeNodes` with `useTreeModel` since consumers don't need to create `VisibleTreeNodes` anymore."
+          },
+          {
+            "comment": "Rename `ControlledTreeProps.treeEvents` to `eventsHandler`."
+          },
+          {
+            "comment": "Make `width` and `height` required props for `ControlledTree` and `TreeRenderer`."
+          },
+          {
+            "comment": "Clean up deprecated Tree and Drag & Drop related APIs"
+          },
+          {
+            "comment": "Clean up deprecated FilteringInput and PropertyGrid props"
+          },
+          {
+            "comment": "Make `width` and `height` props required for `VirtualizedPropertyGrid` and `VirtualizedPropertyGridWithDataProvider`"
+          },
+          {
+            "comment": "Update CustomNumberEditor resetting of bad values."
+          },
+          {
+            "comment": " update immer to fix security warning"
+          },
+          {
+            "comment": "Deprecated Breadcrumb component"
+          },
+          {
+            "comment": "Deprecate and promote apis"
+          },
+          {
+            "comment": "Deprecate Table component."
+          },
+          {
+            "comment": "Deprecate obsolete APIs. Publish beta APIs from last release."
+          },
+          {
+            "comment": "Export BeDragDropContext"
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Remove files generated by bad merge"
+          },
+          {
+            "comment": "Make ToolbarPopupContext public so user can call closePanel from their popup panels."
+          },
+          {
+            "comment": "Update props on iTwinUi-react Select so it works properly in auto-sized floating widgets."
+          },
+          {
+            "comment": "Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md."
+          },
+          {
+            "comment": "Update to latest itwinui-react"
+          },
+          {
+            "comment": "Clean up css for status bar entries to avoid unwanted text wrapping."
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "iTwinUI-react Table demo"
+          },
+          {
+            "comment": "Moved iTwinUI style overrides to ui-core from ui-framework"
+          },
+          {
+            "comment": "Rename ui directories to match new package names."
+          },
+          {
+            "comment": "Remove native key handling in React editor components because it's not longer needed with React 17."
+          },
+          {
+            "comment": "Add prop that prevents popup button panel from unmounting when closed."
+          },
+          {
+            "comment": "Promote property grid related APIs"
+          },
+          {
+            "comment": "Update to React 17."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally."
+          },
+          {
+            "comment": "Replaced ui-core Slider with one from iTwinUi-react. "
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Skip test causing CI job failures"
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/components-react_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

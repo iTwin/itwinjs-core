@@ -12,6 +12,7 @@ import { IModelConnection } from "../IModelConnection";
 /** A key that uniquely identifies a [RenderTexture]($common) in the context of an [[IModelConnection]], used for caching.
  * @see [[TextureCacheOwnership]].
  * @public
+ * @extensions
  */
 export type TextureCacheKey = string | Gradient.Symb;
 
@@ -19,6 +20,7 @@ export type TextureCacheKey = string | Gradient.Symb;
  * which point it will be disposed.
  * @see [[TextureOwnership]]
  * @public
+ * @extensions
  */
 export interface TextureCacheOwnership {
   /** The iModel on which the texture will be cached. */
@@ -35,18 +37,21 @@ export interface TextureCacheOwnership {
  * texture is responsible for calling its `dispose` method when it is no longer needed.
  * @see [[CreateTextureArgs.ownership]]
  * @public
+ * @extensions
  */
 export type TextureOwnership = TextureCacheOwnership | "external";
 
 /** An object from which a [RenderTexture]($common) can be created.
  * @see [[TextureImage.source]]
  * @public
+ * @extensions
  */
-export type TextureImageSource = HTMLImageElement | ImageBuffer; // ###TODO | HTMLCanvasElement etc
+export type TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap; // ###TODO | HTMLCanvasElement etc
 
 /** Describes the image from which to create a [RenderTexture]($common).
  * @see [[CreateTextureArgs.image]]
  * @public
+ * @extensions
  */
 export interface TextureImage {
   /** The object that supplies the texture image. */
@@ -59,6 +64,7 @@ export interface TextureImage {
 
 /** Arguments supplied to [[RenderSystem.createTexture]] to create a [RenderTexture]($common).
  * @public
+ * @extensions
  */
 export interface CreateTextureArgs {
   /** The type of texture to create. Default: [RenderTexture.Type.Normal]($common). */
@@ -76,6 +82,7 @@ export interface CreateTextureArgs {
 
 /** Arguments supplied to [[RenderSystem.createTextureFromSource]].
  * @public
+ * @extensions
  */
 export interface CreateTextureFromSourceArgs {
   /** The type of texture to create. Default: [RenderTexture.Type.Normal]($common). */

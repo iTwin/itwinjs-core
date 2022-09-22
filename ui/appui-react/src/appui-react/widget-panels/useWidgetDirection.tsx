@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { findTab, isHorizontalPanelSide, NineZoneContext, TabIdContext } from "@itwin/appui-layout-react";
+import { getTabLocation, isHorizontalPanelSide, NineZoneContext, TabIdContext } from "@itwin/appui-layout-react";
 import { useFrameworkVersion } from "../hooks/useFrameworkVersion";
 
 /** Returns widget direction.
@@ -18,8 +18,9 @@ export function useWidgetDirection(): "horizontal" | "vertical" {
   const version = useFrameworkVersion();
   const tabId = React.useContext(TabIdContext);
   const nineZone = React.useContext(NineZoneContext);
+  // istanbul ignore else
   if (version === "2") {
-    const tabLocation = findTab(nineZone, tabId);
+    const tabLocation = getTabLocation(nineZone, tabId);
     if (tabLocation && ("side" in tabLocation) && isHorizontalPanelSide(tabLocation.side)) {
       return "horizontal";
     }

@@ -85,3 +85,36 @@ export function addUnpackAndNormalize2Bytes(builder: ShaderBuilder): void {
   builder.addFunction(unpack2Bytes);
   builder.addFunction(unpackAndNormalize2Bytes);
 }
+
+/** Given an IEEE 32-bit float stuffed into a RGBA unsigned byte texture, extract the float.
+ * The input vec4 components are in the integer range [0..255].
+ * From https://github.com/CesiumGS/cesium/blob/main/Source/Shaders/Builtin/Functions/unpackFloat.glsl
+ * @internal
+ */
+export const decodeFloat32 = `
+float decodeFloat32(vec4 packedFloat) {
+  float sign = 1.0 - step(128.0, packedFloat[3]) * 2.0;
+  float exponent = 2.0 * mod(packedFloat[3], 128.0) + step(128.0, packedFloat[2]) - 127.0;
+  if (exponent == -127.0)
+    return 0.0;
+
+  float mantissa = mod(packedFloat[2], 128.0) * 65536.0 + packedFloat[1] * 256.0 + packedFloat[0] + float(0x800000);
+  float result = sign * exp2(exponent - 23.0) * mantissa;
+  return result;
+}
+`;
+
+export const decode3Float32 = `
+// This expects an array of 4 vec3s, where each vec4 contains a slice of all 3 of the packed floats in .xyz
+// pf0 is in [0].x, pf1 is in [0].y, and pf2 in [0].z
+// e.g.: packedFloat[0] = vec3(pf0.x, pf1.x, pf2.x)
+// likewise .y info is in [1], .z in [2], and .w in [3]
+vec3 decode3Float32(vec3 packedFloat[4]) {
+  vec3 sign = 1.0 - step(128.0, packedFloat[3].xyz) * 2.0;
+  vec3 exponent = 2.0 * mod(packedFloat[3].xyz, 128.0) + step(128.0, packedFloat[2].xyz) - 127.0;
+  vec3 zeroFlag = vec3(notEqual(vec3(-127.0), exponent));
+  vec3 mantissa = mod(packedFloat[2].xyz, 128.0) * 65536.0 + packedFloat[1].xyz * 256.0 + packedFloat[0].xyz + float(0x800000);
+  vec3 result = sign * exp2(exponent - 23.0) * mantissa * zeroFlag;
+  return result;
+}
+`;

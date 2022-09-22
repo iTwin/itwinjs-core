@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "3.1.0-dev.11",
+  "version": "3.4.0-dev.50",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -20,7 +20,10 @@
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha"
+    "test": "mocha",
+    "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
+    "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
+    "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets"
   },
   "repository": {
     "type": "git",
@@ -38,10 +41,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.1.0-dev.11",
-    "@itwin/core-common": "workspace:^3.1.0-dev.11",
-    "@itwin/core-geometry": "workspace:^3.1.0-dev.11",
-    "@itwin/ecschema-metadata": "workspace:^3.1.0-dev.11"
+    "@itwin/core-bentley": "workspace:^3.4.0-dev.50",
+    "@itwin/core-common": "workspace:^3.4.0-dev.50",
+    "@itwin/core-geometry": "workspace:^3.4.0-dev.50",
+    "@opentelemetry/api": "^1.0.4"
+  },
+  "peerDependenciesMeta": {
+    "@opentelemetry/api": {
+      "optional": true
+    }
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -52,40 +60,45 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/chai": "^4.1.4",
+    "@opentelemetry/api": "^1.0.4",
+    "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",
-    "@types/node": "14.14.31",
-    "@types/semver": "^5.5.0",
+    "@types/node": "16.11.59",
+    "@types/semver": "7.3.10",
     "@types/sinon": "^9.0.0",
-    "@types/ws": "^6.0.4",
+    "@types/ws": "^7.0.0",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx2": "^3.0.0",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
+    "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
-    "mocha": "^8.3.2",
+    "mocha": "^10.0.0",
+    "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^9.0.2",
-    "typescript": "~4.4.0"
+    "source-map-loader": "^4.0.0",
+    "typescript": "~4.4.0",
+    "webpack": "^5.64.4"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
-    "@bentley/imodeljs-native": "3.1.1",
+    "@bentley/imodeljs-native": "3.4.12",
     "@itwin/core-telemetry": "workspace:*",
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "json5": "^2.2.0",
     "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
-    "semver": "^5.5.0",
+    "semver": "^7.3.5",
     "ws": "^7.5.3"
   },
   "nyc": {

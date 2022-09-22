@@ -178,26 +178,25 @@ export class BriefcaseManager {
     return IModelHost.hubAccess.acquireNewBriefcaseId(arg);
   }
 
-  /** Download a new briefcase from iModelHub for the supplied iModelId.
+  /**
+   * Download a new briefcase from iModelHub for the supplied iModelId.
    *
-   * The process of downloading a briefcase file involves first obtaining a valid BriefcaseId from IModelHub. For each IModel, IModelHub maintains
-   * a list of BriefcaseIds assigned to users, to ensure that no two users have the same BriefcaseId. Typically a given user will have only
-   * one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one briefcase to make isolated independent sets of changes,
-   * but that is exceedingly complicated and rare. If no BriefcaseId is supplied, a new one is acquired from iModelHub.
+   * Briefcases are local files holding a copy of an iModel.
+   * Briefcases may either be specific to an individual user (so that it can be modified to create changesets), or it can be readonly so it can accept but not create changesets.
+   * Every briefcase internally holds its [[BriefcaseId]]. Writeable briefcases have a `BriefcaseId` "assigned" to them by iModelHub. No two users will ever have the same BriefcaseId.
+   * Readonly briefcases are "unassigned" with the special value [[BriefcaseId.Unassigned]].
    *
-   * Then, a Checkpoint file (as of a ChangeSetId, typically "Latest") is downloaded from IModelHub. After the download completes,
-   * the briefcaseId in the local file is changed to acquired briefcaseId, changing the checkpoint file into a briefcase file.
+   * Typically a given user will have only one briefcase on their machine for a given iModelId. Rarely, it may be necessary to use more than one
+   * briefcase to make isolated independent sets of changes, but that is exceedingly complicated and rare.
    *
-   * Each of these steps requires a valid `AuthorizedClientRequestContext` to provide the user's credentials for the requests.
+   * Callers of this method may supply a BriefcaseId, or if none is supplied, a new one is acquired from iModelHub.
    *
-   * @param request The properties that specify the briefcase file to be downloaded.
+   * @param arg The arguments that specify the briefcase file to be downloaded.
    * @returns The properties of the local briefcase in a Promise that is resolved after the briefcase is fully downloaded and the briefcase file is ready for use via [BriefcaseDb.open]($backend).
    * @note The location of the local file to hold the briefcase is arbitrary and may be any valid *local* path on your machine. If you don't supply
    * a filename, the local briefcase cache is used by creating a file with the briefcaseId as its name in the `briefcases` folder below the folder named
    * for the IModelId.
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
-   * @note The special briefcaseId [[BriefcaseIdValue.Unassigned]] (0) can be used for a local briefcase that can accept changesets but may not be generate changesets.
-   * @see CheckpointManager.downloadCheckpoint
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
     const briefcaseId = arg.briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);

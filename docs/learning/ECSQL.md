@@ -331,7 +331,7 @@ SELECT Model FROM bis.Element WHERE ECInstanceId=?
 
 By default, any ECClass in the FROM clause of an ECSQL is treated polymorphically, i.e. all its subclasses are considered as well. If an ECClass should be treated non-polymorphically, i.e. only the class itself and not its subclasses should be considered, add the `ONLY` keyword in front of it.
 
-> This also applies to [Mixins](../bis/intro/mixins.md). Mixins technically are ECClasses (abstract Entity ECClasses to be precise). So you can simply query against a mixin class without knowing which classes actually implement the mixin.
+> This also applies to [Mixins](../bis/guide/fundamentals/mixins.md). Mixins technically are ECClasses (abstract Entity ECClasses to be precise). So you can simply query against a mixin class without knowing which classes actually implement the mixin.
 
 ### Examples
 

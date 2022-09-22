@@ -7,11 +7,11 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
+  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeType, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
+  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
@@ -79,6 +79,7 @@ export interface SelectedAndReadyTiles {
  * @see [[TileAdmin.gpuMemoryLimit]] to adjust the limit after startup.
  * @see [[TileAdmin.totalTileContentBytes]] for the current amount of GPU memory being used for tile contents.
  * @public
+ * @extensions
  */
 export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number;
 
@@ -86,6 +87,7 @@ export type GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | num
  * @see [[TileAdmin.Props.gpuMemoryLimits]] to configure the limit at startup.
  * @see [[GpuMemoryLimit]] for a description of how the available limits and how they are imposed.
  * @public
+ * @extensions
  */
 export interface GpuMemoryLimits {
   /** Limits applied to clients running on mobile devices. Defaults to "default" if undefined. */
@@ -99,6 +101,7 @@ export interface GpuMemoryLimits {
  * @see [[IModelApp.tileAdmin]] to access the instance of the TileAdmin.
  * @see [[TileAdmin.Props]] to configure the TileAdmin at startup.
  * @public
+ * @extensions
  */
 export class TileAdmin {
   private _versionInfo?: TileVersionInfo;
@@ -113,8 +116,11 @@ export class TileAdmin {
   private readonly _retryInterval: number;
   private readonly _enableInstancing: boolean;
   private readonly _enableIndexedEdges: boolean;
+  private _generateAllPolyfaceEdges: boolean;
   /** @internal */
   public readonly enableImprovedElision: boolean;
+  /** @internal */
+  public readonly enableFrontendScheduleScripts: boolean;
   /** @internal */
   public readonly ignoreAreaPatterns: boolean;
   /** @internal */
@@ -214,7 +220,9 @@ export class TileAdmin {
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this._enableIndexedEdges = options.enableIndexedEdges ?? defaultTileOptions.enableIndexedEdges;
+    this._generateAllPolyfaceEdges = options.generateAllPolyfaceEdges ?? defaultTileOptions.generateAllPolyfaceEdges;
     this.enableImprovedElision = options.enableImprovedElision ?? defaultTileOptions.enableImprovedElision;
+    this.enableFrontendScheduleScripts = options.enableFrontendScheduleScripts ?? false;
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
@@ -287,6 +295,16 @@ export class TileAdmin {
   public get enableInstancing() { return this._enableInstancing && IModelApp.renderSystem.supportsInstancing; }
   /** @internal */
   public get enableIndexedEdges() { return this._enableIndexedEdges && IModelApp.renderSystem.supportsIndexedEdges; }
+  /** @internal */
+  public get generateAllPolyfaceEdges() { return this._generateAllPolyfaceEdges; }
+  public set generateAllPolyfaceEdges(val: boolean) { this._generateAllPolyfaceEdges = val; }
+  /** @internal */
+  public get edgeOptions(): EdgeOptions {
+    return {
+      indexed: this.enableIndexedEdges,
+      smooth: this.generateAllPolyfaceEdges,
+    };
+  }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -640,7 +658,10 @@ export class TileAdmin {
    */
   public async requestElementGraphics(iModel: IModelConnection, requestProps: ElementGraphicsRequestProps): Promise<Uint8Array | undefined> {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
-      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed };
+      requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
+
+    if (undefined === requestProps.quantizePositions)
+      requestProps = { ...requestProps, quantizePositions: false };
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
@@ -705,6 +726,27 @@ export class TileAdmin {
     const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
     const childLoad = this.onTileChildrenLoad.addListener((tile) => callback(tile.tree.iModel));
     return () => { tileLoad(); treeLoad(); childLoad(); };
+  }
+
+  /** Determine what information about the schedule script is needed to produce tiles.
+   * If no script, or the script doesn't require batching, then no information is needed - normal tiles can be used.
+   * If possible and enabled, normal tiles can be requested and then processed on the frontend based on the ModelTimeline.
+   * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
+   * @internal
+   */
+  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
+    if (!script || !script.script.requiresBatching)
+      return undefined;
+
+    const timeline = script.script.modelTimelines.find((x) => x.modelId === modelId);
+    if (!timeline || (!timeline.requiresBatching && !timeline.containsTransform))
+      return undefined;
+
+    // Frontend schedule scripts require the element Ids to be included in the script - previously saved views may have omitted them.
+    if (!Id64.isValidId64(script.sourceId) || (this.enableFrontendScheduleScripts && !timeline.omitsElementIds))
+      return { timeline };
+
+    return { animationId: script.sourceId };
   }
 
   private dispatchTileTreePropsRequests(): void {
@@ -858,12 +900,6 @@ export class TileAdmin {
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
-
-    // Ugh this is all so gross and stupid. Can't we just ensure rpc interfaces get registered deterministically?
-    IModelTileRpcInterface.getClient().isUsingExternalTileCache().then((usingCache) => {
-      if (usingCache)
-        this.channels.enableCloudStorageCache();
-    }).catch(() => { });
   }
 }
 
@@ -937,6 +973,15 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * Default value: true
      */
     enableIndexedEdges?: boolean;
+
+    /** If true then if a [Polyface]($geometry) lacks edge visibility information, the display system will display the edges of all of its faces.
+     * Otherwise, the display system will attempt to infer the visibility of each interior edge based on the angle between the two adjacent faces.
+     * Edge inference can produce less visually useful results.
+     *
+     * Default value: true
+     * @beta
+     */
+    generateAllPolyfaceEdges?: boolean;
 
     /** If true, during tile generation the backend will perform tighter intersection tests to more accurately identify empty sub-volumes.
      * This can reduce the number of tiles requested and the number of tile requests that return no content.
@@ -1131,6 +1176,14 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @public
      */
     cesiumIonKey?: string;
+
+    /** If true, when applying a schedule script to a view, ordinary tiles will be requested and then reprocessed on the frontend to align with the script's
+     * animation nodes. This permits the use of schedule scripts not stored in the iModel and improves utilization of the tile cache for animated views.
+     * If false, the schedule script must be stored in the iModel and special tiles must be requested from the backend to align with the script's animation nodes.
+     * Default value: false.
+     * @public
+     */
+    enableFrontendScheduleScripts?: boolean;
   }
 
   /** The number of bytes of GPU memory associated with the various [[GpuMemoryLimit]]s for non-mobile devices.

@@ -22,7 +22,7 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
-import { getItemNamesFromFormatString } from "../utils/FormatEnums";
+import { getItemNamesFromFormatString } from "@itwin/core-quantity";
 import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
 import { SchemaGraph } from "../utils/SchemaGraph";
@@ -655,7 +655,7 @@ export class SchemaReadHelper<T = unknown> {
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     await (classObj as ECClass).fromJSON(classProps);
 
-    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
+    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass, classObj.fullName)) {
       await this.loadPropertyTypes(classObj, propName, propType, rawProp);
     }
 
@@ -683,7 +683,7 @@ export class SchemaReadHelper<T = unknown> {
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     (classObj as ECClass).fromJSONSync(classProps);
 
-    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
+    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass, classObj.fullName)) {
       this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
     }
 

@@ -192,6 +192,7 @@ export class RealityTileTree extends TileTree {
     const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
+    args.processSelectedTiles(selectedTiles);
     let sortIndices;
 
     if (!this.parentsAndChildrenExclusive) {
@@ -199,9 +200,8 @@ export class RealityTileTree extends TileTree {
       sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
     }
 
-    const classifier = args.context.planarClassifiers.get(this.modelId);
-    if (classifier && !(args instanceof GraphicsCollectorDrawArgs))
-      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+    if (! (args instanceof GraphicsCollectorDrawArgs))
+      this.collectClassifierGraphics(args, selectedTiles);
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
@@ -268,6 +268,11 @@ export class RealityTileTree extends TileTree {
     for (const graphicTypeBranch of graphicTypeBranches) {
       args.drawGraphicsWithType(graphicTypeBranch[0], graphicTypeBranch[1]);
     }
+  }
+  protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier)
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
   }
 
   public getTraversalChildren(depth: number) {

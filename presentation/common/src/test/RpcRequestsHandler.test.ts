@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
@@ -14,14 +14,14 @@ import {
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
-import { DiagnosticsScopeLogs } from "../presentation-common/Diagnostics";
+import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
-  ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions,
-  DisplayLabelsRequestOptions, DistinctValuesRequestOptions, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions,
-  HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
+  ComputeSelectionRequestOptions, ContentDescriptorRequestOptions, ContentInstanceKeysRequestOptions, ContentRequestOptions,
+  ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
+  FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyRequestOptions, SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
@@ -40,8 +40,8 @@ describe("RpcRequestsHandler", () => {
   let clientId: string;
   let defaultRpcHandlerOptions: { imodel: IModelRpcProps };
   const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
-  const successResponse = async <TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
-  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
+  const successResponse = async <TResult>(result: TResult, diagnostics?: ClientDiagnostics): PresentationRpcResponse<TResult> => ({ statusCode: PresentationStatus.Success, result, diagnostics });
+  const errorResponse = async (statusCode: PresentationStatus, errorMessage?: string, diagnostics?: ClientDiagnostics): PresentationRpcResponse => ({ statusCode, errorMessage, result: undefined, diagnostics });
 
   beforeEach(() => {
     clientId = faker.random.uuid();
@@ -94,9 +94,33 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const diagnosticsResult: ClientDiagnostics = {};
         await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
+      });
+
+      it("removes redundant ruleset properties", async () => {
+        const func = sinon.stub(Logger, "logWarning");
+
+        const options = {
+          rulesetOrId: {
+            property: "abc",
+            $schema: "schema",
+            id: "id",
+            rules: [],
+          },
+          imodel: token,
+        };
+
+        const actualResult = await handler.request(async (_: IModelRpcProps, hierarchyOptions: HierarchyRpcRequestOptions) => {
+          return successResponse(hierarchyOptions.rulesetOrId);
+        }, options);
+
+        expect(actualResult.hasOwnProperty("property")).to.be.true;
+        expect(actualResult.hasOwnProperty("$schema")).to.be.false;
+        expect(actualResult.hasOwnProperty("id")).to.be.true;
+        expect(actualResult.hasOwnProperty("rules")).to.be.true;
+        expect(func.callCount).to.eq(1);
       });
 
     });
@@ -123,7 +147,7 @@ describe("RpcRequestsHandler", () => {
         const diagnosticsOptions = {
           handler: sinon.spy(),
         };
-        const diagnosticsResult: DiagnosticsScopeLogs[] = [];
+        const diagnosticsResult: ClientDiagnostics = {};
         const func = sinon.fake(async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
@@ -144,10 +168,10 @@ describe("RpcRequestsHandler", () => {
           handler: sinon.spy(),
         };
         let funcCallCount = 0;
-        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, [{ scope: `${funcCallCount++}` }]));
+        const func = sinon.fake(async () => errorResponse(PresentationStatus.BackendTimeout, undefined, { logs: [{ scope: `${funcCallCount++}` }] }));
         await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
         expect(diagnosticsOptions.handler.callCount).to.eq(handler.maxRequestRepeatCount);
-        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith([{ scope: `${callIndex}` }]));
+        diagnosticsOptions.handler.getCalls().forEach((call, callIndex) => expect(call).to.be.calledWith({ logs: [{ scope: `${callIndex}` }] }));
       });
 
     });
@@ -541,17 +565,19 @@ describe("RpcRequestsHandler", () => {
     });
 
     it("forwards computeSelection call", async () => {
-      const handlerOptions: SelectionScopeRequestOptions<IModelRpcProps> = {
+      const handlerOptions: ComputeSelectionRequestOptions<IModelRpcProps> = {
         imodel: token,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const rpcOptions: PresentationRpcRequestOptions<SelectionScopeRequestOptions<any>> = {
+      const rpcOptions: PresentationRpcRequestOptions<ComputeSelectionRequestOptions<any>> = {
         clientId,
+        elementIds: [Id64.invalid],
+        scope: { id: "test scope" },
       };
-      const ids = new Array<Id64String>();
-      const scopeId = faker.random.uuid();
       const result = new KeySet().toJSON();
-      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions, ids, scopeId)).returns(async () => successResponse(result)).verifiable();
-      expect(await handler.computeSelection(handlerOptions, ids, scopeId)).to.eq(result);
+      rpcInterfaceMock.setup(async (x) => x.computeSelection(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.computeSelection(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

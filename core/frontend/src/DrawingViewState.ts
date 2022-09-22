@@ -8,7 +8,7 @@
 
 import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Frustum, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d, Frustum, HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -78,6 +78,25 @@ class SectionAttachmentInfo {
     return new SectionAttachmentInfo(this._spatialView, this._drawingToSpatialTransform, this._displaySpatialView);
   }
 
+  public preload(options: HydrateViewStateRequestProps): void {
+    if (!this.wantDisplayed)
+      return;
+
+    if (this._spatialView instanceof ViewState3d)
+      return;
+
+    if (!Id64.isValidId64(this._spatialView))
+      return;
+
+    options.spatialViewId = this._spatialView;
+    options.viewStateLoadProps = {
+      displayStyle: {
+        omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
+        compressExcludedElementIds: true,
+      },
+    };
+  }
+
   public async load(iModel: IModelConnection): Promise<void> {
     if (!this.wantDisplayed)
       return;
@@ -93,12 +112,22 @@ class SectionAttachmentInfo {
       this._spatialView = spatialView;
   }
 
-  public createAttachment(): SectionAttachment | undefined {
+  public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection): Promise<void> {
+    let spatialView;
+    if (options.spatialViewProps) {
+      spatialView = await iModel.views.convertViewStatePropsToViewState(options.spatialViewProps);
+    }
+
+    if (spatialView instanceof ViewState3d)
+      this._spatialView = spatialView;
+  }
+
+  public createAttachment(toSheet: Transform | undefined): SectionAttachment | undefined {
     if (!this.wantDisplayed || !(this._spatialView instanceof ViewState3d))
       return undefined;
 
     const spatialToDrawing = this._drawingToSpatialTransform.inverse();
-    return spatialToDrawing ? new SectionAttachment(this._spatialView, spatialToDrawing, this._drawingToSpatialTransform) : undefined;
+    return spatialToDrawing ? new SectionAttachment(this._spatialView, spatialToDrawing, this._drawingToSpatialTransform, toSheet) : undefined;
   }
 
   public get sectionDrawingInfo(): SectionDrawingInfo {
@@ -153,7 +182,7 @@ class SectionAttachment {
     return this._drawingExtents.z;
   }
 
-  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform) {
+  public constructor(view: ViewState3d, toDrawing: Transform, fromDrawing: Transform, toSheet: Transform | undefined) {
     // Save the input for clone(). Attach a copy to the viewport.
     this._toDrawing = toDrawing;
     this._fromDrawing = fromDrawing;
@@ -165,7 +194,8 @@ class SectionAttachment {
     let clip = this.view.getViewClip();
     if (clip) {
       clip = clip.clone();
-      clip.transformInPlace(this._toDrawing);
+      const clipTransform = toSheet ? toSheet.multiplyTransformTransform(this._toDrawing) : this._toDrawing;
+      clip.transformInPlace(clipTransform);
       clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     }
 
@@ -264,6 +294,7 @@ class SectionAttachment {
 
 /** A view of a [DrawingModel]($backend)
  * @public
+ * @extensions
  */
 export class DrawingViewState extends ViewState2d {
   /** @internal */
@@ -322,7 +353,7 @@ export class DrawingViewState extends ViewState2d {
   public override attachToViewport(args: AttachToViewportArgs): void {
     super.attachToViewport(args);
     assert(undefined === this._attachment);
-    this._attachment = this._attachmentInfo.createAttachment();
+    this._attachment = this._attachmentInfo.createAttachment(args.drawingToSheetTransform);
   }
 
   /** @internal */
@@ -372,11 +403,18 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override async load(): Promise<void> {
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     assert(!this.isAttachedToViewport);
+    super.preload(hydrateRequest);
+    this._attachmentInfo.preload(hydrateRequest);
+  }
 
-    await super.load();
-    await this._attachmentInfo.load(this.iModel);
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this._attachmentInfo.postload(hydrateResponse, this.iModel));
+    await Promise.all(promises);
   }
 
   public static override createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState {

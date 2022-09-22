@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
-import { Icon } from "@itwin/core-react";
+import { AbstractWidgetProps, BackstageItem, ConditionalStringValue, StringGetter } from "@itwin/appui-abstract";
+import { Icon, IconHelper, IconSpec } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 
 /** A set of helper methods for various props
@@ -54,5 +54,18 @@ export class PropsHelper {
       if (newObj[key] !== prevObj[key]) return false;
     }
     return true;
+  }
+  public static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem> {
+    // istanbul ignore else
+    if (!iconSpec || !React.isValidElement(iconSpec))
+      return {};
+
+    // istanbul ignore else
+    if (!internalData)
+      internalData = new Map<string,any>();
+
+    const icon = IconHelper.getIconData(iconSpec, internalData);
+
+    return (icon === "" ? {icon} : {icon, internalData });
   }
 }

@@ -8,7 +8,6 @@ import {
   ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
   ScreenViewport, ViewState,
 } from "@itwin/core-frontend";
-import { MapLayersWidgetControl } from "@itwin/map-layers"; // used to test map-layers widget control
 import { NodeKey } from "@itwin/presentation-common";
 import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, ContentLayoutProps, RelativePosition, SpecialKey, StageUsage, ToolbarItemUtilities, WidgetState,
@@ -27,8 +26,6 @@ import {
 } from "@itwin/appui-react";
 import { Button, Slider } from "@itwin/itwinui-react";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../../../frontend/index";
-// SVG Support - SvgPath or SvgSprite
-// import { SvgPath } from "@itwin/core-react";
 import { AccuDrawPopupTools } from "../../tools/AccuDrawPopupTools";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { ToolWithDynamicSettings } from "../../tools/ToolWithDynamicSettings";
@@ -363,7 +360,7 @@ export class ViewsFrontstage extends FrontstageProvider {
       <Frontstage id={ViewsFrontstage.stageId}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={this._contentGroupProvider}
-        isInFooterMode={true} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
         usage={StageUsage.General}
         version={3.1} // Defaults to 0. Increment this when Frontstage changes are meaningful enough to reinitialize saved user layout settings.
         contentManipulationTools={
@@ -404,11 +401,6 @@ export class ViewsFrontstage extends FrontstageProvider {
             defaultState={ZoneState.Minimized}
             initialWidth={400}
             widgets={[
-              // Used when using map-layers as a package and not using UiItemsProvider (compatible with V1 of framework)
-              <Widget id={MapLayersWidgetControl.id} label={MapLayersWidgetControl.label}
-                control={MapLayersWidgetControl} iconSpec={MapLayersWidgetControl.iconSpec}
-                applicationData={{ hideExternalMapLayers: false, mapTypeOptions: { supportTileUrl: true, supportWmsAuthentication: true }, fetchPublicMapLayerSources: true }} />,
-
               // <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
               //   applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
               <Widget iconSpec="icon-visibility" label="Searchable Tree" control={VisibilityWidgetControl}
@@ -421,7 +413,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                     },
                   },
                 }}
-                fillZone={true} />,
+                fillZone={true} defaultFloatingSize={{width:330, height:540}} isFloatingStateWindowResizable={true} />,
             ]}
           />
         }
@@ -454,8 +446,11 @@ export class ViewsFrontstage extends FrontstageProvider {
                   id={ViewsFrontstage.unifiedSelectionPropertyGridId}
                   control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                   applicationData={{ iModelConnection }}
+                  isFloatingStateWindowResizable={true}
+                  defaultFloatingSize={{width:200, height:300}}
                 />,
-                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+                <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder"
+                  labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               ]}
           />
         }
@@ -807,8 +802,12 @@ class AdditionalTools {
         const widgetDef = frontstageDef.findWidgetDef("uitestapp-test-wd3");
         if (!widgetDef)
           return;
-        widgetDef.setWidgetState(WidgetState.Open);
-        widgetDef.expand();
+        if (widgetDef.activeState === WidgetState.Open || widgetDef.activeState ===  WidgetState.Floating) {
+          widgetDef.setWidgetState(WidgetState.Hidden);
+        } else {
+          widgetDef.setWidgetState(WidgetState.Open);
+          widgetDef.expand();
+        }
       },
     }), { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, CoreTools.restoreFrontstageLayoutCommandItemDef, { groupPriority: 40 }),

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
 import { IModelJsExpressServer } from "@itwin/express-server";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
@@ -12,7 +12,7 @@ import { loggerCategory } from "../../common/TestAppConfiguration";
 /**
  * Initializes Web Server backend
  */
-export async function initializeWeb(opts?: IModelHostConfiguration) {
+export async function initializeWeb(opts?: IModelHostOptions) {
   // tell BentleyCloudRpcManager which RPC interfaces to handle
   const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "ui-test-app", version: "v1.0" } }, getSupportedRpcs());
 

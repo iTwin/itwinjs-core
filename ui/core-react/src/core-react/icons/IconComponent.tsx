@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Icon
  */
@@ -12,6 +13,7 @@ import classnames from "classnames";
 import { ConditionalStringValue, IconSpecUtilities } from "@itwin/appui-abstract";
 import { SvgSprite } from "./SvgSprite";
 import { CommonProps } from "../utils/Props";
+import DOMPurify, * as DOMPurifyNS from "dompurify";
 
 /** Prototype for an IconSpec which can be a string, ReactNode or ConditionalStringValue.
  * @public
@@ -47,7 +49,24 @@ export function Icon(props: IconProps) {
           <SvgSprite src={svgSource} />
         </i>
       );
-
+    const webComponentString = IconSpecUtilities.getWebComponentSource(iconString);
+    if (webComponentString) {
+      const svgLoader = `<svg-loader src=${webComponentString}></svg-loader>`;
+      const svgDiv = `<div>${svgLoader}</div>`;
+      // the esm build of dompurify has a default import but the cjs build does not
+      // if there is a default export, use it (likely esm), otherwise use the namespace
+      // istanbul ignore next
+      const sanitizer = DOMPurify ?? DOMPurifyNS;
+      const sanitizedIconString = sanitizer.sanitize(svgDiv, { ALLOWED_TAGS: ["svg-loader"] });
+      // we can safely disable jam3/no-sanitizer-with-danger as we are sanitizing above
+      // eslint-disable-next-line @typescript-eslint/naming-convention, jam3/no-sanitizer-with-danger
+      const webComponentNode = <div dangerouslySetInnerHTML={{ __html: sanitizedIconString }}></div>;
+      return (
+        <i className={classnames("icon", "core-svg-icon", props.className)} >
+          {webComponentNode}
+        </i>
+      );
+    }
     return (<i className={classnames("icon", iconString, props.className)} style={props.style} />);
   }
 

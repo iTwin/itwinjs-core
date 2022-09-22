@@ -9,10 +9,9 @@ import { SchemaItemType } from "../ECObjects";
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]
- * @alpha
+ * @internal
  */
 export class UnitConversion {
-  /** @internal */
   constructor(public readonly factor: number = 1.0, public readonly offset: number = 0.0) {}
 
   /**

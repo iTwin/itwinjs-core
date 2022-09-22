@@ -10,21 +10,19 @@ import { RelationshipPathSpecification } from "../../RelationshipPathSpecificati
 import { PropertySpecification } from "../PropertySpecification";
 
 /**
- * Meaning of the relationship
+ * Meaning of the relationship.
  * @public
  */
 export enum RelationshipMeaning {
   /**
-   * Related instance is part of the primary instance. Related properties
-   * with this meaning are displayed in UI as if they belonged to the
-   * primary instance.
+   * The properties should be displayed as if they belonged to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance).
+   * Generally that means they assigned a category, that's nested under the default category.
    */
   SameInstance = "SameInstance",
 
   /**
-   * Related instance if not part of the primary instance - it should
-   * appear as related. UI components may display related instance properties
-   * differently, e.g. put them under a different category, etc.
+   * The properties should be distinguished from properties of the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
+   * and shown separately to make it clear they belong to another instance. Generally that means they're assigned a separate root category.
    */
   RelatedInstance = "RelatedInstance",
 }
@@ -47,21 +45,29 @@ export enum RelatedPropertiesSpecialValues {
 }
 
 /**
- * Sub-specification to include additional related instance properties.
+ * This specification allows including related instance properties into the content.
  *
- * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md)
+ * @see [Related properties specification specification reference documentation page]($docs/presentation/content/RelatedPropertiesSpecification.md)
  * @public
  */
 export interface RelatedPropertiesSpecification {
   /**
-   * Relationship path from content class to properties' class.
+   * Specifies a chain of [relationship path specifications]($docs/presentation/RelationshipPathSpecification.md) that
+   * forms a path from the content instance to the related instance(s) whose properties should additionally be loaded.
    */
   propertiesSource: RelationshipPathSpecification;
 
   /**
-   * Should the target class specified in [[propertiesSource]] be handled
-   * polymorphically. This means properties of not only the target class, but also all its subclasses
-   * are loaded.
+   * Condition for filtering instances targeted by the [[propertiesSource]] attribute.
+   *
+   * **See:** [ECExpressions available in instance filter]($docs/presentation/Content/ECExpressions.md#instance-filter)
+   */
+  instanceFilter?: string;
+
+  /**
+   * The attribute tells whether the target class specified through [[propertiesSource]] should be handled
+   * polymorphically. This means properties of the concrete class are loaded in addition to properties of the
+   * target class itself.
    *
    * @note There's a difference between loading properties and instances polymorphically. This attribute
    * only controls polymorphism of properties, while instances are always looked up in a polymorphic fashion.
@@ -69,29 +75,38 @@ export interface RelatedPropertiesSpecification {
   handleTargetClassPolymorphically?: boolean;
 
   /**
-   * Should field containing related properties be automatically expanded. This only takes effect when
-   * content class is related to properties source class through a one-to-many or many-to-many relationship.
+   * Should the field containing related properties be assigned the [[NestedContentField.autoExpand]]
+   * attribute. The attribute tells UI components showing the properties that they should be initially displayed in the expanded state.
    */
   autoExpand?: boolean;
 
   /**
-   * Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.
+   * Specifies whether the specification should be ignored if another higher priority specification for the same relationship already exists.
    * @beta
    */
   skipIfDuplicate?: boolean;
 
   /**
-   * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
-   * @see [More details]($docs/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
+   * The attribute describes what the related properties mean to the [primary instance]($docs/presentation/content/Terminology.md#primary-instance)
+   * whose properties are displayed.
    */
   relationshipMeaning?: RelationshipMeaning;
 
-  /** Specifications for nested related properties */
+  /** The attribute allows loading additional related properties that are related to the target instance of this specification. */
   nestedRelatedProperties?: RelatedPropertiesSpecification[];
 
   /**
-   * A list of property names or specifications that should be included in the content. All
-   * properties are included if this attribute is not specified.
+   * List of names or definitions of related class properties that should be included in the content.
    */
   properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+
+  /**
+   * List of names or definitions of relationship class properties that should be included in the content.
+   */
+  relationshipProperties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
+
+  /**
+   * Specifies whether a relationship category should be created regardless of whether any relationship properties were included.
+   */
+  forceCreateRelationshipCategory?: boolean;
 }

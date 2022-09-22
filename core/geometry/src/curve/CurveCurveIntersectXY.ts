@@ -421,11 +421,13 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
       const sines = new GrowableFloat64Array(2);
       const radians = new GrowableFloat64Array(2);
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(alpha, beta, gamma, cosines, sines, radians);
+      const lineFractionTol = 1.0e-10;
+      const arcFractionTol = 1.0e-7;
       for (let i = 0; i < numRoots; i++) {
         const arcPoint = data.center.plus2Scaled(data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i));
         const arcFraction = data.sweep.radiansToSignedPeriodicFraction(radians.atUncheckedIndex(i));
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1) && this.acceptFraction(extendB0, arcFraction, extendB1)) {
+        if (lineFraction !== undefined && this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) && this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1,
             arcFraction, arc, 0, 1, reversed);
         }
@@ -717,9 +719,9 @@ export class CurveCurveIntersectXY extends NullGeometryHandler {
           const strokeCountA = bezierSpanA[a].computeStrokeCountForOptions();
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
-            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, !_reversed);
+            this.dispatchBezierBezierStrokeFirst(bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed);
           else
-            this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, _reversed);
+            this.dispatchBezierBezierStrokeFirst(bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed);
         }
       }
     }

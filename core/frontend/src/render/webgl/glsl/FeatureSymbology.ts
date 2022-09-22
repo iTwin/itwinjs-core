@@ -19,7 +19,7 @@ import { decodeDepthRgb, decodeUint24 } from "./Decode";
 import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
-import { addAlpha, addFeatureAndMaterialLookup, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
+import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -142,9 +142,6 @@ function addFeatureIndex(vert: VertexShaderBuilder): void {
 
   vert.addFunction(decodeUint24);
   vert.addFunction(getFeatureIndex(vert));
-
-  if (vert.usesVertexTable && !vert.usesInstancedGeometry)
-    addFeatureAndMaterialLookup(vert);
 }
 
 // Discards vertex if feature is invisible; or rendering opaque during translucent pass or vice-versa

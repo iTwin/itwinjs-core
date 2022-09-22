@@ -468,7 +468,6 @@ describe("QuantityInput", () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     await TestUtils.flushAsyncOperations();
-
     const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
     // fireEvent.change(primaryUnitSelector, { target: { value: "ADDSUBUNIT:Units.IN:in" } });
     selectChangeValueByText(primaryUnitSelector, "Add sub-unit", handleError);
@@ -525,10 +524,11 @@ describe("QuantityInput", () => {
   });
 
   it("should handle onFormatChange when changing primary unit", async () => {
+    const theUserTo = userEvent.setup();
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     const primaryUnitLabel = renderedComponent.getByTestId("unit-label-Units.FT");
-    userEvent.type(primaryUnitLabel, "testfeet");
+    await theUserTo.type(primaryUnitLabel, "testfeet");
     const itemLabel = await renderedComponent.findByText(/testfeet/);
     expect(itemLabel).to.exist;
     expect(spy).to.be.called;

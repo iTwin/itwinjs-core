@@ -40,9 +40,9 @@ export class ModelSelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    this.models.forEach((modelId: Id64String) => predecessorIds.add(modelId));
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    this.models.forEach((modelId: Id64String) => referenceIds.add(modelId));
   }
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -106,9 +106,9 @@ export class CategorySelector extends DefinitionElement {
     return val;
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    this.categories.forEach((categoryId: Id64String) => predecessorIds.add(categoryId));
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    this.categories.forEach((categoryId: Id64String) => referenceIds.add(categoryId));
   }
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -197,15 +197,18 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.categorySelectorId);
-    predecessorIds.add(this.displayStyleId);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    referenceIds.add(this.categorySelectorId);
+    referenceIds.add(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValidId64(acsId)) {
-      predecessorIds.add(acsId);
+      referenceIds.add(acsId);
     }
   }
+
+  /** @beta */
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
 
   /** @internal */
   protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
@@ -340,10 +343,13 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.modelSelectorId);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    referenceIds.add(this.modelSelectorId);
   }
+
+  /** @beta */
+  public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
 
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
@@ -512,9 +518,9 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.baseModelId);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    referenceIds.add(this.baseModelId);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -686,9 +692,9 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
-    predecessorIds.add(this.view.id);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
+    referenceIds.add(this.view.id);
   }
 }
 

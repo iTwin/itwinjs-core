@@ -307,15 +307,6 @@ export enum IModelHubStatus {
   InitializationTimeout = IMODELHUBERROR_REQUESTERRORBASE + 7,
 }
 
-/** Authentication Errors
- * @beta Internal? Right package?
- */
-export enum AuthStatus {
-  Success = 0,
-  AUTHSTATUS_BASE = 0x22000,
-  Error = AUTHSTATUS_BASE,
-}
-
 /** GeoServiceStatus errors
  * @public
  */
@@ -331,6 +322,15 @@ export enum GeoServiceStatus {
   VerticalDatumConvertError = GEOSERVICESTATUS_BASE + 4,
   CSMapError = GEOSERVICESTATUS_BASE + 5,
   Pending = GEOSERVICESTATUS_BASE + 6,
+}
+
+/** Error status from various reality data operations
+ * @alpha
+ */
+export enum RealityDataStatus {
+  Success = 0,
+  REALITYDATA_ERROR_BASE = 0x25000,
+  InvalidData = REALITYDATA_ERROR_BASE + 1,
 }
 
 /** When you want to associate an explanatory message with an error status value.
@@ -655,7 +655,6 @@ export class BentleyError extends Error {
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
-      case AuthStatus.Error: return "Authorization error";
       case GeoServiceStatus.NoGeoLocation: return "No GeoLocation";
       case GeoServiceStatus.OutOfUsefulRange: return "Out of useful range";
       case GeoServiceStatus.OutOfMathematicalDomain: return "Out of mathematical domain";
@@ -663,6 +662,7 @@ export class BentleyError extends Error {
       case GeoServiceStatus.VerticalDatumConvertError: return "Vertical datum convert error";
       case GeoServiceStatus.CSMapError: return "CSMap error";
       case GeoServiceStatus.Pending: return "Pending";
+      case RealityDataStatus.InvalidData: return "Invalid or unknown data";
       case IModelStatus.Success:
       case DbResult.BE_SQLITE_OK:
       case DbResult.BE_SQLITE_ROW:

@@ -4,6 +4,7 @@ public;AdditionalTransform
 public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
+internal;aggregateLoad:
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -26,18 +27,18 @@ internal;B3dmHeader
 public;BackendError 
 public;BackgroundFill
 public;BackgroundMapProps
-beta;BackgroundMapProvider
+public;BackgroundMapProvider
 public;BackgroundMapProviderName = "BingProvider" | "MapBoxProvider"
-beta;BackgroundMapProviderProps
+public;BackgroundMapProviderProps
 public;BackgroundMapSettings
 public;BackgroundMapType
 public;Base64EncodedString = string
 public;Base64EncodedString
-beta;BaseLayerProps = BaseMapLayerProps | ColorDefProps
-beta;BaseLayerSettings = BaseMapLayerSettings | ColorDef
-beta;BaseLayerSettings
-beta;BaseMapLayerProps 
-beta;BaseMapLayerSettings 
+public;BaseLayerProps = BaseMapLayerProps | ColorDefProps
+public;BaseLayerSettings = BaseMapLayerSettings | ColorDef
+public;BaseLayerSettings
+public;BaseMapLayerProps 
+public;BaseMapLayerSettings 
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
@@ -101,6 +102,7 @@ public;ChannelRootAspectProps
 internal;ClassifierTileTreeId
 public;ClipStyle
 public;ClipStyleProps
+beta;CloudContainerUri
 beta;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
@@ -112,14 +114,16 @@ public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
 public;CodeScopeSpec
 public;CodeSpec
-public;ColorByName
+public;ColorByName:
 public;ColorDef
 public;ColorDefProps = number
 internal;ColorIndex
 public;CommonLoggerCategory
+public;CommonMapLayerProps
 internal;compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number
 internal;CompositeTileHeader 
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
+alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
 alpha;ContentFlags
 internal;class ContentIdProvider
@@ -137,6 +141,8 @@ internal;CURRENT_INVOCATION: unique symbol
 internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
+internal;CustomViewState3dCreatorOptions
+internal;CustomViewState3dProps
 public;CutStyle
 public;CutStyleProps
 public;DanishSystem34Region = "Jylland" | "Sjaelland" | "Bornholm"
@@ -182,11 +188,14 @@ public;EasingFunction = (k: number) => number
 public;EcefLocation 
 public;EcefLocationProps
 public;ECJsNames
+public;ECSchemaItemProps
+public;ECSchemaProps
+public;ECSchemaReferenceProps
 beta;ECSqlReader
 public;ECSqlSystemProperty
 public;ECSqlValueType
 internal;EdgeArgs
-alpha;EdgeType
+internal;EdgeOptions
 internal;EditingScopeNotifications
 public;ElementAlignedBox2d = Range2d
 public;ElementAlignedBox3d = Range3d
@@ -240,6 +249,7 @@ public;FilePropertyProps
 public;FillDisplay
 public;FillFlags
 public;FlatBufferGeometryStream
+public;FontId = number
 public;FontMap
 public;FontMapProps
 public;FontProps
@@ -263,6 +273,8 @@ public;GeodeticEllipsoid
 public;GeodeticEllipsoidProps
 public;GeodeticTransform 
 public;GeodeticTransformMethod = "None" | "Geocentric" | "PositionalVector" | "GridFiles" | "MultipleRegression" | "Undefined"
+public;GeodeticTransformPath 
+public;GeodeticTransformPathProps
 public;GeodeticTransformProps
 public;GeographicCRS 
 beta;GeographicCRSInterpretRequestProps
@@ -305,7 +317,7 @@ public;GraphicsRequestProps
 public;GridFileDefinition 
 public;GridFileDefinitionProps
 public;GridFileDirection = "Direct" | "Inverse"
-public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN"
+public;GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "JAPAN" | "ATS77" | "GEOCN" | "OSTN02" | "OSTN15"
 public;GridFileTransform 
 public;GridFileTransformProps
 public;GridOrientationType
@@ -329,14 +341,21 @@ public;HSVConstants
 internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
 public;HttpServerRequest 
 public;HttpServerResponse 
+internal;HydrateViewStateRequestProps
+internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
+public;IgnoreAnimationOverrides = (args: IgnoreAnimationOverridesArgs) => boolean
+public;IgnoreAnimationOverridesArgs
 public;ImageBuffer
 public;ImageBufferFormat
 public;ImageGraphic
 public;ImageGraphicCorners
 public;ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps]
 public;ImageGraphicProps
+public;ImageMapLayerProps 
+public;ImageMapLayerSettings 
 public;ImagePrimitive
+public;ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS"
 public;ImageSource
 public;ImageSourceFormat
 internal;ImdlFlags
@@ -346,6 +365,7 @@ public;IModelConnectionProps = IModelProps & IModelRpcProps
 beta;IModelCoordinatesRequestProps
 beta;IModelCoordinatesResponseProps
 public;IModelEncryptionProps
+deprecated;IModelEncryptionProps
 public;IModelError 
 public;IModelNotFoundResponse 
 public;IModelProps
@@ -361,6 +381,7 @@ public;IModelVersionProps =
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol
+internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
@@ -369,6 +390,7 @@ internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 public;IpcListener = (evt: Event, ...args: any[]) => void
+internal;class IpcSession
 public;IpcSocket
 public;IpcSocketBackend 
 public;IpcSocketFrontend 
@@ -398,17 +420,19 @@ public;LocalBriefcaseProps
 public;LocalDirName = string
 public;LocalFileName = string
 public;Localization
-beta;MapImageryProps
-beta;MapImagerySettings
-beta;MapLayerKey
-beta;MapLayerProps
-beta;MapLayerSettings
-beta;MapSubLayerProps
-beta;MapSubLayerSettings
+public;MapImageryProps
+public;MapImagerySettings
+public;MapLayerKey
+public;MapLayerProps = ImageMapLayerProps | ModelMapLayerProps
+public;class MapLayerSettings
+public;MapSubLayerProps
+public;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
 internal;MarshalingBinaryMarker
 internal;MarshalingBinaryMarker
 public;MassPropertiesOperation
+public;MassPropertiesPerCandidateRequestProps
+public;MassPropertiesPerCandidateResponseProps 
 public;MassPropertiesRequestProps
 public;MassPropertiesResponseProps
 public;MaterialProps
@@ -424,6 +448,8 @@ public;ModelGeometryChanges
 public;ModelGeometryChangesProps
 public;ModelIdAndGeometryGuid
 public;ModelLoadProps
+public;ModelMapLayerProps 
+public;ModelMapLayerSettings 
 public;ModelPlanarClipMaskArgs 
 public;ModelProps 
 public;ModelQueryParams 
@@ -470,7 +496,8 @@ public;OverrideModelAppearanceOptions
 public;OverrideSubCategoryAppearanceOptions 
 internal;PackedFeature
 internal;PackedFeatureTable
-internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
+internal;ParsedTileTreeIdAndContentId
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string): ParsedTileTreeIdAndContentId
 public;PartReference
 public;PersistentBackgroundMapProps = Omit
 public;PersistentGraphicsRequestProps 
@@ -579,6 +606,7 @@ internal;RpcInterfaceDefinition
 internal;RpcInterfaceEndpoints
 internal;RpcInterfaceImplementation
 internal;RpcInvocation
+internal;RpcManagedStatus
 internal;RpcManager
 internal;RpcMarshaling
 internal;RpcMultipart
@@ -594,6 +622,7 @@ public;RpcPendingResponse
 internal;class RpcProtocol
 public;RpcProtocolEvent
 internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcProtocolVersion
 internal;RpcPushChannel
 internal;class RpcPushConnection
 internal;RpcPushMessageListener
@@ -620,6 +649,7 @@ internal;RpcRoutingMap
 internal;RpcRoutingToken
 internal;RpcSerializedValue
 internal;RpcSerializedValue
+internal;RpcSessionInvocation 
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
@@ -671,8 +701,9 @@ public;SubCategoryAppearance
 public;SubCategoryOverride
 public;SubCategoryPlanarClipMaskArgs 
 public;SubCategoryProps 
+internal;SubCategoryResultRow
 public;SubjectProps 
-beta;SubLayerId = string | number
+public;SubLayerId = string | number
 beta;SynchronizationConfigLinkProps 
 public;SyncMode
 public;TerrainHeightOriginMode
@@ -723,6 +754,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 public;TileVersionInfo
+public;TranslationOptions
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

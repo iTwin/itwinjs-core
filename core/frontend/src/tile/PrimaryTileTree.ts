@@ -6,32 +6,35 @@
  * @module Tiles
  */
 
-import { assert, compareBooleans, compareStrings, Id64String } from "@itwin/core-bentley";
-import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, compareIModelTileTreeIds, EdgeType, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString,
-  PrimaryTileTreeId, RenderMode, ViewFlagOverrides,
+  assert, compareBooleans, comparePossiblyUndefined, compareStrings, Id64String,
+} from "@itwin/core-bentley";
+import {
+  BatchType, compareIModelTileTreeIds, FeatureAppearance, FeatureAppearanceProvider, HiddenLine, iModelTileTreeIdToString, MapLayerSettings, ModelMapLayerSettings,
+  PrimaryTileTreeId, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagOverrides, ViewFlagsProperties,
 } from "@itwin/core-common";
+import { Geometry, Range3d, StringifiedClipVector, Transform } from "@itwin/core-geometry";
+import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { AnimationNodeId } from "../render/GraphicBranch";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
+import { AnimationNodeId, formatAnimationBranchId } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
-import { formatAnimationBranchId, RenderScheduleState } from "../RenderScheduleState";
 import { SpatialViewState } from "../SpatialViewState";
 import { SceneContext } from "../ViewContext";
 import { ModelDisplayTransformProvider, ViewState, ViewState3d } from "../ViewState";
 import {
-  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  IModelTileTree, IModelTileTreeParams, iModelTileTreeParamsFromJSON, MapLayerTileTreeReference, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
   TileTreeSupplier,
 } from "./internal";
 
 interface PrimaryTreeId {
-  readonly treeId: PrimaryTileTreeId;
-  readonly modelId: Id64String;
-  readonly is3d: boolean;
-  readonly isPlanProjection: boolean;
-  readonly forceNoInstancing: boolean;
+  treeId: PrimaryTileTreeId;
+  modelId: Id64String;
+  is3d: boolean;
+  isPlanProjection: boolean;
+  forceNoInstancing: boolean;
+  timeline?: RenderSchedule.ModelTimeline;
 }
 
 class PlanProjectionTileTree extends IModelTileTree {
@@ -49,14 +52,8 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
   public compareTileTreeIds(lhs: PrimaryTreeId, rhs: PrimaryTreeId): number {
     // NB: we don't compare isPlanProjection or is3d - they should always have the same value for a given modelId.
-    let cmp = compareStrings(lhs.modelId, rhs.modelId);
-    if (0 === cmp) {
-      cmp = compareIModelTileTreeIds(lhs.treeId, rhs.treeId);
-      if (0 === cmp)
-        cmp = compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing);
-    }
-
-    return cmp;
+    return compareStrings(lhs.modelId, rhs.modelId) || compareIModelTileTreeIds(lhs.treeId, rhs.treeId)
+      || compareBooleans(lhs.forceNoInstancing, rhs.forceNoInstancing) || comparePossiblyUndefined((x, y) => x.compareTo(y), lhs.timeline, rhs.timeline);
   }
 
   public async createTileTree(id: PrimaryTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
@@ -64,11 +61,15 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
     const idStr = iModelTileTreeIdToString(id.modelId, treeId, IModelApp.tileAdmin);
     const props = await IModelApp.tileAdmin.requestTileTreeProps(iModel, idStr);
 
+    // ###TODO remove restriction that animated tile trees can't contained instanced geometry.
+    const isAnimated = undefined !== treeId.animationId || undefined !== id.timeline;
+    const allowInstancing = !isAnimated && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing;
     const options = {
-      edgesRequired: EdgeType.None !== treeId.edges,
-      allowInstancing: undefined === treeId.animationId && !treeId.enforceDisplayPriority && !treeId.sectionCut && !id.forceNoInstancing,
+      edges: treeId.edges,
+      allowInstancing,
       is3d: id.is3d,
       batchType: BatchType.Primary,
+      timeline: id.timeline,
     };
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
@@ -97,8 +98,9 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   }
 
   public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
     for (const tree of trees)
-      if (tree.id.treeId.animationId === scriptSourceId)
+      if (scriptSourceId === tree.id.treeId.animationId)
         modelIds.add(tree.id.modelId);
   }
 
@@ -162,28 +164,32 @@ class PrimaryTreeReference extends TileTreeReference {
       view.onModelDisplayTransformProviderChanged.addListener((provider: ModelDisplayTransformProvider | undefined) => this.checkForceNoInstancing(provider));
     }
 
+    const scriptInfo = IModelApp.tileAdmin.getScriptInfoForTreeId(model.id, view.displayStyle.scheduleScriptReference); // eslint-disable-line deprecation/deprecation
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
       treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
       forceNoInstancing: this._forceNoInstancing,
+      timeline: scriptInfo?.timeline,
     };
 
     this._owner = primaryTreeSupplier.getOwner(this._id, model.iModel);
   }
 
   private checkForceNoInstancing(provider: ModelDisplayTransformProvider | undefined) {
-    this._forceNoInstancing = false;
     // If this model has a display transform with a non-uniform scale then instancing needs to be forced off when using WebGL1.
-    if (undefined !== provider) {
-      const tf = provider.getModelDisplayTransform(this.model.id, Transform.createIdentity());
-      const sx = tf.matrix.getColumn(0).magnitudeSquared();
-      const sy = tf.matrix.getColumn(1).magnitudeSquared();
-      const sz = tf.matrix.getColumn(2).magnitudeSquared();
-      if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
-        this._forceNoInstancing = true;
-    }
+    this._forceNoInstancing = false;
+
+    const mat = provider?.getModelDisplayTransform(this.model.id)?.matrix;
+    if (!mat)
+      return;
+
+    const epsilon = Geometry.smallMetricDistance;
+    const sx = mat.getColumn(0).magnitudeSquared();
+    const sy = mat.getColumn(1).magnitudeSquared();
+    if (Math.abs(sx - sy) > epsilon || Math.abs(sx - mat.getColumn(2).magnitudeSquared()) > epsilon)
+      this._forceNoInstancing = true;
   }
 
   protected override getAnimationTransformNodeId() {
@@ -228,13 +234,15 @@ class PrimaryTreeReference extends TileTreeReference {
 
   public get treeOwner(): TileTreeOwner {
     const newId = this.createTreeId(this.view, this._id.modelId);
-    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
+    const timeline = IModelApp.tileAdmin.getScriptInfoForTreeId(this._id.modelId, this.view.displayStyle.scheduleScriptReference)?.timeline; // eslint-disable-line deprecation/deprecation
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing || timeline !== this._id.timeline) {
       this._id = {
         modelId: this._id.modelId,
         is3d: this._id.is3d,
         treeId: newId,
         isPlanProjection: this._id.isPlanProjection,
         forceNoInstancing: this._forceNoInstancing,
+        timeline,
       };
 
       this._owner = primaryTreeSupplier.getOwner(this._id, this.model.iModel);
@@ -257,13 +265,11 @@ class PrimaryTreeReference extends TileTreeReference {
       };
     }
 
-    const script = view.displayStyle.scheduleState;
-    const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
-
+    const animationId = IModelApp.tileAdmin.getScriptInfoForTreeId(modelId, view.displayStyle.scheduleScriptReference)?.animationId; // eslint-disable-line deprecation/deprecation
     const renderMode = this._viewFlagOverrides.renderMode ?? view.viewFlags.renderMode;
     const visibleEdges = this._viewFlagOverrides.visibleEdges ?? view.viewFlags.visibleEdges;
     const edgesRequired = visibleEdges || RenderMode.SmoothShade !== renderMode || IModelApp.tileAdmin.alwaysRequestEdges;
-    const edges = edgesRequired ? (IModelApp.tileAdmin.enableIndexedEdges ? EdgeType.Indexed : EdgeType.NonIndexed) : EdgeType.None;
+    const edges = edgesRequired ? IModelApp.tileAdmin.edgeOptions : false;
     const sectionCut = this._sectionClip?.clipString;
     return { type: BatchType.Primary, edges, animationId, sectionCut };
   }
@@ -273,8 +279,9 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   protected override computeTransform(tree: TileTree): Transform {
-    const tf = this.computeBaseTransform(tree);
-    return this.view.getModelDisplayTransform(this.model.id, tf);
+    const baseTf = this.computeBaseTransform(tree);
+    const displayTf = this.view.modelDisplayTransformProvider?.getModelDisplayTransform(this.model.id);
+    return displayTf ? baseTf.multiplyTransformTransform(displayTf, displayTf) : baseTf;
   }
 }
 
@@ -442,13 +449,67 @@ class MaskTreeReference extends TileTreeReference {
     return this._owner;
   }
   protected createTreeId(): PrimaryTileTreeId {
-    return { type: BatchType.Primary, edges: EdgeType.None };
+    return { type: BatchType.Primary, edges: false };
   }
 }
 
 /** @internal */
 export function createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference {
   return new MaskTreeReference(view, model);
+}
+
+/** @internal */
+export class ModelMapLayerTileTreeReference extends MapLayerTileTreeReference {
+  private _id: PrimaryTreeId;
+  private _owner: TileTreeOwner;
+  public get isPlanar() { return true; }
+  public get activeClassifier() { return this._classifier; }
+  public constructor(layerSettings: MapLayerSettings, private _classifier: SpatialClassifier, layerIndex: number, iModel: IModelConnection, private _source?: DisplayStyleState) {
+    super(layerSettings, layerIndex, iModel);
+    this._id = {
+      modelId: _classifier.modelId,
+      is3d: true, // model.is3d,
+      treeId: this.createTreeId(),
+      isPlanProjection: false, // isPlanProjection(view, model),
+      forceNoInstancing: false,
+    };
+
+    this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
+  }
+
+  protected createTreeId(): PrimaryTileTreeId {
+    return { type: BatchType.Primary, edges: false };
+  }
+
+  public get treeOwner(): TileTreeOwner {
+    const newId = this.createTreeId();
+    if (0 !== compareIModelTileTreeIds(newId, this._id.treeId)) {
+      this._id = { modelId: this._id.modelId, is3d: this._id.is3d, treeId: newId, isPlanProjection: false, forceNoInstancing: false };
+      this._owner = primaryTreeSupplier.getOwner(this._id, this.iModel);
+    }
+
+    return this._owner;
+  }
+  public get viewFlags(): Partial<ViewFlagsProperties> {
+    return {
+      renderMode: RenderMode.SmoothShade,
+      transparency: true,      // Igored for point clouds as they don't support transparency.
+      textures: true,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: true,
+      hiddenEdges: false,
+      fill: true,
+    };
+  }
+}
+/** @internal */
+export function createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined {
+  const classifier =  SpatialClassifier.fromModelMapLayer(layerSettings);
+  return classifier ? new ModelMapLayerTileTreeReference(layerSettings, classifier, layerIndex, iModel) : undefined;
 }
 
 /** Provides [[TileTreeReference]]s for the loaded models present in a [[SpatialViewState]]'s [[ModelSelectorState]].
@@ -459,7 +520,7 @@ export interface SpatialTileTreeReferences extends Iterable<TileTreeReference> {
   [Symbol.iterator](): Iterator<TileTreeReference>;
   /** Requests that the set of [[TileTreeReference]]s be updated to match the current state of the view, e.g., after the model selector's contents have changed. */
   update(): void;
-  /** @see SpatialViewState.setTileTreeReferencesDeactivated. */
+  /** See SpatialViewState.setTileTreeReferencesDeactivated. */
   setDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, refs: "all" | "animated" | "primary" | "section" | number[]): void;
 }
 
@@ -501,13 +562,13 @@ class SpatialModelRefs implements Iterable<TileTreeReference> {
       yield this._sectionCutRef;
   }
 
-  public updateAnimated(script: RenderScheduleState | undefined): void {
+  public updateAnimated(script: RenderSchedule.ScriptReference | undefined): void {
     const ref = this._primaryRef;
     if (!ref)
       return;
 
     this._animatedRefs.length = 0;
-    const nodeIds = script?.getTransformNodeIds(ref.model.id);
+    const nodeIds = script?.script.getTransformBatchIds(ref.model.id);
     if (nodeIds)
       for (const nodeId of nodeIds)
         this._animatedRefs.push(new AnimatedTreeReference(ref.view, ref.model, nodeId));
@@ -564,12 +625,12 @@ class SpatialRefs implements SpatialTileTreeReferences {
   private readonly _view: SpatialViewState;
   private _refs = new Map<Id64String, SpatialModelRefs>();
   private _swapRefs = new Map<Id64String, SpatialModelRefs>();
-  private _scheduleScript?: RenderScheduleState;
+  private _scheduleScript?: RenderSchedule.ScriptReference;
   private _sectionCut?: StringifiedClipVector;
 
   public constructor(view: SpatialViewState) {
     this._view = view;
-    this._scheduleScript = view.displayStyle.scheduleState;
+    this._scheduleScript = view.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
     this._sectionCut = this.getSectionCutFromView();
   }
 
@@ -605,11 +666,13 @@ class SpatialRefs implements SpatialTileTreeReferences {
       this.updateModels();
     }
 
-    const script = this._view.displayStyle.scheduleState;
-    if (script !== this._scheduleScript) {
-      this._scheduleScript = script;
-      for (const ref of this._refs.values())
-        ref.updateAnimated(script);
+    const curScript = this._view.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
+    const prevScript = this._scheduleScript;
+    if (curScript !== prevScript) {
+      this._scheduleScript = curScript;
+      if (!curScript || !prevScript || !curScript.script.equals(prevScript.script))
+        for (const ref of this._refs.values())
+          ref.updateAnimated(curScript);
     }
 
     const sectionCut = this.getSectionCutFromView();

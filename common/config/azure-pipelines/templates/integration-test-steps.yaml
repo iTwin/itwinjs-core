@@ -24,33 +24,63 @@ steps:
     displayName: rush install
 
   - script: |
+      # full-stack-tests/backend/package.json
       node ./common/scripts/install-run-rush build -v --to backend-integration-tests
-
+      # full-stack-tests/core/package.json
       node ./common/scripts/install-run-rush build -v --to core-full-stack-tests
-
+      # full-stack-tests/ecschema-rpc-interface/package.json
+      node ./common/scripts/install-run-rush build -v --to @itwin/ecschema-rpcinterface-tests
+      # full-stack-tests/rpc/package.json
+      node ./common/scripts/install-run-rush build -v --to rpc-full-stack-tests
+      # full-stack-tests/rpc-interface/package.json
       node ./common/scripts/install-run-rush build -v --to rpcinterface-full-stack-tests
-
+      # full-stack-tests/presentation/package.json
       node ./common/scripts/install-run-rush build -v --to presentation-full-stack-tests
+
+      node ./common/scripts/install-run-rush webpack:test -v
     displayName: "Rush build"
 
-  - script: "npm run test:integration"
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/backend"
     displayName: "Run Backend Tests"
     condition: succeededOrFailed()
 
+  # Linux agents do not have a real display so use the virtual framebuffer
   - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
     workingDirectory: "full-stack-tests/core"
     displayName: "Run Core Full Stack Tests"
+    condition: and(succeededOrFailed(), eq(variables['Agent.OS'], 'Linux'))
+
+  # MacOS and Windows agents work without any virtual display
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/core"
+    displayName: "Run Core Full Stack Tests"
+    condition: and(succeededOrFailed(), ne(variables['Agent.OS'], 'Linux'))
+
+  - script: npm run test:integration
+    workingDirectory: "full-stack-tests/ecschema-rpc-interface"
+    displayName: "Run ECSchema RPC Interface Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test
+    workingDirectory: "full-stack-tests/rpc"
+    displayName: "Run RPC Full Stack Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/rpc-interface"
     displayName: "Run RPC Interface Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: "npm run test:integration"
+  - script: npm run test:integration
     workingDirectory: "full-stack-tests/presentation"
     displayName: "Run Presentation Full Stack Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Tests"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
@@ -69,10 +99,24 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
+    displayName: "Publish ECSchema Rpc Interface Integration Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/ecschema-rpc-interface/ecschema-rpcinterface-tests-result/ecschema-rpcinterface-tests-result.xml"
+      testRunTitle: "ECSchema Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish RPC Full Stack Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
+      testRunTitle: "RPC Full Stack - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
     displayName: "Publish Rpc Interface Integration Test Results"
     inputs:
       testResultsFiles: "full-stack-tests/rpc-interface/full_stack_test_results/full_stack_test_result.xml"
-      testRunTitle: "Core - Integration Tests - ${{ parameters.Node_Version }}"
+      testRunTitle: "Rpc Interface - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
@@ -80,4 +124,11 @@ steps:
     inputs:
       testResultsFiles: full-stack-tests/presentation/lib/test/junit_results.xml
       testRunTitle: "Presentation - Integration Tests - ${{ parameters.Node_Version }}"
+    condition: succeededOrFailed()
+
+  - task: PublishTestResults@2
+    displayName: "Publish Electron Integration Test Results"
+    inputs:
+      testResultsFiles: core/electron/lib/test/junit_results.xml
+      testRunTitle: "Electron - Integration Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()

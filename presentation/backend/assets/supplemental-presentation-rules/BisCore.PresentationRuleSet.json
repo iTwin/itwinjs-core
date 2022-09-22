@@ -192,6 +192,30 @@
       "onlyIfNotHandled": true,
       "class": {
         "schemaName": "BisCore",
+        "className": "RepositoryModel"
+      },
+      "values": [
+        {
+          "specType": "RelatedInstanceLabel",
+          "pathToRelatedInstance": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ModelModelsElement"
+            },
+            "direction": "Forward",
+            "targetClass": {
+              "schemaName": "BisCore",
+              "className": "Subject"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "ruleType": "InstanceLabelOverride",
+      "onlyIfNotHandled": true,
+      "class": {
+        "schemaName": "BisCore",
         "className": "Model"
       },
       "values": [
@@ -216,7 +240,7 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "@BisCore:Categories.SourceInformation@",
+          "label": "Source Information",
           "parentId": {
             "type": "Root"
           },
@@ -224,7 +248,7 @@
         },
         {
           "id": "model_source",
-          "label": "@BisCore:Categories.SourceInformationModelSource@",
+          "label": "Model Source",
           "parentId": "source_information",
           "autoExpand": true
         }
@@ -328,14 +352,14 @@
             {
               "name": "Url",
               "overridesPriority": 1001,
-              "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
+              "labelOverride": "Path",
               "categoryId": "model_source",
               "isDisplayed": true
             },
             {
               "name": "UserLabel",
               "overridesPriority": 1001,
-              "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+              "labelOverride": "Name",
               "categoryId": "model_source",
               "isDisplayed": true
             }
@@ -360,7 +384,7 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "@BisCore:Categories.SourceInformation@"
+          "label": "Source Information"
         }
       ],
       "relatedProperties": [
@@ -379,12 +403,13 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": [
             {
               "name": "Identifier",
               "overridesPriority": 1001,
               "categoryId": "source_information",
-              "labelOverride": "@BisCore:Properties.SourceInformation.ElementId@",
+              "labelOverride": "Source Element ID",
               "isDisplayed": true
             }
           ],
@@ -407,7 +432,7 @@
       "propertyCategories": [
         {
           "id": "source_information",
-          "label": "@BisCore:Categories.SourceInformation@",
+          "label": "Source Information",
           "parentId": {
             "type": "Root"
           },
@@ -415,7 +440,7 @@
         },
         {
           "id": "secondary_sources",
-          "label": "@BisCore:Categories.SourceInformationSecondarySources@",
+          "label": "Secondary Sources",
           "parentId": "source_information",
           "autoExpand": true
         }
@@ -436,6 +461,7 @@
               }
             }
           ],
+          "instanceFilter": "this.Kind <> \"Relationship\"",
           "properties": "_none_",
           "autoExpand": true,
           "nestedRelatedProperties": [
@@ -462,13 +488,13 @@
                 {
                   "name": "UserLabel",
                   "categoryId": "source_information",
-                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "labelOverride": "Name",
                   "isDisplayed": true
                 },
                 {
                   "name": "Url",
                   "categoryId": "source_information",
-                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                  "labelOverride": "Path"
                 }
               ]
             },
@@ -506,13 +532,13 @@
                 {
                   "name": "UserLabel",
                   "categoryId": "secondary_sources",
-                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "labelOverride": "Name",
                   "isDisplayed": true
                 },
                 {
                   "name": "Url",
                   "categoryId": "secondary_sources",
-                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                  "labelOverride": "Path"
                 }
               ]
             }

@@ -23,12 +23,12 @@ describe("<ColorEditor />", () => {
   });
 
   it("should trigger componentDidUpdate", async () => {
-    const record1 = TestUtils.createColorProperty("Test", ColorByName.green as number);
-    const record2 = TestUtils.createColorProperty("Test", ColorByName.blue as number);
+    const record1 = TestUtils.createColorProperty("Test", ColorByName.green);
+    const record2 = TestUtils.createColorProperty("Test", ColorByName.blue);
     record2.isDisabled = true;
 
     const originalValue = (record1.value as PrimitiveValue).value as number;
-    expect(originalValue).to.be.equal(ColorByName.green as number);
+    expect(originalValue).to.be.equal(ColorByName.green);
 
     const renderedComponent = render(<ColorEditor propertyRecord={record1} />);
     renderedComponent.rerender(<ColorEditor propertyRecord={record2} />);
@@ -36,15 +36,15 @@ describe("<ColorEditor />", () => {
   });
 
   it("button press should open popup and allow color selection", async () => {
-    const record = TestUtils.createColorProperty("Test", ColorByName.green as number);
+    const record = TestUtils.createColorProperty("Test", ColorByName.green);
 
     const originalValue = (record.value as PrimitiveValue).value as number;
-    expect(originalValue).to.be.equal(ColorByName.green as number);
+    expect(originalValue).to.be.equal(ColorByName.green);
 
     const spyOnCommit = sinon.spy();
     function handleCommit(commit: PropertyUpdatedArgs): void {
       const newValue = (commit.newValue as PrimitiveValue).value as number;
-      expect(newValue).to.be.equal(ColorByName.blue as number);
+      expect(newValue).to.be.equal(ColorByName.blue);
       spyOnCommit();
     }
 

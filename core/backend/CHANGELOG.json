@@ -2,6 +2,408 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-backend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "await new promise in CustomViewState3dCreator getModelExtents"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-backend_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-backend_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Update links to BIS documentation."
+          },
+          {
+            "comment": "vacuum is now an instance method"
+          },
+          {
+            "comment": "enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/"
+          },
+          {
+            "comment": "Progress API for downloading changesets."
+          },
+          {
+            "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance"
+          },
+          {
+            "comment": "added computeSchemaChecksum function to IModelHost"
+          },
+          {
+            "comment": "Transport RPC requests over IPC when available."
+          },
+          {
+            "comment": "make prefetch opt-in instead of opt-out"
+          },
+          {
+            "comment": "move HubMock to core-backend"
+          },
+          {
+            "comment": "retry v2checkpoint downloads when they fail with \"Failure when receiving data from the peer\""
+          },
+          {
+            "comment": "set cloud cache size to 50G"
+          },
+          {
+            "comment": "move LocalHub to @internal in core-backend"
+          },
+          {
+            "comment": "deprecate collectPredecessorIds and getPredecessorIds in favor of collectReferenceIds and getReferenceIds"
+          },
+          {
+            "comment": "added SQLiteDb.withOpenDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-backend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@3.2.15"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-backend_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-backend_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-backend_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/core-backend_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/core-backend_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/core-backend_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/core-backend_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/core-backend_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/core-backend_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added new additionalTransformPath property to GeodeticDatums and tests"
+          },
+          {
+            "comment": "changed name of GCS in test dataset"
+          },
+          {
+            "comment": "Create an ios test project to run webpacked core tests."
+          },
+          {
+            "comment": "Added \"getMassPropertiesPerCandidate\" RPC operation to IModelReadRpcInterface which returns mass properties for each candidate separately."
+          },
+          {
+            "comment": "Add two new rpcimpls, hydrateViewState and getCustomViewState3dData"
+          },
+          {
+            "comment": "add imodel import context state saving/loading functions for transformer"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-backend_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-backend_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-backend_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-backend_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate IModelReadRpcInterface.getViewThumbnail"
+          },
+          {
+            "comment": "generated element classes now have a default implementation of collectPredecessors returning all set navigation properties"
+          },
+          {
+            "comment": "Correct return status for processGeometryStream and createBRepGeometry."
+          },
+          {
+            "comment": "Remove IModelDb.elementGeometryUpdate."
+          },
+          {
+            "comment": "You may specify an element's geometry in terms of an ElementGeometryDataEntry array"
+          },
+          {
+            "comment": "Web IPC fix (when reloading frontend)."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-backend_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-backend_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-backend_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-backend_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add briefcaseAlias argument to acquireNewBriefcaseId"
+          },
+          {
+            "comment": "make one method to acquire both shared and exclusive locks"
+          },
+          {
+            "comment": "Add GeometryClass to ExportGraphics"
+          },
+          {
+            "comment": "Update SQLiteDb to public release tag"
+          },
+          {
+            "comment": "initial support for cloud-based WorkspaceContainers"
+          },
+          {
+            "comment": "added IModelDb.workspace"
+          },
+          {
+            "comment": "improve concurrent query changes"
+          },
+          {
+            "comment": "Skip full schema load that cause OOM error on node backend"
+          },
+          {
+            "comment": "Do not reopen connection on schema change"
+          },
+          {
+            "comment": "Remove usage-logging-client"
+          },
+          {
+            "comment": "Upgrade target to ES2019"
+          },
+          {
+            "comment": "Entity no longer implements EntityProps."
+          },
+          {
+            "comment": "suppress error logging during test that expect errors"
+          },
+          {
+            "comment": "add test and improved concurrent query support"
+          },
+          {
+            "comment": "fix flaky test"
+          },
+          {
+            "comment": "Update BackendHubAccess api to use ChangesetIndexAndId"
+          },
+          {
+            "comment": "Add new GeoServices class and first method to interpret WKT or complete GCS JSON.\""
+          },
+          {
+            "comment": "getAccessToken always returns a token"
+          },
+          {
+            "comment": "Fix an exception when attempting to pull changes into a briefcase that already has all the changes."
+          },
+          {
+            "comment": "LocalhostIpcHost, display-test-app support for R/W web (via orchestrator)"
+          },
+          {
+            "comment": "Added ability to convert iModel coordinates to or from any Geographic CRS"
+          },
+          {
+            "comment": "rename contextId -> iTwinId"
+          },
+          {
+            "comment": "Tests for solid kernel severe error exceptions."
+          },
+          {
+            "comment": "throw rather than returning status from IModelDb.saveFileProperty and IModelDb.deleteFileProperty"
+          },
+          {
+            "comment": "use db.locks to release all locks"
+          },
+          {
+            "comment": "rename to @itwin/core-backend"
+          },
+          {
+            "comment": "export blobdaemon, blobdaemoncommandargs from imodeljs-native"
+          },
+          {
+            "comment": "Log the error that we catch when v2 checkpoint fails to open"
+          },
+          {
+            "comment": "use BentleyError.getErrorProps(e) instead of just logging e"
+          },
+          {
+            "comment": "Introduce no-non-null-assertion lint rule."
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Removed config.app usage"
+          },
+          {
+            "comment": "Remove deprecated APIs for 3.0."
+          },
+          {
+            "comment": "allow apps to set safety interval for reattaching deamon"
+          },
+          {
+            "comment": "removed several previously-deprecated apis"
+          },
+          {
+            "comment": "remove IModelWriteRpcInterface"
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Renamed all occurrences of the term revision0 to version0."
+          },
+          {
+            "comment": "rework locks"
+          },
+          {
+            "comment": "Removed NativeAppAuthorizationBackend"
+          },
+          {
+            "comment": "Removed two unit tests for reproj and added one"
+          },
+          {
+            "comment": "added RpcTrace"
+          },
+          {
+            "comment": "Bumped dotenv and removed deprecated @types/dotenv"
+          },
+          {
+            "comment": "Replaced ContextRegistry with generalized ITwinAccess interface"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": " Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Removed references to the deleted config-loader package"
+          },
+          {
+            "comment": "split imodel-transformer out of imodel-backend package"
+          },
+          {
+            "comment": "remove use of \"any\" types in SqliteStatement"
+          },
+          {
+            "comment": "IModelDb.getTextureImage is async."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          },
+          {
+            "comment": "Improved log message when v2 checkpoint downloaded is not for the changeset requested"
+          },
+          {
+            "comment": "caching options for changed elements processing"
+          },
+          {
+            "comment": "Adding WebEditServer (test scenarios only for now)"
+          },
+          {
+            "comment": "add persistent iModel-based settings"
+          },
+          {
+            "comment": "initial implementation of Workspace and Settings"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-backend_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

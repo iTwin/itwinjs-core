@@ -22,6 +22,10 @@ export interface InitialAppUiSettings {
   frameworkVersion: FrameworkVersionId;
   widgetOpacity: number;
   showWidgetIcon?: boolean;
+  /** @alpha */
+  autoCollapseUnpinnedPanels?: boolean;
+  animateToolSettings?: boolean;
+  useToolAsToolSettingsLabel?: boolean;
 }
 
 /** These are the UI settings that are stored in the Redux store. They control the color theme, the UI version,
@@ -47,6 +51,9 @@ export class AppUiSettings implements UserSettingsProvider {
   public frameworkVersion: UiStateEntry<FrameworkVersionId>;
   public widgetOpacity: UiStateEntry<number>;
   public showWidgetIcon: UiStateEntry<boolean>;
+  public autoCollapseUnpinnedPanels: UiStateEntry<boolean>;
+  public animateToolSettings: UiStateEntry<boolean>;
+  public useToolAsToolSettingsLabel: UiStateEntry<boolean>;
 
   private setColorTheme = (theme: string) => {
     UiFramework.setColorTheme(theme);
@@ -70,6 +77,11 @@ export class AppUiSettings implements UserSettingsProvider {
       (value: boolean) => UiFramework.setShowWidgetIcon(value), defaults.showWidgetIcon);
     this._settings.push(this.showWidgetIcon);
 
+    this.autoCollapseUnpinnedPanels = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "AutoCollapseUnpinnedPanels",
+      () => UiFramework.autoCollapseUnpinnedPanels,
+      (value: boolean) => UiFramework.setAutoCollapseUnpinnedPanels(value), defaults.autoCollapseUnpinnedPanels);
+    this._settings.push(this.autoCollapseUnpinnedPanels);
+
     this.frameworkVersion = new UiStateEntry<FrameworkVersionId>(AppUiSettings._settingNamespace, "FrameworkVersion",
       () => UiFramework.uiVersion,
       (value: FrameworkVersionId) => UiFramework.setUiVersion(value), defaults.frameworkVersion);
@@ -78,6 +90,16 @@ export class AppUiSettings implements UserSettingsProvider {
     this.widgetOpacity = new UiStateEntry<number>(AppUiSettings._settingNamespace, "WidgetOpacity",
       () => UiFramework.getWidgetOpacity(), (value: number) => UiFramework.setWidgetOpacity(value), defaults.widgetOpacity);
     this._settings.push(this.widgetOpacity);
+
+    this.animateToolSettings = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "AnimateToolSettings",
+      () => UiFramework.animateToolSettings,
+      (value: boolean) => UiFramework.setAnimateToolSettings(value), defaults.animateToolSettings);
+    this._settings.push(this.animateToolSettings);
+
+    this.useToolAsToolSettingsLabel = new UiStateEntry<boolean>(AppUiSettings._settingNamespace, "UseToolAsToolSettingsLabel",
+      () => UiFramework.useToolAsToolSettingsLabel,
+      (value: boolean) => UiFramework.setUseToolAsToolSettingsLabel(value), defaults.useToolAsToolSettingsLabel);
+    this._settings.push(this.useToolAsToolSettingsLabel);
 
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this.handleSyncUiEvent);
   }
@@ -101,8 +123,17 @@ export class AppUiSettings implements UserSettingsProvider {
     if (args.eventIds.has("configurableui:set-show-widget-icon"))
       await this.showWidgetIcon.saveSetting(UiFramework.getUiStateStorage());
 
+    if (args.eventIds.has("configurableui:set-auto-collapse-unpinned-panels"))
+      await this.autoCollapseUnpinnedPanels.saveSetting(UiFramework.getUiStateStorage());
+
     if (args.eventIds.has("configurableui:set_widget_opacity"))
       await this.widgetOpacity.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set-animate-tool-settings"))
+      await this.animateToolSettings.saveSetting(UiFramework.getUiStateStorage());
+
+    if (args.eventIds.has("configurableui:set-use-tool-as-tool-settings-label"))
+      await this.useToolAsToolSettingsLabel.saveSetting(UiFramework.getUiStateStorage());
   };
 
   public async apply(storage: UiStateStorage): Promise<void> {

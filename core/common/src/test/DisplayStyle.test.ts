@@ -341,8 +341,8 @@ describe("DisplayStyleSettings overrides", () => {
       bias: 0.5,
       zLengthCap: 0.25,
       intensity: 1.5,
-      blurDelta: 1,
-      blurSigma: 2,
+      blurDelta: 1.1,
+      blurSigma: 2.1,
       blurTexelStepSize: 3,
       maxDistance: 4,
       texelStepSize: 5,
@@ -390,7 +390,6 @@ describe("DisplayStyleSettings overrides", () => {
     mapImagery: {
       backgroundBase: {
         formatId: "BingMaps",
-        isBase: true,
         name: "Bing Maps: Aerial Imagery",
         provider: {
           name: "BingProvider",

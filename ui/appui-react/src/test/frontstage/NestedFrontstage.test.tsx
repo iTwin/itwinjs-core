@@ -95,7 +95,7 @@ describe("NestedFrontstage", async () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
   });
 
   after(() => {

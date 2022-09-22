@@ -47,17 +47,31 @@ exports[`PanelWidget should render 1`] = `
       class="nz-widget-tabBarButtons"
     >
       <button
-        class="nz-widget-pinToggle"
+        class="nz-widget-pinToggle nz-is-pinned"
       >
         <i
-          class="icon icon-chevron-left"
-        />
+          class="icon core-svg-icon"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+              fill-rule="evenodd"
+            />
+          </svg>
+        </i>
       </button>
     </div>
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -110,8 +124,12 @@ exports[`PanelWidget should render horizontal with fit-content 1`] = `
     />
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -162,17 +180,31 @@ exports[`PanelWidget should render minimized 1`] = `
       class="nz-widget-tabBarButtons"
     >
       <button
-        class="nz-widget-pinToggle"
+        class="nz-widget-pinToggle nz-is-pinned"
       >
         <i
-          class="icon icon-chevron-left"
-        />
+          class="icon core-svg-icon"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+              fill-rule="evenodd"
+            />
+          </svg>
+        </i>
       </button>
     </div>
   </div>
   <div
-    class="nz-widget-content-container nz-minimized"
-  />
+    class="nz-widget-contentContainer nz-minimized"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;
 
@@ -224,16 +256,30 @@ exports[`PanelWidget should render with fit-content 1`] = `
       class="nz-widget-tabBarButtons"
     >
       <button
-        class="nz-widget-pinToggle"
+        class="nz-widget-pinToggle nz-is-pinned"
       >
         <i
-          class="icon icon-chevron-left"
-        />
+          class="icon core-svg-icon"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="m10.49945 0c-.89279.7175-1.46555 1.81691-1.46555 3.05141 0 .09677.00757.19162.01448.28665l-2.24802 2.24802c-.34734-.07958-.70741-.12562-1.0789-.12562-1.48385 0-2.80984.67183-3.69366 1.72668l2.94083 2.94083-4.96863 4.96864v.90339h.90339l4.96865-4.96865 2.94083 2.94083c1.05486-.88382 1.72668-2.20981 1.72668-3.69366 0-.37149-.04604-.73156-.12562-1.0789l2.24802-2.24802c.09502.00691.18988.01448.28665.01448 1.2345 0 2.33391-.57276 3.05141-1.46555z"
+              fill-rule="evenodd"
+            />
+          </svg>
+        </i>
       </button>
     </div>
   </div>
   <div
-    class="nz-widget-content-container"
-  />
+    class="nz-widget-contentContainer"
+  >
+    <div
+      class="nz-content"
+    />
+  </div>
 </div>
 `;

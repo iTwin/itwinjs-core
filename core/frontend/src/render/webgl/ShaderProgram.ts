@@ -46,7 +46,7 @@ export class Uniform {
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
     if (undefined !== prog.glProgram) {
-      this._handle = UniformHandle.create(prog.glProgram, this._name);
+      this._handle = UniformHandle.create(prog, this._name);
     }
 
     return this.isValid;
@@ -136,9 +136,11 @@ export class ShaderProgram implements WebGLDisposable {
   private _fragGNdx: number = -1;
   private _vertHNdx: number = -1;
   private _fragHNdx: number = -1;
+  public readonly outputsToPick;
 
   public constructor(gl: WebGLContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
     this.description = description;
+    this.outputsToPick = description.includes("Overrides") || description.includes("Pick");
     this._fragDescription = fragDescription;
     this.vertSource = vertSource;
     this.fragSource = fragSource;

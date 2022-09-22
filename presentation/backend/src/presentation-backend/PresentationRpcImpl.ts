@@ -7,21 +7,25 @@
  */
 
 import { IModelDb } from "@itwin/core-backend";
-import { assert, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
-  ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions,
-  ContentSourcesRpcResult, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties, FilterByInstancePathsHierarchyRpcRequestOptions,
-  FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON,
-  Node, NodeJSON, NodeKey, NodeKeyJSON, NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError,
-  PresentationRpcInterface, PresentationRpcResponse, PresentationRpcResponseData, PresentationStatus, Ruleset, RulesetVariable, RulesetVariableJSON,
-  SelectClassInfo, SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
+  ClientDiagnostics, ComputeSelectionRpcRequestOptions, ContentDescriptorRpcRequestOptions, ContentFlags, ContentInstanceKeysRpcRequestOptions,
+  ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DescriptorJSON, Diagnostics, DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, DisplayValueGroup, DisplayValueGroupJSON, DistinctValuesRpcRequestOptions, ElementProperties,
+  FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions, HierarchyRpcRequestOptions, InstanceKey,
+  isComputeSelectionRequestOptions, ItemJSON, KeySet, KeySetJSON, LabelDefinition, LabelDefinitionJSON, Node, NodeJSON, NodeKey, NodeKeyJSON,
+  NodePathElement, NodePathElementJSON, Paged, PagedResponse, PageOptions, PresentationError, PresentationRpcInterface, PresentationRpcResponse,
+  PresentationRpcResponseData, PresentationStatus, RpcDiagnosticsOptions, Ruleset, RulesetVariable, RulesetVariableJSON, SelectClassInfo,
+  SelectionScope, SelectionScopeRpcRequestOptions, SingleElementPropertiesRpcRequestOptions,
 } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const packageJsonVersion = require("../../../package.json").version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
 
@@ -34,18 +38,13 @@ export const MAX_ALLOWED_KEYS_PAGE_SIZE = 10000;
  * The backend implementation of PresentationRpcInterface. All it's basically
  * responsible for is forwarding calls to [[Presentation.manager]].
  *
- * Consumers should not use this class. Instead, they should register
- * [PresentationRpcInterface]($presentation-common):
- * ``` ts
- * [[include:Backend.Initialization.RpcInterface]]
- * ```
- *
  * @internal
  */
 export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {
 
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
+  private _cancelEvents: Map<string, BeEvent<() => void>>;
 
   public constructor(props?: { requestTimeout: number }) {
     super();
@@ -58,10 +57,16 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       // attempt to clean up every second
       cleanupInterval: 1000,
 
-      cleanupHandler: (id) => {
-        Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+      cleanupHandler: (id, _, reason) => {
+        if (reason !== "request") {
+          Logger.logTrace(PresentationBackendLoggerCategory.Rpc, `Cleaning up request without frontend retrieving it: ${id}.`);
+          // istanbul ignore next
+          this._cancelEvents.get(id)?.raiseEvent();
+        }
+        this._cancelEvents.delete(id);
       },
     });
+    this._cancelEvents = new Map<string, BeEvent<() => void>>();
   }
 
   public dispose() {
@@ -71,7 +76,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public get requestTimeout() { return this._requestTimeout; }
 
   /** Returns an ok response with result inside */
-  private successResponse<TResult>(result: TResult, diagnostics?: DiagnosticsScopeLogs[]) {
+  private successResponse<TResult>(result: TResult, diagnostics?: ClientDiagnostics) {
     return {
       statusCode: PresentationStatus.Success,
       result,
@@ -80,7 +85,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   /** Returns a bad request response with empty result and an error code */
-  private errorResponse(errorCode: PresentationStatus, errorMessage?: string, diagnostics?: DiagnosticsScopeLogs[]) {
+  private errorResponse(errorCode: PresentationStatus, errorMessage?: string, diagnostics?: ClientDiagnostics) {
     return {
       statusCode: errorCode,
       result: undefined,
@@ -106,8 +111,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     return imodel;
   }
 
-  private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: DiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
-    const requestKey = JSON.stringify(requestOptions);
+  private async makeRequest<TRpcOptions extends { rulesetOrId?: Ruleset | string, clientId?: string, diagnostics?: RpcDiagnosticsOptions, rulesetVariables?: RulesetVariableJSON[] }, TResult>(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+    const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
 
@@ -128,6 +133,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const managerRequestOptions: any = {
         ...options,
         imodel,
+        cancelEvent: new BeEvent<() => void>(),
       };
 
       // set up ruleset variables
@@ -135,25 +141,38 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         managerRequestOptions.rulesetVariables = rulesetVariables.map(RulesetVariable.fromJSON);
 
       // set up diagnostics listener
-      let diagnosticLogs: DiagnosticsScopeLogs[] | undefined;
+      let diagnostics: ClientDiagnostics | undefined;
+      const getDiagnostics = (): ClientDiagnostics => {
+        if (!diagnostics)
+          diagnostics = {};
+        return diagnostics;
+      };
       if (diagnosticsOptions) {
+        if (diagnosticsOptions.backendVersion) {
+          getDiagnostics().backendVersion = packageJsonVersion;
+        }
         managerRequestOptions.diagnostics = {
           ...diagnosticsOptions,
-          handler: (logs: DiagnosticsScopeLogs[]) => {
-            if (!diagnosticLogs)
-              diagnosticLogs = [];
-            diagnosticLogs.push(...logs);
+          handler: (d: Diagnostics) => {
+            if (d.logs) {
+              const target = getDiagnostics();
+              if (target.logs)
+                target.logs.push(...d.logs);
+              else
+                target.logs = [...d.logs];
+            }
           },
         };
       }
 
       // initiate request
       resultPromise = request(managerRequestOptions)
-        .then((result) => this.successResponse(result, diagnosticLogs))
-        .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnosticLogs));
+        .then((result) => this.successResponse(result, diagnostics))
+        .catch((e: PresentationError) => this.errorResponse(e.errorNumber, e.message, diagnostics));
 
       // store the request promise
       this._pendingRequests.addValue(requestKey, resultPromise);
+      this._cancelEvents.set(requestKey, managerRequestOptions.cancelEvent);
     }
 
     if (this._requestTimeout === 0) {
@@ -207,7 +226,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         parentKey: nodeKeyFromJson(options.parentKey),
       });
       const [nodes, count] = await Promise.all([
-        this.getManager(requestOptions.clientId).getNodes(options),
+        this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
       return { total: count, items: nodes.map(Node.toJSON) };
@@ -243,10 +262,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         ...options,
         keys: KeySet.fromJSON(options.keys),
       };
-      const descriptor = await this.getManager(requestOptions.clientId).getContentDescriptor(options);
-      if (descriptor)
-        return descriptor.toJSON();
-      return undefined;
+      if (options.transport === "unparsed-json") {
+        // Here we send a plain JSON string but we will parse it to DescriptorJSON on the frontend. This way we are
+        // bypassing unnecessary deserialization and serialization.
+        return Presentation.getManager().getDetail().getContentDescriptor(options) as unknown as DescriptorJSON | undefined;
+      } else {
+        // Support for older frontends that still expect a parsed descriptor
+        const descriptor = await Presentation.getManager().getContentDescriptor(options);
+        return descriptor?.toJSON();
+      }
     });
   }
 
@@ -269,7 +293,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (!content)
@@ -292,7 +316,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getElementProperties(options);
+      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
     });
   }
 
@@ -324,7 +348,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (size === 0 || !content)
@@ -339,7 +363,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(options);
+      const label = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinition(options);
       return LabelDefinition.toJSON(label);
     });
   }
@@ -349,7 +373,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     if (pageOpts.paging.size < requestOptions.keys.length)
       requestOptions.keys.splice(pageOpts.paging.size);
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
+      const labels = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
       return {
         total: options.keys.length,
         items: labels.map(LabelDefinition.toJSON),
@@ -363,8 +387,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     );
   }
 
-  public override async computeSelection(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions, ids: Id64String[], scopeId: string): PresentationRpcResponse<KeySetJSON> {
-    return this.makeRequest(token, "computeSelection", { ...requestOptions, ids, scopeId }, async (options) => {
+  public override async computeSelection(token: IModelRpcProps, requestOptions: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions, ids?: Id64String[], scopeId?: string): PresentationRpcResponse<KeySetJSON> {
+    return this.makeRequest(token, "computeSelection", requestOptions, async (options) => {
+      if (!isComputeSelectionRequestOptions(options)) {
+        options = {
+          ...options,
+          elementIds: ids!,
+          scope: { id: scopeId! },
+        };
+      }
       const keys = await this.getManager(requestOptions.clientId).computeSelection(options);
       return keys.toJSON();
     });

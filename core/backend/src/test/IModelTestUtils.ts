@@ -4,16 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
-  ElementProps, Environment, ExternalSourceProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName, PhysicalElementProps,
-  PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse,
-  SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
+  ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
+  GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName,
+  PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager,
+  RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -23,7 +24,7 @@ import {
   AuxCoordSystem2d, BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition,
   ECSqlStatement, Element, ElementAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect,
   ExternalSource, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelJsFs,
-  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, Platform,
+  InformationPartitionElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
   RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../core-backend";
 import { DefinitionPartition, Drawing, DrawingGraphic, GeometryPart, LinkElement, PhysicalElement, RepositoryLink, Subject } from "../Element";
@@ -31,10 +32,10 @@ import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordMode
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
-import { HubMock } from "./HubMock";
+import { HubMock } from "../HubMock";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { BackendHubAccess } from "../BackendHubAccess";
 
-const assert = chai.assert;
 chai.use(chaiAsPromised);
 
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
@@ -90,6 +91,7 @@ export enum TestUserType {
  * All methods in this class should be usable with any BackendHubAccess implementation (i.e. HubMock and IModelHubBackend).
  */
 export class HubWrappers {
+  protected static get hubMock() { return HubMock; }
 
   public static async getAccessToken(user: TestUserType) {
     return TestUserType[user];
@@ -97,7 +99,7 @@ export class HubWrappers {
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
   public static async createIModel(accessToken: AccessToken, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     let iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
     if (!iModelId)
       iModelId = await IModelHost.hubAccess.createNewIModel({ accessToken, iTwinId, iModelName, description: `Description for iModel` });
@@ -107,14 +109,14 @@ export class HubWrappers {
   /** Deletes and re-creates an iModel with the provided name in the iTwin.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(arg: { accessToken: AccessToken, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+  public static async recreateIModel(...[arg]: Parameters<BackendHubAccess["createNewIModel"]>): Promise<GuidString> {
+    assert.isTrue(this.hubMock.isValid, "Must use HubMock for tests that modify iModels");
     const deleteIModel = await IModelHost.hubAccess.queryIModelByName(arg);
     if (undefined !== deleteIModel)
       await IModelHost.hubAccess.deleteIModel({ accessToken: arg.accessToken, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
+    return IModelHost.hubAccess.createNewIModel({ description: `Description for ${arg.iModelName}`, ...arg });
   }
 
   /** Delete an IModel from the hub */
@@ -163,7 +165,7 @@ export class HubWrappers {
       forceDownload: args.deleteFirst,
     };
 
-    assert.isTrue(HubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
+    assert.isTrue(this.hubMock.isValid || openArgs.syncMode === SyncMode.PullOnly, "use HubMock to acquire briefcases");
     while (true) {
       try {
         return (await RpcBriefcaseUtility.open(openArgs)) as BriefcaseDb;
@@ -253,6 +255,8 @@ export class HubWrappers {
 
 export class IModelTestUtils {
 
+  protected static get knownTestLocations(): { outputDir: string, assetsDir: string } { return KnownTestLocations; }
+
   /** Generate a name for an iModel that's unique using the baseName provided and appending a new GUID.  */
   public static generateUniqueName(baseName: string) {
     return `${baseName} - ${Guid.createValue()}`;
@@ -266,10 +270,10 @@ export class IModelTestUtils {
    * @param fileName Name of output fille
    */
   public static prepareOutputFile(subDirName: string, fileName: string): LocalFileName {
-    if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
-      IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
+    if (!IModelJsFs.existsSync(this.knownTestLocations.outputDir))
+      IModelJsFs.mkdirSync(this.knownTestLocations.outputDir);
 
-    const outputDir = path.join(KnownTestLocations.outputDir, subDirName);
+    const outputDir = path.join(this.knownTestLocations.outputDir, subDirName);
     if (!IModelJsFs.existsSync(outputDir))
       IModelJsFs.mkdirSync(outputDir);
 
@@ -282,7 +286,7 @@ export class IModelTestUtils {
 
   /** Resolve an asset file path from the asset name by looking in the known assets directory */
   public static resolveAssetFile(assetName: string): LocalFileName {
-    const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
+    const assetFile = path.join(this.knownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));
     return assetFile;
   }
@@ -698,12 +702,11 @@ export class ExtensiveTestScenario {
   }
 
   public static populateDb(sourceDb: IModelDb): void {
-    // Embed font
-    if (Platform.platformName.startsWith("win")) {
-      sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
-      assert.exists(sourceDb.fontMap.getFont("Arial"));
-      assert.exists(sourceDb.fontMap.getFont(1));
-    }
+
+    // make sure Arial is in the font table
+    sourceDb.addNewFont("Arial");
+    assert.exists(sourceDb.fontMap.getFont("Arial"));
+
     // Initialize project extents
     const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
     sourceDb.updateProjectExtents(projectExtents);

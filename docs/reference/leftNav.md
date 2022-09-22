@@ -9,6 +9,7 @@ packageClassification:  [
          "core-backend",
          "core-transformer",
          "core-markup",
+         "core-mobile",
          "core-i18n",
          "core-quantity",
          "core-bentley",

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "IModelDb.Elements.queryParent",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

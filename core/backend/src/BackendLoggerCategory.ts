@@ -20,6 +20,12 @@ export enum BackendLoggerCategory {
    */
   CodeSpecs = "core-backend.CodeSpecs",
 
+  /** The logger category used by the following classes:
+   * - [[CustomViewState3dCreator]]
+   * @internal
+   */
+  CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
+
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */
@@ -83,12 +89,6 @@ export enum BackendLoggerCategory {
   EventSink = "core-backend.EventSink",
 
   /** The logger category used by the following classes:
-   * - [[IModelSchemaLoader]]
-   * @alpha
-   */
-  IModelSchemaLoader = "core-backend.IModelSchemaLoader",
-
-  /** The logger category used by the following classes:
    * - [[iModels]]
    * @alpha
    */
@@ -99,4 +99,10 @@ export enum BackendLoggerCategory {
    * @internal
    */
   NativeApp = "core-backend.NativeApp",
+
+  /** The logger category used by the following classes:
+   * - [[ViewStateHydrator]]
+   * @internal
+   */
+  ViewStateHydrator = "core-backend.ViewStateHydrator",
 }

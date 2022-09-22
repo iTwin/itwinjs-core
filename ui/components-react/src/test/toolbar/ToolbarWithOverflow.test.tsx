@@ -8,7 +8,7 @@ import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, GroupButton, SpecialKey, ToolbarItemUtilities } from "@itwin/appui-abstract";
 import { fireEvent, render } from "@testing-library/react";
-import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
+import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers, ToolbarPopupAutoHideContext, ToolbarWithOverflow } from "../../components-react/toolbar/ToolbarWithOverflow";
 import { Direction } from "../../components-react/toolbar/utilities/Direction";
 import TestUtils from "../TestUtils";
 
@@ -141,6 +141,32 @@ describe("<ToolbarWithOverflow />", () => {
       fireEvent.click(entryButton!);
       // renderedComponent.debug();
       spy.calledOnce.should.true;
+    });
+
+    it("will auto-hide rendered with 3 items + overflow", () => {
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("components-toolbar-overflow-sizer")) {
+          return DOMRect.fromRect({ width: 168 }); // 4*42 = 168
+        } else if (this.classList.contains("components-toolbar-item-container")) {
+          return DOMRect.fromRect({ width: 40 });
+        }
+        return new DOMRect();
+      });
+      let isHidden = false;
+      const renderedComponent = render(<ToolbarPopupAutoHideContext.Provider value={isHidden}><ToolbarWithOverflow items={toolbarItems} /></ToolbarPopupAutoHideContext.Provider>);
+      expect(renderedComponent).not.to.be.undefined;
+
+      const overflowButton = renderedComponent.container.querySelector(".components-toolbar-button-item.components-ellipsis-icon");
+      expect(overflowButton).not.to.be.undefined;
+      fireEvent.click(overflowButton!);
+      expect(renderedComponent.queryByTitle("Entry4")).not.to.be.null;
+      isHidden = true;
+      renderedComponent.rerender(<ToolbarPopupAutoHideContext.Provider value={isHidden}><ToolbarWithOverflow items={toolbarItems} /></ToolbarPopupAutoHideContext.Provider>);
+      // renderedComponent.debug();
+      const overflowPopup = renderedComponent.getByTestId("core-popup");
+      expect (overflowPopup).not.to.be.null;
+      expect (overflowPopup.className).to.contain("nz-hidden");
     });
 
     it("will render with 3 items + overflow containing group", () => {
@@ -378,6 +404,50 @@ describe("<ToolbarWithOverflow />", () => {
       expect(popupPanel).not.to.be.null;
       popupPanel!.dispatchEvent(createBubbledEvent("keydown", { key: SpecialKey.Escape /* <Esc> */ }));
       onKeyDownSpy.calledOnce.should.true;
+    });
+
+    it("should auto-hide open panel", () => {
+      const getCustomDefWithPopupPanel = (): CustomToolbarItem => {
+        return {
+          id: "TestPopupPanelButton",
+          itemPriority: 10,
+          icon: "icon-placeholder",
+          label: "PopupEntry",
+          isCustom: true,
+          panelContentNode: <div data-testid="popup-panel">HelloWorld!</div>,
+        };
+      };
+
+      const toolbarItems: CommonToolbarItem[] = [
+        getCustomDefWithPopupPanel(),
+      ];
+
+      // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
+      sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+        if (this.classList.contains("components-toolbar-overflow-sizer")) {
+          return DOMRect.fromRect({ width: 252 }); // 6*42 = 252
+        } else if (this.classList.contains("components-toolbar-item-container")) {
+          return DOMRect.fromRect({ width: 40 });
+        }
+        return new DOMRect();
+      });
+      let isHidden = false;
+      const renderedComponent = render(<ToolbarPopupAutoHideContext.Provider value={isHidden}><ToolbarWithOverflow items={toolbarItems} /></ToolbarPopupAutoHideContext.Provider>);
+      expect(renderedComponent).not.to.be.undefined;
+      const button = renderedComponent.queryByTitle("PopupEntry");
+      expect(button).not.to.be.null;
+      expect(renderedComponent.queryByTestId("popup-panel")).to.be.null;
+      fireEvent.click(button!);
+      // renderedComponent.debug();
+
+      // Also make sure the popup panel can inform user when key down is pressed
+      const popupPanel = renderedComponent.queryByTestId("popup-panel");
+      expect(popupPanel).not.to.be.null;
+      isHidden = true;
+      renderedComponent.rerender(<ToolbarPopupAutoHideContext.Provider value={isHidden}><ToolbarWithOverflow items={toolbarItems} /></ToolbarPopupAutoHideContext.Provider>);
+      const corePopup = renderedComponent.getByTestId("core-popup");
+      expect (corePopup).not.to.be.null;
+      expect (corePopup.className).to.contain("nz-hidden");
     });
 
     it("should open panel when popup item clicked", () => {

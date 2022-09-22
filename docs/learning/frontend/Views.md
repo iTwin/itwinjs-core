@@ -1,6 +1,6 @@
 # Using Views in iTwin.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
+A *View* renders geometry from one or more [Models](../../bis/guide/fundamentals/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 

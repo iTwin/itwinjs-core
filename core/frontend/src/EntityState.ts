@@ -12,6 +12,7 @@ import { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. Every subclass of EntityState handles one BIS class.
  * @public
+ * @extensions
  */
 export class EntityState implements EntityProps {
   /** The name of the BIS schema for this class.
@@ -37,7 +38,7 @@ export class EntityState implements EntityProps {
   public readonly iModel: IModelConnection;
   /** The full class name in the form "schema:class". */
   public readonly classFullName: string;
-  /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this Entity. */
+  /** Optional [json properties]($docs/bis/guide/fundamentals/element-fundamentals.md#jsonproperties) of this Entity. */
   public readonly jsonProperties: { [key: string]: any };
 
   /** Constructor for EntityState
@@ -75,20 +76,21 @@ export class EntityState implements EntityProps {
 
 /** The "state" of an Element as represented in a web browser.
  * @public
+ * @extensions
  */
 export class ElementState extends EntityState implements ElementProps {
   /** @internal */
   public static override get className() { return "Element"; }
 
-  /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
+  /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
-  /** The [Code]($docs/bis/intro/codes.md) for this element */
+  /** The [Code]($docs/bis/guide/fundamentals/codes.md) for this element */
   public readonly code: Code;
   /** The parent Element of this, or undefined if no parent. */
   public readonly parent?: RelatedElement;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/guide/fundamentals/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
   public readonly federationGuid?: GuidString;
-  /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
+  /** A [user-assigned label]($docs/bis/guide/fundamentals/element-fundamentals.md#userlabel) for this element. */
   public readonly userLabel?: string;
 
   constructor(props: ElementProps, iModel: IModelConnection) {

@@ -17,7 +17,6 @@ exports[`ViewSelector should render correctly 1`] = `
         "handleChangeWrapper": [Function],
         "isSubscribed": [Function],
         "notifyNestedSubs": [Function],
-        "onStateChange": [Function],
         "trySubscribe": [Function],
         "tryUnsubscribe": [Function],
       },

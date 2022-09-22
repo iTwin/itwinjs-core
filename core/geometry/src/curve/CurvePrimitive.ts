@@ -5,16 +5,16 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
+import type { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
-import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3d } from "../bspline/BezierCurve3d";
-import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
-import { DirectSpiral3d } from "./spiral/DirectSpiral3d";
-import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
+import type { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import type { BSplineCurve3d } from "../bspline/BSplineCurve";
+import type { BezierCurve3d } from "../bspline/BezierCurve3d";
+import type { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
+import type { DirectSpiral3d } from "./spiral/DirectSpiral3d";
+import type { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -25,13 +25,15 @@ import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
-import { Arc3d } from "./Arc3d";
+import type { Arc3d } from "./Arc3d";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import { LineSegment3d } from "./LineSegment3d";
+import type { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+import type { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
+import { Range3d } from "../geometry3d/Range";
 
 /** Describes the concrete type of a [[CurvePrimitive]]. Each type name maps to a specific subclass and can be used for type-switching in conditional statements.
  *  - "arc" => [[Arc3d]]
@@ -64,6 +66,7 @@ export type AnnounceNumberNumber = (a0: number, a1: number) => void;
  * @public
  */
 export type AnnounceCurvePrimitive = (cp: CurvePrimitive) => void;
+
 /**
  * A curve primitive is bounded
  * A curve primitive maps fractions in 0..1 to points in space.
@@ -169,6 +172,24 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return undefined;
   }
 
+  /** Construct signed distance from a point on the curve to its center of curvature (in xy only).
+   * * Positive is to the left of the xy tangent.
+   * * negative is to the right of the xy tangent.
+   * * linear curve is 0.
+   */
+   public fractionToSignedXYRadiusOfCurvature(fraction: number): number {
+    const plane = this.fractionToPointAnd2Derivatives(fraction);
+     if (!plane)
+       return 0.0;
+      const cross = plane.vectorU.crossProductXY(plane.vectorV);
+     const b = plane.vectorU.magnitude();
+     if (b === 0.0)
+       return 0.0;
+     const r = Geometry.conditionalDivideCoordinate(b * b * b, cross);
+     if (r !== undefined)
+       return r;
+     return 0.0;
+  }
   /**
    * Construct a point extrapolated along tangent at fraction.
    * @param fraction fractional position on the primitive
@@ -208,6 +229,74 @@ export abstract class CurvePrimitive extends GeometryQuery {
     this.emitStrokableParts(context);
     return Math.abs(context.getSum());
   }
+
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    return this.rangeBetweenFractionsByClone (fraction0, fraction1, transform);
+    }
+
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public rangeBetweenFractionsByClone(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    if (fraction0 === fraction1)
+      return Range3d.create (this.fractionToPoint (fraction0));
+    const fragment = this.clonePartialCurve (fraction0, fraction1);
+    if (fragment)
+      return fragment.range (transform);
+    return Range3d.createNull ();
+  }
+
+  /**
+   * Returns an approximate range based on a fixed number of evaluations
+   * * Default implementation returns a range determined by evaluating a specified number of points on the curve.
+   * * Optional evaluate again at interval midpoints and extrapolate any increase
+   * * For a smooth curve, Richardson extrapolation suggests each subdivision moves 3/4 of the way to final. So extrapolationFactor
+   *            of 1/3 gets speculatively moves closer to the tight range, and larger multipliers increase confidence in being safely larger.
+   * @param fraction0 start fraction for evaluation
+   * @param fraction1 end fraction for evaluation
+   * @param count number of points to evaluate
+   * @param extrapolationFactor if positive, evaluate again at interval midpoints and apply this fraction multiplier to any increase in size.
+   */
+   public rangeBetweenFractionsByCount(fraction0: number, fraction1: number, count: number, transform?: Transform,
+    extrapolationFactor: number = 0.0): Range3d {
+    const range = Range3d.createNull ();
+    const workPoint = Point3d.create ();
+    range.extendPoint (this.startPoint (workPoint));
+    range.extendPoint (this.endPoint (workPoint));
+    // Evaluate at count fractions (fraction0 + i * fractionStep)
+    const evaluateSteps = (fractionA: number, fractionStep: number, countA: number) => {
+      let f = fractionA;
+      for (let i = 0; i < countA; i++, f += fractionStep){
+        this.fractionToPoint (f, workPoint);
+        if (transform)
+          range.extendTransformedPoint (transform, workPoint);
+        else
+          range.extendPoint (workPoint);
+      }
+    };
+    const interiorCount = count - 2;
+    if (interiorCount > 0){
+      const localFraction0 = 1.0 / (interiorCount + 1);
+      const globalFractionStep = localFraction0 * (fraction1 - fraction0);
+      evaluateSteps (fraction0 + globalFractionStep, globalFractionStep, interiorCount);
+    }
+    if (extrapolationFactor > 0.0){
+      // Evaluate at midpoints.  Where this makes the range larger, apply extrapolationFactor to move it to safer excess value.
+      // same interior step, but shift to interval midpoints:.
+      const baseRange = range.clone ();
+      const interiorCount1 = interiorCount + 1;
+      const localFraction0 = 0.5 / interiorCount1;  // we only evaluate at new midpoints.
+      const globalFractionStep = 2 * localFraction0 * (fraction1 - fraction0); // same as above, but avoids special logic for interiorCount = 0
+      evaluateSteps (fraction0 + globalFractionStep * 0.5, globalFractionStep, interiorCount1);
+      range.extendWhenLarger (baseRange, extrapolationFactor);
+      }
+    return range;
+    }
 
   /**
    *
@@ -393,6 +482,12 @@ export abstract class CurvePrimitive extends GeometryQuery {
     // DEFAULT IMPLEMENTATION -- no interior parts
     return false;
   }
+
+  /** Return a deep clone. */
+  public abstract override clone(): CurvePrimitive;
+
+  /** Return a transformed deep clone. */
+  public abstract override cloneTransformed(transform: Transform): CurvePrimitive | undefined;
 
   /** Return (if possible) a curve primitive which is a portion of this curve.
    * @param _fractionA [in] start fraction
@@ -611,6 +706,13 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return results;
   }
 
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * * No attempt is made to join the offsets of smaller constituent primitives. To construct a fully joined offset
+   *   for an aggregate instance (e.g., LineString3d, CurveChainWithDistanceIndex), use RegionOps.constructCurveXYOffset() instead.
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public abstract constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
 }
 
 /** Intermediate class for managing the parentCurve announcements from an IStrokeHandler */

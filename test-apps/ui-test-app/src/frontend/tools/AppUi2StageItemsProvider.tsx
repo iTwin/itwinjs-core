@@ -53,7 +53,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "LeftMiddle1",
@@ -124,7 +125,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           isFloatingStateSupported: true,
         }
       );
-    } else if (section === StagePanelSection.Middle) {
+    // eslint-disable-next-line deprecation/deprecation
+    } else if (section === StagePanelSection.Middle) { // used to ensure deprecated panel section is properly shown in End section
       widgets.push(
         {
           id: "RightMiddle1",
@@ -182,6 +184,8 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
           defaultState: WidgetState.Open,
           getWidgetContent: () => <h2>Top Start1 widget</h2>,
           isFloatingStateSupported: true,
+          defaultFloatingSize: {width: 400, height: 600 },
+          isFloatingStateWindowResizable: true,
         });
       widgets.push(
         {

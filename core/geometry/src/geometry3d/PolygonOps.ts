@@ -10,6 +10,7 @@ import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Point4d } from "../geometry4d/Point4d";
 import { XYParitySearchContext } from "../topology/XYParitySearchContext";
+import { FrameBuilder } from "./FrameBuilder";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 import { IndexedReadWriteXYZCollection, IndexedXYZCollection } from "./IndexedXYZCollection";
 import { Point2d, Vector2d } from "./Point2dVector2d";
@@ -244,6 +245,43 @@ export class PolygonOps {
     }
     return s * 0.5;
   }
+  /** Sum areas of triangles from points[0] to each far edge, as viewed with upVector pointing up.
+   * * Consider triangles from points[0] to each edge.
+   * * Sum the areas perpendicular to the upVector.
+   * * If the upVector is near-zero length, a simple z vector is used.
+   * @returns sum of triangle areas.
+   */
+   public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
+    let scale = upVector.magnitude ();
+    if (scale < Geometry.smallMetricDistance) {
+      upVector = Vector3d.create (0,0,1);
+      scale = 1.0;
+      }
+
+    let s = 0;
+    const n = points.length;
+    if (Array.isArray(points)) {
+      if (n >= 3) {
+        const origin = points[0];
+        const vector0 = origin.vectorTo(points[1]);
+        let vector1 = Vector3d.create();
+        // This will work with or without closure edge.  If closure is given, the last vector is 000.
+        for (let i = 2; i < n; i++) {
+          vector1 = origin.vectorTo(points[i], vector1);
+          s += vector0.tripleProduct(vector1, upVector);
+          vector0.setFrom(vector1);
+        }
+      }
+      return s * 0.5 / scale;
+    }
+    const crossVector = Vector3d.create();
+    for (let i = 2; i < n; i++) {
+      points.crossProductIndexIndexIndex(0, i - 1, i, crossVector);
+      s += crossVector.dotProduct(upVector);
+    }
+    return s * 0.5 / scale;
+  }
+
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
    * * Sum the areas(absolute, without regard to orientation) all these triangles.
@@ -294,11 +332,12 @@ export class PolygonOps {
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
     if (!result)
       result = new Vector3d();
+    else
+      result.setZero();
     const n = points.length;
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
-    } else if (n >= 3) {
-      result.setZero();
+    } else if (n > 3) {
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, result);
@@ -306,7 +345,7 @@ export class PolygonOps {
     }
     // ALL BRANCHES SUM FULL CROSS PRODUCTS AND EXPECT SCALE HERE
     result.scaleInPlace(0.5);
-    return result;
+    return result.isZero ? undefined : result;
   }
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
@@ -445,11 +484,15 @@ export class PolygonOps {
   }
   /**
    * Return a unit normal to the plane of the polygon.
-   * @param points array of points around the polygon.  This is assumed to NOT have closure edge.
+   * @param points array of points around the polygon.
    * @param result caller-allocated result vector.
+   * @return true if and only if result has unit length
    */
   public static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean {
-    const n = points.length;
+    result.setZero();
+    let n = points.length;
+    if (n > 1 && points.getPoint3dAtUncheckedPointIndex(0).isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1)))
+      --n;  // ignore closure point
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
       return result.normalizeInPlace();
@@ -663,7 +706,7 @@ export class PolygonOps {
     return numReverse;
   }
   /**
-   * If reverse loops as necessary to make them all have CCW orientation for given outward normal.
+   * Reverse loops as necessary to make them all have CCW orientation for given outward normal.
    * * Return an array of arrays which capture the input pointers.
    * * In each first level array:
    *    * The first loop is an outer loop.
@@ -680,7 +723,45 @@ export class PolygonOps {
     }
     return SortablePolygon.sortAsArrayOfArrayOfPolygons(loopAndArea);
   }
+
+  /**
+   * Exactly like `sortOuterAndHoleLoopsXY` but allows loops in any plane.
+   * @param loops multiple loops to sort and reverse.
+   * @param defaultNormal optional normal for the loops, if known
+   */
+  public static sortOuterAndHoleLoops(loops: IndexedReadWriteXYZCollection[], defaultNormal: Vector3d | undefined): IndexedReadWriteXYZCollection[][] {
+    const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, loops);
+    const worldToLocal = localToWorld?.inverse();
+
+    const xyLoops: GrowableXYZArray[] = [];
+    if (worldToLocal !== undefined) {
+      // transform into plane so we can ignore z in the sort
+      for (const loop of loops) {
+        const xyLoop = new GrowableXYZArray(loop.length);
+        for (const point of loop.points)
+          xyLoop.push(worldToLocal.multiplyPoint3d(point));
+        xyLoops.push(xyLoop);
+      }
+    }
+    const xySortedLoopsArray = PolygonOps.sortOuterAndHoleLoopsXY(xyLoops);
+
+    const sortedLoopsArray: GrowableXYZArray[][] = [];
+    if (localToWorld !== undefined) {
+      for (const xySortedLoops of xySortedLoopsArray) {
+        const sortedLoops: GrowableXYZArray[] = [];
+        for (const xySortedLoop of xySortedLoops) {
+          const sortedLoop = new GrowableXYZArray(xySortedLoop.length);
+          for (const point of xySortedLoop.points)
+            sortedLoop.push(localToWorld.multiplyPoint3d(point));
+          sortedLoops.push(sortedLoop);
+        }
+        sortedLoopsArray.push(sortedLoops);
+      }
+    }
+    return sortedLoopsArray;
+  }
 }
+
 /**
  *  `IndexedXYZCollectionPolygonOps` class contains _static_ methods for typical operations on polygons carried as `IndexedXyZCollection`
  * @public

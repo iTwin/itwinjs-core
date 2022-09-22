@@ -93,6 +93,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
       return (
         <ul style={ulStyle}>
           {iTwins && iTwins.map((iTwin: ITwin, i: number) => (
+            // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
             <li style={liStyle} key={i} onClick={() => this._onItemClick(iTwin)}>
               <span className="ip-icon icon icon-placeholder" />
               <div className="ip-details">
@@ -115,6 +116,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
         <div className="ip-dropdown">
           {this.renderITwins()}
           <div className="ip-separator" />
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="ip-more" style={liStyle} onClick={this._onMoreClicked} >
             <span className="ip-icon icon icon-search" />
             More
@@ -128,6 +130,7 @@ export class ITwinDropdown extends React.Component<ITwinDropdownProps, ITwinDrop
     const splitterClassName = classnames("ip-splitter icon icon-chevron-down", this.state.isDropdownOpen && "opened");
     return (
       <div className="ip">
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <div className="ip-content" onClick={this._splitterClicked} ref={(element) => { this._target = element; }}>
           <div>
             <span className="number">{this.props.currentITwin ? this.props.currentITwin.code : ""}</span>

@@ -67,6 +67,7 @@ export interface PackedFeature {
  * The most commonly-encountered batches are Tiles, which can be of either Primary or
  * Classifier type.
  * @public
+ * @extensions
  */
 export enum BatchType {
   /** This batch contains graphics derived from a model's visible geometry. */
@@ -139,6 +140,9 @@ export class FeatureTable extends IndexMap<Feature> {
   public getArray(): Array<IndexedValue<Feature>> { return this._array; }
 }
 
+/** @alpha */
+export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number;
+
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
  * wherein each feature occupies 3 32-bit integers.
@@ -151,9 +155,10 @@ export class PackedFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
-  private readonly _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
+  private _animationNodeIds?: Uint8Array | Uint16Array | Uint32Array;
 
   public get byteLength(): number { return this._data.byteLength; }
+  public get animationNodeIds(): Readonly<Uint8Array | Uint16Array | Uint32Array> | undefined { return this._animationNodeIds; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -238,13 +243,13 @@ export class PackedFeatureTable {
   }
 
   /** @internal */
-  public getElementIdPair(featureIndex: number): Id64.Uint32Pair {
+  public getElementIdPair(featureIndex: number, out?: Id64.Uint32Pair): Id64.Uint32Pair {
+    out = out ?? { lower: 0, upper: 0 };
     assert(featureIndex < this.numFeatures);
     const offset = 3 * featureIndex;
-    return {
-      lower: this._data[offset],
-      upper: this._data[offset + 1],
-    };
+    out.lower = this._data[offset];
+    out.upper = this._data[offset + 1];
+    return out;
   }
 
   /** @internal */
@@ -258,7 +263,7 @@ export class PackedFeatureTable {
 
   /** @internal */
   public getAnimationNodeId(featureIndex: number): number {
-    return undefined !== this._animationNodeIds ? this._animationNodeIds[featureIndex] : 0;
+    return undefined !== this._animationNodeIds && featureIndex < this.numFeatures ? this._animationNodeIds[featureIndex] : 0;
   }
 
   /** @internal */
@@ -306,6 +311,28 @@ export class PackedFeatureTable {
     }
 
     return table;
+  }
+
+  public populateAnimationNodeIds(computeNodeId: ComputeNodeId, maxNodeId: number): void {
+    assert(undefined === this._animationNodeIds);
+    assert(maxNodeId > 0);
+
+    const pair = { lower: 0, upper: 0 };
+    let haveNodes = false;
+    const size = this.numFeatures;
+    const nodeIds = maxNodeId < 0x100 ? new Uint8Array(size) : (maxNodeId < 0x10000 ? new Uint16Array(size) : new Uint32Array(size));
+    for (let i = 0; i < this.numFeatures; i++) {
+      this.getElementIdPair(i, pair);
+      const nodeId = computeNodeId(pair, i);
+      assert(nodeId <= maxNodeId);
+      if (0 !== nodeId) {
+        nodeIds[i] = nodeId;
+        haveNodes = true;
+      }
+    }
+
+    if (haveNodes)
+      this._animationNodeIds = nodeIds;
   }
 
   private get _subCategoriesOffset(): number { return this.numFeatures * 3; }

@@ -1,6 +1,165 @@
 # Change Log - @itwin/map-layers
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Fixed FeatureInfo provider registration when Map Layers Widget is initialized.
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+### Updates
+
+- Use a different resize observer technique to ensure the controlled tree in map suplayer popup is properly sized.
+- Turned ON Popup's 'repositionOnResize' property for MapLayerSettingsMenu.
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+### Updates
+
+- Made public MapLayers related objects, methods.
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:37 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:57 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- maplayers widget has been updated to support OAuth2: if needed, a popup window will be displayed to trigger the external OAuth process. When process completes, the focus returns to the map-layers widget and layer is ready to be added/displayed.
+- Use iTwinUI-react components to get consistent styling. Alos fixed bug with elevation correction control.
+- Fix a display issue with background color's ColorPicker where part of the dialog was missing.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+### Updates
+
+- Adjusted the map-layers package's peer dependencies to no longer lock down core packages.
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Add support for map layers using model geometry.
+- User Preferences is now supported for Blank Connection configurations.
+- Fixed issue that would close the new maplayer dialog when a new layer type was picked.
+- Fix 'ResizeObserver loop limit exceeded' error in MapLayers widget
+- Added FeatureInfo Widget.
+- Bug fix: Right click on the new map layer dialog would close it.
+- Refactored MapLayersUI initialization, and will always use UiProviders
+- Fix style on select
+- Update to itwinui-css version "0.44.0".
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Layers could not be added through MapLayers widget when UserPreferences was not set. Fix various issues related to user preferences.
+- Fixed various CSS issues in map-layers widget after recent UI framework changes.
+- No longer display username/password fields by default in the custom map layers dialog: If validation fails and reports authentication is needed, we then ask end-user for credentials.
+- Use QuantityNumericInput for 'Elevation Offset' and 'Model Height' fields instead of hardcoded units.
+- Migrated from Toggle to ToggleSwitch component in map-layers widget
+- rename contextId -> iTwinId
+- Unregister maplayers itemsProvider and widget control on terminate.
+- Now use 'DisplayStyleState.backgroundMapBase' instead of 'DisplayStyleState.changeBaseMapProps' to update the mapImagery.
+- use new @itwin package names
+- rename to @itwin/map-layers
+- remove ClientRequestContext and its subclasses
+- Replace usage of I18N with generic Localization interface.
+-  Renamed an iModel's parent container to iTwin
+- Ignore lint warning for deprecated class
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Update to latest itwinui-react
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Replace deprecated ThemedSelect component with iTwinUI-react Select component.
+- Remove itwinUi css overrides.
+- Replaced ui-core Slider with one from iTwinUi-react.
+- Update to latest types/react package
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -259,7 +418,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete.
+- Fix 'npm run cover' that would never complete. 
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -334,7 +493,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager.
+- Restored base layer visibility button in map manager. 
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -359,7 +518,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT

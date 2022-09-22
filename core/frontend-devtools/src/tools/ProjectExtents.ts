@@ -36,6 +36,10 @@ export class ProjectExtentsDecoration {
     }
   }
 
+  public static get isActive(): boolean {
+    return undefined !== ProjectExtentsDecoration._decorator;
+  }
+
   /** This will allow the render system to cache and reuse the decorations created by this decorator's decorate() method. */
   public readonly useCachedDecorations = true;
 

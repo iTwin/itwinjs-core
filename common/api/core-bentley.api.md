@@ -4,6 +4,13 @@
 
 ```ts
 
+/// <reference types="node" />
+
+import type { Attributes } from '@opentelemetry/api';
+import type { SpanContext } from '@opentelemetry/api';
+import type { SpanOptions } from '@opentelemetry/api';
+import type { Tracer } from '@opentelemetry/api';
+
 // @beta (undocumented)
 export class AbandonedError extends Error {
 }
@@ -31,20 +38,10 @@ export type AsyncMethodsOf<T> = {
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
-    }
+}
 
 // @alpha
 export type AsyncMutexUnlockFnType = () => void;
-
-// @beta
-export enum AuthStatus {
-    // (undocumented)
-    AUTHSTATUS_BASE = 139264,
-    // (undocumented)
-    Error = 139264,
-    // (undocumented)
-    Success = 0
-}
 
 // @public
 export function base64StringToUint8Array(base64: string): Uint8Array;
@@ -97,7 +94,7 @@ export class BentleyError extends Error {
     static getMetaData(metaData: LoggingMetaData): object | undefined;
     get hasMetaData(): boolean;
     protected _initName(): string;
-    }
+}
 
 // @public
 export enum BentleyLoggerCategory {
@@ -187,7 +184,7 @@ export class ByteStream {
     readBytes(readPos: number, numBytes: number): Uint8Array;
     reset(): void;
     rewind(numBytes: number): boolean;
-    }
+}
 
 // @beta
 export enum ChangeSetStatus {
@@ -517,6 +514,15 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
+// @alpha
+export abstract class ErrorCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
+
+// @beta
+export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+
 // @public
 export enum GeoServiceStatus {
     // (undocumented)
@@ -617,6 +623,7 @@ export namespace Id64 {
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
+        hasPair(pair: Uint32Pair): boolean;
         get isEmpty(): boolean;
         // (undocumented)
         protected readonly _map: Map<number, Set<number>>;
@@ -955,6 +962,12 @@ export function isIDisposable(obj: unknown): obj is IDisposable;
 // @public
 export function isInstanceOf<T>(obj: any, constructor: Constructor<T>): boolean;
 
+// @internal
+export function isProperSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass;
+
+// @internal
+export function isSubclassOf<SuperClass extends new (..._: any[]) => any, NonSubClass extends new (..._: any[]) => any, SubClass extends new (..._: any[]) => InstanceType<SuperClass>>(subclass: SuperClass | SubClass | NonSubClass, superclass: SuperClass): subclass is SubClass | SuperClass;
+
 // @public (undocumented)
 export interface JSONSchema {
     // (undocumented)
@@ -1240,7 +1253,7 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     get ids(): CompressedId64Set;
     get isEmpty(): boolean;
     reset(ids?: CompressedId64Set): void;
-    }
+}
 
 // @public
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
@@ -1268,7 +1281,7 @@ export class OneAtATimeAction<T> {
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
-    }
+}
 
 // @public
 export type OnUnexpectedError = (error: any) => void;
@@ -1329,7 +1342,7 @@ export class PerfLogger implements IDisposable {
     constructor(operation: string, metaData?: LoggingMetaData);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
@@ -1422,6 +1435,16 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
     protected _remove(value: T): number;
 }
 
+// @alpha
+export enum RealityDataStatus {
+    // (undocumented)
+    InvalidData = 151553,
+    // (undocumented)
+    REALITYDATA_ERROR_BASE = 151552,
+    // (undocumented)
+    Success = 0
+}
+
 // @beta
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1464,6 +1487,37 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
     remove(value: T): number;
 }
 
+// @alpha
+export enum SpanKind {
+    // (undocumented)
+    CLIENT = 2,
+    // (undocumented)
+    CONSUMER = 4,
+    // (undocumented)
+    INTERNAL = 0,
+    // (undocumented)
+    PRODUCER = 3,
+    // (undocumented)
+    SERVER = 1
+}
+
+// @alpha
+export abstract class StatusCategory {
+    // (undocumented)
+    abstract code: number;
+    // (undocumented)
+    abstract error: boolean;
+    // (undocumented)
+    static for(error: BentleyError): StatusCategory;
+    // (undocumented)
+    static handlers: Set<StatusCategoryHandler>;
+    // (undocumented)
+    abstract name: string;
+}
+
+// @alpha (undocumented)
+export type StatusCategoryHandler = (error: BentleyError) => StatusCategory | undefined;
+
 // @beta
 export interface StatusCodeWithMessage<ErrorCodeType> {
     // (undocumented)
@@ -1484,7 +1538,20 @@ export class StopWatch {
     reset(): void;
     start(): void;
     stop(): BeDuration;
-    }
+}
+
+// @alpha
+export abstract class SuccessCategory extends StatusCategory {
+    // (undocumented)
+    error: boolean;
+}
+
+// @alpha
+export class Tracing {
+    static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
+    static setAttributes(attributes: Attributes): void;
+    static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
+}
 
 // @public
 export class TransientIdSequence {
@@ -1500,7 +1567,7 @@ export class UnexpectedErrors {
     static readonly reThrowDeferred: (e: any) => NodeJS.Timeout;
     static readonly reThrowImmediate: (e: any) => never;
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
-    }
+}
 
 // @public
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
@@ -1511,6 +1578,22 @@ export function utf8ToString(utf8: Uint8Array): string | undefined;
 // @internal
 export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
 
+// @internal
+export class YieldManager {
+    constructor(options?: YieldManagerOptions);
+    // (undocumented)
+    protected actualYield(): Promise<void>;
+    // (undocumented)
+    allowYield(): Promise<void>;
+    // (undocumented)
+    options: Readonly<Required<YieldManagerOptions>>;
+}
+
+// @internal
+export interface YieldManagerOptions {
+    // (undocumented)
+    iterationsBeforeYield?: number;
+}
 
 // (No @packageDocumentation comment for this package)
 

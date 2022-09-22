@@ -885,7 +885,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with Property to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass with PrimitiveProperty to be successful");
 
@@ -925,7 +925,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty (Enumeration) to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass PrimitiveProperty (Enumeration) to be successful");
 
@@ -965,7 +965,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      assert.throws(() => Array.from(parser.getProperties(parentElement)), ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'propertyName' attribute.`);
+      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'propertyName' attribute.`);
     });
 
     it("should throw for missing typeName", () => {
@@ -980,7 +980,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1000,7 +1000,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1020,7 +1020,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1040,7 +1040,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1061,7 +1061,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1081,7 +1081,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1101,7 +1101,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1121,7 +1121,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
@@ -1143,7 +1143,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with Property to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass with StructProperty to be successful");
 
@@ -1180,7 +1180,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass StructArrayProperty to be successful");
 
@@ -1219,7 +1219,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass ArrayProperty to be successful");
 
@@ -1261,7 +1261,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
@@ -1281,7 +1281,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
@@ -1301,7 +1301,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with ArrayProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
@@ -1325,7 +1325,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected parsing EntityClass NavigationProperty to be successful");
 
@@ -1361,7 +1361,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 
@@ -1381,7 +1381,7 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with NavigationProperty to be successful");
 
       const [, , parentElement] = findResult;
-      const propertiesResult = Array.from(parser.getProperties(parentElement));
+      const propertiesResult = Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass"));
       if (propertiesResult.length === 0)
         throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 

@@ -11,9 +11,10 @@ import classnames from "classnames";
 import * as React from "react";
 import { RenderMode } from "@itwin/core-common";
 import { ScreenViewport } from "@itwin/core-frontend";
-import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@itwin/appui-react";
+import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager } from "@itwin/appui-react";
 import { FooterIndicator } from "@itwin/appui-layout-react";
 import { Checkbox } from "@itwin/itwinui-react";
+import { CommonProps } from "@itwin/core-react";
 
 // cspell:ignore statusfield
 
@@ -26,9 +27,9 @@ interface ShadowFieldState {
  * Shadow Field React component. This component is designed to be specified in a status bar definition.
  * It is used to enable/disable display of shadows.
  */
-export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldState> {
+export class ShadowField extends React.Component<CommonProps, ShadowFieldState> {
 
-  constructor(props: StatusFieldProps) {
+  constructor(props: CommonProps) {
     super(props);
 
     this.state = { viewId: "" };
@@ -98,7 +99,6 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
       <FooterIndicator
         className={classnames("uifw-statusFields-shadowField", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
       >
         <Checkbox style={cbStyle} label="Shadows" checked={isChecked} onChange={this._onChange} disabled={isDisabled} className="statusfield-checkbox" />
       </FooterIndicator >

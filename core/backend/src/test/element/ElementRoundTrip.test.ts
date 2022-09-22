@@ -5,10 +5,11 @@
 import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
+  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
-import { ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -716,5 +717,115 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     });
 
     imodel.close();
+  });
+
+  it("Roundtrip placement when geom is undefined", async () => {
+    const placement = {
+      origin: { x: 10, y: 20, z: 30 },
+      angles: {
+        yaw: Angle.createDegrees(90),
+        pitch: Angle.createDegrees(180),
+        roll: Angle.createDegrees(270),
+      },
+      bbox: {
+        low: { x: -1, y: -2, z: -3 },
+        high: { x: 1, y: 2, z: 3 },
+      },
+    } as const;
+
+    const insertAndVerifyPlacement = (
+      name: string,
+      extraProps: Partial<PhysicalElementProps> = {},
+      {
+        /**
+         * setting some geometry will override the passed bounding box with a calculated one,
+         * so we need to be able to override parts of the expected placement based on the geometry used
+         */
+        expectedPlacementOverrides = {},
+      }: {
+        expectedPlacementOverrides?: Partial<Placement3dProps>;
+      } = {}
+    ) => {
+      const imodelPath = IModelTestUtils.prepareOutputFile(subDirName, `roundtrip_placement-${name}.bim`);
+      let imodel = IModelTestUtils.createSnapshotFromSeed(imodelPath, iModelPath);
+      const modelId = PhysicalModel.insert(imodel, IModelDb.rootSubjectId, "model");
+      const categoryId = SpatialCategory.insert(imodel, IModelDb.dictionaryId, "model", {});
+
+      const expectedPlacement = { ...placement, ...expectedPlacementOverrides };
+
+      const objId = imodel.elements.insertElement({
+        classFullName: PhysicalObject.classFullName,
+        code: Code.createEmpty(),
+        model: modelId,
+        placement,
+        category: categoryId,
+        ...extraProps,
+      });
+
+      imodel.saveChanges();
+
+      const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
+      expect(inMemoryCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
+
+      // reload db since there is a different path for loading properties not in memory that we want to force
+      imodel.close();
+      imodel = SnapshotDb.openFile(imodelPath);
+
+      const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
+      expect(readFromDbCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
+
+      imodel.close();
+    };
+
+    insertAndVerifyPlacement("no-geom", {
+      geom: undefined,
+      elementGeometryBuilderParams: undefined,
+    });
+
+    const pts = [Point3d.create(5, 10, 0), Point3d.create(10, 10, 0)];
+    const geomEntry = ElementGeometry.fromGeometryQuery(LineSegment3d.create(pts[0], pts[1]));
+    assert(geomEntry !== undefined);
+
+    const elementGeometryBuilderParams = { entryArray: [geomEntry] };
+    insertAndVerifyPlacement(
+      "geom-through-elementGeometryBuilderParams",
+      {
+        geom: undefined,
+        elementGeometryBuilderParams,
+      },
+      {
+        expectedPlacementOverrides: {
+          bbox: {
+            low: { x: 5, y: 10, z: 0 },
+            high: { x: 10, y: 10, z: 0 },
+          },
+        },
+      }
+    );
+
+    const awaitingFixFromDAssaf = true;
+    if (awaitingFixFromDAssaf)
+      return;
+
+    const geom = [
+      { header: { flags: 0 } },
+      { box: { origin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
+    ];
+
+    insertAndVerifyPlacement(
+      "geom-through-json",
+      {
+        geom,
+        elementGeometryBuilderParams: undefined,
+      },
+      {
+        expectedPlacementOverrides: {
+          bbox: {
+            low: { x: 0, y: 0, z: 0 },
+            high: { x: 10, y: 20, z: 0 },
+          },
+        },
+      }
+    );
   });
 });

@@ -1,6 +1,161 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- stroke centerline in addMiteredPipes
+- upgrade mocha to version 10.0.0
+- sort non-horizontal loops in polyface clipper
+- Speedup CurveChainWithDistanceIndex.closestPoint
+- growable array improvements
+- Fix bug in range.extendWhenLarger
+- prevent Delaunay flipper from removing hole edges
+- Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+### Updates
+
+- sort non-horizontal loops in polyface clipper
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- implement PolyfaceBuilder.addSweptIndexedPolyface
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- add two geom tests
+- PolyfaceBuilder.addMiteredPipes now handles elliptical sections
+- create spirals beyond [0,1]
+- Add secondary sort (based on curvature) to around-the-vertex ordering in planar subdivision with curves
+- fix Matrix4d.createInverse failure
+- Offset XY curve improvements
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Add clonePartialCurve for spirals. Proper length computation for partial spirals.
+- Create interpolation curve for through points construction.
+- InterpolationCurve3d support
+- add HalfEdgeGraphOps.expandConvexFaces
+- Add curve tests to increase coverage
+- add periodic B-spline curve ctor
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- Fix bug in polygon booleans when inputs are disjoint
+- In wire offset, improve handling of arcs offset beyond their center
+- When a UnionOfConvexClipPlaneSets clips a polyface, aggressively stitch shards.
+- Produce triangles (instead of quads) (when requested) in AddUVGridBody.
+- Documentation file for ClipPlane structures
+- When building planes for a ClipShape, pre-filter the shape edges to remove danglers that violate triangulation requirements
+- Correct problems with all-convex mask clips
+- ClipUtilities.createComplementaryClips -- method to create a UnionOfConvexClipPlaneSets which covers the space outside of a ConvexClipPlaneSet
+- Correct implementation of "mask" ClipPrimitive
+- Implement appendPolygonClip in deep boolean trees.
+- When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces.
+- Various code coverage.   Fix infinitie loop in "out of graph" case in InsertAndRetriangulateContext
+- Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals
+- Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions
+- Fix plane constructions on xy clipper from polyline offset
+- Apply tolerance when determining if ClipShape polygon is closed.
+- rename to @itwin/core-geometry
+- remove ClientRequestContext and its subclasses
+- Switching to consume new Projects-Client
+- Renamed an iModel's parent container to iTwin
+- Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent.
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -759,7 +914,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -890,7 +1045,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 

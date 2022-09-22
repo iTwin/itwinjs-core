@@ -41,28 +41,42 @@ function getConfig(env) {
     },
     target: "node",
     devtool: "source-map",
+    resolve: { mainFields: ["main", "module"] },
     module: {
+      // don't parse @bentley/imodeljs-native/NativeLibrary.js,
+      // we don't need to pull in the Native here as it gets loaded by the runtime
+      // via (process as any)._linkedBinding("iModelJsNative")
+      noParse: [/NativeLibrary.js$/],
       rules: [
         {
           test: /AzCopyFileHandler\.js/g,
-          use: 'null-loader'
+          use: "null-loader",
+        },
+        {
+          test: /itwin\+electron-authorization/g,
+          use: "null-loader",
         },
         {
           test: /ElectronBackend\.js/g,
-          use: 'null-loader'
-        }
-      ]
+          use: "null-loader",
+        },
+      ],
     },
     stats: {
-      warnings: false
+      warnings: false,
     },
     externals: {
-      "electron": "electron",
+      electron: "electron",
+      bufferutil: "bufferutil",
+      "utf-8-validate": "utf-8-validate",
     },
     plugins: [
       new plugins.CopyAppAssetsPlugin("./assets/"),
       new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
-      new webpack.DefinePlugin({ "global.GENTLY": false, "process.version": "'v10.9.0'" })
+      new webpack.DefinePlugin({
+        "global.GENTLY": false,
+        "process.version": "'v10.9.0'",
+      }),
     ],
   };
 

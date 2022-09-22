@@ -8,7 +8,7 @@
 
 import { assert, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { Range2d } from "@itwin/core-geometry";
-import { ImageSource, MapLayerSettings } from "@itwin/core-common";
+import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
@@ -80,7 +80,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   private _mapTilingScheme: MapTilingScheme;
   private _urlBase: string;
 
-  constructor(settings: MapLayerSettings) {
+  constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
     this._urlBase = settings.url;
     this._zoomMax = 0;
@@ -147,7 +147,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     return matchingAttributions;
   }
 
-  public override getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined {
+  public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
@@ -160,7 +160,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
         copyrightMsg += "<br>";
       copyrightMsg += copyrights[i];
     }
-    return IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg });
+
+    cards.appendChild(IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/bing.svg`, heading: "Microsoft Bing", notice: copyrightMsg }));
   }
 
   // initializes the BingImageryProvider by reading the templateUrl, logo image, and attribution list.

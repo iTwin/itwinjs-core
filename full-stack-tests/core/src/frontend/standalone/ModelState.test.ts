@@ -123,11 +123,12 @@ describe("ModelState", () => {
 
     testSpatial = imodel2.models.getLoaded("0x1c") as SpatialModelState;
     range = await testSpatial.queryModelRange();
-    assert.isTrue(range.low.isAlmostEqual({ x: 288874.1174466432, y: 3803761.1888925503, z: -0.0005 }));
-    assert.isTrue(range.high.isAlmostEqual({ x: 289160.8417204395, y: 3803959.118535, z: 0.0005 }));
+    assert.isTrue(range.low.isAlmostEqual({ x: 288874.09375, y: 3803760.75, z: -0.0005 }));
+    assert.isTrue(range.high.isAlmostEqual({ x: 289160.84375, y: 3803959.5, z: 0.0005 }));
   });
 
   it("view thumbnails", async () => {
+    // eslint-disable-next-line deprecation/deprecation
     let thumbnail = await imodel3.views.getThumbnail("0x34");
     assert.equal(thumbnail.format, "png", "thumbnail format");
     assert.equal(thumbnail.height, 768, "thumbnail height");
@@ -143,6 +144,7 @@ describe("ModelState", () => {
     assert.equal(image[6], 0x1A);
     assert.equal(image[7], 0x0A);
 
+    // eslint-disable-next-line deprecation/deprecation
     thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
@@ -151,21 +153,8 @@ describe("ModelState", () => {
     assert.equal(thumbnail.image[3], 224);
     assert.equal(thumbnail.image[18061], 217);
 
-    // thumbnail.format = "png";
-    // thumbnail.height = 100;
-    // thumbnail.width = 200;
-    // thumbnail.image = new Uint8Array(301); // try with odd number of bytes
-    // thumbnail.image.fill(33);
-
-    // await imodel2.views.saveThumbnail("0x24", thumbnail);
-    // const thumbnail2 = await imodel2.views.getThumbnail("0x24");
-    // assert.equal(thumbnail2.format, "png");
-    // assert.equal(thumbnail2.height, 100);
-    // assert.equal(thumbnail2.width, 200);
-    // assert.equal(thumbnail2.image.length, 301);
-    // assert.equal(thumbnail2.image[3], 33);
-
     try {
+      // eslint-disable-next-line deprecation/deprecation
       await imodel2.views.getThumbnail("0x25");
     } catch (_err) {
       return;

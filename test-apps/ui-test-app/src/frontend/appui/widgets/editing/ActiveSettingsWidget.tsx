@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Id64String } from "@itwin/core-bentley";
-import { IModelApp } from "@itwin/core-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiManager, WidgetControl } from "@itwin/appui-react";
 import { ActiveSettingsManager, iModelInfoAvailableEvent } from "../../../api/ActiveSettingsManager";
 
@@ -22,19 +21,21 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
   }
 
   private updateState() {
-    this.setState((prev) => ({ ...prev, modelId: IModelApp.toolAdmin.activeSettings.model, categoryId: IModelApp.toolAdmin.activeSettings.category }));
+    this.setState((prev) => ({
+      ...prev,
+      modelId: ActiveSettingsManager.briefcase?.editorToolSettings.model,
+      categoryId: ActiveSettingsManager.briefcase?.editorToolSettings.category,
+    }));
   }
 
   private get activeModelName(): string {
-    if (IModelApp.toolAdmin.activeSettings.model === undefined)
-      return "";
-    return ActiveSettingsManager.models.getNameFromId(IModelApp.toolAdmin.activeSettings.model) || "";
+    const model = ActiveSettingsManager.briefcase?.editorToolSettings.model;
+    return model ? ActiveSettingsManager.models.getNameFromId(model) ?? "" : "";
   }
 
   private get activeCategoryName(): string {
-    if (IModelApp.toolAdmin.activeSettings.category === undefined)
-      return "";
-    return ActiveSettingsManager.categories.getNameFromId(IModelApp.toolAdmin.activeSettings.category) || "";
+    const category = ActiveSettingsManager.briefcase?.editorToolSettings.category;
+    return category ? ActiveSettingsManager.categories.getNameFromId(category) ?? "" : "";
   }
 
   private getAllModels(): JSX.Element[] {
@@ -44,7 +45,9 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
   }
 
   private onSelectModel(event: React.FormEvent<HTMLSelectElement>) {
-    IModelApp.toolAdmin.activeSettings.model = event.currentTarget.options[event.currentTarget.selectedIndex].id;
+    if (ActiveSettingsManager.briefcase)
+      ActiveSettingsManager.briefcase.editorToolSettings.model = event.currentTarget.options[event.currentTarget.selectedIndex].id;
+
     this.updateState();
   }
 
@@ -55,7 +58,9 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
   }
 
   private onSelectCategory(event: React.FormEvent<HTMLSelectElement>) {
-    IModelApp.toolAdmin.activeSettings.category = event.currentTarget.options[event.currentTarget.selectedIndex].id;
+    if (ActiveSettingsManager.briefcase)
+      ActiveSettingsManager.briefcase.editorToolSettings.category = event.currentTarget.options[event.currentTarget.selectedIndex].id;
+
     this.updateState();
   }
 
@@ -69,14 +74,14 @@ export class ActiveSettingsComponent extends React.Component<{}, ActiveSettingsC
           <tbody>
             <tr>
               <td>Model</td>
-              <td><select title="Active Model" value={this.activeModelName} onChange={(e) => this.onSelectModel(e)} >
+              <td><select title="Active Model" value={this.activeModelName} onBlur={(e) => this.onSelectModel(e)} >
                 {this.getAllModels()}
               </select>
               </td>
             </tr>
             <tr>
               <td>Category</td>
-              <td><select title="Active Category" value={this.activeCategoryName} onChange={(e) => this.onSelectCategory(e)} >
+              <td><select title="Active Category" value={this.activeCategoryName} onBlur={(e) => this.onSelectCategory(e)} >
                 {this.getAllCategories()}
               </select>
               </td>

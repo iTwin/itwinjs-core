@@ -85,6 +85,10 @@ class TestUiProvider implements UiItemsProvider {
     if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
       widgets.push({
         id: "addonWidget",
+        icon: PresentationPropertyGridWidgetControl.iconSpec,
+        label: PresentationPropertyGridWidgetControl.label,
+        defaultFloatingSize={{width:330, height:540}},
+         isFloatingStateWindowResizable={true},
         getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>,
       });
     }

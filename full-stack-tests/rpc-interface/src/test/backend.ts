@@ -7,7 +7,7 @@
 
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
-import { IModelHost, IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
@@ -38,10 +38,9 @@ const settings = new Settings(process.env);
   RpcConfiguration.developmentMode = true;
 
   // Start the backend
-  const hostConfig = new IModelHostConfiguration();
-  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-  hostConfig.hubAccess = new BackendIModelsAccess(iModelClient);
-  await IModelHost.startup(hostConfig);
+  const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+  const hubAccess = new BackendIModelsAccess(iModelClient);
+  await IModelHost.startup({ hubAccess });
 
   PresentationBackend.initialize();
 

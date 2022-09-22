@@ -81,8 +81,8 @@ export function ViewFlagItem(flagName: string) {
 export function ViewAttributesWidgetComponent() {
   const widgetDef = useWidgetDef("ui-item-provider-test:ViewAttributesWidget");
   React.useEffect(() => {
-    // using setImmediate to give time for frontstage to load before calling setWidgetState
-    setImmediate(() => widgetDef?.setWidgetState(WidgetState.Floating));
+    // using setTimeout to give time for frontstage to load before calling setWidgetState
+    setTimeout(() => widgetDef?.setWidgetState(WidgetState.Floating));
   }, [widgetDef]);
   const items: JSX.Element[] = [];
   items.push(ViewFlagItem("acs"));

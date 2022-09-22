@@ -6,14 +6,14 @@
  * @module RpcInterface
  */
 
-import { GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  Code, CodeProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData,
-  EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesRequestProps,
-  IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode,
-  TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
+  ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
+  IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
+  IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps,
+  SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps,ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -23,6 +23,8 @@ import { DictionaryModel } from "../Model";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
+import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
+import { ViewStateHydrator } from "../ViewStateHydrator";
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -33,6 +35,24 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getConnectionProps(tokenProps: IModelRpcOpenProps): Promise<IModelConnectionProps> {
     return RpcBriefcaseUtility.openWithTimeout(RpcTrace.expectCurrentActivity, tokenProps, SyncMode.FixedVersion);
+  }
+
+  public async getCustomViewState3dData(tokenProps: IModelRpcProps, options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const viewCreator = new CustomViewState3dCreator(iModelDb);
+    return viewCreator.getCustomViewState3dData(options);
+  }
+
+  public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const viewHydrater = new ViewStateHydrator(iModelDb);
+    return viewHydrater.getHydrateResponseProps(options);
+  }
+
+  public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+    const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
+    return iModelDb.querySubCategories(decompressedIds);
   }
 
   public async queryRows(tokenProps: IModelRpcProps, request: DbQueryRequest): Promise<DbQueryResponse> {
@@ -194,16 +214,54 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getMassProperties(props);
   }
 
+  public async getMassPropertiesPerCandidate(tokenProps: IModelRpcProps, props: MassPropertiesPerCandidateRequestProps): Promise<MassPropertiesPerCandidateResponseProps[]> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
+
+    const getSingleCandidateMassProperties = async (candidate: string) => {
+      try {
+        const massPropResults: MassPropertiesResponseProps[] = [];
+
+        for (const op of props.operations) {
+          const massProperties = await iModelDb.getMassProperties({ operation: op, candidates: [candidate] });
+          massPropResults.push(massProperties);
+        }
+
+        let singleCandidateResult: MassPropertiesPerCandidateResponseProps = { status: BentleyStatus.ERROR, candidate };
+
+        if (massPropResults.some((r) => r.status !== BentleyStatus.ERROR)) {
+          singleCandidateResult.status = BentleyStatus.SUCCESS;
+          for (const r of massPropResults.filter((mpr) => mpr.status !== BentleyStatus.ERROR)) {
+            singleCandidateResult = { ...singleCandidateResult, ...r };
+          }
+        }
+
+        return singleCandidateResult;
+      } catch {
+        return { status: BentleyStatus.ERROR, candidate };
+      }
+    };
+
+    const promises: Promise<MassPropertiesPerCandidateResponseProps>[] = [];
+
+    for (const candidate of CompressedId64Set.iterable(props.candidates)) {
+      promises.push(getSingleCandidateMassProperties(candidate));
+    }
+
+    return Promise.all(promises);
+  }
+
   public async getToolTipMessage(tokenProps: IModelRpcProps, id: string): Promise<string[]> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
     const el = iModelDb.elements.getElement(id);
     return (el === undefined) ? [] : el.getToolTipMessage();
   }
 
-  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header. */
-  public async getViewThumbnail(tokenProps: IModelRpcProps, viewId: string): Promise<Uint8Array> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const thumbnail = iModelDb.views.getThumbnail(viewId);
+  /** Send a view thumbnail to the frontend. This is a binary transfer with the metadata in a 16-byte prefix header.
+   * @deprecated
+   */
+  public async getViewThumbnail(_tokenProps: IModelRpcProps, _viewId: string): Promise<Uint8Array> {
+    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, _tokenProps);
+    const thumbnail = iModelDb.views.getThumbnail(_viewId);
     if (undefined === thumbnail || 0 === thumbnail.image.length)
       throw new NoContentError();
 

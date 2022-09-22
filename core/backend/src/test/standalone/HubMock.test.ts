@@ -11,10 +11,10 @@ import { LockProps, LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../HubMock";
+import { HubMock } from "../../HubMock";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
+import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -22,8 +22,8 @@ describe("HubMock", () => {
   const version0 = IModelTestUtils.resolveAssetFile("test.bim");
   const accessToken: AccessToken = "fake token";
 
-  before(async () => {
-    HubMock.startup("HubMockTest");
+  before(() => {
+    HubMock.startup("HubMockTest", KnownTestLocations.outputDir);
   });
   after(() => {
     HubMock.shutdown();

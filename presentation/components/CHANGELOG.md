@@ -1,6 +1,144 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:23 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:23 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Renderer for nodes with too many children.
+- Add filter button
+- Fix: set correct node's children count after hierarchy update
+- Added 'PresentationInstanceFilterBuilder' component for building complex filters to filter instances when requesting presentation data
+- usePresentationTreeNodeLoader: pass 'customizeTreeNodeItem' callback to 'PresentationTreeDataProvider'
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:37 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:57 GMT
+
+### Updates
+
+- Fix excluding related properties without values
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Added ability to customize TreeNodeItems produced by PresentationTreeDataProvider
+- Documentation updates.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+_Version update only_
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename contextId -> iTwinId
+- rename to @itwin/presentation-components
+- remove ClientRequestContext and its subclasses
+- Clean up deprecated APIs
+- Make property category grouping enabled by default.
+- `usePresentationTreeNodeLoader`: Redesign the way tree component reloads when `enableHierarchyAutoUpdate` is set.
+- Remove `IPresentationTreeDataProvider.loadHierarchy`.
+- Fixed SameInstance nested properties bug when merged cells with multiple nested content items were not created properly.
+- Created an additional nodeLoader used only when filtering Tree Component. That fixed the bug when spinner was not showing when filtering was in progress. 
+- Replace usage of I18N with generic Localization interface.
+-  Renamed an iModel's parent container to iTwin
+- Removed deprecated `DEPRECATED_controlledTreeWithFilteringSupport` and `DEPRECATED_controlledTreeWithVisibleNodes`.
+- Remove `immer` dependency.
+- Ignore lint errors for deprecated Table component.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Update to latest types/react package
+- Lock down and update version numbers so docs will build.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -1014,7 +1152,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it.
+- Deprecated dev-cors-proxy-server and use of it. 
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { Logger } from "@itwin/core-bentley";
 import { ScreenViewport } from "@itwin/core-frontend";
 import { ContentLayoutProps, UiError } from "@itwin/appui-abstract";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -32,7 +31,7 @@ export interface ContentProps {
  * @public
  */
 export interface ContentGroupProps {
-  /** An optional id for the [[ContentGroup]] */
+  /** An id for the [[ContentGroup]]. This id is used to locate a ContentGroup and it also can be used by an ContentGroupProvider to save/restore content settings */
   id: string;
   /** Content Layout Id or complete set of [[ContentLayoutProps]]  */
   layout: ContentLayoutProps;
@@ -160,7 +159,6 @@ export class ContentGroup {
       return this._contentSetMap.get(controlId);
     }
 
-    Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
     return undefined;
   }
 

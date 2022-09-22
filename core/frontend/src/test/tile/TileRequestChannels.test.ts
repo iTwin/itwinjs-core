@@ -46,23 +46,21 @@ describe("TileRequestChannels", () => {
 
   it("allocates http channel on first request", () => {
     const channels = new TileRequestChannels(undefined, false);
-    expect(channels.size).to.equal(2);
+    expect(channels.size).to.equal(3);
     const channel = channels.getForHttp("abc");
-    expect(channels.size).to.equal(3);
+    expect(channels.size).to.equal(4);
     const channel2 = channels.getForHttp("abc");
-    expect(channels.size).to.equal(3);
+    expect(channels.size).to.equal(4);
     expect(channel2).to.equal(channel);
     channels.getForHttp("xyz");
-    expect(channels.size).to.equal(4);
+    expect(channels.size).to.equal(5);
   });
 
-  it("enables cloud storage cache", () => {
+  it("always enables cloud storage cache", () => {
     const channels = new TileRequestChannels(undefined, false);
-    expect(channels.iModelChannels.cloudStorage).to.be.undefined;
-    channels.enableCloudStorageCache();
     expect(channels.iModelChannels.cloudStorage).not.to.be.undefined;
-    expect(channels.iModelChannels.cloudStorage!.concurrency).to.equal(channels.httpConcurrency);
-    expectClassName(channels.iModelChannels.cloudStorage!, "CloudStorageCacheChannel");
+    expect(channels.iModelChannels.cloudStorage.concurrency).to.equal(channels.httpConcurrency);
+    expectClassName(channels.iModelChannels.cloudStorage, "CloudStorageCacheChannel");
   });
 
   it("returns whether channel is registered", () => {

@@ -7,7 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Logger } from "@itwin/core-bentley/lib/cjs/Logger";
+import { FrontendLoggerCategory } from "../../FrontendLoggerCategory";
 import { Matrix3, Matrix4 } from "./Matrix";
+import { ShaderProgram } from "./ShaderProgram";
 import { SyncToken } from "./Sync";
 import { System } from "./System";
 
@@ -29,18 +32,26 @@ const enum DataType {// eslint-disable-line no-restricted-syntax
  * @internal
  */
 export class UniformHandle {
-  private readonly _location: WebGLUniformLocation;
+  private readonly _location: WebGLUniformLocation | null;
   private _type: DataType = DataType.Undefined;
   private readonly _data: number[] = [];
   public syncToken?: SyncToken;
 
-  private constructor(location: WebGLUniformLocation) { this._location = location; }
+  private constructor(location: WebGLUniformLocation | null) { this._location = location; }
 
-  public static create(program: WebGLProgram, name: string): UniformHandle {
-    const location = System.instance.context.getUniformLocation(program, name);
-    if (null === location)
-      throw new Error(`uniform ${name} not found.`);
-
+  public static create(program: ShaderProgram, name: string): UniformHandle {
+    let location = null;
+    if (undefined !== program.glProgram) {
+      location = System.instance.context.getUniformLocation(program.glProgram, name);
+    }
+    if (null === location) {
+      const errMsg = `uniform ${name} not found in ${program.description}.`;
+      if (System.instance.options.errorOnMissingUniform) {
+        throw new Error(errMsg);
+      } else {
+        Logger.logError(FrontendLoggerCategory.Render, errMsg);
+      }
+    }
     return new UniformHandle(location);
   }
 

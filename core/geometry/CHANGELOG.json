@@ -2,6 +2,282 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-geometry_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-geometry_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-geometry_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "stroke centerline in addMiteredPipes"
+          },
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "sort non-horizontal loops in polyface clipper"
+          },
+          {
+            "comment": "Speedup CurveChainWithDistanceIndex.closestPoint"
+          },
+          {
+            "comment": "growable array improvements"
+          },
+          {
+            "comment": "Fix bug in range.extendWhenLarger"
+          },
+          {
+            "comment": "prevent Delaunay flipper from removing hole edges"
+          },
+          {
+            "comment": "Add static function AYAndZ.almostEqual. Transform.isAlmostEqual now only requires a Readonly<Transform>."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-geometry_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-geometry_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-geometry_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-geometry_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "sort non-horizontal loops in polyface clipper"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/core-geometry_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/core-geometry_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/core-geometry_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/core-geometry_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/core-geometry_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/core-geometry_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "implement PolyfaceBuilder.addSweptIndexedPolyface"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/core-geometry_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/core-geometry_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/core-geometry_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/core-geometry_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add two geom tests"
+          },
+          {
+            "comment": "PolyfaceBuilder.addMiteredPipes now handles elliptical sections"
+          },
+          {
+            "comment": "create spirals beyond [0,1]"
+          },
+          {
+            "comment": "Add secondary sort (based on curvature) to around-the-vertex ordering in planar subdivision with curves"
+          },
+          {
+            "comment": "fix Matrix4d.createInverse failure"
+          },
+          {
+            "comment": "Offset XY curve improvements"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/core-geometry_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/core-geometry_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/core-geometry_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/core-geometry_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add clonePartialCurve for spirals. Proper length computation for partial spirals."
+          },
+          {
+            "comment": "Create interpolation curve for through points construction."
+          },
+          {
+            "comment": "InterpolationCurve3d support"
+          },
+          {
+            "comment": "add HalfEdgeGraphOps.expandConvexFaces"
+          },
+          {
+            "comment": "Add curve tests to increase coverage"
+          },
+          {
+            "comment": "add periodic B-spline curve ctor"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "Fix bug in polygon booleans when inputs are disjoint"
+          },
+          {
+            "comment": "In wire offset, improve handling of arcs offset beyond their center"
+          },
+          {
+            "comment": "When a UnionOfConvexClipPlaneSets clips a polyface, aggressively stitch shards."
+          },
+          {
+            "comment": "Produce triangles (instead of quads) (when requested) in AddUVGridBody."
+          },
+          {
+            "comment": "Documentation file for ClipPlane structures"
+          },
+          {
+            "comment": "When building planes for a ClipShape, pre-filter the shape edges to remove danglers that violate triangulation requirements"
+          },
+          {
+            "comment": "Correct problems with all-convex mask clips"
+          },
+          {
+            "comment": "ClipUtilities.createComplementaryClips -- method to create a UnionOfConvexClipPlaneSets which covers the space outside of a ConvexClipPlaneSet"
+          },
+          {
+            "comment": "Correct implementation of \"mask\" ClipPrimitive"
+          },
+          {
+            "comment": "Implement appendPolygonClip in deep boolean trees."
+          },
+          {
+            "comment": "When building index for CurveChainWithDistanceIndex, refer to primary primitives rather than to stroked pieces."
+          },
+          {
+            "comment": "Various code coverage.   Fix infinitie loop in \"out of graph\" case in InsertAndRetriangulateContext"
+          },
+          {
+            "comment": "Fix poor accuracy of closestPoint for BSplineCurve3dH and Integrated Spirals"
+          },
+          {
+            "comment": "Tests of area analysis for road section project.  Shared-edge annotation from constructAllXYRegions"
+          },
+          {
+            "comment": "Fix plane constructions on xy clipper from polyline offset"
+          },
+          {
+            "comment": "Apply tolerance when determining if ClipShape polygon is closed."
+          },
+          {
+            "comment": "rename to @itwin/core-geometry"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Switching to consume new Projects-Client"
+          },
+          {
+            "comment": "Renamed an iModel's parent container to iTwin"
+          },
+          {
+            "comment": "Moved Point3d.interpolatePointAndTangent to Ray3d.interpolatePointAndTangent."
+          },
+          {
+            "comment": "Support for TypeDoc v0.22.7. Fix various broken docs links."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/core-geometry_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

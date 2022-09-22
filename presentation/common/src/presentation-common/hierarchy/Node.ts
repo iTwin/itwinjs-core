@@ -20,13 +20,25 @@ export interface Node {
   label: LabelDefinition;
   /** Extensive description */
   description?: string;
-  /** Image ID */
+  /**
+   * Image ID
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   imageId?: string;
-  /** Foreground color */
+  /**
+   * Foreground color
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   foreColor?: string;
-  /** Background color */
+  /**
+   * Background color
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   backColor?: string;
-  /** Font style */
+  /**
+   * Font style
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   fontStyle?: string;
   /** Does this node have child nodes */
   hasChildren?: boolean;
@@ -36,11 +48,20 @@ export interface Node {
   isEditable?: boolean;
   /** Is this node expanded */
   isExpanded?: boolean;
-  /** Is checkbox visible for this node */
+  /**
+   * Is checkbox visible for this node
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isCheckboxVisible?: boolean;
-  /** Is this node's checkbox checked */
+  /**
+   * Is this node's checkbox checked
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isChecked?: boolean;
-  /** Is this node's checkbox enabled */
+  /**
+   * Is this node's checkbox enabled
+   * @deprecated Use [[extendedData]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
+   */
   isCheckboxEnabled?: boolean;
   /** Extended data injected into this node */
   extendedData?: {
@@ -56,16 +77,23 @@ export interface NodeJSON {
   key: NodeKeyJSON;
   labelDefinition: LabelDefinitionJSON;
   description?: string;
+  /** @deprecated */
   imageId?: string;
+  /** @deprecated */
   foreColor?: string;
+  /** @deprecated */
   backColor?: string;
+  /** @deprecated */
   fontStyle?: string;
   hasChildren?: boolean;
   isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
+  /** @deprecated */
   isCheckboxVisible?: boolean;
+  /** @deprecated */
   isChecked?: boolean;
+  /** @deprecated */
   isCheckboxEnabled?: boolean;
   extendedData?: {
     [key: string]: any;

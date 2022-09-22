@@ -4,7 +4,7 @@
 
 ```ts
 
-import { AbstractToolbarProps } from '@itwin/appui-abstract';
+import type { AbstractToolbarProps } from '@itwin/appui-abstract';
 import { BeButtonEvent } from '@itwin/core-frontend';
 import { BeEvent } from '@itwin/core-bentley';
 import { ClipVector } from '@itwin/core-geometry';
@@ -239,7 +239,6 @@ export interface SectionViewAttachment {
     readonly transformToSpatial: Transform;
     readonly viewId?: Id64String;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

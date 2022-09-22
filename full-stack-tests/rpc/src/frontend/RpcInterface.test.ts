@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import { Buffer } from "buffer";
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError } from "@itwin/core-bentley";
+import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
   ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
-  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WipRpcInterface,
+  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
+  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
 } from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
@@ -155,12 +155,20 @@ describe("RpcInterface", () => {
   });
 
   it("should allow void return values when using RpcDirectProtocol", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
   });
 
   it("should allow terminating interfaces", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
     try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
@@ -204,6 +212,10 @@ describe("RpcInterface", () => {
   });
 
   it("should describe available RPC endpoints from the frontend", async () => {
+    // if (currentEnvironment !== "http") {
+    //  return;
+    // }
+
     const controlChannel = IModelReadRpcInterface.getClient().configuration.controlChannel;
     const controlInterface = (controlChannel as any)._channelInterface as RpcInterfaceDefinition;
     const originalName = controlInterface.interfaceName;
@@ -288,8 +300,8 @@ describe("RpcInterface", () => {
     const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       assert(code !== null);
 
-      TestRpcInterface.interfaceVersion = code as string;
-      ZeroMajorRpcInterface.interfaceVersion = code as string;
+      TestRpcInterface.interfaceVersion = code;
+      ZeroMajorRpcInterface.interfaceVersion = code;
 
       let err: Error | undefined;
       try {
@@ -430,6 +442,62 @@ describe("RpcInterface", () => {
       promises.push(singleStressTest());
     }
     await Promise.all(promises);
+  });
+
+  it("should be able to send large requests as get requests", async () => {
+    if (currentEnvironment === "websocket") {
+      return;
+    }
+
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    let longString = "";
+    // Rpc encodes the body using base64, which takes 4 characters to represent every 3 bytes, with potentially 8 bytes of padding.
+    const length = (WebAppRpcRequest.maxUrlComponentSize / 4 * 3) - 8;
+    for (let i = 0; i < length; i++) {
+      longString = longString + characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    let request: RpcRequest;
+    TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
+      if (type === RpcProtocolEvent.RequestCreated)
+        request = req as RpcRequest<any>; // we can cast it to Rpcrequest because for requestcreated event, RpcRequest is raised
+    });
+    const result = await TestRpcInterface.getClient().op2(longString);
+    assert.isTrue(result === longString);
+    assert.isTrue(request! !== undefined);
+    // only the ._request property's method is changed, atleast in WebAppRpcRequest.
+    if (request! instanceof WebAppRpcRequest)
+      assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
+  });
+
+  it("should set cache-control headers when applicable", async function () {
+    if (currentEnvironment === "websocket") {
+      return this.skip();
+    }
+
+    // Cache-control headers are not applicable to electron apps.
+    if (ProcessDetector.isElectronAppFrontend || ProcessDetector.isElectronAppBackend)
+      return this.skip();
+    const input = "test";
+    let response: any;
+    TestRpcInterface.getClient().configuration.protocol.events.addListener((type, req) => {
+      if (type === RpcProtocolEvent.ResponseLoaded) {
+        response = (req as any)._response;
+      }
+    });
+
+    let result = await TestRpcInterface.getClient().op2(input);
+    assert.isTrue(result === input);
+    let cacheControlHeader: string = response.headers.get("Cache-Control");
+    assert.isDefined(cacheControlHeader);
+    assert.isTrue(cacheControlHeader === "s-maxage=86400, max-age=172800, immutable");
+
+    // Take off caching
+    RpcOperation.lookup(TestRpcInterface, "op2").policy.allowResponseCaching = () => RpcResponseCacheControl.None;
+    result = await TestRpcInterface.getClient().op2(input);
+    assert.isTrue(result === input);
+    cacheControlHeader = response.headers.get("Cache-Control");
+    assert.isTrue(cacheControlHeader === undefined || cacheControlHeader === null);
+    return;
   });
 
   it("should support cacheable responses", async () => {

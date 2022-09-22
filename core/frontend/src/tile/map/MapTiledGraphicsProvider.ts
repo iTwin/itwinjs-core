@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
+import { BaseMapLayerSettings, MapImagerySettings, MapLayerSettings } from "@itwin/core-common";
 import { DisplayStyleState } from "../../DisplayStyleState";
 import { ViewState } from "../../ViewState";
 import { Viewport } from "../../Viewport";
@@ -65,7 +65,7 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     const mapImagery = newView.displayStyle.settings.mapImagery;
     if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
       || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
-      || (mapImagery.backgroundBase instanceof MapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
+      || (mapImagery.backgroundBase instanceof BaseMapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }

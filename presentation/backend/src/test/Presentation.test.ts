@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
@@ -15,6 +15,8 @@ import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcH
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { join } from "path";
 
 describe("Presentation", () => {
 
@@ -37,7 +39,7 @@ describe("Presentation", () => {
     });
 
     it("can be safely shutdown via IModelHost shutdown listener", async () => {
-      await IModelHost.startup();
+      await IModelHost.startup({ cacheDir: join(__dirname, ".cache") });
       Presentation.initialize();
       await IModelHost.shutdown();
       expect(() => Presentation.getManager()).to.throw(PresentationError);
@@ -47,6 +49,14 @@ describe("Presentation", () => {
       expect(() => Presentation.getManager()).to.throw(PresentationError);
       Presentation.initialize();
       expect(Presentation.getManager()).to.be.instanceof(PresentationManager);
+    });
+
+    it("subscribes for `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      Presentation.initialize({ enableSchemasPreload: false });
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
+      Presentation.terminate();
+      Presentation.initialize({ enableSchemasPreload: true });
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
     });
 
     describe("props handling", () => {
@@ -116,6 +126,29 @@ describe("Presentation", () => {
       expect(unregisterSpy).to.not.be.called;
       Presentation.terminate();
       expect(unregisterSpy).to.be.calledOnce;
+    });
+
+    it("unsubscribes from `BriefcaseDb.onOpened` event if `enableSchemasPreload` is set", () => {
+      Presentation.initialize({ enableSchemasPreload: true });
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(1);
+      Presentation.terminate();
+      expect(BriefcaseDb.onOpened.numberOfListeners).to.eq(0);
+    });
+
+  });
+
+  describe("preloading schemas", () => {
+
+    it("calls addon's `forceLoadSchemas` on `BriefcaseDb.onOpened` events", () => {
+      const imodelMock = moq.Mock.ofType<BriefcaseDb>();
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const managerMock = moq.Mock.ofType<PresentationManager>();
+      managerMock.setup((x) => x.getNativePlatform).returns(() => () => nativePlatformMock.object);
+      nativePlatformMock.setup((x) => x.getImodelAddon(imodelMock.object)).verifiable(moq.Times.atLeastOnce());
+
+      Presentation.initialize({ enableSchemasPreload: true, clientManagerFactory: () => managerMock.object });
+      BriefcaseDb.onOpened.raiseEvent(imodelMock.object, {} as any);
+      nativePlatformMock.verify(async (x) => x.forceLoadSchemas(moq.It.isAny()), moq.Times.once());
     });
 
   });

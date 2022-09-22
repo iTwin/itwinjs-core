@@ -8,7 +8,7 @@
 
 import { Id64Arg } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope } from "@itwin/presentation-common";
+import { DEFAULT_KEYS_BATCH_SIZE, KeySet, RpcRequestsHandler, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
 
 /**
  * Properties for creating [[SelectionScopesManager]].
@@ -23,7 +23,7 @@ export interface SelectionScopesManagerProps {
 }
 
 /**
- * A manager that knows available [selection scopes]($docs/presentation/Unified-Selection/index#selection-scopes)
+ * A manager that knows available [selection scopes]($docs/presentation/unified-selection/index#selection-scopes)
  * and can compute logical selection based on element IDs and selection scope.
  *
  * @public
@@ -32,7 +32,7 @@ export class SelectionScopesManager {
 
   private _rpcRequestsHandler: RpcRequestsHandler;
   private _getLocale: () => string | undefined;
-  private _activeScope: SelectionScope | string | undefined;
+  private _activeScope: SelectionScopeProps | SelectionScope | string | undefined;
 
   public constructor(props: SelectionScopesManagerProps) {
     this._rpcRequestsHandler = props.rpcRequestsHandler;
@@ -44,7 +44,7 @@ export class SelectionScopesManager {
 
   /** The active selection scope or its id */
   public get activeScope() { return this._activeScope; }
-  public set activeScope(scope: SelectionScope | string | undefined) { this._activeScope = scope; }
+  public set activeScope(scope: SelectionScopeProps | SelectionScope | string | undefined) { this._activeScope = scope; }
 
   /**
    * Get available selection scopes.
@@ -62,8 +62,8 @@ export class SelectionScopesManager {
    * @param ids Element IDs to compute selection for
    * @param scope Selection scope to apply
    */
-  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScope | string): Promise<KeySet> {
-    const scopeId = getScopeId(scope);
+  public async computeSelection(imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string): Promise<KeySet> {
+    const scopeProps = createSelectionScopeProps(scope);
 
     // convert ids input to array
     if (typeof ids === "string")
@@ -80,7 +80,7 @@ export class SelectionScopesManager {
       const batchStart = batchSize * batchIndex;
       const batchEnd = (batchStart + batchSize > ids.length) ? ids.length : (batchStart + batchSize);
       const batchIds = (0 === batchIndex && ids.length <= batchEnd) ? ids : ids.slice(batchStart, batchEnd);
-      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps() }, batchIds, scopeId));
+      batchKeyPromises.push(this._rpcRequestsHandler.computeSelection({ imodel: imodel.getRpcProps(), elementIds: batchIds, scope: scopeProps }));
     }
     const batchKeys = (await Promise.all(batchKeyPromises)).map(KeySet.fromJSON);
     batchKeys.forEach((bk) => keys.add(bk));
@@ -89,14 +89,26 @@ export class SelectionScopesManager {
 }
 
 /**
+ * Normalizes given scope options and returns [[ComputeSelectionScopeProps]] that can be used for
+ * calculating selection with scope.
+ *
+ * @internal
+ */
+export function createSelectionScopeProps(scope: SelectionScopeProps | SelectionScope | string | undefined): SelectionScopeProps {
+  if (!scope)
+    return { id: "element" };
+  if (typeof scope === "string")
+    return { id: scope };
+  return scope;
+}
+
+/**
  * Determines the scope id
  * @param scope Selection scope
  * @public
+ * @deprecated This is an internal utility that should've never become public.
  */
+// istanbul ignore next
 export function getScopeId(scope: SelectionScope | string | undefined): string {
-  if (!scope)
-    return "element";
-  if (typeof scope === "string")
-    return scope;
-  return scope.id;
+  return createSelectionScopeProps(scope).id;
 }

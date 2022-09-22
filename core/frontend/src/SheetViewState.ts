@@ -6,10 +6,10 @@
  * @module Views
  */
 
-import { assert, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
+import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
 import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, PackedFeatureTable, Placement2d, SheetProps,
+  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
   TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -167,6 +167,56 @@ class ViewAttachmentsInfo {
     return new ViewAttachmentsInfo(this._attachments);
   }
 
+  public preload(options: HydrateViewStateRequestProps) {
+    if (this.isLoaded)
+      return;
+    options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
+    options.viewStateLoadProps = {
+      displayStyle: {
+        omitScheduleScriptElementIds: !IModelApp.tileAdmin.enableFrontendScheduleScripts,
+        compressExcludedElementIds: true,
+      },
+    };
+  }
+
+  public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
+    if (options.sheetViewViews === undefined)
+      return;
+    if (options.sheetViewAttachmentProps === undefined)
+      return;
+
+    const viewStateProps = options.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
+    const promises = [];
+    for (const viewProps of viewStateProps) {
+      const loadView = async () => {
+        try {
+          if (viewProps === undefined)
+            return undefined;
+          const view = await iModel.views.convertViewStatePropsToViewState(viewProps);
+          return view;
+        } catch {
+          return undefined;
+        }
+      };
+      promises.push(loadView());
+    }
+    const views = await Promise.all(promises);
+
+    const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
+    assert (views.length === attachmentProps.length);
+    const attachments = [];
+    for (let i = 0; i < views.length; i++) {
+      const view = views[i];
+      if (view && !(view instanceof SheetViewState)) {
+        const props = attachmentProps[i];
+        props.attachedView = view;
+        attachments.push(props);
+      }
+    }
+
+    this._attachments = attachments;
+  }
+
   public async load(iModel: IModelConnection): Promise<void> {
     if (this.isLoaded)
       return;
@@ -266,6 +316,7 @@ class ViewAttachments {
 
 /** A view of a [SheetModel]($backend).
  * @public
+ * @extensions
  */
 export class SheetViewState extends ViewState2d {
   /** The width and height of the sheet in world coordinates. */
@@ -383,12 +434,18 @@ export class SheetViewState extends ViewState2d {
     return this._viewedExtents;
   }
 
-  /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
-   * @internal override
-   */
-  public override async load(): Promise<void> {
-    await super.load();
-    await this._attachmentsInfo.load(this.iModel);
+  /** @internal */
+  protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
+    super.preload(hydrateRequest);
+    this._attachmentsInfo.preload(hydrateRequest);
+  }
+
+  /** @internal */
+  protected override async postload(hydrateResponse: HydrateViewStateResponseProps): Promise<void> {
+    const promises = [];
+    promises.push(super.postload(hydrateResponse));
+    promises.push(this._attachmentsInfo.postload(hydrateResponse, this.iModel));
+    await Promise.all(promises);
   }
 
   /** @internal */
@@ -598,6 +655,11 @@ class OrthographicAttachment {
     origin.addInPlace(viewOrgToAttachment);
     this._toSheet = Transform.createRefs(origin, matrix);
     this._fromSheet = this._toSheet.inverse()!;
+
+    // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
+    // The clip needs to be transformed into sheet space.
+    if (view.isDrawingView())
+      this._viewport.drawingToSheetTransform = this._toSheet;
 
     // ###TODO? If we also apply the attachment's clip to the attached view, we may get additional culling during tile selection.
     // However the attached view's frustum is already clipped by intersection with sheet view's frustum, and additional clipping planes

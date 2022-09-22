@@ -10,6 +10,7 @@ import {
   StatusBarWidgetControlArgs, WidgetDef,
 } from "../../appui-react";
 import TestUtils, { mount } from "../TestUtils";
+import { MockRender } from "@itwin/core-frontend";
 
 describe("ActivityCenter", () => {
 
@@ -18,10 +19,11 @@ describe("ActivityCenter", () => {
       super(info, options);
     }
 
-    public getReactNode({ isInFooterMode, onOpenWidget, openWidget }: StatusBarWidgetControlArgs): React.ReactNode {
+    // eslint-disable-next-line deprecation/deprecation
+    public getReactNode({ isInFooterMode }: StatusBarWidgetControlArgs): React.ReactNode {
       return (
         <>
-          <ActivityCenterField isInFooterMode={isInFooterMode} onOpenWidget={onOpenWidget} openWidget={openWidget} />
+          <ActivityCenterField isInFooterMode={isInFooterMode} />
         </>
       );
     }
@@ -29,6 +31,7 @@ describe("ActivityCenter", () => {
   let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
+    await MockRender.App.startup();
     await TestUtils.initializeUiFramework();
 
     const statusBarWidgetDef = new WidgetDef({
@@ -41,8 +44,9 @@ describe("ActivityCenter", () => {
 
   });
 
-  after(() => {
+  after(async () => {
     TestUtils.terminateUiFramework();
+    await MockRender.App.shutdown();
   });
 
   it("Status Bar with ActivityCenterField should mount", () => {

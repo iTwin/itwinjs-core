@@ -13,6 +13,8 @@ The supported release tags are:
 - `@alpha`
 - `@internal`
 - `@deprecated`
+- `@extensions`
+- `@preview`
 
 Details about each tag are below.
 
@@ -57,6 +59,18 @@ From the maintainer perspective, *deprecated* API items follow the same rules as
 The deprecation message should include the replacement API item linked using the `[[replacement]]` (double square bracket) link syntax so that the SDK documentation will have a hyperlink and the lint message will mention the replacement item in a readable form.
 More advanced linking syntax should not be used as it would distract in the lint rule case.
 
+### @extensions
+
+The `@extensions` tag indicates that an API item is officially included in the `@twin/core-extension` API and can be used to develop *iTwin.js Extensions*.
+
+> Note: only *public* or *preview* API items can have an `@extensions` tag (there is an lint rule to check).
+
+### @preview
+
+The `@preview` tag indicates that an API item is officially included in the `@twin/core-extension` API **in preview** and can be used to develop *iTwin.js Extensions* but may be subject to change.
+
+> Note: only *extensions* API items can have an `@preview` tag (it is meaningless otherwise).
+
 ### Release Tag Summary
 
 The following table summarizes the affects of each release tag:
@@ -68,6 +82,8 @@ Release Tag | Affects Package Semantic Version | Included in Public SDK Document
 `@alpha` | No | No
 `@internal` | Yes | No
 `@deprecated` | Yes | Yes
+`@extensions` | No | -
+`@preview` | No | -
 
 ## API Items
 
@@ -163,4 +179,22 @@ Likewise, *deprecated* API items should include documentation that indicates wha
 
 ```ts
  /** @alpha Private comment reminding maintainer why API item was marked alpha. */
+```
+
+*Extensions* API tag should be on its own line after the supported release tag:
+
+```ts
+/** Sample description of an exported API item.
+ * @public
+ * @extensions
+ */
+```
+
+*Preview* API tag should be on its own line before the @extensions tag:
+
+```ts
+/** Sample description of an exported API item.
+ * @preview
+ * @extensions
+ */
 ```

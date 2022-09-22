@@ -10,10 +10,19 @@ import { getUiSettingsManagerEntry, UiSettingsPage } from "../../appui-react/set
 import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrollIntoView } from "../TestUtils";
 import { UiFramework } from "../../appui-react/UiFramework";
 import { ColorTheme } from "../../appui-react/theme/ThemeManager";
+import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
 
 describe("UiSettingsPage", () => {
   const localStorageToRestore = Object.getOwnPropertyDescriptor(window, "localStorage")!;
   let localStorageMock = storageMock();
+
+  before(async () => {
+    await NoRenderApp.startup();
+  });
+
+  after(async () => {
+    await IModelApp.shutdown();
+  });
 
   beforeEach(async () => {
     // create a new mock each run so there are no "stored values"
@@ -80,6 +89,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V1) set widget opacity", async () => {
+    UiFramework.setUiVersion("1");
+    await TestUtils.flushAsyncOperations();
+
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
     expect(wrapper).not.to.be.undefined;
     const thumb = wrapper.container.ownerDocument.querySelector(".iui-slider-thumb");
@@ -95,6 +107,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders without version option (V1) toggle auto-hide", async () => {
+    UiFramework.setUiVersion("1");
+    await TestUtils.flushAsyncOperations();
+
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
     expect(wrapper).not.to.be.undefined;
     const autoHideSpan = wrapper.getByText("settings.uiSettingsPage.autoHideTitle");
@@ -111,6 +126,9 @@ describe("UiSettingsPage", () => {
   });
 
   it("renders with version option (V1)", async () => {
+    UiFramework.setUiVersion("1");
+    await TestUtils.flushAsyncOperations();
+
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
     expect(wrapper).not.to.be.undefined;
     expect(wrapper.container.querySelectorAll("span.title").length).to.eq(4);
@@ -120,7 +138,7 @@ describe("UiSettingsPage", () => {
     expect(checkbox).not.to.be.null;
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(8);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
 
     wrapper.unmount();
   });
@@ -198,7 +216,7 @@ describe("UiSettingsPage", () => {
     await TestUtils.flushAsyncOperations();
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={true} />);
     expect(wrapper).not.to.be.undefined;
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(8);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
     const uiVersionSpan = wrapper.getByText("settings.uiSettingsPage.newUiTitle");
     const checkbox = getInputBySpanTitle(uiVersionSpan);
 
@@ -208,8 +226,42 @@ describe("UiSettingsPage", () => {
 
     fireEvent.click(checkbox!);
     await TestUtils.flushAsyncOperations();
-    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(8);
+    expect(wrapper.container.querySelectorAll("span.title").length).to.eq(11);
 
+    wrapper.unmount();
+  });
+
+  it("renders animateToolSettings toggle", async () => {
+    UiFramework.setUiVersion("2");
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    expect(wrapper).not.to.be.undefined;
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.animateToolSettingsTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
+    wrapper.unmount();
+  });
+
+  it("renders useToolAsToolSettingsLabel toggle", async () => {
+    UiFramework.setUiVersion("2");
+    await TestUtils.flushAsyncOperations();
+    const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
+    expect(wrapper).not.to.be.undefined;
+
+    const titleSpan = wrapper.getByText("settings.uiSettingsPage.useToolAsToolSettingsLabelTitle");
+    const checkbox = getInputBySpanTitle(titleSpan);
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.true;
+    fireEvent.click(checkbox!);
+    await TestUtils.flushAsyncOperations();
+    expect(checkbox?.checked).to.be.false;
     wrapper.unmount();
   });
 

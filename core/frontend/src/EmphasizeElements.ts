@@ -14,6 +14,7 @@ import { Viewport } from "./Viewport";
 
 /** An implementation of [[FeatureOverrideProvider]] for emphasizing selected elements through simple color/transparency appearance overrides.
  * @public
+ * @extensions
  */
 export class EmphasizeElements implements FeatureOverrideProvider {
   private _defaultAppearance?: FeatureAppearance;
@@ -40,6 +41,12 @@ export class EmphasizeElements implements FeatureOverrideProvider {
         args.elementId = elementId;
         overrides.override(args);
       }
+
+      // Do not apply animation overrides to de-emphasized elements.
+      overrides.ignoreAnimationOverrides((args) => {
+        const id = Id64.fromUint32Pair(args.elementId.lower, args.elementId.upper);
+        return !emphasizedElements.has(id);
+      });
     }
 
     const overriddenElements = this.getOverriddenElements();

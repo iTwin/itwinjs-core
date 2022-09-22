@@ -23,6 +23,7 @@ describe("DrawingNavigationAid", () => {
   });
 
   after(() => {
+    TestUtils.terminateUiIModelComponents();
     sinon.restore();
   });
 

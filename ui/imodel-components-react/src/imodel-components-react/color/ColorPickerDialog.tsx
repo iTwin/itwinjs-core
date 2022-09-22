@@ -73,7 +73,6 @@ export function ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResu
         buttonCluster={buttonCluster}
         onClose={handleCancel}
         onEscape={handleCancel}
-        minHeight={490}
         maxWidth={320}
       >
         <ColorPicker selectedColor={ColorValue.fromTbgr(activeColor.tbgr)} onChangeComplete={handleColorChanged} >

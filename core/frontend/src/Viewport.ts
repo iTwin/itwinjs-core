@@ -40,6 +40,7 @@ import { Decorations } from "./render/Decorations";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { FrameStats, FrameStatsCollector } from "./render/FrameStats";
 import { GraphicType } from "./render/GraphicBuilder";
+import { AnimationBranchStates } from "./render/GraphicBranch";
 import { Pixel } from "./render/Pixel";
 import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
@@ -48,11 +49,11 @@ import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import {
-  DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
+  DisclosedTileTreeSet, MapFeatureInfo, MapLayerFeatureInfo, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference, TileUser,
 } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
-import { Animator, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
@@ -291,6 +292,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
+  /** @internal */
+  protected _hasMissingTiles = false;
+
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
    */
@@ -457,7 +461,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   private _emphasis = new Hilite.Settings(ColorDef.black, 0, 0, Hilite.Silhouette.Thick);
   private _flash = new FlashSettings();
 
-  /** @see [DisplayStyle3dSettings.lights]($common) */
+  /** See [DisplayStyle3dSettings.lights]($common) */
   public get lightSettings(): LightSettings | undefined {
     return this.displayStyle.is3d() ? this.displayStyle.settings.lights : undefined;
   }
@@ -466,7 +470,7 @@ export abstract class Viewport implements IDisposable, TileUser {
       this.displayStyle.settings.lights = settings;
   }
 
-  /** @see [DisplayStyle3dSettings.solarShadows]($common) */
+  /** See [DisplayStyle3dSettings.solarShadows]($common) */
   public get solarShadowSettings(): SolarShadowSettings | undefined {
     return this.view.displayStyle.is3d() ? this.view.displayStyle.settings.solarShadows : undefined;
   }
@@ -489,7 +493,7 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @see [DisplayStyleSettings.analysisFraction]($common). */
+  /** See [DisplayStyleSettings.analysisFraction]($common). */
   public get analysisFraction(): number {
     return this.displayStyle.settings.analysisFraction;
   }
@@ -497,7 +501,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.settings.analysisFraction = fraction;
   }
 
-  /** @see [DisplayStyleSettings.timePoint]($common) */
+  /** See [DisplayStyleSettings.timePoint]($common) */
   public get timePoint(): number | undefined {
     return this.displayStyle.settings.timePoint;
   }
@@ -565,7 +569,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.view.displayStyle.viewFlags = viewFlags;
   }
 
-  /** @see [[ViewState.displayStyle]] */
+  /** See [[ViewState.displayStyle]] */
   public get displayStyle(): DisplayStyleState { return this.view.displayStyle; }
   public set displayStyle(style: DisplayStyleState) {
     this.view.displayStyle = style;
@@ -578,7 +582,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.settings.applyOverrides(overrides);
   }
 
-  /** @see [DisplayStyleSettings.clipStyle]($common) */
+  /** See [DisplayStyleSettings.clipStyle]($common) */
   public get clipStyle(): ClipStyle { return this.displayStyle.settings.clipStyle; }
   public set clipStyle(style: ClipStyle) {
     this.displayStyle.settings.clipStyle = style;
@@ -764,12 +768,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.displayStyle.backgroundMapSettings = settings;
   }
 
-  /** @see [[DisplayStyleState.changeBackgroundMapProps]] */
+  /** See [[DisplayStyleState.changeBackgroundMapProps]] */
   public changeBackgroundMapProps(props: BackgroundMapProps): void {
     this.displayStyle.changeBackgroundMapProps(props);
   }
 
-  /** @see [[DisplayStyleState.changeBackgroundMapProvider]] */
+  /** See [[DisplayStyleState.changeBackgroundMapProvider]] */
   public changeBackgroundMapProvider(props: BackgroundMapProviderProps): void {
     this.displayStyle.changeBackgroundMapProvider(props);
   }
@@ -796,7 +800,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * the Model of baseModelId should be the same type (Drawing or Sheet) as the current view.
    * @note this method clones the current ViewState2d and sets its baseModelId to the supplied value. The DisplayStyle and CategorySelector remain unchanged.
    */
-  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions): Promise<void> {
+  public async changeViewedModel2d(baseModelId: Id64String, options?: ChangeViewedModel2dOptions & ViewChangeOptions & MarginOptions): Promise<void> {
     if (!this.view.is2d())
       return;
 
@@ -930,7 +934,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     const promises = new Array<Promise<string | HTMLElement | undefined>>();
     if (this.displayStyle) {
       this.displayStyle.forEachTileTreeRef(async (tree) => {
-        promises.push(tree.getToolTip(hit));
+        promises.push(tree.getToolTip(hit).catch(() => undefined));
       });
     }
     this.forEachMapTreeRef(async (tree) => promises.push(tree.getToolTip(hit)));
@@ -941,6 +945,34 @@ export abstract class Viewport implements IDisposable, TileUser {
         return result;
 
     return "";
+  }
+
+  /** @alpha */
+  public async getMapFeatureInfo(hit: HitDetail): Promise<MapFeatureInfo> {
+    const promises = new Array<Promise<MapLayerFeatureInfo[] | undefined>>();
+
+    // Execute 'getMapFeatureInfo' on every tree, and make sure to handle exception for each call,
+    // so that we get still get results even though a tree has failed.
+    this.forEachMapTreeRef(async (tree) => promises.push(tree.getMapFeatureInfo(hit).catch(() => undefined)));
+    const featureInfo: MapFeatureInfo = {};
+
+    const worldPoint = hit.hitPoint.clone();
+    const backgroundMapGeometry = hit.viewport.displayStyle.getBackgroundMapGeometry();
+    if (undefined !== backgroundMapGeometry) {
+      featureInfo.hitPoint = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    }
+
+    const results = await Promise.all(promises);
+    for (const result of results)
+      if (result !== undefined) {
+
+        if (featureInfo.layerInfo === undefined) {
+          featureInfo.layerInfo = [];
+        }
+
+        featureInfo.layerInfo.push(...result);
+      }
+    return featureInfo;
   }
 
   /** If this event has one or more listeners, collection of timing statistics related to rendering frames is enabled. Frame statistics will be received by the listeners whenever a frame is finished rendering.
@@ -984,7 +1016,12 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.attachToView();
   }
 
-  private attachToView(): void {
+  /** @internal Invoked when the viewport becomes associated with a new ViewState to register event listeners with the view
+   * and allow the ViewState to set up internal state that is only relevant when associated with a Viewport.
+   * Also invoked after changing OffScreenViewport.drawingToSheetTransform.
+   * @internal
+   */
+  protected attachToView(): void {
     this.registerDisplayStyleListeners(this.view.displayStyle);
     this.registerViewListeners();
     this.view.attachToViewport(this);
@@ -1084,8 +1121,13 @@ export abstract class Viewport implements IDisposable, TileUser {
       IModelApp.requestNextAnimation();
     };
 
-    removals.push(style.onScheduleScriptReferenceChanged.addListener(scheduleChanged));
+    const scriptChanged = () => {
+      scheduleChanged();
+      this.invalidateScene();
+    };
+
     removals.push(settings.onTimePointChanged.addListener(scheduleChanged));
+    removals.push(style.onScheduleScriptChanged.addListener(scriptChanged));
 
     removals.push(settings.onViewFlagsChanged.addListener((vf) => {
       if (vf.backgroundMap !== this.viewFlags.backgroundMap)
@@ -1125,7 +1167,13 @@ export abstract class Viewport implements IDisposable, TileUser {
     }
   }
 
-  private detachFromView(): void {
+  /** @internal Invoked when the viewport becomes associated with a new ViewState to unregister event listeners for
+   * the previous ViewState and allow the previous ViewState to clean up any internal state that is only relevant while
+   * associated with a Viewport.
+   * Also invoked after changing OffScreenViewport.drawingToSheetTransform.
+   * @internal
+   */
+  protected detachFromView(): void {
     this._detachFromView.forEach((f) => f());
     this._detachFromView.length = 0;
 
@@ -1847,7 +1895,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param factor the zoom factor.
    * @param options options for behavior of view change
    */
-  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & OnViewExtentsError): ViewStatus {
+  public zoom(newCenter: Point3d | undefined, factor: number, options?: ViewChangeOptions & MarginOptions & OnViewExtentsError): ViewStatus {
     const view = this.view;
     if (undefined === view)
       return ViewStatus.InvalidViewport;
@@ -1892,8 +1940,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     return ViewStatus.Success;
   }
 
-  /** @see [[zoomToPlacements]]. */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+  /** See [[zoomToPlacements]]. */
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
     this.zoomToPlacements(placements, options);
   }
@@ -1905,7 +1953,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @see [[zoomToElements]] to zoom to a set of elements.
    * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
    */
-  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void {
+  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     placements = placements.filter((x) => x.isValid);
     if (placements.length === 0)
       return;
@@ -1929,7 +1977,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     for (const placement of placements)
       viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
-    const ignoreError: ViewChangeOptions & OnViewExtentsError = {
+    const ignoreError: ViewChangeOptions & MarginOptions & OnViewExtentsError = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };
@@ -1943,7 +1991,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param options options that control how the view change works and whether to change view rotation.
    * @note Do not query for ElementProps just to zoom to their placements - [[zoomToElements]] is much more efficient because it queries only for the placement properties.
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & MarginOptions & ZoomToOptions): void {
     if (elementProps.length === 0)
       return;
 
@@ -1961,7 +2009,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param ids the element id(s) to include. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
    */
-  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
+  public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & MarginOptions & ZoomToOptions): Promise<void> {
     const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
     this.zoomToPlacements(placements, options);
   }
@@ -1970,7 +2018,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @param volume The low and high corners, in world coordinates.
    * @param options options that control how the view change works
    */
-  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions) {
+  public zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions & MarginOptions) {
     this.view.lookAtVolume(volume, this.viewRect.aspect, options);
     this.synchWithView(options);
   }
@@ -2279,13 +2327,13 @@ export abstract class Viewport implements IDisposable, TileUser {
 
     if (!this._timePointValid) {
       isRedrawNeeded = true;
-      const scheduleScript = view.displayStyle.scheduleState;
+      const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript) {
-        target.animationBranches = scheduleScript.getAnimationBranches(this.timePoint ?? scheduleScript.duration.low);
+        target.animationBranches = AnimationBranchStates.fromScript(scheduleScript, this.timePoint ?? scheduleScript.duration.low);
         if (scheduleScript.containsFeatureOverrides)
           overridesNeeded = true;
 
-        if (scheduleScript.script.containsTransform && !this._freezeScene)
+        if (scheduleScript.containsTransform && !this._freezeScene)
           this.invalidateScene();
       }
 
@@ -2308,6 +2356,7 @@ export abstract class Viewport implements IDisposable, TileUser {
         this.createScene(context);
 
         context.requestMissingTiles();
+        this._hasMissingTiles = context.hasMissingTiles || context.missingTiles.size > 0;
         target.changeScene(context.scene);
         isRedrawNeeded = true;
         this._frameStatsCollector.endTime("createChangeSceneTime");
@@ -2397,13 +2446,13 @@ export abstract class Viewport implements IDisposable, TileUser {
   /** Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions. This input viewport is specified using CSS pixels not device pixels.
    * @param selector Specifies which aspect(s) of data to read.
-   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
+   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport has been disposed, the rect is out of bounds, or some other error. The pixels received will be device pixels, not CSS pixels. See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
    * @param excludeNonLocatable If true, geometry with the "non-locatable" flag set will not be drawn.
    * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
   public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable = false): void {
     const viewRect = this.viewRect;
-    if (!rect.isContained(viewRect))
+    if (this.isDisposed || !rect.isContained(viewRect))
       receiver(undefined);
     else
       this.target.readPixels(rect, selector, receiver, excludeNonLocatable);
@@ -2420,7 +2469,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return undefined === this.mapLayerFromIds(pixel.featureTable.modelId, pixel.elementId);  // Maps no selectable.
   }
 
-  /** Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
+  /** Read the current image from this viewport from the rendering system. If a "null" rectangle is supplied (@see [[ViewRect.isNull]]), the entire view is captured.
    * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
    * @param flipVertically If true, the image is flipped along the x-axis.
@@ -2428,7 +2477,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @note By default the image is returned with the coordinate (0,0) referring to the bottom-most pixel. Pass `true` for `flipVertically` to flip it along the x-axis.
    * @deprecated Use readImageBuffer.
    */
-  public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
+  public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
     // eslint-disable-next-line deprecation/deprecation
     return this.target.readImage(rect, targetSize, flipVertically);
   }
@@ -2447,6 +2496,50 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
+  }
+
+  /** Returns a Promise that resolves after the contents of this viewport are fully loaded and rendered.
+   * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
+   * ```ts
+   *  async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
+   *    await vp.waitForSceneCompletion();
+   *    return vp.readImageBuffer();
+   *  }
+   * ```
+   */
+  public async waitForSceneCompletion(): Promise<void> {
+    const system = this.target.renderSystem;
+    let haveNewTiles = true;
+    let haveExternalTexRequests = true;
+    while ((haveNewTiles || haveExternalTexRequests) && !this.isDisposed) {
+      // Since this viewport is not being managed by the ViewManager, we must first manually invalidate the scene and re-render the frame each tick of the tile-wait loop.
+      this.invalidateScene();
+      this.renderFrame();
+
+      haveExternalTexRequests = system.hasExternalTextureRequests;
+      haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
+      if (!haveNewTiles) {
+        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+        for (const vp of this.view.secondaryViewports) {
+          if (vp.numRequestedTiles > 0) {
+            haveNewTiles = true;
+            break;
+          }
+
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+          if (tiles && tiles.external.requested > 0) {
+            haveNewTiles = true;
+            break;
+          }
+        }
+      }
+
+      // Since the viewport is not being managed by the ViewManager, we must manually pump the TileAdmin to initiate further tile requests each tick of the tile-wait loop.
+      if (haveNewTiles)
+        IModelApp.tileAdmin.process();
+
+      await BeDuration.wait(100);
+    }
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
@@ -2487,10 +2580,11 @@ export abstract class Viewport implements IDisposable, TileUser {
       // If this is a plan projection model, invert the elevation applied to its display transform.
       // Likewise, if it is a hit on a model with a display transform, reverse the display transform.
       if (!preserveModelDisplayTransforms) {
-        const modelId = pixels.getPixel(x, y).featureTable?.modelId;
+        const pixel = pixels.getPixel(x, y);
+        const modelId = pixel.featureTable?.modelId;
         if (undefined !== modelId) {
-          npc.z -= this.view.getModelElevation(modelId);
-          this.view.transformPointByModelDisplayTransform(modelId, npc, true);
+          const transform = this.view.computeDisplayTransform({ modelId, elementId: pixel.feature?.elementId });
+          transform?.multiplyInversePoint3d(npc, npc);
         }
       }
     }
@@ -2567,7 +2661,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     return this.target.cssPixelsToDevicePixels(cssPixels);
   }
 
-  /** @see [[ViewState.setModelDisplayTransformProvider]]
+  /** See [[ViewState.setModelDisplayTransformProvider]]
    * @internal
    */
   public setModelDisplayTransformProvider(provider: ModelDisplayTransformProvider): void {
@@ -3025,7 +3119,11 @@ export class ScreenViewport extends Viewport {
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
-  /** @internal */
+  /** Queue an animation that interpolates between this viewport's previous [Frustum]($common) and its current frustum.
+   * This function is typically called by [ViewTool]($frontend)s after modifying the viewport's [ViewState]($frontend), to smoothly transition to the new view;
+   * as opposed to calling [[synchWithView]] which immediately transitions to the new view. It uses [[FrustumAnimator]] to perform the animation.
+   * @public
+   */
   public animateFrustumChange(options?: ViewAnimationOptions) {
     if (this._lastPose && this._currentBaseline)
       this.setAnimator(new FrustumAnimator(options ? options : {}, this, this._lastPose, this.view.savePose()));
@@ -3317,8 +3415,77 @@ export class ScreenViewport extends Viewport {
       _clear2dCanvas(this.canvas);
     }
 
-    this.target.updateViewRect();
+    const resized = this.target.updateViewRect();
+    if (resized) {
+      this.target.onResized();
+      this.invalidateController();
+    }
     this.invalidateRenderPlan();
+  }
+
+  /** @internal override */
+  public override async waitForSceneCompletion(): Promise<void> {
+    if (!IModelApp.viewManager.hasViewport(this))
+      return super.waitForSceneCompletion();
+
+    const system = this.target.renderSystem;
+
+    // Let the ViewManager/TileAdmin initiate all further requests for tiles until no more requests are pending.
+    // We will latch onto the onRender event in order to know when tile requests are finished and the promise is fulfilled.
+    const promise = new Promise<void>((resolve, _reject) => {
+      const removeOnRender = this.onRender.addListener(() => {
+        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener((vp: ScreenViewport) => {
+          if (vp as Viewport === this) {
+            removeOnViewClose();
+            removeOnRender();
+            resolve();
+            return;
+          }
+        });
+
+        if (this.isDisposed) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+
+        let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
+        if (!haveNewTiles) {
+          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+          for (const vp of this.view.secondaryViewports) {
+            if (vp.numRequestedTiles > 0) {
+              haveNewTiles = true;
+              break;
+            }
+
+            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+            if (tiles && tiles.external.requested > 0) {
+              haveNewTiles = true;
+              break;
+            }
+          }
+        }
+
+        if (!haveNewTiles && !system.hasExternalTextureRequests) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+      });
+    });
+
+    // Must first wait to ensure all tile trees are loaded -- tile requests will not happen before then; it may look like we have no requests pending, but in reality no requests even began.
+    while (!this.areAllTileTreesLoaded) {
+      await BeDuration.wait(100);
+    }
+
+    // After all tile trees have loaded, kick off an initial request for tiles.
+    this.invalidateScene();
+    this.renderFrame();
+
+    return promise;
   }
 }
 
@@ -3351,6 +3518,17 @@ export interface OffScreenViewportOptions {
  */
 export class OffScreenViewport extends Viewport {
   protected _isAspectRatioLocked = false;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  private _drawingToSheetTransform?: Transform;
+  /** @internal see AttachToViewportArgs.drawingToSheetTransform. */
+  public get drawingToSheetTransform(): Transform | undefined {
+    return this._drawingToSheetTransform;
+  }
+  public set drawingToSheetTransform(transform: Transform | undefined) {
+    this.detachFromView();
+    this._drawingToSheetTransform = transform;
+    this.attachToView();
+  }
 
   public static create(options: OffScreenViewportOptions): OffScreenViewport {
     return this.createViewport(options.view, IModelApp.renderSystem.createOffscreenTarget(options.viewRect), options.lockAspectRatio);

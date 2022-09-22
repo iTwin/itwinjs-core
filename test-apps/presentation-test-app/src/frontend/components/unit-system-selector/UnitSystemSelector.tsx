@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
-import { Select } from "@itwin/core-react";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export interface UnitSystemSelectorProps {
   selectedUnitSystem: UnitSystemKey | undefined;
@@ -14,24 +14,21 @@ export interface UnitSystemSelectorProps {
 
 export function UnitSystemSelector(props: UnitSystemSelectorProps) {
   const { selectedUnitSystem, onUnitSystemSelected: onUnitSystemSelectedProp } = props;
-  const onUnitSystemSelected = React.useCallback((evt: React.ChangeEvent<HTMLSelectElement>) => {
-    onUnitSystemSelectedProp(evt.target.value ? (evt.target.value as UnitSystemKey) : undefined);
-  }, [onUnitSystemSelectedProp]);
 
   return (
     <div className="UnitSystemSelector">
-      {/* eslint-disable-next-line deprecation/deprecation */}
       <Select
         options={availableUnitSystems}
-        defaultValue={selectedUnitSystem}
+        value={selectedUnitSystem}
         placeholder={IModelApp.localization.getLocalizedString("Sample:controls.notifications.select-unit-system")}
-        onChange={onUnitSystemSelected}
+        onChange={onUnitSystemSelectedProp}
+        size="small"
       />
     </div>
   );
 }
 
-const availableUnitSystems = [{
+const availableUnitSystems: SelectOption<UnitSystemKey | undefined>[] = [{
   value: undefined,
   label: "",
 }, {

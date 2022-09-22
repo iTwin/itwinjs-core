@@ -9,7 +9,7 @@
 import "./ModalSettingsStage.scss";
 import * as React from "react";
 import { BackstageItemUtilities, ConditionalBooleanValue, IconSpecUtilities, StageUsage } from "@itwin/appui-abstract";
-import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg?sprite";
+import settingsIconSvg from "@bentley/icons-generic/icons/settings.svg";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import { Logger } from "@itwin/core-bentley";
 import { Centered, SettingsContainer } from "@itwin/core-react";
@@ -68,7 +68,7 @@ export class SettingsModalFrontstage implements ModalFrontstageInfo {
   public static getBackstageActionItem(groupPriority: number, itemPriority: number) {
     return BackstageItemUtilities.createActionItem(SettingsModalFrontstage.id, groupPriority, itemPriority, () => FrontstageManager.openModalFrontstage(new SettingsModalFrontstage()),
       UiFramework.translate("settings.settingsStageLabel"),
-      undefined, IconSpecUtilities.createSvgIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
+      undefined, IconSpecUtilities.createWebComponentIconSpec(settingsIconSvg), { isHidden: SettingsModalFrontstage.noSettingsAvailable() });
   }
 
   public static showSettingsStage(initialSettingsTab?: string) {

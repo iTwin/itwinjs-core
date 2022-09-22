@@ -128,6 +128,7 @@ This package provides several keyins to control the display of background maps, 
 * `fdt toggle terrain` - Toggle terrain display for background maps.
 * `fdt attach maplayer <name>` - Attach a background map layer from name within the map layer source list.  Partial names may be used.
 * `fdt attach mapoverlay <name>` - Attach an overlay map layer from name within the map layer source list.  Partial names may be used.
+* `fdt attach model maplayer <name>` - Attach a model map layer for each unique model of the currently selected elements.
 * `fdt set map base <name>` - Set the background base map from name within the map layer source list.  Partial names may be used.
 * `fdt set map base color <red, green, blue>` - Set map base color by red, green and blue values [0..255].
 * `fdt set map base transparency <transparency>` - Set map base transparency [0..1].
@@ -261,7 +262,14 @@ These keysins control the planar masking of reality models.
   * "refs=0|1" where `1` indicates that if the element is a geometry part, the output should include a list of all geometric elements which reference that geometry part. This is **extremely** inefficient and may take a very long time to process in iModels containing many geometric elements.
   * "modal=0|1" where `1` indicates the output should be displayed in a modal dialog.
   * "copy=0|1" where `1` indicates the output should be copied to the system clipboard.
+  * "explodeparts=0|1" where `1` indicates that a summary of the geometry of each geometry part reference should also be output.
 * `fdt select elements` - given a list of element Ids separated by whitespace, replace the contents of the selection set with those Ids.
+* `fdt dump selection` - Dump the Ids of the currently select elements, optionally formatting and/or copying to the clipboard. Optional arguments:
+  * "copy=0|1" - if `1`, copy the result to the system clipboard.
+  * "format=list|json|compressed"
+    * "list" (default): Output consists of a list of element Ids each separate by a single space. e.g., `0x123 0x456 0x789`.
+    * "json": Output is a JSON array of Ids. e.g., `["0x123", "0x456", "0x789"]`.
+    * "compressed": Output is a CompressedId64String. e.g., `+123+333*2`
 * `fdt toggle skybox` - If the active viewport is displaying a spatial view, toggles display of the skybox.
 * `fdt sky sphere` - set the image used for the skybox as a Url or texture Id.
 * `fdt sky cube` - set the images used for the skybox, mapping each to one or more faces of the box. Each image is specified as a Url or texture Id. The images are mapped in the following orders based on how many are supplied:
@@ -291,6 +299,7 @@ These keysins control the planar masking of reality models.
   * "children": For each tile, draw a box around the volume of each of its child tiles, color-coded such that green indicates an empty child tile and blue a non-empty child tile.
   * "sphere": Bounding sphere representing the full range of each tile.
 * `fdt time tile load` - Purges all tile trees from memory and reloads the contents of the selected viewport. Outputs to the notifications center the time elapsed once all tiles required for the view are loaded and displayed.
+* `fdt hilite mode` - Changes the ModelSubCategoryHiliteMode for the HiliteSet associated with the selected viewport. It takes a single argument: "union" or "intersection".
 * `fdt hilite settings` - Modifies the hilite settings for the selected viewport. If no arguments are specified, it resets them to the defaults. Otherwise, each argument modifies an aspect of the current settings:
   * "r", "g", or "b": An integer in [0..255] specifying the red, green, or blue component of the hilite color.
   * "v", "h": The visible or hidden ratio in [0..1].
@@ -314,6 +323,8 @@ These keysins control the planar masking of reality models.
     * "include": Include the Ids as they are stored in the script - possibly in compressed format.
     * "expand": Include the Ids, decompressing them if they are in compressed format.
     * "count": Replace each list of Ids with the number of Ids in that list.
+* `fdt set schedule script` - Sets or clears the schedule script associated with the selected viewport. The script is supplied as a JSON string complying with the format of RenderSchedule.ScriptProps. If no script is supplied, any existing script is removed from the viewport.
+* `fdt reverse schedule script` - If a schedule script is associated with the selected viewport, replaces it with a script that reverses the script's element timelines.
 * `fdt visibility` - Controls whether instanced, un-instanced (batched), or all geometry is displayed in the active viewport. Accepts at most one argument; defaults to "all" if none is specified:
   * "instanced": Display only instanced geometry.
   * "batched": Display only un-instanced (batched) geometry.

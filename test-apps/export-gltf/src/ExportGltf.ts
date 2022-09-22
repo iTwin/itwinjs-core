@@ -413,12 +413,7 @@ function exportInstances(partInstanceArray: ExportPartInstanceInfo[], recenterTr
   }
 }
 
-interface ExportGltfArgs {
-  input: string;
-  output: string;
-}
-
-const exportGltfArgs: yargs.Arguments<ExportGltfArgs> = yargs
+const exportGltfArgs = yargs
   .usage("Usage: $0 --input [Snapshot iModel] --output [GLTF file]")
   .string("input")
   .alias("input", "i")
@@ -428,7 +423,7 @@ const exportGltfArgs: yargs.Arguments<ExportGltfArgs> = yargs
   .alias("output", "o")
   .demandOption(["output"])
   .describe("output", "Path to the GLTF file that will be created")
-  .argv;
+  .parseSync();
 
 (async () => {
   await IModelHost.startup();

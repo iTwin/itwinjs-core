@@ -9,9 +9,9 @@
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
+  BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
   ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -23,6 +23,7 @@ import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
 import { createSurfaceMaterial, isValidSurfaceType, SurfaceMaterial, SurfaceParams, SurfaceType } from "../render/primitives/SurfaceParams";
 import { EdgeParams, IndexedEdgeParams, SegmentEdgeParams, SilhouetteParams } from "../render/primitives/EdgeParams";
 import { MeshParams, VertexIndices, VertexTable } from "../render/primitives/VertexTable";
+import { splitMeshParams, splitPointStringParams, splitPolylineParams } from "../render/primitives/VertexTableSplitter";
 import { PointStringParams } from "../render/primitives/PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "../render/primitives/PolylineParams";
 import { RenderGraphic } from "../render/RenderGraphic";
@@ -96,6 +97,7 @@ export class GltfHeader extends TileHeader {
  * @param is3d True if the graphics are 3d.
  * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized; or false if you don't want to produce a batch.
  * @public
+ * @extensions
  */
 export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
   const stream = ByteStream.fromUint8Array(bytes);
@@ -226,6 +228,7 @@ interface ImdlVertexTable {
   };
   /** If the vertex table contains multiple surface materials, describes the embedded material atlas. */
   readonly materialAtlas?: ImdlMaterialAtlas;
+  readonly usesUnquantizedPositions?: boolean;
 }
 
 /** Describes how to draw a single [[ImdlPrimitive]] repeatedly.
@@ -468,7 +471,23 @@ export interface ImdlReaderCreateArgs {
   sizeMultiplier?: number;
   options?: BatchOptions | false;
   containsTransformNodes?: boolean; // default false
+  /** Supplied if the graphics in the tile are to be split up based on the nodes in the timeline. */
+  timeline?: RenderSchedule.ModelTimeline;
 }
+
+type PrimitiveParams = {
+  params: MeshParams;
+  viOrigin?: Point3d;
+  type: "mesh";
+} | {
+  params: PointStringParams;
+  viOrigin?: Point3d;
+  type: "point";
+} | {
+  params: PolylineParams;
+  viOrigin?: Point3d;
+  type: "polyline";
+};
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
@@ -495,6 +514,7 @@ export class ImdlReader {
   private readonly _options: BatchOptions | false;
   private readonly _patternGeometry = new Map<string, RenderGeometry[]>();
   private readonly _containsTransformNodes: boolean;
+  private readonly _timeline?: RenderSchedule.ModelTimeline;
 
   private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
   private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
@@ -565,6 +585,7 @@ export class ImdlReader {
     this._loadEdges = args.loadEdges ?? true;
     this._options = args.options ?? {};
     this._containsTransformNodes = args.containsTransformNodes ?? false;
+    this._timeline = args.timeline;
   }
 
   /** Attempt to deserialize the tile data */
@@ -871,13 +892,21 @@ export class ImdlReader {
     return this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
   }
 
+  private readMeshGeometry(primitive: AnyImdlPrimitive): { geometry: RenderGeometry, instances?: InstancedGraphicParams } | undefined {
+    const geometry = this.readPrimitiveGeometry(primitive);
+    if (!geometry)
+      return undefined;
+
+    const instances = this.readInstances(primitive);
+    return { geometry, instances };
+  }
+
   private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
     if (primitive.type === "areaPattern")
       return this.readAreaPattern(primitive);
 
-    const instances = this.readInstances(primitive);
-    const geometry = this.readPrimitiveGeometry(primitive);
-    return geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+    const geom = this.readMeshGeometry(primitive);
+    return geom ? this._system.createRenderGraphic(geom.geometry, geom.instances) : undefined;
   }
 
   private findBuffer(bufferViewId: string): Uint8Array | undefined {
@@ -935,6 +964,7 @@ export class ImdlReader {
       numVertices: json.count,
       numRgbaPerVertex: json.numRgbaPerVertex,
       uvParams,
+      usesUnquantizedPositions: true === json.usesUnquantizedPositions,
     });
   }
 
@@ -1003,15 +1033,6 @@ export class ImdlReader {
     return undefined !== bytes ? new VertexIndices(bytes) : undefined;
   }
 
-  private createPointStringGeometry(primitive: ImdlPointStringPrimitive, displayParams: DisplayParams, vertices: VertexTable, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const indices = this.readVertexIndices(primitive.indices);
-    if (undefined === indices)
-      return undefined;
-
-    const params = new PointStringParams(vertices, indices, displayParams.width);
-    return this._system.createPointStringGeometry(params, viewIndependentOrigin);
-  }
-
   private readTesselatedPolyline(json: ImdlPolyline): TesselatedPolyline | undefined {
     const indices = this.readVertexIndices(json.indices);
     const prevIndices = this.readVertexIndices(json.prevIndices);
@@ -1021,19 +1042,6 @@ export class ImdlReader {
       return undefined;
 
     return { indices, prevIndices, nextIndicesAndParams };
-  }
-
-  private createPolylineGeometry(primitive: ImdlPolylinePrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const polyline = this.readTesselatedPolyline(primitive);
-    if (undefined === polyline)
-      return undefined;
-
-    let flags = PolylineTypeFlags.Normal;
-    if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
-      flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
-
-    const params = new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags);
-    return this._system.createPolylineGeometry(params, viewIndependentOrigin);
   }
 
   private readSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): SurfaceParams | undefined {
@@ -1142,26 +1150,7 @@ export class ImdlReader {
     return { succeeded, params };
   }
 
-  private createMeshGeometry(primitive: ImdlMeshPrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, viewIndependentOrigin: Point3d | undefined): RenderGeometry | undefined {
-    const surface = this.readSurface(primitive, displayParams);
-    if (undefined === surface)
-      return undefined;
-
-    // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
-    let edgeParams: EdgeParams | undefined;
-    if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
-      const edgeResult = this.readEdges(primitive.edges, displayParams);
-      if (!edgeResult.succeeded)
-        return undefined;
-      else
-        edgeParams = edgeResult.params;
-    }
-
-    const params = new MeshParams(vertices, surface, edgeParams, isPlanar, auxChannels);
-    return this._system.createMeshGeometry(params, viewIndependentOrigin);
-  }
-
-  private readPrimitiveGeometry(primitive: AnyImdlPrimitive): RenderGeometry | undefined {
+  private readPrimitiveParams(primitive: AnyImdlPrimitive): PrimitiveParams | undefined {
     const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
@@ -1176,16 +1165,74 @@ export class ImdlReader {
 
     const viOrigin = primitive.viewIndependentOrigin ? Point3d.fromJSON(primitive.viewIndependentOrigin) : undefined;
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
+
     switch (primitive.type) {
-      case Mesh.PrimitiveType.Mesh:
-        return this.createMeshGeometry(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), viOrigin);
-      case Mesh.PrimitiveType.Polyline:
-        return this.createPolylineGeometry(primitive, displayParams, vertices, isPlanar, viOrigin);
-      case Mesh.PrimitiveType.Point:
-        return this.createPointStringGeometry(primitive, displayParams, vertices, viOrigin);
+      case Mesh.PrimitiveType.Mesh: {
+        const surface = this.readSurface(primitive, displayParams);
+        if (!surface)
+          return undefined;
+
+        // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
+        let edgeParams: EdgeParams | undefined;
+        if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
+          const edgeResult = this.readEdges(primitive.edges, displayParams);
+          if (!edgeResult.succeeded)
+            return undefined;
+          else
+            edgeParams = edgeResult.params;
+        }
+
+        return {
+          params: new MeshParams(vertices, surface, edgeParams, isPlanar, this.readAuxChannelTable(primitive)),
+          type: "mesh",
+          viOrigin,
+        };
+      }
+      case Mesh.PrimitiveType.Polyline: {
+        const polyline = this.readTesselatedPolyline(primitive);
+        if (!polyline)
+          return undefined;
+
+        let flags = PolylineTypeFlags.Normal;
+        if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
+          flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
+
+        return {
+          params: new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags),
+          type: "polyline",
+          viOrigin,
+        };
+      }
+      case Mesh.PrimitiveType.Point: {
+        const indices = this.readVertexIndices(primitive.indices);
+        if (undefined === indices)
+          return undefined;
+
+        return {
+          params: new PointStringParams(vertices, indices, displayParams.width),
+          type: "point",
+          viOrigin,
+        };
+      }
       default:
         assert(false, "unhandled primitive type");
         return undefined;
+    }
+  }
+
+  private readPrimitiveGeometry(primitive: AnyImdlPrimitive): RenderGeometry | undefined {
+    const prim = this.readPrimitiveParams(primitive);
+    return prim ? this.createPrimitiveGeometry(prim) : undefined;
+  }
+
+  private createPrimitiveGeometry(prim: PrimitiveParams): RenderGeometry | undefined {
+    switch (prim.type) {
+      case "mesh":
+        return this._system.createMeshGeometry(prim.params, prim.viOrigin);
+      case "polyline":
+        return this._system.createPolylineGeometry(prim.params, prim.viOrigin);
+      case "point":
+        return this._system.createPointStringGeometry(prim.params, prim.viOrigin);
     }
   }
 
@@ -1209,6 +1256,116 @@ export class ImdlReader {
     return geometry;
   }
 
+  private readAnimationBranches(output: RenderGraphic[], mesh: ImdlMesh, featureTable: PackedFeatureTable): void {
+    const timeline = this._timeline;
+    assert(undefined !== timeline);
+
+    const primitives = mesh.primitives;
+    if (!primitives)
+      return;
+
+    const branchesByNodeId = new Map<number, GraphicBranch>();
+    const getBranch = (nodeId: number): GraphicBranch => {
+      let branch = branchesByNodeId.get(nodeId);
+      if (!branch) {
+        branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
+        branch.animationNodeId = nodeId;
+        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+      }
+
+      return branch;
+    };
+
+    featureTable.populateAnimationNodeIds((elemIdPair) => {
+      const elementTimeline = timeline.getTimelineForElement(elemIdPair.lower, elemIdPair.upper);
+      return elementTimeline?.batchId ?? 0;
+    }, timeline.maxBatchId);
+
+    const discreteNodeIds = timeline.discreteBatchIds;
+    const computeNodeId: ComputeNodeId = (_id, featureIndex) => {
+      const nodeId = featureTable.getAnimationNodeId(featureIndex);
+      return 0 !== nodeId && discreteNodeIds.has(nodeId) ? nodeId : 0;
+    };
+
+    const splitArgs = {
+      maxDimension: this._system.maxTextureSize,
+      computeNodeId,
+      featureTable,
+    };
+
+    for (const primitive of primitives) {
+      if (primitive.type === "areaPattern") {
+        // ###TODO animated area patterns.
+        const gf = this.readAreaPattern(primitive);
+        if (gf)
+          getBranch(AnimationNodeId.Untransformed).add(gf);
+      } else {
+        const prim = this.readPrimitiveParams(primitive);
+        if (!prim)
+          continue;
+
+        const viOrigin = prim.viOrigin;
+        switch (prim.type) {
+          case "mesh": {
+            const split = splitMeshParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "mesh" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+
+            break;
+          }
+          case "point": {
+            const split = splitPointStringParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "point" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+
+            break;
+          }
+          case "polyline": {
+            const split = splitPolylineParams({ ...splitArgs, params: prim.params });
+            for (const [nodeId, params] of split) {
+              const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "polyline" });
+              const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
+              const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
+              if (graphic)
+                getBranch(nodeId).add(graphic);
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    for (const branch of branchesByNodeId.values()) {
+      assert(!branch.isEmpty);
+      output.push(this._system.createBranch(branch, Transform.createIdentity()));
+    }
+  }
+
+  private readBranch(output: RenderGraphic[], primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
+    const branch = new GraphicBranch(true);
+    branch.animationId = animationId;
+    branch.animationNodeId = nodeId;
+
+    for (const primitive of primitives) {
+      const graphic = this.readMeshGraphic(primitive);
+      if (graphic)
+        branch.add(graphic);
+    }
+
+    if (!branch.isEmpty)
+      output.push(this._system.createBranch(branch, Transform.createIdentity()));
+  }
+
   private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
@@ -1227,21 +1384,6 @@ export class ImdlReader {
         }
       }
     } else {
-      const readBranch = (primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined) => {
-        const branch = new GraphicBranch(true);
-        branch.animationId = animationId;
-        branch.animationNodeId = nodeId;
-
-        for (const primitive of primitives) {
-          const graphic = this.readMeshGraphic(primitive);
-          if (graphic)
-            branch.add(graphic);
-        }
-
-        if (!branch.isEmpty)
-          graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
-      };
-
       for (const nodeKey of Object.keys(this._nodes)) {
         const nodeValue = this._nodes[nodeKey];
         const meshValue = undefined !== nodeValue ? this._meshes[nodeValue] : undefined;
@@ -1251,10 +1393,13 @@ export class ImdlReader {
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
-          // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
-          // any node in the schedule script can be grouped together.
-          if (this._containsTransformNodes) {
-            readBranch(primitives, AnimationNodeId.Untransformed, undefined);
+          if (this._timeline) {
+            // Split up the root node into transform nodes.
+            this.readAnimationBranches(graphics, meshValue, featureTable);
+          } else if (this._containsTransformNodes) {
+            // If transform nodes exist in the tile tree, then we need to create a branch for Node_Root so that elements not associated with
+            // any node in the schedule script can be grouped together.
+            this.readBranch(graphics, primitives, AnimationNodeId.Untransformed, undefined);
           } else {
             for (const primitive of primitives) {
               const graphic = this.readMeshGraphic(primitive);
@@ -1263,7 +1408,7 @@ export class ImdlReader {
             }
           }
         } else if (undefined === layerId) {
-          readBranch(primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
+          this.readBranch(graphics, primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
         } else {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {

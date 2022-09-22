@@ -75,6 +75,7 @@ export * from "./presentation-components/tree/FilteredDataProvider";
 export * from "./presentation-components/tree/controlled/UseUnifiedSelection";
 export * from "./presentation-components/tree/controlled/UseControlledTreeFiltering";
 export * from "./presentation-components/tree/controlled/TreeHooks";
+export * from "./presentation-components/tree/controlled/PresentationTreeNodeRenderer";
 export { PRESENTATION_TREE_NODE_KEY };
 
 /**
@@ -97,9 +98,20 @@ export * from "./presentation-components/labels/LabelsProvider";
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Utilities for working with [Unified Selection]($docs/presentation/Unified-Selection/index.md) within [React](https://reactjs.org/) components.
+ * Utilities for working with [Unified Selection]($docs/presentation/unified-selection/index.md) within [React](https://reactjs.org/) components.
  */
 export * from "./presentation-components/unified-selection/UnifiedSelectionContext";
+
+/**
+ * @module InstancesFilter
+ *
+ * @docs-group-description InstancesFilter
+ * Utilities for creating filters for filtering presentation data.
+ */
+export * from "./presentation-components/instance-filter-builder/InstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
+export * from "./presentation-components/instance-filter-builder/Types";
+export * from "./presentation-components/instance-filter-builder/Utils";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);

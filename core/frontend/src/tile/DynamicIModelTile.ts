@@ -359,7 +359,9 @@ class GraphicsTile extends Tile {
       formatVersion: idProvider.majorFormatVersion,
       location: this.tree.iModelTransform.toJSON(),
       contentFlags: idProvider.contentFlags,
-      omitEdges: !this.tree.hasEdges,
+      omitEdges: !this.tree.edgeOptions,
+      edgeType: this.tree.edgeOptions && this.tree.edgeOptions.indexed ? 2 : 1,
+      smoothPolyfaceEdges: this.tree.edgeOptions && this.tree.edgeOptions.smooth,
       clipToProjectExtents: true,
       sectionCut: this.tree.stringifiedSectionClip,
     };
@@ -387,7 +389,7 @@ class GraphicsTile extends Tile {
     const reader = ImdlReader.create({
       stream, iModel, modelId, is3d, system, isCanceled, containsTransformNodes,
       type: tree.batchType,
-      loadEdges: tree.hasEdges,
+      loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
     });
 

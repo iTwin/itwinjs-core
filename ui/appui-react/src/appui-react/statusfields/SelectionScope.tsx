@@ -41,7 +41,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
   constructor(props: SelectionScopeFieldProps) {
     super(props);
     this._scopeOptions = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
-      const label = UiFramework.translate(`selectionScopeLabels.${scope.id}`);
+      const label = !!scope.label ? scope.label : UiFramework.translate(`selectionScopeLabels.${scope.id}`);
       return { value: scope.id, label };
     });
   }
@@ -59,9 +59,11 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
       <FooterIndicator
         className={classnames("uifw-statusFields-selectionScope", this.props.className)}
         style={this.props.style}
-        isInFooterMode={this.props.isInFooterMode}
+        // eslint-disable-next-line deprecation/deprecation
+        isInFooterMode={this.props.isInFooterMode ?? true}
       >
-        {this.props.isInFooterMode &&
+        {// eslint-disable-next-line deprecation/deprecation
+          (this.props.isInFooterMode ?? true) &&
           <label className="uifw-statusFields-selectionScope-label">
             {this._label}:
           </label>

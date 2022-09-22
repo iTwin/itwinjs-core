@@ -111,12 +111,11 @@ describe("<Form />", () => {
     expect(lockInput).not.to.be.null;
     expect(lockInput.value).to.be.eq("on");
     fireEvent.click(lockInput); // associated lock value should be false
-
-    const pickList = form.container.querySelector(".iui-select#PickList") as HTMLSelectElement;
+    const pickList = form.container.ownerDocument.querySelector(".core-form-select#PickList") as HTMLSelectElement;
     expect(pickList).not.to.be.null;
     selectChangeValueByText(pickList, "four", handleError);
 
-    const pickList2 = form.container.querySelector(".iui-select#PickList2") as HTMLSelectElement;
+    const pickList2 = form.container.ownerDocument.querySelector(".core-form-select#PickList2") as HTMLSelectElement;
     expect(pickList2).not.to.be.null;
     selectChangeValueByText(pickList2, "grape", handleError);
 

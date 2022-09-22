@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, ByteStream } from "@itwin/core-bentley";
+import { assert, ByteStream, Guid } from "@itwin/core-bentley";
+import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import {
-  ImdlReader, IModelApp, IModelTileTree, Tool,
+  ImdlReader, IModelApp, IModelConnection, IModelTileTree, Tool,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -27,7 +28,7 @@ export class GenerateTileContentTool extends Tool {
         stream, iModel, modelId, is3d, containsTransformNodes,
         system: IModelApp.renderSystem,
         type: tree.batchType,
-        loadEdges: tree.hasEdges,
+        loadEdges: false !== tree.edgeOptions,
         options: { tileId: contentId },
       });
 
@@ -60,5 +61,32 @@ export class GenerateTileContentTool extends Tool {
     }
 
     return false;
+  }
+}
+
+export class GenerateElementGraphicsTool extends Tool {
+  public static override toolId = "GenerateElementGraphics";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
+
+  public override async run(props?: PersistentGraphicsRequestProps, iModel?: IModelConnection): Promise<boolean> {
+    if (!props || !iModel)
+      return false;
+
+    await IModelApp.tileAdmin.requestElementGraphics(iModel, props);
+    return true;
+  }
+
+  public override async parseAndRun(...input: string[]) {
+    const args = parseArgs(input);
+    const elementId = args.get("e");
+    if (!elementId)
+      return false;
+
+    return this.run({
+      id: Guid.createValue(),
+      elementId,
+      toleranceLog10: args.getInteger("t") ?? -2,
+    }, IModelApp.viewManager.selectedView?.iModel);
   }
 }

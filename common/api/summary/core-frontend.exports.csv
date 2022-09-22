@@ -24,6 +24,7 @@ public;AccuSnap
 public;AccuSnap
 public;ACSDisplayOptions
 public;ACSType
+alpha;ActivationEvent = "onStartup"
 public;ActivityMessageDetails
 public;ActivityMessageEndReason
 internal;addRangeGraphic(builder: GraphicBuilder, range: Range3d, is2d: boolean): void
@@ -32,16 +33,12 @@ beta;AngleDescription
 internal;AnimatedTreeReference 
 internal;AnimationBranchState
 internal;AnimationBranchStates
+internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
-internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
-internal;ArcGisToken
-internal;ArcGisTokenClientType
-internal;ArcGisTokenGenerator
-internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
@@ -71,6 +68,7 @@ internal;BingMapsImageryLayerProvider
 public;BlankConnection 
 public;BlankConnectionProps
 public;BriefcaseConnection 
+alpha;BriefcaseEditorToolSettings
 public;class BriefcaseNotificationHandler 
 public;BriefcaseTxns 
 internal;CachedDecoration =
@@ -85,13 +83,17 @@ internal;CesiumIonAssetProvider
 internal;ChangeFlag
 public;ChangeFlags
 public;ChangeViewedModel2dOptions
-beta;CheckboxFormatPropEditorSpec 
+public;CheckboxFormatPropEditorSpec 
 public;CheckpointConnection 
 public;ClipEventType
 public;Cluster
 beta;CollectTileStatus = "accept" | "reject" | "continue"
 alpha;CompassMode
 public;ComputeChordToleranceArgs
+beta;ComputeDisplayTransformArgs
+public;connectViewportFrusta(viewports: Iterable
+public;connectViewports(viewports: Iterable
+public;connectViewportViews(viewports: Iterable
 internal;ContextMode
 public;ContextRealityModelState 
 public;ContextRotationId
@@ -103,7 +105,9 @@ internal;CoreTools
 internal;createClassifierTileTreeReference(classifiers: SpatialClassifiers, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference
 internal;createDefaultViewFlagOverrides(options:
 internal;createEmptyRenderPlan(): RenderPlan
+internal;createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined
 internal;createMaskTreeReference(view: ViewState, model: GeometricModelState): TileTreeReference
+internal;createModelMapLayerTileTreeReference(layerSettings: ModelMapLayerSettings, layerIndex: number, iModel: IModelConnection): ModelMapLayerTileTreeReference | undefined
 internal;createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceProps): RealityModelTileTree.Reference
 internal;createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference
 internal;createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference
@@ -113,9 +117,9 @@ public;CreateTextureArgs
 public;CreateTextureFromSourceArgs
 internal;CurrentInputState
 internal;CurrentState
-beta;CustomFormatPropEditorSpec
+public;CustomFormatPropEditorSpec
 public;CustomGraphicBuilderOptions 
-beta;CustomQuantityTypeDefinition 
+public;CustomQuantityTypeDefinition 
 internal;DebugShaderFile
 public;DecorateContext 
 public;Decorations 
@@ -154,6 +158,8 @@ public;EntityState
 internal;EnvironmentDecorations
 public;EventController
 public;EventHandled
+alpha;ExtensionManifest
+alpha;ExtensionProvider
 public;ExtentLimits
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
@@ -170,8 +176,8 @@ public;FlashSettingsOptions = Mutable
 public;FlyViewTool 
 internal;formatAnimationBranchId(modelId: Id64String, branchId: number): string
 beta;class FormattedQuantityDescription 
-beta;FormatterParserSpecsProvider
-beta;FormattingUnitSystemChangedArgs
+public;FormatterParserSpecsProvider
+public;FormattingUnitSystemChangedArgs
 internal;FrameBeforeRenderData
 internal;FrameCameraFrustumData
 internal;FrameCameraViewData
@@ -203,7 +209,7 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 public;GetPixelDataWorldPointArgs
-beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
+public;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
 public;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
@@ -223,6 +229,8 @@ internal;class GltfReader
 internal;GltfReaderArgs
 internal;GltfReaderProps
 internal;GltfReaderResult 
+internal;GltfSampler 
+internal;GltfWrapMode
 internal;GLTimerResult
 internal;GLTimerResultCallback = (result: GLTimerResult) => void
 public;GpuMemoryLimit = "none" | "default" | "aggressive" | "relaxed" | number
@@ -266,11 +274,12 @@ public;HitSource
 internal;I3dmReader 
 public;IconSprites
 public;IdleTool 
+public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
-public;imageElementFromUrl(url: string): Promise
+public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 internal;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
@@ -304,16 +313,19 @@ internal;internalMapLayerImageryFormats: (typeof WmsMapLayerFormat)[]
 public;IntersectDetail 
 public;IpcApp
 public;IpcAppOptions
-beta;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
-beta;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
-beta;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
-beta;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
+public;isCheckboxFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is CheckboxFormatPropEditorSpec
+public;isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition
+public;isTextInputFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextInputFormatPropEditorSpec
+public;isTextSelectFormatPropEditorSpec: (item: CustomFormatPropEditorSpec) => item is TextSelectFormatPropEditorSpec
 alpha;ItemField
 beta;ITwinIdArg
+public;ITWINJS_CORE_VERSION: string
 public;KeyinParseError
 internal;KeyinStatus
 beta;LengthDescription 
 internal;linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void
+alpha;LocalExtensionProvider 
+alpha;LocalExtensionProviderProps
 internal;LocalhostIpcApp
 internal;LocalHostIpcAppOpts
 beta;LocalUnitFormatProvider 
@@ -333,20 +345,28 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
-internal;MapLayerAuthenticationInfo
-beta;MapLayerAuthType
-internal;MapLayerFormat
-internal;MapLayerFormatRegistry
-internal;MapLayerFormatType = typeof MapLayerFormat
+alpha;MapFeatureInfo
+alpha;MapFeatureInfoRecord 
+beta;MapLayerAccessClient
+beta;MapLayerAccessToken
+beta;MapLayerAccessTokenParams
+beta;MapLayerAuthenticationInfo
+internal;MapLayerClassifiers = Map
+alpha;MapLayerFeatureInfo
+beta;MapLayerFormat
+internal;MapLayerFormatEntry
+beta;MapLayerFormatRegistry
+beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
 internal;MapLayerImageryProviderStatus
 beta;MapLayerOptions
-internal;MapLayerSource
+public;MapLayerSource
 internal;MapLayerSources
-internal;MapLayerSourceStatus
-internal;MapLayerSourceValidation
+public;MapLayerSourceStatus
+public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
-internal;MapLayerTokenEndpoint
+beta;MapLayerTokenEndpoint
+alpha;MapSubLayerFeatureInfo
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
@@ -377,8 +397,10 @@ internal;MockRender
 internal;ModalOptions
 internal;ModalReturn
 beta;ModelDisplayTransformProvider
+internal;ModelMapLayerTileTreeReference 
 public;ModelSelectorState 
 public;ModelState 
+public;ModelSubCategoryHiliteMode = "union" | "intersection"
 alpha;ModifyElementSource
 internal;MutableChangeFlags 
 public;NativeApp
@@ -398,6 +420,7 @@ public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 public;OnViewExtentsError
+internal;OPCFormatInterpreter
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
 internal;OrbitGtTileTree 
 internal;OrbitGtTileTree
@@ -406,7 +429,7 @@ public;OsmBuildingDisplayOptions
 public;OutputMessageAlert
 public;OutputMessagePriority
 public;OutputMessageType
-beta;OverrideFormatEntry
+public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
 public;PanViewTool 
 public;ParseAndRunResult
@@ -420,6 +443,7 @@ public;ParticleProps
 internal;PatternGraphicParams
 internal;PerformanceMetrics
 public;PerModelCategoryVisibility
+beta;Props
 public;PhysicalModelState 
 public;PickableGraphicOptions 
 internal;PingTestResult
@@ -434,14 +458,15 @@ beta;PreferenceArg
 beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
+alpha;PublisherProductInfo
 internal;QuadId
-beta;QuantityFormatOverridesChangedArgs
-beta;QuantityFormatsChangedArgs
-beta;QuantityFormatter 
-beta;QuantityType
-beta;QuantityTypeArg = QuantityType | string
-beta;QuantityTypeDefinition
-beta;QuantityTypeKey = string
+public;QuantityFormatOverridesChangedArgs
+public;QuantityFormatsChangedArgs
+public;QuantityFormatter 
+public;QuantityType
+public;QuantityTypeArg = QuantityType | string
+public;QuantityTypeDefinition
+public;QuantityTypeKey = string
 beta;QueryScreenFeaturesOptions
 public;queryTerrainElevationOffset(viewport: ScreenViewport, carto: Cartographic): Promise
 beta;QueryTileFeaturesOptions
@@ -454,13 +479,15 @@ public;readGltfGraphics(args: ReadGltfGraphicsArgs): Promise
 public;ReadGltfGraphicsArgs
 public;ReadImageBufferArgs
 internal;ReadonlyTileUserSet 
-internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): RenderGraphic | undefined
+internal;readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise
+alpha;RealityDataError 
 beta;RealityDataSource
 beta;RealityDataSource
+internal;createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey
 alpha;createKeyFromBlobUrl(blobUrl: string, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
-internal;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
+alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
@@ -475,6 +502,8 @@ internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
+alpha;RemoteExtensionProvider 
+alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
 public;class RenderClipVolume
 public;RenderContext
@@ -486,7 +515,6 @@ internal;RenderMaterialSource
 internal;RenderMemory
 internal;RenderPlan
 internal;class RenderPlanarClassifier 
-internal;RenderScheduleState 
 internal;RenderSkyBoxParams = RenderSkyGradientParams | RenderSkySphereParams | RenderSkyCubeParams
 internal;RenderSkyCubeParams
 internal;RenderSkyGradientParams
@@ -499,6 +527,8 @@ internal;RenderTargetDebugControl
 internal;class RenderTerrainGeometry 
 internal;class RenderTextureDrape 
 internal;RequestTileTreePropsFunc = (iModel: IModelConnection, treeId: string) => Promise
+alpha;ResolveFunc = () => Promise
+alpha;ResolveManifestFunc = () => Promise
 internal;RootIModelTile = Tile &
 public;RotateViewTool 
 alpha;RotationMode
@@ -519,7 +549,6 @@ public;SelectAddEvent
 internal;SelectedAndReadyTiles
 public;SelectedViewportChangedArgs
 public;SelectionMethod
-public;SelectionMode
 public;SelectionProcessing
 public;SelectionSet
 public;SelectionSetEvent = SelectAddEvent | SelectRemoveEvent | SelectReplaceEvent
@@ -541,6 +570,7 @@ public;SnapMode
 public;SnapshotConnection 
 public;SnapStatus
 internal;class SpatialClassifierTileTreeReference 
+alpha;SpatialLocationAndExtents
 public;SpatialLocationModelState 
 public;SpatialModelState 
 internal;SpatialTileTreeReferences 
@@ -552,12 +582,14 @@ public;StandardView
 public;StandardViewId
 public;StandardViewTool 
 public;StartOrResume
-public;Storage
 internal;SubCategoriesCache
 internal;SubCategoriesCache
 internal;SubCategoriesRequest
 beta;SurveyLengthDescription 
 internal;SuspendedToolState
+public;synchronizeViewportFrusta(source: Viewport): SynchronizeViewports
+public;SynchronizeViewports = (source: Viewport, target: Viewport) => void
+public;synchronizeViewportViews(source: Viewport): SynchronizeViewports
 internal;class Target 
 internal;TentativeOrAccuSnap
 public;TentativePoint
@@ -565,15 +597,17 @@ internal;TerrainDisplayOverrides
 internal;class TerrainMeshProvider
 internal;TerrainTexture
 internal;TerrainTileContent 
-beta;TextInputFormatPropEditorSpec 
-beta;TextSelectFormatPropEditorSpec 
+public;TextInputFormatPropEditorSpec 
+public;TextSelectFormatPropEditorSpec 
 public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
 public;TextureImage
-public;TextureImageSource = HTMLImageElement | ImageBuffer
+public;TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
+internal;ThreeDTileFileInfo
+internal;ThreeDTileFormatInterpreter
 public;class Tile
 public;TileAdmin
 public;TileAdmin
@@ -615,8 +649,6 @@ public;TileVisibility
 beta;TokenArg
 public;Tool
 public;ToolAdmin
-public;ToolAdmin
-alpha;ActiveSettings
 public;ToolAssistance
 public;ToolAssistanceImage
 public;ToolAssistanceInputMethod
@@ -636,7 +668,7 @@ internal;TouchCursor
 internal;TraversalChildrenDetails
 internal;TraversalDetails
 internal;TraversalSelectionContext
-public;tryImageElementFromUrl(url: string): Promise
+public;tryImageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
 public;TwoWayViewportFrustumSync 
 public;TwoWayViewportSync
 public;Uniform
@@ -645,8 +677,8 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 internal;UniqueTileUserSets
-beta;UnitFormattingSettingsProvider
-beta;UnitNameKey = string
+public;UnitFormattingSettingsProvider
+public;UnitNameKey = string
 internal;UpsampledMapTile 
 beta;UserPreferencesAccess
 public;VaryingType

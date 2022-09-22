@@ -8,9 +8,11 @@ import * as os from "os";
 import * as readline from "readline";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
+
+import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
 
 // Configuration needed:
 //    IMJS_TEST_REGULAR_USER_NAME
@@ -31,17 +33,16 @@ describe("BriefcaseManager", () => {
   let testITwinId: string;
 
   let readOnlyTestIModelId: GuidString;
-  const readOnlyTestVersions = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const readOnlyTestElementCounts = [27, 28, 29];
-
-  let noVersionsTestIModelId: GuidString;
   let accessToken: AccessToken;
 
   before(async () => {
     accessToken = await HubUtility.getAccessToken(TestUserType.Regular);
     testITwinId = await HubUtility.getTestITwinId(accessToken);
     readOnlyTestIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
-    noVersionsTestIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readWrite);
+  });
+
+  after(async () => {
+    V2CheckpointManager.cleanup();
   });
 
   it("should open and close an iModel from the Hub", async () => {
@@ -55,11 +56,12 @@ describe("BriefcaseManager", () => {
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
-    const pathname = iModel.pathName;
-    assert.isTrue(IModelJsFs.existsSync(pathname));
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
-
-    assert.isFalse(IModelJsFs.existsSync(pathname), `Briefcase continues to exist at ${pathname}`);
+    // the v2 checkpoint should be opened directly
+    // Convert to UNIX path separators on Windows for consistent results.
+    const actualPathName = iModel.pathName.replace(/\\/g, "/");
+    const expectedPathName = `/imodelblocks-73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a/BASELINE.bim`;
+    expect(actualPathName).equals(expectedPathName);
+    iModel.close();
   });
 
   it("should reuse checkpoints", async () => {
@@ -97,63 +99,18 @@ describe("BriefcaseManager", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it("should open iModels of specific versions from the Hub", async () => {
-    const dirToPurge = BriefcaseManager.getIModelPath(readOnlyTestIModelId);
-    IModelJsFs.purgeDirSync(dirToPurge);
-
-    const iModelFirstVersion = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
-    assert.exists(iModelFirstVersion);
-    assert.strictEqual(iModelFirstVersion.changeset.id, "");
-
-    const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: readOnlyTestIModelId });
-
-    for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
-      const iModelFromVersion = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changesets[arrayIndex + 1].id).toJSON() });
-      assert.exists(iModelFromVersion);
-      assert.strictEqual(iModelFromVersion.changeset.id, changesets[arrayIndex + 1].id);
-
-      const iModelFromChangeSet = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
-      assert.exists(iModelFromChangeSet);
-      assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
-      assert.strictEqual(iModelFromChangeSet.changeset.id, changesets[arrayIndex + 1].id);
-
-      const elementCount = iModelFromVersion.withStatement("SELECT COUNT(*) FROM bis.Element", (stmt) => {
-        stmt.step();
-        return stmt.getValue(0).getInteger();
-      });
-      assert.equal(elementCount, readOnlyTestElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.pathName}, version ${versionName}`);
-
-      iModelFromVersion.close();
-      iModelFromChangeSet.close();
-    }
-
-    const iModelLatestVersion = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, deleteFirst: true });
-    assert.isDefined(iModelLatestVersion);
-    assert.strictEqual(iModelLatestVersion.nativeDb.getCurrentChangeset().id, changesets[3].id);
-
-    assert.equal(iModelLatestVersion.nativeDb.getCurrentChangeset().index, changesets[3].index);
-
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelFirstVersion);
-    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModelLatestVersion);
-  });
-
-  it("should open an iModel with no versions", async () => {
-    const iModelNoVer = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: noVersionsTestIModelId });
-    assert.exists(iModelNoVer);
-    assert(iModelNoVer.iModelId === noVersionsTestIModelId, "Correct iModel not found");
-  });
-
   it("should be able to show progress when downloading a briefcase (#integration)", async () => {
     const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
-
     let numProgressCalls = 0;
 
     readline.clearLine(process.stdout, 0);
     readline.moveCursor(process.stdout, -20, 0);
     let done = 0;
     let complete = 0;
+    let last = -1;
     const downloadProgress = (loaded: number, total: number) => {
-      if (total > 0) {
+      if (total > 0 && loaded !== last) {
+        last = loaded;
         const message = `${HubUtility.testIModelNames.stadium} Download Progress ... ${(loaded * 100 / total).toFixed(2)}%`;
         process.stdout.write(message);
         readline.moveCursor(process.stdout, -1 * message.length, 0);
@@ -204,7 +161,7 @@ describe("BriefcaseManager", () => {
 
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
-    await expect(downloadPromise).to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+    await expect(downloadPromise).to.eventually.be.rejectedWith("cancelled").have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
   });
 
 });

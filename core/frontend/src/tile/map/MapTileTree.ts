@@ -8,31 +8,43 @@
 
 import { assert, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
-} from "@itwin/core-geometry";
-import {
   BackgroundMapSettings, BaseLayerSettings, Cartographic, ColorDef, FeatureAppearance, GeoCoordStatus, GlobeMode, MapLayerSettings, PlanarClipMaskPriority, TerrainHeightOriginMode,
   TerrainProviderName,
 } from "@itwin/core-common";
+import {
+  Angle, AngleSweep, Constant, Ellipsoid, EllipsoidPatch, Point3d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYZProps,
+} from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
 import { HitDetail } from "../../HitDetail";
-import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { FeatureSymbology } from "../../render/FeatureSymbology";
+import { RenderPlanarClassifier } from "../../render/RenderPlanarClassifier";
 import { SceneContext } from "../../ViewContext";
 import { ScreenViewport } from "../../Viewport";
 import {
-  BingElevationProvider, createDefaultViewFlagOverrides, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, ImageryMapLayerTreeReference, ImageryMapTileTree,
-  MapCartoRectangle, MapTile, MapTileLoader, MapTilingScheme, PlanarTilePatch, QuadId, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs,
-  TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
+  BingElevationProvider,
+  createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference, getCesiumTerrainProvider, GraphicsCollectorDrawArgs,
+  ImageryMapLayerTreeReference,
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapLayerFeatureInfo,
+  MapLayerTileTreeReference,
+  MapTile,
+  MapTileLoader,
+  MapTilingScheme,
+  ModelMapLayerTileTreeReference,
+  PlanarTilePatch,
+  QuadId,
+  RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchCorner = Point3d.createZero();
 const scratchZNormal = Vector3d.create(0, 0, 1);
+
 /** @internal */
 export class MapTileTree extends RealityTileTree {
   private _mercatorFractionToDb: Transform;
@@ -41,7 +53,6 @@ export class MapTileTree extends RealityTileTree {
   public maxEarthEllipsoid: Ellipsoid;
   public globeMode: GlobeMode;
   public globeOrigin: Point3d;
-
   private _mercatorTilingScheme: MapTilingScheme;
   public useDepthBuffer: boolean;
   public isOverlay: boolean;
@@ -100,20 +111,38 @@ export class MapTileTree extends RealityTileTree {
 
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
+  private _modelIdToIndex = new Map<Id64String, number>();
+  public layerClassifiers = new Map<number, RenderPlanarClassifier>();
 
-  public addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings) {
-    const maxLayers = IModelApp.renderSystem.maxRealityImageryLayers;
-    if (this.imageryTrees.length < maxLayers) {
-      this.imageryTrees.push(tree);
-      this._layerSettings.set(tree.modelId, settings);
-    } else {
-      // TBD -- Notify user that layers is being ignored?
-    }
+  public  addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings, index: number) {
+    this.imageryTrees.push(tree);
+    this._layerSettings.set(tree.modelId, settings);
+    this._modelIdToIndex.set(tree.modelId, index);
   }
-  public clearImageryLayers() {
+
+  public addModelLayer(layerTreeRef: ModelMapLayerTileTreeReference, context: SceneContext) {
+    const classifier = context.addPlanarClassifier(`MapLayer ${this.modelId}-${layerTreeRef.layerIndex}`, layerTreeRef);
+    if (classifier)
+      this.layerClassifiers.set(layerTreeRef.layerIndex, classifier);
+  }
+
+  protected override collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
+    super.collectClassifierGraphics(args, selectedTiles);
+
+    this.layerClassifiers.forEach((layerClassifier: RenderPlanarClassifier) => {
+      if (!(args instanceof GraphicsCollectorDrawArgs))
+        layerClassifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+
+    });
+  }
+
+  public clearImageryTreesAndClassifiers() {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
+    this._modelIdToIndex.clear();
+    this.layerClassifiers.clear();
   }
+
   public override get isTransparent() {
     return this.mapTransparent || this.baseTransparent;
   }
@@ -124,7 +153,7 @@ export class MapTileTree extends RealityTileTree {
 
     return maxDepth;
   }
-  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined {
+  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined{
     const childAvailable = this.mapLoader.isTileAvailable(quadId);
     if (!childAvailable && this.produceGeometry)
       return undefined;
@@ -331,11 +360,8 @@ export class MapTileTree extends RealityTileTree {
     return this.sourceTilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
   }
   public getLayerIndex(imageryTreeId: Id64String) {
-    for (let index = 0; index < this.imageryTrees.length; index++)
-      if (imageryTreeId === this.imageryTrees[index].modelId)
-        return index;
-
-    return -1;
+    const index = this._modelIdToIndex.get(imageryTreeId);
+    return index === undefined ? -1 : index;
   }
 
   public getLayerTransparency(imageryTreeId: Id64String): number {
@@ -397,7 +423,7 @@ class MapTreeSupplier implements TileTreeSupplier {
       cmp = compareStringsOrUndefined(lhs.maskModelIds, rhs.maskModelIds);
       if (0 === cmp) {
         cmp = compareBooleans(lhs.isOverlay, rhs.isOverlay);
-        if (0 === cmp && !lhs.isOverlay) {
+        if (0 === cmp) {
           cmp = compareBooleans(lhs.wantSkirts, rhs.wantSkirts);
           if (0 === cmp) {
             cmp = compareBooleans(lhs.wantNormals, rhs.wantNormals);
@@ -511,7 +537,7 @@ export class MapTileTreeReference extends TileTreeReference {
   private readonly _iModel: IModelConnection;
   private _baseImageryLayerIncluded = false;
   private _baseColor?: ColorDef;
-  private readonly _imageryTrees: ImageryMapLayerTreeReference[] = new Array<ImageryMapLayerTreeReference>();
+  private readonly _layerTrees = new Array<MapLayerTileTreeReference>();
   private _baseTransparent = false;
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
@@ -524,7 +550,7 @@ export class MapTileTreeReference extends TileTreeReference {
     let tree;
     if (!isOverlay && this._baseLayerSettings !== undefined) {
       if (this._baseLayerSettings instanceof MapLayerSettings) {
-        tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._baseLayerSettings, 0, iModel);
+        tree = createMapLayerTreeReference(this._baseLayerSettings, 0, iModel);
         this._baseTransparent = this._baseLayerSettings.transparency > 0;
       } else {
         this._baseColor = this._baseLayerSettings;
@@ -533,11 +559,11 @@ export class MapTileTreeReference extends TileTreeReference {
     }
 
     if (this._baseImageryLayerIncluded = (undefined !== tree))
-      this._imageryTrees.push(tree);
+      this._layerTrees.push(tree);
 
     for (let i = 0; i < this._layerSettings.length; i++)
-      if (undefined !== (tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(this._layerSettings[i], i + 1, iModel)))
-        this._imageryTrees.push(tree);
+      if (undefined !== (tree = createMapLayerTreeReference(this._layerSettings[i], i + 1, iModel)))
+        this._layerTrees.push(tree);
 
     if (this._settings.planarClipMask && this._settings.planarClipMask.isValid)
       this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
@@ -572,7 +598,7 @@ export class MapTileTreeReference extends TileTreeReference {
     this._baseLayerSettings = baseLayerSettings;
 
     if (baseLayerSettings instanceof MapLayerSettings) {
-      tree = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(baseLayerSettings, 0, this._iModel);
+      tree = createMapLayerTreeReference(baseLayerSettings, 0, this._iModel);
       this._baseColor = undefined;
       this._baseTransparent = baseLayerSettings.transparency > 0;
     } else {
@@ -582,12 +608,12 @@ export class MapTileTreeReference extends TileTreeReference {
 
     if (tree) {
       if (this._baseImageryLayerIncluded)
-        this._imageryTrees[0] = tree;
+        this._layerTrees[0] = tree;
       else
-        this._imageryTrees.splice(0, 0, tree);
+        this._layerTrees.splice(0, 0, tree);
     } else {
       if (this._baseImageryLayerIncluded)
-        this._imageryTrees.shift();
+        this._layerTrees.shift();
     }
     this._baseImageryLayerIncluded = tree !== undefined;
     this.clearLayers();
@@ -600,11 +626,11 @@ export class MapTileTreeReference extends TileTreeReference {
     this._layerSettings = layerSettings;
     const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
 
-    this._imageryTrees.length = Math.min(layerSettings.length + baseLayerIndex, this._imageryTrees.length);    // Truncate if number of layers reduced.
+    this._layerTrees.length = Math.min(layerSettings.length + baseLayerIndex, this._layerTrees.length);    // Truncate if number of layers reduced.
     for (let i = 0; i < layerSettings.length; i++) {
       const treeIndex = i + baseLayerIndex;
-      if (treeIndex >= this._imageryTrees.length || !this._imageryTrees[treeIndex].layerSettings.displayMatches(layerSettings[i]))
-        this._imageryTrees[treeIndex] = IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings[i], treeIndex, this._iModel)!;
+      if (treeIndex >= this._layerTrees.length || !this._layerTrees[treeIndex].layerSettings.displayMatches(layerSettings[i]))
+        this._layerTrees[treeIndex] = createMapLayerTreeReference(layerSettings[i], treeIndex, this._iModel)!;
     }
     this.clearLayers();
   }
@@ -621,7 +647,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   protected override get _isLoadingComplete(): boolean {
     // Wait until drape tree is fully loaded too.
-    for (const drapeTree of this._imageryTrees)
+    for (const drapeTree of this._layerTrees)
       if (!drapeTree.isLoadingComplete)
         return false;
 
@@ -640,7 +666,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
     const id: MapTreeId = {
       tileUserId: this._tileUserId,
-      applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
+      applyTerrain: this.settings.applyTerrain && !this._isDrape,
       terrainProviderName: this.settings.terrainSettings.providerName,
       terrainHeightOrigin: this.settings.terrainSettings.heightOrigin,
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
@@ -673,36 +699,37 @@ export class MapTileTreeReference extends TileTreeReference {
   public getLayerImageryTreeRef(index: number) {
     const baseLayerIndex = this._baseImageryLayerIncluded ? 1 : 0;
     const treeIndex = index + baseLayerIndex;
-    return index < 0 || treeIndex >= this._imageryTrees.length ? undefined : this._imageryTrees[treeIndex];
+    return index < 0 || treeIndex >= this._layerTrees.length ? undefined : this._layerTrees[treeIndex];
   }
 
-  public initializeImagery(): boolean {
+  public initializeLayers(context: SceneContext): boolean {
     const tree = this.treeOwner.load() as MapTileTree;
     if (undefined === tree)
       return false;     // Not loaded yet.
 
     tree.imageryTrees.length = 0;
-    if (0 === this._imageryTrees.length)
+    if (0 === this._layerTrees.length)
       return !this.isOverlay;
 
-    let treeIndex = this._imageryTrees.length - 1;
+    let treeIndex = this._layerTrees.length - 1;
     // Start displaying at the highest completely opaque layer...
     for (; treeIndex >= 1; treeIndex--) {
-      const imageryTreeRef = this._imageryTrees[treeIndex];
-      const layerSettings = imageryTreeRef.layerSettings;
-      if (layerSettings.visible && !imageryTreeRef.layerSettings.allSubLayersInvisible && !layerSettings.transparentBackground && 0 === layerSettings.transparency)
+      const layerTreeRef = this._layerTrees[treeIndex];
+      if (layerTreeRef.isOpaque)
         break;    // This layer is completely opaque and will obscure all others so ignore lower ones.
     }
-    for (; treeIndex < this._imageryTrees.length; treeIndex++) {
-      const imageryTreeRef = this._imageryTrees[treeIndex];
-      if (TileTreeLoadStatus.NotFound !== imageryTreeRef.treeOwner.loadStatus && imageryTreeRef.layerSettings.visible && !imageryTreeRef.layerSettings.allSubLayersInvisible) {
-        const imageryTree = imageryTreeRef.treeOwner.load();
-        if (undefined === imageryTree)
+    for (; treeIndex < this._layerTrees.length; treeIndex++) {
+      const layerTreeRef = this._layerTrees[treeIndex];
+      if (TileTreeLoadStatus.NotFound !== layerTreeRef.treeOwner.loadStatus && layerTreeRef.layerSettings.visible && !layerTreeRef.layerSettings.allSubLayersInvisible) {
+        const layerTree = layerTreeRef.treeOwner.load();
+        if (undefined === layerTree)
           return false; // Not loaded yet.
-        tree.addImageryLayer(imageryTree as ImageryMapTileTree, imageryTreeRef.layerSettings);
+        if (layerTree instanceof ImageryMapTileTree) {
+          tree.addImageryLayer(layerTree, layerTreeRef.layerSettings, treeIndex);
+        } else if (layerTreeRef instanceof ModelMapLayerTileTreeReference)
+          tree.addModelLayer(layerTreeRef, context);
       }
     }
-
     return true;
   }
 
@@ -712,7 +739,7 @@ export class MapTileTreeReference extends TileTreeReference {
       return;
 
     const tree = this.treeOwner.load() as MapTileTree;
-    if (undefined === tree || !this.initializeImagery())
+    if (undefined === tree || !this.initializeLayers(context))
       return;     // Not loaded yet.
 
     if (this._planarClipMask && this._planarClipMask.settings.isValid)
@@ -732,7 +759,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined !== args)
       tree.draw(args);
 
-    tree.clearImageryLayers();
+    tree.clearImageryTreesAndClassifiers();
   }
 
   public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
@@ -740,7 +767,8 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === args)
       return undefined;
 
-    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
+    const tree = this.treeOwner.load() as MapTileTree;
+    return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes, undefined, tree?.layerClassifiers);
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {
@@ -753,7 +781,7 @@ export class MapTileTreeReference extends TileTreeReference {
 
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    this._imageryTrees.forEach((imageryTree) => trees.disclose(imageryTree));
+    this._layerTrees.forEach((imageryTree) => trees.disclose(imageryTree));
     if (this._planarClipMask)
       this._planarClipMask.discloseTileTrees(trees);
   }
@@ -762,7 +790,7 @@ export class MapTileTreeReference extends TileTreeReference {
     if (undefined === tree || tree.modelId !== mapTreeModelId)
       return undefined;
 
-    for (const imageryTree of this._imageryTrees)
+    for (const imageryTree of this._layerTrees)
       if (imageryTree.treeOwner.tileTree && imageryTree.treeOwner.tileTree.modelId === layerTreeModelId)
         return imageryTree;
 
@@ -773,9 +801,9 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTree === undefined ? imageryTree : imageryTree.layerSettings;
   }
 
-  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+  // Utility method that execute the provided function for every *imagery* tiles under a given HotDetail object.
+  private async forEachImageryTileHit(hit: HitDetail, func: (imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => Promise<void>): Promise<void> {
     const tree = this.treeOwner.tileTree as MapTileTree;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
       return undefined;
 
@@ -784,7 +812,15 @@ export class MapTileTreeReference extends TileTreeReference {
       return undefined;
 
     const worldPoint = hit.hitPoint.clone();
-    const cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    let cartoGraphic: Cartographic|undefined;
+    try {
+      cartoGraphic = await backgroundMapGeometry.dbToCartographicFromGcs(worldPoint);
+    } catch {
+    }
+    if (!cartoGraphic) {
+      return undefined;
+    }
+
     const strings = [];
     const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
     if (imageryTreeRef !== undefined) {
@@ -796,37 +832,92 @@ export class MapTileTreeReference extends TileTreeReference {
           const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
           if (imageryTree) {
             for (const imageryTile of terrainTile.imageryTiles) {
-              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic))
-                await imageryTree.imageryLoader.getToolTip(strings, imageryTile.quadId, cartoGraphic, imageryTree);
+              if (imageryTree === imageryTile.imageryTree && imageryTile.rectangle.containsCartographic(cartoGraphic)) {
+                try {
+                  await func (imageryTreeRef, imageryTile.quadId, cartoGraphic, imageryTree);
+                } catch {
+                  // continue iterating even though we got a failure.
+                }
+
+              }
+
             }
           }
         }
       }
     }
+  }
 
-    strings.push(`Latitude: ${cartoGraphic.latitudeDegrees.toFixed(4)}`);
-    strings.push(`Longitude: ${cartoGraphic.longitudeDegrees.toFixed(4)}`);
-    if (this.settings.applyTerrain) {
-      const geodeticHeight = (cartoGraphic.height - tree.bimElevationBias) / tree.terrainExaggeration;
-      strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    if (tree.modelId !== hit.modelId)
+      return undefined;
+
+    let carto: Cartographic|undefined;
+
+    const strings: string[] = [];
+
+    const getTooltipFunc = async (imageryTreeRef: ImageryMapLayerTreeReference,  quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+      strings.push(`Imagery Layer: ${imageryTreeRef.layerSettings.name}`);
+      carto = cartoGraphic;
+      await imageryTree.imageryLoader.getToolTip(strings, quadId, cartoGraphic, imageryTree);
+    };
+    try {
+      await this.forEachImageryTileHit(hit, getTooltipFunc);
+    } catch {
+      // No results added
     }
+
+    if (carto) {
+      strings.push(`Latitude: ${carto.latitudeDegrees.toFixed(4)}`);
+      strings.push(`Longitude: ${carto.longitudeDegrees.toFixed(4)}`);
+      if (this.settings.applyTerrain && tree.terrainExaggeration !== 0.0) {
+        const geodeticHeight = (carto.height - tree.bimElevationBias) / tree.terrainExaggeration;
+        strings.push(`Height (Meters) Geodetic: ${geodeticHeight.toFixed(1)} Sea Level: ${(geodeticHeight - tree.geodeticOffset).toFixed(1)}`);
+      }
+    }
+
     const div = document.createElement("div");
     div.innerHTML = strings.join("<br>");
     return div;
   }
 
+  public override async getMapFeatureInfo(hit: HitDetail): Promise<MapLayerFeatureInfo[] | undefined> {
+    const tree = this.treeOwner.tileTree as MapTileTree;
+    if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
+      return undefined;
+
+    const info: MapLayerFeatureInfo[] = [];
+    const imageryTreeRef = this.imageryTreeFromTreeModelIds(hit.modelId, hit.sourceId);
+    if (imageryTreeRef !== undefined) {
+
+      const getFeatureInfoFunc = async (_imageryTreeRef: ImageryMapLayerTreeReference, quadId: QuadId, cartoGraphic: Cartographic,imageryTree: ImageryMapTileTree ) => {
+        try {
+          await imageryTree.imageryLoader.getMapFeatureInfo(info, quadId, cartoGraphic, imageryTree);
+        } catch {
+        }
+      };
+      try {
+        await this.forEachImageryTileHit(hit, getFeatureInfoFunc);
+      } catch {
+        // No results added
+      }
+
+    }
+
+    return info;
+  }
+
   /** Add logo cards to logo div. */
   public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
-    let logo;
     if (tree) {
-      if (undefined !== (logo = tree.mapLoader.terrainProvider.getLogo()))
-        cards.appendChild(logo);
-      for (const imageryTreeRef of this._imageryTrees) {
+      tree.mapLoader.terrainProvider.addLogoCards(cards, vp);
+      for (const imageryTreeRef of this._layerTrees) {
         if (imageryTreeRef.layerSettings.visible) {
-          const imageryTree = imageryTreeRef.treeOwner.tileTree as ImageryMapTileTree;
-          if (imageryTree && (undefined !== (logo = imageryTree.getLogo(vp))))
-            cards.appendChild(logo);
+          const imageryTree = imageryTreeRef.treeOwner.tileTree;
+          if (imageryTree instanceof ImageryMapTileTree)
+            imageryTree.addLogoCards(cards, vp);
         }
       }
     }

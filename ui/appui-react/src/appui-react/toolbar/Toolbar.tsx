@@ -53,7 +53,7 @@ interface ToolbarState {
 export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
   private _dimension: number = 0;
   private _minToolbarSize = (ActionButtonItemDef.defaultButtonSize + 2);
-
+  private _isMounted = false;
   public constructor(props: ToolbarProps) {
     super(props);
 
@@ -93,10 +93,12 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
   }
 
   public override componentDidMount() {
+    this._isMounted = true;
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
   public override componentWillUnmount() {
+    this._isMounted = false;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
@@ -156,10 +158,11 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     if (this._processSyncUiEvent(this.props.items, args)) {
-      setImmediate(() => {
+      setTimeout(() => {
         // if sync event changed number of displayable buttons layout the toolbar and re-render
         const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
-        this.setState({ items });
+        if (this._isMounted)
+          this.setState({ items });
       });
     }
   };
@@ -265,7 +268,8 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     if (height < this._minToolbarSize) height = this._minToolbarSize;
     if (this.state.width !== width || this.state.height !== height) {
       const items = this.generateToolbarItems(this.props.items, new Size(width, height));
-      this.setState({ width, height, items });
+      if (this._isMounted)
+        this.setState({ width, height, items });
     }
   };
 

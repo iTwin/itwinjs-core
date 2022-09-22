@@ -31,10 +31,20 @@ describe("IntTypeConverter", () => {
     it("returns empty string when value is undefined", () => {
       expect(converter.convertToString(undefined)).to.be.eq("");
     });
+
+    it("returns default value when value is not a number", () => {
+      expect(converter.convertToString("not a number")).to.be.eq("0");
+    });
   });
 
-  it("convertFromString", () => {
-    expect(converter.convertFromString("100")).to.equal(100);
+  describe("convertFromString", () => {
+    it("returns valid value", () => {
+      expect(converter.convertFromString("100")).to.equal(100);
+    });
+
+    it("returns undefined if string is not a number", () => {
+      expect(converter.convertFromString("not a number")).to.be.undefined;
+    });
   });
 
   it("sortCompare", () => {
@@ -105,10 +115,20 @@ describe("FloatTypeConverter", () => {
     it("returns empty string when value is undefined", () => {
       expect(converter.convertToString(undefined)).to.be.eq("");
     });
+
+    it("returns default value when value is not a number", () => {
+      expect(converter.convertToString("not a number")).to.be.eq("0.0");
+    });
   });
 
-  it("convertFromString", () => {
-    expect(converter.convertFromString("100.0")).to.equal(100.0);
+  describe("convertFromString", () => {
+    it("return valid value", () => {
+      expect(converter.convertFromString("100.0")).to.equal(100.0);
+    });
+
+    it("returns undefined if string is not a number", () => {
+      expect(converter.convertFromString("not a number")).to.be.undefined;
+    });
   });
 
   it("sortCompare", () => {

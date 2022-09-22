@@ -21,6 +21,7 @@ export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
 export * from "./presentation-common/Utils";
 export * from "./presentation-common/PresentationIpcInterface";
+export * from "./presentation-common/LocalizationHelper";
 
 /**
  * @module RPC
@@ -37,7 +38,7 @@ export * from "./presentation-common/ElementProperties";
  * @module UnifiedSelection
  *
  * @docs-group-description UnifiedSelection
- * Types related to [unified selection]($docs/presentation/Unified-Selection/index.md).
+ * Types related to [unified selection]($docs/presentation/unified-selection/index.md).
  */
 export * from "./presentation-common/selection/SelectionScope";
 
@@ -45,7 +46,7 @@ export * from "./presentation-common/selection/SelectionScope";
  * @module Content
  *
  * @docs-group-description Content
- * Types related to presentation [content]($docs/presentation/Content/index.md).
+ * Types related to presentation [content]($docs/presentation/content/index.md).
  */
 export * from "./presentation-common/content/Category";
 export * from "./presentation-common/content/Content";
@@ -64,7 +65,7 @@ export * from "./presentation-common/content/ContentTraverser";
  * @module Hierarchies
  *
  * @docs-group-description Hierarchies
- * Types related to presentation [hierarchies]($docs/presentation/Hierarchies/index.md).
+ * Types related to presentation [hierarchies]($docs/presentation/hierarchies/index.md).
  */
 export * from "./presentation-common/hierarchy/Key";
 export * from "./presentation-common/hierarchy/Node";

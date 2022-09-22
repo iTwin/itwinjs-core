@@ -5,7 +5,7 @@
 @import "~@itwin/core-react/lib/cjs/core-react/index";
 
 $divider-color: $buic-background-toolbutton-stroke;
-$hovered-icon-color: $buic-foreground-primary-tone;
+$hovered-icon-color: $buic-foreground-primary;
 
 .map-manager-basemap {
   display: flex;
@@ -24,20 +24,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
     width: 100%;
     margin-top: 5px;
 
-    .map-transparency-popup-button {
-      background-color: transparent;
-      margin-left: 5px;
-      width: 40px;
-      border: none;
-      color: $buic-foreground-body;
-
-      &:hover {
-        color: $hovered-icon-color;
-      }
-    }
   }
 
   .map-manager-base-label {
+    margin-left: 2px;
     padding-right: 10px;
   }
 
@@ -51,15 +41,9 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       overflow: hidden;
     }
 
-    button.map-manager-base-item-visibility {
-      border: none;
-      margin-right: 4px;
-      background-color: transparent;
-      color: $buic-foreground-body;
 
-      &:hover {
-        color: $hovered-icon-color;
-      }
+    .map-manager-base-item-select {
+      width: 100%;  // makes the Select control fill empty space on the right
     }
 
     button.map-manager-base-settings-button {
@@ -69,6 +53,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
       color: $buic-foreground-body;
 
       &:hover {
+        background-color: transparent;
         color: $hovered-icon-color;
       }
     }

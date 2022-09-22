@@ -1,6 +1,144 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Add target info to NavigationPropertyInfo
+- `PresentationRpcInterface`: Enable response compression for certain operations.
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:53 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:37 GMT
+
+### Updates
+
+- Add support for nth level element selection scopes
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:57 GMT
+
+_Version update only_
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- Deprecated StyleOverrideRule, ImageIdOverrideRule, CheckboxRule and LabelOverrideRule
+- Documentation updates.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:47 GMT
+
+### Updates
+
+- Deprecate `PropertyGroupingValue`, `PropertyGroup.groupingValue` and `PropertyGroup.sortingValue`.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:02 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+_Version update only_
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+_Version update only_
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Removed deprecated rules for iModel.js 3.0.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- rename contextId -> iTwinId
+- Added 'BaseNodeKey.version' property and 'NodeKey.equals' function to compare keys taking their versions into account.
+- rename to @itwin/presentation-common
+- Added `excludedClasses` attribute to `ContentInstancesOfSpecificClassesSpecification` and `InstanceNodesOfSpecificClassesSpecification` specifications.
+- Added 'onlyIfNotHandled' property support to all content rule specifications
+- Update `SelectClassInfo.pathFromInputToSelectClass` type definition to match reality - the relationship may not always be set.
+- Clean up deprecated APIs
+- Added API to get properties of all elements.
+- Added `getContentSources` RPC to retrieve information about where content for specific types of elements comes from.
+- Fixed processing of merged content values under nested content field.
+- Remove ability to get multiple element properties over RPC.
+- Add `getContentInstanceKeys` RPC to efficiently get content instance keys.
+- Remove `priority` attribute from presentation request options type.
+- Optimize `KeySetJSON` size by compressing instance IDs.
+- Remove `PresentationRpcInterface.loadHierarchy`.
+- The `condition` attribute should be defined on both `ChildNodeRule` and `RootNodeRule`.
+- Added `ignoreCategories` parameter in `createFieldHierarchies` function for adding all of the nested properties to parent field's child fields without considering categories. 
+- Removed `PresentationUnitSystem`  in favor of `UnitSystemKey` from `@itwin/core-quantity`.
+- remove ClientRequestContext.current
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT

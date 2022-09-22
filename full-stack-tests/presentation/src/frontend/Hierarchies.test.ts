@@ -39,27 +39,27 @@ describe("Hierarchies", () => {
             ruleType: RuleTypes.RootNodes,
             specifications: [{
               specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "nodeType",
+              type: "nodeType1",
               label: "filter r1",
               nestedRules: [{
                 ruleType: RuleTypes.ChildNodes,
                 specifications: [{
                   specType: ChildNodeSpecificationTypes.CustomNode,
-                  type: "nodeType",
+                  type: "nodeType11",
                   label: "filter ch1",
                 }, {
                   specType: ChildNodeSpecificationTypes.CustomNode,
-                  type: "nodeType",
+                  type: "nodeType12",
                   label: "other ch2",
                 }, {
                   specType: ChildNodeSpecificationTypes.CustomNode,
-                  type: "nodeType",
+                  type: "nodeType13",
                   label: "other ch3",
                   nestedRules: [{
                     ruleType: RuleTypes.ChildNodes,
                     specifications: [{
                       specType: ChildNodeSpecificationTypes.CustomNode,
-                      type: "nodeType",
+                      type: "nodeType131",
                       label: "filter ch4",
                     }],
                   }],
@@ -67,21 +67,21 @@ describe("Hierarchies", () => {
               }],
             }, {
               specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "nodeType",
+              type: "nodeType2",
               label: "other r2",
             }, {
               specType: ChildNodeSpecificationTypes.CustomNode,
-              type: "nodeType",
+              type: "nodeType3",
               label: "other r3",
               nestedRules: [{
                 ruleType: RuleTypes.ChildNodes,
                 specifications: [{
                   specType: ChildNodeSpecificationTypes.CustomNode,
-                  type: "nodeType",
+                  type: "nodeType31",
                   label: "other ch5",
                 }, {
                   specType: ChildNodeSpecificationTypes.CustomNode,
-                  type: "nodeType",
+                  type: "nodeType32",
                   label: "filter ch6",
                 }],
               }],

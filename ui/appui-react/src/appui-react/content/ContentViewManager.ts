@@ -14,6 +14,8 @@ import { ContentControl } from "./ContentControl";
 import { ContentLayoutManager } from "./ContentLayoutManager";
 import { IModelApp } from "@itwin/core-frontend";
 import { ContentGroup } from "./ContentGroup";
+import { Logger } from "@itwin/core-bentley";
+import { UiFramework } from "../UiFramework";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
@@ -76,7 +78,7 @@ export class ContentViewManager {
     return this._activeContent;
   }
 
-  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined) {
+  private static getControlFromElement(content: React.ReactNode, activeContentGroup: ContentGroup | undefined, floatingControls: ContentControl[] | undefined, logIfNotFound = false) {
     if (floatingControls?.length) {
       const control = floatingControls.find((contentControl) => contentControl.reactNode === content);
       if (control)
@@ -89,6 +91,9 @@ export class ContentViewManager {
       if (activeContentControl)
         return activeContentControl;
     }
+
+    if (logIfNotFound)
+      Logger.logError(UiFramework.loggerCategory(this), `getControlFromElement: no control found for element`);
 
     return undefined;
   }
@@ -137,7 +142,7 @@ export class ContentViewManager {
 
         // istanbul ignore else
         const oldContentControl = this.getControlFromElement(oldContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
-        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls);
+        const activeContentControl = this.getControlFromElement(activeContent, activeContentGroup, activeFrontstageDef.floatingContentControls, true);
 
         // Only call setActiveView if going to or coming from a non-viewport ContentControl
         // istanbul ignore else

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureTransparency,
+  ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
@@ -23,26 +23,33 @@ import { MeshParams } from "../../../render/primitives/VertexTable";
 import { createBlankConnection } from "../../createBlankConnection";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
-  const args = new MeshArgs();
-  args.colors.initUniform(ColorDef.from(255, 0, 0, transparency));
-
-  if (mat instanceof RenderMaterial) {
-    args.material = mat;
-    args.texture = args.material.textureMapping?.texture;
-  } else {
-    args.texture = mat;
-  }
-
-  if (args.texture)
-    args.textureUv = [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ];
+  const colors = new ColorIndex();
+  colors.initUniform(ColorDef.from(255, 0, 0, transparency));
 
   const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
-  args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
+  const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
   for (const point of points)
-    args.points.add(point);
+    qpoints.add(point);
 
-  args.vertIndices = [0, 1, 2, 2, 1, 3];
-  args.isPlanar = true;
+  const args: MeshArgs = {
+    points: qpoints,
+    vertIndices: [0, 1, 2, 2, 1, 3],
+    isPlanar: true,
+    colors,
+    features: new FeatureIndex(),
+    fillFlags: FillFlags.None,
+  };
+
+  let texture;
+  if (mat instanceof RenderMaterial) {
+    args.material = mat;
+    texture = mat.textureMapping?.texture;
+  } else {
+    texture = mat;
+  }
+
+  if (texture)
+    args.textureMapping = { texture, uvParams: [ new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ] };
 
   const params = MeshParams.create(args);
   return IModelApp.renderSystem.createMesh(params)!;
@@ -101,7 +108,14 @@ describe("Surface transparency", () => {
   });
 
   function createMaterial(alpha?: number, texture?: RenderTexture, textureWeight?: number): RenderMaterial {
-    const material = IModelApp.renderSystem.createRenderMaterial({ alpha, textureMapping: texture ? { texture, weight: textureWeight } : undefined });
+    // eslint-disable-next-line deprecation/deprecation
+    const params = new RenderMaterial.Params();
+    params.alpha = alpha;
+    if (texture)
+      params.textureMapping = new TextureMapping(texture, new TextureMapping.Params({ textureWeight }));
+
+    // eslint-disable-next-line deprecation/deprecation
+    const material = IModelApp.renderSystem.createMaterial(params, imodel);
     expect(material).not.to.be.undefined;
     return material!;
   }

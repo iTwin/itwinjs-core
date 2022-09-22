@@ -11,6 +11,7 @@ import {
   WidgetControl, WidgetDef, WidgetProps,
 } from "../../appui-react";
 import TestUtils from "../TestUtils";
+import { SvgList } from "@itwin/itwinui-icons-react";
 
 // cSpell:ignore widgetstate
 
@@ -70,10 +71,54 @@ describe("WidgetDef", () => {
     expect(widgetDef.label).to.eq("label");
     expect(widgetDef.tooltip).to.eq("tooltip");
     expect(widgetDef.iconSpec).to.eq("icon-home");
-
     expect(widgetDef.badgeType).to.eq(BadgeType.TechnicalPreview);
+
+    widgetDef.iconSpec = "icon-lightbulb";
+    expect(widgetDef.iconSpec).to.eq("icon-lightbulb");
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.false;
   });
 
+  it("should work with react icon", () => {
+    const widgetProps: WidgetProps = {
+      defaultState: WidgetState.Open,
+      priority: 200,
+      iconSpec: <SvgList />,
+      label: "label",
+      tooltip: "tooltip",
+      isToolSettings: false,
+      fillZone: true,
+      isFloatingStateSupported: true,
+      isFloatingStateWindowResizable: true,
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.true;
+  });
+
+  it("should properly handle iconSpec set/get", () => {
+    const widgetProps: WidgetProps = {
+      defaultState: WidgetState.Open,
+      priority: 200,
+      iconSpec: "icon-lightbulb",
+      internalData: new Map<string,any>(),
+      label: "label",
+      tooltip: "tooltip",
+      isToolSettings: false,
+      fillZone: true,
+      isFloatingStateSupported: true,
+      isFloatingStateWindowResizable: true,
+    };
+    const widgetDef: WidgetDef = new WidgetDef(widgetProps);
+    expect(widgetDef.iconSpec).to.eq("icon-lightbulb");
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.false;
+
+    widgetDef.iconSpec = <SvgList />;
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.true;
+
+    widgetDef.iconSpec = "icon-home";
+    expect(widgetDef.iconSpec).to.eq("icon-home");
+    expect (React.isValidElement(widgetDef.iconSpec)).to.be.false;
+
+  });
   it("registerControl & widgetControl using same classId", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",

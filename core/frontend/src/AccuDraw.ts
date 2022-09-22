@@ -2133,7 +2133,6 @@ export class AccuDraw {
     let projectionVector = new Vector3d();
 
     if (perpendicular) {
-      // eslint-disable-next-line react-hooks/rules-of-hooks
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
         const axes = ThreeAxes.createFromMatrix3d(rMatrix);
@@ -2700,7 +2699,6 @@ export class AccuDraw {
       return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {
       this.setRotationMode(RotationMode.ACS);
       this.flags.baseRotation = RotationMode.ACS;
@@ -3084,6 +3082,7 @@ export class AccuDraw {
 
 /** Specify the rotation to return from [[AccuDrawHintBuilder.getContextRotation]].
  * @public
+ * @extensions
  */
 export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Face }
 
@@ -3096,6 +3095,7 @@ export enum ContextRotationId { Top, Front, Left, Bottom, Back, Right, View, Fac
  * through keyboard shortcuts.
  * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)*
  * @public
+ * @extensions
  */
 export class AccuDrawHintBuilder {
   private _flagOrigin = false;

@@ -2,6 +2,246 @@
   "name": "@itwin/appui-abstract",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/appui-abstract_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/appui-abstract_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/appui-abstract_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Do not filter calls to provideBackstageItems by stage criteria set when provider is registered."
+          },
+          {
+            "comment": "Add hideWithUiWhenFloating prop to widgets so that an app can opt into hiding specific floating widgets when the UI automatically hides."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/appui-abstract_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/appui-abstract_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/appui-abstract_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/appui-abstract_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/appui-abstract_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/appui-abstract_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/appui-abstract_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/appui-abstract_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/appui-abstract_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/appui-abstract_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement svg icons loading as a web component."
+          },
+          {
+            "comment": "Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items."
+          },
+          {
+            "comment": "Allow React icons to be user on Wedget tabs, backstage, and status bar items."
+          },
+          {
+            "comment": "Add ability to specify default widget size."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/appui-abstract_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/appui-abstract_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/appui-abstract_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/appui-abstract_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:46 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix missing parameter in UiManager.getWidgets call and pass provider to isSupportedStage function."
+          },
+          {
+            "comment": "Provide internal method to clear out all registered item providers for use in unit testing."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/appui-abstract_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/appui-abstract_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/appui-abstract_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/appui-abstract_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add onUnregister function to UiItemsProviderInterface to allow provider to do cleanup."
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename to @itwin/appui-abstract"
+          },
+          {
+            "comment": "remove ClientRequestContext and its subclasses"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Remove UiItemsArbiter."
+          },
+          {
+            "comment": "remove ClientRequestContext.current"
+          },
+          {
+            "comment": "Add non-static class to handle UiSync messages."
+          },
+          {
+            "comment": "Refactored part of AccuDraw UI & Providing AccuDraw UI documentation"
+          },
+          {
+            "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined."
+          },
+          {
+            "comment": "Deprecate and promote apis"
+          },
+          {
+            "comment": "Deprecate obsolete APIs. Publish beta APIs from last release."
+          },
+          {
+            "comment": "Deprecate UI 1.0 props"
+          },
+          {
+            "comment": "Add comment about isPressed property."
+          },
+          {
+            "comment": "Allow widgets supplied by a UiItemsProvider to specify a default state of floating."
+          },
+          {
+            "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js"
+          },
+          {
+            "comment": "Rename ui directories to match new package names."
+          },
+          {
+            "comment": "Fix bug that sets the icon on MessageBox.NoSymbol the Success icon."
+          },
+          {
+            "comment": "Update to React 17"
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally."
+          },
+          {
+            "comment": "Remove old aribiter related functions that are not used."
+          },
+          {
+            "comment": "Add BaseUiItemsProvider class"
+          },
+          {
+            "comment": "Replaced ui-core Slider with one from iTwinUi-react. "
+          },
+          {
+            "comment": "Add support for widget tab icons in UI-2"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.28",
       "tag": "@itwin/appui-abstract_v2.19.28",
       "date": "Wed, 12 Jan 2022 14:52:38 GMT",

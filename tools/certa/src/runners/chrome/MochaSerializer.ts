@@ -24,7 +24,14 @@ class MochaSerializer {
 
   public static createHandle(raw: MochaObj, isPrimary: boolean) {
     let $$index = this._registry.indexOf(raw);
-    const $$typeName = raw.constructor.name;
+    // Browser side of mocha is webpacked so the constructor name has an added suffix for example `Test` is converted into `Test$4`.
+    // This is not the case is node side of mocha, so an error is thrown because of this mismatch. The `.replace()` is there to strip that suffix
+    let $$typeName: string;
+    if (raw instanceof Mocha.Suite) $$typeName = "Suite";
+    else if (raw instanceof Mocha.Test) $$typeName = "Test";
+    else if (raw instanceof Mocha.Hook) $$typeName = "Hook";
+    else throw new Error("Unexpected instance of Mocha");
+
     if ($$index < 0) {
       $$index = this._registry.push(raw) - 1;
       // This is a new instance, so we also need to include its properties

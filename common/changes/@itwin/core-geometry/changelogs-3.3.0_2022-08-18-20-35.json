@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "type": "none",
+      "packageName": "@itwin/core-geometry"
+    }
+  ],
+  "packageName": "@itwin/core-geometry",
+  "email": "aruniverse@users.noreply.github.com"
+}

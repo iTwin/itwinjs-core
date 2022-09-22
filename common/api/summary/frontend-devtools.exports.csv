@@ -10,6 +10,7 @@ beta;AttachArcGISMapLayerByUrlTool
 beta;AttachCesiumAssetTool 
 beta;AttachMapLayerTool 
 beta;AttachMapOverlayTool 
+beta;AttachModelMapLayerTool 
 beta;AttachRealityModelTool 
 beta;AttachTileURLMapLayerByUrlTool 
 beta;AttachWmsMapLayerByUrlTool 
@@ -21,6 +22,7 @@ beta;ChangeBackgroundColorTool
 beta;ChangeCameraTool 
 beta;ChangeEmphasisSettingsTool 
 beta;ChangeFlashSettingsTool 
+beta;ChangeHiliteModeTool 
 beta;ChangeHiliteSettingsTool 
 beta;class ChangeHiliteTool 
 beta;class ChangePlanProjectionSettingsTool 
@@ -69,6 +71,7 @@ beta;DiagnosticsPanel
 beta;DiagnosticsPanelProps
 beta;class DisplayStyleTool 
 beta;DumpPlanProjectionSettingsTool 
+beta;DumpSelectionSetTool 
 beta;EdgeDetectionEffect 
 beta;ElementIdFromSourceAspectIdTool 
 beta;EmbossEffect 
@@ -142,6 +145,7 @@ beta;class RenderTargetDebugControlToggleTool
 beta;class RenderTargetDebugControlTool 
 beta;ReorderMapLayers 
 beta;ReportWebGLCompatibilityTool 
+beta;ReverseScheduleScriptTool 
 beta;SaturationConfig 
 beta;SaturationEffect 
 beta;SaveRealityModelTool 
@@ -166,6 +170,7 @@ beta;SetRealityModelColorTool
 beta;SetRealityModelEmphasizedTool 
 beta;SetRealityModelLocateTool 
 beta;SetRealityModelTransparencyTool 
+beta;SetScheduleScriptTool 
 beta;SharpenEffect 
 beta;SharpnessEffect 
 beta;ShowTileVolumesTool 

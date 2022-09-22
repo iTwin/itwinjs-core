@@ -4,36 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { AccessToken, assert, GuidString } from "@itwin/core-bentley";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
+import { AccessToken, assert, GuidString, Logger } from "@itwin/core-bentley";
+import { NodeCliAuthorizationClient } from "@itwin/node-cli-authorization";
 import { AccessTokenAdapter, BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHostConfiguration, RequestNewBriefcaseArg } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, IModelHost, RequestNewBriefcaseArg } from "@itwin/core-backend";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps } from "@itwin/core-common";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelsClient, NamedVersion } from "@itwin/imodels-client-authoring";
+import { loggerCategory } from "./Transformer";
 
 export class IModelTransformerTestAppHost {
   public static iModelClient?: IModelsClient;
 
   public static async startup(): Promise<void> {
-    const iModelHost = new IModelHostConfiguration();
-    IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
-    iModelHost.hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
-
-    const opt = {
-      electronHost: {
-        developmentServer: process.env.NODE_ENV === "development",
-      },
-      nativeHost: {
-        applicationName: "imodel-transformer-test-app",
-      },
-      iModelHost,
-    };
-
-    await ElectronHost.startup(opt);
+    IModelTransformerTestAppHost.iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
+    const hubAccess = new BackendIModelsAccess(IModelTransformerTestAppHost.iModelClient);
+    await IModelHost.startup({ hubAccess });
   }
 
-  private static _authClient: ElectronMainAuthorization | undefined;
+  private static _authClient: NodeCliAuthorizationClient | undefined;
 
   /** Similar to get `IModelHost.authorizationClient.getAccessToken()` but lazily
    * initializes auth, so users aren't prompted to sign in unless a hub-accessing feature is used.
@@ -47,23 +35,13 @@ export class IModelTransformerTestAppHost {
         "An online-only interaction was requested, but the required environment variables haven't been configured\n"
         + "Please see the .env.template file on how to set up environment variables."
       );
-      return new Promise<AccessToken>(async (resolve, reject) => {
-        const client = new ElectronMainAuthorization({
-          clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-          redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-          scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-        });
-        this._authClient = client;
-
-        ElectronMainAuthorization.onUserStateChanged.addOnce((token) => {
-          if (token !== "") {
-            resolve(token);
-          } else {
-            reject(new Error("Failed to sign in"));
-          }
-        });
-        this._authClient.signIn().catch((err) => reject(err));
+      const client = new NodeCliAuthorizationClient({
+        clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
+        redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
+        scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
       });
+      await client.signIn();
+      this._authClient = client;
     }
     return this._authClient.getAccessToken();
   }
@@ -105,13 +83,31 @@ export namespace IModelHubUtils {
     if (!IModelTransformerTestAppHost.iModelClient)
       throw new Error("IModelTransformerTestAppHost.startup has not been called.");
 
-    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({iModelId, authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken)})) {
+    for await (const namedVersion of IModelTransformerTestAppHost.iModelClient.namedVersions.getRepresentationList({ iModelId, authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken) })) {
       func(namedVersion);
     }
   }
 
-  export async function downloadAndOpenBriefcase(briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(briefcaseArg);
+  export async function downloadAndOpenBriefcase(briefcaseArg: Omit<RequestNewBriefcaseArg, "accessToken">): Promise<BriefcaseDb> {
+    const PROGRESS_FREQ_MS = 2000;
+    let nextProgressUpdate = Date.now() + PROGRESS_FREQ_MS;
+
+    const briefcaseProps =
+      BriefcaseManager.getCachedBriefcases(briefcaseArg.iModelId)[0] ??
+      (await BriefcaseManager.downloadBriefcase({
+        ...briefcaseArg,
+        accessToken: await IModelTransformerTestAppHost.acquireAccessToken(),
+        onProgress(loadedBytes, totalBytes) {
+          if (totalBytes !== 0 && Date.now() > nextProgressUpdate || loadedBytes === totalBytes) {
+            if (loadedBytes === totalBytes) Logger.logInfo(loggerCategory, "Briefcase download completed");
+            const asMb = (n: number) => (n / (1024 * 1024)).toFixed(2);
+            if (loadedBytes < totalBytes) Logger.logInfo(loggerCategory, `Downloaded ${asMb(loadedBytes)} of ${asMb(totalBytes)}`);
+            nextProgressUpdate = Date.now() + PROGRESS_FREQ_MS;
+          }
+          return 0;
+        },
+      }));
+
     return BriefcaseDb.open({
       fileName: briefcaseProps.fileName,
       readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,

@@ -11,7 +11,7 @@ import { Clipper } from "../clipping/ClipUtils";
 import { BeJSONFunctions, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
@@ -20,6 +20,7 @@ import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMo
 import { CurveIntervalRole, CurveLocationDetail } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
@@ -104,7 +105,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** Clone the LineSegment3d */
   public clone(): LineSegment3d { return LineSegment3d.create(this._point0, this._point1); }
   /** Clone and apply transform to the clone. */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): LineSegment3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -322,7 +323,41 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): LineSegment3d {
     return LineSegment3d.create(this.fractionToPoint(fractionA), this.fractionToPoint(fractionB));
+  }
+  /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+   public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    // (This is cheap -- don't bother testing for fraction0===fraction1)
+    if (!transform){
+      const range = Range3d.create();
+      range.extendInterpolated (this._point0, fraction0, this._point1);
+      range.extendInterpolated (this._point0, fraction1, this._point1);
+      return range;
+    }
+    const point0 = this.fractionToPoint (fraction0);
+    const point1 = this.fractionToPoint (fraction1);
+    if (transform){
+      transform.multiplyPoint3d (point0, point0);
+      transform.multiplyPoint3d (point1, point1);
+    }
+    return Range3d.create (point0, point1);
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const offsetVec = Vector3d.createStartEnd(this._point0, this._point1);
+    if (offsetVec.normalizeInPlace()) {
+      offsetVec.rotate90CCWXY(offsetVec);
+      const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
+      return LineSegment3d.create(this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist));
+    }
+    return undefined;
   }
 }

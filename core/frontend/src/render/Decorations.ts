@@ -12,6 +12,7 @@ import { GraphicList, RenderGraphic } from "./RenderGraphic";
 
 /** A set of [[RenderGraphic]]s and [[CanvasDecoration]]s produced by [[Tool]]s and [[Decorator]]s, used to decorate the contents of a [[Viewport]].
  * @public
+ * @extensions
  */
 export class Decorations implements IDisposable {
   private _skyBox?: RenderGraphic;

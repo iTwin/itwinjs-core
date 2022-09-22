@@ -7,14 +7,17 @@
  */
 
 import {
-  DiagnosticsHandler, DiagnosticsLogEntry, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs,
+  ClientDiagnostics, ClientDiagnosticsHandler, DiagnosticsLogEntry, DiagnosticsLoggerSeverity, DiagnosticsLogMessage, DiagnosticsScopeLogs,
 } from "@itwin/presentation-common";
 
 /**
- * @alpha
+ * A function which logs messages to the console.
+ * @beta
  */
-export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]) {
-  handleDiagnosticLogs(scopeLogs, (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
+export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics) {
+  // eslint-disable-next-line no-console
+  diagnostics.backendVersion && console.log(`Backend version: ${diagnostics.backendVersion}`);
+  diagnostics.logs && handleDiagnosticLogs(diagnostics.logs, (msg: DiagnosticsLogMessage, stack: DiagnosticsScopeLogs[]) => {
     /* note: we're duplicating the message if it's logged at both editor and dev severity levels */
     const str = buildLogMessageString(msg, stack);
     if (msg.severity.editor)
@@ -25,11 +28,12 @@ export function consoleDiagnosticsHandler(scopeLogs: DiagnosticsScopeLogs[]) {
 }
 
 /**
- * @alpha
+ * A function which calls all diagnostics handlers passed to it.
+ * @beta
  */
-export function createCombinedDiagnosticsHandler(handlers: DiagnosticsHandler[]) {
-  return (scopeLogs: DiagnosticsScopeLogs[]) => {
-    handlers.forEach((handler) => handler(scopeLogs));
+export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]) {
+  return (diagnostics: ClientDiagnostics) => {
+    handlers.forEach((handler) => handler(diagnostics));
   };
 }
 

@@ -19,6 +19,7 @@ import { System } from "./render/webgl/System";
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
  * @public
+ * @extensions
  */
 export interface Decorator extends ViewportDecorator {
   /** If the [[decorate]] method created pickable graphics, return true if the supplied Id is from this Decorator.
@@ -62,6 +63,7 @@ export interface Decorator extends ViewportDecorator {
 
 /** Argument for [[ViewManager.onSelectedViewportChanged]]
  * @public
+ * @extensions
  */
 export interface SelectedViewportChangedArgs {
   current?: ScreenViewport;
@@ -85,6 +87,7 @@ export interface ToolTipProvider {
  *
  * The ViewManager controls the render loop, which causes the contents of each registered [[Viewport]] to update on the screen.
  * @public
+ * @extensions
  */
 export class ViewManager implements Iterable<ScreenViewport> {
   public inDynamicsMode = false;
@@ -142,6 +145,13 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.decorators.length = 0;
     this.toolTipProviders.length = 0;
     this._selectedView = undefined;
+  }
+
+  /** Returns true if the specified viewport is currently being managed by this ViewManager.
+   * @see [[addViewport]] to enable management of a viewport and [[dropViewport]] to disable it.
+   */
+  public hasViewport(viewport: ScreenViewport) {
+    return this._viewports.includes(viewport);
   }
 
   /** Called after the selected view changes.
@@ -259,7 +269,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @note raises onViewOpen event with newVp.
    */
   public addViewport(newVp: ScreenViewport): BentleyStatus {
-    if (this._viewports.includes(newVp)) // make sure its not already added
+    if (this.hasViewport(newVp)) // make sure its not already added
       return BentleyStatus.ERROR;
 
     newVp.setEventController(new EventController(newVp)); // this will direct events to the viewport
@@ -350,6 +360,8 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public onSelectionSetChanged(_iModel: IModelConnection) {
     for (const vp of this)
       vp.markSelectionSetDirty();
+
+    IModelApp.requestNextAnimation();
   }
 
   /** @internal */

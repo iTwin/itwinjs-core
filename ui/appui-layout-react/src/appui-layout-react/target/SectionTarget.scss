@@ -1,0 +1,50 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/themecolors";
+@import "variables";
+
+.nz-target-sectionTarget {
+  $section-background: $buic-background-1;
+
+  @include nz-widget-target;
+
+  &.nz-horizontal {
+    flex-direction: row;
+  }
+
+  &.nz-vertical {
+    flex-direction: column;
+  }
+
+  >.nz-section {
+    flex: 1;
+    background-color: $section-background;
+    pointer-events: none;
+
+    &.nz-target {
+      background-color: $nz-widget-target-background;
+    }
+  }
+
+  >.nz-border {
+    flex: 0 0 $nz-widget-target-border-size;
+    background-color: $nz-widget-target-border-color;
+    pointer-events: none;
+  }
+
+  &.nz-hidden {
+    display: none;
+  }
+
+  &.nz-targeted {
+    @include nz-targeted-widget-target;
+
+    >.nz-section {
+      &.nz-target {
+        background-color: $nz-opaque-outline-color;
+      }
+    }
+  }
+}

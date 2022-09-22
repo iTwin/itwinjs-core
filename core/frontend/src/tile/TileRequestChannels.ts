@@ -44,6 +44,7 @@ class ElementGraphicsChannel extends TileRequestChannel {
  * @see [[TileAdmin.channels]] for the channels configured for use with the iTwin.js display system.
  * @see [[TileRequestChannels.getForHttp]] for the most typical way of obtaining or registering a channel.
  * @public
+ * @extensions
  */
 export class TileRequestChannels {
   /** @internal */
@@ -75,17 +76,11 @@ export class TileRequestChannels {
       concurrency: this.rpcConcurrency,
       usesHttp: undefined === rpcConcurrency,
       cacheMetadata,
+      cacheConcurrency: this.httpConcurrency,
     });
 
     for (const channel of this.iModelChannels)
       this.add(channel);
-  }
-
-  /** Lazily called by [[TileAdmin]] once it can determine whether a cloud storage cache is configured.
-   * @internal
-   */
-  public enableCloudStorageCache(): void {
-    this.add(this.iModelChannels.enableCloudStorageCache(this.httpConcurrency));
   }
 
   /** The number of registered channels. */

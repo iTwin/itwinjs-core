@@ -13,6 +13,7 @@ import { GlobalLocation } from "./ViewGlobalLocation";
 
 /** Provides an interface to the [Bing Maps location services](https://docs.microsoft.com/en-us/bingmaps/rest-services/locations/).
  * @public
+ * @extensions
  */
 export class BingLocationProvider {
   private _locationRequestTemplate: string;

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@itwin/core-geometry";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
+  IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
   Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -15,6 +15,7 @@ import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
 import { SavedViewPicker } from "./SavedViews";
+import { CameraPathsMenu } from "./CameraPaths";
 import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
 import { Surface } from "./Surface";
@@ -24,25 +25,10 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
-import { openIModel } from "./openIModel";
+import { openIModel, OpenIModelProps } from "./openIModel";
+import { HubPicker } from "./HubPicker";
 
 // cspell:ignore savedata topdiv savedview viewtop
-
-function saveImage(vp: Viewport) {
-  const buffer = vp.readImageBuffer({ size: new Point2d(768, 768) });
-  if (undefined === buffer) {
-    alert("Failed to read image");
-    return;
-  }
-
-  const url = imageBufferToPngDataUrl(buffer, false);
-  if (undefined === url) {
-    alert("Failed to produce PNG");
-    return;
-  }
-
-  openImageDataUrlInNewWindow(url, "Saved View");
-}
 
 async function zoomToSelectedElements(vp: Viewport) {
   const elems = vp.iModel.selectionSet.elements;
@@ -56,17 +42,6 @@ export class ZoomToSelectedElementsTool extends Tool {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp)
       await zoomToSelectedElements(vp);
-
-    return true;
-  }
-}
-
-export class SaveImageTool extends Tool {
-  public static override toolId = "SaveImage";
-  public override async run(_args: any[]): Promise<boolean> {
-    const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      saveImage(vp);
 
     return true;
   }
@@ -227,6 +202,24 @@ export class Viewer extends Window {
       },
     }));
 
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue9e0", // cloud-download
+      tooltip: "Open iModel from hub",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new HubPicker(container, async (iModelId, iTwinId) => {
+          alert(`About to download and open hub iModel. Note that this could take quite some time without any feedback.`);
+          await this.openIModel({
+            iModelId,
+            iTwinId,
+            writable: this.surface.openReadWrite,
+          });
+          picker.close();
+        });
+        await picker.populate();
+        return picker;
+      },
+    });
+
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
     this._viewPicker.element.addEventListener("click", () => this.toolBar.close());
@@ -257,6 +250,16 @@ export class Viewer extends Window {
       tooltip: "External saved views",
       createDropDown: async (container: HTMLElement) => {
         const picker = new SavedViewPicker(this.viewport, container, this);
+        await picker.populate();
+        return picker;
+      },
+    });
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue932",
+      tooltip: "Saved camera paths",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new CameraPathsMenu(this.viewport, container);
         await picker.populate();
         return picker;
       },
@@ -375,20 +378,28 @@ export class Viewer extends Window {
   private updateActiveSettings(): void {
     // NOTE: First category/model is fine for testing purposes...
     const view = this.viewport.view;
+    if (!view.iModel.isBriefcaseConnection())
+      return;
 
-    IModelApp.toolAdmin.activeSettings.category = undefined;
-    for (const catId of view.categorySelector.categories) {
-      IModelApp.toolAdmin.activeSettings.category = catId;
-      break;
+    const settings = view.iModel.editorToolSettings;
+    if (undefined === settings.category || !view.viewsCategory(settings.category)) {
+      settings.category = undefined;
+      for (const catId of view.categorySelector.categories) {
+        settings.category = catId;
+        break;
+      }
     }
 
-    if (view.is2d()) {
-      IModelApp.toolAdmin.activeSettings.model = view.baseModelId;
-    } else if (view.isSpatialView()) {
-      IModelApp.toolAdmin.activeSettings.model = undefined;
-      for (const modId of view.modelSelector.models) {
-        IModelApp.toolAdmin.activeSettings.model = modId;
-        break;
+    if (undefined === settings.model || !view.viewsModel(settings.model)) {
+      settings.model = undefined;
+      if (view.is2d()) {
+        settings.model = view.baseModelId;
+      } else if (view.isSpatialView()) {
+        settings.model = undefined;
+        for (const modId of view.modelSelector.models) {
+          settings.model = modId;
+          break;
+        }
       }
     }
   }
@@ -428,12 +439,13 @@ export class Viewer extends Window {
     this._viewPicker.populate(this.views);
   }
 
-  private async resetIModel(filename: string): Promise<void> {
+  private async resetIModel(props: OpenIModelProps): Promise<void> {
+    const { fileName, iModelId } = props;
     let newIModel: IModelConnection;
-    const sameFile = filename === this._imodel.key;
+    const sameFile = (fileName !== undefined && fileName === this._imodel.key) || (iModelId !== undefined && iModelId === this._imodel.iModelId);
     if (!sameFile) {
       try {
-        newIModel = await openIModel(filename, this.surface.openReadWrite);
+        newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
       } catch (err: any) {
         alert(err.toString());
         return;
@@ -446,7 +458,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await openIModel(filename, this.surface.openReadWrite);
+      newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -454,18 +466,18 @@ export class Viewer extends Window {
     await this.openView(view);
   }
 
-  public async openFile(filename?: string): Promise<void> {
-    return undefined !== filename ? this.openIModel(filename) : this.selectIModel();
+  public async openFile(fileName?: string): Promise<void> {
+    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : this.selectIModel();
   }
 
   private async selectIModel(): Promise<void> {
-    const filename = await this.surface.selectFileName();
-    return undefined !== filename ? this.openIModel(filename) : Promise.resolve();
+    const fileName = await this.surface.selectFileName();
+    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
   }
 
-  private async openIModel(filename: string): Promise<void> {
+  private async openIModel(props: OpenIModelProps): Promise<void> {
     try {
-      await this.resetIModel(filename);
+      await this.resetIModel(props);
       setTitle(this._imodel);
     } catch {
       alert("Error - could not open file.");

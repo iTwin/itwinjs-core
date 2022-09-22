@@ -7,12 +7,12 @@
  */
 
 import {
-  AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant,
-  containerTypeToString, CustomAttributeClass, CustomAttributeContainerProps, EntityClass, Enumeration, Format, formatTraitsToArray,
-  formatTypeToString, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass,
-  RelationshipConstraint, Schema, SchemaItem, schemaItemTypeToString, scientificTypeToString, showSignOptionToString, strengthDirectionToString,
-  strengthToString, StructProperty, Unit,
+  AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttributeClass,
+  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon,
+  primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
+  SchemaItem, schemaItemTypeToString, strengthDirectionToString, strengthToString, StructProperty, Unit,
 } from "@itwin/ecschema-metadata";
+import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";

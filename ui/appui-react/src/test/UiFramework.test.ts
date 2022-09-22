@@ -35,13 +35,27 @@ describe("UiFramework localStorage Wrapper", () => {
   });
 
   describe("UiFramework basic Initialization", () => {
-    it("should initialize default StateManager", async () => {
+    it("should initialize redux to UI 2", async () => {
       await UiFramework.initialize(undefined);
-      const uiVersion = "2";
+      expect(UiFramework.uiVersion).to.eql("2");
+      UiFramework.terminate();
+    });
+
+    it("should allow initialize to UI 1", async () => {
+      await UiFramework.initialize(undefined, undefined, true);
+      expect(UiFramework.uiVersion).to.eql("1");
+      UiFramework.terminate();
+    });
+
+    it("should initialize default StateManager to 2 and change to 1", async () => {
+      await UiFramework.initialize(undefined);
+      expect(UiFramework.uiVersion).to.eql("2");
+      const uiVersion = "1";
       UiFramework.setUiVersion(uiVersion);
       expect(UiFramework.uiVersion).to.eql(uiVersion);
       UiFramework.terminate();
     });
+
   });
 
   describe("UiFramework", () => {

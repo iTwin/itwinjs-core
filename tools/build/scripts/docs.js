@@ -12,6 +12,7 @@ const cpx = require("cpx2");
 const fs = require("fs");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { validateTags } = require("./utils/validateTags");
+const { addSourceDir } = require("./utils/addSourceDir");
 const argv = require("yargs").argv;
 
 // Makes the script crash on unhandled rejections instead of silently
@@ -87,6 +88,9 @@ spawn(require.resolve(".bin/typedoc"), args).then((code) => {
   if (fs.existsSync(path.join(process.cwd(), 'CHANGELOG.json'))) {
     cpx.copySync(path.join(process.cwd(), 'CHANGELOG.json'), outputDir);
   }
+
+  // Append the directory of the package to the output
+  addSourceDir(json, process.cwd());
 
   if (code === 0) {
     let tagErrors = validateTags(json);

@@ -10,6 +10,7 @@
  * @note All logger categories in this package start with the `core-frontend` prefix.
  * @see [Logger]($bentley)
  * @public
+ * @extensions
  */
 export enum FrontendLoggerCategory {
   Package = "core-frontend",
@@ -33,4 +34,12 @@ export enum FrontendLoggerCategory {
    * @alpha
    */
   RealityData = "core-frontend.RealityData",
+
+  /** The logger category used for creating and displaying graphics. */
+  Render = "core-frontend.Render",
+
+  /** The logger category used for loading and executing Extensions
+   * @alpha
+   */
+  Extensions = "core-frontend.Extensions",
 }

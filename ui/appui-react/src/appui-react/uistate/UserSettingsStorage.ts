@@ -22,6 +22,7 @@ export class UserSettingsStorage implements UiStateStorage {
     if (accessToken === "")
       return { status: UiStateStorageStatus.AuthorizationError };
 
+    // istanbul ignore next
     if (!IModelApp.userPreferences)
       return { status: UiStateStorageStatus.Uninitialized };
     const result = await IModelApp.userPreferences.get({ accessToken, key: `${namespace}.${name}` });
@@ -32,6 +33,7 @@ export class UserSettingsStorage implements UiStateStorage {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiStateStorageResult> {
+    // istanbul ignore next
     if (!IModelApp.userPreferences)
       return { status: UiStateStorageStatus.Uninitialized };
 
@@ -47,6 +49,7 @@ export class UserSettingsStorage implements UiStateStorage {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiStateStorageResult> {
+    // istanbul ignore next
     if (!IModelApp.userPreferences)
       return { status: UiStateStorageStatus.Uninitialized };
 

@@ -142,6 +142,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   constructor(props: CommonProps) {
     super(props);
 
+    FrontstageManager.activeFrontstageDef?.updateWidgetDefs();
     this._frontstageDef = FrontstageManager.activeFrontstageDef;
 
     // Get the id and nineZoneProps for the current FrontstageDef

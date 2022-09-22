@@ -18,16 +18,16 @@ iModels have a property called [Project Extents](../learning/glossary#project-ex
 
 ## The format of information in an iModel is defined by BIS
 
-The [Base Infrastructure Schemas](../bis/index) are a family of [domain-specific](../bis/intro/schemas-domains) class definitions that define the properties and relationships of entities within an iModel. All information held in an iModel is an instance of some class defined in BIS, inserted using the iTwin.js API.
+The [Base Infrastructure Schemas](../bis/index) are a family of [domain-specific](../bis/guide/fundamentals/schemas-domains) class definitions that define the properties and relationships of entities within an iModel. All information held in an iModel is an instance of some class defined in BIS, inserted using the iTwin.js API.
 
 ## An iModel is comprised of many Models
 
-Within an iModel, logical subdivisions of information are defined by [Models](../bis/intro/model-fundamentals).
+Within an iModel, logical subdivisions of information are defined by [Models](../bis/guide/fundamentals/model-fundamentals).
 There are many types of Models, corresponding to the type of information they hold (e.g. spatial, functional, drawing, etc.) There can be many instances of each type of Model in the same iModel.
 
 ## A Model is comprised of many Elements
 
-[Elements](../bis/intro/element-fundamentals) are the smallest independently addressable building block in BIS.
+[Elements](../bis/guide/fundamentals/element-fundamentals) are the smallest independently addressable building block in BIS.
 Every Element is *owned by* (i.e. *contained in*) one and only one Model.
 
 There are many types of Elements, corresponding to the type of information they contain. Only [GeometricElement]($backend)s, held in [GeometricModel]($backend)s, are visible in [Views](../learning/frontend/views).

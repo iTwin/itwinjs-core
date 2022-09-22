@@ -1,0 +1,48 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/speed";
+@import "variables";
+
+.nz-outline-sectionOutline {
+  background-color: $nz-outline-color;
+
+  &.nz-horizontal {
+    transition: width $iui-speed-fast ease-in;
+    height: 100%;
+    width: 50%;
+    top: 0;
+
+    &.nz-0 {
+      left: 0;
+    }
+
+    &.nz-1 {
+      right: 0;
+    }
+
+    &.nz-hidden {
+      width: 0;
+    }
+  }
+
+  &.nz-vertical {
+    transition: height $iui-speed-fast ease-in;
+    width: 100%;
+    height: 50%;
+    left: 0;
+
+    &.nz-0 {
+      top: 0;
+    }
+
+    &.nz-1 {
+      bottom: 0;
+    }
+
+    &.nz-hidden {
+      height: 0;
+    }
+  }
+}

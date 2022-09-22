@@ -46,4 +46,6 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public async readExternalSavedViews(_filename: string): Promise<string> { return this.forward(arguments); }
   public async getMatchingFiles(_rootDir: string, _pattern: string): Promise<string> { return this.forward(arguments); }
+
+  public async getAccessToken(): Promise<string> { return this.forward(arguments); }
 }

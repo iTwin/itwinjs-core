@@ -70,7 +70,7 @@ describe("Descriptor", () => {
 
     it("creates valid Descriptor from valid JSON", () => {
       const category = createTestCategoryDescription();
-      const ids = ["0x1", "0x2", "0x3", "0x4"];
+      const ids = ["0x1", "0x2", "0x3", "0x4", "0x5"];
       const testRelatedClassInfo: RelatedClassInfoJSON<string> = {
         sourceClassInfo: ids[1],
         targetClassInfo: ids[2],
@@ -89,6 +89,7 @@ describe("Descriptor", () => {
           [ids[1]]: { name: "name2", label: "label2" },
           [ids[2]]: { name: "name3", label: "label3" },
           [ids[3]]: { name: "name4", label: "label4" },
+          [ids[4]]: { name: "name5", label: "label5" },
         },
         selectClasses: [{
           selectClassInfo: ids[0],
@@ -152,6 +153,26 @@ describe("Descriptor", () => {
             }],
           }],
           autoExpand: false,
+        }, {
+          name: "test-properties-field-with-navigation-property-info",
+          label: "Test Properties Field With Navigation Property Info",
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "navigation" },
+          category: category.name,
+          isReadonly: false,
+          priority: 0,
+          properties: [{
+            property: {
+              classInfo: ids[1],
+              name: "PropertyName",
+              type: "TestPropertyType",
+              navigationPropertyInfo: {
+                classInfo: ids[3],
+                isForwardRelationship: true,
+                targetClassInfo: ids[4],
+                isTargetPolymorphic: true,
+              },
+            },
+          }],
         }],
       };
       const descriptor = Descriptor.fromJSON(json);

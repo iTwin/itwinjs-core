@@ -66,15 +66,116 @@ export class WidgetHost {
    * @internal
    */
   public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[], frontstageApplicationData?: any
+    allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any
   ): void {
-    widgetDefs.push(...this._widgetDefs);
-    this._dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, section, frontstageApplicationData)
-      ?.filter((widgetDef) => {
-        const duplicate = widgetDefs.find((wDef) => wDef.id === widgetDef.id);
-        return !duplicate;
-      });
-    this._dynamicWidgetDefs && widgetDefs.push(...this._dynamicWidgetDefs);
+    // get widgetDefs not already in allStageWidgetDefs and add them
+    const uniqueWidgets = this._widgetDefs.filter((widgetDef) => {
+      return !allStageWidgetDefs.find((wDef) => wDef.id === widgetDef.id);
+    });
+
+    allStageWidgetDefs.push(...uniqueWidgets);
+
+    let dynamicWidgetDefs: readonly WidgetDef[] | undefined;
+
+    if (UiFramework.uiVersion === "1") {
+      // istanbul ignore next
+      if (location in ZoneLocation) {
+        switch (location) {
+          case ZoneLocation.CenterLeft:
+            {
+              const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.CenterLeft, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...middleDynamicWidgetDefs];
+            }
+            break;
+          case ZoneLocation.BottomLeft:
+            {
+              const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.BottomLeft, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...bottomDynamicWidgetDefs];
+            }
+            break;
+          case ZoneLocation.CenterRight:
+            {
+              const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.CenterRight, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...middleDynamicWidgetDefs];
+            }
+            break; // added to BottomRight
+          case ZoneLocation.BottomRight:
+            {
+              const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.BottomRight, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...bottomDynamicWidgetDefs];
+            }
+            break;
+        }
+      } else if ((location in StagePanelLocation) && undefined !== section) {
+        switch (section) {
+          case StagePanelSection.Start: {
+            dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, frontstageApplicationData) ?? [];
+            break;
+          }
+          case StagePanelSection.Middle:
+            const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, frontstageApplicationData) ?? [];
+            dynamicWidgetDefs = [...middleDynamicWidgetDefs];
+            break; // added to BottomLeft
+          case StagePanelSection.End: {
+            const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, frontstageApplicationData) ?? [];
+            dynamicWidgetDefs = [...bottomDynamicWidgetDefs];
+            break;
+          }
+        }
+      }
+
+    } else {
+      if (location in ZoneLocation) {
+        switch (location) {
+          case ZoneLocation.CenterLeft:
+            break; // added to BottomLeft
+          case ZoneLocation.BottomLeft:
+            {
+              const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.CenterLeft, section, frontstageApplicationData) ?? [];
+              const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.BottomLeft, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...middleDynamicWidgetDefs, ...bottomDynamicWidgetDefs];
+            }
+            break;
+          case ZoneLocation.CenterRight:
+            break; // added to BottomRight
+          case ZoneLocation.BottomRight:
+            {
+              const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.CenterRight, section, frontstageApplicationData) ?? [];
+              const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, ZoneLocation.BottomRight, section, frontstageApplicationData) ?? [];
+              dynamicWidgetDefs = [...middleDynamicWidgetDefs, ...bottomDynamicWidgetDefs];
+            }
+            break;
+        }
+      } else
+      // istanbul ignore else
+      if ((location in StagePanelLocation) && undefined !== section) {
+        switch (section) {
+          case StagePanelSection.Start: {
+            dynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, frontstageApplicationData) ?? [];
+            break;
+          }
+          case StagePanelSection.Middle:
+            break; // added to BottomLeft
+          case StagePanelSection.End: {
+            const middleDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, frontstageApplicationData) ?? [];
+            const bottomDynamicWidgetDefs = UiFramework.widgetManager.getWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, frontstageApplicationData) ?? [];
+            dynamicWidgetDefs = [...middleDynamicWidgetDefs, ...bottomDynamicWidgetDefs];
+            break;
+          }
+        }
+      }
+    }
+
+    const uniqueDynamicWidgetDefs = dynamicWidgetDefs?.filter((widgetDef) => {
+      return ((!allStageWidgetDefs.find((wDef) => wDef.id === widgetDef.id)));
+    });
+
+    // Now that we no longer support a middle panel section, yet we have existing API that allows a middle section to be
+    // defined, the following is needed to combining middle and end panel section widgets into a single set of widgets
+    if (uniqueDynamicWidgetDefs) {
+      allStageWidgetDefs.push(...uniqueDynamicWidgetDefs);
+      this._dynamicWidgetDefs = [...uniqueDynamicWidgetDefs];
+    }
     this.sortWidgetDefs();
   }
 

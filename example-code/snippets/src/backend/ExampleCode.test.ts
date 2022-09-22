@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -167,17 +167,17 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ Settings.containerAlias
     const iTwinDict: SettingDictionary = {
-      "workspace/container/alias": [
-        { name: "default-fonts", id: "fonts-01" },
-        { name: "gcs-data", id: "gcsdata-01" },
+      "cloud/containers": [
+        { name: "default-fonts", containerId: "fonts-01", accountName: "" },
+        { name: "gcs-data", containerId: "gcsdata-01", accountName: "" },
       ],
     };
     const iModelDict: SettingDictionary = {
-      "workspace/container/alias": [
-        { name: "default-icons", id: "icons-01" },
-        { name: "default-lang", id: "lang-05" },
-        { name: "default-fonts", id: "fonts-02" },
-        { name: "default-key", id: "key-05" },
+      "cloud/containers": [
+        { name: "default-icons", containerId: "icons-01", accountName: "" },
+        { name: "default-lang", containerId: "lang-05", accountName: "" },
+        { name: "default-fonts", containerId: "fonts-02", accountName: "" },
+        { name: "default-key", containerId: "key-05", accountName: "" },
       ],
     };
 
@@ -187,22 +187,26 @@ describe("Example Code", () => {
     settings.addDictionary("iTwin", SettingsPriority.iTwin, iTwinDict);
     settings.addDictionary("iModel", SettingsPriority.iModel, iModelDict);
 
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals("fonts-02"); // iModel has higher priority than iTwin
-    expect(workspace.resolveContainerId({ containerId: "fonts-01" })).equals("fonts-01"); // can specify id directly
+    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-02"); // iModel has higher priority than iTwin
 
     settings.dropDictionary("iModel"); // drop iModel dict
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals("fonts-01"); // now resolves to iTwin value
+    expect(workspace.resolveContainer(fontContainerName).containerId).equals("fonts-01"); // now resolves to iTwin value
 
     settings.dropDictionary("iTwin"); // drop iTwin dict
-    expect(workspace.resolveContainerId({ containerName: fontContainerName })).equals(fontContainerName); // no resolution, resolves to name
+    expect(() => workspace.resolveContainer(fontContainerName)).to.throw("no setting");
     // __PUBLISH_EXTRACT_END__
   });
 
-  it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
+});
+
+namespace Snippets {
+  // this snippet isn't a test because it uses a fake ElementAspect class "SomeDomain:SomeAspectClass" that doesn't exist
+  export function elementAspectSnippet() {
+    const iModel = IModelTestUtils.openIModelForWrite("test.bim");
     const elementId = Id64.invalid;
-    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
-    const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
+    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
+    const elementAspects = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
 
@@ -215,6 +219,6 @@ describe("Example Code", () => {
     };
     iModel.elements.insertAspect(aspectProps);
     // __PUBLISH_EXTRACT_END__
-  });
-
-});
+  }
+}
+Snippets.elementAspectSnippet;

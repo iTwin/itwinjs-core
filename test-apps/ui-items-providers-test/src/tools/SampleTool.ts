@@ -13,6 +13,7 @@ import {
 } from "@itwin/core-frontend";
 import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
+  IconSpecUtilities,
   InputEditorSizeParams,
   PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
 } from "@itwin/appui-abstract";
@@ -22,8 +23,8 @@ import { Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef } from "@itwin/core-common";
 import { FormatterSpec } from "@itwin/core-quantity";
 import { CursorInformation, MenuItemProps, UiFramework } from "@itwin/appui-react";
-import sampleToolSvg from "./SampleTool.svg?sprite";
 import { UiItemsProvidersTest } from "../ui-items-providers-test";
+import sampleToolSvg from "./SampleTool.svg";
 
 enum ToolOptions {
   Red,
@@ -37,7 +38,7 @@ enum ToolOptions {
 export class SampleTool extends PrimitiveTool {
   // ensure toolId is unique by adding "uiItemsProvidersTest-" prefix
   public static override toolId = "uiItemsProvidersTest-SampleTool";
-  public static override iconSpec = `svg:${sampleToolSvg}`;
+  public static override iconSpec = sampleToolSvg;
   public readonly points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
   private _stationFormatterSpec?: FormatterSpec;
@@ -106,14 +107,14 @@ export class SampleTool extends PrimitiveTool {
         params: [{
           type: PropertyEditorParamTypes.ColorData,
           colorValues: [
-            ColorByName.blue as number,
-            ColorByName.red as number,
-            ColorByName.green as number,
-            ColorByName.yellow as number,
-            ColorByName.black as number,
-            ColorByName.gray as number,
-            ColorByName.purple as number,
-            ColorByName.pink as number,
+            ColorByName.blue,
+            ColorByName.red,
+            ColorByName.green,
+            ColorByName.yellow,
+            ColorByName.black,
+            ColorByName.gray,
+            ColorByName.purple,
+            ColorByName.pink,
           ],
           numColumns: 2,
         } as ColorEditorParams,
@@ -122,7 +123,7 @@ export class SampleTool extends PrimitiveTool {
     };
   };
 
-  private _colorValue: DialogItemValue = { value: ColorByName.blue as number };
+  private _colorValue: DialogItemValue = { value: ColorByName.blue };
 
   public get colorValue(): number {
     return this._optionsValue.value as number;
@@ -529,7 +530,9 @@ export class SampleTool extends PrimitiveTool {
 
   public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
     const overrides = undefined !== groupPriority ? { groupPriority } : {};
-    return ToolbarItemUtilities.createActionButton(SampleTool.toolId, itemPriority, SampleTool.iconSpec, SampleTool.flyover,
+    const iconSpec = IconSpecUtilities.createWebComponentIconSpec(this.iconSpec);
+
+    return ToolbarItemUtilities.createActionButton(SampleTool.toolId, itemPriority, iconSpec, SampleTool.flyover,
       async () => { await IModelApp.tools.run(SampleTool.toolId); },
       overrides);
   }

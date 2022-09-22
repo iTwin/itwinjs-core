@@ -12,7 +12,7 @@ import {
   AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, SpatialClassifier, ThematicDisplayMode, ViewFlags,
 } from "@itwin/core-common";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../ImageUtil";
-import { HiliteSet } from "../../SelectionSet";
+import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
 import { ViewRect } from "../../ViewRect";
@@ -55,7 +55,7 @@ import { System } from "./System";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
-import { TextureHandle } from "./Texture";
+import { Texture2DHandle, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
 import { EdgeSettings } from "./EdgeSettings";
 import { TargetGraphics } from "./TargetGraphics";
@@ -74,6 +74,7 @@ export interface Hilites {
   readonly subcategories: Id64.Uint32Set;
   readonly models: Id64.Uint32Set;
   readonly isEmpty: boolean;
+  readonly modelSubCategoryMode: ModelSubCategoryHiliteMode;
 }
 
 class EmptyHiliteSet {
@@ -81,10 +82,16 @@ class EmptyHiliteSet {
   public readonly subcategories: Id64.Uint32Set;
   public readonly models: Id64.Uint32Set;
   public readonly isEmpty = true;
+  public readonly modelSubCategoryMode = "union";
 
   public constructor() {
     this.elements = this.subcategories = this.models = new Id64.Uint32Set();
   }
+}
+
+interface ReadPixelResources {
+  readonly texture: Texture2DHandle;
+  readonly fbo: FrameBuffer;
 }
 
 /** @internal */
@@ -101,7 +108,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _renderCommands: RenderCommands;
   private _overlayRenderState: RenderState;
   protected _compositor: SceneCompositor;
-  private _fbo?: FrameBuffer;
+  protected _fbo?: FrameBuffer;
   private _dcAssigned = false;
   public performanceMetrics?: PerformanceMetrics;
   public readonly decorationsState = BranchState.createForDecorations(); // Used when rendering view background and view/world overlays.
@@ -116,6 +123,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   private _animationBranches?: AnimationBranchStates;
   private _isReadPixelsInProgress = false;
   private _readPixelsSelector = Pixel.Selector.None;
+  private _readPixelReusableResources?: ReadPixelResources;
   private _drawNonLocatable = true;
   private _currentlyDrawingClassifier?: PlanarClassifier;
   private _analysisFraction: number = 0;
@@ -418,7 +426,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<Id64String, T> | undefined, newMap: Map<Id64String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
@@ -440,7 +448,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public changePlanarClassifiers(planarClassifiers?: PlanarClassifierMap) {
     this.changeDrapesOrClassifiers<RenderPlanarClassifier>(this._planarClassifiers, planarClassifiers);
     this._planarClassifiers = planarClassifiers;
-
   }
 
   public changeDynamics(dynamics?: GraphicList) {
@@ -740,30 +747,78 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
-    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture) {
+    const resources = this.createOrReuseReadPixelResources(rect);
+    if (resources === undefined) {
       receiver(undefined);
       return;
     }
 
     let result: Pixel.Buffer | undefined;
-    const fbo = FrameBuffer.create([texture]);
-    if (undefined !== fbo) {
-      this.renderSystem.frameBufferStack.execute(fbo, true, false, () => {
-        this._drawNonLocatable = !excludeNonLocatable;
-        result = this.readPixelsFromFbo(rect, selector);
-        this._drawNonLocatable = true;
-      });
 
-      dispose(fbo);
-    }
+    this.renderSystem.frameBufferStack.execute(resources.fbo, true, false, () => {
+      this._drawNonLocatable = !excludeNonLocatable;
+      result = this.readPixelsFromFbo(rect, selector);
+      this._drawNonLocatable = true;
+    });
 
-    dispose(texture);
+    this.disposeOrReuseReadPixelResources(resources);
 
     receiver(result);
 
     // Reset the batch IDs in all batches drawn for this call.
     this.uniforms.batch.resetBatchState();
+  }
+
+  private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
+    if (this._readPixelReusableResources !== undefined) {
+
+      // To reuse a texture, we need it to be the same size or bigger than what we need
+      if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
+        const resources = this._readPixelReusableResources;
+        this._readPixelReusableResources = undefined;
+
+        return resources;
+      }
+    }
+
+    // Create a new texture/fbo
+    const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    if (texture === undefined)
+      return undefined;
+
+    const fbo = FrameBuffer.create([texture]);
+    if (fbo === undefined) {
+      dispose(texture);
+      return undefined;
+    }
+
+    return { texture, fbo };
+  }
+
+  private disposeOrReuseReadPixelResources({texture, fbo}: ReadPixelResources) {
+    const maxReusableTextureSize = 256;
+    const isTooBigToReuse = texture.width > maxReusableTextureSize || texture.height > maxReusableTextureSize;
+
+    let reuseResources = !isTooBigToReuse;
+
+    if (reuseResources && this._readPixelReusableResources !== undefined) {
+
+      // Keep the biggest texture
+      if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
+        reuseResources = false; // The current resources being reused are better
+      } else {
+        // Free memory of the current reusable resources before replacing them
+        dispose(this._readPixelReusableResources.fbo);
+        dispose(this._readPixelReusableResources.texture);
+      }
+    }
+
+    if (reuseResources) {
+      this._readPixelReusableResources = {texture, fbo};
+    } else {
+      dispose(fbo);
+      dispose(texture);
+    }
   }
 
   private beginReadPixels(selector: Pixel.Selector, cullingFrustum?: Frustum): void {
@@ -925,7 +980,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   /** wantRectIn is in CSS pixels. Output ImageBuffer will be in device pixels.
-   * If wantRect.right or wantRect.bottom is -1, that means "read the entire image".
+   * If wantRect is null, that means "read the entire image".
    */
   public override readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     if (!this.assignDC())
@@ -933,7 +988,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Determine capture rect and validate
     const actualViewRect = this.renderRect; // already has device pixel ratio applied
-    const wantRect = (wantRectIn.right === -1 || wantRectIn.bottom === -1) ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
+    const wantRect = wantRectIn.isNull ? actualViewRect : this.cssViewRectToDeviceViewRect(wantRectIn);
     const lowerRight = Point2d.create(wantRect.right - 1, wantRect.bottom - 1);
     if (!actualViewRect.containsPoint(Point2d.create(wantRect.left, wantRect.top)) || !actualViewRect.containsPoint(lowerRight))
       return undefined;
@@ -1186,7 +1241,11 @@ class CanvasState {
   public updateDimensions(pixelRatio: number): boolean {
     const w = Math.floor(this.canvas.clientWidth * pixelRatio);
     const h = Math.floor(this.canvas.clientHeight * pixelRatio);
-    if (w === this._width && h === this._height)
+
+    // Do not update the dimensions if not needed, or if new width or height is 0, which is invalid.
+    // NB: the 0-dimension check indirectly resolves an issue when a viewport is dropped and immediately re-added
+    // to the view manager. See ViewManager.test.ts for more details.
+    if (w === this._width && h === this._height || (0 === w || 0 === h))
       return false;
 
     // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance.
@@ -1263,6 +1322,16 @@ export class OnScreenTarget extends Target {
 
   public setViewRect(_rect: ViewRect, _temporary: boolean): void {
     assert(false);
+  }
+
+  /** Internal-only function for testing. Returns true if the FBO dimensions match the canvas dimensions */
+  public checkFboDimensions(): boolean {
+    if (undefined !== this._fbo) {
+      const tx = this._fbo.getColor(0);
+      if (tx.width !== this._curCanvas.width || tx.height !== this._curCanvas.height)
+        return false;
+    }
+    return true;
   }
 
   protected _assignDC(): boolean {

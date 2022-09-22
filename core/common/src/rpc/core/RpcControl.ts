@@ -7,6 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
@@ -20,6 +21,7 @@ import { RpcRegistry } from "./RpcRegistry";
  * @public
  */
 export abstract class RpcControlResponse {
+  public message = "RpcControlResponse";
 }
 
 /** A pending RPC operation response.
@@ -27,7 +29,7 @@ export abstract class RpcControlResponse {
  */
 export class RpcPendingResponse extends RpcControlResponse {
   /** Extended status regarding the pending operation. */
-  public message: string;
+  public override message: string;
 
   /** Constructs a pending response. */
   public constructor(message: string = "") {
@@ -40,6 +42,7 @@ export class RpcPendingResponse extends RpcControlResponse {
  * @public
  */
 export class RpcNotFoundResponse extends RpcControlResponse {
+  public override message = "Not found";
 }
 
 /** Manages requests and responses for an RPC configuration.
@@ -62,6 +65,10 @@ export class RpcControlChannel {
   /** @internal */
   public async describeEndpoints() {
     this.activateClient();
+    if (!this._channelInterface.interfaceName) {
+      return [];
+    }
+
     return this._describeEndpoints();
   }
 
@@ -151,7 +158,10 @@ export class RpcControlChannel {
   public handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean {
     const op = invocation.request.operation;
     if (op.interfaceVersion === "CONTROL" && op.operationName === "describeEndpoints") {
-      op.interfaceDefinition = this._channelInterface.interfaceName;
+      if (this._channelInterface.interfaceName) {
+        op.interfaceDefinition = this._channelInterface.interfaceName;
+      }
+
       return true;
     }
 

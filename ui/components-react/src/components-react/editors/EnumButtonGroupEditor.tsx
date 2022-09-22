@@ -169,7 +169,7 @@ export class EnumButtonGroupEditor extends React.Component<PropertyEditorProps, 
 
     return (
       <button
-        ref={(ref: HTMLButtonElement) => this._btnRefs.set(choiceValue, ref)}
+        ref={(ref: HTMLButtonElement|null) => ref && this._btnRefs.set(choiceValue, ref)}
         data-testid={choice.label}
         className={className}
         title={choice.label}

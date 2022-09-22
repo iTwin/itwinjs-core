@@ -46,6 +46,33 @@ describe("JsonParser", () => {
       parser = new JsonParser(createSchemaJsonWithItems(json));
       assert.throws(() => [...parser.getItems()], ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
     });
+
+    it("should throw for bad property type", () => {
+      const json = {
+        TestEntityClass: {
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.BaseEntity",
+          properties: [
+            {
+              name: "TestProp",
+              type: "BadType",
+              typeName: "int",
+            },
+          ],
+        },
+        BaseEntity: {
+          schemaItemType: "EntityClass",
+        },
+      };
+
+      parser = new JsonParser(createSchemaJsonWithItems(json));
+      const findResult = parser.findItem("TestEntityClass");
+      if (findResult === undefined)
+        throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
+
+      const [, , parentElement] = findResult;
+      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.TestProp has an invalid 'type' attribute. 'BadType' is not a valid type.`);
+    });
   });
 
   describe("parseCustomAttributeClass", () => {

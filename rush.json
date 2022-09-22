@@ -1,6 +1,6 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.58.0",
+  "rushVersion": "5.76.1",
   "pnpmVersion": "6.24.4",
   "nodeSupportedVersionRange": ">=12.17.0 <17.0.0",
   "projectFolderMinDepth": 2,
@@ -20,20 +20,30 @@
       "extensions",
       "integration-testing"
     ],
-    "ignoredNpmScopes": [
-      "@types"
-    ]
+    "ignoredNpmScopes": ["@types"]
   },
   "gitPolicy": {
-    "allowedEmailRegExps": [
-      "[^@]+@users\\.noreply\\.github\\.com"
-    ],
+    "allowedEmailRegExps": ["[^@]+@users\\.noreply\\.github\\.com"],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
   "repository": {
-    "url": "https://github.com/iTwin/itwinjs-core"
+    "url": "https://github.com/iTwin/itwinjs-core",
+    "defaultBranch": "master"
   },
   "projects": [
+    {
+      "packageName": "@itwin/core-extension",
+      "projectFolder": "core/extension",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "extension-prototype",
+      "projectFolder": "extensions/test-extension",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
     {
       "packageName": "@itwin/build-tools",
       "projectFolder": "tools/build",
@@ -46,12 +56,6 @@
       "projectFolder": "tools/eslint-plugin",
       "reviewCategory": "tools",
       "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/imodelbank-client",
-      "projectFolder": "clients/imodelhub",
-      "reviewCategory": "common",
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
@@ -212,6 +216,13 @@
       "packageName": "@itwin/presentation-components",
       "projectFolder": "presentation/components",
       "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@itwin/presentation-opentelemetry",
+      "projectFolder": "presentation/opentelemetry",
+      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -384,15 +395,15 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/geonames-extension",
-      "projectFolder": "extensions/geonames",
+      "packageName": "@itwin/map-layers",
+      "projectFolder": "extensions/map-layers",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/map-layers",
-      "projectFolder": "extensions/map-layers",
+      "packageName": "@itwin/map-layers-auth",
+      "projectFolder": "extensions/map-layers-auth",
       "reviewCategory": "extensions",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -446,6 +457,24 @@
       "shouldPublish": false
     },
     {
+      "packageName": "appui-connected-app",
+      "projectFolder": "test-apps/appui-test-app/connected",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "appui-standalone-app",
+      "projectFolder": "test-apps/appui-test-app/standalone",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "@itwin/appui-test-providers",
+      "projectFolder": "test-apps/appui-test-app/appui-test-providers",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "display-test-app",
       "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
@@ -476,12 +505,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "presentation-full-stack-tests",
-      "projectFolder": "full-stack-tests/presentation",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "ui-test-app",
       "projectFolder": "test-apps/ui-test-app",
       "reviewCategory": "internal",
@@ -500,6 +523,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "presentation-full-stack-tests",
+      "projectFolder": "full-stack-tests/presentation",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "rpc-full-stack-tests",
       "projectFolder": "full-stack-tests/rpc",
       "reviewCategory": "internal",
@@ -511,6 +540,12 @@
       "reviewCategory": "integration-testing",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "ui-end-to-end-tests",
+      "projectFolder": "full-stack-tests/ui",
+      "reviewCategory": "internal",
+      "shouldPublish": false
     }
   ]
 }

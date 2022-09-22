@@ -449,7 +449,13 @@ export class ToolWithSettings extends PrimitiveTool {
       return this.exitTool();
   }
 
-  /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
+  public override async exitTool() {
+    // eslint-disable-next-line no-console
+    console.log("tool exit");
+    await super.exitTool();
+  }
+
+  /** Used to supply DefaultToolSettingProvider with a list of properties used to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
   public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     this.initializeToolSettingPropertyValues([
       this.colorOptionProperty,
@@ -477,10 +483,10 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(this.numberProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
     toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 17, columnIndex: 2 }));
     const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 0 });
-    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }, lengthLock));
-    toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
-    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 25, columnIndex: 2 }));
-    toolSettings.push(this.imageCheckBoxProperty.toDialogItem({ rowPriority: 30, columnIndex: 2 }));
+    toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 1 }, lengthLock));
+    toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 19, columnIndex: 2 }));
+    toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }));
+    toolSettings.push(this.imageCheckBoxProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
     return toolSettings;
   }
 
@@ -501,11 +507,15 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
+  /** Override to return the property that is disabled/enabled if the supplied property is a lock property.
+   * @see [[changeToolSettingPropertyValue]]
+   * @beta
+   */
   protected override getToolSettingPropertyLocked(property: DialogProperty<any>): DialogProperty<any> | undefined {
     return (property === this.useLengthProperty ? this.lengthProperty : undefined);
   }
 
-  /** Used to send changes from UI back to Tool */
+  /** Used to allow Tool to react to ToolSettings changes in UI */
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
     return this.changeToolSettingPropertyValue(updatedValue);
   }

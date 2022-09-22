@@ -64,7 +64,6 @@ export class Frontstage3 extends FrontstageProvider {
         id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={true}
         contentManipulationTools={
           <Zone
             widgets={[

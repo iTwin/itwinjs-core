@@ -8,8 +8,7 @@
  */
 
 import produce, { Draft } from "immer";
-import { StagePanelLocation, StagePanelSection } from "@itwin/appui-abstract";
-import { UiEvent } from "@itwin/core-react";
+import { StagePanelLocation, StagePanelSection, UiEvent } from "@itwin/appui-abstract";
 import { NineZoneState, PanelSide } from "@itwin/appui-layout-react";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { WidgetDef } from "../widgets/WidgetDef";
@@ -29,7 +28,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @public @deprecated
+ * @public
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -241,31 +240,26 @@ export class StagePanelDef extends WidgetHost {
 
   /** @internal */
   public override updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
-    widgetDefs: WidgetDef[], frontstageApplicationData?: any,
+    allStageWidgetDefs: WidgetDef[], frontstageApplicationData?: any,
   ): void {
-    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs, frontstageApplicationData);
-    this.panelZones.middle.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, widgetDefs, frontstageApplicationData);
-    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, widgetDefs, frontstageApplicationData);
+    this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, allStageWidgetDefs, frontstageApplicationData);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Middle, allStageWidgetDefs, frontstageApplicationData);
+    this.panelZones.end.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.End, allStageWidgetDefs, frontstageApplicationData);
   }
 }
 
 /** @internal */
-export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "middle" | "end">;
+export type StagePanelZoneDefKeys = keyof Pick<StagePanelZonesDef, "start" | "end">;
 
-const stagePanelZoneDefKeys: StagePanelZoneDefKeys[] = ["start", "middle", "end"];
+const stagePanelZoneDefKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
 /** @internal */
 export class StagePanelZonesDef {
   private _start = new StagePanelZoneDef();
-  private _middle = new StagePanelZoneDef();
   private _end = new StagePanelZoneDef();
 
   public get start() {
     return this._start;
-  }
-
-  public get middle() {
-    return this._middle;
   }
 
   public get end() {
@@ -278,7 +272,7 @@ export class StagePanelZonesDef {
       this.start.initializeFromProps(props.start, panelLocation, "start");
     }
     if (props.middle) {
-      this.middle.initializeFromProps(props.middle, panelLocation, "middle");
+      this.end.initializeFromProps(props.middle, panelLocation, "end");
     }
     if (props.end) {
       this.end.initializeFromProps(props.end, panelLocation, "end");

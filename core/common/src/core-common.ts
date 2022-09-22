@@ -25,6 +25,7 @@ export * from "./DisplayStyleSettings";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./ECSqlTypes";
+export * from "./ECSchemaProps";
 export * from "./ElementProps";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";
@@ -68,6 +69,7 @@ export * from "./IModelVersion";
 export * from "./ipc/IpcSocket";
 export * from "./ipc/IpcWebSocket";
 export * from "./ipc/IpcWebSocketTransport";
+export * from "./ipc/IpcSession";
 export * from "./IpcAppProps";
 export * from "./LightSettings";
 export * from "./LinePixels";
@@ -123,6 +125,7 @@ export * from "./ViewProps";
 export * from "./rpc/core/RpcConstants";
 export * from "./rpc/core/RpcControl";
 export * from "./rpc/core/RpcInvocation";
+export * from "./rpc/core/RpcSessionInvocation";
 export * from "./rpc/core/RpcMarshaling";
 export * from "./rpc/core/RpcOperation";
 export * from "./rpc/core/RpcPendingQueue";
@@ -158,7 +161,7 @@ export * from "./WhiteOnWhiteReversalSettings";
  */
 /**
  * @docs-group-description Codes
- * Types for working with [Codes]($docs/bis/intro/codes.md).
+ * Types for working with [Codes]($docs/bis/guide/fundamentals/codes.md).
  */
 /**
  * @docs-group-description Geometry
@@ -235,4 +238,8 @@ export * from "./WhiteOnWhiteReversalSettings";
 /**
  * @docs-group-description RealityData
  * Types for working with the RealityData API.
+ */
+/**
+ * @docs-group-description MapLayers
+ * Types for working with the MapLayers API.
  */

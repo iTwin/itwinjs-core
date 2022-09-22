@@ -24,7 +24,7 @@ import { LengthDescription } from "../properties/LengthDescription";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
 import { StandardViewId } from "../StandardView";
-import { Animator, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
+import { Animator, MarginOptions, OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext } from "../ViewContext";
 import {
   eyeToCartographicOnGlobeFromGcs, GlobalLocation, queryTerrainElevationOffset, rangeToCartographicArea, viewGlobalLocation,
@@ -88,6 +88,7 @@ const inertialDampen = (pt: Vector3d) => {
 
 /** An InteractiveTool that manipulates a view.
  * @public
+ * @extensions
  */
 export abstract class ViewTool extends InteractiveTool {
   public static translate(val: string) { return CoreTools.translate(`View.${val}`); }
@@ -98,7 +99,7 @@ export abstract class ViewTool extends InteractiveTool {
   public override async run(..._args: any[]): Promise<boolean> {
     const toolAdmin = IModelApp.toolAdmin;
     if (undefined !== this.viewport && this.viewport === toolAdmin.markupView) {
-      IModelApp.notifications.outputPromptByKey("Viewing.NotDuringMarkup");
+      IModelApp.notifications.outputPromptByKey("iModelJs:Viewing.NotDuringMarkup");
       return false;
     }
 
@@ -295,6 +296,7 @@ export class ViewHandleArray {
 
 /** Base class for tools that manipulate the frustum of a Viewport.
  * @public
+ * @extensions
  */
 export abstract class ViewManip extends ViewTool {
   /** @internal */
@@ -785,7 +787,7 @@ export abstract class ViewManip extends ViewTool {
     return range;
   }
 
-  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitView(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
     const aspect = viewport.viewRect.aspect;
     viewport.view.lookAtVolume(range, aspect, options);
@@ -794,7 +796,7 @@ export abstract class ViewManip extends ViewTool {
   }
 
   /** @internal */
-  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
+  public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions & MarginOptions) {
     const range = this.computeFitRange(viewport);
 
     if (viewport.view.isSpatialView() && animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
@@ -815,7 +817,7 @@ export abstract class ViewManip extends ViewTool {
     viewport.viewCmdTargetCenter = undefined;
   }
 
-  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions): Promise<boolean> {
+  public static async zoomToAlwaysDrawnExclusive(viewport: ScreenViewport, options?: ViewChangeOptions & MarginOptions): Promise<boolean> {
     if (!viewport.isAlwaysDrawnExclusive || undefined === viewport.alwaysDrawn || 0 === viewport.alwaysDrawn.size)
       return false;
     await viewport.zoomToElements(viewport.alwaysDrawn, options);
@@ -1095,7 +1097,7 @@ class ViewPan extends HandleWithInertia {
     const thisWorld = vp.npcToWorld(thisPtNpc);
     const dist = thisWorld.vectorTo(lastWorld);
     if (view.is3d()) {
-      if (ViewStatus.Success !== (view.isGlobalView ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
+      if (ViewStatus.Success !== (vp.viewingGlobe ? view.moveCameraGlobal(lastWorld, thisWorld) : view.moveCameraWorld(dist)))
         return false;
 
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
@@ -3693,7 +3695,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   private _singleTouch = false;
   private _duration!: BeDuration;
   private _end!: BeTimePoint;
-  private _hasZoom = false;
   private _rotate2dDisabled = false;
   private _rotate2dThreshold?: Angle;
   private _only2dManipulations = false;
@@ -3751,7 +3752,6 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
   }
 
   private computeZoomRatio(ev?: BeTouchEvent): number {
-    this._hasZoom = false;
     if (undefined === ev || 0.0 === this._startDistance)
       return 1.0;
 
@@ -3762,7 +3762,8 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (0.0 === distance || Math.abs(this._startDistance - distance) < threshold)
       return 1.0;
 
-    this._hasZoom = true;
+    // Remove inertia if the viewing operation includes zoom, only use it for pan and rotate.
+    this._inertiaVec = undefined;
     const adjustedDist = (distance > this._startDistance ? (distance - threshold) : (distance + threshold)); // Avoid sudden jump in zoom scale by subtracting zoom threshold distance...
     return Geometry.clamp(this._startDistance / adjustedDist, .1, 10);
   }
@@ -3898,8 +3899,7 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
     if (this._startPtView.isAlmostEqualXY(thisPt, smallDistance)) {
       this._lastPtView.setFrom(this._startPtView);
     } else {
-      // Don't add inertia if the viewing operation included zoom, only do this for pan and rotate.
-      if (!samePoint && !this._hasZoom) {
+      if (!samePoint) {
         this._inertiaVec = this._lastPtView.vectorTo(thisPt);
         this._inertiaVec.z = 0;
       }
@@ -3922,6 +3922,10 @@ export class DefaultViewTouchTool extends ViewManip implements Animator {
 
   public override async onDataButtonDown(_ev: BeButtonEvent) { return EventHandled.Yes; }
   public override async onDataButtonUp(_ev: BeButtonEvent) { return EventHandled.Yes; }
+  public override async onTouchStart(ev: BeTouchEvent): Promise<void> {
+    if (undefined !== this.viewport)
+      this.onStart(ev);
+  }
   public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
     this.handleEvent(ev);
   }

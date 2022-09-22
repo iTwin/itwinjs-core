@@ -132,19 +132,21 @@ export class UiFramework {
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
+   * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
    */
-  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
-    return this.initializeEx(store, frameworkStateKey);
+  public static async initialize(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
+    return this.initializeEx(store, frameworkStateKey, startInUi1Mode);
   }
 
   /**
    * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
+   * @param startInUi1Mode Used for legacy applications to start up in the deprecated UI 1 mode. This should not set by newer applications.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, frameworkStateKey?: string, startInUi1Mode?: boolean): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -159,6 +161,9 @@ export class UiFramework {
     // ignore setting _frameworkStateKeyInStore if not using store
     if (frameworkStateKey && store)
       UiFramework._frameworkStateKeyInStore = frameworkStateKey;
+
+    if (startInUi1Mode)
+      UiFramework.store.dispatch({ type: ConfigurableUiActionId.SetFrameworkVersion, payload: "1" });
 
     // set up namespace and register all tools from package
     const frameworkNamespace = IModelApp.localization?.registerNamespace(UiFramework.localizationNamespace);
@@ -517,6 +522,42 @@ export class UiFramework {
       return;
 
     UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetShowWidgetIcon, value, true);
+  }
+  /** Animate Tool Settings on appear  */
+  public static get animateToolSettings(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.animateToolSettings : /* istanbul ignore next */ false;
+  }
+  public static setAnimateToolSettings(value: boolean) {
+    if (UiFramework.animateToolSettings === value)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.AnimateToolSettings, value, true);
+  }
+
+  /** Use Tool Name As Tool Settings Widget Tab Label */
+  public static get useToolAsToolSettingsLabel(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.useToolAsToolSettingsLabel : /* istanbul ignore next */ false;
+  }
+  public static setUseToolAsToolSettingsLabel(value: boolean) {
+    if (UiFramework.useToolAsToolSettingsLabel === value)
+      return;
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.UseToolAsToolSettingsLabel, value, true);
+  }
+
+  /** @alpha */
+  public static get autoCollapseUnpinnedPanels(): boolean {
+    return UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.autoCollapseUnpinnedPanels : /* istanbul ignore next */ false;
+  }
+
+  /** Method used to enable the automatic closing of an unpinned widget panel as soon as the
+   * mouse leaves the widget panel. The default behavior is to require a mouse click outside
+   * the panel before it is closed.
+   * @alpha */
+
+  public static setAutoCollapseUnpinnedPanels(value: boolean) {
+    if (UiFramework.autoCollapseUnpinnedPanels === value)
+      return;
+
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.AutoCollapseUnpinnedPanels, value, true);
   }
 
   public static get useDragInteraction(): boolean {

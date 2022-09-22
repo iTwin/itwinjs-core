@@ -5,7 +5,7 @@
 
 import { OrbitGtBlobProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
 import { expect } from "chai";
-import { CesiumIonAssetProvider } from "../core-frontend";
+import { CesiumIonAssetProvider, getCesiumAssetUrl } from "../core-frontend";
 import { RealityDataSource } from "../RealityDataSource";
 
 describe("RealityDataSource", () => {
@@ -29,6 +29,24 @@ describe("RealityDataSource", () => {
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
     expect(rdSourceKeyStr).to.be.equal("CesiumIonAsset:ThreeDTile:OSMBuildings:undefined");
+  });
+  it("should handle creation from any CesiumIonAsset url (not OSM Building)", () => {
+    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(75343,"ThisIsADummyCesiumIonKey");
+    expect(rdSourceKey.provider).to.equal(RealityDataProvider.CesiumIonAsset);
+    expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
+    const tilesetUrl = getCesiumAssetUrl(75343,"ThisIsADummyCesiumIonKey");
+    expect(rdSourceKey.id).to.be.equal(tilesetUrl);
+    expect(rdSourceKey.iTwinId).to.be.undefined;
+    const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
+    expect(rdSourceKeyStr).to.be.equal(`CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`);
+    // Key createdFromUrl should be equal to key created from call to createCesiumIonAssetKey
+    const rdSourceKeyFromURL = RealityDataSource.createKeyFromUrl(tilesetUrl);
+    expect(rdSourceKeyFromURL.id).to.be.equal(rdSourceKey.id);
+    expect(rdSourceKeyFromURL.iTwinId).to.be.equal(rdSourceKey.iTwinId);
+    expect(rdSourceKeyFromURL.format).to.be.equal(rdSourceKey.format);
+    expect(rdSourceKeyFromURL.provider).to.be.equal(rdSourceKey.provider);
+    const rdSourceKeyFromURLStr = RealityDataSourceKey.convertToString(rdSourceKeyFromURL);
+    expect(rdSourceKeyFromURLStr).to.be.equal(`CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`);
   });
   it("should handle creation from Context Share url", () => {
     const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";

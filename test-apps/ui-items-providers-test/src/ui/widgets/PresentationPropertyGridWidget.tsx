@@ -6,6 +6,9 @@
 import * as React from "react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field } from "@itwin/presentation-common";
+import { Menu, MenuItem } from "@itwin/itwinui-react";
+import { Popover } from "@itwin/itwinui-react/cjs/core/utils";
+
 import {
   IPresentationPropertyDataProvider, PresentationPropertyDataProvider, usePropertyDataProviderWithUnifiedSelection,
 } from "@itwin/presentation-components";
@@ -14,7 +17,7 @@ import {
   ActionButtonRendererProps, PropertyGridContextMenuArgs, useAsyncValue, VirtualizedPropertyGridWithDataProvider,
   VirtualizedPropertyGridWithDataProviderProps,
 } from "@itwin/components-react";
-import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
+import { ContextMenuItemProps, FillCentered, Icon, Orientation, ResizableContainerObserver } from "@itwin/core-react";
 import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@itwin/appui-react";
 import { UiItemsProvidersTest } from "../../ui-items-providers-test";
 
@@ -49,6 +52,7 @@ function FavoriteActionButton({ field, imodel }: { field: Field, imodel: IModelC
   }, [toggleFavoriteProperty]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
     <div onClick={onActionButtonClicked}>
       {isFavorite ?
         <Icon iconSpec="icon-star" /> :
@@ -138,18 +142,17 @@ export function PresentationPropertyGridWidget() {
     }
   }, [iModelConnection, dataProvider, onRemoveFavorite, onAddFavorite]);
 
+  const stats = React.useRef({ clientX: 0, clientY: 0 });
+
+  const [isMenuVisible, setIsMenuVisible] = React.useState(false);
+
   const onPropertyContextMenu = React.useCallback((args: PropertyGridContextMenuArgs) => {
+    stats.current.clientX = args.event.clientX;
+    stats.current.clientY = args.event.clientY;
     args.event.persist();
     setupContextMenu(args);
+    setIsMenuVisible(true);
   }, [setupContextMenu]);
-
-  const onContextMenuOutsideClick = React.useCallback(() => {
-    setContextMenu(undefined);
-  }, []);
-
-  const onContextMenuEsc = React.useCallback(() => {
-    setContextMenu(undefined);
-  }, []);
 
   const favoriteActionButtonRenderer = React.useCallback((props: ActionButtonRendererProps) => {
     if (iModelConnection && dataProvider) {
@@ -174,6 +177,12 @@ export function PresentationPropertyGridWidget() {
 
   const [gridSize, setGridSize] = React.useState<{ width: number, height: number }>();
   const onGridResize = React.useCallback((width, height) => setGridSize({ width, height }), []);
+  const onMenuHide = React.useCallback(() => {
+    setIsMenuVisible(false);
+  }, []);
+
+  const showContextMenu = React.useMemo(() => isMenuVisible && !!contextMenu && !!contextMenuItemInfos,
+    [isMenuVisible, contextMenu, contextMenuItemInfos]);
 
   return (
     <div data-component-id={componentId} style={style}>
@@ -188,28 +197,38 @@ export function PresentationPropertyGridWidget() {
             onPropertyContextMenu={onPropertyContextMenu}
             actionButtonRenderers={[favoriteActionButtonRenderer]}
           />
-
-          {contextMenu && contextMenuItemInfos &&
-            <GlobalContextMenu
-              opened={true}
-              onOutsideClick={onContextMenuOutsideClick}
-              onEsc={onContextMenuEsc}
-              identifier="TableWidget"
-              x={contextMenu.event.clientX}
-              y={contextMenu.event.clientY}
-            >
-              {contextMenuItemInfos.map((info: ContextMenuItemInfo) =>
-                <ContextMenuItem
-                  key={info.key}
-                  onSelect={info.onSelect}
-                  title={info.title}
-                  icon={info.icon}
-                >
-                  {info.label}
-                </ContextMenuItem>
-              )}
-            </GlobalContextMenu>
-          }
+          {showContextMenu && <Popover
+            appendTo={document.body}
+            content={
+              <Menu>
+                {contextMenuItemInfos && contextMenuItemInfos.map((info: ContextMenuItemInfo) =>
+                  <MenuItem
+                    key={info.key}
+                    onClick={info.onSelect}
+                    title={info.title}
+                    icon={<Icon className="core-menuitem-icon" iconSpec={info.icon} />}
+                  >
+                    {info.label}
+                  </MenuItem>
+                )}
+              </Menu>
+            }
+            visible={isMenuVisible}
+            onClickOutside={() => setIsMenuVisible(false)}
+            getReferenceClientRect={() => ({
+              width: 0,
+              height: 0,
+              top: stats.current.clientY,
+              bottom: stats.current.clientY,
+              left: stats.current.clientX,
+              right: stats.current.clientX,
+              x: stats.current.clientX,
+              y: stats.current.clientY,
+              toJSON: () => { },
+            })}
+            placement="bottom-start"
+            onHide={onMenuHide}
+          />}
         </>
       }
       <ResizableContainerObserver onResize={onGridResize} />

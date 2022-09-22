@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { AbandonedError, BeEvent, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
@@ -23,7 +23,6 @@ import { OnViewExtentsError, ViewChangeOptions } from "../ViewAnimation";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
 import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
-import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
   BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
@@ -32,10 +31,16 @@ import {
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum StartOrResume { Start = 1, Resume = 2 }
 
-/** @public */
+/**
+ * @public
+ * @extensions
+ */
 export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
 
 const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
@@ -296,6 +301,7 @@ interface ToolEvent {
 
 /** Controls the operation of [[Tool]]s, administering the current [[ViewTool]], [[PrimitiveTool]], and [[IdleTool]] and forwarding events to the appropriate tool.
  * @public
+ * @extensions
  */
 export class ToolAdmin {
   public markupView?: ScreenViewport;
@@ -310,17 +316,14 @@ export class ToolAdmin {
   private _suspendedByInputCollector?: SuspendedToolState;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
-  private _idleTool?: IdleTool;
+  private _idleTool?: InteractiveTool;
   private _inputCollector?: InputCollector;
   private _saveCursor?: string;
   private _saveLocateCircle = false;
   private _defaultToolId = "Select";
   private _defaultToolArgs?: any[];
-  /**
-   * The active settings that placement tools will use.
-   * @alpha
-   */
-  public readonly activeSettings = new ToolAdmin.ActiveSettings();
+  private _lastHandledMotionTime?: BeTimePoint;
+  private _mouseMoveOverTimeout?: NodeJS.Timeout;
 
   /** The name of the [[PrimitiveTool]] to use as the default tool. Defaults to "Select", referring to [[SelectionTool]].
    * @see [[startDefaultTool]] to activate the default tool.
@@ -449,7 +452,7 @@ export class ToolAdmin {
     if (typeof document === "undefined")
       return;    // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
 
-    this._idleTool = IModelApp.tools.create("Idle") as IdleTool;
+    this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
@@ -788,8 +791,13 @@ export class ToolAdmin {
   }
 
   /** The idleTool handles events that are not otherwise processed. */
-  public get idleTool(): IdleTool { return this._idleTool!; }
-  public set idleTool(idleTool: IdleTool) { this._idleTool = idleTool; }
+  public get idleTool(): InteractiveTool {
+    assert(undefined !== this._idleTool);
+    return this._idleTool;
+  }
+  public set idleTool(idleTool: InteractiveTool) {
+    this._idleTool = idleTool;
+  }
 
   /** Return true to filter (ignore) events to the given viewport */
   protected filterViewport(vp: ScreenViewport) {
@@ -842,13 +850,24 @@ export class ToolAdmin {
       return;
 
     const buttonMask = (event.ev as MouseEvent).buttons;
-    const cancelDrag = (current.isDragging(BeButton.Data) && !(buttonMask & 1)) || (current.isDragging(BeButton.Reset) && !(buttonMask & 2)) || (current.isDragging(BeButton.Middle) && !(buttonMask & 4));
+    let cancelDrag = false;
+
+    current.button.forEach((button, buttonNum) => {
+      if (button.isDragging && !(buttonMask & (1 << buttonNum))) {
+        button.isDragging = button.isDown = false;
+        cancelDrag = true;
+      }
+    });
+
     if (cancelDrag)
       await tool.onReinitialize();
   }
 
   /** @internal */
   public onMouseLeave(vp: ScreenViewport): void {
+    if (this._mouseMoveOverTimeout !== undefined)
+      clearTimeout(this._mouseMoveOverTimeout);
+
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
     this.setCanvasDecoration(vp);
@@ -868,7 +887,8 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      if (adjustPoint && undefined !== ev.viewport)
+      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
+      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
         this.adjustPoint(ev.point, ev.viewport);
     }
 
@@ -944,15 +964,45 @@ export class ToolAdmin {
     this._snapMotionPromise = this._toolMotionPromise = undefined;
   }
 
+  private async forceOnMotionSnap(ev: BeButtonEvent): Promise<boolean> {
+    // Make sure that we fire the motion snap event correctly
+    this._lastHandledMotionTime = undefined;
+
+    return this.onMotionSnap(ev);
+  }
+
   private async onMotionSnap(ev: BeButtonEvent): Promise<boolean> {
     try {
-      await IModelApp.accuSnap.onMotion(ev);
+      await this.onMotionSnapOrSkip(ev);
       return true;
     } catch (error) {
       if (error instanceof AbandonedError)
         return false; // expected, not a problem. Just ignore this motion and return.
       throw error; // unknown error
     }
+  }
+
+  // Call accuSnap.onMotion
+  private async onMotionSnapOrSkip(ev: BeButtonEvent): Promise<void> {
+    if (this.shouldSkipOnMotionSnap())
+      return;
+
+    await IModelApp.accuSnap.onMotion(ev);
+
+    this._lastHandledMotionTime = BeTimePoint.now();
+  }
+
+  // Should the current onMotionSnap event be skipped to avoid unnecessary ReadPixel calls?
+  private shouldSkipOnMotionSnap(): boolean {
+    if (this._lastHandledMotionTime === undefined)
+      return false;
+
+    const now = BeTimePoint.now();
+    const msSinceLastCall = now.milliseconds - this._lastHandledMotionTime.milliseconds;
+
+    const delay = 1000 / ToolSettings.maxOnMotionSnapCallPerSecond;
+
+    return msSinceLastCall < delay;
   }
 
   private async onStartDrag(ev: BeButtonEvent, tool?: InteractiveTool): Promise<EventHandled> {
@@ -972,6 +1022,10 @@ export class ToolAdmin {
       return;
     }
 
+    // Detect when the motion stops by setting a timeout
+    if (this._mouseMoveOverTimeout !== undefined)
+      clearTimeout(this._mouseMoveOverTimeout); // If a previous timeout was up, it is cancelled: the movement is not over yet
+
     const ev = new BeButtonEvent();
     current.fromPoint(vp, pt2d, inputSource);
     current.toEvent(ev, false);
@@ -980,8 +1034,13 @@ export class ToolAdmin {
     if (undefined !== overlayHit) {
       if (overlayHit.onMouseMove)
         overlayHit.onMouseMove(ev);
+
       return; // we're inside a pickable decoration, don't send event to tool
     }
+
+    this._mouseMoveOverTimeout = setTimeout(async () => {
+      await this.onMotionEnd(vp, pt2d, inputSource);
+    }, 100);
 
     const processMotion = async (): Promise<void> => {
       // Update event to account for AccuSnap adjustments...
@@ -991,7 +1050,7 @@ export class ToolAdmin {
 
       IModelApp.accuDraw.onMotion(ev);
 
-      const tool = this.activeTool;
+      let tool = this.activeTool;
       const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
       this.setIncompatibleViewportCursor(isValidLocation);
 
@@ -1000,10 +1059,16 @@ export class ToolAdmin {
         current.changeButtonToDownPoint(ev);
         ev.isDragging = true;
 
-        if (undefined !== tool && isValidLocation)
-          tool.receivedDownEvent = true;
+        if (undefined !== tool) {
+          if (!isValidLocation)
+            tool = undefined;
+          else if (forceStartDrag)
+            tool.receivedDownEvent = true;
+          else if (!tool.receivedDownEvent)
+            tool = undefined;
+        }
 
-        await this.onStartDrag(ev, isValidLocation ? tool : undefined);
+        await this.onStartDrag(ev, tool);
         return;
       }
 
@@ -1028,6 +1093,17 @@ export class ToolAdmin {
         return;
       return processMotion();
     }).catch((_) => { });
+  }
+
+  // Called when we detect that the motion stopped
+  private async onMotionEnd(vp: ScreenViewport, pos: XAndY, inputSource: InputSource): Promise<void> {
+    const current = this.currentInputState;
+
+    const ev = new BeButtonEvent();
+    current.fromPoint(vp, pos, inputSource);
+    current.toEvent(ev, false);
+
+    await this.forceOnMotionSnap(ev);
   }
 
   private async onMouseMove(event: ToolEvent): Promise<any> {
@@ -1173,8 +1249,11 @@ export class ToolAdmin {
         if (tool instanceof PrimitiveTool)
           tool.autoLockTarget();
 
+        // Process the active tool's pending hints from onDataButtonDown before calling updateDynamics...
+        IModelApp.accuDraw.processHints();
+
         // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-        this.updateDynamics(undefined, true);
+        this.updateDynamics(undefined, true, true);
         break;
       }
 
@@ -1252,7 +1331,7 @@ export class ToolAdmin {
 
     if (changed === EventHandled.Yes) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      this.updateDynamics();
+      this.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
     }
   }
 
@@ -1409,7 +1488,7 @@ export class ToolAdmin {
       await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onInputCollectorExit();
-    this.updateDynamics();
+    this.updateDynamics(undefined, undefined, true);
   }
 
   /** @internal */
@@ -1460,7 +1539,7 @@ export class ToolAdmin {
       await this.onUnsuspendTool();
 
     IModelApp.accuDraw.onViewToolExit();
-    this.updateDynamics();
+    this.updateDynamics(undefined, undefined, true);
   }
 
   /** @internal */
@@ -1885,24 +1964,4 @@ export class WheelEventProcessor {
     await IModelApp.accuSnap.reEvaluate();
     return status;
   }
-}
-
-/**
- * @public
- */
-export namespace ToolAdmin { // eslint-disable-line no-redeclare
-
-  /**
-   * Active settings that placement tools will use.
-   * @alpha
-   */
-  export class ActiveSettings {
-
-    /** The active category */
-    public category?: Id64String;
-
-    /** The target model */
-    public model?: Id64String;
-  }
-
 }

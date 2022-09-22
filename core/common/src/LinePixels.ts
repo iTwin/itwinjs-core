@@ -9,6 +9,7 @@
 /** Enumerates the available patterns for drawing patterned lines.
  * Each is a 32-bit pattern in which each bit specifies the on- or off-state of a pixel along the line. The pattern repeats along the length of the entire line.
  * @public
+ * @extensions
  */
 export enum LinePixels {
   /** A solid line. */

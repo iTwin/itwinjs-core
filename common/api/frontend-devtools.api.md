@@ -158,6 +158,25 @@ export class AttachMapOverlayTool extends AttachMapLayerTool {
 }
 
 // @beta
+export class AttachModelMapLayerTool extends Tool {
+    constructor(_formatId: string);
+    // (undocumented)
+    protected _formatId: string;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onRestartTool(): Promise<void>;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(nameIn?: string): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachRealityModelTool extends Tool {
     // (undocumented)
     static get maxArgs(): number;
@@ -267,6 +286,20 @@ export class ChangeFlashSettingsTool extends Tool {
     parseAndRun(...inputArgs: string[]): Promise<boolean>;
     // (undocumented)
     run(settings?: FlashSettings): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ChangeHiliteModeTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): Promise<boolean>;
+    // (undocumented)
+    run(mode?: string): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -710,6 +743,20 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
     protected parse(args: string[]): Promise<boolean>;
     // (undocumented)
     protected get require3d(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class DumpSelectionSetTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): Promise<boolean>;
+    // (undocumented)
+    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1422,6 +1469,8 @@ export class ProjectExtentsDecoration {
     // (undocumented)
     protected _extents: AxisAlignedBox3d;
     // (undocumented)
+    static get isActive(): boolean;
+    // (undocumented)
     protected _removeDecorationListener?: () => void;
     // (undocumented)
     protected stop(): void;
@@ -1561,6 +1610,16 @@ export class ReorderMapLayers extends Tool {
 export class ReportWebGLCompatibilityTool extends Tool {
     // (undocumented)
     run(_args: any[]): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ReverseScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    parse(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }
@@ -1890,6 +1949,20 @@ export class SetRealityModelTransparencyTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(transparency: number, index: number): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class SetScheduleScriptTool extends DisplayStyleTool {
+    // (undocumented)
+    execute(vp: Viewport): Promise<boolean>;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parse(args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

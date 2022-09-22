@@ -64,7 +64,7 @@ export class Frontstage2 extends FrontstageProvider {
       <Frontstage id={this.id}
         defaultTool={CoreTools.selectElementCommand}
         contentGroup={myContentGroup}
-        isInFooterMode={false} applicationData={{ key: "value" }}
+        applicationData={{ key: "value" }}
 
         contentManipulationTools={
           <Zone

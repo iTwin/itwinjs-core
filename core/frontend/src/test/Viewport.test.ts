@@ -14,6 +14,7 @@ import { IModelApp } from "../IModelApp";
 import { openBlankViewport, testBlankViewport } from "./openBlankViewport";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
+import { Pixel } from "../render/Pixel";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup());
@@ -392,7 +393,7 @@ describe("Viewport", () => {
           expectNoImage(0, 0, -1, -1);
           expectNoImage(0, 0, 100, 1);
           expectNoImage(0, 0, 1, 100);
-          expectNoImage(-1, -1, 1, 1);
+          expectNoImage(100, 100, 1, 1);
           expectNoImage(1, 1, 1, 1);
         });
       });
@@ -496,6 +497,24 @@ describe("Viewport", () => {
         test(rTransp100pct, (viewport) => {
           expect(viewport.readImageBuffer()).to.be.undefined;
         });
+      });
+    });
+  });
+
+  describe("readPixels", () => {
+    it("returns undefined if viewport is disposed", async () => {
+      testBlankViewport((vp) => {
+        vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).not.to.be.undefined);
+
+        // BlankViewport.dispose also closes the iModel and removes the viewport's div from the DOM.
+        // We don't want that until the test completes.
+        const dispose = vp.dispose; // eslint-disable-line @typescript-eslint/unbound-method
+        vp.dispose = ScreenViewport.prototype.dispose; // eslint-disable-line @typescript-eslint/unbound-method
+        vp.dispose();
+
+        vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
+
+        vp.dispose = dispose;
       });
     });
   });

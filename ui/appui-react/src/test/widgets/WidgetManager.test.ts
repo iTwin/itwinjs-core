@@ -37,6 +37,7 @@ class TestUiProvider implements UiItemsProvider {
         restoreTransientState: () => false,
         defaultState: WidgetState.Floating,
         defaultFloatingPosition: { x: 100, y: 200 },
+        defaultFloatingSize: { width: 400, height: 200 },
         floatingContainerId: "my-floating-container",
         isFloatingStateSupported: true,
         isFloatingStateWindowResizable: false,

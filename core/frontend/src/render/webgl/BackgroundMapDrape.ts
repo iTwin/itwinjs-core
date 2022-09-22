@@ -78,7 +78,7 @@ export class BackgroundMapDrape extends TextureDrape {
       return;
 
     const tileTree = this._mapTree.treeOwner.load();
-    if (undefined === tileTree || !this._mapTree.initializeImagery())
+    if (undefined === tileTree || !this._mapTree.initializeLayers(context))
       return;
 
     const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);     // TBD - Size to textured area.

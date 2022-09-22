@@ -7,15 +7,12 @@
  * @module Polyface
  */
 
-// import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { GrowableXYArray } from "../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-// import { Geometry } from "./Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
@@ -25,12 +22,8 @@ import { FacetFaceData } from "./FacetFaceData";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { PolyfaceData } from "./PolyfaceData";
 
-function allDefined(valueA: any, valueB: any, valueC: any): boolean {
-  return valueA !== undefined && valueB !== undefined && valueC !== undefined;
-}
-
 /**
- * A Polyface is n abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
+ * A Polyface is an abstract mesh structure (of unspecified implementation) that provides a PolyfaceVisitor
  * to iterate over its facets.
  * @public
  */
@@ -181,101 +174,92 @@ export class IndexedPolyface extends Polyface {
   }
   /**
    * * Add facets from source to this polyface.
-   * * optionally reverse the facets.
-   * * optionally apply a transform to points.
-   * * will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them
+   * * Optionally reverse facet indices as per PolyfaceData.reverseIndicesSingleFacet() with preserveStart = false, and invert source normals.
+   * * Optionally apply a transform to points and normals.
+   * * Will only copy param, normal, color, and face data if we are already tracking them AND/OR the source contains them.
    */
   public addIndexedPolyface(source: IndexedPolyface, reversed: boolean, transform: Transform | undefined) {
-    const copyParams = allDefined(this.data.param, source.data.param, source.data.paramIndex);
-    const copyNormals = allDefined(this.data.normal, source.data.normal, source.data.normalIndex);
-    // Add point data
-    const sourceToDestPointIndex = new GrowableFloat64Array();
-    sourceToDestPointIndex.ensureCapacity(source.data.pointCount);
-    const sourcePoints = source.data.point;
+    const numSourceFacets = source.facetCount;
+
+    // Add point, point index, and edge visibility data
+    // Note: there is no need to build an intermediate index map since all points are added
+    const startOfNewPoints = this.data.point.length;
     const xyz = Point3d.create();
-    for (let i = 0, n = source.data.point.length; i < n; i++) {
-      sourcePoints.getPoint3dAtUncheckedPointIndex(i, xyz);
+    for (let i = 0; i < source.data.point.length; i++) {
+      source.data.point.getPoint3dAtUncheckedPointIndex(i, xyz);
       if (transform) {
         transform.multiplyPoint3d(xyz, xyz);
-        sourceToDestPointIndex.push(this.addPoint(xyz));
+        this.addPoint(xyz);
       } else
-        sourceToDestPointIndex.push(this.addPoint(xyz));
+        this.addPoint(xyz);
     }
-
-    // Add point index and facet data
-    const numSourceFacets = source._facetStart.length - 1;
     for (let i = 0; i < numSourceFacets; i++) {
       const i0 = source._facetStart[i];
       const i1 = source._facetStart[i + 1];
       if (reversed) {
-        for (let j = i1; j-- > i0;) {
-          this.addPointIndex(sourceToDestPointIndex.atUncheckedIndex(source.data.pointIndex[j]), source.data.edgeVisible[j]);
+        for (let j = i1; j-- > i0;) { // visibility is transferred from far vertex, e.g., -abc-d => dc-b-a
+          this.addPointIndex(startOfNewPoints + source.data.pointIndex[j], source.data.edgeVisible[j > i0 ? j - 1 : i1 - 1]);
         }
       } else {
         for (let j = i0; j < i1; j++) {
-          this.addPointIndex(sourceToDestPointIndex.atUncheckedIndex(source.data.pointIndex[j]), source.data.edgeVisible[j]);
+          this.addPointIndex(startOfNewPoints + source.data.pointIndex[j], source.data.edgeVisible[j]);
         }
       }
       this.terminateFacet(false);
     }
 
     // Add param and param index data
-    if (copyParams) {
-      const myParams = this.data.param!;
-
-      const startOfNewParams = myParams.length;
-      myParams.pushFromGrowableXYArray(source.data.param!);
-      for (let i = 0; i < source._facetStart.length; i++) {  // Expect facet start and ends for points to match normals
+    if (undefined !== this.data.param && undefined !== source.data.param && undefined !== source.data.paramIndex) {
+      const startOfNewParams = this.data.param.length;
+      this.data.param.pushFromGrowableXYArray(source.data.param);
+      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addParamIndex(startOfNewParams + source.data.paramIndex![j]);
+            this.addParamIndex(startOfNewParams + source.data.paramIndex[j]);
         }
       }
     }
 
     // Add normal and normal index data
-    if (copyNormals && source.data.normal) {
-      const startOfNewNormals = this.data.normal!.length;
-      const numNewNormals = source.data.normal.length;
-      for (let i = 0; i < numNewNormals; i++) {
+    if (undefined !== this.data.normal && undefined !== source.data.normal && undefined !== source.data.normalIndex) {
+      const startOfNewNormals = this.data.normal.length;
+      for (let i = 0; i < source.data.normal.length; i++) {
         const sourceNormal = source.data.normal.getVector3dAtCheckedVectorIndex(i)!;
-        if (transform) {
+        if (transform)
           transform.multiplyVector(sourceNormal, sourceNormal);
-          this.addNormal(sourceNormal);
-        } else {
-          this.addNormal(sourceNormal);
-        }
+        if (reversed)
+          sourceNormal.scaleInPlace(-1.0);
+        this.addNormal(sourceNormal);
       }
-      for (let i = 0; i < source._facetStart.length; i++) {  // Expect facet start and ends for points to match normals
+      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
-            this.addNormalIndex(startOfNewNormals + source.data.normalIndex![j]);
+            this.addNormalIndex(startOfNewNormals + source.data.normalIndex[j]);
         }
       }
     }
 
     // Add color and color index data
-    if (this.data.color && source.data.color && source.data.colorIndex) {
+    if (undefined !== this.data.color && undefined !== source.data.color && undefined !== source.data.colorIndex) {
       const startOfNewColors = this.data.color.length;
-      for (const sourceColor of source.data.color) {
+      for (const sourceColor of source.data.color)
         this.addColor(sourceColor);
-      }
-      for (let i = 0; i < source._facetStart.length; i++) {  // Expect facet start and ends for points to match colors
+      for (let i = 0; i < numSourceFacets; i++) {  // Expect facet start and ends for points to match colors
         const i0 = source._facetStart[i];
         const i1 = source._facetStart[i + 1];
         if (reversed) {
           for (let j = i1; j-- > i0;)
-            this.addColorIndex(startOfNewColors + source.data.colorIndex[j - 1]);
+            this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);
         } else {
           for (let j = i0; j < i1; j++)
             this.addColorIndex(startOfNewColors + source.data.colorIndex[j]);

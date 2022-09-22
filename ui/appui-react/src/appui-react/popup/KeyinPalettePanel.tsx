@@ -202,17 +202,20 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
     } else {
       const newKeyinSet: KeyinEntry[] = [];
       allKeyins.forEach((value) => {
-        const matches = matchesWords(currentKeyin, value.value);
-        if (matches && matches.length) {
-          // istanbul ignore else
-          if (value.isHistory) {
-            filteredHistory.push(value);
-            newKeyinSet.push({ ...value, matches });
-          } else {
-            // only add entry if no match in filtered history
+        if (value.value.length >= currentKeyin.length) {
+          // Force contiguous searches if key-in is over 60 characters long for performance.
+          const matches = matchesWords(currentKeyin, value.value, currentKeyin.length > 60);
+          if (matches && matches.length) {
             // istanbul ignore else
-            if (-1 === filteredHistory.findIndex((historyEntry: KeyinEntry) => historyEntry.value === value.value))
+            if (value.isHistory) {
+              filteredHistory.push(value);
               newKeyinSet.push({ ...value, matches });
+            } else {
+              // only add entry if no match in filtered history
+              // istanbul ignore else
+              if (-1 === filteredHistory.findIndex((historyEntry: KeyinEntry) => historyEntry.value === value.value))
+                newKeyinSet.push({ ...value, matches });
+            }
           }
         }
       });
@@ -260,7 +263,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       placeholder={placeholderLabel.current} value={currentKeyin} size="small"
     />
     {(filteredKeyins.length > 0) &&
-      <Listbox id="uifw-command-sources" className="map-manager-source-list" onKeyPress={handleKeypressOnKeyinsList}
+      <Listbox id="uifw-command-sources" className="map-manager-source-list" onKeyDown={handleKeypressOnKeyinsList}
         onListboxValueChange={onListboxValueChange} >
         {
           filteredKeyins.map((entry, index) => {

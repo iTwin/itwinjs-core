@@ -8,6 +8,7 @@
 
 /** Coordinate system types
  * @public
+ * @extensions
  */
 export enum CoordSystem {
   /** Coordinates are relative to the origin of the viewing rectangle.

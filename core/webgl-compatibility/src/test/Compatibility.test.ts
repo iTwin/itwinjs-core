@@ -51,6 +51,7 @@ class OverriddenFunctions {
   }
 }
 
+// NB: These tests run in chromium via puppeteer. On non-Windows platforms, it uses software rendering. On Windows, it uses hardware rendering if available.
 describe("Render Compatibility", () => {
   let overriddenFunctions: OverriddenFunctions;
 
@@ -62,24 +63,9 @@ describe("Render Compatibility", () => {
     overriddenFunctions.restore();
   });
 
-  // NB: We assume software rendering for these tests because puppeteer only supports software rendering.
-  // Further, we run in the context of Chrome, whose Swift software renderer fully supports our renderer.
-
-  it("should query proper render compatibility info assuming software rendering causing performance caveat", () => {
+  it("should provide error message if failed to produce context", () => {
     const compatibility = queryRenderCompatibility(false, createContext);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat);
-    expect(compatibility.contextErrorMessage).to.not.be.undefined;
-  });
-
-  it("should query proper render compatibility info assuming software rendering ignoring performance caveat", () => {
-    overriddenFunctions.overrideCreateContext(undefined, false);
-    const compatibility = queryRenderCompatibility(false, createContext);
-    expect(compatibility.status).to.equal(WebGLRenderCompatibilityStatus.MissingOptionalFeatures);
-    expect(compatibility.missingRequiredFeatures.length).to.equal(0);
-    expect(compatibility.missingOptionalFeatures.length).to.equal(2);
-    expect(compatibility.missingOptionalFeatures[0]).to.equal("fragment depth");
-    expect(compatibility.contextErrorMessage).to.be.undefined;
-    overriddenFunctions.restore();
+    expect(compatibility.contextErrorMessage !== undefined).to.equal(WebGLRenderCompatibilityStatus.MajorPerformanceCaveat === compatibility.status);
   });
 
   it("should query proper render compatibility info assuming not enough texture units", () => {
@@ -212,6 +198,59 @@ describe("Render Compatibility", () => {
       const expected = renderer[1] ? true : undefined;
       expect(compatibility.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
       expect(caps.driverBugs.fragDepthDoesNotDisableEarlyZ).to.equal(expected);
+    }
+  });
+
+  it("detects integrated and dedicated graphics", () => {
+    const renderers = [
+      [ "ANGLE (Intel(R) HD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel(R) UHD Graphics 630 Direct3D11 vs_5_0 ps_5_0)", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  true ],
+      [ "Intel(R) Iris(TM) Graphics 6100", true ],
+      [ "ANGLE (NVIDIA GeForce GTX 970 Direct3D11 vs_5_0 ps_5_0)", false ],
+    ];
+
+    for (const renderer of renderers) {
+      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
+        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
+          return renderer[0];
+
+        return undefined;
+      });
+
+      const context = makeTestContext(true);
+      const caps = new Capabilities();
+      const compatibility = caps.init(context);
+
+      expect(compatibility.usingIntegratedGraphics).to.equal(renderer[1]);
+    }
+  });
+
+  it("detects MSAA hang bug", () => {
+    const renderers = [
+      [ "Mali-G71", true ],
+      [ "Mali-G72", true ],
+      [ "Mali-G76", true ],
+      [ "ANGLE (Intel HD Graphics 620 Direct3D11 vs_5_0 ps_5_0)",  false ],
+      [ "Mali-G79", false ],
+    ];
+
+    for (const renderer of renderers) {
+      overriddenFunctions.overrideCreateContext((ctx: WebGLContext, pname: number) => {
+        const ext = ctx.getExtension("WEBGL_debug_renderer_info");
+        if (ext && pname === ext.UNMASKED_RENDERER_WEBGL)
+          return renderer[0];
+
+        return undefined;
+      });
+
+      const context = makeTestContext(true);
+      const caps = new Capabilities();
+      const compatibility = caps.init(context);
+
+      const expected = renderer[1] ? true : undefined;
+      expect(compatibility.driverBugs.msaaWillHang).to.equal(expected);
     }
   });
 });

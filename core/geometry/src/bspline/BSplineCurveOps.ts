@@ -116,15 +116,13 @@ export namespace BSplineCurveOps {
         knots = undefined;
         return false;
       }
-      const myKnots = KnotVector.create(knots, 1, false);
-      if (myKnots.knotLength01 < KnotVector.knotTolerance) {
+      const myKnots = KnotVector.create(knots, 1, false); // no extra knots at start/end
+      if (!myKnots.normalize()) {
         knots = undefined;
         return false;
       }
-      for (let i = 0; i < myKnots.numSpans; ++i) {
-        knots[i] = myKnots.spanFractionToFraction(i, 0.0);
-      }
-      knots[knots.length - 1] = 1.0;
+      for (let i = 0; i < knots.length; ++i)
+        knots[i] = myKnots.knots[i];
       return true;
     }
 

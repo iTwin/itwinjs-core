@@ -1,0 +1,24 @@
+#
+# This is a valgrind suppression file that should be used when running valgrind.
+#
+#  Add the parameter to valgrind
+#
+#	valgrind --suppressions=<pathToFile>
+#
+
+{
+   Seems to be related to rush or node, suppress to have less clutter in the logs
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   obj:/bin/sed
+}
+
+{
+   Seems to be related to rush or node, suppress to have less clutter in the logs (2)
+   Memcheck:Leak
+   match-leak-kinds: possible
+   fun:malloc
+   fun:realloc
+   obj:/bin/sed
+}

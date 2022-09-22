@@ -5,10 +5,10 @@
 
 import * as path from "path";
 import * as Yargs from "yargs";
-import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { assert, Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
 import { IModelDb, IModelHost, IModelJsFs, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@itwin/core-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetProps, IModelVersion } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "@itwin/core-transformer";
 import { NamedVersion } from "@itwin/imodels-client-authoring";
 import { ElementUtils } from "./ElementUtils";
@@ -17,97 +17,174 @@ import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
 import * as dotenv from "dotenv";
 import * as dotenvExpand from "dotenv-expand";
 
-interface CommandLineArgs {
-  hub?: string;
-  sourceFile?: string;
-  sourceITwinId?: GuidString;
-  sourceIModelId?: GuidString;
-  sourceIModelName?: string;
-  sourceStartChangesetId?: ChangesetId;
-  sourceStartChangesetIndex?: ChangesetIndex;
-  sourceEndChangesetId?: ChangesetId;
-  sourceEndChangesetIndex?: ChangesetIndex;
-  /** location of a target snapshot iModel to transform */
-  targetFile: string;
-  /** location to create a new target file */
-  targetDestination: string;
-  targetITwinId?: GuidString;
-  targetIModelId?: GuidString;
-  targetIModelName?: string;
-  clean?: boolean;
-  logChangesets: boolean;
-  logNamedVersions: boolean;
-  logProvenanceScopes: boolean;
-  logTransformer: boolean;
-  validation: boolean;
-  simplifyElementGeometry?: boolean;
-  combinePhysicalModels?: boolean;
-  exportViewDefinition?: Id64String;
-  deleteUnusedGeometryParts?: boolean;
-  noProvenance?: boolean;
-  includeSourceProvenance?: boolean;
-  excludeSubCategories?: string;
-  excludeCategories?: string;
-}
-
 void (async () => {
   try {
-    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env")});
+    const envResult = dotenv.config({ path: path.resolve(__dirname, "../.env") });
     if (!envResult.error) {
       dotenvExpand(envResult);
     }
 
-    Yargs.usage("Transform the specified source iModel into a new target iModel.\n"
-              + "You must set up a .env file to connect to an online iModel, see the .env.template file to do so.");
+    const args = Yargs(process.argv.slice(2))
+      .usage(
+        [
+          "Transform the specified source iModel into a new target iModel.",
+          "You must set up a .env file to connect to an online iModel, see the .env.template file to do so.",
+        ].join("\n")
+      )
+      .strict()
+      .options({
+        hub: {
+          desc: "The iModelHub environment: prod | qa | dev",
+          type: "string",
+          default: "prod",
+        },
 
-    Yargs.strict();
+        // used if the source iModel is a snapshot
+        sourceFile: {
+          desc: "The full path to the source iModel",
+          type: "string",
+        },
 
-    // iModelHub environment options
-    Yargs.option("hub", { desc: "The iModelHub environment: prod | qa | dev", type: "string", default: "prod" });
+        // used if the source iModel is on iModelHub
+        sourceITwinId: {
+          desc: "The iModelHub iTwin containing the source iModel",
+          type: "string",
+        },
+        sourceIModelId: {
+          desc: "The guid of the source iModel",
+          type: "string",
+        },
+        sourceIModelName: {
+          desc: "The name of the source iModel",
+          type: "string",
+        },
+        sourceStartChangesetId: {
+          desc: "The starting changeset of the source iModel to transform",
+          type: "string",
+        },
+        sourceStartChangesetIndex: {
+          desc: "The starting changeset of the source iModel to transform",
+          type: "number",
+        },
+        sourceEndChangesetId: {
+          desc: "The ending changeset of the source iModel to transform",
+          type: "string",
+        },
+        sourceEndChangesetIndex: {
+          desc: "The ending changeset of the source iModel to transform",
+          type: "number",
+        },
 
-    // used if the source iModel is a snapshot
-    Yargs.option("sourceFile", { desc: "The full path to the source iModel", type: "string" });
+        // used if the target iModel is a new snapshot
+        targetDestination: {
+          desc: "The destination path where to create the target iModel",
+          type: "string",
+        },
+        // used if the target iModel is a standalone db
+        targetFile: {
+          desc: "The full path to the target iModel",
+          type: "string",
+        },
+        // used if the target iModel is on iModelHub
+        targetITwinId: {
+          desc: "The iModelHub iTwin containing the target iModel",
+          type: "string",
+        },
+        targetIModelId: {
+          desc: "The guid of the target iModel",
+          type: "string",
+        },
+        targetIModelName: {
+          desc: "The name of the target iModel",
+          type: "string",
+        },
 
-    // used if the source iModel is on iModelHub
-    Yargs.option("sourceITwinId", { desc: "The iModelHub iTwin containing the source iModel", type: "string" });
-    Yargs.option("sourceIModelId", { desc: "The guid of the source iModel", type: "string", default: undefined });
-    Yargs.option("sourceIModelName", { desc: "The name of the source iModel", type: "string", default: undefined });
-    Yargs.option("sourceStartChangesetId", { desc: "The starting changeset of the source iModel to transform", type: "string", default: undefined });
-    Yargs.option("sourceStartChangesetIndex", { desc: "The starting changeset of the source iModel to transform", type: "number", default: undefined });
-    Yargs.option("sourceEndChangesetId", { desc: "The ending changeset of the source iModel to transform", type: "string", default: undefined });
-    Yargs.option("sourceEndChangesetIndex", { desc: "The ending changeset of the source iModel to transform", type: "number", default: undefined });
+        // print/debug options
+        logChangesets: {
+          desc: "If true, log the list of changesets",
+          type: "boolean",
+          default: false,
+        },
+        logNamedVersions: {
+          desc: "If true, log the list of named versions",
+          type: "boolean",
+          default: false,
+        },
+        logProvenanceScopes: {
+          desc: "If true, log the provenance scopes in the source and target iModels",
+          type: "boolean",
+          default: false,
+        },
+        logTransformer: {
+          alias: ["verbose", "v"],
+          desc: "If true, turn on verbose logging for iModel transformation",
+          type: "boolean",
+          default: false,
+        },
+        validation: {
+          desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results",
+          type: "boolean",
+          default: false,
+        },
 
-    // used if the target iModel is a new snapshot
-    Yargs.option("targetDestination", { desc: "The destination path where to create the target iModel", type: "string" });
-    // used if the target iModel is a standalone db
-    Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
-
-    // used if the target iModel is on iModelHub
-    Yargs.option("targetITwinId", { desc: "The iModelHub iTwin containing the target iModel", type: "string" });
-    Yargs.option("targetIModelId", { desc: "The guid of the target iModel", type: "string", default: undefined });
-    Yargs.option("targetIModelName", { desc: "The name of the target iModel", type: "string", default: undefined });
-
-    // target iModel management options
-    Yargs.option("clean", { desc: "If true, refetch briefcases and clean/delete the target before beginning", type: "boolean", default: undefined });
-
-    // print/debug options
-    Yargs.option("logChangesets", { desc: "If true, log the list of changesets", type: "boolean", default: false });
-    Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
-    Yargs.option("logProvenanceScopes", { desc: "If true, log the provenance scopes in the source and target iModels", type: "boolean", default: false });
-    Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
-    Yargs.option("validation", { desc: "If true, perform extra and potentially expensive validation to assist with finding issues and confirming results", type: "boolean", default: false });
-
-    // transformation options
-    Yargs.option("simplifyElementGeometry", { desc: "Simplify element geometry upon import into target iModel", type: "boolean", default: false });
-    Yargs.option("combinePhysicalModels", { desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel", type: "boolean", default: false });
-    Yargs.option("exportViewDefinition", { desc: "Only export elements that would be visible using the specified ViewDefinition Id", type: "string", default: undefined });
-    Yargs.option("deleteUnusedGeometryParts", { desc: "Delete unused GeometryParts from the target iModel", type: "boolean", default: false });
-    Yargs.option("excludeSubCategories", { desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel", type: "string" });
-    Yargs.option("excludeCategories", { desc: "Exclude a categories (names with comma separators) and their elements from the target iModel", type: "string" });
-    Yargs.option("noProvenance", { desc: "If true, IModelTransformer should not record its provenance.", type: "boolean", default: false });
-    Yargs.option("includeSourceProvenance", { desc: "Include existing provenance from the source iModel in the target iModel", type: "boolean", default: false });
-
-    const args = Yargs.parse() as Yargs.Arguments<CommandLineArgs>;
+        // transformation options
+        simplifyElementGeometry: {
+          desc: "Simplify element geometry upon import into target iModel",
+          type: "boolean",
+          default: false,
+        },
+        combinePhysicalModels: {
+          desc: "Combine all source PhysicalModels into a single PhysicalModel in the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        exportViewDefinition: {
+          desc: "Only export elements that would be visible using the specified ViewDefinition Id",
+          type: "string",
+        },
+        deleteUnusedGeometryParts: {
+          desc: "Delete unused GeometryParts from the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        excludeSubCategories: {
+          desc: "Exclude geometry in the specified SubCategories (names with comma separators) from the target iModel",
+          type: "string",
+        },
+        excludeCategories: {
+          desc: "Exclude a categories (names with comma separators) and their elements from the target iModel",
+          type: "string",
+        },
+        noProvenance: {
+          desc: "If true, IModelTransformer should not record its provenance.",
+          type: "boolean",
+          default: false,
+        },
+        includeSourceProvenance: {
+          desc: "Include existing provenance from the source iModel in the target iModel",
+          type: "boolean",
+          default: false,
+        },
+        isolateElements: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids",
+          type: "string",
+        },
+        isolateTrees: {
+          desc: "transform filtering all element/models that aren't part of the logical path to a set of comma-separated element ids, or one of their children",
+          type: "string",
+        },
+        loadSourceGeometry: {
+          desc: "load geometry from the source as JSON while transforming, for easier (but not performant) transforming of geometry",
+          type: "boolean",
+          default: false,
+        },
+        cloneUsingJsonGeometry: {
+          desc: "sets cloneUsingBinaryGeometry in the transformer options to true, which is slower but allows simple editing of geometry in javascript.",
+          type: "boolean",
+          default: false,
+        },
+      })
+      .parseSync();
 
     IModelHubUtils.setHubEnvironment(args.hub);
 
@@ -177,7 +254,6 @@ void (async () => {
       }
 
       sourceDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await acquireAccessToken(),
         iTwinId: sourceITwinId,
         iModelId: sourceIModelId,
         asOf: sourceEndVersion.toJSON(),
@@ -232,7 +308,6 @@ void (async () => {
       }
 
       targetDb = await IModelHubUtils.downloadAndOpenBriefcase({
-        accessToken: await acquireAccessToken(),
         iTwinId: targetITwinId,
         iModelId: targetIModelId,
       });
@@ -270,6 +345,7 @@ void (async () => {
 
     const transformerOptions: TransformerOptions = {
       ...args,
+      cloneUsingBinaryGeometry: !args.cloneUsingJsonGeometry,
       excludeSubCategories: args.excludeSubCategories?.split(","),
       excludeCategories: args.excludeCategories?.split(","),
     };
@@ -277,6 +353,20 @@ void (async () => {
     if (processChanges) {
       assert(undefined !== args.sourceStartChangesetId);
       await Transformer.transformChanges(await acquireAccessToken(), sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
+    } else if (args.isolateElements !== undefined || args.isolateTrees !== undefined) {
+      const isolateTrees = args.isolateTrees !== undefined;
+      const isolateArg = args.isolateElements ?? args.isolateTrees;
+      assert(isolateArg !== undefined);
+      const isolateList = isolateArg.split(",");
+      const transformer = await Transformer.transformIsolated(sourceDb, targetDb, isolateList, isolateTrees, transformerOptions);
+      Logger.logInfo(
+        loggerCategory,
+        [
+          "remapped elements:",
+          isolateList.map((id) => `${id}=>${transformer.context.findTargetElementId(id)}`).join(", "),
+        ].join("\n")
+      );
+      transformer.dispose();
     } else {
       await Transformer.transformAll(sourceDb, targetDb, transformerOptions);
     }

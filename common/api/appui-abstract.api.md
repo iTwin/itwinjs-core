@@ -9,6 +9,7 @@ import { BentleyError } from '@itwin/core-bentley';
 import { BeUiEvent } from '@itwin/core-bentley';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
+import { MarkRequired } from '@itwin/core-bentley';
 
 // @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
@@ -76,10 +77,15 @@ export interface AbstractWidgetProps extends ProvidedItem {
         x: number;
         y: number;
     };
+    defaultFloatingSize?: {
+        width: number;
+        height: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
     readonly floatingContainerId?: string;
     readonly getWidgetContent: () => any;
+    hideWithUiWhenFloating?: boolean;
     readonly icon?: string | ConditionalStringValue;
     readonly id?: string;
     readonly internalData?: Map<string, any>;
@@ -94,6 +100,7 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly priority?: number;
     readonly restoreTransientState?: () => boolean;
     readonly saveTransientState?: () => void;
+    // @deprecated
     readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
     readonly syncEventIds?: string[];
     readonly tooltip?: string | ConditionalStringValue;
@@ -116,6 +123,16 @@ export interface ActionButton extends ToolbarItem {
     readonly execute: () => void;
     readonly icon: string | ConditionalStringValue;
     readonly label: string | ConditionalStringValue;
+}
+
+// @public
+export interface AllowedUiItemProviderOverrides {
+    // @beta
+    providerId?: string;
+    // @beta
+    stageIds?: string[];
+    // @beta
+    stageUsages?: string[];
 }
 
 // @public
@@ -253,11 +270,11 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
 
 // @public
 export class BaseUiItemsProvider implements UiItemsProvider {
-    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    constructor(_providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined);
     // (undocumented)
     get id(): string;
     // (undocumented)
-    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined;
+    isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any, provider?: UiItemsProvider | undefined) => boolean) | undefined;
     // (undocumented)
     onUnregister(): void;
     provideBackstageItems(): BackstageItem[];
@@ -274,7 +291,7 @@ export class BaseUiItemsProvider implements UiItemsProvider {
     // (undocumented)
     provideWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     // (undocumented)
-    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[];
+    provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _zoneLocation?: AbstractZoneLocation, _stageAppData?: any): AbstractWidgetProps[];
     // (undocumented)
     unregister(): void;
 }
@@ -1200,9 +1217,15 @@ export interface IconListEditorParams extends BasePropertyEditorParams {
 
 // @public
 export class IconSpecUtilities {
+    // @deprecated
     static createSvgIconSpec(svgSrc: string): string;
+    static createWebComponentIconSpec(srcString: string): string;
+    // @deprecated
     static getSvgSource(iconSpec: string): string | undefined;
+    static getWebComponentSource(iconSpec: string): string | undefined;
     static readonly SVG_PREFIX = "svg:";
+    // (undocumented)
+    static readonly WEB_COMPONENT_PREFIX = "webSvg:";
 }
 
 // @internal
@@ -1723,7 +1746,7 @@ export enum StagePanelLocation {
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
-    // (undocumented)
+    // @deprecated (undocumented)
     Middle = 1,
     // (undocumented)
     Start = 0
@@ -2085,12 +2108,18 @@ export interface UiFlags {
 }
 
 // @public
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
+MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+
+// @public
 export interface UiItemProviderRegisteredEventArgs {
     // (undocumented)
     providerId: string;
 }
 
-// @public
+// @public @deprecated
 export enum UiItemsApplicationAction {
     Allow = 0,
     Disallow = 1,
@@ -2099,6 +2128,8 @@ export enum UiItemsApplicationAction {
 
 // @public
 export class UiItemsManager {
+    // @internal
+    static clearAllProviders(): void;
     static getBackstageItems(): BackstageItem[];
     static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
     static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
@@ -2106,7 +2137,7 @@ export class UiItemsManager {
     static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: UiItemsProvider): void;
+    static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void;
     static get registeredProviderIds(): string[];
     static unregister(uiProviderId: string): void;
 }

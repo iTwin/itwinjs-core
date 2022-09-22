@@ -11,7 +11,8 @@ import { using } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
-  Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,
+  Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, ProcessPrimitiveValueProps, RegisteredRuleset, Ruleset, traverseContent,
+  Value, ValuesMap,
 } from "@itwin/presentation-common";
 import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@itwin/presentation-components";
 import { Presentation } from "@itwin/presentation-frontend";
@@ -47,8 +48,20 @@ export interface ContentBuilderResult {
 export interface ContentBuilderProps {
   /** The iModel to pull data from */
   imodel: IModelConnection;
+
   /** Custom data provider that allows mocking data ContentBuilder receives */
   dataProvider?: IContentBuilderDataProvider;
+
+  /**
+   * Decimal precision or numeric types.
+   *
+   * Raw numeric values with high precision may slightly differ from platform to platform due to
+   * rounding differences on different platforms. This may be a problem when used with snapshot testing,
+   * in which case this attribute may be set to supply the maximum precision of raw numeric values.
+   *
+   * By default no rounding is applied.
+   */
+  decimalPrecision?: number;
 }
 
 /**
@@ -58,6 +71,7 @@ export interface ContentBuilderProps {
 export class ContentBuilder {
   private readonly _iModel: IModelConnection;
   private _dataProvider: IContentBuilderDataProvider | undefined;
+  private _decimalPrecision?: number;
 
   /**
    * Constructor
@@ -67,6 +81,7 @@ export class ContentBuilder {
   constructor(props: ContentBuilderProps) {
     this._iModel = props.imodel;
     this._dataProvider = props.dataProvider;
+    this._decimalPrecision = props.decimalPrecision;
   }
 
   private async doCreateContent(rulesetId: string, instanceKeys: InstanceKey[], displayType: string): Promise<PropertyRecord[]> {
@@ -77,7 +92,7 @@ export class ContentBuilder {
     if (!content)
       return [];
 
-    const accumulator = new PropertyRecordsAccumulator();
+    const accumulator = new PropertyRecordsAccumulator(this._decimalPrecision);
     traverseContent(accumulator, content);
     return accumulator.records;
   }
@@ -164,6 +179,12 @@ export class ContentBuilder {
 
 class PropertyRecordsAccumulator extends PropertyRecordsBuilder {
   private _records: PropertyRecord[] = [];
+  private _decimalPrecision?: number;
+
+  public constructor(decimalPrecision?: number) {
+    super();
+    this._decimalPrecision = decimalPrecision;
+  }
 
   public get records(): PropertyRecord[] {
     return this._records;
@@ -175,5 +196,32 @@ class PropertyRecordsAccumulator extends PropertyRecordsBuilder {
         this._records.push(record.record);
       },
     };
+  }
+
+  private processRawValue(value: Value): Value {
+    if (this._decimalPrecision === undefined)
+      return value;
+
+    if (typeof value === "number") {
+      return +(Number(value)).toFixed(this._decimalPrecision);
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.processRawValue(item));
+    }
+
+    if (value instanceof Object) {
+      const res: ValuesMap = {};
+      Object.entries(value).forEach(([key, memberValue]) => {
+        res[key] = this.processRawValue(memberValue);
+      });
+      return res;
+    }
+
+    return value;
+  }
+
+  public override processPrimitiveValue(props: ProcessPrimitiveValueProps) {
+    super.processPrimitiveValue({ ...props, rawValue: this.processRawValue(props.rawValue) });
   }
 }

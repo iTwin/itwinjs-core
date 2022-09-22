@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
-import { Direction, PanelSide } from "@itwin/appui-layout-react";
+import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -20,6 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
+import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -105,6 +106,7 @@ export interface TabLocation {
   widgetIndex: number;
   side: PanelSide;
   tabIndex: number;
+  floatingWidget?: FloatingWidgetState;
 }
 
 // -----------------------------------------------------------------------------
@@ -135,29 +137,37 @@ export class WidgetDef {
   private _widgetType: WidgetType = WidgetType.Rectangular;
   private _applicationData?: any;
   private _iconSpec?: string | ConditionalStringValue | React.ReactNode;
+  private _internalData?: Map<string, any>;
   private _badgeType?: BadgeType;
   private _onWidgetStateChanged?: () => void;
   private _saveTransientState?: () => void;
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
+  private _defaultFloatingSize: SizeProps | undefined;
   private _canPopout?: boolean;
   private _floatingContainerId?: string;
   private _defaultFloatingPosition: PointProps | undefined;
 
-  private _tabLocation: TabLocation = {
+  private _hideWithUiWhenFloating?: boolean;
+  private _initialProps?: WidgetProps;
+
+  private _tabLocation?: TabLocation;
+  private _defaultTabLocation: TabLocation = {
     side: "left",
     tabIndex: 0,
     widgetId: "",
     widgetIndex: 0,
   };
+  private _popoutBounds?: Rectangle;
 
   public get state(): WidgetState {
     if ("1" === UiFramework.uiVersion)
       return this._state;
 
     const frontstageDef = FrontstageManager.activeFrontstageDef;
-    if (frontstageDef?.findWidgetDef(this.id)) {
+    if (frontstageDef && frontstageDef.findWidgetDef(this.id)) {
       const currentState = frontstageDef.getWidgetCurrentState(this);
+      // istanbul ignore else
       if (undefined !== currentState)
         return currentState;
     }
@@ -178,22 +188,35 @@ export class WidgetDef {
   public get stateFunc(): WidgetStateFunc | undefined { return this._stateFunc; }
   public get applicationData(): any | undefined { return this._applicationData; }
   public get isFloating(): boolean { return this.state === WidgetState.Floating; }
-  public get iconSpec(): string | ConditionalStringValue | React.ReactNode { return this._iconSpec; }
+  public get iconSpec(): IconSpec { return this._iconSpec === IconHelper.reactIconKey ? IconHelper.getIconReactNode(this._iconSpec, this._internalData) : this._iconSpec; }
+  public set iconSpec(spec: IconSpec) { this._iconSpec = this._internalData ? IconHelper.getIconData(spec, this._internalData) : spec; }
   public get badgeType(): BadgeType | undefined { return this._badgeType; }
+  public get initialProps(): WidgetProps | undefined { return this._initialProps; }
 
   public get widgetType(): WidgetType { return this._widgetType; }
   public set widgetType(type: WidgetType) { this._widgetType = type; }
 
   /** @internal */
   public get tabLocation() { return this._tabLocation; }
-  public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
+  public set tabLocation(tabLocation: TabLocation | undefined) { this._tabLocation = tabLocation; }
+
+  /** @internal */
+  public get defaultTabLocation() { return this._defaultTabLocation; }
 
   /** @internal */
   public get defaultFloatingPosition() { return this._defaultFloatingPosition; }
   public set defaultFloatingPosition(position: PointProps | undefined) { this._defaultFloatingPosition = position; }
 
   /** @internal */
+  public get defaultFloatingSize() { return this._defaultFloatingSize; }
+  public set defaultFloatingSize(size: SizeProps | undefined) { this._defaultFloatingSize = size; }
+
+  /** @internal */
   public get defaultState() { return this._defaultState; }
+
+  /** @internal */
+  public get popoutBounds() { return this._popoutBounds; }
+  public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
@@ -207,6 +230,7 @@ export class WidgetDef {
   }
 
   public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+    me._initialProps = widgetProps;
     if (widgetProps.label)
       me.setLabel(widgetProps.label);
     else if (widgetProps.labelKey)
@@ -215,6 +239,8 @@ export class WidgetDef {
     me.setCanPopout(widgetProps.canPopout);
     me.setFloatingContainerId(widgetProps.floatingContainerId);
     me.defaultFloatingPosition = widgetProps.defaultFloatingPosition ? widgetProps.defaultFloatingPosition as PointProps : undefined;
+
+    me._hideWithUiWhenFloating = !!widgetProps.hideWithUiWhenFloating;
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -231,6 +257,7 @@ export class WidgetDef {
 
     if (widgetProps.defaultState !== undefined) {
       me._defaultState = widgetProps.defaultState;
+      // istanbul ignore next
       if ("1" === UiFramework.uiVersion)
         me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
@@ -259,14 +286,17 @@ export class WidgetDef {
 
     if (widgetProps.iconSpec !== undefined)
       me._iconSpec = widgetProps.iconSpec;
-    // istanbul ignore if
-    if (widgetProps.icon !== undefined)
+    if (widgetProps.internalData)
+      me._internalData = widgetProps.internalData;
+    // istanbul ignore next
+    if (widgetProps.icon !== undefined && me._iconSpec === undefined)
       me._iconSpec = widgetProps.icon;
 
     if (widgetProps.badgeType !== undefined)
       me._badgeType = widgetProps.badgeType;
 
     me._preferredPanelSize = widgetProps.preferredPanelSize;
+    me._defaultFloatingSize = widgetProps.defaultFloatingSize;
     me._onWidgetStateChanged = widgetProps.onWidgetStateChanged;
     me._saveTransientState = widgetProps.saveTransientState;
     me._restoreTransientState = widgetProps.restoreTransientState;
@@ -281,9 +311,9 @@ export class WidgetDef {
   }
 
   public setUpSyncSupport(props: WidgetProps) {
-    if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) {
+    if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) { // eslint-disable-line deprecation/deprecation
       this._syncEventIds = props.syncEventIds;
-      this._stateFunc = props.stateFunc;
+      this._stateFunc = props.stateFunc; // eslint-disable-line deprecation/deprecation
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
   }
@@ -428,6 +458,14 @@ export class WidgetDef {
 
   public get isActive(): boolean {
     return WidgetState.Open === this.activeState;
+  }
+
+  public set hideWithUiWhenFloating(hide: boolean | undefined) {
+    this._hideWithUiWhenFloating = !!hide;
+  }
+
+  public get hideWithUiWhenFloating(): boolean {
+    return !!this._hideWithUiWhenFloating;
   }
 
   public onWidgetStateChanged(): void {

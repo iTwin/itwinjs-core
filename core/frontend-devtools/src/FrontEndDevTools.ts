@@ -20,24 +20,26 @@ import {
   MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
 } from "./tools/PlanarMaskTools";
 import {
-  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool, FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool,
-  Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool, ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool,
-  ToggleViewAttachmentsTool, ViewportAddRealityModel, ViewportTileSizeModifierTool,
+  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
+  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
+  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
+  ViewportTileSizeModifierTool,
 } from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, QueryScheduleScriptTool, SaveRenderingStyleTool, SkyCubeTool, SkySphereTool, ToggleSkyboxTool,
-  ToggleWiremeshTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
+  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
-  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
+  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
   AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
   MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
 } from "./tools/MapLayerTool";
@@ -60,7 +62,7 @@ import {
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
-import { SelectElementsByIdTool } from "./tools/SelectionTools";
+import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
@@ -87,11 +89,15 @@ export class FrontendDevTools {
 
     this._initialized = true;
 
+    // clean up if we're being shut down
+    IModelApp.onBeforeShutdown.addListener(() => this.shutdown());
+
     const namespace = "FrontendDevTools";
     const namespacePromise = IModelApp.localization.registerNamespace(namespace);
     const tools = [
       AttachMapLayerTool,
       AttachMapOverlayTool,
+      AttachModelMapLayerTool,
       AttachArcGISMapLayerByUrlTool,
       AttachWmsMapLayerByUrlTool,
       AttachWmtsMapLayerByUrlTool,
@@ -104,6 +110,7 @@ export class FrontendDevTools {
       ChangeCameraTool,
       ChangeEmphasisSettingsTool,
       ChangeFlashSettingsTool,
+      ChangeHiliteModeTool,
       ChangeHiliteSettingsTool,
       ChangePlanProjectionSettingsTool,
       ChangeUnitsTool,
@@ -116,6 +123,7 @@ export class FrontendDevTools {
       DefaultTileSizeModifierTool,
       DetachMapLayersTool,
       DumpPlanProjectionSettingsTool,
+      DumpSelectionSetTool,
       EdgeDetectionEffect,
       EmbossEffect,
       ElementIdFromSourceAspectIdTool,
@@ -146,6 +154,7 @@ export class FrontendDevTools {
       RealityTransitionTool,
       ReorderMapLayers,
       ReportWebGLCompatibilityTool,
+      ReverseScheduleScriptTool,
       SaturationConfig,
       SaturationEffect,
       SaveRenderingStyleTool,
@@ -153,6 +162,7 @@ export class FrontendDevTools {
       SelectElementsByIdTool,
       SetAASamplesTool,
       SetAspectRatioSkewTool,
+      SetScheduleScriptTool,
       ToggleVolClassIntersect,
       SetMapBaseTool,
       SharpenEffect,
@@ -232,5 +242,9 @@ export class FrontendDevTools {
       tool.register(namespace);
 
     return namespacePromise;
+  }
+
+  private static shutdown() {
+    this._initialized = false;
   }
 }

@@ -171,6 +171,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, do not allow visible or hidden edges to be displayed, and also do not create any UI related to them.
 * IMJS_USE_WEBGL2
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
+* IMJS_DISABLE_UNIFORM_ERRORS
+  * If defined, do not throw an error for missing shader uniforms, and call Logger instead.
 * IMJS_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
 * IMJS_DEBUG_SHADERS
@@ -185,15 +187,37 @@ You can use these environment variables to alter the default behavior of various
   * See TileAdmin.Props.minimumSpatialTolerance.
 * IMJS_NO_EXTERNAL_TEXTURES
   * If defined, the backend will embed all texture image data directly in the tiles.
+* IMJS_NO_FRONTEND_SCHEDULE_SCRIPTS
+  * If defined, a schedule script applied to a display style is required to be hosted on a persistent RenderTimeline or DisplayStyle element.
 * IMJS_ITWIN_ID.
   * GuidString of the Context Id (aka project id) to use to query Reality Data - use by Spatial Classification (e.g. "fb1696c8-c074-4c76-a539-a5546e048cc6").
   For IMJS_ITWIN_ID to work you should be in signin mode (IMJS_STANDALONE_SIGNIN=true).
+  * Also used as the iTwin ID (aka project ID) for the given iModel if IMJS_IMODEL_ID is defined.
 * IMJS_MAPBOX_KEY
   * If defined, sets the MapBox key for the `MapLayerOptions` as an "access_token".
 * IMJS_BING_MAPS_KEY
   * If defined, sets a Bing Maps key within the `MapLayerOptions` as a "key" type.
 * IMJS_CESIUM_ION_KEY
   * If defined, the API key supplying access to Cesium ION assets.
+* IMJS_IMODEL_ID
+  * If defined, the GuidString of the iModel to fetch from the iModel Hub and open.
+* IMJS_URL_PREFIX
+  * If defined, the URL prefix to use when accessing the iModel hub (eg "qa-").
+* IMJS_OIDC_CLIENT_ID
+  * If defined, the client ID to use for OIDC auth.
+* IMJS_OIDC_SCOPE
+  * If defined, the scope to be used for OIDC auth.
+* IMJS_OIDC_REDIRECT_URI
+  * If defined, the redirect URI to be used for OIDC auth.
+    * NOTE: as long as IMJS_OIDC_HEADLESS is not defined, OIDC auth will default to using "http://localhost:3000/signin-callback" for this.
+* IMJS_OIDC_CLIENT_SECRET
+  * If defined in iOS, the client secret to be used for OIDC auth.
+* IMJS_BRIEFCASE_CACHE_LOCATION
+  * If defined, the full path to the directory in which to store cached briefcases.
+* IMJS_IGNORE_CACHE
+  * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
+* IMJS_DEBUG_URL
+  * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
 
 ## Key-ins
 
@@ -206,9 +230,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport.
+* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
 * `dta version compare` - emulate version comparison.
-* `dta save image` - open a new window containing a snapshot of the contents of the selected viewport.
+* `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
+  * `w=width` - the desired width of the image in pixels. e.g. `w=640`.
+  * `h=height` - the desired height of the image in pixels. e.g. `h=480`.
+  * `d=dimensions` - the desired width and height of the image in pixels. The image will be square. e.g. `d=768`.
+  * `c=0|1` - if `1`, instead of opening a new window to display the image, the image will be copied to the clipboard. NOTE: this probably doesn't work in Firefox.
 * `dta record fps` *numFrames* - record average frames-per-second over the specified number of frames (default: 150) and output to status bar.
 * `dta zoom selected` - zoom the selected viewport to the elements in the selection set.
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
@@ -247,9 +275,12 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `gridsPerRef=number` Specify number of grid lines to display per reference line.
   * `orientation=0|1|2|3|4` Value for GridOrientationType.
 * `dta model transform` - Apply a display transform to all models currently displayed in the selected viewport. Origin is specified like `x=1 y=2 z=3`; pitch and roll as `p=45 r=90` in degrees. Any argument can be omitted. Omitting all arguments clears the display transform. Snapping intentionally does not take the display transform into account.
-* `dta viewport sync *viewportId1* *viewportId2*` - Synchronize the contents of two viewports, specifying them by integer Id displayed in their title bars. Omit the Ids to disconnect two previously synchronized viewports.
+* `dta viewport sync viewportIds` - Synchronize the contents of two or more viewports, specifying them by integer Id displayed in their title bars, or "all" to apply to all open viewports. Omit the Ids to disconnect previously synchronized viewports.
 * `dta frustum sync *viewportId1* *viewportId2*` - Like `dta viewport sync but synchronizes only the frusta of the viewports.
 * `dta gen tile *modelId=<modelId>* *contentId=<contentId>*` - Trigger a request to obtain tile content for the specified tile. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+* `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
+  * `elementId=Id` The element for which to obtain graphics
+  * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
 
 ## Editing
 

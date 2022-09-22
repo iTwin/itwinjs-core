@@ -1,0 +1,27 @@
+# Workflow that will create a GitHub release a when a new release tag is pushed
+
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "release/*"
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Create release
+        run: python common/scripts/create_release.py ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

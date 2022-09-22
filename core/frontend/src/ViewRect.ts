@@ -8,10 +8,12 @@
 
 import { LowAndHighXY, XAndY } from "@itwin/core-geometry";
 
-/** A rectangle in integer view coordinates with (0,0) corresponding to the top-left corner of the view.
- *
+/** A rectangle in unsigned integer view coordinates with (0,0) corresponding to the top-left corner of the view.
  * Increasing **x** moves from left to right, and increasing **y** moves from top to bottom.
+ * [[left]], [[top]], [[right]], and [[bottom]] are required to be non-negative integers; any negative inputs are treated as
+ * zero and any non-integer inputs are rounded down to the nearest integer.
  * @public
+ * @extensions
  */
 export class ViewRect {
   private _left!: number;
@@ -19,20 +21,24 @@ export class ViewRect {
   private _right!: number;
   private _bottom!: number;
 
+  private _set(key: "_left" | "_right" | "_top" | "_bottom", value: number): void {
+    this[key] = Math.max(0, Math.floor(value));
+  }
+
   /** Construct a new ViewRect. */
   public constructor(left = 0, top = 0, right = 0, bottom = 0) { this.init(left, top, right, bottom); }
-  /** The leftmost side of this ViewRect.  */
+  /** The leftmost side of this ViewRect. */
   public get left(): number { return this._left; }
-  public set left(val: number) { this._left = Math.floor(val); }
+  public set left(val: number) { this._set("_left", val); }
   /** The topmost side of this ViewRect. */
   public get top(): number { return this._top; }
-  public set top(val: number) { this._top = Math.floor(val); }
+  public set top(val: number) { this._set("_top", val); }
   /** The rightmost side of this ViewRect. */
   public get right(): number { return this._right; }
-  public set right(val: number) { this._right = Math.floor(val); }
+  public set right(val: number) { this._set("_right", val); }
   /** The bottommost side of this ViewRect. */
   public get bottom(): number { return this._bottom; }
-  public set bottom(val: number) { this._bottom = Math.floor(val); }
+  public set bottom(val: number) { this._set("_bottom", val); }
   /** True if this ViewRect has an area > 0. */
   public get isNull(): boolean { return this.right <= this.left || this.bottom <= this.top; }
   /** True if `!isNull` */

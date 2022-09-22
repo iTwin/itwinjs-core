@@ -8,8 +8,10 @@ import { Mutable, OpenMode } from "@itwin/core-bentley";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { SettingDictionary, SettingsPriority } from "../../workspace/Settings";
-import { SettingsGroupSpec, SettingSpec, SettingsSpecRegistry } from "../../workspace/SettingsSpecRegistry";
+import { SettingSchema, SettingSchemaGroup, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
+
+/// cspell:ignore devstoreaccount1
 
 describe("Settings", () => {
   let iModel: SnapshotDb;
@@ -24,7 +26,7 @@ describe("Settings", () => {
     iModel.close();
   });
 
-  const app1: SettingsGroupSpec = {
+  const app1: SettingSchemaGroup = {
     groupName: "app1",
     title: "group 1 settings",
     properties: {
@@ -41,6 +43,9 @@ describe("Settings", () => {
       "app1/sub2": {
         type: "array",
         description: "an array",
+        items: {
+          type: "string",
+        },
       },
       "app1/boolVal": {
         type: "boolean",
@@ -54,6 +59,64 @@ describe("Settings", () => {
       "app1/intVal": {
         type: "integer",
         default: 22,
+      },
+      "app1/obj": {
+        type: "object",
+        properties: {
+          out: {
+            type: "object",
+            properties: {
+              o1: {
+                type: "object",
+                required: ["m1", "m2"],
+                properties: {
+                  m1: {
+                    type: "string",
+                  },
+                  m2: {
+                    type: "number",
+                  },
+                },
+              },
+            },
+          },
+        },
+
+      },
+      "app1/databases": {
+        type: "array",
+        items: {
+          type: "object",
+          required: ["name", "dbName", "containerName"],
+          properties: {
+            name: {
+              type: "string",
+            },
+            dbName: {
+              type: "string",
+            },
+            containerName: {
+              type: "string",
+            },
+            b2: {
+              type: "object",
+              properties: {
+                o1: {
+                  type: "object",
+                  required: ["m1"],
+                  properties: {
+                    m1: {
+                      type: "string",
+                    },
+                    m2: {
+                      type: "number",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
   };
@@ -106,7 +169,7 @@ describe("Settings", () => {
   it("settings priorities", () => {
 
     const settings = iModel.workspace.settings;
-    SettingsSpecRegistry.addGroup(app1);
+    SettingsSchemas.addGroup(app1);
     IModelHost.appWorkspace.settings.addDictionary("app1", SettingsPriority.application, app1Settings);
 
     let settingsChanged = 0;
@@ -150,8 +213,8 @@ describe("Settings", () => {
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
     expect(settingsChanged).eq(4);
 
-    (app1.properties["app1/strVal"] as Mutable<SettingSpec>).default = "new default";
-    SettingsSpecRegistry.addGroup(app1);
+    (app1.properties["app1/strVal"] as Mutable<SettingSchema>).default = "new default";
+    SettingsSchemas.addGroup(app1);
 
     // after re-registering, the new default should be updated
     expect(settings.getString("app1/strVal")).equals(app1.properties["app1/strVal"].default);
@@ -175,12 +238,12 @@ describe("Settings", () => {
     const settingFileName = IModelTestUtils.resolveAssetFile("test.setting.json5");
     appSettings.addFile(settingFileName, SettingsPriority.application);
     expect(() => iModelSettings.addFile(settingFileName, SettingsPriority.application)).to.throw("Use IModelHost.appSettings");
-    expect(appSettings.getString("workbench/colorTheme")).equals("Visual Studio Light");
-    expect(iModelSettings.getString("workbench/colorTheme")).equals("Visual Studio Light");
+    expect(appSettings.getString("app1/colorTheme")).equals("Light Theme");
+    expect(iModelSettings.getString("app1/colorTheme")).equals("Light Theme");
     const token = appSettings.getSetting<any>("editor/tokenColorCustomizations")!;
     expect(token["Visual Studio Light"].textMateRules[0].settings.foreground).equals("#d16c6c");
     expect(token["Default High Contrast"].comments).equals("#FF0000");
-    expect(appSettings.getArray<string>("cSpell/enableFiletypes")!.length).equals(17);
+    expect(appSettings.getArray<string>("editor/enableFiletypes")!.length).equals(17);
     appSettings.dropDictionary(settingFileName);
   });
 
@@ -194,32 +257,27 @@ describe("Settings", () => {
     const setting1changed: SettingDictionary = {
       "imodel/setting1": "this is changed setting1",
     };
-    const setting2: SettingDictionary = {
-      "workspace/container/alias": [
-        { name: "default-icons", id: "icons-01" },
-        { name: "default-lang", id: "lang-05" },
-        { name: "default-fonts", id: "fonts-02" }, // a container id that doesn't exist
-        { name: "default-key", id: "key-05" },
-      ],
+    const gcsDbDict: SettingDictionary = {
+      "gcs/databases": ["gcs/Usa", "gcs/Canada"],
     };
-    iModel2.saveSettingDictionary("testSetting", setting2);
+    iModel2.saveSettingDictionary("gcs-dbs", gcsDbDict);
     iModel2.saveSettingDictionary("test1", setting1);
     iModel2.close();
 
     let iModel3 = StandaloneDb.openFile(iModelName, OpenMode.ReadWrite);
-    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1["imodel/setting1"]);
 
     iModel3.saveSettingDictionary("test1", setting1changed);
     iModel3.close();
     iModel3 = StandaloneDb.openFile(iModelName);
-    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).equal(setting1changed["imodel/setting1"]);
     iModel3.deleteSettingDictionary("test1");
     iModel3.close();
 
     iModel3 = StandaloneDb.openFile(iModelName);
-    expect(iModel3.workspace.settings.getObject("workspace/container/alias")).to.deep.equal(setting2["workspace/container/alias"]);
+    expect(iModel3.workspace.settings.getObject("gcs/databases")).to.deep.equal(gcsDbDict["gcs/databases"]);
     expect(iModel3.workspace.settings.getString("imodel/setting1")).to.be.undefined;
     iModel3.close();
   });

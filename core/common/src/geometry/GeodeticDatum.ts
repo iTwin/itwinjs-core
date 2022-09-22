@@ -12,6 +12,7 @@ import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 
 /** Holds 3 components of a Positional Vector rotation definition in arc seconds
  *  @public
+ *  @extensions
  */
 export interface XyzRotationProps {
   /** X rotation component in arc second */
@@ -64,6 +65,7 @@ export class XyzRotation implements XyzRotationProps {
 
 /** Type indicating the geodetic transformation method
  *  @public
+ *  @extensions
  */
 export type GeodeticTransformMethod =
   "None" |
@@ -75,6 +77,7 @@ export type GeodeticTransformMethod =
 
 /** This interface represents a geocentric (three parameters) geodetic transformation.
  *  @public
+ *  @extensions
  */
 export interface GeocentricTransformProps {
   /** The frame translation components in meters */
@@ -117,6 +120,7 @@ export class GeocentricTransform implements GeocentricTransformProps {
  *  EPSG operation 9606. Beware that the convention relative to rotation direction is different
  *  from the Coordinate Frame operation (epsg 9607).
  *  @public
+ *  @extensions
  */
 export interface PositionalVectorTransformProps {
   /** The frame translation components in meters */
@@ -181,6 +185,7 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
 
 /** Type indicating the file format of the grid files.
  *  @public
+ *  @extensions
  */
 export type GridFileFormat =
   "NONE" |
@@ -190,15 +195,19 @@ export type GridFileFormat =
   "FRENCH" |
   "JAPAN" |
   "ATS77" |
-  "GEOCN";
+  "GEOCN" |
+  "OSTN02" |
+  "OSTN15";
 
 /** type to indicate the grid file application direction.
  *  @public
+ *  @extensions
  */
 export type GridFileDirection = "Direct" | "Inverse";
 
 /** Grid file definition containing name of the file, the format and the direction it should be applied
  *  @public
+ *  @extensions
  */
 export interface GridFileDefinitionProps {
   /** Name of the grid shift file. This name is relative to the expected dictionary root document.
@@ -263,6 +272,7 @@ export class GridFileDefinition implements GridFileDefinitionProps {
 
 /** This interface represents a grid files based geodetic transformation.
  *  @public
+ *  @extensions
  */
 export interface GridFileTransformProps {
   /** The list of grid files. The order of file is meaningful, the first encountered that covers the extent of coordinate
@@ -335,6 +345,7 @@ export class GridFileTransform implements GridFileTransformProps {
 /** This interface represents a geodetic transformation that enables transforming longitude/latitude coordinates
  *  from one datum to another.
  *  @public
+ *  @extensions
  */
 export interface GeodeticTransformProps {
   /** The method used by the geodetic transform */
@@ -348,6 +359,12 @@ export interface GeodeticTransformProps {
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
   targetEllipsoid?: GeodeticEllipsoidProps;
+  /** The id of the source datum. */
+  sourceDatumId?: string;
+  /** The id of the target datum. This id is useful to seach within a geodetic transform path for
+   *  a shortcut to another included datum.
+  */
+  targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
   geocentric?: GeocentricTransformProps;
   /** When method is PositionalVector this property contains the positional vector parameters */
@@ -371,6 +388,12 @@ export class GeodeticTransform implements GeodeticTransformProps {
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.*/
   public readonly targetEllipsoid?: GeodeticEllipsoid;
+  /** The id of the source datum. */
+  public readonly sourceDatumId?: string;
+  /** The id of the target datum. This id is useful to seach within a geodetic transform path for
+   *  a shortcut to another included datum.
+  */
+  public readonly targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
   public readonly geocentric?: GeocentricTransform;
   /** When method is PositionalVector this property contains the positional vector parameters */
@@ -384,6 +407,8 @@ export class GeodeticTransform implements GeodeticTransformProps {
       this.method = data.method;
       this.sourceEllipsoid = data.sourceEllipsoid ? GeodeticEllipsoid.fromJSON(data.sourceEllipsoid) : undefined;
       this.targetEllipsoid = data.targetEllipsoid ? GeodeticEllipsoid.fromJSON(data.targetEllipsoid) : undefined;
+      this.sourceDatumId = data.sourceDatumId;
+      this.targetDatumId = data.targetDatumId;
       this.geocentric = data.geocentric ? GeocentricTransform.fromJSON(data.geocentric) : undefined;
       this.positionalVector = data.positionalVector ? PositionalVectorTransform.fromJSON(data.positionalVector) : undefined;
       this.gridFile = data.gridFile ? GridFileTransform.fromJSON(data.gridFile) : undefined;
@@ -402,6 +427,8 @@ export class GeodeticTransform implements GeodeticTransformProps {
     const data: GeodeticTransformProps = { method: this.method };
     data.sourceEllipsoid = this.sourceEllipsoid ? this.sourceEllipsoid.toJSON() : undefined;
     data.targetEllipsoid = this.targetEllipsoid ? this.targetEllipsoid.toJSON() : undefined;
+    data.sourceDatumId = this.sourceDatumId;
+    data.targetDatumId = this.targetDatumId;
     data.geocentric = this.geocentric ? this.geocentric.toJSON() : undefined;
     data.positionalVector = this.positionalVector ? this.positionalVector.toJSON() : undefined;
     data.gridFile = this.gridFile ? this.gridFile.toJSON() : undefined;
@@ -413,6 +440,9 @@ export class GeodeticTransform implements GeodeticTransformProps {
    *  @public */
   public equals(other: GeodeticTransform): boolean {
     if (this.method !== other.method)
+      return false;
+
+    if (this.sourceDatumId !== other.sourceDatumId || this.targetDatumId !== other.targetDatumId)
       return false;
 
     if ((this.sourceEllipsoid === undefined) !== (other.sourceEllipsoid === undefined))
@@ -444,6 +474,87 @@ export class GeodeticTransform implements GeodeticTransformProps {
   }
 }
 
+/** This interface represents a geodetic datum transform path. It contains a list of transforms linking
+ *  a source to a target geodetic datum.
+ *  @public
+ */
+export interface GeodeticTransformPathProps {
+  /** Source geodetic datum key name */
+  sourceDatumId?: string;
+  /** Target geodetic datum key name */
+  targetDatumId?: string;
+  /** The transformation path from source datum to target datum.
+   */
+  transforms?: GeodeticTransformProps[];
+}
+
+/** This class represents a geodetic datum transform path. It contains a list of transforms linking
+ *  a source to a target geodetic datum.
+ *  @public
+ */
+export class GeodeticTransformPath implements GeodeticTransformPathProps {
+  /** Source geodetic datum key name */
+  public readonly sourceDatumId?: string;
+  /** Target geodetic datum key name */
+  public readonly targetDatumId?: string;
+  /** The transformation path from source datum to target datum.
+   */
+  public readonly transforms?: GeodeticTransform[];
+
+  public constructor(_data?: GeodeticTransformPathProps) {
+    if (_data) {
+      this.sourceDatumId = _data.sourceDatumId;
+      this.targetDatumId = _data.targetDatumId;
+      if (Array.isArray(_data.transforms)) {
+        this.transforms = [];
+        for (const item of _data.transforms)
+          this.transforms.push(GeodeticTransform.fromJSON(item));
+      }
+    }
+  }
+
+  /** Creates a Geodetic transform path from JSON representation.
+   * @public */
+  public static fromJSON(data: GeodeticTransformPathProps): GeodeticTransformPath {
+    return new GeodeticTransformPath(data);
+  }
+
+  /** Creates a JSON from the Geodetic transform path definition
+   * @public */
+  public toJSON(): GeodeticTransformPathProps {
+    const data: GeodeticTransformPathProps = {};
+    data.sourceDatumId = this.sourceDatumId;
+    data.targetDatumId = this.targetDatumId;
+    if (Array.isArray(this.transforms)) {
+      data.transforms = [];
+      for (const item of this.transforms)
+        data.transforms.push(item.toJSON());
+    }
+    return data;
+  }
+
+  /** Compares two Geodetic Transform Paths. It is a strict compare operation not an equivalence test.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   *  @public */
+  public equals(other: GeodeticTransformPath): boolean {
+    if (this.sourceDatumId !== other.sourceDatumId || this.targetDatumId !== other.targetDatumId)
+      return false;
+
+    if ((this.transforms === undefined) !== (other.transforms === undefined))
+      return false;
+
+    if (this.transforms && other.transforms) {
+      if (this.transforms.length !== other.transforms.length)
+        return false;
+
+      for (let idx = 0; idx < this.transforms.length; ++idx)
+        if (!this.transforms[idx].equals(other.transforms[idx]))
+          return false;
+    }
+    return true;
+  }
+}
+
 /** This interface represents a geodetic datum. Geodetic datums are based on an ellipsoid.
  *  In addition to the ellipsoid definition they are the base for longitude/latitude coordinates.
  *  Geodetic datums are the basis for geodetic transformations. Most geodetic datums are defined by specifying
@@ -452,6 +563,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
  *  Sometimes there exists transformation paths direct from one non-WGS84 datum to another non-WGS84. The current model
  *  does not allow specifications of these special paths at the moment.
  *  @public
+ *  @extensions
  */
 export interface GeodeticDatumProps {
   /** GeodeticDatum key name */
@@ -479,6 +591,16 @@ export interface GeodeticDatumProps {
    *  required to transform to WGS84, such as the newer datum definitions for Slovakia or Switzerland.
    */
   transforms?: GeodeticTransformProps[];
+  /** The optional list of transformation paths to other datum. These should only be used if the path to
+   *  these datum is not included in the transforms property definition of the transformation to WGS84.
+   *  It should not be used either if the transformation to the datum can be infered from the concatenation
+   *  of their individual paths to WGS84. These should be used to express an alternate shortcut path that is
+   *  inherent to the nature of the datum. As an example it is required to represent the transformation
+   *  from NAD27 to NAD83/2011 since NAD83/2011 is coincident to WGS84 yet the NAD27 datum to WGS84 path
+   *  only includes transformation to NAD83, making the path of transforms to NAD83/2011 not related
+   *  to the available paths to WGS84.
+   */
+  additionalTransformPaths?: GeodeticTransformPathProps[];
 }
 
 /** This class represents a geodetic datum. Geodetic datums are based on an ellipsoid.
@@ -518,6 +640,16 @@ export class GeodeticDatum implements GeodeticDatumProps {
    *  required to transform to WGS84, such as the newer datum definitions for Slovakia or Switzerland.
    */
   public readonly transforms?: GeodeticTransform[];
+  /** The optional list of transformation paths to other datum. These should only be used if the path to
+   *  these datum is not included in the transforms property definition of the transformation to WGS84.
+   *  It should not be used either if the transformation to the datum can be infered from the concatenation
+   *  of their individual paths to WGS84. These should be used to express an alternate shortcut path that is
+   *  inherent to the nature of the datum. As an example it is required to represent the transformation
+   *  from NAD27 to NAD83/2011 since NAD83/2011 is coincident to WGS84 yet the NAD27 datum to WGS84 path
+   *  only includes transformation to NAD83, making the path of transforms to NAD83/2011 not related
+   *  to the available paths to WGS84.
+   */
+  public readonly additionalTransformPaths?: GeodeticTransformPath[];
 
   public constructor(_data?: GeodeticDatumProps) {
     this.deprecated = false;
@@ -533,6 +665,11 @@ export class GeodeticDatum implements GeodeticDatumProps {
         this.transforms = [];
         for (const item of _data.transforms)
           this.transforms.push(GeodeticTransform.fromJSON(item));
+      }
+      if (Array.isArray(_data.additionalTransformPaths)) {
+        this.additionalTransformPaths = [];
+        for (const item of _data.additionalTransformPaths)
+          this.additionalTransformPaths.push(GeodeticTransformPath.fromJSON(item));
       }
     }
   }
@@ -559,6 +696,11 @@ export class GeodeticDatum implements GeodeticDatumProps {
       data.transforms = [];
       for (const item of this.transforms)
         data.transforms.push(item.toJSON());
+    }
+    if (Array.isArray(this.additionalTransformPaths)) {
+      data.additionalTransformPaths = [];
+      for (const item of this.additionalTransformPaths)
+        data.additionalTransformPaths.push(item.toJSON());
     }
     return data;
   }
@@ -590,6 +732,18 @@ export class GeodeticDatum implements GeodeticDatumProps {
 
       for (let idx = 0; idx < this.transforms.length; ++idx)
         if (!this.transforms[idx].equals(other.transforms[idx]))
+          return false;
+    }
+
+    if ((this.additionalTransformPaths === undefined) !== (other.additionalTransformPaths === undefined))
+      return false;
+
+    if (this.additionalTransformPaths && other.additionalTransformPaths) {
+      if (this.additionalTransformPaths.length !== other.additionalTransformPaths.length)
+        return false;
+
+      for (let idx = 0; idx < this.additionalTransformPaths.length; ++idx)
+        if (!this.additionalTransformPaths[idx].equals(other.additionalTransformPaths[idx]))
           return false;
     }
     return true;

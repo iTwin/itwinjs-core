@@ -8,7 +8,7 @@
 
 import { assert, Id64String } from "@itwin/core-bentley";
 import {
-  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, NavigationPropertyInfo, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
   StrippedRelationshipPath,
 } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
@@ -359,14 +359,14 @@ export class PropertiesField extends Field {
 }
 
 /**
- * Describes a content field that contains [Nested content]($docs/presentation/Content/Terminology#nested-content).
+ * Describes a content field that contains [Nested content]($docs/presentation/content/Terminology#nested-content).
  *
  * @public
  */
 export class NestedContentField extends Field {
   /** Information about an ECClass whose properties are nested inside this field */
   public contentClassInfo: ClassInfo;
-  /** Relationship path to [Primary class]($docs/presentation/Content/Terminology#primary-class) */
+  /** Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
   /** @alpha */
   public relationshipMeaning: RelationshipMeaning;
@@ -386,7 +386,7 @@ export class NestedContentField extends Field {
    * @param isReadonly Are values in this field read-only
    * @param priority Priority of the field
    * @param contentClassInfo Information about an ECClass whose properties are nested inside this field
-   * @param pathToPrimaryClass Relationship path to [Primary class]($docs/presentation/Content/Terminology#primary-class)
+   * @param pathToPrimaryClass Relationship path to [Primary class]($docs/presentation/content/Terminology#primary-class)
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
@@ -601,8 +601,12 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
 
 function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
   assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
+
+  const { navigationPropertyInfo, ...leftOverPropertyJSON } = compressedPropertyJSON;
+
   return {
-    ...compressedPropertyJSON,
+    ...leftOverPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
+    ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.fromCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
   };
 }

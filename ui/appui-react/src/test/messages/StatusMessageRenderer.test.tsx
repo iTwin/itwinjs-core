@@ -5,12 +5,10 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
-import { MessageHyperlink, MessageProgress } from "@itwin/appui-layout-react";
-import { IconButton } from "@itwin/itwinui-react";
-import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
-import { ActivityMessage, AppNotificationManager, MessageManager, StatusMessageRenderer, StickyMessage, ToastMessage } from "../../appui-react";
-import { mount, TestUtils } from "../TestUtils";
+import { ActivityMessageDetails, ActivityMessageEndReason, NoRenderApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
+import { AppNotificationManager, MessageManager, StatusMessageRenderer } from "../../appui-react";
+import { TestUtils } from "../TestUtils";
+import { act, fireEvent, render, screen, waitForElementToBeRemoved } from "@testing-library/react";
 
 describe("StatusMessageRenderer", () => {
 
@@ -20,146 +18,156 @@ describe("StatusMessageRenderer", () => {
     await TestUtils.initializeUiFramework();
 
     notifications = new AppNotificationManager();
+    await NoRenderApp.startup();
+    MessageManager.clearMessages();
   });
 
   after(() => {
     TestUtils.terminateUiFramework();
   });
 
-  beforeEach(() => {
-    MessageManager.activeMessageManager.initialize();
-  });
-
-  it("Renderer should render a Toast message", () => {
-    const wrapper = mount(<StatusMessageRenderer />);
+  it("Renderer should render a Toast message", async () => {
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Toast);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
 
-    expect(wrapper.find(ToastMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    expect(await screen.findByText("Message")).to.be.not.null;
 
-    wrapper.unmount();
+    act(() => {
+      MessageManager.clearMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("Message"));
   });
 
-  it("Renderer should render a Sticky  message", () => {
-    const wrapper = mount(<StatusMessageRenderer />);
+  it("Renderer should render a Sticky  message", async () => {
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "Message", "Details", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
 
-    expect(wrapper.find(StickyMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    expect(await screen.findByText("Message")).to.be.not.null;
 
-    wrapper.unmount();
+    act(() => {
+      MessageManager.clearMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("Message"));
   });
 
-  it("Sticky message should close on button click", () => {
-    const fakeTimers = sinon.useFakeTimers();
+  it("Sticky message should close on button click", async () => {
     const spy = sinon.spy();
-    const wrapper = mount(<StatusMessageRenderer closeMessage={spy} />);
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer closeMessage={spy} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    expect(wrapper.find(IconButton).length).to.eq(1);
-    wrapper.find(IconButton).simulate("click");
-    fakeTimers.tick(1000);
-    fakeTimers.restore();
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
+    const closeButton = screen.getByRole("button");
+    fireEvent.click(closeButton);
+    await waitForElementToBeRemoved(screen.queryByText("A brief message."));
     spy.calledOnce.should.true;
-
-    wrapper.unmount();
+    act(() => {
+      MessageManager.clearMessages();
+    });
   });
 
-  it("Renderer should render an Activity message", () => {
-    const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
+  it("Renderer should render an Activity message", async () => {
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, false);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-    expect(wrapper.find(MessageProgress).length).to.eq(1);
-
-    notifications.endActivityMessage(ActivityMessageEndReason.Completed);
-    wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-
-    wrapper.unmount();
+    act(() => {
+      notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    });
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
+    expect(screen.queryByText("Message text")).to.be.null;
   });
 
-  it("Activity message should be canceled", () => {
+  it("Activity message should be canceled", async () => {
     const spy = sinon.spy();
-    const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer cancelActivityMessage={spy} dismissActivityMessage={() => { }} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    const cancelLink = await screen.findByText("dialog.cancel");
+    fireEvent.click(cancelLink);
 
-    wrapper.find(MessageHyperlink).simulate("click");
-    wrapper.update();
-
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
+    expect(screen.queryByText("Message text")).to.be.null;
     spy.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
-  it("Activity message should be dismissed & restored", () => {
+  it("Activity message should be dismissed & restored", async () => {
     const spy = sinon.spy();
-    const wrapper = mount(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer cancelActivityMessage={() => { }} dismissActivityMessage={spy} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
-    notifications.outputActivityMessage("Message text", 50);
-    wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    act(() => {
+      notifications.outputActivityMessage("Message text", 50);
+    });
+    expect(await screen.findByText("Message text")).to.be.not.null;
 
-    wrapper.find(IconButton).simulate("click");
-    wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
+    const closeButton = screen.getByRole("button");
+    fireEvent.click(closeButton);
+    await waitForElementToBeRemoved(screen.queryByText("Message text"));
+    expect(screen.queryByText("Message text")).to.be.null;
     spy.calledOnce.should.true;
 
-    notifications.outputActivityMessage("Message text", 60);
-    wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(0);
+    act(() => {
+      notifications.outputActivityMessage("Message text", 60);
+    });
+    expect(screen.queryByText("Message text")).to.be.null;
 
-    MessageManager.setupActivityMessageValues("Test message text", 75, true);   // restore
-    wrapper.update();
-    expect(wrapper.find(ActivityMessage).length).to.eq(1);
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
+    act(() => {
+      MessageManager.setupActivityMessageValues("Test message text", 75, true);   // restore
+    });
+    expect(screen.queryByText("Message text")).to.be.null;
+    expect(await screen.findByText("75 activityCenter.percentComplete")).to.be.not.null;
 
-    wrapper.unmount();
+    act(() => {
+      notifications.endActivityMessage(ActivityMessageEndReason.Completed);
+    });
+    await waitForElementToBeRemoved(screen.queryByText("Test message text"));
+    expect(screen.queryByText("Test message text")).to.be.null;
   });
 
-  it("Renderer should clear messages", () => {
-    const wrapper = mount(<StatusMessageRenderer />);
+  it("Renderer should clear messages", async () => {
+    // eslint-disable-next-line deprecation/deprecation
+    render(<StatusMessageRenderer />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", "A detailed message.", OutputMessageType.Sticky);
-    notifications.outputMessage(details);
-    wrapper.update();
+    act(() => {
+      notifications.outputMessage(details);
+    });
+    expect(await screen.findByText("A brief message.")).to.be.not.null;
 
-    expect(wrapper.find(ToastPresentation).length).to.eq(1);
-
-    MessageManager.clearMessages();
-    wrapper.update();
-    expect(wrapper.find(ToastPresentation).length).to.eq(0);
-    wrapper.unmount();
+    act(() => {
+      MessageManager.clearMessages();
+    });
+    await waitForElementToBeRemoved(screen.queryByText("A brief message."));
+    expect(screen.queryByText("A brief message.")).to.be.null;
   });
-
 });

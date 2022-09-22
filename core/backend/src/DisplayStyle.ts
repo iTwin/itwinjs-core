@@ -41,21 +41,21 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      predecessorIds.add(id);
+      referenceIds.add(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      predecessorIds.add(excludedElementId);
+      referenceIds.add(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      predecessorIds.add(this.settings.renderTimeline);
+      referenceIds.add(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(predecessorIds);
+        script.script.discloseIds(referenceIds);
     }
   }
 
@@ -94,20 +94,18 @@ export abstract class DisplayStyle extends DefinitionElement {
         settings.excludedElements = CompressedId64Set.compressIds(OrderedId64Iterable.sortArray(excluded));
     }
 
-    // eslint-disable-next-line deprecation/deprecation
     if (settings.renderTimeline) {
       const renderTimeline = context.findTargetElementId(settings.renderTimeline);
       if (Id64.isValid(renderTimeline))
         settings.renderTimeline = renderTimeline;
       else
         delete settings.renderTimeline;
-    } else if (settings.scheduleScript) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (settings.scheduleScript) {
       const scheduleScript = RenderTimeline.remapScript(context, settings.scheduleScript);
       if (scheduleScript.length > 0)
-        settings.scheduleScript = scheduleScript; // eslint-disable-line deprecation/deprecation
+        settings.scheduleScript = scheduleScript;
       else
-        delete settings.scheduleScript; // eslint-disable-line deprecation/deprecation
+        delete settings.scheduleScript;
     }
   }
 
@@ -120,8 +118,7 @@ export abstract class DisplayStyle extends DefinitionElement {
         script = RenderSchedule.Script.fromJSON(timeline.scriptProps);
         sourceId = timeline.id;
       }
-    } else if (this.settings.scheduleScriptProps) { // eslint-disable-line deprecation/deprecation
-      // eslint-disable-next-line deprecation/deprecation
+    } else if (this.settings.scheduleScriptProps) {
       script = RenderSchedule.Script.fromJSON(this.settings.scheduleScriptProps);
       sourceId = this.id;
     }
@@ -215,14 +212,14 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected override collectPredecessorIds(predecessorIds: Id64Set): void {
-    super.collectPredecessorIds(predecessorIds);
+  protected override collectReferenceIds(referenceIds: Id64Set): void {
+    super.collectReferenceIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      predecessorIds.add(textureId);
+      referenceIds.add(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        predecessorIds.add(planProjectionSetting[0]);
+        referenceIds.add(planProjectionSetting[0]);
   }
 
   /** @alpha */

@@ -71,7 +71,7 @@ describe("ContentLayout", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
 
     const frontstageProvider = new TestFrontstage2();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
@@ -288,7 +288,7 @@ describe("SingleContentLayout", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     await MockRender.App.startup();
-    FrontstageManager.clearFrontstageDefs();
+    FrontstageManager.clearFrontstageProviders();
 
     const frontstageProvider = new TestFrontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);

@@ -2,17 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { TestRunner, TestSetsProps } from "./TestRunner";
 import { ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import {
   BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
-import { BrowserAuthorizationClient, BrowserAuthorizationClientConfiguration } from "@itwin/browser-authorization";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
+import { TestRunner, TestSetsProps } from "./TestRunner";
 
 /** Prevents the hypermodeling markers from displaying in the viewport and obscuring the image. */
 class MarkerHandler extends SectionMarkerHandler {
@@ -36,10 +38,14 @@ export class DisplayPerfTestApp {
 
     /* eslint-disable @typescript-eslint/naming-convention */
     iModelApp.mapLayerOptions = {
-      MapBoxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
+      MapboxImagery: process.env.IMJS_MAPBOX_KEY ? { key: "access_token", value: process.env.IMJS_MAPBOX_KEY } : undefined,
       BingMaps: process.env.IMJS_BING_MAPS_KEY ? { key: "key", value: process.env.IMJS_BING_MAPS_KEY } : undefined,
     };
     /* eslint-enable @typescript-eslint/naming-convention */
+
+    iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` }}))
+      : new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
     if (ProcessDetector.isElectronAppFrontend)
@@ -62,35 +68,20 @@ export class DisplayPerfTestApp {
   }
 }
 
-async function createOidcClient(): Promise<ElectronRendererAuthorization | BrowserAuthorizationClient> {
-  if (ProcessDetector.isElectronAppFrontend) {
-    const desktopClient = new ElectronRendererAuthorization();
-    return desktopClient;
-  } else {
-    const oidcConfiguration: BrowserAuthorizationClientConfiguration = {
-      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
-      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
-      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
-    };
-    const browserClient = new BrowserAuthorizationClient(oidcConfiguration);
-    return browserClient;
-  }
-}
-
-// Wraps the signIn process
-// In the case of use in web applications:
-// - called the first time to start the signIn process - resolves to false
-// - called the second time as the Authorization provider redirects to cause the application to refresh/reload - resolves to false
-// - called the third time as the application redirects back to complete the authorization - finally resolves to true
-// In the case of use in electron applications:
-// - promise wraps around a registered call back and resolves to true when the sign in is complete
-// @return Promise that resolves to true only after signIn is complete. Resolves to false until then.
-async function signIn(): Promise<boolean> {
-  const oidcClient = await createOidcClient();
-  await oidcClient.signIn();
-
-  IModelApp.authorizationClient = oidcClient;
-  return (await oidcClient.getAccessToken()) !== "";
+async function signIn(): Promise<void> {
+  if(process.env.IMJS_OIDC_HEADLESS)
+    return;
+  let authorizationClient;
+  if(ProcessDetector.isElectronAppFrontend)
+    authorizationClient = new ElectronRendererAuthorization();
+  else
+    authorizationClient = new BrowserAuthorizationClient({
+      clientId: process.env.IMJS_OIDC_CLIENT_ID!,
+      scope: process.env.IMJS_OIDC_SCOPE!,
+      redirectUri: process.env.IMJS_OIDC_REDIRECT_URI!,
+    });
+  await authorizationClient.signIn();
+  IModelApp.authorizationClient = authorizationClient;
 }
 
 async function main() {
@@ -98,7 +89,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    if (props.signIn)
+    if(props.signIn)
       await signIn();
 
     const runner = new TestRunner(props);

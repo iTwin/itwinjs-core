@@ -8,14 +8,14 @@ import { assert } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { getSupportedRpcs } from "../../common/rpcs";
-import { IModelHostConfiguration } from "@itwin/core-backend";
+import { IModelHostOptions } from "@itwin/core-backend";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 
 const mainWindowName = "mainWindow";
 
 /** Initializes Electron backend */
-export async function initializeElectron(opts?: IModelHostConfiguration) {
+export async function initializeElectron(opts?: IModelHostOptions) {
   const opt = {
     electronHost: {
       webResourcesPath: join(__dirname, "..", "..", "..", "build"),
@@ -28,16 +28,21 @@ export async function initializeElectron(opts?: IModelHostConfiguration) {
     iModelHost: opts,
   };
 
-  const authClient = new ElectronMainAuthorization({
-    clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "",
-    redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI ?? "",
-    scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "",
-  });
-  if (opt.iModelHost?.authorizationClient)
-    opt.iModelHost.authorizationClient = authClient;
+  let authClient;
+  if (process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID && process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI && process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES) {
+    authClient = new ElectronMainAuthorization({
+      clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID,
+      redirectUri: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI,
+      scope: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES,
+    });
+    await authClient.signInSilent();
+    if (opt.iModelHost?.authorizationClient)
+      opt.iModelHost.authorizationClient = authClient;
+  }
 
   await ElectronHost.startup(opt);
-  await authClient.signInSilent();
+  if (authClient)
+    await authClient.signInSilent();
   EditCommandAdmin.registerModule(editorBuiltInCommands);
 
   // Handle custom keyboard shortcuts

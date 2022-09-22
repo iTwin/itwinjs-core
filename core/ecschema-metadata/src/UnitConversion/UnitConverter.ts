@@ -13,7 +13,7 @@ import { UnitGraph } from "./UnitTree";
 
 /**
  * Class constructed with SchemaContext and used to calculate [[UnitConversion]] between Units
- * @alpha
+ * @internal
  */
 export class UnitConverter {
   private _uGraph: UnitGraph;

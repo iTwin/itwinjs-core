@@ -2,13 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "../safearea";
 @import "variables";
 
 .nz-zones-zone {
-  transition: visibility 0.5s ease, opacity 0.5s ease;
+  transition: visibility $iui-speed ease, opacity $iui-speed ease;
 
-  &:not(.nz-zone-8):not(.nz-floating), &.nz-zone-8:not(.nz-footer-mode) {
+  &:not(.nz-zone-8):not(.nz-floating),
+  &.nz-zone-8:not(.nz-footer-mode) {
     padding: $nz-zone-padding;
     box-sizing: border-box;
   }
@@ -18,49 +20,49 @@
     visibility: hidden;
   }
 
-  > div {
+  >div {
     height: 100%;
     box-sizing: border-box;
   }
 
   &.nz-safe-area-left {
-    &.nz-zone-1 > div {
+    &.nz-zone-1>div {
       @include nz-safe-area-left;
     }
 
-    &.nz-zone-4 > div {
+    &.nz-zone-4>div {
       @include nz-safe-area-left;
     }
 
-    &.nz-zone-7 > div {
+    &.nz-zone-7>div {
       @include nz-safe-area-left;
     }
   }
 
   &.nz-safe-area-top {
-    &.nz-zone-1 > div {
+    &.nz-zone-1>div {
       @include nz-safe-area-top;
     }
 
-    &.nz-zone-2 > div {
+    &.nz-zone-2>div {
       @include nz-safe-area-top;
     }
 
-    &.nz-zone-3 > div {
+    &.nz-zone-3>div {
       @include nz-safe-area-top;
     }
   }
 
   &.nz-safe-area-right {
-    &.nz-zone-3 > div {
+    &.nz-zone-3>div {
       @include nz-safe-area-right;
     }
 
-    &.nz-zone-6 > div {
+    &.nz-zone-6>div {
       @include nz-safe-area-right;
     }
 
-    &.nz-zone-9 > div {
+    &.nz-zone-9>div {
       @include nz-safe-area-right;
     }
   }
@@ -68,7 +70,7 @@
   &.nz-safe-area-bottom {
     &.nz-zone-7 {
       &:not(.nz-footer-mode) {
-        > div {
+        >div {
           @include nz-safe-area-bottom;
         }
       }
@@ -76,7 +78,7 @@
 
     &.nz-zone-8 {
       &:not(.nz-footer-mode) {
-        > div {
+        >div {
           @include nz-safe-area-bottom;
         }
       }
@@ -84,7 +86,7 @@
 
     &.nz-zone-9 {
       &:not(.nz-footer-mode) {
-        > div {
+        >div {
           @include nz-safe-area-bottom;
         }
       }

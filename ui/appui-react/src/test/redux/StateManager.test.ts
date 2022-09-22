@@ -193,7 +193,10 @@ describe("ConfigurableUiReducer", () => {
       useDragInteraction: false,
       frameworkVersion: "2",
       showWidgetIcon: true,
+      autoCollapseUnpinnedPanels: true,
       viewOverlayDisplay: true,
+      animateToolSettings: false,
+      useToolAsToolSettingsLabel: false,
     };
 
     let outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setDragInteraction(true));
@@ -217,7 +220,16 @@ describe("ConfigurableUiReducer", () => {
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setShowWidgetIcon(false));
     expect(outState.showWidgetIcon).to.be.eql(false);
 
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setAutoCollapseUnpinnedPanels(false));
+    expect(outState.autoCollapseUnpinnedPanels).to.be.eql(false);
+
     outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setViewOverlayDisplay(false));
     expect(outState.viewOverlayDisplay).to.be.false;
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setAnimateToolSettings(true));
+    expect(outState.animateToolSettings).to.be.true;
+
+    outState = ConfigurableUiReducer(initialState, ConfigurableUiActions.setUseToolAsToolSettingsLabel(true));
+    expect(outState.useToolAsToolSettingsLabel).to.be.true;
   });
 });

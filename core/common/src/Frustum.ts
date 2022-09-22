@@ -12,6 +12,7 @@ import {
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
  * @public
+ * @extensions
  */
 export enum Npc {
   /** Left bottom rear */

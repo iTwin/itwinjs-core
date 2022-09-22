@@ -14,6 +14,7 @@ import { TileTree, TileTreeLoadStatus } from "./internal";
  * @see [[TileTreeReference]] for an indirect reference to a TileTree by way of a TileTreeOwner.
  * @see [[Tiles.getTileTreeOwner]] to obtain a TileTreeOwner.
  * @public
+ * @extensions
  */
 export interface TileTreeOwner {
   /** The iModel for this TileTree */

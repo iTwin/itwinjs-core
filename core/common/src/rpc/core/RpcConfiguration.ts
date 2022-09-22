@@ -126,7 +126,7 @@ export abstract class RpcConfiguration {
   public pendingOperationRetryInterval = 10000;
 
   /** The maximum number of transient faults permitted before request failure. */
-  public transientFaultLimit = 3;
+  public transientFaultLimit = 4;
 
   /** @internal */
   public readonly routing: RpcRoutingToken = RpcRoutingToken.default;

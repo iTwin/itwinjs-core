@@ -7,6 +7,7 @@
  * @module Topology
  */
 
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -29,7 +30,24 @@ export class GraphSplitData {
   public constructor() {
   }
 }
+/**
+ * Structure for data used when sorting outbound edges "around a node"
+ */
+export class VertexNeighborhoodSortData {
+  public index: number;
+  public radiusOfCurvature: number;
+  public node: HalfEdge;
+  public radians?: number;
+  public constructor(index: number, key: number, node: HalfEdge, radians?: number) {
+    this.index = index;
+    this.radiusOfCurvature = key;
+    this.node = node;
+    this.radians = radians;
+  }
+}
 
+/** Function signature for announcing a vertex neighborhood during sorting. */
+export type AnnounceVertexNeighborhoodSortData = (data: VertexNeighborhoodSortData[]) => any;
 /**
  * * Assorted methods used in algorithms on HalfEdgeGraph.
  * @internal
@@ -238,6 +256,84 @@ export class HalfEdgeGraphOps {
  * @internal
  */
 export class HalfEdgeGraphMerge {
+  // return kC <= kB such that stored angles (at extra data index 0 !) kA<=k<kC match.
+  // * Note that the usual case (when angle at kA is not repeated) is kA+1 === kC
+  public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number{
+    let kC = kA + 1;
+    const thetaA = clusters.getExtraData(order[kA], 0);
+    while (kC < kB) {
+      const thetaB = clusters.getExtraData(order[kC], 0);
+      if (!Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
+        return kC;
+      }
+     kC++;
+    }
+    return kC;
+  }
+  private static _announceVertexNeighborhoodFunction?: AnnounceVertexNeighborhoodSortData;
+/**
+ * public property setter for a function to be called with sorted edge data around a vertex.
+ */
+  public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) { this._announceVertexNeighborhoodFunction = func; }
+  private static doAnnounceVertexNeighborhood(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+    if (this._announceVertexNeighborhoodFunction) {
+      const sortData: VertexNeighborhoodSortData[] = [];
+      // build and share the entire vertex order
+      for (let k = k0; k < k1; k++){
+      const index = clusters.getExtraData(order[k], 1);
+      const theta = clusters.getExtraData(order[k], 0);
+      const node = allNodes[index];
+      const signedDistance = this.curvatureSortKey(node);
+      sortData.push(new VertexNeighborhoodSortData(order[k], signedDistance, node, theta));
+      }
+      this._announceVertexNeighborhoodFunction(sortData);
+    }
+
+  }
+  // assumptions about cluster array:
+  //   * data order is: x,y,theta, nodeIndex
+  //   * theta and nodeIndex are the "extra" data.
+  //   * only want to do anything here when curves are present.
+  //   * k0<=k<k1 are around a vertex
+  //   * These are sorted by theta.
+  private static secondarySortAroundVertex(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
+    const sortData: VertexNeighborhoodSortData[] = [];
+
+    for (let k = k0; k < k1;) {
+      const kB = this.getCommonThetaEndIndex(clusters, order,k, k1);
+      if (k + 1 < kB) {
+        sortData.length = 0;
+        for (let kA = k; kA < kB; kA++) {
+          const index = clusters.getExtraData(order[kA], 1);
+          const node = allNodes[index];
+          const signedDistance = this.curvatureSortKey(node);
+          sortData.push(new VertexNeighborhoodSortData(order[kA], signedDistance, node));
+        }
+        sortData.sort((a: VertexNeighborhoodSortData, b: VertexNeighborhoodSortData) => (a.radiusOfCurvature - b.radiusOfCurvature));
+        for (let i = 0; i < sortData.length; i++){
+          order[k + i] = sortData[i].index;
+        }
+      }
+      k = kB;
+    }
+  }
+  // Return the sort key for sorting by curvature.
+  // This is the signed distance from the curve to center of curvature.
+  // This should need to be upgraded to account for higher derivatives in the case of higher-than-tangent match.
+  private static curvatureSortKey(node: HalfEdge): number {
+    const cld = node.edgeTag as CurveLocationDetail;
+    if (cld !== undefined) {
+      const fraction = cld.fraction;
+      const curve = cld.curve;
+      if (curve) {
+        let radius = curve.fractionToSignedXYRadiusOfCurvature(fraction);
+        if (node.sortData !== undefined && node.sortData < 0)
+          radius = -radius;
+        return radius;
+      }
+    }
+    return 0.0;
+  }
   /** Simplest merge algorithm:
    * * collect array of (x,y,theta) at all nodes
    * * lexical sort of the array.
@@ -296,11 +392,20 @@ export class HalfEdgeGraphMerge {
     const unmatchedNullFaceNodes: HalfEdge[] = [];
     k0 = 0;
     let thetaA, thetaB;
+      // eslint-disable-next-line no-console
+      // console.log("START VERTEX LINKS");
+
     // now pinch each neighboring pair together
     for (let k1 = 0; k1 < numK; k1++) {
       if (order[k1] === ClusterableArray.clusterTerminator) {
         // nodes identified in order[k0]..order[k1] are properly sorted around a vertex.
         if (k1 > k0) {
+          // const xy = clusters.getPoint2d(order[k0]);
+          // eslint-disable-next-line no-console
+          // console.log({ k0, k1, x: xy.x, y: xy.y });
+          if (k1 > k0 + 1)
+            this.secondarySortAroundVertex(clusters, order, allNodes, k0, k1);
+          this.doAnnounceVertexNeighborhood(clusters, order, allNodes, k0, k1);
           const iA = clusters.getExtraData(order[k0], 1);
           thetaA = clusters.getExtraData(order[k0], 0);
           const nodeA0 = allNodes[iA];
@@ -319,7 +424,7 @@ export class HalfEdgeGraphMerge {
               nodeA = nodeB;
               thetaA = thetaB;
             } else if (nodeB.isMaskSet(HalfEdgeMask.NULL_FACE)) {
-              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeA === node);
+              const j = unmatchedNullFaceNodes.findIndex((node: HalfEdge) => nodeB === node);
               if (j >= 0) {
                 unmatchedNullFaceNodes[j] = unmatchedNullFaceNodes[unmatchedNullFaceNodes.length - 1];
                 unmatchedNullFaceNodes.pop();
@@ -373,6 +478,7 @@ export class HalfEdgeGraphMerge {
     const by0 = nodeB0.y;
     const vx = nodeB1.x - bx0;
     const vy = nodeB1.y - by0;
+    // cspell:word lineSegmentXYUVTransverseIntersectionUnbounded
     if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy,
       bx0, by0, vx, vy, fractions)) {
       pointA.x = ax0 + fractions.x * ux;

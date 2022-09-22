@@ -154,6 +154,7 @@ export class UiShowHideManager {
 
   /** Handler for when a Frontstage is ready */
   public static handleFrontstageReady() {
+    // istanbul ignore next
     if (!UiShowHideManager._autoHideUi)
       return;
 

@@ -8,7 +8,7 @@ import { BackendOptions } from 'i18next-http-backend';
 import { DetectorOptions } from 'i18next-browser-languagedetector';
 import { i18n } from 'i18next';
 import { InitOptions } from 'i18next';
-import { Localization } from '@itwin/core-common';
+import type { Localization } from '@itwin/core-common';
 import { Module } from 'i18next';
 import { TOptionsBase } from 'i18next';
 
@@ -49,7 +49,6 @@ export interface LocalizationOptions {
     // (undocumented)
     urlTemplate?: string;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

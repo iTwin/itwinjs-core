@@ -7,9 +7,9 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
-import { IpcHost } from "./IpcHost";
-import { IModelHostConfiguration } from "./IModelHost";
+import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
+import { IpcHandler, IpcHost } from "./IpcHost";
+import { IModelHostOptions } from "./IModelHost";
 
 /** @internal */
 export interface LocalhostIpcHostOpts {
@@ -19,7 +19,7 @@ export interface LocalhostIpcHostOpts {
 
 class LocalTransport extends IpcWebSocketTransport {
   private _server: ws.Server | undefined;
-  private _connections: Set<ws> = new Set();
+  private _connections: Map<ws, number> = new Map();
 
   public constructor(opts: LocalhostIpcHostOpts) {
     super();
@@ -31,17 +31,19 @@ class LocalTransport extends IpcWebSocketTransport {
   }
 
   public send(message: IpcWebSocketMessage): void {
-    this._connections.forEach((connection) => {
+    this._connections.forEach((last, connection) => {
+      message.sequence = last + 1;
+      this._connections.set(connection, message.sequence);
       const parts = this.serialize(message);
       parts.forEach((part) => connection.send(part));
     });
   }
 
   public connect(connection: ws) {
-    this._connections.add(connection);
+    this._connections.set(connection, -1);
 
     connection.on("message", async (data) => {
-      const message = await this.notifyIncoming(data);
+      const message = await this.notifyIncoming(data, connection);
       if (IpcWebSocketMessage.skip(message)) {
         return;
       }
@@ -53,19 +55,44 @@ class LocalTransport extends IpcWebSocketTransport {
 
     connection.on("close", () => {
       this._connections.delete(connection);
+      this.notifyClose(connection);
     });
+  }
+}
+
+class RpcHandler extends IpcHandler {
+  public channelName = "RPC";
+
+  public async request(info: InterceptedRpcRequest) {
+    const invocation = RpcSessionInvocation.create(info);
+    const fulfillment = await invocation.fulfillment;
+    return invocation.rejected ? Promise.reject(fulfillment.rawResult) : fulfillment.rawResult;
   }
 }
 
 /** @internal */
 export class LocalhostIpcHost {
+  private static _initialized = false;
+  private static _socket: IpcWebSocketBackend;
+
   public static connect(connection: ws) {
     (IpcWebSocket.transport as LocalTransport).connect(connection);
   }
 
-  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostConfiguration }) {
-    IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
-    const socket = new IpcWebSocketBackend();
-    await IpcHost.startup({ ipcHost: { socket }, iModelHost: opts?.iModelHost });
+  public static async startup(opts?: { localhostIpcHost?: LocalhostIpcHostOpts, iModelHost?: IModelHostOptions }) {
+    let registerHandler = false;
+
+    if (!this._initialized) {
+      registerHandler = true;
+      IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcHost ?? {});
+      this._socket = new IpcWebSocketBackend();
+      this._initialized = true;
+    }
+
+    await IpcHost.startup({ ipcHost: { socket: this._socket }, iModelHost: opts?.iModelHost });
+
+    if (registerHandler) {
+      RpcHandler.register();
+    }
   }
 }

@@ -130,11 +130,220 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_canPopout": undefined,
       "_classId": undefined,
       "_defaultFloatingPosition": undefined,
+      "_defaultFloatingSize": undefined,
       "_defaultState": 4,
+      "_defaultTabLocation": Object {
+        "side": "left",
+        "tabIndex": 0,
+        "widgetId": "",
+        "widgetIndex": 0,
+      },
       "_fillZone": false,
       "_floatingContainerId": undefined,
       "_handleSyncUiEvent": [Function],
+      "_hideWithUiWhenFloating": false,
       "_id": "toolWidget",
+      "_initialProps": Object {
+        "appButton": CommandItemDef {
+          "_commandHandler": Object {
+            "execute": [Function],
+            "getCommandArgs": undefined,
+            "parameters": undefined,
+          },
+          "_description": "",
+          "_isActive": false,
+          "_label": "",
+          "_onItemExecuted": undefined,
+          "_tooltip": "",
+          "badgeType": undefined,
+          "commandId": "SampleApp.BackstageToggle",
+          "execute": [Function],
+          "getKey": [Function],
+          "handleSizeKnown": [Function],
+          "iconSpec": "icon-home",
+          "isDisabled": undefined,
+          "isEnabled": true,
+          "isHidden": undefined,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+        "horizontalToolbar": <Toolbar
+          expandsTo={4}
+          items={
+            <UNDEFINED>
+              <ActionItemButton
+                actionItem={
+                  ToolItemDef {
+                    "_commandHandler": Object {
+                      "execute": [Function],
+                      "getCommandArgs": undefined,
+                      "parameters": undefined,
+                    },
+                    "_description": "",
+                    "_isActive": false,
+                    "_label": "",
+                    "_onItemExecuted": undefined,
+                    "_tooltip": "",
+                    "badgeType": undefined,
+                    "execute": [Function],
+                    "getKey": [Function],
+                    "handleSizeKnown": [Function],
+                    "iconSpec": "icon-cursor",
+                    "isDisabled": undefined,
+                    "isEnabled": true,
+                    "isHidden": undefined,
+                    "isPressed": false,
+                    "isVisible": true,
+                    "stateSyncIds": Array [],
+                    "toolId": "Select",
+                  }
+                }
+              />
+              <ToolButton
+                iconSpec="icon-placeholder"
+                labelKey="SampleApp:buttons.tool1"
+                toolId="tool1a"
+              />
+              <ToolButton
+                iconSpec="icon-placeholder"
+                labelKey="SampleApp:buttons.tool2"
+                toolId="tool2a"
+              />
+              <GroupButton
+                direction={4}
+                iconSpec="icon-placeholder"
+                items={
+                  Array [
+                    CommandItemDef {
+                      "_description": "",
+                      "_isActive": false,
+                      "_label": "",
+                      "_onItemExecuted": undefined,
+                      "_tooltip": "",
+                      "badgeType": undefined,
+                      "commandId": "cmd:tool1",
+                      "execute": [Function],
+                      "getKey": [Function],
+                      "handleSizeKnown": [Function],
+                      "iconSpec": "icon-placeholder",
+                      "isDisabled": undefined,
+                      "isEnabled": true,
+                      "isHidden": undefined,
+                      "isPressed": false,
+                      "isVisible": true,
+                      "stateSyncIds": Array [],
+                    },
+                    CommandItemDef {
+                      "_description": "",
+                      "_isActive": false,
+                      "_label": "",
+                      "_onItemExecuted": undefined,
+                      "_tooltip": "",
+                      "applicationData": Object {
+                        "key": "value",
+                      },
+                      "badgeType": undefined,
+                      "commandId": "cmd:tool2",
+                      "execute": [Function],
+                      "getKey": [Function],
+                      "handleSizeKnown": [Function],
+                      "iconSpec": "icon-placeholder",
+                      "isDisabled": undefined,
+                      "isEnabled": true,
+                      "isHidden": undefined,
+                      "isPressed": false,
+                      "isVisible": true,
+                      "stateSyncIds": Array [],
+                    },
+                  ]
+                }
+                itemsInColumn={7}
+              />
+            </UNDEFINED>
+          }
+          panelAlignment={0}
+        />,
+        "id": "toolWidget",
+        "verticalToolbar": <Toolbar
+          expandsTo={3}
+          items={
+            <UNDEFINED>
+              <ToolButton
+                iconSpec="icon-placeholder"
+                labelKey="SampleApp:buttons.tool1"
+                toolId="tool1b"
+              />
+              <ToolButton
+                iconSpec="icon-placeholder"
+                labelKey="SampleApp:buttons.tool2"
+                toolId="tool2b"
+              />
+              <ToolButton
+                iconSpec="icon-placeholder"
+                isEnabled={false}
+                labelKey="SampleApp:buttons.tool1"
+                toolId="tool1c"
+              />
+              <ToolButton
+                iconSpec="icon-placeholder"
+                isVisible={false}
+                labelKey="SampleApp:buttons.tool2"
+                toolId="tool2c"
+              />
+              <GroupButton
+                iconSpec="icon-placeholder"
+                items={
+                  Array [
+                    CommandItemDef {
+                      "_description": "",
+                      "_isActive": false,
+                      "_label": "",
+                      "_onItemExecuted": undefined,
+                      "_tooltip": "",
+                      "badgeType": undefined,
+                      "commandId": "cmd:tool1",
+                      "execute": [Function],
+                      "getKey": [Function],
+                      "handleSizeKnown": [Function],
+                      "iconSpec": "icon-placeholder",
+                      "isDisabled": undefined,
+                      "isEnabled": true,
+                      "isHidden": undefined,
+                      "isPressed": false,
+                      "isVisible": true,
+                      "stateSyncIds": Array [],
+                    },
+                    CommandItemDef {
+                      "_description": "",
+                      "_isActive": false,
+                      "_label": "",
+                      "_onItemExecuted": undefined,
+                      "_tooltip": "",
+                      "applicationData": Object {
+                        "key": "value",
+                      },
+                      "badgeType": undefined,
+                      "commandId": "cmd:tool2",
+                      "execute": [Function],
+                      "getKey": [Function],
+                      "handleSizeKnown": [Function],
+                      "iconSpec": "icon-placeholder",
+                      "isDisabled": undefined,
+                      "isEnabled": true,
+                      "isHidden": undefined,
+                      "isPressed": false,
+                      "isVisible": true,
+                      "stateSyncIds": Array [],
+                    },
+                  ]
+                }
+              />
+            </UNDEFINED>
+          }
+          panelAlignment={0}
+        />,
+      },
       "_isFloatingStateSupported": false,
       "_isFloatingStateWindowResizable": true,
       "_isFreeform": false,
@@ -149,12 +358,6 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
       "_state": 4,
       "_stateChanged": false,
       "_syncEventIds": Array [],
-      "_tabLocation": Object {
-        "side": "left",
-        "tabIndex": 0,
-        "widgetId": "",
-        "widgetIndex": 0,
-      },
       "_toolbarBaseName": "[]ToolWidget",
       "_tooltip": "",
       "_widgetType": 0,

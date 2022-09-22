@@ -93,14 +93,14 @@ deprecated;FieldValues
 public;FillCentered(props: CommonDivProps): JSX.Element
 alpha;FilteredText(props: FilteredTextProps): JSX.Element
 alpha;FilteredTextProps 
-internal;flattenChildren: (children: React.ReactNode) => React.ReactNode
+internal;flattenChildren: (children: React_2.ReactNode) => React_2.ReactNode
 public;FlexWrapContainer(props: CommonDivProps): JSX.Element
-internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React.RefObject
+internal;focusIntoContainer(focusContainer: HTMLDivElement, initialFocusElement?: React_2.RefObject
 internal;FocusTrap(props: FocusTrapProps): JSX.Element | null
 internal;FocusTrapProps 
 public;Form 
-public;FormContext: React.Context
-deprecated;FormContext: React.Context
+public;FormContext: React_2.Context
+deprecated;FormContext: React_2.Context
 public;FormContextState 
 public;FormProps
 public;Gap(props: GapProps): JSX.Element
@@ -110,7 +110,7 @@ internal;getBestBWContrastColor(hexColor: string): "black" | "white"
 internal;getButtonTypeClassName(buttonType?: ButtonType): string
 public;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
 public;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
-internal;getDisplayName: (component: React.ComponentType
+internal;getDisplayName: (component: React_2.ComponentType
 internal;getToolbarBackdropFilter: (filterBlur: number) => string
 internal;getToolbarBackgroundColor: (opacity: number) => string
 internal;getToolbarBoxShadow: (opacity: number) => string
@@ -131,7 +131,7 @@ public;IconHelper
 public;IconInput: (props: IconInputProps) => JSX.Element | null
 public;IconInputProps 
 public;IconProps 
-public;IconSpec = string | ConditionalStringValue | React.ReactNode
+public;IconSpec = string | ConditionalStringValue | React_2.ReactNode
 public;ImageCheckBox 
 public;ImageCheckBoxProps 
 public;Input: (props: InputProps) => JSX.Element | null
@@ -173,7 +173,7 @@ public;LeadingText2(props: TextProps): JSX.Element
 deprecated;LeadingText2(props: TextProps): JSX.Element
 internal;Line
 alpha;Listbox(props: ListboxProps): JSX.Element
-alpha;ListboxContext: React.Context
+alpha;ListboxContext: React_2.Context
 alpha;ListboxContextProps
 alpha;ListboxItem(props: ListboxItemProps): JSX.Element
 alpha;ListboxItemProps 
@@ -208,11 +208,10 @@ public;MutedText(props: TextProps): JSX.Element
 internal;NewBadge(props: CommonProps): JSX.Element
 public;NoChildrenProps
 public;NodeCheckboxProps
-public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode
-public;NodeCheckboxRenderProps = Omit
+public;NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React_2.ReactNode
+public;NodeCheckboxRenderProps = Omit_2
 public;NumberInput: (props: NumberInputProps) => JSX.Element | null
 public;NumberInputProps 
-public;Omit
 public;OmitChildrenProp
 beta;OptionsType = Array
 deprecated;OptionsType = Array
@@ -257,8 +256,7 @@ internal;Rectangle
 public;RectangleProps
 public;RenderPropsArgs
 public;ResizableContainerObserver({ onResize, children }:
-internal;ResizeObserver: ResizeObserverType
-internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
+internal;ResizeObserverType = default_2
 public;ScrollPositionMaintainer 
 public;ScrollView(props: CommonDivProps): JSX.Element
 public;SearchBox 
@@ -306,7 +304,9 @@ deprecated;Subheading2(props: TextProps): JSX.Element
 public;SvgPath 
 public;SvgPathProps 
 public;SvgSprite 
+deprecated;SvgSprite 
 public;SvgSpriteProps 
+deprecated;SvgSpriteProps 
 public;TabLabel
 public;Tabs 
 public;TabsProps 
@@ -363,9 +363,11 @@ public;UiStateStorageResult
 public;UiStateStorageStatus
 public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
+beta;useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
 internal;useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void
+beta;useInterval(callback: (...args: any[]) => void, delay: number | undefined): void
 internal;useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[]
 public;useOptionalDisposable
 internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number
@@ -375,14 +377,14 @@ internal;useRefState
 internal;useResizeObserver
 public;useSaveBeforeActivatingNewSettingsTab(settingsManager: SettingsManager, saveFunction: (tabSelectionFunc: (args: any) => void, requestedSettingsTabId?: string) => void): void
 public;useSaveBeforeClosingSettingsContainer(settingsManager: SettingsManager, saveFunction: (closeFunc: (args: any) => void, closeFuncArgs?: any) => void): void
-internal;useTargeted: (ref: React.RefObject
+internal;useTargeted: (ref: React_2.RefObject
 internal;useWidgetOpacityContext(): WidgetOpacityContextProps
 public;VerticalAlignment
 public;VerticalTabs(props: TabsProps): JSX.Element
 public;WebFontIcon(props: WebFontIconProps): JSX.Element
 public;WebFontIconProps 
 internal;WidgetElementSet 
-internal;WidgetOpacityContext: React.Context
+internal;WidgetOpacityContext: React_2.Context
 internal;WidgetOpacityContextProps
 public;withIsPressed: 
 public;WithIsPressedProps

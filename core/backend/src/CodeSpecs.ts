@@ -11,7 +11,7 @@ import { CodeScopeSpec, CodeSpec, IModelError } from "@itwin/core-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 
-/** Manages [CodeSpecs]($docs/BIS/intro/element-fundamentals.md#codespec) within an [[IModelDb]]
+/** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public
  */
 export class CodeSpecs {
@@ -45,7 +45,7 @@ export class CodeSpecs {
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId");
 
     // good chance it is already loaded - check there before running a query
-    const found: CodeSpec | undefined = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
+    const found = this._loadedCodeSpecs.find((codeSpec) => codeSpec.id === codeSpecId);
     if (found !== undefined)
       return found;
 

@@ -7,6 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import {BriefcaseConnection} from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -17,6 +18,7 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
 /** The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
  * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  * @public
+ * @extensions
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   /** The viewport within which the tool operates.
@@ -34,6 +36,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public get iModel(): IModelConnection {
     assert(undefined !== this.targetView);
     return this.targetView.view.iModel;
+  }
+
+  /** Get the briefcase on which this tool operates, if the tool has successfully installed and the target [[iModel]] is a briefcase. */
+  public get briefcase(): BriefcaseConnection | undefined {
+    const iModel = this.targetView?.view.iModel;
+    return iModel?.isBriefcaseConnection() ? iModel : undefined;
   }
 
   /**
@@ -170,9 +178,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onUndoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onUndoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }
@@ -188,9 +196,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!await this.onRedoPreviousStep())
       return false;
 
-    AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    AccuDrawShortcuts.processPendingHints(); // Process pending hints from onRedoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    IModelApp.toolAdmin.updateDynamics();
+    IModelApp.toolAdmin.updateDynamics(undefined, undefined, true); // Don't wait for motion to update dynamics...
 
     return true;
   }

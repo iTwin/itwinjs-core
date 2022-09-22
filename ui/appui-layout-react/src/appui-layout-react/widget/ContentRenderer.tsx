@@ -10,8 +10,9 @@ import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
-import { TabState, toolSettingsTabId } from "../base/NineZoneState";
+import { TabState } from "../state/TabState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 /** @internal */
 export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
@@ -85,22 +86,14 @@ TabIdContext.displayName = "nz:TabIdContext";
 export function useTabTransientState(tabId: string, onSave?: () => void, onRestore?: () => void) {
   const widgetContentManager = React.useContext(WidgetContentManagerContext);
   React.useEffect(() => {
-    const handleSaveTransientState = (id: TabState["id"]) => {
+    return widgetContentManager.onSaveTransientState.add((id) => {
       tabId === id && onSave && onSave();
-    };
-    widgetContentManager.onSaveTransientState.add(handleSaveTransientState);
-    return () => {
-      widgetContentManager.onSaveTransientState.remove(handleSaveTransientState);
-    };
+    });
   }, [widgetContentManager, onSave, tabId]);
   React.useEffect(() => {
-    const handleRestoreTransientState = (id: TabState["id"]) => {
+    return widgetContentManager.onRestoreTransientState.add((id) => {
       tabId === id && onRestore && onRestore();
-    };
-    widgetContentManager.onRestoreTransientState.add(handleRestoreTransientState);
-    return () => {
-      widgetContentManager.onRestoreTransientState.remove(handleRestoreTransientState);
-    };
+    });
   }, [widgetContentManager, onRestore, tabId]);
 }
 

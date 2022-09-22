@@ -11,12 +11,14 @@ import { Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometry";
 
 /** JSON representation of the 4 corners of an [[ImageGraphicProps]]. @see [[ImageGraphicCorners]].
  * @public
+ * @extensions
  */
 export type ImageGraphicCornersProps = [XYZProps, XYZProps, XYZProps, XYZProps];
 
 /** JSON representation of an [[ImageGraphic]].
  * @see [[GeometryStreamEntryProps]].
  * @public
+ * @extensions
  */
 export interface ImageGraphicProps {
   /** The 4 corners of defining the quadrilateral on which the image is displayed. */

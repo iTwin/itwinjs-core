@@ -7,16 +7,17 @@
  */
 
 import { Id64String, IDisposable } from "@itwin/core-bentley";
-import { Point2d, XAndY } from "@itwin/core-geometry";
 import { Frustum, ImageBuffer, SpatialClassifier } from "@itwin/core-common";
+import { Point2d, XAndY } from "@itwin/core-geometry";
+import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
 import { SceneContext } from "../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
-import { IModelConnection } from "../IModelConnection";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
+import { FrameStatsCollector } from "./FrameStats";
 import { AnimationBranchStates } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
@@ -27,7 +28,6 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
-import { FrameStatsCollector } from "./FrameStats";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -107,7 +107,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   public updateSolarShadows(_context: SceneContext | undefined): void { }
-  public getPlanarClassifier(_id: Id64String): RenderPlanarClassifier | undefined { return undefined; }
+  public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined { return undefined; }
   public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
   public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
 

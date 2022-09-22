@@ -1,8 +1,8 @@
 # Schemas and Elements in TypeScript
 
-A [Schema]($backend) represents an ECSchema in TypeScript. It is a collection of Entity-based classes. See [the BIS overview]($docs/bis) for how ECSchemas are used to model information. ECSchemas define classes for models, elements, and aspects, as well as ECRelationships.
+A [Schema]($backend) represents an ECSchema in TypeScript. It is a collection of Entity-based classes. See [the BIS overview](../../bis/index.md) for how ECSchemas are used to model information. ECSchemas define classes for models, elements, and aspects, as well as ECRelationships.
 
-An [Element]($backend) object represents an *instance* of a [bis:Element]($docs/BIS/intro/element-fundamentals.md) class when it is read from an iModel. The Element object has properties that correspond to the bis class definition in the schema. An [ElementAspect]($backend) object represents an instance of a [bis:Aspect]($docs/BIS/intro/elementaspect-fundamentals.md) in memory.
+An [Element]($backend) object represents an *instance* of a [bis:Element](../../BIS/guide/fundamentals/element-fundamentals.md) class when it is read from an iModel. The Element object has properties that correspond to the bis class definition in the schema. An [ElementAspect]($backend) object represents an instance of a [bis:Aspect](../../BIS/guide/fundamentals/elementaspect-fundamentals.md) in memory.
 
 ECSchemas typically define subclasses of bis:Element, bis:Aspect, and so on. The objects that are loaded into memory are instances of TypeScript/JavaScript classes that match the ECSchema definitions. So, for example, an instance of a bis:GeometricElement3d is an object of the class [GeometricElement3d]($backend).
 

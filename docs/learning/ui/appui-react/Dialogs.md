@@ -25,7 +25,6 @@ import { IModelApp } from "@itwin/core-frontend";
 import { Dialog, DialogButtonType } from "@itwin/core-react";
 
 export interface SampleModalDialogProps {
-  opened: boolean;
   onResult?: (result: DialogButtonType) => void;
 }
 
@@ -34,21 +33,17 @@ export interface SampleModalDialogState {
 }
 
 export class SampleModalDialog extends React.Component<SampleModalDialogProps, SampleModalDialogState> {
-  public readonly state: Readonly<SampleModalDialogState>;
   private _title = IModelApp.i18n.translate("SampleApp:buttons.sampleModalDialog");
 
   constructor(props: SampleModalDialogProps) {
     super(props);
-    this.state = {
-      opened: this.props.opened,
-    };
   }
 
   public render(): JSX.Element {
     return (
       <Dialog
         title={this._title}
-        opened={this.state.opened}
+        opened={true}
         modal={true}
         width={450}
         height={300}
@@ -75,10 +70,9 @@ export class SampleModalDialog extends React.Component<SampleModalDialogProps, S
     this._closeDialog(() => this.props.onResult && this.props.onResult(DialogButtonType.Cancel));
   };
 
-  private _closeDialog = (followUp: () => void) => {
-    this.setState(
-      { opened: false },
-      () => followUp());
+  private _closeDialog = (followUp?: () => void) => {
+      followup && followUp();
+      ModelessDialogManager.closeDialog();
   };
 }
 ```
@@ -90,7 +84,6 @@ The `ModalDialogManager.openDialog` function is called to open a modal dialog.
 ```tsx
   ModalDialogManager.openDialog(
     <SampleModalDialog
-      opened={true}
       onResult={(result) => this._handleModalResult(result)}
     />);
 ```
@@ -205,4 +198,4 @@ The `ModelessDialogManager.closeDialog` function is called to close a modeless d
 
 ## API Reference
 
-- [Dialog]($appui-react:Dialog)
+* [Dialog]($appui-react:Dialog)

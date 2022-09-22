@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable deprecation/deprecation */
 /** @packageDocumentation
  * @module Notification
  */
@@ -16,7 +17,7 @@ import {
 } from "@itwin/core-frontend";
 import { IconSpecUtilities } from "@itwin/appui-abstract";
 import {
-  FillCentered, Icon, LocalStateStorage, SvgSprite, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
+  FillCentered, Icon, LocalStateStorage, UiCore, UiStateEntry, UiStateStorage, UiStateStorageResult, UiStateStorageStatus,
 } from "@itwin/core-react";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog,
@@ -32,22 +33,22 @@ import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
 import { UiStateStorageContext } from "../../uistate/useUiStateStorage";
 
-import acceptPointIcon from "./accept-point.svg?sprite";
-import cursorClickIcon from "./cursor-click.svg?sprite";
-import oneTouchDragIcon from "./gesture-one-finger-drag.svg?sprite";
-import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg?sprite";
-import oneTouchTapIcon from "./gesture-one-finger-tap.svg?sprite";
-import twoTouchPinchIcon from "./gesture-pinch.svg?sprite";
-import twoTouchDragIcon from "./gesture-two-finger-drag.svg?sprite";
-import twoTouchTapIcon from "./gesture-two-finger-tap.svg?sprite";
-import clickLeftDragIcon from "./mouse-click-left-drag.svg?sprite";
-import clickLeftIcon from "./mouse-click-left.svg?sprite";
-import clickRightDragIcon from "./mouse-click-right-drag.svg?sprite";
-import clickRightIcon from "./mouse-click-right.svg?sprite";
-import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg?sprite";
-import mouseWheelClickIcon from "./mouse-click-wheel.svg?sprite";
-import touchCursorDragIcon from "./touch-cursor-pan.svg?sprite";
-import touchCursorTapIcon from "./touch-cursor-point.svg?sprite";
+import acceptPointIcon from "./accept-point.svg";
+import cursorClickIcon from "./cursor-click.svg";
+import oneTouchDragIcon from "./gesture-one-finger-drag.svg";
+import oneTouchDoubleTapIcon from "./gesture-one-finger-tap-double.svg";
+import oneTouchTapIcon from "./gesture-one-finger-tap.svg";
+import twoTouchPinchIcon from "./gesture-pinch.svg";
+import twoTouchDragIcon from "./gesture-two-finger-drag.svg";
+import twoTouchTapIcon from "./gesture-two-finger-tap.svg";
+import clickLeftDragIcon from "./mouse-click-left-drag.svg";
+import clickLeftIcon from "./mouse-click-left.svg";
+import clickRightDragIcon from "./mouse-click-right-drag.svg";
+import clickRightIcon from "./mouse-click-right.svg";
+import clickMouseWheelDragIcon from "./mouse-click-wheel-drag.svg";
+import mouseWheelClickIcon from "./mouse-click-wheel.svg";
+import touchCursorDragIcon from "./touch-cursor-pan.svg";
+import touchCursorTapIcon from "./touch-cursor-point.svg";
 
 // cSpell:ignore cursorprompt
 
@@ -86,6 +87,7 @@ interface ToolAssistanceFieldState {
   showTouchInstructions: boolean;
   mouseTouchTabIndex: number;
   isPinned: boolean;
+  openWidget: string | null;
 }
 
 /** Tool Assistance Field React component.
@@ -137,6 +139,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       showTouchInstructions: false,
       mouseTouchTabIndex: 0,
       isPinned: false,
+      openWidget: null,
     };
 
     this._uiSettingsStorage = new LocalStateStorage();
@@ -388,15 +391,15 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
             indicatorRef={this._indicator}
             className={classnames("uifw-statusFields-toolassistance", this.props.className)}
             style={this.props.style}
-            isInFooterMode={this.props.isInFooterMode}
+            isInFooterMode={this.props.isInFooterMode ?? true}
             onClick={this._handleToolAssistanceIndicatorClick}
             title={tooltip}
           >
-            {this.props.isInFooterMode ? prompt : undefined}
+            {(this.props.isInFooterMode ?? true) ? prompt : undefined}
           </ToolAssistance>
         </div>
         <FooterPopup
-          isOpen={this.props.openWidget === this._className}
+          isOpen={(this.props.openWidget ?? this.state.openWidget) === this._className}
           onClose={this._handleClose}
           onOutsideClick={this._handleOutsideClick}
           target={this._target}
@@ -458,7 +461,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private _handleToolAssistanceIndicatorClick = () => {
-    const isOpen = this.props.openWidget === this._className;
+    const isOpen = (this.props.openWidget ?? this.state.openWidget) === this._className;
     if (isOpen) {
       this.setOpenWidget(null);
     } else
@@ -476,15 +479,14 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   private setOpenWidget(openWidget: StatusBarFieldId) {
-    // istanbul ignore else
-    if (this.props.onOpenWidget)
-      this.props.onOpenWidget(openWidget);
-
-    if (!openWidget && this.state.isPinned) {
-      // istanbul ignore else
-      if (this._isMounted)
-        this.setState({ isPinned: false });
+    this.props.onOpenWidget?.(openWidget);
+    let newState = {
+      openWidget,
+    };
+    if (!openWidget && this.state.isPinned && this._isMounted) {
+      newState = {...newState, ...{isPinned: false}};
     }
+    this.setState(newState);
   }
 
   /** @internal */
@@ -589,12 +591,12 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
           className = mediumSize ? /* istanbul ignore next */ "uifw-toolassistance-svg-medium-wide" : "uifw-toolassistance-svg-wide";
           break;
       }
-
+      const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgImage);
       image = (
         <div className={className}>
           {svgImage &&
             // istanbul ignore next
-            <SvgSprite src={svgImage} />
+            <Icon iconSpec={iconSpec} />
           }
         </div>
       );

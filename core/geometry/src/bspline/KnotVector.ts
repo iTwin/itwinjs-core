@@ -35,7 +35,7 @@ export enum BSplineWrapMode {
 /**
  * Array of non-decreasing numbers acting as a knot array for bsplines.
  *
- * * Essential identity: numKnots = numPoles + order = numPoles + degree - 1
+ * * Essential identity: numKnots = numPoles + order - 2 = numPoles + degree - 1
  * * Various bspline libraries have confusion over how many "end knots" are needed. "Many" libraries (including MicroStation)
  *     incorrectly demand "order" knots at each end for clamping.   But only "order - 1" are really needed.
  * * This class uses the "order-1" convention.
@@ -43,7 +43,7 @@ export enum BSplineWrapMode {
  * * A span is a single interval of the knots.
  * * The left knot of span {k} is knot {k+degree-1}
  * * This class provides queries to convert among spanFraction, fraction of knot range, and knot
- * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Caller's need to
+ * * core computations (evaluateBasisFunctions) have leftKnotIndex and global knot value as inputs.  Callers need to
  * know their primary values (global knot, spanFraction).
  * @public
  */
@@ -148,6 +148,61 @@ export class KnotVector {
     if (this.degree !== other.degree) return false;
     return NumberArray.isAlmostEqual(this.knots, other.knots, KnotVector.knotTolerance);
   }
+
+  /** Compute the multiplicity of the input knot, or zero if not a knot. */
+  public getKnotMultiplicity(knot: number): number {
+    let m = 0;
+    for (const k of this.knots) {
+      if (Math.abs(k - knot) < KnotVector.knotTolerance)
+        ++m;
+      else if (knot < k)
+        break;
+    }
+    return m;
+  }
+
+  /** Compute the multiplicity of the knot at the given index. */
+  public getKnotMultiplicityAtIndex(knotIndex: number): number {
+    let m = 0;
+    if (knotIndex >= 0 && knotIndex < this.knots.length) {
+      const knot = this.knots[knotIndex];
+      ++m;  // count this knot
+      for (let i = knotIndex - 1; i >= 0; --i) {
+        const k = this.knots[i];
+        if (Math.abs(k - knot) < KnotVector.knotTolerance)
+          ++m;  // found multiple to left of knot
+        else if (knot > k)
+          break;
+      }
+      for (let i = knotIndex + 1; i < this.knots.length; ++i) {
+        const k = this.knots[i];
+        if (Math.abs(k - knot) < KnotVector.knotTolerance)
+          ++m;  // found multiple to right of knot
+        else if (knot < k)
+          break;
+      }
+    }
+    return m;
+  }
+
+  /** Transform knots to span [0,1].
+   * @returns false if and only if this.knotLength01 is trivial
+   */
+  public normalize(): boolean {
+    if (this.knotLength01 < KnotVector.knotTolerance)
+      return false;
+    const divisor = 1.0 / this.knotLength01;
+    const leftKnot = this.leftKnot;
+    for (let i = 0; i < this.knots.length; ++i)
+      this.knots[i] = (this.knots[i] - leftKnot) * divisor;
+    // explicitly set rightKnot and its multiples to 1.0 to avoid round-off
+    for (let i = this.rightKnotIndex - 1; i > this.leftKnotIndex && (this.knots[i] === this.knots[this.rightKnotIndex]); --i) this.knots[i] = 1.0;
+    for (let i = this.rightKnotIndex + 1; i < this.knots.length && (this.knots[i] === this.knots[this.rightKnotIndex]); ++i) this.knots[i] = 1.0;
+    this.knots[this.rightKnotIndex] = 1.0;
+    this.setupFixedValues();
+    return true;
+  }
+
   /** install knot values from an array, optionally ignoring first and last.
    */
   public setKnots(knots: number[] | Float64Array, skipFirstAndLast?: boolean) {
@@ -164,6 +219,13 @@ export class KnotVector {
     }
     this.setupFixedValues();
   }
+
+  /** install knot values from an array, optionally ignoring first and last. */
+  public setKnotsCapture(knots: Float64Array) {
+    this.knots = knots;
+    this.setupFixedValues();
+  }
+
   /**
    * Create knot vector with {degree-1} replicated knots at start and end, and uniform knots between.
    * @param numPoles Number of poles
@@ -203,7 +265,7 @@ export class KnotVector {
    * Create knot vector with given knot values and degree.
    * @param knotArray knot values
    * @param degree degree of polynomial
-   * @param skipFirstAndLast true to skip class overclamped end knots.
+   * @param skipFirstAndLast true to skip copying the first and last knot values.
    */
   public static create(knotArray: number[] | Float64Array, degree: number, skipFirstAndLast?: boolean): KnotVector {
     const numAllocate = skipFirstAndLast ? knotArray.length - 2 : knotArray.length;
@@ -213,13 +275,13 @@ export class KnotVector {
   }
 
   /**
-   * Return the average of degree consecutive knots beginning at spanIndex.
+   * Return the average of degree consecutive knots beginning at knotIndex.
    */
-  public grevilleKnot(spanIndex: number): number {
-    if (spanIndex < 0) return this.leftKnot;
-    if (spanIndex > this.rightKnotIndex) return this.rightKnot;
+  public grevilleKnot(knotIndex: number): number {
+    if (knotIndex < 0) return this.leftKnot;
+    if (knotIndex > this.rightKnotIndex) return this.rightKnot;
     let sum = 0.0;
-    for (let i = spanIndex; i < spanIndex + this.degree; i++)
+    for (let i = knotIndex; i < knotIndex + this.degree; i++)
       sum += this.knots[i];
     return sum / this.degree;
   }
@@ -248,7 +310,7 @@ export class KnotVector {
    * Evaluate basis functions f[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of basis values.  ASSUMED PROPER LENGTH
+   * @param f array of order basis function values
    */
   public evaluateBasisFunctions(knotIndex0: number, u: number, f: Float64Array) {
     f[0] = 1.0;
@@ -278,10 +340,12 @@ export class KnotVector {
   }
 
   /**
-   * Evaluate basis fucntions f[] at knot value u.
+   * Evaluate basis functions f[], derivatives df[], and optional second derivatives ddf[] at knot value u.
    *
    * @param u knot value for evaluation
-   * @param f array of basis values.  ASSUMED PROPER LENGTH
+   * @param f array of order basis function values
+   * @param df array of order basis derivative values
+   * @param ddf array of order basis second derivative values
    */
   public evaluateBasisFunctions1(knotIndex0: number, u: number, f: Float64Array, df: Float64Array, ddf?: Float64Array) {
     f[0] = 1.0; df[0] = 0.0;
@@ -341,18 +405,21 @@ export class KnotVector {
         ddf[depth + 1] = ddgCarry;
     }
   }
-  /** Return the (highest) index of the knot less than or equal to u */
+  /** Find the knot span bracketing knots[i] <= u < knots[i+1] and return i.
+   * * If u has no such bracket, return the smaller index of the closest nontrivial bracket.
+   * @param u value to bracket
+   */
   public knotToLeftKnotIndex(u: number): number {
-    // Anything to left is in the first span . .
-    const firstLeftKnot = this.degree - 1;
-    if (u < this.knots[firstLeftKnot + 1]) return firstLeftKnot;
-    // Anything to right is in the last span ...
-    const lastLeftKnot = this.knots.length - this.degree - 1;
-    if (u >= this.knots.length - this.degree) return this.knots[lastLeftKnot];
-    // ugh ... linear search ...
-    for (let i = firstLeftKnot + 1; i < lastLeftKnot; i++)
-      if (u < this.knots[i + 1]) return i;  // testing against right side skips over multiple knot cases???
-    return lastLeftKnot;
+    for (let i = this.leftKnotIndex; i < this.rightKnotIndex; ++i) {
+      if (u < this.knots[i + 1])
+        return i;
+    }
+    // for u >= rightKnot, return left index of last nontrivial span
+    for (let i = this.rightKnotIndex; i > this.leftKnotIndex; --i) {
+      if (this.knots[i] - this.knots[i - 1] >= KnotVector.knotTolerance)
+        return i - 1;
+    }
+    return this.rightKnotIndex - 1; // shouldn't get here
   }
   /**
    * Given a span index, return the index of the knot at its left.
@@ -361,7 +428,7 @@ export class KnotVector {
   public spanIndexToLeftKnotIndex(spanIndex: number): number {
     const d = this.degree;
     if (spanIndex <= 0.0) return d - 1;
-    return Math.min(spanIndex + d - 1, this.knots.length - d);
+    return Math.min(spanIndex + d - 1, this.knots.length - d - 1);
   }
   /** Return the knot interval length of indexed bezier span. */
   public spanIndexToSpanLength(spanIndex: number): number {
@@ -374,7 +441,7 @@ export class KnotVector {
    * @param spanIndex index of span to test.
    */
   public isIndexOfRealSpan(spanIndex: number): boolean {
-    if (spanIndex >= 0 && spanIndex < this.knots.length - this.degree)
+    if (spanIndex >= 0 && spanIndex < this.numSpans)
       return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
     return false;
   }

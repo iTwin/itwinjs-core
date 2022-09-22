@@ -9,7 +9,7 @@
 import {
   Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@itwin/core-geometry";
-import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
+import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
@@ -41,6 +41,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       analysisStyleDisplacement: this.analysisStyle?.displacement,
       viewIndependentOrigin: options.viewIndependentOrigin,
     });
+
+    if (this.pickable)
+      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
 
   public finish(): RenderGraphic {
@@ -51,6 +54,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public activateGraphicParams(graphicParams: GraphicParams): void {
     graphicParams.clone(this.graphicParams);
+  }
+
+  protected override _activateFeature(feature: Feature): void {
+    this.accum.currentFeature = feature;
   }
 
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
@@ -165,9 +172,11 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       // No point generating edges for graphics that are always rendered in smooth shade mode.
       const options = GeometryOptions.createForGraphicBuilder(this);
       const tolerance = this.computeTolerance(accum);
-      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickId);
+      meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
-        featureTable = meshes.features;
+        if (meshes.features?.anyDefined)
+          featureTable = meshes.features;
+
         range = meshes.range;
       }
     }

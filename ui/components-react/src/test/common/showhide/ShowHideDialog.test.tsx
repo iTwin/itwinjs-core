@@ -9,6 +9,8 @@ import { fireEvent, render } from "@testing-library/react";
 import { ShowHideDialog } from "../../../components-react";
 import TestUtils from "../../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("ShowHideDialog", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();

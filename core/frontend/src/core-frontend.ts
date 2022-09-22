@@ -11,6 +11,7 @@ export * from "./BriefcaseConnection";
 export * from "./BriefcaseTxns";
 export * from "./CategorySelectorState";
 export * from "./ChangeFlags";
+export * from "./CheckpointConnection";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
 export * from "./DecorationsCache";
@@ -30,12 +31,12 @@ export * from "./FrustumAnimator";
 export * from "./FuzzySearch";
 export * from "./GeoServices";
 export * from "./GlobeAnimator";
+export * from "./GraphicalEditingScope";
 export * from "./HitDetail";
 export * from "./ImageUtil";
 export * from "./IModelApp";
 export * from "./IModelConnection";
 export * from "./IModelRoutingContext";
-export * from "./GraphicalEditingScope";
 export * from "./IpcApp";
 export * from "./LinePlaneIntersect";
 export * from "./MarginPercent";
@@ -48,11 +49,6 @@ export * from "./NoRenderApp";
 export * from "./NotificationManager";
 export * from "./PerModelCategoryVisibility";
 export * from "./PlanarClipMaskState";
-export * from "./quantity-formatting/QuantityFormatter";
-export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
-export * from "./quantity-formatting/LocalUnitFormatProvider";
-export * from "./RenderScheduleState";
-export * from "./CheckpointConnection";
 export * from "./SelectionSet";
 export * from "./SheetViewState";
 export * from "./SpatialViewState";
@@ -61,7 +57,6 @@ export * from "./StandardView";
 export * from "./SubCategoriesCache";
 export * from "./TentativePoint";
 export * from "./Tiles";
-export * from "./TwoWayViewportSync";
 export * from "./UserPreferences";
 export * from "./ViewAnimation";
 export * from "./ViewContext";
@@ -69,13 +64,21 @@ export * from "./ViewGlobalLocation";
 export * from "./ViewingSpace";
 export * from "./ViewManager";
 export * from "./Viewport";
+export * from "./ViewportSync";
 export * from "./ViewPose";
 export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
+export * from "./extension/Extension";
+export * from "./extension/providers/LocalExtensionProvider";
+export * from "./extension/providers/RemoteExtensionProvider";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
 export * from "./properties/LengthDescription";
+export * from "./quantity-formatting/QuantityFormatter";
+export * from "./quantity-formatting/BaseUnitFormattingSettingsProvider";
+export * from "./quantity-formatting/LocalUnitFormatProvider";
+export * from "./quantity-formatting/QuantityTypesEditorSpecs";
 export * from "./render/CanvasDecoration";
 export * from "./render/Decorations";
 export * from "./render/FeatureSymbology";
@@ -102,8 +105,8 @@ export * from "./render/VisibleFeature";
 export * from "./render/webgl/PerformanceMetrics";
 export * from "./render/webgl/Target";
 export * from "./render/webgl/IModelFrameLifecycle";
-export * from "./tools/AccuDrawTool";
 export * from "./tile/internal";
+export * from "./tools/AccuDrawTool";
 export * from "./tools/ClipViewTool";
 export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
@@ -122,6 +125,8 @@ export * from "./ViewCreator2d";
 export * from "./ViewCreator3d";
 export * from "./LocalhostIpcApp";
 export * from "./RealityDataSource";
+// TODO/FIX: "./extension/ExtensionRuntime" import has to be last to avoid circular dependency errors.
+import "./extension/ExtensionRuntime";
 
 /** @docs-package-description
  * The core-frontend package always runs in a web browser. It contains classes for [querying iModels and showing views]($docs/learning/frontend/index.md).
@@ -175,7 +180,7 @@ export * from "./RealityDataSource";
  */
 /**
  * @docs-group-description Extensions
- * Classes for creating and managing runtime [Extensions]($docs/learning/frontend/Extensions.md)
+ * Classes for creating and managing Extensions.
  */
 /**
  * @docs-group-description Properties
@@ -223,4 +228,3 @@ export * from "./RealityDataSource";
  * @docs-group-description MapLayers
  * Classes supporting map layers display.
  */
-

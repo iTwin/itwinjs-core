@@ -7,28 +7,37 @@
  */
 
 import { compareStrings } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, MapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
 } from "@itwin/core-common";
-import { getJson, RequestBasicCredentials } from "../../request/Request";
+import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-
+import { getJson, RequestBasicCredentials } from "../../request/Request";
 import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
 
-/** @internal */
+/**
+ * Values for return codes from [[MapLayerSource.validateSource]]
+ * @public
+ */
 export enum MapLayerSourceStatus {
+  /** Layer source is valid */
   Valid,
+  /** Authorization has failed when accessing this layer source. */
   InvalidCredentials,
+  /** Provided format id could not be resolved in [[MapLayerFormatRegistry]] */
   InvalidFormat,
+  /** The tiling schema of the source is not supported */
   InvalidTileTree,
+  /** Could not not connect to remote server using the provided URL.*/
   InvalidUrl,
+  /** Authorization is required to access this map layer source. */
   RequireAuth,
 }
 
 /** JSON representation of a map layer source.
- * @internal
+ *  * @see [ImageryMapLayerFormatId]($common)
+ * @public
  */
 interface MapLayerSourceProps {
   /** Identifies the map layers source. Defaults to 'WMS'. */
@@ -39,18 +48,12 @@ interface MapLayerSourceProps {
   url: string;
   /** True to indicate background is transparent.  Defaults to 'true'. */
   transparentBackground?: boolean;
-  /** Is a base layer.  Defaults to 'false'. */
-  isBase?: boolean;
   /** Indicate if this source definition should be used as a base map. Defaults to false. */
   baseMap?: boolean;
-  /** UserName */
-  userName?: string;
-  /** Password */
-  password?: string;
 }
 
 /** A source for map layers.  These may be catalogued for convenient use by users or applications.
- * @internal
+ * @public
  */
 export class MapLayerSource {
   public formatId: string;
@@ -61,26 +64,26 @@ export class MapLayerSource {
   public userName?: string;
   public password?: string;
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, userName?: string, password?: string) {
+  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
     this.baseMap = baseMap;
     this.transparentBackground = transparentBackground;
-    this.userName = userName;
-    this.password = password;
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
     if (json === undefined)
       return undefined;
 
-    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground, json.userName, json.password);
+    return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     return IModelApp.mapLayerFormatRegistry.validateSource(this.formatId, this.url, this.getCredentials(), ignoreCache);
   }
+
+  /** @internal*/
   public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps) {
     const provider = BackgroundMapProvider.fromBackgroundMapProps(props);
     const layerSettings = BaseMapLayerSettings.fromProvider(provider);
@@ -98,10 +101,13 @@ export class MapLayerSource {
     return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground };
   }
 
-  public toLayerSettings(subLayers?: MapSubLayerProps[]): MapLayerSettings | undefined {
+  public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
     // When MapLayerSetting is created from a MapLayerSource, sub-layers and credentials need to be set separately.
-    const layerSettings = MapLayerSettings.fromJSON({ ...this, subLayers });
-    layerSettings?.setCredentials(this.userName, this.password);
+    const layerSettings = ImageMapLayerSettings.fromJSON({ ...this, subLayers });
+    if (this.userName !== undefined || this.password !== undefined) {
+      layerSettings?.setCredentials(this.userName, this.password);
+    }
+
     return layerSettings;
   }
 

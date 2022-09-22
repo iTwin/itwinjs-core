@@ -1,0 +1,281 @@
+{
+  "name": "@itwin/imodel-components-react",
+  "entries": [
+    {
+      "version": "3.3.2",
+      "tag": "@itwin/imodel-components-react_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/imodel-components-react_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/imodel-components-react_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Add ability to specify locale and format of Data and Time shown by timeline component."
+          },
+          {
+            "comment": "Navicube is now locked when Markup is active"
+          },
+          {
+            "comment": "Ensure Timeline's current duration value is with valid range."
+          },
+          {
+            "comment": "Update iTwinUI-react to 1.38.1"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/imodel-components-react_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/imodel-components-react_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/imodel-components-react_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/imodel-components-react_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.5",
+      "tag": "@itwin/imodel-components-react_v3.2.5",
+      "date": "Wed, 13 Jul 2022 15:45:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.4",
+      "tag": "@itwin/imodel-components-react_v3.2.4",
+      "date": "Tue, 21 Jun 2022 18:06:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.3",
+      "tag": "@itwin/imodel-components-react_v3.2.3",
+      "date": "Fri, 17 Jun 2022 15:18:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.2",
+      "tag": "@itwin/imodel-components-react_v3.2.2",
+      "date": "Fri, 10 Jun 2022 16:11:37 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.1",
+      "tag": "@itwin/imodel-components-react_v3.2.1",
+      "date": "Tue, 07 Jun 2022 15:02:56 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove fix height from ColorPicker dialog."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.0",
+      "tag": "@itwin/imodel-components-react_v3.2.0",
+      "date": "Fri, 20 May 2022 13:10:54 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix for losing viewport content after clicking PW link "
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.1.3",
+      "tag": "@itwin/imodel-components-react_v3.1.3",
+      "date": "Fri, 15 Apr 2022 13:49:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.2",
+      "tag": "@itwin/imodel-components-react_v3.1.2",
+      "date": "Wed, 06 Apr 2022 22:27:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.1",
+      "tag": "@itwin/imodel-components-react_v3.1.1",
+      "date": "Thu, 31 Mar 2022 15:55:48 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.1.0",
+      "tag": "@itwin/imodel-components-react_v3.1.0",
+      "date": "Tue, 29 Mar 2022 20:53:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Required updates based on @itwin/core-quantity format type definition related changes."
+          },
+          {
+            "comment": "Add pointer cursor for ColorPicker close button."
+          },
+          {
+            "comment": "whitespace change"
+          },
+          {
+            "comment": "Replace use of Context menu in Timeline with DropdownMenu."
+          },
+          {
+            "comment": "Update to itwinui-css version \"0.44.0\"."
+          },
+          {
+            "comment": "Update to @itwin/itwinui-react: 1.32.0"
+          },
+          {
+            "comment": "Update to latest itwinui-react."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.3",
+      "tag": "@itwin/imodel-components-react_v3.0.3",
+      "date": "Fri, 25 Mar 2022 15:10:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.2",
+      "tag": "@itwin/imodel-components-react_v3.0.2",
+      "date": "Thu, 10 Mar 2022 21:18:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.0.1",
+      "tag": "@itwin/imodel-components-react_v3.0.1",
+      "date": "Thu, 24 Feb 2022 15:26:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Avoid processing stale viewstates that reference closed imodels."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.0.0",
+      "tag": "@itwin/imodel-components-react_v3.0.0",
+      "date": "Mon, 24 Jan 2022 14:00:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height."
+          },
+          {
+            "comment": "Update colorpicker to support RGB input"
+          },
+          {
+            "comment": "Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package"
+          },
+          {
+            "comment": "rename to @itwin/imodel-components-react"
+          },
+          {
+            "comment": "Replace usage of I18N with generic Localization interface."
+          },
+          {
+            "comment": "Remove deprecate QuantityFormatter methods"
+          },
+          {
+            "comment": "Update snapshots"
+          },
+          {
+            "comment": "tool.run and tool.parseAndRun are now async methods"
+          },
+          {
+            "comment": "Deprecate obsolete code."
+          },
+          {
+            "comment": "Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined."
+          },
+          {
+            "comment": " update immer to fix security warning"
+          },
+          {
+            "comment": "Deprecate and promote apis"
+          },
+          {
+            "comment": "Deprecate obsolete APIs. Publish beta APIs from last release."
+          },
+          {
+            "comment": "Upgraded itwinui-react to 1.16.2. Fixed editor sizes."
+          },
+          {
+            "comment": "Remove files generated by bad merge"
+          },
+          {
+            "comment": "Update disabled styling for QuantityNumberInput."
+          },
+          {
+            "comment": "Allow widgets supplied by a UiItemsProvider to specify a default state of floating."
+          },
+          {
+            "comment": "Replace ColorPickerPanel with ColorPicker from itwinui-react"
+          },
+          {
+            "comment": "Clean up css for status bar entries to avoid unwanted text wrapping"
+          },
+          {
+            "comment": "Rename ui directories to match new package names."
+          },
+          {
+            "comment": "Deprecated Task/Workflow. Promoted AccuDraw UI to @beta. Added AccuDraw and NavigationAids learning docs."
+          },
+          {
+            "comment": "Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract."
+          },
+          {
+            "comment": "Remove react 16 peer dependency."
+          },
+          {
+            "comment": "Remove itwinUi css overrides."
+          },
+          {
+            "comment": "UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally."
+          },
+          {
+            "comment": "Add the ability for an app to mark a specific date on the rail of a TimelineComponent."
+          },
+          {
+            "comment": "Update to latest types/react package"
+          },
+          {
+            "comment": "Update ViewportComponent to function component that properly processes async method to get viewstate."
+          },
+          {
+            "comment": "Lock down and update version numbers so docs will build."
+          }
+        ]
+      }
+    }
+  ]
+}

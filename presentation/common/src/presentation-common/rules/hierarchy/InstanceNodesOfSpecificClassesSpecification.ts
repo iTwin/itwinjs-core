@@ -10,9 +10,9 @@ import { MultiSchemaClassesSpecification } from "../ClassSpecifications";
 import { ChildNodeSpecificationBase, ChildNodeSpecificationTypes, DefaultGroupingPropertiesContainer } from "./ChildNodeSpecification";
 
 /**
- * Creates nodes for all instances of specified ECClasses.
+ * Returns nodes for instances of specific ECClasses.
  *
- * @see [More details]($docs/presentation/Hierarchies/InstanceNodesOfSpecificClasses.md)
+ * @see [Instance nodes of specific classes specification reference documentation page]($docs/presentation/hierarchies/InstanceNodesOfSpecificClasses.md)
  * @public
  */
 export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSpecificationBase, DefaultGroupingPropertiesContainer {
@@ -20,26 +20,30 @@ export interface InstanceNodesOfSpecificClassesSpecification extends ChildNodeSp
   specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses;
 
   /**
-   * Specifications of ECClasses whose instances should be returned.
+   * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that
+   * specify which ECClasses need to be selected to form the result.
    */
   classes: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Specifications of ECClasses whose instances should be excluded.
+   * Defines a set of [multi schema classes]($docs/presentation/MultiSchemaClassesSpecification.md) that
+   * prevents specified ECClasses and subclasses from being selected by [[classes]] attribute.
    */
   excludedClasses?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
 
   /**
-   * Whether to get instances from derived `classes`.
-   * Acts as default value for [[classes.arePolymorphic]] and [[excludedClasses.arePolymorphic]].
-   * @deprecated Specify polymorphism value inside [[classes.arePolymorphic]] or [[excludedClasses.arePolymorphic]].
+   * Tells whether selecting instances from ECClasses specified in [[classes]] and [[excludedClasses]]
+   * attributes should be polymorphic or not.
+   *
+   * @deprecated The attribute was replaced by `arePolymorphic` attribute specified individually for each class definition
+   * under [[classes]] and [[excludedClasses]] attributes. At the moment, to keep backwards compatibility, this attribute acts
+   * as a fallback value in case the flag is not specified individually for a class definition.
    */
   arePolymorphic?: boolean;
 
   /**
-   * Condition for filtering instances of defined classes.
-   *
-   * **See:** [ECExpressions Available in InstanceFilter]($docs/presentation/Hierarchies/ECExpressions.md#instance-filter).
+   * Specifies an [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#instance-filter) for filtering
+   * instances of ECClasses specified through the [[classes]] attribute.
    */
   instanceFilter?: string;
 }

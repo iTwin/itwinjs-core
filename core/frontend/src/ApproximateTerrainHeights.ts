@@ -9,9 +9,8 @@
 import { assert } from "@itwin/core-bentley";
 import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { request } from "./request/Request";
 import { GeographicTilingScheme, QuadId } from "./tile/internal";
-import { IModelApp } from "./IModelApp";
+import type { ApproximateTerrainHeightsProps } from "./ApproximateTerrainHeightsProps";
 
 let instance: ApproximateTerrainHeights | undefined;
 
@@ -22,7 +21,7 @@ let instance: ApproximateTerrainHeights | undefined;
 export class ApproximateTerrainHeights {
   public static readonly maxLevel = 6;
   public readonly globalHeightRange = Range1d.createXX(-400, 90000); // Dead Sea to Mount Everest.
-  private _terrainHeights: any;
+  private _terrainHeights?: ApproximateTerrainHeightsProps;
   private readonly _scratchCorners = [Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero(), Cartographic.createZero()];
   private readonly _tilingScheme = new GeographicTilingScheme(2, 1, true); // Y at top... ?
   private readonly _scratchTileXY = Point2d.createZero();
@@ -39,12 +38,9 @@ export class ApproximateTerrainHeights {
    * @return {Promise}
    */
   public async initialize(): Promise<void> {
-    if (undefined === this._terrainHeights) {
-      const data = await request(`${IModelApp.publicPath}assets/approximateTerrainHeights.json`, {
-        method: "GET",
-        responseType: "json",
-      });
-      this._terrainHeights = data.body;
+    if (!this._terrainHeights) {
+      const { terrainHeightsPropsString } = await import("./ApproximateTerrainHeightsProps");
+      this._terrainHeights = JSON.parse(terrainHeightsPropsString);
     }
   }
 

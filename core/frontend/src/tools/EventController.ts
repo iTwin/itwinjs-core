@@ -13,6 +13,7 @@ import { ToolAdmin } from "./ToolAdmin";
  * An EventController maps user input events from a Viewport to the ToolAdmin so that tools can process them.
  * Viewports are assigned an EventController when they are registered with ViewManager.addViewport and they are destroyed with ViewManager.dropViewport.
  * @public
+ * @extensions
  */
 export class EventController {
   private readonly _removals: VoidFunction[] = [];

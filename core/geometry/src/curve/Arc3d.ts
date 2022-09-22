@@ -29,6 +29,8 @@ import { AnnounceNumberNumberCurvePrimitive, CurvePrimitive } from "./CurvePrimi
 import { GeometryQuery } from "./GeometryQuery";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
+import { CurveOffsetXYHandler } from "./internalContexts/CurveOffsetXYHandler";
+import { OffsetOptions } from "./internalContexts/PolygonOffsetContext";
 
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
 /**
@@ -122,7 +124,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *  Return a clone of the arc, with transform applied
    * @param transform
    */
-  public cloneTransformed(transform: Transform): CurvePrimitive {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): Arc3d {  // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -662,6 +664,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param transform optional transform to apply to the arc.
    */
   public extendRange(range: Range3d, transform?: Transform): void {
+    this.extendRangeInSweep (range, this._sweep, transform);
+  }
+  /**
+   * Extend a range to include the range of the arc, using specified range in place of the arc range.
+   * @param range range being extended.
+   * @param transform optional transform to apply to the arc.
+   */
+   public  extendRangeInSweep(range: Range3d, sweep: AngleSweep, transform?: Transform): void {
     const trigForm = new SineCosinePolynomial(0, 0, 0);
     const center = this._center.clone(Arc3d._workPointA);
     const vectorU = this._matrix.columnX(Arc3d._workVectorU);
@@ -676,14 +686,24 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const range1 = Range1d.createNull();
     for (let i = 0; i < 3; i++) {
       trigForm.set(center.at(i), vectorU.at(i), vectorV.at(i));
-      trigForm.rangeInSweep(this._sweep, range1);
+      trigForm.rangeInSweep(sweep, range1);
       lowPoint.setAt(i, range1.low);
       highPoint.setAt(i, range1.high);
     }
     range.extend(lowPoint);
     range.extend(highPoint);
-
   }
+    /**
+   * Returns a (high accuracy) range of the curve between fractional positions
+   * * Default implementation returns teh range of the curve from clonePartialCurve
+   */
+  public override rangeBetweenFractions(fraction0: number, fraction1: number, transform?: Transform): Range3d {
+    const sweep = AngleSweep.createStartEndRadians (this.sweep.fractionToRadians (fraction0), this.sweep.fractionToRadians (fraction1));
+    const range = Range3d.create ();
+    this.extendRangeInSweep (range, sweep, transform);
+    return range;
+  }
+
   /**
    * Set up a SineCosinePolynomial as the function c+u*cos(theta)+v*sin(theta) where
    *  c,u,v are coefficients obtained by evaluating altitude and velocity relative to the plane.
@@ -881,15 +901,13 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */
-  public override clonePartialCurve(fractionA: number, fractionB: number): CurvePrimitive | undefined {
+  public override clonePartialCurve(fractionA: number, fractionB: number): Arc3d {
     if (fractionB < fractionA) {
       const arcA = this.clonePartialCurve(fractionB, fractionA);
-      if (arcA)
-        arcA.reverseInPlace();
+      arcA.reverseInPlace();
       return arcA;
     }
     const arcB = this.clone();
-
     arcB.sweep.setStartEndRadians(
       this.sweep.fractionToRadians(fractionA),
       this.sweep.fractionToRadians(fractionB));
@@ -939,9 +957,9 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *   * `arc` is the (bounded) arc
    *   * `fraction10` is the tangency point's position as an interpolating fraction of the line segment from `point1` (backwards) to `point0`
    *   * `fraction12` is the tangency point's position as an interpolating fraction of the line segment from `point1` (forward) to `point2`
-   *   * `point1` is the `point1` input.
+   *   * `point` is the `point1` input.
    * * If unable to construct the arc:
-   *   * `point` is the `point` input.
+   *   * `point` is the `point1` input.
    *   * both fractions are zero
    *   * `arc` is undefined.
    * @param point0 first point of path. (the point before the point of inflection)
@@ -1000,6 +1018,35 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       detJ = - detJ;
     const wedgeArea = Math.cos(alpha) * Math.sin(alpha);
     return (alpha - wedgeArea) * detJ;
+  }
+
+  /**
+   * Construct an offset of the instance curve as viewed in the xy-plane (ignoring z).
+   * @param offsetDistanceOrOptions offset distance (positive to left of the instance curve), or options object
+   */
+  public override constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+    const options = OffsetOptions.create(offsetDistanceOrOptions);
+    if (this.isCircular || options.preserveEllipticalArcs) {
+      const arcXY = this.cloneAtZ();
+      const sign = arcXY.sweep.sweepRadians * arcXY.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
+      const r0 = arcXY.matrixRef.columnXMagnitude();
+      const r0new = r0 - sign * options.leftOffsetDistance;
+      const r90 = this.isCircular ? r0 : arcXY.matrixRef.columnYMagnitude();
+      const r90new = this.isCircular ? r0new : r90 - sign * options.leftOffsetDistance;
+      if (!Geometry.isSmallMetricDistance(r0new) && (r0 * r0new > 0.0) && (this.isCircular || (!Geometry.isSmallMetricDistance(r90new) && (r90 * r90new > 0.0)))) {
+        const factor0 = r0new / r0;
+        const factor90 = this.isCircular ? factor0 : r90new / r90;
+        const matrix = arcXY.matrixClone();
+        matrix.scaleColumnsInPlace(factor0, factor90, 1.0);
+        return Arc3d.createRefs(arcXY.center.clone(), matrix, arcXY.sweep.clone());
+      } else {
+        return undefined; // zero radius
+      }
+    }
+    // default impl
+    const handler = new CurveOffsetXYHandler(this, options.leftOffsetDistance);
+    this.emitStrokableParts(handler, options.strokeOptions);
+    return handler.claimResult();
   }
 }
 /**

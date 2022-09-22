@@ -35,7 +35,7 @@ export class GeometryCoreTestIO {
         fs.mkdirSync(path);
     }
     let fullPath = `${path}/${fileName}`;
-    if (fileName.search("\.imjs$") === 0)
+    if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
         fullPath = `${fullPath}.imjs`;
 
     console.log(`saveGeometry:: ${fullPath}`);

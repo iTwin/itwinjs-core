@@ -6,8 +6,8 @@ import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { DbResult, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, IModelHost, SqliteStatement } from "@itwin/core-backend";
+import { DbResult, OpenMode, StopWatch, using } from "@itwin/core-bentley";
+import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 function makeRandStr(length: number) {
@@ -62,7 +62,7 @@ async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): P
   return stmt.step() === DbResult.BE_SQLITE_ROW && stmt.getValue(0).getInteger() === id;
 }
 
-async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
+async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
   const nRows = endId - startId;
   const rowsToBeRead = Math.round((percentageOfRowToRead / 100) * nRows);
   let rowReadSoFar = 0;
@@ -71,7 +71,7 @@ async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveRead
   do {
     if (await readRow(stmt, nextRowToRead))
       rowReadSoFar++;
-    if (probabiltyOfConsectiveReads < Math.random()) {
+    if (probabilityOfConsecutiveReads < Math.random()) {
       nextRowToRead++;
       while (nextRowToRead >= endId)
         nextRowToRead = startId;
@@ -85,23 +85,19 @@ async function simulateRowRead(stmt: SqliteStatement, probabiltyOfConsectiveRead
   return sp.elapsedSeconds;
 }
 
-function changePageSize(iModelPath: string, pageSizeInKb: number) {
+function changePageSize(dbName: string, pageSizeInKb: number) {
   const sp = new StopWatch(undefined, true);
-  const pageSize = using(new ECDb(), (ecdb: ECDb) => {
-    ecdb.openDb(iModelPath, ECDbOpenMode.ReadWrite);
-    if (!ecdb.isOpen)
-      throw new Error(`changePageSize() fail to open file ${iModelPath}`);
-    return ecdb.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {
+  const db = new SQLiteDb();
+  db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite }, () => {
+    let pageSize = 0;
+    db.withPreparedSqliteStatement(`PRAGMA page_size`, (stmt) => {
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new Error(`changePageSize() fail to change page size to ${pageSizeInKb} Kb for ${iModelPath}`);
-      return stmt.getValue(0).getInteger();
+        throw new Error(`changePageSize() failed to get page size`);
+      pageSize = stmt.getValue(0).getInteger();
     });
+    db.vacuum({ pageSize: pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024 });
   });
-
-  IModelHost.platform.DgnDb.vacuum(iModelPath, pageSize === pageSizeInKb * 1024 ? undefined : pageSizeInKb * 1024);
-  sp.stop();
-  process.stdout.write(`Change vacuum with page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
-
+  process.stdout.write(`Change page size to ${pageSizeInKb}K took ${sp.elapsedSeconds} sec\n`);
 }
 
 interface ReadParams {

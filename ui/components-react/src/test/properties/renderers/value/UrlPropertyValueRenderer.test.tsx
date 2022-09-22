@@ -155,15 +155,15 @@ describe("UrlPropertyValueRenderer", () => {
       expect(renderer.canRender(property)).to.be.true;
     });
 
-    it("returns false for properties that are not URI", () => {
+    it("returns false for properties that are not URI or string", () => {
       const renderer = new UrlPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       const structProperty = TestUtils.createStructProperty("NameStruct");
-      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Model");
+      const doubleProperty = TestUtils.createPrimitiveDoubleProperty("Label", 123.456);
       const navigationProperty = TestUtils.createNavigationProperty("Category", { className: "", id: Id64.fromUint32Pair(1, 0) });
       expect(renderer.canRender(arrayProperty)).to.be.false;
       expect(renderer.canRender(structProperty)).to.be.false;
-      expect(renderer.canRender(stringProperty)).to.be.false;
+      expect(renderer.canRender(doubleProperty)).to.be.false;
       expect(renderer.canRender(navigationProperty)).to.be.false;
     });
   });

@@ -8,7 +8,7 @@
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
-import { GeometryClass } from "@itwin/core-common";
+import { ColorDefProps, GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -31,8 +31,8 @@ export interface ExportLinesInfo {
   elementId: Id64String;
   /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** The linework for these graphics */
@@ -71,8 +71,8 @@ export interface ExportGraphicsInfo {
   elementId: Id64String;
   /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
@@ -139,11 +139,19 @@ export interface ExportGraphicsOptions {
    * will not be supplied via onGraphics. See [IModelDb.exportPartGraphics]($core-backend)
    */
   partInstanceArray?: ExportPartInstanceInfo[];
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry).
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.
@@ -171,8 +179,8 @@ export interface ExportGraphicsOptions {
  * @public
  */
 export interface ExportPartInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
@@ -194,8 +202,8 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
  * @public
  */
 export interface ExportPartLinesInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** The linework for these graphics */
@@ -222,11 +230,19 @@ export interface ExportPartGraphicsOptions {
   onPartGraphics: ExportPartFunction;
   /** An optional function to call if line graphics are desired. */
   onPartLineGraphics?: ExportPartLinesFunction;
-  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry) */
+  /** Max distance from a face to the original geometry, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to zero and angleTol will control the quality of the resulting mesh.
+   */
   chordTol?: number;
-  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry) */
+  /** Max angle difference in radians for approximated face, see [StrokeOptions]($core-geometry).
+   * If not supplied, defaults to PI/12 (15 degrees).
+   */
   angleTol?: number;
-  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry) */
+  /** Max length of any edge in generated faces, see [StrokeOptions]($core-geometry)
+   * If not supplied, there is no maximum length of an edge. Supplying this value can greatly increase the
+   * size of the resulting geometry, and should only be done in cases where necessary (if you don't know
+   * that it's necessary, it's almost certainly not!)
+   */
   maxEdgeLength?: number;
   /** The longest dimension of a line style's largest component must be at least this size in order for
    * exportGraphics to evaluate and generate its graphics. If undefined, this defaults to 0.1.

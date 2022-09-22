@@ -5,23 +5,25 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@itwin/core-common";
 import {
+  CheckpointConnection,
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import * as path from "path";
+import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
 import {
-  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
+  defaultEmphasis, defaultHilite, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
 } from "./TestConfig";
+import { SavedViewsFetcher } from "./SavedViewsFetcher";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -143,12 +145,16 @@ export class TestRunner {
   private readonly _logFileName: string;
   private readonly _testNamesImages = new Map<string, number>();
   private readonly _testNamesTimings = new Map<string, number>();
+  private readonly _savedViewsFetcher: SavedViewsFetcher;
 
   public get curConfig(): TestConfig {
     return this._config.top;
   }
 
-  public constructor(props: TestSetsProps) {
+  public constructor(
+    props: TestSetsProps,
+    savedViewsFetcher: SavedViewsFetcher = new SavedViewsFetcher()
+  ) {
     // NB: The default minimum spatial chord tolerance was changed from "no minimum" to 1mm. To preserve prior behavior,
     // override it to zero.
     // Subsequently pushed configs can override this if desired.
@@ -159,6 +165,7 @@ export class TestRunner {
     this._testSets = props.testSet;
     this._minimizeOutput = true === props.minimize;
     this._logFileName = "_DispPerfTestAppViewLog.txt";
+    this._savedViewsFetcher = savedViewsFetcher;
 
     ToolAdmin.exceptionHandler = async (ex) => this.onException(ex);
   }
@@ -244,15 +251,22 @@ export class TestRunner {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
 
-        const context = await this.openIModel();
-        if (context) {
+        let context: TestContext;
+        try {
+          context = await this.openIModel();
+        } catch (e: any) {
+          await this.logError(`Failed to open iModel ${iModelName}: ${(e as Error).message}`);
+          continue;
+        }
+
+        try {
           await this.runTests(context);
+        } catch {
+          await this.logError(`Failed to run tests on iModel ${iModelName}`);
+        } finally {
           await context.iModel.close();
-        } else {
-          await this.logError(`Failed to open iModel ${iModelName}`);
         }
       }
-
       this._config.pop();
     }
 
@@ -500,44 +514,7 @@ export class TestRunner {
 
   private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
     const timer = new StopWatch(undefined, true);
-    let haveNewTiles = true;
-    while (haveNewTiles) {
-      viewport.requestRedraw();
-      viewport.invalidateScene();
-      viewport.renderFrame();
-
-      // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
-      const context = viewport.createSceneContext();
-      viewport.createScene(context);
-      context.requestMissingTiles();
-
-      haveNewTiles = !viewport.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
-      if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of viewport.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
-
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
-          }
-        }
-      }
-
-      // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler.
-      if (haveNewTiles)
-        IModelApp.tileAdmin.process();
-
-      await BeDuration.wait(100);
-    }
-
-    await IModelApp.renderSystem.waitForAllExternalTextures();
-
-    viewport.renderFrame();
+    await viewport.waitForSceneCompletion();
     timer.stop();
 
     const selectedTiles = getSelectedTileStats(viewport);
@@ -643,31 +620,39 @@ export class TestRunner {
     return this.logToFile(outStr);
   }
 
-  private async openIModel(): Promise<TestContext | undefined> {
-    const filepath = path.join(this.curConfig.iModelLocation, this.curConfig.iModelName);
-    let iModel;
-    try {
-      iModel = await SnapshotConnection.openFile(path.join(filepath));
-    } catch (err: any) {
-      await this.logError(`openSnapshot failed: ${err.toString()}`);
-      return undefined;
-    }
+  private async openIModel(): Promise<TestContext> {
+    if(this.curConfig.iModelId) {
+      if(process.env.IMJS_OIDC_HEADLESS) {
+        const token = await DisplayPerfRpcInterface.getClient().getAccessToken();
+        IModelApp.authorizationClient = new TestFrontendAuthorizationClient(token);
+      }
+      // Download remote iModel and its saved views
+      const { iModelId, iTwinId } = this.curConfig;
+      if(iTwinId === undefined)
+        throw new Error("Missing iTwinId for remote iModel");
+      const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId);
+      const externalSavedViews = await this._savedViewsFetcher.getSavedViews(iTwinId, iModelId, await IModelApp.getAccessToken());
+      return { iModel, externalSavedViews };
+    } else {
+      // Load local iModel and its saved views
+      const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
+      const iModel = await SnapshotConnection.openFile(filepath);
 
-    const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
-    let externalSavedViews: ViewStateSpec[] = [];
-    if (esv) {
-      const json = JSON.parse(esv) as ViewStateSpecProps[];
-      externalSavedViews = json.map((x) => {
-        return {
-          name: x._name,
-          viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
-          elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
-          selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
-        };
-      });
+      const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
+      let externalSavedViews: ViewStateSpec[] = [];
+      if (esv) {
+        const json = JSON.parse(esv) as ViewStateSpecProps[];
+        externalSavedViews = json.map((x) => {
+          return {
+            name: x._name,
+            viewProps: JSON.parse(x._viewStatePropsString) as ViewStateProps,
+            elementOverrides: x._overrideElements ? JSON.parse(x._overrideElements) as ElementOverrideProps[] : undefined,
+            selectedElements: x._selectedElements ? JSON.parse(x._selectedElements) as Id64String | Id64Array : undefined,
+          };
+        });
+      }
+      return { iModel, externalSavedViews };
     }
-
-    return { iModel, externalSavedViews };
   }
 
   private async getIModelNames(): Promise<string[]> {
@@ -761,6 +746,7 @@ export class TestRunner {
     testName += configs.iModelName.replace(/\.[^/.]+$/, "");
     testName += `_${configs.viewName}`;
     testName += configs.displayStyle ? `_${configs.displayStyle.trim()}` : "";
+    testName = testName.replace(/[/\\?%*:|"<>]/g, "-");
 
     const renderMode = getRenderMode(test.viewport);
     if (renderMode)
@@ -806,8 +792,7 @@ export class TestRunner {
     const filename = `${this.getTestName(test, prefix, true)}.png`;
     if (ProcessDetector.isMobileAppFrontend)
       return filename; // on mobile we use device's Documents path as determined by mobile backend
-
-    return path.join(this.curConfig.outputPath, filename);
+    return `${this.curConfig.outputPath}${separator}${filename}`;
   }
 
   private getRowData(timings: Timings, test: TestCase, pixSelectStr?: string): Map<string, number | string> {
@@ -929,7 +914,7 @@ export class TestRunner {
     if ((1000.0 / totalTime) > 59) // ie actual fps > 60fps - 1fps tolerance
       boundBy += " (vsync)";
     const totalCpuTime = totalRenderTime > 2 ? totalRenderTime : 2; // add 2ms lower bound to cpu total time for tolerance
-    const effectiveFps = 1000.0 / (totalGpuTime > totalCpuTime ? totalGpuTime : totalCpuTime);
+    const effectiveFps = 1000.0 / (gpuBound ? totalGpuTime : totalCpuTime);
     if (disjointTimerUsed) {
       rowData.set("GPU Total Time", totalGpuTime.toFixed(fixed));
       rowData.delete("GPU-Total");
@@ -1153,6 +1138,9 @@ function getTileProps(props: TileAdmin.Props): string {
         break;
       case "enableIndexedEdges":
         if (!props[key]) tilePropsStr += "-idxEdg";
+        break;
+      case "generateAllPolyfaceEdges":
+        if (!props[key]) tilePropsStr += "-pfEdg";
         break;
     }
   }

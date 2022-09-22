@@ -160,6 +160,54 @@ export interface IndexedEdgeParams {
   readonly edges: EdgeTable;
 }
 
+export interface EdgeTableInfo {
+  /** Width of the table. */
+  readonly width: number;
+  /** Height of the table. */
+  readonly height: number;
+  /** The number of segments in the lower partition. */
+  readonly silhouettePadding: number;
+  /** The starting byte index of silhouettes */
+  readonly silhouetteStartByteIndex: number;
+}
+
+export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes: number, maxSize: number): EdgeTableInfo {
+  // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
+  // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
+  let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
+  const silhouetteStartByteIndex = numSegmentEdges * 6;
+  let silhouettePadding = 0;
+  let width = nRgbaRequired;
+  let height = 1;
+  if (nRgbaRequired >= maxSize) {
+    // Make roughly square to reduce unused space in last row.
+    width = Math.ceil(Math.sqrt(nRgbaRequired));
+    // Each entry's data must fit on the same row. 15 RGBA = 60 bytes = lowest common multiple of 6, 10, and 4.
+    const remainder = width % 15;
+    if (0 !== remainder)
+      width += 15 - remainder;
+
+    // If the table contains both segments and silhouettes, there may be one row containing a mix of the two where padding
+    // is required between them.
+    if (numSilhouettes > 0 && numSegmentEdges > 0) {
+      const silOffset = silhouetteStartByteIndex % 60; // some multiple of 6.
+      silhouettePadding = (60 - silOffset) % 10;
+      nRgbaRequired += Math.ceil(silhouettePadding / 4);
+    }
+
+    height = Math.ceil(nRgbaRequired / width);
+    if (width * height < nRgbaRequired)
+      height++;
+  }
+
+  return {
+    width,
+    height,
+    silhouettePadding,
+    silhouetteStartByteIndex,
+  };
+}
+
 function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: number): IndexedEdgeParams | undefined {
   const hardEdges = args.edges?.edges;
   const silhouettes = args.silhouettes;
@@ -179,38 +227,9 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-  // Each segment edge requires 2 24-bit indices = 6 bytes = 1.5 RGBA values.
-  // Each silhouette requires the same as segment edge plus 2 16-bit oct-encoded normals = 10 bytes = 2.5 RGBA values.
-  let nRgbaRequired = Math.ceil(1.5 * numSegmentEdges + 2.5 * numSilhouettes);
-  let dimensions;
-  const silhouetteStartByteIndex = numSegmentEdges * 6;
-  let silhouettePadding = 0;
-  if (nRgbaRequired < maxSize) {
-    dimensions = { width: nRgbaRequired, height: 1 };
-  } else {
-    // Make roughly square to reduce unused space in last row.
-    let width = Math.ceil(Math.sqrt(nRgbaRequired));
-    // Each entry's data must fit on the same row. 15 RGBA = 60 bytes = lowest common multiple of 6, 10, and 4.
-    const remainder = width % 15;
-    if (0 !== remainder)
-      width += 15 - remainder;
+  const {width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams (numSegmentEdges, numSilhouettes, maxSize);
 
-    // If the table contains both segments and silhouettes, there may be one row containing a mix of the two where padding
-    // is required between them.
-    if (numSilhouettes > 0 && numSegmentEdges > 0) {
-      const silOffset = silhouetteStartByteIndex % 60; // some multiple of 6.
-      silhouettePadding = (60 - silOffset) % 10;
-      nRgbaRequired += Math.ceil(silhouettePadding / 4);
-    }
-
-    let height = Math.ceil(nRgbaRequired / width);
-    if (width * height < nRgbaRequired)
-      height++;
-
-    dimensions = { width, height };
-  }
-
-  const data = new Uint8Array(dimensions.width * dimensions.height * 4);
+  const data = new Uint8Array(width * height * 4);
   function setUint24(byteIndex: number, value: number): void {
     data[byteIndex + 0] = value & 0x0000ff;
     data[byteIndex + 1] = (value & 0x00ff00) >>> 8;
@@ -265,8 +284,8 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     indices,
     edges: {
       data,
-      width: dimensions.width,
-      height: dimensions.height,
+      width,
+      height,
       numSegments: numSegmentEdges,
       silhouettePadding,
     },
@@ -293,7 +312,10 @@ export interface EdgeParams {
 export namespace EdgeParams {
   export function fromMeshArgs(meshArgs: MeshArgs, maxWidth?: number): EdgeParams | undefined {
     const args = meshArgs.edges;
-    const doJoints = wantJointTriangles(args.width, meshArgs.is2d);
+    if (!args)
+      return undefined;
+
+    const doJoints = wantJointTriangles(args.width, true === meshArgs.is2d);
     const polylines = doJoints ? TesselatedPolyline.fromMesh(meshArgs) : undefined;
 
     let segments: SegmentEdgeParams | undefined;

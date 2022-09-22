@@ -6,9 +6,9 @@
  * @module RpcInterface
  */
 
-import { AccessToken, assert, BeDuration, BentleyError, BentleyStatus, IModelStatus, Logger } from "@itwin/core-bentley";
+import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -29,7 +29,7 @@ export interface DownloadAndOpenArgs {
   forceDownload?: boolean;
 }
 /**
- * Utility to open the iModel for Read/Write RPC interfaces
+ * Utility to open the iModel for RPC interfaces
  * @internal
  */
 export class RpcBriefcaseUtility {
@@ -37,8 +37,7 @@ export class RpcBriefcaseUtility {
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
-    if (undefined === tokenProps.iModelId)
-      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
+    assert(undefined !== tokenProps.iModelId);
 
     const iModelId = tokenProps.iModelId;
     let myBriefcaseIds: number[];
@@ -91,7 +90,7 @@ export class RpcBriefcaseUtility {
     };
 
     const props = await BriefcaseManager.downloadBriefcase(request);
-    return BriefcaseDb.open({ rpcActivity: activity, fileName: props.fileName });
+    return BriefcaseDb.open(props);
   }
 
   private static _briefcasePromise: Promise<BriefcaseDb> | undefined;
@@ -113,12 +112,10 @@ export class RpcBriefcaseUtility {
    * @param the IModelRpcProps to locate the opened iModel.
    */
   public static async findOpenIModel(accessToken: AccessToken, iModel: IModelRpcProps) {
-    const iModelDb = IModelDb.tryFindByKey(iModel.key);
-    if (undefined === iModelDb)
-      throw new IModelError(IModelStatus.NotOpen, "iModel is not opened", () => iModel);
+    const iModelDb = IModelDb.findByKey(iModel.key);
 
-    // call reattach, just in case this is a V2 checkpoint whose accessToken is about to expire.
-    await iModelDb.reattachDaemon(accessToken);
+    // call refreshContainerSas, just in case this is a V2 checkpoint whose sasToken is about to expire.
+    await iModelDb.refreshContainerSas(accessToken);
     return iModelDb;
   }
 
@@ -138,16 +135,13 @@ export class RpcBriefcaseUtility {
         Logger.logTrace(loggerCategory, "Open briefcase - pending", () => ({ ...tokenProps }));
         throw new RpcPendingResponse();
       }
-      // note: usage is logged in BriefcaseManager.downloadNewBriefcaseAndOpen
+      // note: usage is logged in the function BriefcaseManager.downloadNewBriefcaseAndOpen
       return briefcaseDb;
     }
 
-    if (undefined === tokenProps.iModelId)
-      throw new IModelError(BentleyStatus.ERROR, "iModelId is undefined.");
-    if (undefined === tokenProps.iTwinId)
-      throw new IModelError(BentleyStatus.ERROR, "iTwinId is undefined.");
-    if (undefined === tokenProps.changeset)
-      throw new IModelError(BentleyStatus.ERROR, "Changeset is undefined.");
+    assert(undefined !== tokenProps.iModelId);
+    assert(undefined !== tokenProps.iTwinId);
+    assert(undefined !== tokenProps.changeset);
 
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId,

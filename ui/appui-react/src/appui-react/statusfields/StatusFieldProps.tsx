@@ -5,18 +5,24 @@
 /** @packageDocumentation
  * @module StatusBar
  */
-
 import { CommonProps } from "@itwin/core-react";
+
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 
 /** Properties for a StatusBar field component
  * @public
  */
 export interface StatusFieldProps extends CommonProps {
-  /** Indicates whether the StatusBar is in footer mode */
-  isInFooterMode: boolean;
-  /** Function called when the widget is opened or closed. */
-  onOpenWidget: (widget: StatusBarFieldId) => void;
-  /** Field Id for open widgets */
-  openWidget: StatusBarFieldId;
+  /** Indicates whether the StatusBar is in footer mode
+   * @deprecated In upcoming version, widget mode will be removed. Consider this parameter to always be true.
+  */
+  isInFooterMode?: boolean;
+  /** Function called when the widget is opened or closed.
+   * @deprecated In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
+   */
+  onOpenWidget?: (widget: StatusBarFieldId) => void;
+  /** Field Id for open widgets
+   * @deprecated In upcoming versions, this will be removed. Field will have the freedom of handling their dialog behavior however they like.
+   */
+  openWidget?: StatusBarFieldId;
 }

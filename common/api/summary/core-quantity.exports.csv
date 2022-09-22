@@ -2,24 +2,37 @@ sep=;
 Release Tag;API Item
 beta;AlternateUnitLabelsProvider
 beta;BadUnit 
+beta;BaseFormat
 beta;BasicUnit 
 beta;CloneOptions
 beta;CloneUnit
 beta;CustomFormatProps 
 beta;DecimalPrecision
-beta;Format
+beta;Format 
 beta;FormatProps
+internal;formatStringRgx: RegExp
 beta;Formatter
 beta;FormatterSpec
 beta;FormatTraits
+beta;formatTraitsToArray(currentFormatTrait: FormatTraits): string[]
 beta;FormatType
+beta;formatTypeToString(type: FormatType): string
 beta;FractionalPrecision
+internal;getItemNamesFromFormatString(formatString: string): Iterable
+beta;getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative"
 beta;isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps
+beta;parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision
 beta;ParsedQuantity
 beta;ParseError
+beta;parseFormatTrait(formatTraitsString: string, formatName: string): FormatTraits
+beta;parseFormatType(jsonObjType: string, formatName: string): FormatType
+beta;parseFractionalPrecision(jsonObjPrecision: number, formatName: string): FractionalPrecision
+beta;parsePrecision(precision: number, type: FormatType, formatName: string): DecimalPrecision | FractionalPrecision
 beta;ParseQuantityError
 beta;Parser
 beta;ParserSpec
+beta;parseScientificType(scientificType: string, formatName: string): ScientificType
+beta;parseShowSignOption(showSignOption: string, formatName: string): ShowSignOption
 beta;PotentialParseUnit
 beta;Quantity 
 internal;QuantityConstants
@@ -28,9 +41,12 @@ beta;QuantityParseResult = ParsedQuantity | ParseQuantityError
 beta;QuantityProps
 beta;QuantityStatus
 beta;ScientificType
+beta;scientificTypeToString(scientificType: ScientificType): string
 beta;ShowSignOption
+beta;showSignOptionToString(showSign: ShowSignOption): string
 beta;UnitConversion
 beta;UnitConversionSpec
+alpha;UnitExtraData
 beta;UnitProps
 beta;UnitsProvider
 beta;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"

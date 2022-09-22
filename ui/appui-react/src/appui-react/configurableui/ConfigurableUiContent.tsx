@@ -70,7 +70,7 @@ export function ConfigurableUiContent(props: ConfigurableUiContentProps) {
     >
       {props.appBackstage}
       {/* eslint-disable-next-line deprecation/deprecation */}
-      {version === "1" ? <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
+      {version === "1" ?  /* istanbul ignore next */ <FrontstageComposer style={{ position: "relative", height: "100%" }} /> : /* istanbul ignore next */ <WidgetPanelsFrontstage />}
       <ContentDialogRenderer />
       <ModelessDialogRenderer />
       <ModalDialogRenderer />

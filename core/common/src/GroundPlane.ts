@@ -13,6 +13,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 /** JSON representation of a [[GroundPlane]].
  * @see [[EnvironmentProps.ground]].
  * @public
+ * @extensions
  */
 export interface GroundPlaneProps {
   /** Whether the ground plane should be displayed. Defaults to false. */
@@ -53,7 +54,7 @@ export class GroundPlane {
   }
 
   /** Default settings with a dark green "above" color, dark brown "below" color, and elevation of -0.01 meters. */
-  public static readonly defaults = new GroundPlane({ });
+  public static readonly defaults = new GroundPlane({});
 
   /** Create a new GroundPlane. Any properties not specified by `props` will be initialized to their default values. */
   public static create(props?: Partial<GroundPlaneProperties>) {

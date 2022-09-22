@@ -13,6 +13,7 @@ import { AxisAlignedBox3dProps } from "./geometry/Placement";
 
 /** Bitflags describing which aspects of an [Element]($backend) changed as part of a [[ChangedElements]].
  * @public
+ * @extensions
  */
 export enum TypeOfChange {
   /** A property in the element changed */
@@ -32,6 +33,7 @@ export enum TypeOfChange {
  * Each index for those arrays refer to the same element, e.g. to get the class Id of
  * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index].
  * @public
+ * @extensions
  */
 export interface ChangedElements {
   /** Ids of elements that changed */

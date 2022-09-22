@@ -43,4 +43,20 @@ describe("Schema Cache", () => {
     const schema5 = new Schema(context, "TestSchema", "ts", 1, 0, 0);
     await expect(cache.addSchema(schema5)).to.be.rejectedWith(ECObjectsError, "The schema, TestSchema.01.00.00, already exists within this cache.");
   });
+
+  it("getAllSchemas should return added schemas", async () => {
+    const cache = new SchemaCache();
+    const context = new SchemaContext();
+
+    const schema1 = new Schema(context, new SchemaKey("TestSchema"), "ts");
+    await cache.addSchema(schema1);
+
+    const schema2 = new Schema(context, new SchemaKey("TestSchema2"), "ts");
+    await cache.addSchema(schema2);
+
+    const schemas = cache.getAllSchemas();
+    expect(schemas.length).to.equal(2);
+    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
+    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
+  });
 });

@@ -14,6 +14,7 @@ import { volClassOpaqueColor } from "./glsl/PlanarClassification";
 import { addPosition, earlyVertexDiscard, lateVertexDiscard, vertexDiscard } from "./glsl/Vertex";
 import { ShaderProgram } from "./ShaderProgram";
 import { System } from "./System";
+import { PositionType } from "./TechniqueFlags";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -461,14 +462,11 @@ export class SourceBuilder {
 }
 
 /** @internal */
-export const enum ShaderBuilderFlags {
-  // No special flags. Vertex data comes from attributes, geometry is not instanced.
-  None = 0,
-  // Vertex data comes from a texture.
-  VertexTable = 1 << 0,
-  // Geometry is instanced.
-  Instanced = 1 << 1,
-  InstancedVertexTable = VertexTable | Instanced,
+export interface ShaderBuilderFlags {
+  /** If defined and true, the geometry is instanced. */
+  readonly instanced?: boolean;
+  /** If defined, indicates the vertex data comes from a texture and specifies whether the positions are quantized 16-bit integers or unquantized 32-bit floats. */
+  readonly positionType?: PositionType;
 }
 
 /**
@@ -487,8 +485,9 @@ export class ShaderBuilder extends ShaderVariables {
   protected readonly _flags: ShaderBuilderFlags;
   protected _initializers: string[] = new Array<string>();
 
-  public get usesVertexTable() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.VertexTable); }
-  public get usesInstancedGeometry() { return ShaderBuilderFlags.None !== (this._flags & ShaderBuilderFlags.Instanced); }
+  public get usesInstancedGeometry(): boolean {
+    return !!this._flags.instanced;
+  }
 
   public addInitializer(initializer: string): void {
     if (-1 === this._initializers.indexOf(initializer))
@@ -661,7 +660,7 @@ export const enum VertexShaderComponent {
   // This runs before any initializers.
   // vec3 computeQuantizedPosition()
   ComputeQuantizedPosition,
-  // (Optional) Adjust the result of unquantizeVertexPosition().
+  // (Optional) Adjust the result of computeVertexPosition().
   // vec4 adjustRawPosition(vec4 rawPosition)
   AdjustRawPosition,
   // (Optional) Return true to discard this vertex before evaluating feature overrides etc, given the model-space position.
@@ -711,7 +710,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
   private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(VertexShaderComponent.COUNT, flags);
 
     this.addDefine("MAT_NORM", "g_nmx");
@@ -725,6 +724,15 @@ export class VertexShaderBuilder extends ShaderBuilder {
     }
 
     addPosition(this, this.usesVertexTable);
+  }
+
+  public get usesVertexTable(): boolean {
+    return undefined !== this._flags.positionType;
+  }
+
+  public get positionType(): PositionType {
+    assert(undefined !== this._flags.positionType);
+    return this._flags.positionType;
   }
 
   public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
@@ -760,7 +768,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
         main.addline(`  { ${init} }\n`);
     }
 
-    main.addline("  vec4 rawPosition = unquantizeVertexPosition(qpos, u_qOrigin, u_qScale);");
+    main.addline("  vec4 rawPosition = computeVertexPosition(qpos);");
     const adjustRawPosition = this.get(VertexShaderComponent.AdjustRawPosition);
     if (undefined !== adjustRawPosition) {
       prelude.addFunction("vec4 adjustRawPosition(vec4 rawPos)", adjustRawPosition);
@@ -922,7 +930,7 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public requiresEarlyZWorkaround = false;
 
-  public constructor(flags: ShaderBuilderFlags) {
+  public constructor(flags: ShaderBuilderFlags = { }) {
     super(FragmentShaderComponent.COUNT, flags);
 
     if (System.instance.capabilities.isWebGL2)
@@ -1129,7 +1137,7 @@ export class ProgramBuilder {
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(attrMap?: Map<string, AttributeDetails>, flags = ShaderBuilderFlags.None) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = { }) {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);

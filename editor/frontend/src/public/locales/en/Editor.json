@@ -8,6 +8,13 @@
       "keyin": "editor move elements",
       "flyover": "Move Elements"
     },
+    "CopyElements": {
+      "keyin": "editor copy elements",
+      "flyover": "Copy Elements",
+      "Label": {
+        "NumCopies": "Copies"
+      }
+    },
     "RotateElements": {
       "keyin": "editor rotate elements",
       "flyover": "Rotate Elements",
@@ -101,6 +108,108 @@
       "flyover": "Create Rectangle",
       "Label": {
         "CornerRadius": "Corner Radius"
+      }
+    },
+    "CreateSphere": {
+      "keyin": "editor create sphere",
+      "flyover": "Create Sphere",
+      "Label": {
+        "Radius": "Radius",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "CenterPoint": "Define center",
+        "RadiusPoint": "Define radius"
+      }
+    },
+    "CreateCylinder": {
+      "keyin": "editor create cylinder",
+      "flyover": "Create Cylinder",
+      "Label": {
+        "Radius": "Radius",
+        "Length": "Length",
+        "Orthogonal": "Orthogonal",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "BasePoint": "Define center of base",
+        "RadiusPoint": "Define radius",
+        "LengthPoint": "Define length"
+      }
+    },
+    "CreateCone": {
+      "keyin": "editor create cone",
+      "flyover": "Create Cone",
+      "Label": {
+        "BaseRadius": "Base Radius",
+        "TopRadius": "Top Radius",
+        "Length": "Length",
+        "Orthogonal": "Orthogonal",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "BasePoint": "Define center of base",
+        "BaseRadiusPoint": "Define base radius",
+        "TopRadiusPoint": "Define top radius",
+        "LengthPoint": "Define length"
+      }
+    },
+    "CreateBox": {
+      "keyin": "editor create box",
+      "flyover": "Create Box",
+      "Label": {
+        "Length": "Length",
+        "Width": "Width",
+        "Height": "Height",
+        "Orthogonal": "Orthogonal",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "BasePoint": "Define corner of base",
+        "LengthPoint": "Define length",
+        "WidthPoint": "Define width",
+        "HeightPoint": "Define height"
+      }
+    },
+    "CreateTorus": {
+      "keyin": "editor create torus",
+      "flyover": "Create Torus",
+      "Label": {
+        "PrimaryRadius": "Primary Radius",
+        "SecondaryRadius": "Secondary Radius",
+        "Angle": "Angle",
+        "Capped": "Solid"
+      },
+      "Prompts": {
+        "StartPoint": "Define start",
+        "CenterPoint": "Define center",
+        "SecondaryRadiusPoint": "Define secondary radius",
+        "AnglePoint": "Define angle"
+      }
+    },
+    "OffsetCurve": {
+      "keyin": "editor offset curve",
+      "flyover": "Offset planar paths and regions",
+      "Label": {
+        "Distance": "Distance",
+        "MakeCopy": "Make Copy"
+      },
+      "Prompts": {
+        "DefineOffset": "Define offset distance"
+      }
+    },
+    "BreakCurve": {
+      "keyin": "editor break curve",
+      "flyover": "Split an open path or open a closed loop",
+      "Prompts": {
+        "IdentifyBreak": "Identify break location"
+      }
+    },
+    "ExtendCurve": {
+      "keyin": "editor extend curve",
+      "flyover": "Extend or shorten a curve",
+      "Prompts": {
+        "IdentifyEnd": "Identify end to modify"
       }
     },
     "UniteSolids": {

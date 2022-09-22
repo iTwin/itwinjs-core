@@ -6,7 +6,7 @@ import { expect } from "chai";
 import {
   Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@itwin/core-geometry";
-import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
+import { ColorByName, ColorIndex, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
 import { GraphicBuilder, GraphicType, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -114,15 +114,21 @@ describe("GraphicBuilder", () => {
 
   describe("createTriMesh", () => {
     it("should create a simple mesh graphic", () => {
-      const args = new MeshArgs();
-
       const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
-      args.points = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
+      const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
       for (const point of points)
-        args.points.add(point);
+        qpoints.add(point);
 
-      args.vertIndices = [0, 1, 2];
-      args.colors.initUniform(ColorByName.tan);
+      const colors = new ColorIndex();
+      colors.initUniform(ColorByName.tan);
+
+      const args: MeshArgs = {
+        points: qpoints,
+        vertIndices: [0, 1, 2],
+        colors,
+        fillFlags: FillFlags.None,
+        features: new FeatureIndex(),
+      };
 
       const graphic = IModelApp.renderSystem.createTriMesh(args);
       expect(graphic).not.to.be.undefined;
@@ -161,7 +167,7 @@ describe("GraphicBuilder", () => {
 
     function injectNormalsCheck(expectNormals: boolean): void {
       const verifyParams = (params: MeshParams) => {
-        expect(params.vertices.numRgbaPerVertex).to.equal(expectNormals ? 4 : 3);
+        expect(params.vertices.numRgbaPerVertex).to.equal(5);
       };
       const verifyGraphic = (graphic: MeshGraphic) => {
         expect(graphic.meshData.type).to.equal(expectNormals ? SurfaceType.Lit : SurfaceType.Unlit);

@@ -17,10 +17,10 @@
     }
   }
 
-  .core-image-checkbox {
+  .contents > .core-image-checkbox {
     position: absolute;
+    top: unset;
     left: 5px;
-    padding: 0;
     margin: -2px 0px 0px 5px;
   }
 

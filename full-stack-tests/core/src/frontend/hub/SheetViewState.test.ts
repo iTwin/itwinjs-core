@@ -117,6 +117,19 @@ describe("Sheet views (#integration)", () => {
     expect(p1).not.to.deep.equal(p2);
   });
 
+  it("should update subcategories cache when loading a sheetview", async () => {
+    // 0x1a, 0x93 are the two category ids that are passed to preload for this view.
+    const catIds = ["0x1a", "0x93"];
+    const view = await imodel.views.load(sheetViewId) as SheetViewState;
+    const props = view.toProps();
+
+    expect(props.sheetProps).not.to.be.undefined;
+
+    for (const catId of catIds) {
+      expect(imodel.subcategories.getSubCategories(catId)).not.to.be.undefined;
+    }
+  });
+
   it("preserves view attachment info when round-tripped through JSON", async () => {
     const view = await imodel.views.load(sheetViewId) as SheetViewState;
     const props = view.toProps();

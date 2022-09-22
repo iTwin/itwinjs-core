@@ -10,7 +10,6 @@ import { GeometryHandler, IStrokeHandler } from "../../geometry3d/GeometryHandle
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
@@ -48,9 +47,9 @@ export class DirectSpiral3d extends TransitionSpiral3d {
 
   public readonly curvePrimitiveType = "transitionSpiral";
 
-  /** stroked approximation of entire spiral. */
+  /** stroked approximation of entire spiral. This is AFTER the localToWorld transform ... */
   private _globalStrokes: LineString3d;
-  /** stroked approximation of active spiral.
+  /** stroked approximation of active spiral.  This is AFTER the localToWorld transfomr ...
    * * Same count as global -- possibly overly fine, but it gives some consistency between same clothoid constructed as partial versus complete.
    * * If no trimming, this points to the same place as the _globalStrokes !!!  Don't double transform!!!
    */
@@ -98,7 +97,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    * @param fraction0 start fraction
    * @param fraction1 end fraction
    */
-  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number) {
+  private computeStrokes(strokes: LineString3d, fractionA: number, fractionB: number, numInterval: number, applyLocalToWorld: boolean = true) {
     if (numInterval < 1)
       numInterval = 1;
     strokes.clear();
@@ -113,21 +112,22 @@ export class DirectSpiral3d extends TransitionSpiral3d {
         this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
-
+    if (applyLocalToWorld)
+      strokes.tryTransformInPlace (this._localToWorld);
     let fraction0 = distances.getXAtUncheckedPointIndex(0);
     let trueDistance0 = distances.getYAtUncheckedPointIndex(0); // whatever was assigned as start distance is fine
     let trueDistance1, fraction1;
     for (let i = 1; i <= numInterval; i++) {
       fraction1 = distances.getXAtUncheckedPointIndex(i);
       trueDistance1 = trueDistance0 + this._evaluator.integrateDistanceBetweenFractions(fraction0, fraction1);
-      distances.setXYZAtCheckedPointIndex(i, fraction1, trueDistance1);
+      distances.setXYAtCheckedPointIndex(i, fraction1, trueDistance1);
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
     }
 
   }
   /** Recompute strokes */
-  public refreshComputedProperties() {
+  public override refreshComputedProperties() {
     const sweepRadians = this.nominalL1 / (2.0 * this.nominalR1);
     const radiansStep = 0.02;
     const numInterval = StrokeOptions.applyAngleTol(undefined, 4, sweepRadians, radiansStep);
@@ -442,7 +442,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     return undefined;
   }
   /** Deep clone of this spiral */
-  public clone(): DirectSpiral3d {
+  public override clone(): DirectSpiral3d {
     return new DirectSpiral3d(
       this.localToWorld.clone(),
       this._spiralType,
@@ -451,16 +451,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       this._nominalR1,
       this._activeFractionInterval?.clone(),
       this._evaluator.clone());
-  }
-
-  /** Return (if possible) a spiral which is a portion of this curve. */
-  public override clonePartialCurve(fractionA: number, fractionB: number): DirectSpiral3d | undefined {
-    const spiralB = this.clone();
-    const globalFractionA = this._activeFractionInterval.fractionToPoint(fractionA);
-    const globalFractionB  = this._activeFractionInterval.fractionToPoint(fractionB);
-    spiralB._activeFractionInterval.set(globalFractionA, globalFractionB);
-    spiralB.refreshComputedProperties();
-    return spiralB;
   }
 
   /** apply `transform` to this spiral's local to world transform. */
@@ -474,16 +464,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this.refreshComputedProperties();
     return true;
   }
-  /** Clone with a transform applied  */
-  public cloneTransformed(transform: Transform): DirectSpiral3d {
-    const result = this.clone();
-    result.tryTransformInPlace(transform); // ok, we're confident it will always work.
-    return result;
-  }
+
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.startPoint()); }
+  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.localToWorld.multiplyPoint3d(this.activeStrokes.endPoint()); }
+  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)
@@ -588,10 +573,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   /** Second step of double dispatch:  call `handler.handleTransitionSpiral(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTransitionSpiral(this);
-  }
-  /** extend the range by the strokes of the spiral */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    this.activeStrokes.extendRange(rangeToExtend, transform);
   }
   /** compare various coordinate quantities */
   public override isAlmostEqual(other: any): boolean {

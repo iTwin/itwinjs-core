@@ -11,7 +11,7 @@ import { IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { Reporter } from "@itwin/perf-tools";
 import { IModelHost, IModelJsFs, StandaloneDb } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, TestUtils } from "@itwin/core-backend/lib/cjs/test/index";
+import { HubWrappers, IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { BackendTileGenerator, TileGenParams, TileStats } from "./TilesGenUtils";
 
 interface TileResult {
@@ -200,7 +200,8 @@ describe("TilesGenerationPerformance", () => {
     assert.isDefined(config.iTwinId, "No iTwinId defined");
     imodels.forEach((element) => element.iTwinId = config.iTwinId);
 
-    TestUtils.setupLogging();
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
     Logger.setLevel("TileGenerationPerformance", LogLevel.Error);
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");

@@ -138,6 +138,7 @@ internal;HalfEdgeGraph
 internal;HalfEdgeMask
 internal;HalfEdgeToBooleanFunction = (node: HalfEdge) => boolean
 public;HasZ = Readonly
+public;HoleFillOptions
 public;IModelJson
 internal;ImplicitLineXY
 public;IndexedCollectionInterval
@@ -185,6 +186,7 @@ internal;NodeFunction = (node: HalfEdge) => any
 internal;NodeToNumberFunction = (node: HalfEdge) => number
 public;NullGeometryHandler 
 public;NumberArray
+public;OffsetOptions
 public;OptionalGrowableFloat64Array = GrowableFloat64Array | undefined
 internal;Order2Bezier 
 internal;Order3Bezier 
@@ -253,6 +255,7 @@ public;SmallSystem
 public;SmoothTransformBetweenFrusta
 public;class SolidPrimitive 
 public;SolidPrimitiveType = "box" | "cone" | "sphere" | "linearSweep" | "rotationalSweep" | "ruledSweep" | "torusPipe"
+public;SpacePolygonTriangulation
 public;Sphere 
 internal;SphereImplicit
 public;StandardViewIndex
@@ -295,6 +298,7 @@ public;WriteableHasZ
 public;XAndY = Readonly
 public;XY 
 public;XYAndZ = Readonly
+public;XYAndZ
 public;XYProps =
 public;XYZ 
 public;XYZProps =

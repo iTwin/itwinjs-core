@@ -207,6 +207,9 @@ div.nz-toolSettings-docked .uifw-default-editor:last-child {
 
 /* Override the GridLayout case where width is 100% */
 div.nz-toolSettings-docked {
+  border-top: none;
+  border-left: none;
+  border-right: none;
   select.uicore-inputs-select.components-cell-editor.components-enum-editor {
     width: auto;
   }

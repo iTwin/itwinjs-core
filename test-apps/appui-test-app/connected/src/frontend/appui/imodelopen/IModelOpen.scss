@@ -1,0 +1,109 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/core-react/lib/cjs/core-react/style/colors";
+@import "~@itwin/itwinui-css/scss/style/typography";
+@import "~@itwin/core-react/lib/cjs/core-react/scrollbar";
+
+$appbar-height: 65px;
+$navbar-width: 72px;
+$itwinpicker-min-width: 250px;
+/* iTwin picker minimum width */
+$itwinpicker-max-width: 450px;
+/* iTwin picker maximum width */
+$open-background: #FCFDFD;
+$open-color: #6d6e77;
+$content-background: $uicore-white;
+$border-color: #e7e9ec;
+
+/* application bar*/
+.open-appbar {
+  height: $appbar-height;
+  background-color: $open-background;
+  color: $open-color;
+  display: flex;
+  align-items: center;
+  padding-right: 1em;
+  border-bottom: 1px solid $border-color;
+  box-sizing: border-box;
+  position: relative;
+
+  /* backstage icon */
+  .backstage-icon {
+    width: $navbar-width;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid $border-color;
+    box-sizing: border-box;
+    font-size: 28px;
+    cursor: pointer;
+  }
+
+  /* itwins label */
+  .itwin-picker-content {
+    display: flex;
+    align-items: center;
+    position: absolute;
+    left: $navbar-width;
+    height: 80%;
+    margin-left: 40px;
+
+    /* "itwins" label */
+    .itwins-label {
+      margin-right: 1em;
+      font-size: $iui-font-size-subheading;
+    }
+
+    /* itwin picker */
+    .itwin-picker {
+      min-width: $itwinpicker-min-width;
+      max-width: $itwinpicker-max-width;
+      height: 100%;
+
+      >div {
+        height: 100%;
+      }
+    }
+  }
+
+  .activity-button {
+    position: absolute;
+    left: 600px;
+  }
+
+  /* user profile */
+  .user-profile {
+    margin-left: auto;
+  }
+}
+
+.open-content-container {
+  height: 100%;
+  overflow: hidden;
+
+
+  /* right side (content) area */
+  .open-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: hidden;
+    background: $content-background;
+    -webkit-transition: all .2s linear;
+    -moz-transition: all .2s linear;
+    -o-transition: all .2s linear;
+    transition: all .2s linear;
+  }
+
+  .idp-scrolling-content {
+    @include uicore-scrollbar();
+    overflow: auto;
+    flex-basis: 100%;
+  }
+}

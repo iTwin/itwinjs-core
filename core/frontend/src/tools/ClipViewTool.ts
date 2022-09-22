@@ -6,7 +6,7 @@
  * @module Tools
  */
 
-import { BeEvent, Id64, Id64Arg } from "@itwin/core-bentley";
+import { BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
 import {
   AxisOrder, ClipMaskXYZRangePlanes, ClipPlane, ClipPrimitive, ClipShape, ClipUtilities, ClipVector, ConvexClipPlaneSet, FrameBuilder, Geometry, GeometryQuery,
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
@@ -31,6 +31,7 @@ import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAss
 
 /** An object that can react to a view's clip being changed by tools or modify handles.
  * @public
+ * @extensions
  */
 export interface ViewClipEventHandler {
   /** Add newly created clip geometry to selection set and show modify controls. */
@@ -70,7 +71,7 @@ export interface DrawClipOptions {
 }
 
 /** A tool to define a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipTool extends PrimitiveTool {
   constructor(protected _clipEventHandler?: ViewClipEventHandler) { super(); }
@@ -428,7 +429,7 @@ export class ViewClipTool extends PrimitiveTool {
 }
 
 /** A tool to remove a clip volume for a view
- * @public
+ * @public @extensions
  */
 export class ViewClipClearTool extends ViewClipTool {
   public static override toolId = "ViewClip.Clear";
@@ -945,21 +946,26 @@ export class ViewClipByElementTool extends ViewClipTool {
     return false;
   }
 
-  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
+  protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false, modelId?: Id64String): Promise<boolean> {
     try {
       const placements = await viewport.iModel.elements.getPlacements(ids, { type: viewport.view.is3d() ? "3d" : "2d" });
       if (0 === placements.length)
         return false;
 
+      const displayTransform = modelId && 1 === placements.length ? viewport.view.computeDisplayTransform({ modelId, elementId: placements[0].elementId }) : undefined;
       const range = new Range3d();
       const transform = Transform.createIdentity();
       if (!alwaysUseRange && 1 === placements.length) {
         const placement = placements[0];
         range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
         transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
+        displayTransform?.multiplyTransformTransform(transform, transform);
       } else {
         for (const placement of placements)
           range.extendRange(placement.calculateRange());
+
+        if (displayTransform)
+          transform.setFrom(displayTransform);
       }
 
       if (range.isNull)
@@ -1016,7 +1022,7 @@ export class ViewClipByElementTool extends ViewClipTool {
     const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (undefined === hit || !hit.isElementHit)
       return EventHandled.No;
-    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange) ? EventHandled.Yes : EventHandled.No;
+    return await this.doClipToElements(this.targetView, hit.sourceId, this._alwaysUseRange, hit.modelId) ? EventHandled.Yes : EventHandled.No;
   }
 }
 
@@ -1327,8 +1333,33 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       this._clipShape = clipShape;
     } else {
       const clipPlanes = ViewClipTool.isSingleConvexClipPlaneSet(clip);
-      if (undefined === clipPlanes || clipPlanes.planes.length > 12)
-        return false;
+      if (undefined === clipPlanes || clipPlanes.planes.length > 12) {
+        // Show visual representation for ClipVectors that are not supported for modification...
+        const viewRange = this._clipView.computeViewRange();
+
+        for (const primitive of clip.clips) {
+          const union = primitive.fetchClipPlanesRef();
+          if (undefined === union)
+            continue;
+
+          for (const convexSet of union.convexSets) {
+            const convexSetLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(convexSet, viewRange, true, false, true);
+            if (undefined === convexSetLoops)
+              continue;
+
+            if (undefined === this._clipPlanesLoops)
+              this._clipPlanesLoops = convexSetLoops;
+            else
+              this._clipPlanesLoops.push(...convexSetLoops);
+          }
+        }
+
+        if (undefined === this._clipPlanesLoops)
+          return false;
+
+        this._clip = clip;
+        return true;
+      }
       const clipPlanesLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(clipPlanes, this._clipView.computeViewRange(), true, false, true);
       if (undefined !== clipPlanesLoops && clipPlanesLoops.length > clipPlanes.planes.length)
         return false;
@@ -1778,6 +1809,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
       if (undefined !== this._clipPlanesLoopsNoncontributing)
         ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoopsNoncontributing, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.red, vp), 1, true);
+    } else if (undefined !== this._clipPlanesLoops) {
+      ViewClipTool.drawClipPlanesLoops(context, this._clipPlanesLoops, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.white, vp), 3, false, EditManipulator.HandleUtils.adjustForBackgroundColor(ColorDef.from(0, 255, 255, 225), vp), this._clipId);
     }
 
     if (!this._isActive)
@@ -1900,11 +1933,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
 /** Event types for ViewClipDecorationProvider.onActiveClipChanged \
  * @public
+ * @extensions
  */
 export enum ClipEventType { New, NewPlane, Modify, Clear }
 
 /** An implementation of ViewClipEventHandler that responds to new clips by presenting clip modification handles
- * @public
+ * @public @extensions
  */
 export class ViewClipDecorationProvider implements ViewClipEventHandler {
   private static _provider?: ViewClipDecorationProvider;

@@ -9,7 +9,7 @@ import {
 } from "@itwin/appui-abstract";
 import TestUtils from "../TestUtils";
 import { MockRender } from "@itwin/core-frontend";
-import { DefaultNavigationTools, StandardNavigationToolsProvider } from "../../appui-react/ui-items-provider/StandardNavigationToolsProvider";
+import { DefaultNavigationTools, StandardNavigationToolsProvider } from "../../appui-react";
 
 const testToolsArray: DefaultNavigationTools[] = [
   {
@@ -79,7 +79,7 @@ describe("StandardNavigationToolsProvider", () => {
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
       ToolbarOrientation.Horizontal, undefined).length).to.eq(6);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
-      ToolbarOrientation.Vertical, undefined).length).to.eq(2);
+      ToolbarOrientation.Vertical, undefined).length).to.eq(3);
     provider.unregister();
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
@@ -91,6 +91,7 @@ describe("StandardNavigationToolsProvider", () => {
       vertical: {
         walk: true,
         toggleCamera: true,
+        setupWalkCamera: true,
       },
     }, (stageId: string, _stageUsage: string, _applicationData: any) => {
       return "test" === stageId;
@@ -99,7 +100,7 @@ describe("StandardNavigationToolsProvider", () => {
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
       ToolbarOrientation.Horizontal, undefined).length).to.eq(0);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
-      ToolbarOrientation.Vertical, undefined).length).to.eq(2);
+      ToolbarOrientation.Vertical, undefined).length).to.eq(3);
     provider.unregister();
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });

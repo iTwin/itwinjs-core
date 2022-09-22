@@ -270,9 +270,11 @@ export namespace Id64 {
     return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
   }
 
-  /** Represents an unsigned 64-bit integer as a pair of unsigned 32-bit integers.
-   * @see [[Id64.getUint32Pair]]
-   * @see [[Id64.isValidUint32Pair]]
+  /** Represents an [[Id64]] as a pair of unsigned 32-bit integers. Because Javascript lacks efficient support for 64-bit integers,
+   * this representation can be useful in performance-sensitive code like the render loop.
+   * @see [[Id64.getUint32Pair]] to convert an [[Id64String]] to a Uint32Pair.
+   * @see [[Id64.fromUint32Pair]] to convert a Uint32Pair to an [[Id64String]].
+   * @see [[Id64.Uint32Set]] and [[Id64.Uint32Map]] for collections based on Uint32Pairs.
    */
   export interface Uint32Pair {
     /** The lower 4 bytes of the 64-bit integer. */
@@ -476,7 +478,7 @@ export namespace Id64 {
    */
   export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
 
-  /** A specialized replacement for Set<Id64String> optimized for performance-critical code which represents large sets of 64-bit IDs as pairs of
+  /** A specialized replacement for Set<Id64String> optimized for performance-critical code which represents large sets of [[Id64]]s as pairs of
    * 32-bit integers.
    * The internal representation is a Map<number, Set<number>> where the Map key is the upper 4 bytes of the IDs and the Set elements are the lower 4 bytes of the IDs.
    * Because the upper 4 bytes store the 24-bit briefcase ID plus the upper 8 bits of the local ID, there will be a very small distribution of unique Map keys.
@@ -549,6 +551,11 @@ export namespace Id64 {
     public has(low: number, high: number): boolean {
       const set = this._map.get(high);
       return undefined !== set && set.has(low);
+    }
+
+    /** Returns true if the set contains the Id specified by `pair`. */
+    public hasPair(pair: Uint32Pair): boolean {
+      return this.has(pair.lower, pair.upper);
     }
 
     /** Returns true if the set contains no Ids. */

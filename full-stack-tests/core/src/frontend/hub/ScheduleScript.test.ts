@@ -163,6 +163,8 @@ describe("Schedule script (#integration)", () => {
 
     view.displayStyle.settings.scheduleScriptProps = json; // eslint-disable-line deprecation/deprecation
     expect(view.displayStyle.scheduleScript).not.to.be.undefined;
+
+    // eslint-disable-next-line deprecation/deprecation
     expect(view.displayStyle.scheduleScriptReference!.sourceId).to.equal(embedStyleId);
     expect(countTileTrees(view)).to.equal(3);
   });

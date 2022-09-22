@@ -6,28 +6,28 @@
  * @module PresentationRules
  */
 
-import { ConditionContainer, RuleBase, RuleTypes } from "../Rule";
+import { RuleBase, RuleTypes } from "../Rule";
 
 /**
- * Rule to override default node style and dynamically define a foreground/background
- * colors and a font style for a particular nodes.
+ * Style override rules allow customizing display style of specific types of ECInstances.
  *
- * @see [More details]($docs/presentation/Customization/StyleOverride.md)
+ * @see [Style override reference documentation page]($docs/presentation/customization/StyleOverride.md)
  * @public
+ * @deprecated Use [[ExtendedDataRule]] instead. See [extended data usage page]($docs/presentation/customization/ExtendedDataUsage.md) for more details.
  */
-export interface StyleOverride extends RuleBase, ConditionContainer {
+export interface StyleOverride extends RuleBase {
   /** Used for serializing to JSON. */
   ruleType: RuleTypes.StyleOverride;
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/presentation/Advanced/ECExpressions.md), which can use
-   * a [limited set of symbols]($docs/presentation/Customization/ECExpressions.md#rule-condition).
+   * is an [ECExpression]($docs/presentation/advanced/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/presentation/customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
 
   /**
-   * Foreground color that should be used for node. The value should be an [ECExpression]($docs/presentation/Advanced/ECExpressions.md)
+   * Foreground color that should be used for node. The value should be an [ECExpression]($docs/presentation/advanced/ECExpressions.md)
    * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
@@ -36,7 +36,7 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   foreColor?: string;
 
   /**
-   * Background color that should be used for node. The value should be an [ECExpression]($docs/presentation/Advanced/ECExpressions.md)
+   * Background color that should be used for node. The value should be an [ECExpression]($docs/presentation/advanced/ECExpressions.md)
    * whose result would evaluate to one the following formats:
    * - color name (`Red`, `Blue`, etc.)
    * - `rgb(255, 255, 255)`
@@ -45,14 +45,14 @@ export interface StyleOverride extends RuleBase, ConditionContainer {
   backColor?: string;
 
   /**
-   * Font style that should be used for node. The value should be an [ECExpression]($docs/presentation/Advanced/ECExpressions.md)
+   * Font style that should be used for node. The value should be an [ECExpression]($docs/presentation/advanced/ECExpressions.md)
    * whose result would evaluate to one the following values:
    * - `"Bold"`
    * - `"Italic"`
    * - `"Italic,Bold"`
    * - `"Regular"`
    *
-   * Defaults to `"FontStyle.Regular"`.
+   * Defaults to `"Regular"`.
    */
   fontStyle?: string;
 }

@@ -204,13 +204,14 @@ export class PrimitiveCommand {
     const wiremesh = target.currentViewFlags.wiremesh && System.instance.isWebGL2 && (techniqueId === TechniqueId.Surface || techniqueId === TechniqueId.RealityMesh);
     const isWiremesh = wiremesh ? IsWiremesh.Yes : IsWiremesh.No;
     const flags = PrimitiveCommand._scratchTechniqueFlags;
-    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh);
+    const posType = this.primitive.cachedGeometry.usesQuantizedPositions ? "quantized" : "unquantized";
+    flags.init(target, exec.renderPass, isInstanced, isAnimated, isClassified, isShadowable, isThematic, isWiremesh, posType);
 
     const technique = target.techniques.getTechnique(techniqueId);
     const program = technique.getShader(flags);
 
     if (exec.setProgram(program))
-      this.primitive.draw(exec);
+      exec.target.compositor.drawPrimitive(this.primitive, exec, program.outputsToPick);
   }
 
   public get hasFeatures(): boolean { return this.primitive.hasFeatures; }
@@ -296,7 +297,7 @@ export function extractHilitedVolumeClassifierCommands(hilites: Hilites, cmds: D
             continue;
 
           const feature = batch.featureTable.getPackedFeature(surface.mesh.uniformFeatureId);
-          if (undefined === feature || !isFeatureHilited(feature, hilites))
+          if (undefined === feature || !isFeatureHilited(feature, hilites, hilites.models.hasId(batch.featureTable.modelId)))
             continue;
 
           break;

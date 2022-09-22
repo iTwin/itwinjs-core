@@ -26,9 +26,9 @@ export enum ChildNodeSpecificationTypes {
 }
 
 /**
- * Base interface for all [[ChildNodeSpecification]] implementations. Not
- * meant to be used directly, see `ChildNodeSpecification`.
+ * Base interface for all [[ChildNodeSpecification]] implementations.
  *
+ * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
  */
 export interface ChildNodeSpecificationBase {
@@ -36,84 +36,82 @@ export interface ChildNodeSpecificationBase {
   specType: ChildNodeSpecificationTypes;
 
   /**
-   * Defines the order in which specifications are evaluated and executed. Defaults to `1000`.
+   * Controls the order in which specifications are handled — specification with higher priority value is
+   * handled first. If priorities are equal, the specifications are handled in the order they appear in the
+   * ruleset.
    *
    * @type integer
    */
   priority?: number;
 
   /**
-   * This tells the rules engine that nodes produced using this
-   * specification always or never have children. Defaults to `Unknown`.
-   *
-   * **Note:** setting this flag to `Always` or `Never` improves performance.
+   * This attribute allows telling the engine that nodes created by this specification always or never have children.
    */
   hasChildren?: "Always" | "Never" | "Unknown";
 
   /**
-   * Hide instance nodes provided by this specification and directly show nodes of its children.
-   * This helps if you need to define related instance nodes of particular parent node that is not available in the
-   * hierarchy.
+   * When `true`, instances nodes produced by this specification are omitted and their children appear one
+   * hierarchy level higher.
    */
   hideNodesInHierarchy?: boolean;
 
   /**
-   * Hide nodes if they don't have children.
+   * Specifies whether nodes created through this specification should be hidden if they have no child nodes.
    */
   hideIfNoChildren?: boolean;
 
   /**
-   * An [ECExpression]($docs/presentation/Hierarchies/ECExpressions.md#specification) which
-   * indicates whether a node should be hidden or not.
-   *
-   * @note While the attribute provides much flexibility, it also has performance implications - it's
-   * strongly suggested to first consider using `instanceFilter`, `hideNodesInHierarchy` or `hideIfNoChildren`
-   * and only use `hideExpression` if none of them are sufficient.
+   * When specified [ECExpression]($docs/presentation/hierarchies/ECExpressions.md#specification) evaluates
+   * to `true`, nodes produced by this specification are omitted and their children appear one hierarchy level
+   * higher.
    */
   hideExpression?: string;
 
   /**
-   * Set this flag to `true` to suppress default sorting of ECInstances returned by this specification.
-   *
-   * **Note:** setting this flag to `true` improves performance.
+   * Suppress sorting of nodes returned by this specification. With this attribute set to `true`, the order
+   * of returned nodes is undefined.
    */
   doNotSort?: boolean;
 
   /**
-   * Suppress similar ancestor nodes' checking when creating nodes based on this specification.
-   *
-   * By default we stop creating hierarchy at the node that has a similar ancestor representing
-   * the same ECInstance and created using the same specification to prevent creating infinite
-   * hierarchies. With this flag enabled, we allow up to 10 similar ancestors before we consider
-   * the hierarchy infinite.
+   * Specifies whether similar ancestor nodes' checking should be suppressed when creating nodes based on this
+   * specification. See more in [infinite hierarchies prevention page]($docs/presentation/hierarchies/InfiniteHierarchiesPrevention.md).
    *
    * @beta
    */
   suppressSimilarAncestorsCheck?: boolean;
 
-  /** Specifications of related instances that can be used in nodes' creation. */
+  /**
+   * Specifications of [related instances]($docs/presentation/RelatedInstanceSpecification.md) that can be used
+   * when creating the nodes.
+   */
   relatedInstances?: RelatedInstanceSpecification[];
 
-  /** [Nested rule]($docs/presentation/Hierarchies/Terminology.md#nested-rule) specifications. */
+  /**
+   * Specifications of [nested child node rules]($docs/presentation/hierarchies/Terminology.md#nested-rule) that
+   * allow creating child nodes without the need of supplying a condition to match the parent node.
+   */
   nestedRules?: ChildNodeRule[];
 }
 
 /**
  * A container of default grouping properties. Used for specifications that support
- * default grouping. Not meant to be used directly, see `ChildNodeSpecification`.
+ * default grouping. Not meant to be used directly, see [[ChildNodeSpecification]].
  *
  * @public
  */
 export interface DefaultGroupingPropertiesContainer {
-  /** Group instances by ECClass. Defaults to `true`. */
+  /** Controls whether returned instances should be grouped by ECClass. Defaults to `true`. */
   groupByClass?: boolean;
 
-  /** Group instances by label. Defaults to `true`. */
+  /** Controls whether returned instances should be grouped by label. Defaults to `true`. */
   groupByLabel?: boolean;
 }
 
 /**
- * Navigation rule specifications that define what content the rule results in.
+ * Hierarchy rule specifications that define what nodes are going to be returned by the rule.
+ *
+ * @see [Child node specifications reference documentation section]($docs/presentation/hierarchies/ChildNodeRule.md#attribute-specifications)
  * @public
  */
 export type ChildNodeSpecification =

@@ -14,6 +14,7 @@ import { FeatureAppearanceProps } from "./FeatureSymbology";
  * @see [EmphasizeElements]($frontend)
  * @see [[AppearanceOverrideProps]]
  * @public
+ * @extensions
  */
 export enum FeatureOverrideType {
   /** Override color only. */
@@ -27,6 +28,7 @@ export enum FeatureOverrideType {
 /** JSON representation of an appearance override in an [[EmphasizeElementsProps]].
  * @see [EmphasizeElements]($frontend).
  * @public
+ * @extensions
  */
 export interface AppearanceOverrideProps {
   /** Whether to override color, transparency, or both. */
@@ -39,22 +41,23 @@ export interface AppearanceOverrideProps {
 
 /** JSON representation of an [EmphasizeElements]($frontend).
  * @public
+ * @extensions
  */
 export interface EmphasizeElementsProps {
-  /** @see [EmphasizeElements.getNeverDrawnElements]($frontend) */
+  /** See [EmphasizeElements.getNeverDrawnElements]($frontend) */
   neverDrawn?: Id64Array;
-  /** @see [EmphasizeElements.getAlwaysDrawnElements]($frontend) */
+  /** See [EmphasizeElements.getAlwaysDrawnElements]($frontend) */
   alwaysDrawn?: Id64Array;
-  /** @see [EmphasizeElements.getIsolatedElements]($frontend) */
+  /** See [EmphasizeElements.getIsolatedElements]($frontend) */
   isAlwaysDrawnExclusive?: boolean;
-  /** @see [EmphasizeElements.getEmphasizedIsolatedElements]($frontend) */
+  /** See [EmphasizeElements.getEmphasizedIsolatedElements]($frontend) */
   alwaysDrawnExclusiveEmphasized?: Id64Array;
-  /** @see [EmphasizeElements.defaultAppearance]($frontend) */
+  /** See [EmphasizeElements.defaultAppearance]($frontend) */
   defaultAppearance?: FeatureAppearanceProps;
-  /** @see [EmphasizeElements.getOverriddenElementsByKey]($frontend) */
+  /** See [EmphasizeElements.getOverriddenElementsByKey]($frontend) */
   appearanceOverride?: AppearanceOverrideProps[];
-  /** @see [EmphasizeElements.wantEmphasis]($frontend) */
+  /** See [EmphasizeElements.wantEmphasis]($frontend) */
   wantEmphasis?: boolean;
-  /** @see [EmphasizeElements.unanimatedAppearance]($frontend) */
+  /** See [EmphasizeElements.unanimatedAppearance]($frontend) */
   unanimatedAppearance?: FeatureAppearanceProps;
 }

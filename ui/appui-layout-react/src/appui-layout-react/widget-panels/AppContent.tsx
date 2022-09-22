@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
+import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext } from "../base/NineZone";
 import { WidgetPanelsContent } from "./Content";
 import { ContentNodeContext } from "./Panels";
 import { panelSides } from "./Panel";
@@ -38,8 +38,11 @@ export const AppContent = React.memo(function AppContent() { // eslint-disable-l
 export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T> {
   const panels = React.useContext(PanelsStateContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
+  const autoCollapseUnpinnedPanels = React.useContext(AutoCollapseUnpinnedPanelsContext);
+
   const setRef = useRefEffect<T>((instance) => {
-    if (!instance)
+    // only enable if element is defined and autoCollapseUnpinnedPanels is false
+    if (!instance || autoCollapseUnpinnedPanels)
       return;
     const listener = () => {
       for (const side of panelSides) {

@@ -49,7 +49,7 @@ export interface SelectionChangeEventArgs {
   /** The name of the selection source which caused the selection change. */
   source: string;
 
-  /** Level of the selection. See [selection levels]($docs/presentation/Unified-Selection/index#selection-levels). */
+  /** Level of the selection. See [selection levels documentation section]($docs/presentation/unified-selection/index#selection-levels). */
   level: number;
 
   /** The selection change type. */

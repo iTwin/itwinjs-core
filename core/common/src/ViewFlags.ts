@@ -13,6 +13,7 @@ import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@itwin/core-bentley
 /** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
  * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
  * @public
+ * @extensions
  */
 export enum RenderMode {
   /** Renders only the edges of surfaces, with exceptions for planar regions based on their [[FillFlags]].
@@ -49,6 +50,7 @@ export enum RenderMode {
  * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
  * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
  * @public
+ * @extensions
  */
 export interface ViewFlagProps {
   /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
@@ -73,11 +75,11 @@ export interface ViewFlagProps {
   noTexture?: boolean;
   /** If true, don't apply [[RenderMaterial]]s to surfaces. */
   noMaterial?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noCameraLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSourceLights?: boolean;
-  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
+  /** See [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSolarLight?: boolean;
   /** If true, display the edges of surfaces. */
   visEdges?: boolean;
@@ -526,11 +528,13 @@ export class ViewFlags {
 /** A type containing all of the properties of [[ViewFlags]] with none of the methods and with the `readonly` modifiers removed.
  * @see [[ViewFlags.create]], [[ViewFlags.copy]], and [[ViewFlags.override]] for methods accepting an object of this type.
  * @public
+ * @extensions
  */
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 /** A type that describes how to override selected properties of a [[ViewFlags]].
  * @see [[ViewFlags.override]] to apply the overrides to a ViewFlags object.
  * @public
+ * @extensions
  */
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

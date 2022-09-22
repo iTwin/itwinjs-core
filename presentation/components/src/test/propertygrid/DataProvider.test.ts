@@ -2,27 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import "@itwin/presentation-frontend/lib/cjs/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
-import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, using } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import {
-  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
-  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
-} from "@itwin/presentation-common";
-import {
-  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem,
-  createTestECClassInfo, createTestECInstanceKey, createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
-} from "@itwin/presentation-common/lib/cjs/test";
-import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { PropertyCategory } from "@itwin/components-react";
+import { BeEvent, using } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import {
+  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, DisplayValue, Field, Item, Property, PropertyValueFormat,
+  RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, Value, ValuesDictionary,
+} from "@itwin/presentation-common";
+import {
+  createRandomId, createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestECClassInfo, createTestECInstanceKey,
+  createTestNestedContentField, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+} from "@itwin/presentation-common/lib/cjs/test";
+import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
-import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
 import { DEFAULT_PROPERTY_GRID_RULESET, PresentationPropertyDataProvider } from "../../presentation-components/propertygrid/DataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
@@ -62,12 +59,7 @@ describe("PropertyDataProvider", () => {
 
     Presentation.setPresentationManager(presentationManagerMock.object);
     Presentation.setFavoritePropertiesManager(favoritePropertiesManagerMock.object);
-    const localize = new ITwinLocalization({
-      urlTemplate: `file://${path.resolve("public/locales")}/{{lng}}/{{ns}}.json`,
-    });
-    await localize.initialize(["iModelJS"]);
-    Presentation.setLocalization(localize);
-    await initializeLocalization();
+    Presentation.setLocalization(new EmptyLocalization());
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId });
   });
@@ -1061,6 +1053,52 @@ describe("PropertyDataProvider", () => {
             expect(data.records[data.categories[0].name].length).to.eq(1);
             expect(data.records[data.categories[0].name]).to.containSubset([{
               property: { name: "WithMembers" },
+            }]);
+          });
+
+          it("doesn't include nested fields with no values when set", async () => {
+            const category = createTestCategoryDescription({ name: "custom-category" });
+            const descriptor = createTestContentDescriptor({
+              fields: [
+                createTestNestedContentField({
+                  name: "nested",
+                  nestedFields: [
+                    createPrimitiveField({ name: "a", label: "a", category }),
+                    createPrimitiveField({ name: "b", label: "b", category }),
+                  ],
+                }),
+              ],
+            });
+            const values: ValuesDictionary<Value> = {
+              nested: [{
+                primaryKeys: [createTestECInstanceKey()],
+                values: {
+                  a: "",
+                  b: "some value",
+                },
+                displayValues: {
+                  a: undefined,
+                  b: "some value",
+                },
+                mergedFieldNames: [],
+              }],
+            };
+            const displayValues: ValuesDictionary<DisplayValue> = {
+              nested: [{
+                displayValues: {
+                  a: undefined,
+                  b: "some value",
+                },
+              }],
+            };
+            const record = createTestContentItem({ values, displayValues });
+            (provider as any).getContent = async () => new Content(descriptor, [record]);
+            const data = await provider.getData();
+            expect(data.categories.length).to.eq(1);
+            expect(data.records[data.categories[0].name].length).to.eq(1);
+            expect(data.records[data.categories[0].name]).to.containSubset([{
+              property: { displayLabel: "b" },
+              value: { value: "some value" },
             }]);
           });
 

@@ -2,18 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import {
-  DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, IModelError, isPlacement3dProps, JsonGeometryStream,
-  PlacementProps,
-} from "@itwin/core-common";
-import {
-  BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool,
-  readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
-  ToolAssistanceSection, Viewport,
-} from "@itwin/core-frontend";
+import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
+import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
   if (vp.view.is3d() && vp.view.isCameraOn) {
@@ -175,21 +167,26 @@ export class DynamicGraphicsProvider {
 /** @alpha Placement tool base class for creating new elements. */
 export abstract class CreateElementTool extends PrimitiveTool {
   public get targetCategory(): Id64String {
-    if (IModelApp.toolAdmin.activeSettings.category === undefined)
+    const category = this.briefcase?.editorToolSettings.category;
+    if (undefined === category)
       throw new IModelError(IModelStatus.InvalidCategory, "");
-    return IModelApp.toolAdmin.activeSettings.category;
+
+    return category;
   }
 
   public override get targetModelId(): Id64String {
-    if (IModelApp.toolAdmin.activeSettings.model === undefined)
+    const model = this.briefcase?.editorToolSettings.model;
+    if (undefined === model)
       throw new IModelError(IModelStatus.BadModel, "");
-    return IModelApp.toolAdmin.activeSettings.model;
+
+    return model;
   }
 
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
-    if (IModelApp.toolAdmin.activeSettings.model === undefined)
+    if (!vp?.iModel.isBriefcaseConnection())
       return false;
-    return super.isCompatibleViewport(vp, isSelectedViewChange);
+
+    return undefined !== vp.iModel.editorToolSettings.model && super.isCompatibleViewport(vp, isSelectedViewChange);
   }
 
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
@@ -289,5 +286,121 @@ export abstract class CreateElementTool extends PrimitiveTool {
     const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg));
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
+  }
+}
+
+/** @alpha Placement tool base class for creating new elements that use dynamics to show intermediate results. */
+export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
+  protected _graphicsProvider?: DynamicGraphicsProvider;
+
+  protected override get wantAccuSnap(): boolean { return true; }
+  protected override get wantDynamics(): boolean { return true; }
+
+  protected clearGraphics(): void {
+    if (undefined === this._graphicsProvider)
+      return;
+    this._graphicsProvider.cleanupGraphic();
+    this._graphicsProvider = undefined;
+  }
+
+  protected async createGraphics(ev: BeButtonEvent): Promise<void> {
+    if (!await this.updateDynamicData(ev))
+      return;
+
+    const placement = this.getPlacementProps();
+    if (undefined === placement)
+      return;
+
+    const geometry = this.getGeometryProps(placement);
+    if (undefined === geometry)
+      return;
+
+    if (undefined === this._graphicsProvider)
+      this._graphicsProvider = new DynamicGraphicsProvider(this.iModel, this.toolId);
+
+    // Set chord tolerance for curved surfaces...
+    if (ev.viewport)
+      this._graphicsProvider.chordTolerance = computeChordToleranceFromPoint(ev.viewport, ev.point);
+
+    await this._graphicsProvider.createGraphic(this.targetCategory, placement, geometry);
+  }
+
+  public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
+    if (undefined !== this._graphicsProvider)
+      this._graphicsProvider.addGraphic(context);
+  }
+
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    return this.createGraphics(ev);
+  }
+
+  protected abstract getPlacementProps(): PlacementProps | undefined;
+  protected abstract getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+  protected abstract getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
+
+  protected async doCreateElement(_props: GeometricElementProps, _data?: ElementGeometryBuilderParams): Promise<void> {}
+  protected async updateElementData(_ev: BeButtonEvent, _isDynamics: boolean): Promise<void> {}
+
+  protected async updateDynamicData(ev: BeButtonEvent): Promise<boolean> {
+    if (!IModelApp.viewManager.inDynamicsMode)
+      return false; // Don't need to create graphic if dynamics aren't yet active...
+
+    await this.updateElementData(ev, true);
+    return true;
+  }
+
+  protected async createElement(): Promise<void> {
+    const placement = this.getPlacementProps();
+    if (undefined === placement)
+      return;
+
+    const geometry = this.getGeometryProps(placement);
+    if (undefined === geometry)
+      return;
+
+    const elemProps = this.getElementProps(placement);
+    if (undefined === elemProps)
+      return;
+
+    let data;
+    if ("flatbuffer" === geometry.format) {
+      data = { entryArray: geometry.data };
+      delete elemProps.geom; // Leave unchanged until replaced by flatbuffer geometry...
+    } else {
+      elemProps.geom = geometry.data;
+    }
+
+    return this.doCreateElement(elemProps, data);
+  }
+
+  protected setupAccuDraw(): void { }
+
+  protected override setupAndPromptForNextAction(): void {
+    this.setupAccuDraw();
+    super.setupAndPromptForNextAction();
+  }
+
+  protected async acceptPoint(ev: BeButtonEvent): Promise<boolean> {
+    await this.updateElementData(ev, false);
+    return true;
+  }
+
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!await this.acceptPoint(ev))
+      return EventHandled.Yes;
+    return super.onDataButtonDown(ev);
+  }
+
+  protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> { return true; }
+
+  public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
+    if (!await this.cancelPoint(ev))
+      return EventHandled.Yes;
+    return super.onResetButtonUp(ev);
+  }
+
+  public override async onCleanup() {
+    this.clearGraphics();
+    return super.onCleanup();
   }
 }

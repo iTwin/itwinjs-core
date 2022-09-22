@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@itwin/core-react/lib/cjs/core-react/z-index";
-@import "variables";
+@import "~@itwin/itwinui-css/scss/style/speed";
 @import "../widgetopacity";
+@import "variables";
 
 .nz-widget-floatingWidget {
   position: absolute;
   border: 1px solid $buic-background-5;
   border-radius: 3px;
+  min-width: 200px;
+  min-height: 120px;
+  transition: opacity $iui-speed ease;
+
+  &.nz-floating-toolsettings {
+    min-height: 60px;
+  }
+
   @include uicore-z-index(dragged-widget);
   @include nz-widget-opacity;
 
@@ -21,6 +30,10 @@
     }
   }
 
+  &.nz-hidden {
+    opacity: 0;
+  }
+
   &.nz-dragged {
     pointer-events: none;
     opacity: $nz-dragged-widget-opacity;
@@ -29,6 +42,8 @@
   }
 
   &.nz-minimized {
+    min-height: 30px;
+
     .nz-widget-floatingWidget_handle {
       visibility: hidden;
     }

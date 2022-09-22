@@ -6,18 +6,18 @@
  * @module RpcInterface
  */
 
-import "@ungap/url-search-params/index";
 import { BentleyStatus } from "@itwin/core-bentley";
+import { Buffer } from "buffer";
 import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 import { MarshalingBinaryMarker, RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcProtocol, RpcRequestFulfillment, SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
-import { RpcMultipart } from "./RpcMultipart";
+import { ReadableFormData, RpcMultipart } from "./RpcMultipart";
 import { HttpServerRequest, HttpServerResponse, WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 /** @internal */
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"; // eslint-disable-line @typescript-eslint/naming-convention
@@ -32,9 +32,11 @@ export class WebAppRpcRequest extends RpcRequest {
   private get _headers() { return this._request.headers as { [key: string]: string }; }
 
   /** The maximum size permitted for an encoded component in a URL.
+   * Note that some backends limit the total cumulative request size. Our current node backends accept requests with a max size of 16 kb.
+   * In addition to the url size, an authorization header may also add considerably to the request size.
    * @note This is used for features like encoding the payload of a cacheable request in the URL.
    */
-  public static maxUrlComponentSize = 1024;
+  public static maxUrlComponentSize = 1024 * 8;
 
   /** The HTTP method for this request. */
   public override method: HttpMethod_T;
@@ -90,23 +92,55 @@ export class WebAppRpcRequest extends RpcRequest {
     }
 
     if (!request.id) {
-      throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
+      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Missing required activity ID.`);
     }
 
     return request;
   }
 
   /** Sends the response for a web request. */
-  public static sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  public static async sendResponse(
+    protocol: WebAppRpcProtocol,
+    request: SerializedRpcRequest,
+    fulfillment: RpcRequestFulfillment,
+    req: HttpServerRequest,
+    res: HttpServerResponse,
+  ): Promise<void> {
+    const versionHeader = protocol.protocolVersionHeaderName;
+    if (versionHeader && RpcProtocol.protocolVersion) {
+      res.set(versionHeader, RpcProtocol.protocolVersion.toString());
+    }
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const { Readable, Stream } = await import(/* webpackIgnore: true */ "stream");
+    const { createGzip } = await import(/* webpackIgnore: true */ "zlib");
+
     const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
+    let responseBody;
     if (transportType === RpcContentType.Binary) {
-      WebAppRpcRequest.sendBinary(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureBinary(fulfillment, res);
     } else if (transportType === RpcContentType.Multipart) {
-      WebAppRpcRequest.sendMultipart(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureMultipart(fulfillment, res);
     } else if (transportType === RpcContentType.Stream) {
-      WebAppRpcRequest.sendStream(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureStream(fulfillment);
     } else {
-      WebAppRpcRequest.sendText(protocol, request, fulfillment, res);
+      responseBody = WebAppRpcRequest.configureText(fulfillment, res);
+    }
+
+    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
+    res.status(fulfillment.status);
+
+    if (fulfillment.allowCompression && req.header("Accept-Encoding")?.includes("gzip")) {
+      res.set("Content-Encoding", "gzip");
+      const readableResponseBody = (responseBody instanceof Stream) ? responseBody : Readable.from(responseBody);
+      responseBody = readableResponseBody.pipe(createGzip());
+    }
+
+    // This check should in theory look for instances of Readable, but that would break backend implementation at
+    // core/backend/src/RpcBackend.ts
+    if (responseBody instanceof Stream) {
+      responseBody.pipe(res);
+    } else {
+      res.send(responseBody);
     }
   }
 
@@ -131,20 +165,6 @@ export class WebAppRpcRequest extends RpcRequest {
     this._request.headers = {};
   }
 
-  /** @internal */
-  public async preflight(): Promise<Response | undefined> {
-    this.method = "options";
-    this._request.method = "options";
-    await this.setHeaders();
-    await this.send();
-    return this._response;
-  }
-
-  protected override isHeaderAvailable(name: string): boolean {
-    const allowed = this.protocol.allowedHeaders;
-    return allowed.has("*") || allowed.has(name);
-  }
-
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
     this._headers[name] = value;
@@ -152,10 +172,6 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Sends the request. */
   protected async send(): Promise<number> {
-    if (this.method !== "options") {
-      await this.protocol.initialize();
-    }
-
     this._loading = true;
     await this.setupTransport();
 
@@ -209,6 +225,13 @@ export class WebAppRpcRequest extends RpcRequest {
           return;
         }
 
+        if (this.protocol.protocolVersionHeaderName) {
+          const version = response.headers.get(this.protocol.protocolVersionHeaderName);
+          if (version) {
+            this.responseProtocolVersion = parseInt(version, 10);
+          }
+        }
+
         const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);
         const responseType = WebAppRpcProtocol.computeContentType(contentType);
 
@@ -245,9 +268,26 @@ export class WebAppRpcRequest extends RpcRequest {
 
   private static configureResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
     const success = protocol.getStatus(fulfillment.status) === RpcRequestStatus.Resolved;
+    // TODO: Use stale-while-revalidate in cache headers. This needs to be tested, and does not currently have support in the router/caching-service.
+    // This will allow browsers to use stale cached responses while also revalidating with the router, allowing us to start up a backend if necessary.
 
+    // RPC Caching Service uses the s-maxage header to determine the TTL for the redis cache.
+    const oneHourInSeconds = 3600;
     if (success && request.caching === RpcResponseCacheControl.Immutable) {
-      res.set("Cache-Control", "private, max-age=31536000, immutable");
+      // If response size is > 50 MB, do not cache it.
+      if (fulfillment.result.objects.length > (50 * 10**7)) {
+        res.set("Cache-Control", "no-store");
+      } else if (request.operation.operationName === "generateTileContent") {
+        res.set("Cache-Control", "no-store");
+      } else if (request.operation.operationName === "getConnectionProps") {
+        // GetConnectionprops can't be cached on the browser longer than the lifespan of the backend. The lifespan of backend may shrink too. Keep it at 1 second to be safe.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=1, immutable`);
+      } else if (request.operation.operationName === "getTileCacheContainerUrl") {
+        // getTileCacheContainerUrl returns a SAS with an expiry of 23:59:59. We can't exceed that time when setting the max-age.
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 23}, max-age=${oneHourInSeconds * 23}, immutable`);
+      } else {
+        res.set("Cache-Control", `s-maxage=${oneHourInSeconds * 24}, max-age=${oneHourInSeconds * 48}, immutable`);
+      }
     }
 
     if (fulfillment.retry) {
@@ -255,23 +295,18 @@ export class WebAppRpcRequest extends RpcRequest {
     }
   }
 
-  private static sendText(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const response = (fulfillment.status === 204) ? "" : fulfillment.result.objects;
+  private static configureText(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): string {
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status).send(response);
+    return (fulfillment.status === 204) ? "" : fulfillment.result.objects;
   }
 
-  private static sendBinary(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const data = fulfillment.result.data[0];
-    const response = Buffer.isBuffer(data) ? data : Buffer.from(data);
-
+  private static configureBinary(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): Buffer {
     res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status).send(response);
+    const data = fulfillment.result.data[0];
+    return Buffer.isBuffer(data) ? data : Buffer.from(data);
   }
 
-  private static sendMultipart(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+  private static configureMultipart(fulfillment: RpcRequestFulfillment, res: HttpServerResponse): ReadableFormData {
     const response = RpcMultipart.createStream(fulfillment.result);
     const headers = response.getHeaders();
     for (const header in headers) {
@@ -280,16 +315,11 @@ export class WebAppRpcRequest extends RpcRequest {
       }
     }
 
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status);
-    response.pipe(res);
+    return response;
   }
 
-  private static sendStream(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
-    const response = fulfillment.result.stream;
-    WebAppRpcRequest.configureResponse(protocol, request, fulfillment, res);
-    res.status(fulfillment.status);
-    response!.pipe(res);
+  private static configureStream(fulfillment: RpcRequestFulfillment) {
+    return fulfillment.result.stream!;
   }
 
   private static parseFromPath(operation: SerializedRpcOperation): RpcSerializedValue {
@@ -347,10 +377,6 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async setupTransport(): Promise<void> {
-    if (this.method === "options") {
-      return;
-    }
-
     const parameters = (await this.protocol.serialize(this)).parameters;
     const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
 

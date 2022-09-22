@@ -7,14 +7,13 @@ import { LoremIpsum } from "lorem-ipsum";
 import { Dialog } from "@itwin/core-react";
 import { DialogButtonType } from "@itwin/appui-abstract";
 import { Checkbox, Input } from "@itwin/itwinui-react";
+import { ModalDialogManager } from "@itwin/appui-react";
 
 export interface TestModalDialogProps {
-  opened: boolean;
   onResult?: (result: DialogButtonType) => void;
 }
 
 export interface TestModalDialogState {
-  opened: boolean;
   movable: boolean;
   resizable: boolean;
   overlay: boolean;
@@ -28,7 +27,6 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
   constructor(props: TestModalDialogProps) {
     super(props);
     this.state = {
-      opened: this.props.opened,
       movable: false,
       resizable: false,
       overlay: true,
@@ -49,7 +47,7 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
     return (
       <Dialog
         title={"Modal Dialog"}
-        opened={this.state.opened}
+        opened={true}
         resizable={this.state.resizable}
         movable={this.state.movable}
         modal={this.state.overlay}
@@ -100,7 +98,6 @@ export class TestModalDialog extends React.Component<TestModalDialogProps, TestM
 
   private _closeDialog = (_followUp: () => void) => {
     this.setState({
-      opened: false,
-    });
+    }, () => ModalDialogManager.closeDialog());
   };
 }

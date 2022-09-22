@@ -229,6 +229,11 @@
         "NewYork": "New York"
       }
     },
+    "MapFeatureInfoTool": {
+      "keyin": "MapFeatureInfo",
+      "description": "Map Feature Info",
+      "flyover": "Map Feature Info"
+    },
     "Tool1": {
       "keyin": "Test Tool1",
       "description": "Test1 tool",

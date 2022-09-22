@@ -16,6 +16,7 @@ public;CategoryDescription
 public;CategoryDescriptionJSON
 public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
+deprecated;CheckBoxRule 
 public;ChildNodeRule 
 public;ChildNodeSpecification = CustomNodeSpecification | InstanceNodesOfSpecificClassesSpecification | RelatedInstanceNodesSpecification | CustomQueryInstanceNodesSpecification
 public;ChildNodeSpecificationBase
@@ -25,10 +26,19 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
+beta;ClientDiagnostics 
+public;ClientDiagnosticsAttribute
+beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
+beta;ClientDiagnosticsOptions 
+internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
 internal;CommonIpcParams
+internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
+alpha;ComputeSelectionRequestOptions
+alpha;ComputeSelectionRpcRequestOptions = PresentationRpcRequestOptions
 public;ConditionContainer
+deprecated;ConditionContainer
 public;Content
 public;ContentDescriptorRequestOptions
 public;ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions
@@ -62,14 +72,13 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
-alpha;DiagnosticsHandler = (logs: DiagnosticsScopeLogs[]) => void
-alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
-alpha;DiagnosticsLogEntry
-alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
-alpha;DiagnosticsLogMessage
-alpha;DiagnosticsOptions
-alpha;DiagnosticsOptionsWithHandler 
-alpha;DiagnosticsScopeLogs
+beta;Diagnostics
+beta;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
+beta;DiagnosticsLogEntry
+beta;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
+beta;DiagnosticsLogMessage
+beta;DiagnosticsOptions
+beta;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 public;DisplayLabelRequestOptions
 public;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions
@@ -109,6 +118,7 @@ beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
 beta;ElementPropertiesRequestOptions
 beta;ElementPropertiesStructArrayPropertyItem 
 beta;ElementPropertiesStructPropertyItem 
+alpha;ElementSelectionScopeProps
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -129,7 +139,6 @@ public;FilterByTextHierarchyRequestOptions
 public;FilterByTextHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
-internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
 public;GroupingNodeKeyJSON 
 public;GroupingRule 
@@ -155,6 +164,7 @@ public;Id64sRulesetVariable
 public;Id64sRulesetVariableJSON 
 public;IdCategoryIdentifier
 public;ImageIdOverride 
+deprecated;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey
@@ -176,6 +186,7 @@ public;IntRulesetVariable
 public;IntRulesetVariableJSON 
 public;IntsRulesetVariable 
 public;IntsRulesetVariableJSON 
+internal;isComputeSelectionRequestOptions
 beta;isSingleElementPropertiesRequestOptions
 public;Item
 public;ItemJSON
@@ -197,11 +208,17 @@ public;LabelDefinitionJSON
 public;LabelGroupingNodeKey 
 public;LabelGroupingNodeKeyJSON 
 public;LabelOverride 
+deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+internal;LocalizationHelper
+internal;LocalizationHelperProps
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfo
+beta;NavigationPropertyInfoJSON
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
@@ -210,13 +227,6 @@ public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
 public;NoCategoryIdentifier
-public;Node
-public;Node
-internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
-internal;listFromJSON(json: NodeJSON[] | string): Node[]
-internal;listReviver(key: string, value: any): any
-internal;reviver(key: string, value: any): any
-internal;toPartialJSON(node: PartialNode): PartialNodeJSON
 public;NodeArtifactsRule 
 public;NodeDeletionInfo
 public;NodeDeletionInfoJSON
@@ -238,7 +248,6 @@ public;NodePathFilteringData
 public;NodePathFilteringDataJSON
 public;NodeUpdateInfo
 public;NodeUpdateInfoJSON
-public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
@@ -283,6 +292,7 @@ public;PropertyEditorSliderParameters
 public;PropertyEditorSpecification
 public;PropertyGroup 
 public;PropertyGroupingValue
+deprecated;PropertyGroupingValue
 public;PropertyInfo
 public;PropertyInfo
 public;PropertyInfoJSON
@@ -321,6 +331,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
+beta;RpcDiagnosticsOptions = Omit_2
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride
@@ -343,6 +354,7 @@ public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
 public;SelectionScope
+alpha;SelectionScopeProps = ElementSelectionScopeProps |
 public;SelectionScopeRequestOptions
 public;SelectionScopeRpcRequestOptions = PresentationRpcRequestOptions
 internal;SetRulesetVariableParams
@@ -367,7 +379,8 @@ public;StrippedRelationshipPath = StrippedRelatedClassInfo[]
 public;StructFieldMemberDescription
 public;StructTypeDescription 
 public;StyleOverride 
-public;SubCondition 
+deprecated;StyleOverride 
+public;SubCondition
 public;Subtract
 public;SupplementationInfo
 alpha;traverseContent(visitor: IContentVisitor, content: Content): void
@@ -394,3 +407,4 @@ public;VariableValue = boolean | string | number | number[] | Id64String | Id64S
 public;VariableValueJSON = boolean | string | number | number[] | Id64String | Id64String[] | CompressedId64Set
 public;VariableValueType
 public;VariableValueTypes
+public;WithCancelEvent

@@ -39,6 +39,7 @@ export * from "./tools/RenderTargetTools";
 export * from "./tools/ReportWebGLCompatibilityTool";
 export * from "./tools/SavedViews";
 export * from "./tools/SelectionTools";
+export * from "./tools/ScheduleScriptTools";
 export * from "./tools/SetGpuMemoryLimitTool";
 export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";

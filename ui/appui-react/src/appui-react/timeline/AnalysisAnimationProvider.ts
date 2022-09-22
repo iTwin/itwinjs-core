@@ -35,7 +35,7 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
     if (this.supportsTimelineAnimation && this._viewState.analysisStyle) {
       // for now just initial settings
       this.updateSettings({
-        duration: 5 * 1000,
+        duration: 10 * 1000,
         loop: true,
       });
 

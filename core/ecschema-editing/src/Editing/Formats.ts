@@ -6,7 +6,8 @@
  * @module Editing
  */
 
-import { FormatProps, FormatType, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatProps, InvertedUnit, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { FormatType } from "@itwin/core-quantity";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
 

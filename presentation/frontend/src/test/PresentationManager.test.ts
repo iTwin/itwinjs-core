@@ -453,6 +453,29 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock.verifyAll();
     });
 
+    it("requests localized root nodes from proxy", async () => {
+      i18nMock.reset();
+      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() => { return "LocalizedString"; });
+      const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@EN:LocalizableString@", displayValue: "@EN:LocalizableString@", typeName: "string" } })];
+      const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
+        imodel: testData.imodelMock.object,
+        rulesetOrId: testData.rulesetId,
+        paging: testData.pageOptions,
+        parentKey: undefined,
+      };
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getPagedNodes(prepareOptions(options)))
+        .returns(async () => ({ total: 666, items: prelocalizedNode.map(Node.toJSON) }))
+        .verifiable();
+
+      const actualResult = await manager.getNodes(options);
+      const expectedResult = prelocalizedNode;
+      expectedResult[0].label.rawValue = "LocalizedString";
+      expectedResult[0].label.displayValue = "LocalizedString";
+      expect(actualResult).to.deep.eq(expectedResult);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
     it("requests child nodes from proxy", async () => {
       const parentNodeKey = createRandomECInstancesNodeKey();
       const result = [createRandomECInstancesNode(), createRandomECInstancesNode()];
@@ -1340,6 +1363,17 @@ describe("PresentationManager", () => {
       const result = await buildPagedArrayResponse({ start: 1 }, getter);
       expect(getter).to.be.calledOnce;
       expect(getter).to.be.calledWith({ start: 1, size: 0 });
+      expect(result).to.deep.eq({ total: 0, items: [] });
+    });
+
+    it("returns zero response when partial request returns less items than requested", async () => {
+      const getter = sinon.stub();
+      getter.onFirstCall().resolves({ total: 5, items: [2, 3] });
+      getter.onSecondCall().resolves({ total: 5, items: [] });
+      const result = await buildPagedArrayResponse({ start: 1 }, getter);
+      expect(getter).to.be.calledTwice;
+      expect(getter.firstCall).to.be.calledWith({ start: 1, size: 0 });
+      expect(getter.secondCall).to.be.calledWith({ start: 3, size: 0 });
       expect(result).to.deep.eq({ total: 0, items: [] });
     });
 

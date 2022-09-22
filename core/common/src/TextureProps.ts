@@ -13,6 +13,7 @@ import { Base64EncodedString } from "./Base64EncodedString";
 
 /** Properties that define a [Texture]($backend) element.
  * @public
+ * @extensions
  */
 export interface TextureProps extends DefinitionElementProps {
   /** Format of the image data. */
@@ -28,6 +29,7 @@ export interface TextureProps extends DefinitionElementProps {
 
 /** Properties that specify what texture should be loaded and how it should be loaded.
  * @public
+ * @extensions
  */
 export interface TextureLoadProps {
   /** A valid Id64 string identifying the texture */
@@ -56,6 +58,7 @@ export enum TextureTransparency {
 
 /** Information about [Texture]($backend) data returned by [[IModelReadRpcInterface.queryTextureData]].
  * @public
+ * @extensions
  */
 export interface TextureData {
   /** The width of the image, possibly reduced from the original width based on [[TextureLoadProps.maxTextureSize]]. */

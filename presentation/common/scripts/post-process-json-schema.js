@@ -34,7 +34,7 @@ function handleArray(arr) {
 function handleDescription(descr) {
   descr = descr.replace(/\[\[([\w\d\.]+)\]\]/ig, "`$1`"); // replace [[something]] to: `something`
   descr = descr.replace(/\*\*([\w\d\.\:]+)\*\*/ig, "$1"); // replace **something** to: something
-  descr = descr.replace(/\[([\w\d\s\.\:]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1"); // replace [something]($docs/link) to: something
+  descr = descr.replace(/\[([\w\d\s\.\:`]+)\]\(\$docs[\\\/\w\d-#\.]+\)/ig, "$1"); // replace [something]($docs/link) to: something
   return descr;
 }
 

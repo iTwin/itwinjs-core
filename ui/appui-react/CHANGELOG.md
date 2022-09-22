@@ -1,6 +1,260 @@
 # Change Log - @itwin/appui-react
 
-This log was last generated on Wed, 12 Jan 2022 14:52:38 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+### Updates
+
+- Update camera icon and make camera tooltip conditional on the camera's on/off state.
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:01 GMT
+
+### Updates
+
+- remove alpha tag from AutoCollapseUnpinnedPanels
+- upgrade mocha to version 10.0.0
+- Set `hideWithUiWhenFloating` flag of a widget when restoring a layout.
+- Fix an issue where a widget is added to the layout multiple times.
+- [ModelsTree]: Make sure all child elements visibility is changed
+- Deprecated `isInFooterMode` in `StatusFieldProps`, should always be considered true. Deprecated `withStatusFieldProps` which provides only deprecated props to components.
+- Deprecated `isInFooterMode` in `FrontstageProps` and `ContentLayoutComponentProps`, should alays be considered true.
+- Deprecated `withMessageCenterFieldProps`, components should directly use `MessageManager.registerAnimateOutToElement`.
+- Deprecate `openWidget` and `onOpenWidget` props from `StatusBarFields` interface.
+- Add option to display active tool name as the Tool Settings tab label.
+- Export useTransientState hook.
+- Do not require list of static backstage items to be specified with BackstageComposer. Allow StandardFrontstageProvider to hideToolSetting in modal stages.
+- Avoid slow keyin browser filtering when processing long keyins.
+- Change to only log the inability to find a content view when the content is required.
+- Models Tree: Optimize creating subjects hierarchy
+- Add hideWithUiWhenFloating prop to widgets so that an app can opt into hiding specific floating widgets when the UI automatically hides.
+- Save state of floating widgets when they are hidden
+- Use toaster from iTwinUI to display messages
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
+
+## 3.2.5
+Wed, 13 Jul 2022 15:45:52 GMT
+
+_Version update only_
+
+## 3.2.4
+Tue, 21 Jun 2022 18:06:33 GMT
+
+_Version update only_
+
+## 3.2.3
+Fri, 17 Jun 2022 15:18:39 GMT
+
+_Version update only_
+
+## 3.2.2
+Fri, 10 Jun 2022 16:11:36 GMT
+
+_Version update only_
+
+## 3.2.1
+Tue, 07 Jun 2022 15:02:56 GMT
+
+### Updates
+
+- Ensure selection scope override labels are honored.
+- Models Tree: Fix performance of determining Subject nodes' display state.
+- Models Tree: Optimize creating subjects hierarchy
+- Remove cached frontstageDef if associated FrontstageProvider is re-registered.
+
+## 3.2.0
+Fri, 20 May 2022 13:10:54 GMT
+
+### Updates
+
+- mock hydrateviewstate rpc method in SavedviewLayout tests
+- Documentation updates
+- Fix bug where widgets from UiItemProviders were not honoring Center Zonelocation in UI 1.0 mode.
+- Fix for losing viewport content after clicking PW link.
+- Add ability to pass parameters to UiItemsManager when loading items provider to specify what stages allow the provider to supply items.
+- Add option to auto-collapse unpinned widget panels.
+- Allow React icons to be used on Wedget tabs, backstage, and status bar items
+- Add default tool prop to StandardFrontstageProps to give apps a simple, typesafe way to specify a default tool for their frontstages.
+- Add an empty state message when there are no settings to display in the tool settings bar.
+- Add a mousemove listener to an ElementTooltip's owner document so that it can be closed when the mouse travels over a React element.
+- Fix checkbox alignment in visibility trees.
+
+## 3.1.3
+Fri, 15 Apr 2022 13:49:25 GMT
+
+_Version update only_
+
+## 3.1.2
+Wed, 06 Apr 2022 22:27:56 GMT
+
+_Version update only_
+
+## 3.1.1
+Thu, 31 Mar 2022 15:55:48 GMT
+
+_Version update only_
+
+## 3.1.0
+Tue, 29 Mar 2022 20:53:46 GMT
+
+### Updates
+
+- Fix missing parameter in UiManager.getWidgets call and pass provider to isSupportedStage function.
+- Allow initial UI version to be set when UIFramework is initialized.
+- Optimize ModelsTree search ruleset
+- Add data attributes to identify item and its UI provider.
+- Added ContentDialogManager, ContentDialog, and FloatingViewportContentControl to allow imodel viewport in a modeless dialog.
+- Add the ability to Open a collapsed Panel when a request to Open a widget in a collapsed panel is made.
+- Update to itwinui-css version "0.44.0".
+- Fix spelling error in function documentation.
+- Update to @itwin/itwinui-react: 1.32.0
+- Update to latest itwinui-react - requires new compile option allowSyntheticDefaultImports=true.
+
+## 3.0.3
+Fri, 25 Mar 2022 15:10:01 GMT
+
+_Version update only_
+
+## 3.0.2
+Thu, 10 Mar 2022 21:18:13 GMT
+
+### Updates
+
+- Optimize ModelsTree search ruleset
+- Make fix to displaying a custom view overlay.
+
+## 3.0.1
+Thu, 24 Feb 2022 15:26:55 GMT
+
+### Updates
+
+- React to 3.0 breaking change w.r.t ECSQL Query Row Format
+- Respect min/max size when initializing a panel.
+- Provide FrontstageManager.clearFrontstageProviders method to clear out static maps.
+- Add FrontstageDef.isWidgetDisplayed() to allow apps to query whether their widget is visible.
+- Update ToolbarAutoHidePopup context when widgets autohide.
+- Change initializeNineZoneState to properly handle floating widgets.
+- Remove unecessary dependency on itwin/browser-authorization
+
+## 3.0.0
+Mon, 24 Jan 2022 14:00:52 GMT
+
+### Updates
+
+- Update ClearHideIsolateEmphasize Tool button definition to work on Models and Categories as well as Elements.
+- The Cartographic creation API now takes an interface as an argument with named properties. This will avoid callers mixing up the order of longitude, latitude, and height.
+- Update colorpicker to support RGB input
+- fix code for breaking change to .query() method
+- Existing ruleset configurations were updated to no longer use deprecated rule versions for iModel.js 3.0.
+- Upgrade target to ES2019 and deliver both a CommonJs and ESModule version of package
+- export CategoryVisibilityHandler
+- Fix ecsql row format
+- getAccessToken always returns a token
+- rename contextId -> iTwinId
+- updated @itwin/browser-authorization to 0.3.1
+- rename to @itwin/appui-react
+- Added UserInfo from itwin-client
+- remove ClientRequestContext and its subclasses
+- Made ConfigurableUiManager.closeUi() public
+- Removed OIDC signin/signout and UserProfileBackstageItem
+- Improve performance of determining visibility state of element and element grouping nodes.
+- Removed 'ModelsTreeProps.enablePreloading' flag
+- Promote standard UI providers from beta to public
+- Initialize StateManager store if necessary during UiFramework initialization.
+- Replace usage of I18N with generic Localization interface.
+- Remove use of UiItemsArbiter
+- Remove UserInfo completely
+- Update snapshots
+- Replaced ContextRegistry with generalized ITwinAccess interface
+-  Renamed an iModel's parent container to iTwin
+- Removed references to the deleted config-loader package
+- tool.run and tool.parseAndRun are now async methods
+- Support for TypeDoc v0.22.7. Fix various broken docs links.
+- Refactor SynchUiEventDispatcher to use new UiEventDispatcher from appui-abstract. Deprecate obsolete code.
+- Refactored part of AccuDraw UI & Providing AccuDraw UI documentation
+- Create empty frontstage and UiItemsProviders to populate it and update how ContentGroups are defined.
+- Add missing public/beta types to the barrel file.
+- Add required `width` and `height` props for `CategoryTree`, `ModelsTree` and `SpatialContainmentTree`.
+- Remove `IModelConnectedCategoryTree`, `IModelConnectedModelsTree` and `IModelConnectedSpatialContainmentTree`.
+- Remove deprecated `CategoryTreeWithSearchBox`.
+- Remove deprecated `VisibilityComponent`, `VisibilityWidget` and related types.
+- Clean up deprecated Drag & Drop related APIs
+- Add state variable to control display of view overlay in the viewports.
+- Update to default to using UI2.0/AppUI.
+- Deprecate and promote apis
+- Deprecate obsolete APIs. Publish beta APIs from last release.
+- Update links in API doc comments.
+- Make it possible to set label and execute function for BackstageAppButton
+- Upgraded itwinui-react to 1.16.2. Fixed editor sizes.
+- Ensure duplicate items provided via UiItemProviders are filtered out and only one item per Id is used. 
+- Add ability to remove stage launcher entry from backstage if only one stage is available.
+- Remove files generated by bad merge
+- Fix bug where ConditionalStringValue used in some status bar components would cause a crash.
+- Ensure nineZoneState is not set in FrontstageDef until 'isReady' is set.
+- Add support for all existing Indicator Props.
+- Updates to enable frontstageDef to be cached per iModelConnection.
+- Add initializeStateFromUserSettingsProviders to initialize UI state.
+- Update ShowHideManager defaults
+- Update comment.
+- Fix warning shown in unit test by ensuring setState is only processed if state component is mounted.
+- Allow widgets supplied by a UiItemsProvider to specify a default state of floating.
+- Deprecated HorizontalTabs in ui-core. Removed older deprecated items. Updated NextVersion.md.
+- Update to latest itwinui-react
+- Clean up css for status bar entries to avoid unwanted text wrapping.
+- Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js
+- Moved iTwinUI style overrides to ui-core from ui-framework
+- Rename ui directories to match new package names.
+- Deprecated Task/Workflow. Promoted AccuDraw UI to @beta. Added AccuDraw and NavigationAids learning docs.
+- Fix bug that sets the icon on MessageBox.NoSymbol the Success icon.
+- Add prop that prevents popup button panel from unmounting when closed.
+- Update to React 17.
+- Created imodel-components folder & package and moved color, lineweight, navigationaids, quantity, timeline & viewport. Deprecated MessageSeverity in ui-core & added it ui-abstract. Added MessagePresenter interface to ui-abstract.
+- Remove react 16 peer dependency.
+- Filter out duplicate tools that may be registered in different UiItemProviders. First one in wins.
+- Remove itwinUi css overrides.
+- UiFramework and UiIModelComponent initialize method no longer take localization argument, uses IModelApp.localization internally.
+- Remove package react-split-pane.
+- Remove WidgetProvider and associated events.
+- Fixed z-index of status messages to be on top of a dialog
+- Update Tool Setting for UI 1.0 to fix refresh bug.
+- BaseUiItemsProvider class and refactor "standard" providers to subclass it.
+- Undeprecate necessary UI 1.0 classes/interfaces
+- Update standard UI item providers to require a providerId so more than one instance may be used within an app.  Usually by different packages providing stages.
+- Replaced ui-core Slider with one from iTwinUi-react. Update DefaultViewOverlay to opt-in to dislay of view overlays.
+- Update to latest types/react package
+- reset to use overflow hidden in floating widgets as it messes up auto-sizing and re-sizing.
+- Add support for widget tab icons in UI-2
+- Update CSS used for ToolSettingEntries in grid layout.
+- Get WidgetState and PanelState from NinzoneState when running in UI 2 mode - single source of truth.
+- Lock down and update version numbers so docs will build.
+- Hide widgets with Hidden defaultState when frontstage is activated.
 
 ## 2.19.28
 Wed, 12 Jan 2022 14:52:38 GMT
@@ -281,9 +535,9 @@ Mon, 24 May 2021 15:58:39 GMT
 - Clean up styling in StatusBar.css
 - Set overflow hidden on content Panes used when stage has multiple content views.
 - Adding ability to override isActive property for BackstageItem
-- Add support for child popup windows.
+- Add support for child popup windows. 
 - Replace deprecated ViewManager.forEachViewport() with iterator.
-- Update to latest classnames package
+- Update to latest classnames package 
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -440,7 +694,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.
+- Update components that support providing refs via React.forwardRef to work better with document generation.  
 - Fix backstage not updating when props.items are updated.
 - Propagate isDisabled MenuItem property to ContextMenuItem disabled property
 - Added partially visible instances support to VisibilityHandler
@@ -523,7 +777,7 @@ Thu, 19 Nov 2020 17:03:42 GMT
 
 ### Updates
 
-- Revert width change to EnumEditor component instead set width to auto only for docked tool settings.
+- Revert width change to EnumEditor component instead set width to auto only for docked tool settings. 
 
 ## 2.9.0
 Wed, 18 Nov 2020 16:01:50 GMT
@@ -631,7 +885,7 @@ Thu, 17 Sep 2020 13:16:12 GMT
 
 ### Updates
 
-- Add support for a feature flag to control the display of the keyin palette.
+- Add support for a feature flag to control the display of the keyin palette.     
 - BadgeType support for Backstage items
 - add itemschanged handler so that items provided can be conditionally hidden
 - Lower case syncEventIds prior to comparison
@@ -787,7 +1041,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Add missing @itwin/core-markup peerDependency
-- Add commandItemDef to clearHiddenIsolatedEmphasized elements.
+- Add commandItemDef to clearHiddenIsolatedEmphasized elements. 
 - Fix z-index of Modeless dialogs.
 - Address React warnings about deprecated methods.
 - Make methods in HideIsolateEmphasizeManager static so they can be called by other packages.
@@ -828,7 +1082,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - react to renaming of imodeljs-clients
 - Moved KeyinBrowser component to @beta for 2.0
 - Using center of Messages indicator as target. Added CSS classname overrides to StatusBarComposer for sections. UI 2.0 color tweaks.
-- Fixed FrontendAuthorizationClient type guard.
+- Fixed FrontendAuthorizationClient type guard. 
 - Update GroupButton definition to use ReadonlyArray for child items.
 - Modal Frontstage styling
 - Ui 2.0 - Blur the toolbar item background
@@ -836,7 +1090,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - Fixed popup location when passing htmlElement to UiAdmin functions
 - Clean up deprecated APIs
-- Hide stage panel when panel state is off.
+- Hide stage panel when panel state is off. 
 - Added ability to customize selection handling in VisibilityWidget's Models tree
 - Made React functional component specifications consistent across UI packages
 - Slider component tooltipBelow prop & tooltip styling
@@ -883,7 +1137,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - Ability to switch to 9-Zone 2.0
 - Refactor to remove duplicate ComponentGenerator instatiation. Rename filea nd components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
-- Moved Property classes and interfaces to ui-abstract package. Created a "DefaultDialogGridContainer" to turn specifications from abstract DialogItems UI into React components.
+- Moved Property classes and interfaces to ui-abstract package. Created a "DefaultDialogGridContainer" to turn specifications from abstract DialogItems UI into React components. 
 - Refactor DefaultToolSettingsProvider to use DialogItemsManager and remove duplicate code.
 - Fix Indicator to properly load SVG icons.
 - Refactor DefaultToolSettingsProvider to use the DialogItem interfaces in place of ToolSettings classes.
@@ -953,7 +1207,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 - Add useActiveIModelConnection hook.
 - Allow setting App Iconspec.
-- Setup OidcDesktopClient for Electron use cases.
+- Setup OidcDesktopClient for Electron use cases. 
 - Fix styling of footer Indicator to work with Themes.
 - Disallow plugins from adding tools anywhere but the end of a toolbar.
 - [ModelsTree] Merge same-label Subject nodes to avoid duplication
@@ -972,7 +1226,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 - Use exhaustive-deps linter rule.
 - Ability to opt-in to toolbar drag interaction.
 - Prevent unnecessary resubscribe in useActiveViewport hook.
-- Visibility Widget: Treat dictionary model as never private in Categories tree.
+- Visibility Widget: Treat dictionary model as never private in Categories tree. 
 - Ability to specify initialWidth for Zone component.
 - Removed unused React state variables. Removed unsupported setState calls from render() methods.
 - Code cleanup based on code analysis report from lgtm. Updated status field fade-in/out animation.
@@ -1196,7 +1450,7 @@ Mon, 03 Jun 2019 18:09:39 GMT
 - Release tag cleanup and ui-framework unit tests
 - Updated UI package release tags for 1.0 release.
 - Fixed release tag warnings in UI packages
-- Removed use of OidcClientWrapper.
+- Removed use of OidcClientWrapper. 
 - Remove console log message output by SyncUiEventDispatcher. Add Logging.
 - Changed some release tags from @hidden to @internal
 - Add alpha level support for solar timeline
@@ -1243,9 +1497,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
-- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s.
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
 - Rename AppState to SessionState to avoid collision with acutal App's state. Add AvailableSectionScopes to SessionState.
 - Move SelectionScope status field from test app to ui-framework. Update icons-generic-webfont version to latest available.
 - Remove need to sync SelectionMethod since it is not changed within tool code.
@@ -1512,7 +1766,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- OIDC related enhancments (WIP).
+- OIDC related enhancments (WIP). 
 - Updated to TypeScript 3.1
 - ui-core unit tests. Fixed backstage open issue.
 - Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.

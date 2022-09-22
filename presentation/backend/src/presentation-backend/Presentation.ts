@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { IModelHost, IpcHost } from "@itwin/core-backend";
+import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
@@ -19,22 +19,35 @@ import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
 const defaultRequestTimeout: number = 90000;
 
 /**
+ * Base props for initializing the [[Presentation]] library.
+ *
+ * @public
+ */
+export interface PresentationPropsBase extends PresentationManagerProps {
+  /**
+   * Time in milliseconds after which the request will timeout.
+   */
+  requestTimeout?: number;
+
+  /**
+   * Should schemas preloading be enabled. If true, [[Presentation]] library listens
+   * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
+   */
+  enableSchemasPreload?: boolean;
+}
+
+/**
  * Props for initializing the [[Presentation]] library for using multiple [[PresentationManager]]
  * instances, one for each frontend.
  *
  * @public
  */
-export interface MultiManagerPresentationProps extends PresentationManagerProps {
+export interface MultiManagerPresentationProps extends PresentationPropsBase {
   /**
    * Factory method for creating separate managers for each client
    * @internal
    */
   clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
-
-  /**
-   * Time in milliseconds after which the request will timeout.
-   */
-  requestTimeout?: number;
 
   /**
    * How much time should an unused client manager be stored in memory
@@ -49,13 +62,7 @@ export interface MultiManagerPresentationProps extends PresentationManagerProps 
  *
  * @public
  */
-export interface SingleManagerPresentationProps extends PresentationManagerProps {
-  /**
-   * How much time should an unused client manager be stored in memory
-   * before it's disposed.
-   */
-  requestTimeout?: number;
-
+export interface SingleManagerPresentationProps extends PresentationPropsBase {
   /**
    * Specifies to use single manager for all clients.
    * @alpha
@@ -89,6 +96,7 @@ export class Presentation {
   private static _clientsStorage: FactoryBasedTemporaryStorage<ClientStoreItem> | undefined;
   private static _disposeIpcHandler: DisposeFunc | undefined;
   private static _shutdownListener: DisposeFunc | undefined;
+  private static _disposeIModelOpenedListener: DisposeFunc | undefined;
   private static _manager: PresentationManager | undefined;
   private static _rpcImpl: PresentationRpcImpl | undefined;
 
@@ -101,7 +109,7 @@ export class Presentation {
   /**
    * Initializes Presentation library for the backend.
    *
-   * See [this]($docs/presentation/Setup/index.md#backend) for an example.
+   * See [Setting up iTwin.js Presentation library documentation page]($docs/presentation/setup/index.md#backend) for an example.
    *
    * **Important:** The method should be called after a call to [IModelHost.startup]($core-backend)
    *
@@ -136,6 +144,9 @@ export class Presentation {
         onDisposedAll: /* istanbul ignore next */() => Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
       });
     }
+
+    if (this._initProps.enableSchemasPreload)
+      this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
   }
 
   /**
@@ -146,6 +157,10 @@ export class Presentation {
     if (this._clientsStorage) {
       this._clientsStorage.dispose();
       this._clientsStorage = undefined;
+    }
+    if (this._disposeIModelOpenedListener) {
+      this._disposeIModelOpenedListener();
+      this._disposeIModelOpenedListener = undefined;
     }
     if (this._shutdownListener) {
       this._shutdownListener();
@@ -201,6 +216,13 @@ export class Presentation {
       throw new PresentationError(PresentationStatus.NotInitialized, "Presentation must be first initialized by calling Presentation.initialize");
     return this._rpcImpl.requestTimeout;
   }
+
+  private static onIModelOpened = (imodel: BriefcaseDb) => {
+    const manager = this.getManager();
+    const imodelAddon = manager.getNativePlatform().getImodelAddon(imodel);
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    manager.getNativePlatform().forceLoadSchemas(imodelAddon);
+  };
 }
 
 function isSingleManagerProps(props: PresentationProps): props is SingleManagerPresentationProps {

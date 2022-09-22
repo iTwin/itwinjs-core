@@ -7,16 +7,22 @@ export * from "./Category";
 export * from "./ChangeSummaryManager";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
+export * from "./CodeService";
 export * from "./CodeSpecs";
+export * from "./CloudSqlite";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
 export * from "./Element";
 export * from "./ElementAspect";
+export * from "./ElementTreeWalker";
 export * from "./Entity";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./GeoCoordConfig";
+export * from "./LocalHub";
+export * from "./HubMock";
 export * from "./IModelJsFs";
 export * from "./BackendHubAccess";
 export * from "./Relationship";
@@ -38,20 +44,20 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
+export * from "./PropertyStore";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
 export * from "./workspace/Settings";
-export * from "./workspace/SettingsSpecRegistry";
+export * from "./workspace/SettingsSchemas";
 export * from "./workspace/Workspace";
 export * from "./IModelDb"; // must be last
 
@@ -76,17 +82,17 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Models
- * Subclasses of [Models]($docs/BIS/intro/model-fundamentals.md).
+ * Subclasses of [Models]($docs/BIS/guide/fundamentals/model-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Elements
- * Subclasses of [Elements]($docs/BIS/intro/element-fundamentals.md).
+ * Subclasses of [Elements]($docs/BIS/guide/fundamentals/element-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Codes
- * Classes for working with [Codes]($docs/BIS/intro/codes.md).
+ * Classes for working with [Codes]($docs/BIS/guide/fundamentals/codes.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
@@ -96,16 +102,16 @@ export * from "./IModelDb"; // must be last
  */
 /**
  * @docs-group-description Relationships
- * Classes that describe the [relationships]($docs/bis/intro/relationship-fundamentals.md) between elements.
+ * Classes that describe the [relationships]($docs/bis/guide/fundamentals/relationship-fundamentals.md) between elements.
  */
 /**
  * @docs-group-description ElementAspects
- * Subclasses of [ElementAspects]($docs/bis/intro/elementaspect-fundamentals.md).
+ * Subclasses of [ElementAspects]($docs/bis/guide/fundamentals/elementaspect-fundamentals.md).
  * See [the learning articles]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Categories
- * Classes for [Categories]($docs/bis/intro/categories.md).
+ * Classes for [Categories]($docs/bis/guide/fundamentals/categories.md).
  */
 /**
  * @docs-group-description Symbology
@@ -170,4 +176,8 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Workspace
  * APIs for loading and using Settings and Workspace resources
+ */
+/**
+ * @docs-group-description ViewStateHydrator
+ * Class responsible for loading ViewStates.
  */

@@ -10,12 +10,12 @@ import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedVal
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,
-  SelectionScopeRpcRequestOptions,
+  PresentationStatus, SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
-  ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions, FilterByTextHierarchyRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
+  ComputeSelectionRpcRequestOptions, ContentInstanceKeysRpcRequestOptions, FilterByInstancePathsHierarchyRpcRequestOptions,
+  FilterByTextHierarchyRpcRequestOptions, PresentationRpcResponseData, SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { createTestContentDescriptor } from "./_helpers/Content";
 import { createRandomECInstanceKey, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON } from "./_helpers/random";
@@ -55,12 +55,12 @@ describe("PresentationRpcInterface", () => {
   describe("calls forwarding", () => {
 
     let rpcInterface: PresentationRpcInterface;
-    let spy: sinon.SinonSpy<[IArguments], Promise<any>>;
+    let spy: sinon.SinonStub<[IArguments], Promise<any>>;
     const token: IModelRpcProps = { key: "test", iModelId: "test", iTwinId: "test" };
 
     beforeEach(() => {
       rpcInterface = new PresentationRpcInterface();
-      spy = sinon.stub(rpcInterface, "forward");
+      spy = sinon.stub(rpcInterface, "forward").returns(Promise.resolve({ statusCode: PresentationStatus.Success }));
     });
 
     it("forwards getNodesCount call for root nodes", async () => {
@@ -117,14 +117,33 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards getContentDescriptor call", async () => {
+    describe("getContentDescriptor", () => {
       const options: ContentDescriptorRpcRequestOptions = {
-        rulesetOrId: faker.random.word(),
+        rulesetOrId: "test_ruleset",
         displayType: "test",
         keys: new KeySet().toJSON(),
       };
-      await rpcInterface.getContentDescriptor(token, options);
-      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+
+      it("forwards call without modifying options", async () => {
+        await rpcInterface.getContentDescriptor(token, options);
+        expect(spy).to.be.calledOnceWith([token, { ...options, transport: "unparsed-json" }]);
+        expect(options.transport).to.be.undefined;
+      });
+
+      it("parses string response into DescriptorJSON", async () => {
+        const descriptorJson = createTestContentDescriptor({ inputKeysHash: "", fields: [] }).toJSON();
+        // Undefined properties won't be serialized to JSON string and will be missing once we deserialize the string
+        // back to object representation. Delete contentOptions property so that we can use deep equality comparison.
+        delete descriptorJson.contentOptions;
+        const presentationResponse: PresentationRpcResponseData<string> = {
+          statusCode: PresentationStatus.Success,
+          result: JSON.stringify(descriptorJson),
+        };
+        spy.returns(Promise.resolve(presentationResponse));
+
+        const response = await rpcInterface.getContentDescriptor(token, options);
+        expect(response.result).to.be.deep.equal(descriptorJson);
+      });
     });
 
     it("forwards getContentSetSize call", async () => {
@@ -212,13 +231,22 @@ describe("PresentationRpcInterface", () => {
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
-    it("forwards computeSelection call", async () => {
+    it("[deprecated] forwards computeSelection call", async () => {
       const options: SelectionScopeRpcRequestOptions = {
       };
       const ids = new Array<Id64String>();
       const scopeId = faker.random.uuid();
       await rpcInterface.computeSelection(token, options, ids, scopeId);
       expect(spy).to.be.calledOnceWith(toArguments(token, options, ids, scopeId));
+    });
+
+    it("forwards computeSelection call", async () => {
+      const options: ComputeSelectionRpcRequestOptions = {
+        elementIds: new Array<Id64String>(),
+        scope: { id: faker.random.uuid() },
+      };
+      await rpcInterface.computeSelection(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 
   });

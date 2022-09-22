@@ -25,21 +25,21 @@ export class Constant extends SchemaItem {
   public override readonly schemaItemType!: SchemaItemType.Constant; // eslint-disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
-  protected _numerator: number;
-  protected _denominator: number;
+  protected _numerator?: number;
+  protected _denominator?: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Constant;
     this._definition = "";
-    this._denominator = 1.0;
-    this._numerator = 1.0;
   }
 
   public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
   public get definition(): string { return this._definition; }
-  public get numerator(): number { return this._numerator; }
-  public get denominator(): number { return this._denominator; }
+  public get numerator(): number { return this._numerator ?? 1.0; }
+  public get denominator(): number { return this._denominator ?? 1.0; }
+  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
+  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
@@ -51,9 +51,10 @@ export class Constant extends SchemaItem {
     if (this.phenomenon !== undefined)
       schemaJson.phenomenon = this.phenomenon.fullName;
     schemaJson.definition = this.definition;
-    if (this.numerator !== undefined)
+    if (this.hasNumerator)
       schemaJson.numerator = this.numerator;
-    schemaJson.denominator = this.denominator;
+    if (this.hasDenominator)
+      schemaJson.denominator = this.denominator;
     return schemaJson as ConstantProps;
   }
 
@@ -61,9 +62,9 @@ export class Constant extends SchemaItem {
   public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
     itemElement.setAttribute("definition", this.definition);
-    if (undefined !== this.numerator)
+    if (this.hasNumerator)
       itemElement.setAttribute("numerator", this.numerator.toString());
-    if (undefined !== this.denominator)
+    if (this.hasDenominator)
       itemElement.setAttribute("denominator", this.denominator.toString());
 
     const phenomenon = await this.phenomenon;

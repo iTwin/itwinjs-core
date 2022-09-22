@@ -94,6 +94,9 @@ export class PromiseMemoizer<T> implements IDisposable {
   public deleteMemoized = (...args: any[]) => {
     const key: string = this._generateKeyFn(...args);
     this._cachedPromises.delete(key);
+    const timer = this._timers.get(key);
+    if (timer)
+      clearTimeout(timer);
   };
 
   /** Clear all entries in the memoizer cache */

@@ -1,0 +1,31 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@itwin/itwinui-css/scss/style/theme";
+
+.presentation-components-muted-node{
+  @include themed {
+    color: t(iui-text-color-muted);
+  }
+}
+
+.presentation-components-node {
+
+  .presentation-components-filter-action-button {
+    visibility: hidden;
+    position: sticky;
+    background-color: inherit;
+    right: 0;
+    display: flex;
+
+    .iui-button{
+      height: 24px;
+      width: 24px;
+      }
+    }
+
+  &:hover > .presentation-components-filter-action-button {
+    visibility: visible;
+  }
+}
