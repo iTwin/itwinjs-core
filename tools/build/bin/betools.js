@@ -110,7 +110,7 @@ function docsCommand(options) {
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/docs.js"),
+  exec("node", [path.resolve(__dirname, "../scripts/docs.js"),
     ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
     ...excludesOpt, ...excludesGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
@@ -120,26 +120,26 @@ function extractCommand(options) {
   const outOpt = options.out ? ["--out", options.out] : [];
   const fileExt = options.fileExt ? ["--fileExt", options.fileExt] : [];
   const recursive = options.recursive ? ["--recursive"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
+  exec("node", [path.resolve(__dirname, "../scripts/extract.js"), ...extractOpt, ...outOpt, ...fileExt, ...recursive]);
 }
 
 function extractApiCommand(options) {
   const entryOpt = options.entry ? ["--entry", options.entry] : [];
   const ignoreTagsOpt = options.ignoreMissingTags ? ["--ignoreMissingTags"] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
+  exec("node", [path.resolve(__dirname, "../scripts/extract-api.js"), ...entryOpt, ...ignoreTagsOpt]);
 }
 
 function pseudolocalizeCommand(options) {
   const englishDir = options.englishDir ? ["--englishDir", options.englishDir] : [];
   const outOpt = options.out ? ["--out", options.out] : [];
-  exec(["node", path.resolve(__dirname, "../scripts/pseudolocalize"), ...englishDir, ...outOpt]);
+  exec("node", [path.resolve(__dirname, "../scripts/pseudolocalize"), ...englishDir, ...outOpt]);
 }
 
-function exec(cmd) {
+function exec(cmd, args) {
   console.log("Running command:");
-  console.log(cmd.join(" "));
+  console.log(`${cmd} ${args.join(' ')}`);
   try {
-    return child_process.execSync(cmd.join(" "), { encoding: "utf8", stdio: 'inherit' });
+    return child_process.execFileSync(cmd, args, { encoding: "utf8", stdio: 'inherit' });
   } catch (error) {
     if (error.status)
       process.exit(error.status);

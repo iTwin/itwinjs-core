@@ -30,11 +30,17 @@ app.use("/", (req, resp, next) => {
 app.use("/@/", (_req, resp) => {
   const filePath = _req.originalUrl.replace(/^\/@\//, "");
   const sourceMap = require("source-map-support").retrieveSourceMap(filePath);
-  resp.sendFile(path.resolve("/", filePath), {
-    headers: (sourceMap) && {
-      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
-    },
-  });
+  const canonicalPath = require("canonical-path");
+  const fullPath = path.resolve("/", filePath);
+  if (canonicalPath.normalize(fullPath) === fullPath) {
+    resp.sendFile(fullPath, {
+      headers: (sourceMap) && {
+        "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
+      },
+    });
+  } else {
+    console.log("FilePath ERROR: The provided absolute path is different from the canonical path. Moving up to parent directory is forbidden.");
+  }
 });
 
 // Serve static assets from any configured "public" directories
