@@ -29,12 +29,13 @@ export class MapCartoRectangle extends Range2d {
    * @param east The eastern latitude in radians, in [-pi, pi].
    * @param north The northern latitude in radians, in [-pi/2, pi/2].
    * @note If `north` is less than `south`, they will be swapped.
+   * @see [[fromRadians]], [[fromDegrees]], [[createZero]], and [[createMaximum]] to construct a new rectangle.
    */
   protected constructor(west: number, south: number, east: number, north: number) {
     super(west, Math.min(south, north), east, Math.max(south, north));
   }
 
-  /** Create a rectangle with all coordinates set to zero. */
+  /** Create a rectangle with all angles set to zero. */
   public static createZero(): MapCartoRectangle {
     return new MapCartoRectangle(0, 0, 0, 0);
   }
