@@ -90,7 +90,7 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
                 completion(self.error(reason: "Invalid response."))
                 return
             }
-            if response.statusCode != 200 {
+            guard response.statusCode == 200 else {
                 completion(self.error(reason: "Status code: \(response.statusCode)"))
                 return
             }
@@ -98,7 +98,7 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
                 completion(self.error(reason: "Invalid response body."))
                 return
             }
-            
+
             self.accessToken = (json["access_token"] as? String).map { "Bearer \($0)" }
             self.expirationDate = (json["expires_in"] as? Double).map { Date(timeIntervalSinceNow: $0) }
             completion(nil)
