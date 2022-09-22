@@ -6,7 +6,7 @@
 
 /// <reference types="node" />
 
-import type { Attributes } from '@opentelemetry/api';
+import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
 import type { Tracer } from '@opentelemetry/api';
@@ -1549,7 +1549,7 @@ export abstract class SuccessCategory extends StatusCategory {
 // @alpha
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    static setAttributes(attributes: Attributes): void;
+    static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
