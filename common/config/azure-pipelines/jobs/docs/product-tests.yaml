@@ -2,13 +2,52 @@ parameters:
 - name: env
   type: string
   values:
-  - DEV
+  - Development
   - QA
-  - PROD
+  - Production
 
 jobs:
 - job: ProductTests-${{ parameters.env }}
   pool:
-    vmImage: SecurityScans
+    name: SecurityScans
     demands: Agent.OS -equals Windows_NT
+
+  variables:
+    group: Selenium Test Variables
+    ${{ if eq(parameters.env, 'Development') }}:
+      SeleniumTestUrl: https://dev.imodeljs.org
+    ${{ if eq(parameters.env, 'QA') }}:
+      SeleniumTestUrl: https://qa.imodeljs.org
+    ${{ if eq(parameters.env, 'Production') }}:
+      SeleniumTestUrl: https://imodeljs.org
+
   steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: Download Selenium Tests
+      inputs:
+        source: specific
+        project: iModelTechnologies
+        pipeline: 2179
+        runVersion: latest
+
+    - powershell: '((Get-Item "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe").VersionInfo)'
+      displayName: PowerShell Script
+
+    - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+      displayName: Replace tokens in settings.xml
+      inputs:
+        rootDirectory: $(Pipeline.Workspace)/Bemetalsmith-Selenium-Tests/DocsSeleniumTests
+        targetFiles: settings.xml
+        escapeType: none
+
+    - task: VisualStudioTestPlatformInstaller@1
+      displayName: Visual Studio Test Platform Installer
+
+    - task: VSTest@2
+      displayName: Run Selenium Tests
+      inputs:
+        testAssemblyVer2: imodeljs-docs-selenium-tests.dll
+        searchFolder: $(Pipeline.Workspace)/Bemetalsmith-Selenium-Tests/DocsSeleniumTests
+        vsTestVersion: toolsInstaller
+        rerunFailedTests: true
+        rerunType: basedOnTestFailureCount

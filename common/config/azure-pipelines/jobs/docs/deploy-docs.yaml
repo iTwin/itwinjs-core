@@ -2,27 +2,38 @@ parameters:
 - name: env
   type: string
   values:
-  - DEV
+  - Development
   - QA
-  - PROD
+  - Production
 
 jobs:
-- job: Deploy-${{ parameters.env }}
+- job: Deploy - ${{ parameters.env }}
   pool:
-    vmImage: SecurityScans
-    demands: Agent.OS -equals Windows_NT
+    name: PRG Octo Deploy Only
+    demands: DotNetFramework -exists
   steps:
+    - script: |
+        echo * * * * * * * * * *
+        echo * * * * * * * * * * Definition: $(Build.DefinitionName)($(System.DefinitionId))
+        echo * * * * * * * * * * Current Release: $(Build.BuildNumber)
+        echo * * * * * * * * * * Requested For: $(Build.RequestedFor)
+        echo * * * * * * * * * * Deployment To ${{ parameters.env }}
+        echo * * * * * * * * * * Build: $(Build.BuildNumber)
+        echo * * * * * * * * * *
+      displayName: Release Header
 
-# Check octopus project
-# Deploy resources (ARM templates)
-#   Deploy Azure CDN
-#   App insights
-# DNS Setup and validation
-# LetsEncrypt cert
-# Deploy stotage accounts
-# Check/rotate cert
-# Copy files to web container
-# CORS storage config
+    - task: octopusdeploy.octopus-deploy-build-release-tasks.octo-installer.OctoInstaller@5
+      displayName: Use Octopus CLI tool version 8.0.1
+      inputs:
+        version: 8.0.1
 
-# Maybe split this up between two jobs?
-# e.g. imsejs-app, deploy resorces/deploy site
+    - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-deploy.OctopusDeployRelease@5
+      displayName: Deploy Octopus Release to ${{ parameters.env }}
+      inputs:
+        OctoConnectedServiceName: 'Prod Octopus'
+        Space: 'Spaces-1'
+        Project: '$(octopusProjectName)'
+        ReleaseNumber: '$(Build.BuildNumber)'
+        Environments: ${{ parameters.env }}
+        ShowProgress: true
+        AdditionalArguments: '--deploymenttimeout=04:00:00'

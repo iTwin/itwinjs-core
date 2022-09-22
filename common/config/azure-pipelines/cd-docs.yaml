@@ -30,32 +30,30 @@ resources:
       tags:
       - iTwinJsDocsRelease
 
+variables:
+  octopusProjectName: iModel.js Documentation
+
 stages:
-  - stage: Build
-    displayName: Build Docs
+  - stage: PackageAndPush
+    displayName: Package Docs and Push to Octopus
     jobs:
     - template: ./jobs/docs/package-docs.yaml
 
-  # - stage: CreateOctopusRelease
-  #   displayName: Create Octopus release
-  #   dependsOn: Build
-  #   jobs:
+  - stage: DEV
+    displayName: Deployment (DEV)
+    dependsOn: PackageAndPush
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        env: Development
 
-  # - stage: DEV
-  #   displayName: Deployment (DEV)
-  #   dependsOn: CreateOctopusRelease
-  #   jobs:
-  #   - template: ./templates/docs/deploy-docs.yaml
-  #     parameters:
-  #       env: DEV
-
-  # - stage: ProductTestsDEV
-  #   displayName: Product Tests (DEV)
-  #   dependsOn: DEV
-  #   jobs:
-  #   - template: ./templates/docs/deploy-docs.yaml
-  #     parameters:
-  #       env: DEV
+  - stage: ProductTestsDEV
+    displayName: Product Tests (DEV)
+    dependsOn: DEV
+    jobs:
+    - template: ./jobs/docs/product-tests.yaml
+      parameters:
+        env: DEV
 
   # - stage: QA
   #   displayName: Deployment (QA)
