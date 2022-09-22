@@ -35,6 +35,7 @@ export class RpcSessionInvocation extends RpcInvocation {
       applicationVersion: request.context.applicationVersion,
       sessionId: request.context.sessionId,
       authorization: "",
+      accept: "",
       operation: {
         interfaceDefinition: request.definition.interfaceName,
         interfaceVersion: request.definition.interfaceVersion,
