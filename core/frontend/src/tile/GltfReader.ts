@@ -18,7 +18,7 @@ import {
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
@@ -32,6 +32,7 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
+import { TextureImageSource } from "../render/RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -916,7 +917,7 @@ export abstract class GltfReader {
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
   protected get _textures(): GltfDictionary<GltfTexture> { return this._glTF.textures ?? emptyDict; }
 
-  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: HTMLImageElement }> { return this._glTF.images ?? emptyDict; }
+  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: TextureImageSource }> { return this._glTF.images ?? emptyDict; }
   protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
 
   /* -----------------------------------
@@ -1971,7 +1972,7 @@ export abstract class GltfReader {
     }
   }
 
-  private async resolveImage(image: GltfImage & { resolvedImage?: HTMLImageElement }): Promise<void> {
+  private async resolveImage(image: GltfImage & { resolvedImage?: TextureImageSource }): Promise<void> {
     if (image.resolvedImage)
       return;
 
@@ -1990,7 +1991,11 @@ export abstract class GltfReader {
       const offset = bufferView.byteOffset ?? 0;
       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
       try {
-        image.resolvedImage = await imageElementFromImageSource(new ImageSource(bytes, format));
+        const imageSource = new ImageSource(bytes, format);
+        if (this._system.supportsCreateImageBitmap)
+          image.resolvedImage = await imageBitmapFromImageSource(imageSource);
+        else
+          image.resolvedImage = await imageElementFromImageSource(imageSource);
       } catch (_) {
         //
       }
