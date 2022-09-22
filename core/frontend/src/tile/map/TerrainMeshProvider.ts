@@ -14,7 +14,7 @@ import {
   MapCartoRectangle, MapTile, MapTilingScheme, QuadId,
 } from "../internal";
 
-/** Options used to construct a [[TerrainMeshProvider]].
+/** Options supplied to [[TerrainProvider.createTerrainMeshProvider]] to construct a [[TerrainMeshProvider]].
  * @beta
  */
 export interface TerrainMeshProviderOptions {
@@ -63,6 +63,7 @@ export interface ReadMeshArgs {
 /** Provides 3d meshes representing terrain for display in a [[Viewport]].
  * Each mesh represents the terrain within a rectangular region of the Earth associated with a [[MapTile]].
  * The display system drapes background map imagery onto these meshes.
+ * `TerrainMeshProvider`s are obtained from [[TerrainProvider]]s.
  * @beta
  */
 export abstract class TerrainMeshProvider {
