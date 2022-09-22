@@ -29,8 +29,5 @@
     "url": "http://www.bentley.com"
   },
   "//dependencies": "NOTE: dependencies will be empty here and instead specified in each package.",
-  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package.",
-  "dependencies": {
-    "canonical-path": "^1.0.0"
-  }
+  "//devDependencies": "NOTE: devDependencies will be empty here and instead specified in each package."
 }
