@@ -56,7 +56,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     // it would be a client error (400), not server error (500).
     // Wrap them.
     if (latLongRange.high.x >= 180)
-      latLongRange.high.x = latLongRange.high.x - 180;
+      latLongRange.high.x = latLongRange.high.x - 360;
 
     const heights = await this._provider.getHeights(latLongRange);
     return heights?.length === 16 * 16 ? heights : undefined;
