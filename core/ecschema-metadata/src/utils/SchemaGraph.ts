@@ -5,7 +5,7 @@
 
 import { Schema } from "../Metadata/Schema";
 
-/** @beta */
+/** @internal */
 export interface ReferenceCycle {
   schema: Schema;
   refSchema: Schema;
