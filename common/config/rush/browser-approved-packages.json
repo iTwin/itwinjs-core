@@ -203,6 +203,10 @@
       "allowedCategories": [ "backend", "internal", "tools" ]
     },
     {
+      "name": "@itwin/ecschema-editing",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@itwin/ecschema-locaters",
       "allowedCategories": [ "tools" ]
     },
@@ -440,7 +444,7 @@
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "almost-equal",

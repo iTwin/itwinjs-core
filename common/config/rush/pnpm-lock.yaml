@@ -1339,6 +1339,8 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
+      '@itwin/ecschema-editing': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
@@ -1348,6 +1350,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
+      '@xmldom/xmldom': ^0.7.0
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1363,8 +1366,11 @@ importers:
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
+      '@itwin/ecschema-editing': link:../../core/ecschema-editing
+      '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.2
+      '@xmldom/xmldom': 0.7.5
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
