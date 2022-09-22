@@ -7,8 +7,8 @@ import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
-  RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions,
+  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
+  RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
 } from "@itwin/core-frontend";
 
 // The number of elevation values per row/column within each tile.
@@ -272,5 +272,20 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
   public override get maxDepth(): number {
     return 22;
+  }
+
+  // Register the terrain provider, just after calling `IModelApp.startup`
+  public static register(): void {
+    // The name of our provider. It must be unique! It will be stored in `TerrainSettings.providerName`.
+    const providerName = "DtaBingTerrain";
+
+    // Our provider.
+    const provider: TerrainProvider = {
+      createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => {
+        return Promise.resolve(new BingTerrainMeshProvider(options));
+      },
+    };
+
+    IModelApp.terrainProviderRegistry.register(providerName, provider);
   }
 }

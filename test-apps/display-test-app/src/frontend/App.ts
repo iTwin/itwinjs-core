@@ -16,7 +16,7 @@ import {
 import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
-  TerrainMeshProviderOptions, TileAdmin, Tool, ToolAdmin,
+  TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
@@ -334,9 +334,7 @@ export class DisplayTestApp {
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
-    IModelApp.terrainProviderRegistry.register("DtaBingTerrain", {
-      createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => Promise.resolve(new BingTerrainMeshProvider(options)),
-    });
+    BingTerrainMeshProvider.register();
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
