@@ -45,19 +45,32 @@ export class PlanarTilePatch {
 /** @internal */
 export type TilePatch = PlanarTilePatch | EllipsoidPatch;
 
-/** @internal */
+/** Projects points within the rectangular region of a [[MapTile]] into 3d space.
+ * @see [[MapTile.getProjection]] to obtain the projection for a [[MapTile]].
+ * @beta
+ */
 export abstract class MapTileProjection {
+  /** The extents of the volume of space associated with the projected [[MapTile]]. */
   abstract get localRange(): Range3d;
+  /** @alpha */
   abstract get transformFromLocal(): Transform;
+
+  /** Given parametric coordinates in [0, 1] within the tile's rectangular region, and an elevation above the Earth,
+   * compute the 3d position in space.
+   */
   public abstract getPoint(u: number, v: number, height: number, result?: Point3d): Point3d;
+
+  /** @alpha */
   public get ellipsoidPatch(): EllipsoidPatch | undefined { return undefined; }
+
+  /** @alpha */
   public getGlobalPoint(u: number, v: number, z: number, result?: Point3d): Point3d {
     const point = this.getPoint(u, v, z, result);
     return this.transformFromLocal.multiplyPoint3d(point, point);
   }
 }
 
-/** @internal */
+/** @alpha */
 class EllipsoidProjection extends MapTileProjection {
   public transformFromLocal = Transform.createIdentity();
   public localRange: Range3d;
@@ -76,7 +89,7 @@ class EllipsoidProjection extends MapTileProjection {
   public override get ellipsoidPatch() { return this._patch; }
 }
 
-/** @internal */
+/** @alpha */
 class PlanarProjection extends MapTileProjection {
   private _bilinearPatch: BilinearPatch;
   public transformFromLocal: Transform;
@@ -566,7 +579,7 @@ export class MapTile extends RealityTile {
       this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
 
-  /** ###TODO document */
+  /** Obtain a [[MapTileProjection]] to project positions within this tile's area into 3d space. */
   public getProjection(heightRange?: Range1d): MapTileProjection {
     return this._patch instanceof PlanarTilePatch ? new PlanarProjection(this._patch, heightRange) : new EllipsoidProjection(this._patch, heightRange);
   }
