@@ -193,7 +193,7 @@ public;FuzzySearch
 public;FuzzySearchResult
 public;FuzzySearchResults
 internal;GeoConverter
-internal;GeographicTilingScheme 
+beta;GeographicTilingScheme 
 public;GeometricModel2dState 
 public;GeometricModel3dState 
 public;class GeometricModelState 
@@ -343,7 +343,7 @@ internal;LRUTileList
 internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
-internal;MapCartoRectangle 
+beta;MapCartoRectangle 
 alpha;MapFeatureInfo
 alpha;MapFeatureInfoRecord 
 beta;MapLayerAccessClient
@@ -366,13 +366,13 @@ public;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 beta;MapLayerTokenEndpoint
 alpha;MapSubLayerFeatureInfo
-internal;MapTile 
+beta;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
-internal;class MapTileProjection
-internal;MapTileTree 
+beta;class MapTileProjection
+beta;MapTileTree 
 internal;MapTileTreeReference 
-internal;class MapTilingScheme
+beta;class MapTilingScheme
 public;MarginOptions
 public;MarginPercent
 public;Marker 
@@ -458,7 +458,7 @@ beta;PreferenceKeyArg
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 alpha;PublisherProductInfo
-internal;QuadId
+beta;QuadId
 public;QuantityFormatOverridesChangedArgs
 public;QuantityFormatsChangedArgs
 public;QuantityFormatter 
@@ -489,22 +489,24 @@ alpha;createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider
 alpha;createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined
 alpha;fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise
 internal;RealityMeshGraphicParams
-public;RealityMeshParams
-public;RealityMeshParams
-public;RealityMeshParamsBuilder
-public;RealityMeshParamsBuilderOptions
+beta;RealityMeshParams
+beta;RealityMeshParams
+internal;fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined
+alpha;toPolyface(params: RealityMeshParams, options?:
+beta;RealityMeshParamsBuilder
+beta;RealityMeshParamsBuilderOptions
 internal;RealityModelSource = ViewState | DisplayStyleState
 internal;RealityModelTileTree 
 internal;RealityModelTileTree
 internal;RealityModelTileUtils
-internal;RealityTile 
+beta;RealityTile 
 internal;RealityTileContent 
 internal;RealityTileDrawArgs 
 alpha;RealityTileGeometry
 internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileRegion
-internal;RealityTileTree 
+beta;RealityTileTree 
 internal;RealityTileTreeParams 
 internal;RealityTreeReference 
 alpha;RemoteExtensionProvider 
@@ -740,8 +742,8 @@ public;ViewUndoEvent
 public;ViewUndoTool 
 beta;VisibleFeature
 public;WalkViewTool 
-internal;WebMercatorProjection
-internal;WebMercatorTilingScheme 
+alpha;WebMercatorProjection
+beta;WebMercatorTilingScheme 
 internal;WheelEventProcessor
 public;WindowAreaTool 
 internal;WmsCapabilities

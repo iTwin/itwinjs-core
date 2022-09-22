@@ -125,12 +125,9 @@ const scratchPoint = Point3d.create();
 const scratchClipPlanes = [ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint), ClipPlane.createNormalAndPoint(scratchNormal, scratchPoint)];
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 
-/**
- * A specialization of Tile for maps imagery.  Holds the corners (possibly reprojected) as well as the height range.
- * @internal
+/** A [[Tile]] belonging to a [[MapTileTree]] representing a rectangular region of a map of the Earth.
+ * @beta
  */
-
-/** @internal */
 export class MapTile extends RealityTile {
   private static _maxParentHeightDepth = 4;
   private _imageryTiles?: ImageryMapTile[];
