@@ -67,7 +67,7 @@ export class CustomViewState3dCreator {
         modelExtentsStopWatch.start();
         const props = this._imodel.nativeDb.queryModelExtents({ id }).modelExtents;
         modelExtentsStopWatch.stop();
-        Logger.logInfo(LoggerCategory, "Finished getModelExtents query.", () => ({timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id}));
+        Logger.logInfo(loggerCategory, "Finished getModelExtents query.", () => ({timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id}));
         modelExtents.union(Range3d.fromJSON(props), modelExtents);
       } catch (err: any) {
         modelExtentsStopWatch.stop();
