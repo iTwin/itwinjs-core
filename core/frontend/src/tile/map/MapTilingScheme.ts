@@ -11,90 +11,113 @@ import { Cartographic } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
 
-/** @internal */
+/** A scheme for converting between two representations of the surface of the Earth: an ellipsoid and a rectangular [tiled map](https://en.wikipedia.org/wiki/Tiled_web_map).
+ * Positions on the surface of the ellipsoid are expressed in [Cartographic]($common) coordinates.
+ * Rectangular [[MapTile]]s are projected onto this ellipsoid by the tiling scheme. Tile coordinates are represented by [[QuadId]]s.
+ *
+ * The tiling scheme represents the (x,y) coordinates of its tiles as fractions in [0,1] along the X and Y axes.
+ * An X fraction of 0 corresponds to the easternmost longitude and an X fraction of 1 to the westernmost longitude.
+ * The scheme can choose to correlate a latitude of zero with either the north or south pole, as specified by [[rowZeroAtNorthPole]].
+ * Implementing a tiling scheme only requires implementing the abstract method [[yFractionToLatitude]] and its inverse, [[latitudeToYFraction]].
+ * @beta
+ */
 export abstract class MapTilingScheme {
-  private _scratchFraction = Point2d.createZero();
-
-  /**
-   * @param longitude in radians (-pi to pi)
+  /** If true, the fractional Y coordinate 0 corresponds to the north pole and 1 to the south pole; otherwise,
+   * 0 corresponds to the south pole and 1 to the north.
    */
+  public readonly rowZeroAtNorthPole: boolean;
+  /** The number of tiles in the X direction at level 0 of the quad tree. */
+  public readonly numberOfLevelZeroTilesX;
+  /** The number of tiles in the Y direction at level 0 of the quad tree. */
+  public readonly numberOfLevelZeroTilesY;
+  private readonly _scratchFraction = Point2d.createZero();
+  private readonly _scratchPoint2d = Point2d.createZero();
+
+  /** Convert a longitude in [-pi, pi] radisn to a fraction in [0, 1] along the X axis. */
   public longitudeToXFraction(longitude: number) {
     return longitude / Angle.pi2Radians + .5;
   }
 
-  /**
-   * Return longitude in radians (-pi to pi from fraction).
-   */
+  /** Convert a fraction in [0, 1] along the X axis into a longitude in [-pi, pi] radians. */
   public xFractionToLongitude(xFraction: number) {
     return Angle.pi2Radians * (xFraction - .5);
   }
 
+  /** Convert a fraction in [0, 1] along the Y axis into a latitude in [-pi/2, pi/2] radians. */
   public abstract yFractionToLatitude(yFraction: number): number;
+
+  /** Convert a latitude in [-pi/2, pi/2] radians into a fraction in [0, 1] along the Y axis. */
   public abstract latitudeToYFraction(latitude: number): number;
 
-  protected constructor(public readonly numberOfLevelZeroTilesX: number, public readonly numberOfLevelZeroTilesY: number, public rowZeroAtNorthPole: boolean, private _rectangle = Range2d.createXYXY(-Angle.piRadians, -Angle.piOver2Radians, Angle.piRadians, Angle.piOver2Radians)) {
+  protected constructor(numberOfLevelZeroTilesX: number, numberOfLevelZeroTilesY: number, rowZeroAtNorthPole: boolean) {
+    this.rowZeroAtNorthPole = rowZeroAtNorthPole;
+    this.numberOfLevelZeroTilesX = numberOfLevelZeroTilesX;
+    this.numberOfLevelZeroTilesY = numberOfLevelZeroTilesY;
   }
-  /**
-   * Gets the total number of tiles in the X direction at a specified level-of-detail.
-   *
-   * @param {Number} level The level-of-detail.  Level 0 is the root tile.
-   * @returns {Number} The number of tiles in the X direction at the given level.
+
+  /** The total number of tiles in the X direction at the specified level of detail.
+   * @param level The level of detail, with 0 corresponding to the root tile.
    */
   public getNumberOfXTilesAtLevel(level: number) {
     return level < 0 ? 1 : this.numberOfLevelZeroTilesX << level;
   }
 
-  /**
-   * Gets the total number of tiles in the Y direction at a specified level-of-detail.
-   *
-   *
-   * @param {Number} level The level-of-detail.  Level 0 is the root tile.
-   * @returns {Number} The number of tiles in the Y direction at the given level.
+  /** The total number of tiles in the Y direction at the specified level of detail.
+   * @param level The level of detail, with 0 corresponding to the root tile.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
     return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
   }
 
+  /** @alpha */
   public get rootLevel() {
     return this.numberOfLevelZeroTilesX > 1 || this.numberOfLevelZeroTilesY > 1 ? -1 : 0;
   }
+
+  /** @alpha */
   public getNumberOfXChildrenAtLevel(level: number): number {
     return level === 0 ? this.numberOfLevelZeroTilesX : 2;
   }
+
+  /** @alpha */
   public getNumberOfYChildrenAtLevel(level: number): number {
     return level === 0 ? this.numberOfLevelZeroTilesY : 2;
   }
+
+  /** Given the X component and level of a [[QuadId]], convert it to a fractional distance along the X axis. */
   public tileXToFraction(x: number, level: number): number {
     return x / this.getNumberOfXTilesAtLevel(level);
   }
 
+  /** Given the Y component and level of a [[QuadId]], convert it to a fractional distance along the Y axis. */
   public tileYToFraction(y: number, level: number): number {
     return y / this.getNumberOfYTilesAtLevel(level);
   }
+
+  /** Given a fractional distance along the X axis and a level of the quad tree, compute the X component of the corresponding [[QuadId]]. */
   public xFractionToTileX(xFraction: number, level: number): number {
     const nTiles = this.getNumberOfXTilesAtLevel(level);
     return Math.min(Math.floor(xFraction * nTiles), nTiles - 1);
   }
 
+  /** Given a fractional distance along the Y axis and a level of the quad tree, compute the Y component of the corresponding [[QuadId]]. */
   public yFractionToTileY(yFraction: number, level: number): number {
     const nTiles = this.getNumberOfYTilesAtLevel(level);
     return Math.min(Math.floor(yFraction * nTiles), nTiles - 1);
   }
 
+  /** Given the X component and level of a [[QuadId]], compute its longitude in [-pi, pi] radians. */
   public tileXToLongitude(x: number, level: number) {
     return this.xFractionToLongitude(this.tileXToFraction(x, level));
   }
+
+  /** Given the Y component and level of a [[QuadId]], compute its latitude in [-pi/2, pi/2] radians. */
   public tileYToLatitude(y: number, level: number) {
     return this.yFractionToLatitude(this.tileYToFraction(y, level));
   }
-  /**
-   * Gets the fraction of the normalized (0-1) coordinates with at left, bottom.
-   *
-   * @param x  column
-   * @param y  row
-   * @param level depth
-   * @param result result (0-1 from left, bottom
-   */
+
+
+  /** Given the components of a [[QuadId]], compute its fractional coordinates in the XY plane. */
   public tileXYToFraction(x: number, y: number, level: number, result?: Point2d): Point2d {
     if (undefined === result)
       result = Point2d.createZero();
@@ -104,69 +127,74 @@ export abstract class MapTilingScheme {
 
     return result;
   }
-  private static _scratchPoint2d = Point2d.createZero();
-  /** Get Cartographic from tile XY
-   *
-   * @param x column
-   * @param y row
-   * @param level depth
-   * @param result result longitude, latitude.
-   * @param height height (optional)
+
+  /** Given the components of a [[QuadId]] and an elevation, compute the corresponding [Cartographic]($common) position.
+   * @param x The X component of the QuadId.
+   * @param y The Y component of the QuadId.
+   * @param level The level component of the QuadId.
+   * @param height The elevation above the ellipsoid.
+   * @returns the corresponding cartographic position.
    */
-  public tileXYToCartographic(x: number, y: number, level: number, result: Cartographic, height?: number): Cartographic {
-    this.tileXYToFraction(x, y, level, this._scratchFraction);
-    return this.fractionToCartographic(this._scratchFraction.x, this._scratchFraction.y, result, height);
+  public tileXYToCartographic(x: number, y: number, level: number, result: Cartographic, height = 0): Cartographic {
+    const pt = this.tileXYToFraction(x, y, level, this._scratchFraction);
+    return this.fractionToCartographic(pt.x, pt.y, result, height);
   }
 
+  /** Given the components of a [[QuadId]], compute the corresponding region of the Earth's surface. */
   public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    return level < 0 ? MapCartoRectangle.createMaximum() : MapCartoRectangle.fromRadians(this.tileXToLongitude(x, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level), this.tileXToLongitude(x + 1, level), this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level), result);
+    if (level < 0)
+      return MapCartoRectangle.createMaximum();
+
+    return MapCartoRectangle.fromRadians(
+      this.tileXToLongitude(x, level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level),
+      this.tileXToLongitude(x + 1, level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level),
+      result
+    );
   }
+
+  /** Returns true if the tile at the specified X coordinate and level is adjacent to the north pole. */
   public tileBordersNorthPole(row: number, level: number) {
     return this.rowZeroAtNorthPole ? this.tileYToFraction(row, level) === 0.0 : this.tileYToFraction(row + 1, level) === 1.0;
   }
 
+  /** Returns true if the tile at the specified X coordinate and level is adjacent to the south pole. */
   public tileBordersSouthPole(row: number, level: number) {
     return this.rowZeroAtNorthPole ? this.tileYToFraction(row + 1, level) === 1.0 : this.tileYToFraction(row, level) === 0.0;
   }
 
-  /** Get tile XY  from Cartographic.
-   *
-   * @param x column
-   * @param y row
-   * @param level depth
-   * @param result result longitude, latitude.
-   * @param height height (optional)
+  /** Given a cartographic position, compute the corresponding position on the surface of the Earth as fractional distances along the
+   * X and Y axes.
    */
   public cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d {
-    const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, MapTilingScheme._scratchPoint2d);
+    const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, this._scratchPoint2d);
     return Point2d.create(this.xFractionToTileX(fraction.x, level), this.yFractionToTileY(fraction.y, level), result);
 
   }
-  /** Get fraction from Cartographic.
-   * @param xFraction
-   * @param yFraction
-   * @param result
-   * @param height
-   */
-  public fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height?: number): Cartographic {
+
+  /** Given fractional coordinates in the XY plane and an elevation, compute the corresponding cartographic position. */
+  public fractionToCartographic(xFraction: number, yFraction: number, result: Cartographic, height = 0): Cartographic {
     result.longitude = this.xFractionToLongitude(xFraction);
     result.latitude = this.yFractionToLatitude(yFraction);
-    result.height = undefined === height ? 0.0 : height;
+    result.height = height;
     return result;
   }
 
+  /** Given a cartographic location on the surface of the Earth, convert it to fractional coordinates in the XY plane. */
   public cartographicToFraction(latitudeRadians: number, longitudeRadians: number, result: Point2d): Point2d {
     result.x = this.longitudeToXFraction(longitudeRadians);
     result.y = this.latitudeToYFraction(latitudeRadians);
     return result;
   }
 
-  // gets the longitude and latitude into a point with coordinates between 0 and 1
+  /** @alpha */
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
     return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
   }
 
+  /** @alpha */
   public computeMercatorFractionToDb(ecefToDb: Transform, bimElevationOffset: number, iModel: IModelConnection, applyTerrain: boolean) {
     const dbToEcef = ecefToDb.inverse()!;
 
@@ -187,27 +215,33 @@ export abstract class MapTilingScheme {
     return mercatorToDb === undefined ? Transform.createIdentity() : mercatorToDb;
   }
 
+  /** @alpha */
   protected yFractionFlip(fraction: number) {
     return this.rowZeroAtNorthPole ? (1.0 - fraction) : fraction;
   }
 }
 
-/** @internal */
+/** A [[MapTilingScheme]] using a simple geographic projection by which longitude and latitude are mapped directly to X and Y.
+ * This projection is commonly known as "geographic", "equirectangular", "equidistant cylindrical", or "plate carrée".
+ * @beta
+ */
 export class GeographicTilingScheme extends MapTilingScheme {
-  public constructor(numberOfLevelZeroTilesX: number = 2, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole = false) {
+  public constructor(numberOfLevelZeroTilesX = 2, numberOfLevelZeroTilesY = 1, rowZeroAtNorthPole = false) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
+  /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
     return Math.PI * (this.yFractionFlip(yFraction) - .5);
   }
 
+  /** @internal override */
   public latitudeToYFraction(latitude: number): number {
     return this.yFractionFlip(.5 + latitude / Math.PI);
   }
 }
 
-/** @internal */
+/** @alpha */
 export class WebMercatorProjection {
   /**
    * Converts a Mercator angle, in the range -PI to PI, to a geodetic latitude
@@ -221,30 +255,35 @@ export class WebMercatorProjection {
   }
 
   public static maximumLatitude = WebMercatorProjection.mercatorAngleToGeodeticLatitude(Angle.piRadians);
+
   public static geodeticLatitudeToMercatorAngle(latitude: number) {
     // Clamp the latitude coordinate to the valid Mercator bounds.
-    if (latitude > WebMercatorProjection.maximumLatitude) {
+    if (latitude > WebMercatorProjection.maximumLatitude)
       latitude = WebMercatorProjection.maximumLatitude;
-    } else if (latitude < -WebMercatorProjection.maximumLatitude) {
+    else if (latitude < -WebMercatorProjection.maximumLatitude)
       latitude = -WebMercatorProjection.maximumLatitude;
-    }
+
     const sinLatitude = Math.sin(latitude);
     return 0.5 * Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude));
   }
 }
 
-/** @internal */
+/** A [[MapTilingScheme]] using the [EPSG:3857](https://en.wikipedia.org/wiki/Web_Mercator_projection) projection.
+ * This scheme is used by most [tiled web maps](https://en.wikipedia.org/wiki/Tiled_web_map), including Bing Maps and Google Maps.
+ * @beta
+ */
 export class WebMercatorTilingScheme extends MapTilingScheme {
-
-  public constructor(numberOfLevelZeroTilesX: number = 1, numberOfLevelZeroTilesY: number = 1, rowZeroAtNorthPole: boolean = true /* Bing uses 0 north */) {
+  public constructor(numberOfLevelZeroTilesX = 1, numberOfLevelZeroTilesY = 1, rowZeroAtNorthPole = true) {
     super(numberOfLevelZeroTilesX, numberOfLevelZeroTilesY, rowZeroAtNorthPole);
   }
 
+  /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
     const mercatorAngle = Angle.pi2Radians * (this.rowZeroAtNorthPole ? (.5 - yFraction) : (yFraction - .5));
     return WebMercatorProjection.mercatorAngleToGeodeticLatitude(mercatorAngle);
   }
 
+  /** @internal override */
   public latitudeToYFraction(latitude: number): number {
     // Clamp the latitude coordinate to the valid Mercator bounds.
     if (latitude > WebMercatorProjection.maximumLatitude) {
