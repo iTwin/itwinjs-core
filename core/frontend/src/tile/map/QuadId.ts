@@ -15,7 +15,7 @@ const scratchCartographic1 = Cartographic.createZero();
 const scratchCartographic2 = Cartographic.createZero();
 
 /** Identifies a node within a [quad tree](https://en.wikipedia.org/wiki/Quadtree), such as a [[MapTile]] within a [[MapTileTree]].
- * A quad tree recursively sub-divides a two-dimensional space along the X and Y axes such that each node on level L had four child nodes on
+ * A quad tree recursively sub-divides a two-dimensional space along the X and Y axes such that each node on level L has four child nodes on
  * level L+1.
  * @beta
  */
