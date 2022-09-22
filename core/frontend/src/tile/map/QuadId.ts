@@ -78,12 +78,23 @@ export class QuadId {
   }
 
   /** Compute the region of the surface of the Earth represented by this node according to the specified tiling scheme. */
-  public getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d {
+  public getLatLongRangeDegrees(mapTilingScheme: MapTilingScheme): Range2d {
+    return this._getLatLongRange(mapTilingScheme, "degrees");
+  }
+
+  /** Compute the region of the surface of the Earth represented by this node according to the specified tiling scheme. */
+  public getLatLongRangeRadians(mapTilingScheme: MapTilingScheme): Range2d {
+    return this._getLatLongRange(mapTilingScheme, "radians");
+  }
+
+  private _getLatLongRange(mapTilingScheme: MapTilingScheme, units: "radians" | "degrees"): Range2d {
     const range = Range2d.createNull();
+    const factor = "degrees" === units ? Angle.degreesPerRadian : 1;
+
     mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
-    range.extendXY(scratchCartographic1.longitude * Angle.degreesPerRadian, scratchCartographic1.latitude * Angle.degreesPerRadian);
+    range.extendXY(scratchCartographic1.longitude * factor, scratchCartographic1.latitude * factor);
     mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
-    range.extendXY(scratchCartographic2.longitude * Angle.degreesPerRadian, scratchCartographic2.latitude * Angle.degreesPerRadian);
+    range.extendXY(scratchCartographic2.longitude * factor, scratchCartographic2.latitude * factor);
 
     return range;
   }

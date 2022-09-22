@@ -7819,7 +7819,8 @@ export class QuadId {
         latitude: AngleSweep;
     };
     getChildIds(columnCount?: number, rowCount?: number): QuadId[];
-    getLatLongRange(mapTilingScheme: MapTilingScheme): Range2d;
+    getLatLongRangeDegrees(mapTilingScheme: MapTilingScheme): Range2d;
+    getLatLongRangeRadians(mapTilingScheme: MapTilingScheme): Range2d;
     // @alpha (undocumented)
     static getTileContentId(level: number, column: number, row: number): string;
     // @alpha (undocumented)

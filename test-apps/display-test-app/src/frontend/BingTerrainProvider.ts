@@ -46,7 +46,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
   /** Return elevation values in a 16x16 grid. */
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
-    const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
+    const latLongRange = args.tile.quadId.getLatLongRangeDegrees(this.tilingScheme);
 
     // Latitudes outside the range [-85, 85] produce HTTP 400 per the Bing API docs - clamp to that range.
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
