@@ -32,7 +32,6 @@ import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
-import { System } from "../render/webgl/System";
 import { TextureImageSource } from "../render/RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
@@ -1993,12 +1992,10 @@ export abstract class GltfReader {
       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
       try {
         const imageSource = new ImageSource(bytes, format);
-
-        if (System.instance.capabilities.supportsCreateImageBitmap) {
+        if (this._system.supportsCreateImageBitmap)
           image.resolvedImage = await imageBitmapFromImageSource(imageSource);
-        } else {
+        else
           image.resolvedImage = await imageElementFromImageSource(imageSource);
-        }
       } catch (_) {
         //
       }
