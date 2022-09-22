@@ -11,13 +11,28 @@ import {
   RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions,
 } from "@itwin/core-frontend";
 
+// The number of elevation values per row/column within each tile.
 const size = 16;
+// The number of quads per row/column within each tile.
 const sizeM1 = size - 1;
 
+/** An example TerrainMeshProvider that obtains elevation data from [Bing](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/get-elevations).
+ * This example is not intended for production use. Its primary purpose is to present a clear example of how to implement a custom TerrainMeshProvider.
+ * The code is written to favor readability over efficiency.
+ * The 3d terrain produced is less accurate than that available from services like [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/).
+ * This provider requires a valid Bing Maps API key to be supplied via `IModelAppOptions.mapLayerOptions.BingMaps` to `IModelApp.startup`.
+ *
+ * For each tile, the provider obtains a 16x16 equally-spaced grid of elevation values. Each group of four adjacent elevations is converted into pair
+ * of triangles (a quad).
+ */
 export class BingTerrainMeshProvider extends TerrainMeshProvider {
+  /** Provides elevation data. */
   private readonly _provider: BingElevationProvider;
+  /** Scale factor applied to elevations, from `TerrainSettings.exaggeration`. */
   private readonly _exaggeration: number;
+  /** If true, generate per-vertex normal vectors. */
   private readonly _wantNormals: boolean;
+  /** If true, generate skirts around the edges of each tile. */
   private readonly _wantSkirts: boolean;
   public readonly tilingScheme = new GeographicTilingScheme(1, 1);
 
@@ -29,16 +44,17 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     this._wantSkirts = options.wantSkirts;
   }
 
+  /** Return elevation values in a 16x16 grid. */
   public override async requestMeshData(args: RequestMeshDataArgs): Promise<number[] | undefined> {
     const latLongRange = args.tile.quadId.getLatLongRange(this.tilingScheme);
 
-    // Latitudes outside the range [-85, 85] produce HTTP 400 as specified by
-    // [documentation](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/get-elevations)
+    // Latitudes outside the range [-85, 85] produce HTTP 400 per the Bing API docs - clamp to that range.
     latLongRange.low.y = Math.max(-85, latLongRange.low.y);
     latLongRange.high.y = Math.min(85, latLongRange.high.y);
 
-    // Longitudes outside the range [0, 180) produce HTTP 500. Documentation makes no mention of this and if that's
-    // a client error I'd expect 400, not 500.
+    // Longitudes outside the range [0, 180) produce HTTP 500. Bing API docs don't mention this, but it seems like
+    // it would be a client error (400), not server error (500).
+    // Wrap them.
     if (latLongRange.high.x >= 180)
       latLongRange.high.x = latLongRange.high.x - 180;
 
@@ -46,36 +62,51 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     return heights?.length === 16 * 16 ? heights : undefined;
   }
 
+  /** Produce a 3d terrain mesh from the elevation values obtained by `requestMeshData`. */
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
-    // ###TODO skirts.
     const heights = args.data as number[];
     assert(heights.length === size * size);
 
+    // Make skirts 1/20th the width of the tile.
     const skirtHeight = this._wantSkirts ? args.tile.range.xLength() / 20 : 0;
+
+    // Determine the minimum and maximum height values, scaled by the terrain exaggeration factor.
     const heightRange = Range1d.createArray(heights);
     heightRange.low -= skirtHeight;
     heightRange.low *= this._exaggeration;
     heightRange.high *= this._exaggeration;
+
+    // Update the height range stored on the MapTile.
     args.tile.adjustHeights(heightRange.low, heightRange.high);
 
-    // 16 new vertices along each edge.
+    // Skirts add 16 new vertices along each edge.
     const numSkirtVertices = this._wantSkirts ? size * 4 : 0;
-    // 15 new quads along each edge.
+    // Skirts add 15 new quads along each edge.
     const numSkirtIndices = this._wantSkirts ? sizeM1 * sizeM1 * 4 * 3 * 2 : 0;
+
+    // Given a 2d point in tile coordinates and an elevation, the projection can produce a 3d point in space.
     const projection = args.tile.getProjection(heightRange);
 
+    // TerrainMeshBuilderOptions for creating the TerrainMeshBuilder.
     const options = {
+      // A range encompassing all possible 3d points in the mesh.
       positionRange: projection.localRange,
+      // The exact number of vertices we will need - preallocated to avoid reallocating as we populate the array.
       initialVertexCapacity: size * size + numSkirtVertices,
+      // The exact number of vertex indices we will need - preallocated to avoid reallocating as we populate the array.
       initialIndexCapacity: sizeM1 * sizeM1 * 3 * 2 + numSkirtIndices,
-      // We will compute the normals after computing the positions.
+      // We will compute the normals after computing the positions, if needed.
       wantNormals: false,
     };
 
     const builder = new RealityMeshParamsBuilder(options);
 
+    // Holds the texture coordinates for the current vertex.
     const uv = new Point2d();
+    // Holds the 3d position of the current vertex.
     const position = new Point3d();
+
+    // For each elevation in the grid, add a vertex to the builder.
     const delta = 1 / sizeM1;
     for (let row = 0, v = 0; row < size; row++, v += delta) {
       for (let col = 0, u = 0; col < size; col++, u += delta) {
@@ -89,6 +120,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     if (this._wantNormals)
       this.addNormals(builder, options.initialVertexCapacity);
 
+    // Define the triangles for each quad.
     for (let row = 0; row < sizeM1; row++) {
       const rowIndex = row * size;
       const nextRowIndex = rowIndex + size;
@@ -113,39 +145,54 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     assert(undefined === builder.normals || builder.normals.length === builder.positions.length);
     assert(builder.indices.capacity === options.initialIndexCapacity);
 
+    // Extract the completed 3d mesh.
     return builder.finish();
   }
 
+  // Compute a normal vector for each vertex.
   private addNormals(builder: RealityMeshParamsBuilder, numVertices: number): void {
     const scratchP0 = new Point3d();
     const scratchP1 = new Point3d();
     const scratchP2 = new Point3d();
     const scratchFaceNormal = new Vector3d();
 
+    // Compute the vector perpendicular to one triangle, and add it to the accumulated vertex normal.
+    // sum: The accumulated vertex normal thus far.
+    // p0: The position of the vertex whose normal vector is being computed.
+    // r1, c1: The (x, y) offset of the second triangle vertex, relative to p0 - either 0, -1, or 1.
+    // r2, c2: The (x, y) offset of the third triangle vertex, relative to p0 - either 0, -1, or 1.
     const addNormal = (sum: Vector3d, p0: Point3d, r1: number, c1: number, r2: number, c2: number): void => {
       if (r1 < 0 || c1 < 0 || r2 < 0 || c2 < 0 || r1 >= size || c1 >= size || r2 >= size || c2 >= size) {
-        // To properly compute normals on the edges of the tile, requestMeshData would need to request additional elevations
-        // for points adjacent to the tile. For now, just ignore them
+        // At least one of the adjacent points is outside the boundaries of the tile. We have no elevation data for points outside the tile.
+        // Note: to properly compute normals for vertices on the edges of the tile, requestMeshData would need to request additional elevations
+        // for points adjacent to the tile. For simplicity, we simply ignore their contribution to the vertex normal.
         return;
       }
 
+      // Look up the positions of the other two triangle vertices.
       const p1 = builder.positions.unquantize(r1 * size + c1, scratchP1);
       const p2 = builder.positions.unquantize(r2 * size + c2, scratchP2);
 
+      // Compute the normalized vector perpendicular to the triangle.
       const faceNormal = Vector3d.createCrossProductToPoints(p0, p1, p2, scratchFaceNormal);
       faceNormal.normalizeInPlace();
 
+      // Add this triangle's normal vector to the vertex normal.
       sum.plus(faceNormal, sum);
       sum.normalizeInPlace();
     };
 
+    // Allocate all of the normal vectors we need.
     builder.normals = new Uint16ArrayBuilder({ initialCapacity: numVertices });
+
+    // Compute the normal vector for each vertex in the mesh.
     const vertexNormal = Vector3d.createZero();
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
         Vector3d.createZero(vertexNormal);
         const p0 = builder.positions.unquantize(row * size + col, scratchP0);
-        // ###TODO turn this into a loop
+        // This could be made more efficient with a loop that retains the output of the previous iteration,
+        // but less readable.
         addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
         addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
         addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
@@ -161,7 +208,11 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
     }
   }
 
+  // Generate "skirts" around the edge of the mesh, hanging straight down from the existing triangles.
+  // Note: if we angled the skirts outward slightly, they would do a better job of hiding seams, particularly when
+  // looking directly down at the map.
   private addSkirts(builder: RealityMeshParamsBuilder, heights: number[], skirtHeight: number, projection: MapTileProjection): void {
+    // The normal vector for the skirt vertices does not matter - use a zero vector.
     const skirtNormal = this._wantNormals ? new Vector3d() : undefined;
     const uv = new Point2d();
     const position = new Point3d();
@@ -193,8 +244,10 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
       uv.set(1, 1 - u);
       const rightIndex = builder.addUnquantizedVertex(position, uv, skirtNormal);
 
-      if (c === sizeM1)
+      if (c === sizeM1) {
+        // We have added all 16 vertices and all 15 quads along each edge
         break;
+      }
 
       // top row
       builder.addTriangle(c, c + 1, topIndex + 4);
