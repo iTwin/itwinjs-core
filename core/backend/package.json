@@ -62,7 +62,7 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@opentelemetry/api": "^1.0.4",
+    "@opentelemetry/api": "1.0.4",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/fs-extra": "^4.0.7",
