@@ -21,6 +21,7 @@ Table of contents:
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
+- [SELECT * FROM Link Tables](#select-*-from-link-tables)
 
 ## Electron 17 support
 
@@ -142,3 +143,12 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ### @itwin/core-transformer
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
+
+### @itwin/core-geometry
+
+`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
+
+## SELECT * FROM Link Tables
+
+Previously when we did SELECT *on a link table, it would only return ECInstanceId, ECClassId, SourceECInstanceId and TargetECInstanceId. We were skipping SourceECClassId and TargetECClassId. This behavior was dropped as technically SELECT* on a link table should also return SourceECClassId and TargetECClassId.
+The new behavior is that we would return ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceId, TargetECClassId when we do SELECT * on a link table.
