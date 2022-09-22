@@ -274,6 +274,7 @@ public;HitSource
 internal;I3dmReader 
 public;IconSprites
 public;IdleTool 
+public;imageBitmapFromImageSource(source: ImageSource): Promise
 public;imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCanvasElement | undefined
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
@@ -614,7 +615,7 @@ public;TextureCacheKey = string | Gradient.Symb
 public;TextureCacheOwnership
 internal;TextureDrapeMap = Map
 public;TextureImage
-public;TextureImageSource = HTMLImageElement | ImageBuffer
+public;TextureImageSource = HTMLImageElement | ImageBuffer | ImageBitmap
 public;TextureOwnership = TextureCacheOwnership | "external"
 internal;ThreeAxes
 internal;ThreeDTileFileInfo
