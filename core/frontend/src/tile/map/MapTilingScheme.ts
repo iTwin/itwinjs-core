@@ -17,7 +17,7 @@ import { MapCartoRectangle } from "../internal";
  *
  * The tiling scheme represents the (x,y) coordinates of its tiles as fractions in [0,1] along the X and Y axes.
  * An X fraction of 0 corresponds to the easternmost longitude and an X fraction of 1 to the westernmost longitude.
- * The scheme can choose to correlate a latitude of zero with either the north or south pole, as specified by [[rowZeroAtNorthPole]].
+ * The scheme can choose to correlate a Y fraction of 0 with either the north or south pole, as specified by [[rowZeroAtNorthPole]].
  * Implementing a tiling scheme only requires implementing the abstract method [[yFractionToLatitude]] and its inverse, [[latitudeToYFraction]].
  * @beta
  */
