@@ -8955,6 +8955,8 @@ export abstract class RenderSystem implements IDisposable {
     // @internal
     readonly options: RenderSystem.Options;
     // @internal (undocumented)
+    get supportsCreateImageBitmap(): boolean;
+    // @internal (undocumented)
     get supportsIndexedEdges(): boolean;
     // @internal (undocumented)
     get supportsInstancing(): boolean;
