@@ -55,7 +55,7 @@ export class SampleModelessDialog extends React.Component<SampleModelessDialogPr
   }
   private _onShowMessageBox = async () => {
     const _result = await IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk,
-      "I should be displayed over the Modeless dialog, but am pushed to the back :( !!",
+      "I should be displayed over the Sample Modeless dialog.",
       MessageBoxIconType.Warning);
   };
 

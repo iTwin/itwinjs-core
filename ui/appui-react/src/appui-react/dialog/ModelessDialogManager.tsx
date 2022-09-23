@@ -60,7 +60,6 @@ export class ModelessDialogManager {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message, undefined, OutputMessageType.Toast));
       return;
     }
-    DialogManagerBase.topZIndex += 1;
     ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: DialogManagerBase.topZIndex, parentDocument });
     ModelessDialogManager._idArray.push(id);
     ModelessDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
