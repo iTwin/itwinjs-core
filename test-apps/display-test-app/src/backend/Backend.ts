@@ -18,7 +18,6 @@ import {
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
-import { FakeTileCacheService } from "./FakeTileCacheService";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 
@@ -209,9 +208,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
 
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-
-  if (dtaConfig.useFakeCloudStorageTileCache)
-    iModelHost.tileCacheService = new FakeTileCacheService(path.normalize(path.join(__dirname, "tiles")), "http://localhost:3001"); // puts the cache in "./lib/backend/tiles" and serves them from "http://localhost:3001/tiles"
 
   let logLevel = LogLevel.None;
   if (undefined !== dtaConfig.logLevel)

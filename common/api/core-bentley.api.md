@@ -6,7 +6,7 @@
 
 /// <reference types="node" />
 
-import type { Attributes } from '@opentelemetry/api';
+import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
 import type { Tracer } from '@opentelemetry/api';
@@ -1549,13 +1549,51 @@ export abstract class SuccessCategory extends StatusCategory {
 // @alpha
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    static setAttributes(attributes: Attributes): void;
+    static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
 }
 
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+    protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
+    append(values: T): void;
+    at(index: number): number;
+    get capacity(): number;
+    protected readonly _constructor: Constructor<T>;
+    protected _data: T;
+    ensureCapacity(newCapacity: number): number;
+    readonly growthFactor: number;
+    get length(): number;
+    protected _length: number;
+    push(value: number): void;
+    toTypedArray(includeUnusedCapacity?: boolean): T;
+}
+
+// @public
+export interface TypedArrayBuilderOptions {
+    growthFactor?: number;
+    initialCapacity?: number;
+}
+
+// @public
+export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+    toUint8Array(includeUnusedCapacity?: boolean): Uint8Array;
+}
+
+// @public
+export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+    constructor(options?: TypedArrayBuilderOptions);
 }
 
 // @public
