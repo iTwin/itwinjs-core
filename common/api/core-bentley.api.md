@@ -1559,6 +1559,44 @@ export class TransientIdSequence {
 }
 
 // @public
+export class TypedArrayBuilder<T extends Uint8Array | Uint16Array | Uint32Array> {
+    protected constructor(constructor: Constructor<T>, options?: TypedArrayBuilderOptions);
+    append(values: T): void;
+    at(index: number): number;
+    get capacity(): number;
+    protected readonly _constructor: Constructor<T>;
+    protected _data: T;
+    ensureCapacity(newCapacity: number): number;
+    readonly growthFactor: number;
+    get length(): number;
+    protected _length: number;
+    push(value: number): void;
+    toTypedArray(includeUnusedCapacity?: boolean): T;
+}
+
+// @public
+export interface TypedArrayBuilderOptions {
+    growthFactor?: number;
+    initialCapacity?: number;
+}
+
+// @public
+export class Uint16ArrayBuilder extends TypedArrayBuilder<Uint16Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
+export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+    toUint8Array(includeUnusedCapacity?: boolean): Uint8Array;
+}
+
+// @public
+export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
+    constructor(options?: TypedArrayBuilderOptions);
+}
+
+// @public
 export class UnexpectedErrors {
     static addTelemetry(tracker: OnUnexpectedError): () => void;
     static readonly consoleLog: (e: any) => void;

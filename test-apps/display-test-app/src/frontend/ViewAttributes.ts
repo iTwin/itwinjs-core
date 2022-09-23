@@ -661,12 +661,18 @@ export class ViewAttributes {
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
 
+    const bingCheckbox = this.addCheckbox("Use Bing elevation",
+      (enabled: boolean) => updateTerrainSettings({ providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain" }),
+      settingsDiv
+    ).checkbox;
+
     this._updates.push((view) => {
       const map = view.displayStyle.settings.backgroundMap;
       const terrainSettings = map.terrainSettings;
       heightOriginMode.value = terrainSettings.heightOriginMode.toString();
       heightOrigin.value = terrainSettings.heightOrigin.toString();
       exaggeration.value = terrainSettings.exaggeration.toString();
+      bingCheckbox.checked = "DtaBingTerrain" === terrainSettings.providerName;
     });
 
     return settingsDiv;

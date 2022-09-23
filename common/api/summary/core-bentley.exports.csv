@@ -118,6 +118,11 @@ public;StopWatch
 alpha;class SuccessCategory 
 alpha;Tracing
 public;TransientIdSequence
+public;TypedArrayBuilder
+public;TypedArrayBuilderOptions
+public;Uint16ArrayBuilder 
+public;Uint32ArrayBuilder 
+public;Uint8ArrayBuilder 
 public;UnexpectedErrors
 public;using
 public;utf8ToString(utf8: Uint8Array): string | undefined
