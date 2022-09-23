@@ -23,6 +23,7 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [AppUi](#appui)
+  - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
 - [Deprecations](#deprecations)
   - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
@@ -136,7 +137,7 @@ The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has 
 - Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
 - Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
 
-### Localization Changes
+### Localization changes
 
 Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
@@ -164,7 +165,7 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 
 ## AppUi
 
-### Setting Allowed Panel Zones for Widgets
+### Setting allowed panel zones for widgets
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
