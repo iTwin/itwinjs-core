@@ -17,6 +17,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { IndexedPolyface } from "../../polyface/Polyface";
+import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
 // cspell:word geomlibs
 // cspell:word BSIJSON
 // directory containing imjs files produced by native geomlibs tests:
@@ -247,6 +248,12 @@ describe("CreateIModelJsonSamples", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
+    const expectedJsonMismatchList = ["indexedMesh.numPerFace.",  // the mesh flips to zero-terminated
+                                      "cone.imjs",                // cone can change to cylinder
+                                      "box.minimal.imjs",         // minimal box gets remaining fields populated
+                                     ];
+    const expectedFBMismatchList = ["point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
+                                   ];
     // read imjs files from various places -- some produced by native, some by core-geometry ...
     for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
       const items = fs.readdirSync(sourceDirectory);
@@ -256,13 +263,10 @@ describe("CreateIModelJsonSamples", () => {
       for (const i of items) {
         const currFile = sourceDirectory + i;
         // skip known non-round-trip files ...
-        let numSkip = 0;
-        for (const candidate of skipList) {
-          if (currFile.lastIndexOf(candidate) >= 0)
-            numSkip++;
-        }
-        if (numSkip > 0)
-          continue;
+        let isFiltered = false;
+        for (const candidate of skipList)
+          if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+        if (isFiltered) continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
         if (Checker.noisy.reportRoundTripFileNames)
@@ -284,22 +288,27 @@ describe("CreateIModelJsonSamples", () => {
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
             const geometryQuery3 = IModelJson.Reader.parse(jsonObject3);
             if (deepAlmostEqual(geometryQuery1, geometryQuery3)) {
-              console.log(" json round trip warning.  json round trip mismatch but secondary geometry round trip matches ", currFile);
-              const match0 = currFile.search("indexedMesh.numPerFace."); // The mesh flips to zero-terminated
-              const match1 = currFile.search("cone.imjs");  // cone can change to cylinder
-              if (match0 > 0 || match1 > 0) {
-                console.log("   (This is expected for this file)");
-                } else{
+              isFiltered = false;
+              for (const candidate of expectedJsonMismatchList)
+                if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+              console.log("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
+              if (!isFiltered) {
                 console.log("jsonObject1:", prettyPrint(jsonObject1));
                 console.log("jsonObject3:", prettyPrint(jsonObject3));
               }
             } else {
-              ck.announceError("imjs => GeometryQuery =>imjs round trip failure", currFile);
+              ck.announceError("imjs => GeometryQuery => imjs round trip failure", currFile);
               console.log("jsonObject1:", prettyPrint(jsonObject1));
               console.log("jsonObject2:", prettyPrint(jsonObject2));
               if (Checker.noisy.printJSONFailure) { console.log(`FAIL: ${i}`); console.log(compareObj.errorTracker); }
             }
           }
+          // test geometry roundtrip thru flatbuffer (and IMJS again)
+          isFiltered = false;
+          for (const candidate of expectedFBMismatchList)
+            if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+          if (isFiltered) continue;
+          testGeometryQueryRoundTrip(ck, geometryQuery1);
         }
       }
       if (Checker.noisy.printJSONSuccess) {
