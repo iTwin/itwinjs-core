@@ -8,7 +8,12 @@ import { BentleyStatus } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageProvider, IModelError } from "@itwin/core-common";
 import { CloudStorageService, CloudStorageUploadOptions } from "./CloudStorageBackend";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/**
+ * @beta
+ * @deprecated
+ */
 export interface AliCloudStorageServiceCredentials {
   region: string;
   accessKeyId: string;
@@ -36,7 +41,10 @@ declare namespace OSS { // eslint-disable-line no-redeclare
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated Use `@itwin/object-storage-oss` instead, see https://github.com/iTwin/object-storage for more details.
+ */
 export class AliCloudStorageService extends CloudStorageService {
   private _client: OSS;
 

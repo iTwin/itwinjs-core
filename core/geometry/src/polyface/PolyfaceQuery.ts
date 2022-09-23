@@ -1099,7 +1099,7 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
   /**
   * * Find mated pairs among facet edges.
   * * Mated pairs have the same vertex indices appearing in opposite order.
-  * * Mark all non-mated pairs invisible.
+  * * Mark all non-mated pairs visible.
   * * At mated pairs
   *    * if angle across the edge is larger than `sharpEdgeAngle`, mark visible
   *    * otherwise mark invisible.

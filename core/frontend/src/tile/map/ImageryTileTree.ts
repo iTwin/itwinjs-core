@@ -157,7 +157,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   protected override _selectTiles(_args: TileDrawArgs): Tile[] { assert(false); return []; }
   public override draw(_args: TileDrawArgs): void { assert(false); }
 
-  private static _scratchDrapeRectangle = new MapCartoRectangle();
+  private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
   private static _drapeIntersectionScale = 1.0 - 1.0E-5;
 
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {

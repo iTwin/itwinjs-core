@@ -2,16 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import * as sinon from "sinon";
+import * as sinonChai from "sinon-chai";
+import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, ServerTimeoutError, TileContentIdentifier } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
-  TileRequestChannel, Viewport,
+  TileRequestChannel, TileStorage, Viewport,
 } from "@itwin/core-frontend";
+import { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
+
+use(sinonChai);
 
 describe("IModelTileRequestChannels", () => {
   function getCloudStorageChannel(): TileRequestChannel {
@@ -322,6 +327,96 @@ describe("RPC channels", () => {
   });
 });
 
+describe("TileStorage", () => {
+  const mockFrontendStorage: FrontendStorage = {
+    async download(): Promise<ArrayBuffer> {
+      return Promise.resolve(new ArrayBuffer(1));
+    },
+  } as unknown as FrontendStorage;
+
+  function stubTileRpcInterface(
+    getTileCacheConfigReturns: TransferConfig | undefined
+  ): sinon.SinonStub<[], IModelTileRpcInterface> {
+    return sinon.stub(IModelTileRpcInterface, "getClient").returns(
+      {
+        async getTileCacheConfig(): Promise<TransferConfig | undefined> {
+          return Promise.resolve(getTileCacheConfigReturns);
+        },
+      } as unknown as IModelTileRpcInterface
+    );
+  }
+
+  let tileStorage: TileStorage;
+  let iModel: SnapshotConnection;
+  let downloadTileParameters: Parameters<typeof tileStorage.downloadTile>;
+  before(async () => {
+    await TestUtility.startFrontend();
+    iModel = await SnapshotConnection.openFile("test.bim");
+    const rpcProps = iModel.getRpcProps();
+    downloadTileParameters = [
+      rpcProps,
+      iModel.iModelId,
+      rpcProps.changeset!.id,
+      "treeId",
+      "contentId",
+      undefined,
+    ];
+  });
+  after(async () => {
+    await iModel.close();
+    await TestUtility.shutdownFrontend();
+  });
+  beforeEach(() => {
+    tileStorage = new TileStorage(mockFrontendStorage); // Clears cache
+  });
+  afterEach(() => {
+    sinon.restore();
+  });
+
+  it("should return undefined if the backend does not support caching", async () => {
+    stubTileRpcInterface(undefined);
+    const result = await tileStorage.downloadTile(...downloadTileParameters);
+    expect(result).to.be.undefined;
+  });
+
+  it("should not request tile content when the backend does not support caching", async () => {
+    stubTileRpcInterface(undefined);
+    const storageSpy = sinon.spy(tileStorage.storage).download;
+    await tileStorage.downloadTile(...downloadTileParameters);
+    expect(storageSpy).to.have.not.been.called;
+  });
+
+  it("should cache transfer configs", async () => {
+    const transferConfig: TransferConfig = {
+      baseUrl: "test",
+      expiration: new Date(new Date().getTime()+(1000*60*60)), // 1 hour from now
+    };
+    const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
+    await tileStorage.downloadTile(...downloadTileParameters);
+    expect(tileRpcInterfaceStub).to.have.been.calledOnce;
+    await tileStorage.downloadTile(...downloadTileParameters);
+    expect(tileRpcInterfaceStub).to.have.been.calledOnce; // Not called again
+  });
+
+  it("should refresh expired cached transfer config", async () => {
+    const clock = sinon.useFakeTimers();
+    after(() => { clock.restore(); });
+    const dateExpiration = new Date(new Date().getTime()+(1000*60*60)); // 1 hour from now
+    const transferConfig: TransferConfig = {
+      baseUrl: "test",
+      expiration: dateExpiration,
+    };
+    const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
+    await tileStorage.downloadTile(...downloadTileParameters);
+    expect(tileRpcInterfaceStub).to.have.been.calledOnce;
+
+    clock.setSystemTime(new Date(dateExpiration.getTime() + 1000)); // Advance 1hour 1s
+    await tileStorage.downloadTile(...downloadTileParameters);
+    expect(tileRpcInterfaceStub).to.have.been.calledTwice;
+  });
+});
+
+/* eslint-disable deprecation/deprecation */
 describe("CloudStorageTileCache", () => {
   let imodel: IModelConnection;
   let cache: TestCloudStorageTileCache;
@@ -388,3 +483,4 @@ describe("CloudStorageTileCache", () => {
     expect(content).to.be.undefined;
   });
 });
+/* eslint-enable deprecation/deprecation */
