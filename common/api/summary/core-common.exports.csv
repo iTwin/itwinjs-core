@@ -539,8 +539,14 @@ beta;PropertyMetaDataProps
 public;QParams2d
 public;QParams3d
 public;QPoint2d
+public;QPoint2dBuffer
+public;QPoint2dBuffer
+public;QPoint2dBufferBuilder
 public;QPoint2dList
 public;QPoint3d
+public;QPoint3dBuffer
+public;QPoint3dBuffer
+public;QPoint3dBufferBuilder
 public;QPoint3dList
 public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
@@ -708,7 +714,8 @@ beta;SynchronizationConfigLinkProps
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps
-public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainProviderName = string
+deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
 public;TextString

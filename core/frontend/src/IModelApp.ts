@@ -11,13 +11,13 @@
 export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
 const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
-import { TelemetryManager } from "@itwin/core-telemetry";
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
   AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -39,7 +39,7 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
-import { MapLayerFormatRegistry, MapLayerOptions, TileAdmin } from "./tile/internal";
+import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
 import * as idleTool from "./tools/IdleTool";
@@ -201,6 +201,7 @@ export class IModelApp {
   private static _animationIntervalId?: number;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
+  private static _terrainProviderRegistry: TerrainProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
@@ -226,6 +227,10 @@ export class IModelApp {
    * @internal
    */
   public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  /** The [[TerrainProviderRegistry]] for this session.
+   * @beta
+   */
+  public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -400,6 +405,7 @@ export class IModelApp {
     this._quantityFormatter = opts.quantityFormatter ?? new QuantityFormatter();
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
+    this._terrainProviderRegistry = new TerrainProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._publicPath = opts.publicPath ?? "";
 

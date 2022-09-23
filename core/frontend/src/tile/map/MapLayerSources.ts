@@ -168,13 +168,13 @@ export class MapLayerSources {
     if (!iModel)
       iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
 
-    let sourceRange = MapCartoRectangle.create();
+    let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
       const projectCenter = iModel.projectExtents.localXYZToWorld(.5, .5, .5)!;
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
-      const globeRange = MapCartoRectangle.create();
+      const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.create(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.fromRadians(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
     }
 
     const sources = new Array<MapLayerSource>();
