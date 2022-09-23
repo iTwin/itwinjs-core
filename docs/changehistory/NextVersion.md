@@ -8,7 +8,10 @@ Table of contents:
 
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Improved link table selection](improved-link-table-selection)
+- [Cloud storage changes](#cloud-storage-changes)
 - [Display](#display)
+  - [Custom terrain providers](#custom-terrain-providers)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Improved display transform support](#improved-display-transform-support)
   - [Wait for scene completion](#wait-for-scene-completion)
@@ -20,6 +23,7 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Electron 17 support
@@ -44,7 +48,27 @@ const schema = loader.getSchema("BisCore");
 
 [SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
+## Improved link table selection
+
+Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
+
+## Cloud storage changes
+
+The existing beta implementations of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) have been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
+
+[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
+
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
+
 ## Display
+
+### Custom terrain providers
+
+Previously, 3d terrain required access to [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/), a paid service. Now, applications can use their own sources of 3d terrain by registering a [TerrainProvider]($frontend) and implementing a [TerrainMeshProvider]($frontend) to produce 3d terrain meshes.
+
+The name of the provider is stored in [TerrainSettings.providerName]($common). The default is "CesiumWorldTerrain".
+
+See [BingTerrainProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example of a custom terrain provider.
 
 ### Ambient occlusion improvements
 
@@ -138,6 +162,10 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
 
 ## Deprecations
+
+### @itwin/core-geometry
+
+`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
 
 ### @itwin/core-transformer
 

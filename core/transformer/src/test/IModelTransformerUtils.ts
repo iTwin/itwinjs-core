@@ -483,6 +483,8 @@ export async function assertIdentityTransformation(
       TargetECInstanceId: _2,
       ECClassId: _3,
       ECInstanceId: _4,
+      SourceECClassId: _5,
+      TargetECClassId: _6,
       ...rel
     }: any) => rel;
     expect(makeRelInvariant(relInSource)).to.deep.equal(
