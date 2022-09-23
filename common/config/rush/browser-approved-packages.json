@@ -451,10 +451,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "appui-test-providers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "assert",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
