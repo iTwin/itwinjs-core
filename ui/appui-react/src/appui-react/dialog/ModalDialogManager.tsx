@@ -34,6 +34,7 @@ export class ModalDialogManager {
    * @param parentDocument The Document used to determine the owning window.
    */
   public static openDialog(dialog: React.ReactNode, id?: string, parentDocument = document): void {
+    DialogManagerBase.topZIndex += 1;
     ModalDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }
 

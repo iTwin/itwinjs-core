@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { Logger } from "@itwin/core-bentley";
-import { CommonProps, getCssVariableAsNumber } from "@itwin/core-react";
+import { CommonProps } from "@itwin/core-react";
 import { UiFramework } from "../UiFramework";
 import { DialogChangedEvent, DialogManagerBase, DialogRendererBase } from "./DialogManagerBase";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
@@ -27,9 +27,6 @@ interface ModelessDialogInfo {
   parentDocument: Document;
 }
 
-/** Used if the 'dialog' z-index CSS variable cannot be read */
-const ZINDEX_DEFAULT = 12000;
-
 /** Modeless Dialog Manager class displays and manages multiple modeless dialogs
  * @public
  */
@@ -46,23 +43,9 @@ export class ModelessDialogManager {
   private static _dialogMap = new Map<string, ModelessDialogInfo>();
   private static _idArray = new Array<string>();
 
-  private static _topZIndex = ZINDEX_DEFAULT;
-
   /** Initialize the modeless dialog manager */
   public static initialize(): void {
-    ModelessDialogManager._topZIndex = ModelessDialogManager.getDialogZIndexDefault();
-  }
-
-  private static getDialogZIndexDefault(): number {
-    const variable = "--uicore-z-index-dialog";
-    const value = getCssVariableAsNumber(variable);
-
-    // istanbul ignore next
-    if (!isNaN(value))
-      return value;
-
-    Logger.logError(UiFramework.loggerCategory(this), `'${variable}' CSS variable not found`);
-    return ZINDEX_DEFAULT;
+    DialogManagerBase.initialize();
   }
 
   /** Open a modeless dialog
@@ -77,7 +60,8 @@ export class ModelessDialogManager {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, message, undefined, OutputMessageType.Toast));
       return;
     }
-    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: ++ModelessDialogManager._topZIndex, parentDocument });
+    DialogManagerBase.topZIndex += 1;
+    ModelessDialogManager._dialogMap.set(id, { reactNode: dialog, zIndex: DialogManagerBase.topZIndex, parentDocument });
     ModelessDialogManager._idArray.push(id);
     ModelessDialogManager.dialogManager.openDialog(dialog, id, parentDocument);
   }
@@ -96,7 +80,7 @@ export class ModelessDialogManager {
         ModelessDialogManager._idArray.splice(index, 1);
 
       if (ModelessDialogManager.activeDialog === undefined)
-        ModelessDialogManager._topZIndex = ModelessDialogManager.getDialogZIndexDefault();
+        DialogManagerBase.topZIndex = DialogManagerBase.getDialogZIndexDefault();
 
       this.update();
     } else {
@@ -136,7 +120,8 @@ export class ModelessDialogManager {
   public static handlePointerDownEvent(_event: React.PointerEvent, id: string, updateFunc: () => void): void {
     const dialogInfo = ModelessDialogManager._dialogMap.get(id);
     if (dialogInfo && dialogInfo.reactNode !== ModelessDialogManager.activeDialog) {
-      dialogInfo.zIndex = ++ModelessDialogManager._topZIndex;
+      DialogManagerBase.topZIndex += 1;
+      dialogInfo.zIndex = DialogManagerBase.topZIndex;
 
       ModelessDialogManager._idArray.splice(ModelessDialogManager._idArray.indexOf(id), 1);
       ModelessDialogManager._idArray.push(id);
@@ -148,7 +133,7 @@ export class ModelessDialogManager {
 
   /** Get the z-index for a modeless dialog */
   public static getDialogZIndex(id: string): number {
-    let zIndex = ModelessDialogManager.getDialogZIndexDefault();
+    let zIndex = DialogManagerBase.getDialogZIndexDefault();
     const dialogInfo = ModelessDialogManager._dialogMap.get(id);
     // istanbul ignore else
     if (dialogInfo)
