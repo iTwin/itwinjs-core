@@ -9,6 +9,7 @@ Table of contents:
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
 - [Display](#display)
+  - [Custom terrain providers](#custom-terrain-providers)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Improved display transform support](#improved-display-transform-support)
   - [Wait for scene completion](#wait-for-scene-completion)
@@ -46,6 +47,14 @@ const schema = loader.getSchema("BisCore");
 [SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ## Display
+
+### Custom terrain providers
+
+Previously, 3d terrain required access to [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/), a paid service. Now, applications can use their own sources of 3d terrain by registering a [TerrainProvider]($frontend) and implementing a [TerrainMeshProvider]($frontend) to produce 3d terrain meshes.
+
+The name of the provider is stored in [TerrainSettings.providerName]($common). The default is "CesiumWorldTerrain".
+
+See [BingTerrainProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example of a custom terrain provider.
 
 ### Ambient occlusion improvements
 
