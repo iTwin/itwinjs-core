@@ -5,7 +5,6 @@
 import * as express from "express";
 import * as fs from "fs";
 import * as https from "https";
-import * as path from "path";
 import * as enableWs from "express-ws";
 import { Logger } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
@@ -62,10 +61,6 @@ const dtaWebMain = (async () => {
   app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
   app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
   app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-  app.use("/tiles", express.static(path.join(__dirname, "tiles"), {
-    fallthrough: false,
-    index: false,
-  }));
   app.use("*", (_req: any, res: any) => { res.send("<h1>iTwin.js RPC Server</h1>"); });
 
   // ---------------------------------------------

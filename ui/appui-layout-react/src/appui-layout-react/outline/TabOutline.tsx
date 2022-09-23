@@ -10,9 +10,9 @@ import "./TabOutline.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useTargeted } from "../base/DragManager";
-import { isWidgetDropTargetState } from "../base/NineZoneState";
 import { WidgetIdContext } from "../widget/Widget";
 import { withTargetVersion } from "../target/TargetOptions";
+import { isWidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export const TabOutline = withTargetVersion("2", function TabOutline() {
@@ -43,5 +43,5 @@ function useHidden() {
       return true;
 
     return false;
-  }, [targeted,  widgetId]);
+  }, [targeted, widgetId]);
 }

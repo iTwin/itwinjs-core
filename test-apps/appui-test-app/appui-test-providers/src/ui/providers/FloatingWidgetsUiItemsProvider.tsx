@@ -22,21 +22,65 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
     section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
     if (stageUsage === StageUsage.General && location === StagePanelLocation.Left && section === StagePanelSection.Start) {
-      const widget: AbstractWidgetProps = {
+      widgets.push({
         id: "appui-test-providers:ViewAttributesWidget",
         label: "View Attributes",
         icon: "icon-window-settings",
         defaultState: WidgetState.Floating,
-        isFloatingStateSupported: true,
         floatingContainerId: "appui-test-providers:ViewAttributesWidget",
-        // eslint-disable-next-line react/display-name
-        getWidgetContent: () => {
+        isFloatingStateSupported: true,
+        getWidgetContent: () => { // eslint-disable-line react/display-name
           return <ViewAttributesWidgetComponent />;
         },
         canPopout: true,
-      };
+      });
 
-      widgets.push(widget);
+      widgets.push({
+        id: "FW-1",
+        label: "FW-1",
+        icon: "icon-app-1",
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "appui-test-providers:floating-widget",
+        isFloatingStateSupported: true,
+        defaultFloatingPosition: { x: 600, y: 385 },
+        getWidgetContent: () => { // eslint-disable-line react/display-name
+          return <div>Floating widget 1</div>;
+        },
+      });
+      widgets.push({
+        id: "FW-2",
+        label: "FW-2",
+        icon: "icon-app-2",
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "appui-test-providers:floating-widget",
+        isFloatingStateSupported: true,
+        getWidgetContent: () => { // eslint-disable-line react/display-name
+          return <div>Floating widget 2</div>;
+        },
+      });
+      widgets.push({
+        id: "FW-3",
+        label: "FW-3",
+        icon: "icon-app-1",
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "appui-test-providers:floating-widget",
+        isFloatingStateSupported: true,
+        getWidgetContent: () => { // eslint-disable-line react/display-name
+          return <div>Floating widget 3</div>;
+        },
+      });
+
+      widgets.push({
+        id: "FW-H1",
+        label: "FW-H1",
+        icon: "icon-visibility-hide",
+        defaultState: WidgetState.Hidden,
+        floatingContainerId: "appui-test-providers:hidden-floating-widget",
+        isFloatingStateSupported: true,
+        getWidgetContent: () => { // eslint-disable-line react/display-name
+          return <div>Hidden floating widget 1</div>;
+        },
+      });
     }
     return widgets;
   }
