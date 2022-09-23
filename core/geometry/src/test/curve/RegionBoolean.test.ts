@@ -213,6 +213,133 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithCoincidentEdges");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  function createXYRegions(curvesAndRegions: AnyCurve | AnyCurve[], ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number, z0: number, delta: number): SignedLoops[] {
+    if (Array.isArray(curvesAndRegions))
+      for (const geom of curvesAndRegions) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, geom, x0, y0, z0);
+        y0 += delta;
+      }
+    else
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvesAndRegions, x0, y0, z0);
+
+    const outLoops = RegionOps.constructAllXYRegionLoops(curvesAndRegions);
+    ck.testTrue(outLoops.length > 0);   // TODO: more assertions?
+
+    x0 += delta;
+    y0 = 0;
+    for (const signedLoop of outLoops) {
+      for (const outerLoop of signedLoop.negativeAreaLoops) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, outerLoop, x0, y0, z0);
+        y0 += delta;
+      }
+
+      x0 += delta;
+      y0 = 0;
+      for (const innerLoop of signedLoop.positiveAreaLoops) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, innerLoop, x0, y0, z0);
+        y0 += delta;
+      }
+
+      x0 += delta;
+      y0 = 0;
+      for (const sliver of signedLoop.slivers) {
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, sliver, x0, y0, z0);
+        y0 += delta;
+      }
+
+      x0 = delta;
+      y0 = 0;
+      z0 += delta;
+    }
+
+    return outLoops;
+  }
+
+  it("ParityRegionWithCoincidentBoundary", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    let z0 = 0;
+    const delta = 10;
+    const deltaFactorToNextTest = 5;
+    let variant = 0;
+
+    // original input: ccw outer, ccw inner with downward normal arc
+    const outsideLoop = Loop.create(
+      LineSegment3d.createXYXY(0, 0, 0, 5),
+      LineSegment3d.createXYXY(0, 5, -5, 5),
+      LineSegment3d.createXYXY(-5, 5, -5, 0),
+      LineSegment3d.createXYXY(-5, 0, 0, 0),
+    );
+    let insideLoop = Loop.create(
+      LineSegment3d.createXYXY(0, 0, 0, 2),
+      LineSegment3d.createXYXY(0, 2, -2, 2),
+      Arc3d.create(
+        Point3d.create(-2, 1),
+        Vector3d.create(0, 1),
+        Vector3d.create(1, 0),
+        AngleSweep.createStartEndDegrees(0, 180),
+      ),
+      LineSegment3d.createXYXY(-2, 0, 0, 0),
+    );
+    let loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+
+    // variant input #1: parity region from original input
+    ++variant;
+    const region = ParityRegion.create();
+    region.tryAddChild(outsideLoop);
+    region.tryAddChild(insideLoop);
+    x0 = variant * deltaFactorToNextTest * delta;
+    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+
+    // variant input #2: ccw inner with upward normal arc
+    ++variant;
+    insideLoop = Loop.create(
+      LineSegment3d.createXYXY(0, 0, 0, 2),
+      LineSegment3d.createXYXY(0, 2, -2, 2),
+      Arc3d.create(
+        Point3d.create(-2, 1),
+        Vector3d.create(1, 0),
+        Vector3d.create(0, 1),
+        AngleSweep.createStartEndDegrees(90, -90),
+      ),
+      LineSegment3d.createXYXY(-2, 0, 0, 0),
+    );
+    x0 = variant * deltaFactorToNextTest * delta;
+    loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+
+    // variant input #3: parity region from variant #2
+    ++variant;
+    x0 = variant * deltaFactorToNextTest * delta;
+    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+
+    // variant input #4: cw inner with upward normal arc
+    ++variant;
+    insideLoop = Loop.create(
+      LineSegment3d.createXYXY(0, 0, -2, 0),
+      Arc3d.create(
+        Point3d.create(-2, 1),
+        Vector3d.create(1, 0),
+        Vector3d.create(0, 1),
+        AngleSweep.createStartEndDegrees(-90, 90),
+      ),
+      LineSegment3d.createXYXY(-2, 2, 0, 2),
+      LineSegment3d.createXYXY(0, 2, 0, 0),
+    );
+    x0 = variant * deltaFactorToNextTest * delta;
+    loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+
+    // variant input #5: parity region from variant #4
+    ++variant;
+    x0 = variant * deltaFactorToNextTest * delta;
+    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ParityRegionWithCoincidentBoundary");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("ParityRegionWithBadBoundary", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -294,50 +421,50 @@ describe("RegionBoolean", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExample");
     expect(ck.getNumErrors()).equals(0);
-    });
-    it("SectioningExampleFile", () => {
-      const ck = new Checker();
-      const allGeometry: GeometryQuery[] = [];
-      let x0 = 0.0;
-      let   y0 = 0.0;
-      const dy = 2.0;
-      const positiveLoopOffset = 0.005;
-      // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
-      // sectionA has half a bridge pier
-      // sectionF is a mess of diagonals.
-      for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
-          console.log({ baseName });
-        const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.imjs`, "utf8");
-        const jsonA = JSON.parse(stringA);
-        const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
-        const closedAreas: LineString3d[] = [];
-        for (const g of section){
-          if (g instanceof LineString3d) {
-            if (g.packedPoints.front()?.isAlmostEqualMetric(g.packedPoints.back()!)) {
-              closedAreas.push(g);
-              const centroid = PolygonOps.centroidAreaNormal(g.packedPoints);
-              if (ck.testType (centroid, Ray3d) && Number.isFinite (centroid.a!)){
-                const areaNormal = PolygonOps.areaNormal(g.points);
-                ck.testCoordinate(centroid.a!, areaNormal.magnitude(), "compare area methods");
-              }
+  });
+  it("SectioningExampleFile", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0.0;
+    let   y0 = 0.0;
+    const dy = 2.0;
+    const positiveLoopOffset = 0.005;
+    // for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
+    // sectionA has half a bridge pier
+    // sectionF is a mess of diagonals.
+    for (const baseName of ["sectionA", "sectionB", "sectionC", "sectionD", "sectionE", "sectionF"]) {
+        console.log({ baseName });
+      const stringA = fs.readFileSync(`./src/test/testInputs/ChainCollector/sectionData00/${ baseName  }.imjs`, "utf8");
+      const jsonA = JSON.parse(stringA);
+      const section = IModelJson.Reader.parse(jsonA) as GeometryQuery[];
+      const closedAreas: LineString3d[] = [];
+      for (const g of section){
+        if (g instanceof LineString3d) {
+          if (g.packedPoints.front()?.isAlmostEqualMetric(g.packedPoints.back()!)) {
+            closedAreas.push(g);
+            const centroid = PolygonOps.centroidAreaNormal(g.packedPoints);
+            if (ck.testType (centroid, Ray3d) && Number.isFinite (centroid.a!)){
+              const areaNormal = PolygonOps.areaNormal(g.points);
+              ck.testCoordinate(centroid.a!, areaNormal.magnitude(), "compare area methods");
             }
           }
-
         }
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y0);
-        const regions = RegionOps.constructAllXYRegionLoops(section as AnyRegion[]);
-        saveShiftedLoops(allGeometry, regions, x0, y0 + dy, dy, positiveLoopOffset, false);
-        x0 += 300.0;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas, x0, y0);
-        const regionsB = RegionOps.constructAllXYRegionLoops((closedAreas as unknown) as AnyRegion[]);
-        saveShiftedLoops(allGeometry, regionsB, x0, y0 + dy, dy, positiveLoopOffset, false);
-        x0 = 0;
-        y0 += 100.0;
+
       }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
-      expect(ck.getNumErrors()).equals(0);
-    });
-    it("SectioningLineStringApproach", () => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y0);
+      const regions = RegionOps.constructAllXYRegionLoops(section as AnyRegion[]);
+      saveShiftedLoops(allGeometry, regions, x0, y0 + dy, dy, positiveLoopOffset, false);
+      x0 += 300.0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedAreas, x0, y0);
+      const regionsB = RegionOps.constructAllXYRegionLoops((closedAreas as unknown) as AnyRegion[]);
+      saveShiftedLoops(allGeometry, regionsB, x0, y0 + dy, dy, positiveLoopOffset, false);
+      x0 = 0;
+      y0 += 100.0;
+    }
+  GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExampleFile");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SectioningLineStringApproach", () => {
       const ck = new Checker();
       const allGeometry: GeometryQuery[] = [];
       let x0 = 0.0;
@@ -407,7 +534,7 @@ describe("RegionBoolean", () => {
       }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningLineStringApproach");
       expect(ck.getNumErrors()).equals(0);
-      });
+  });
 
   // In the input directories ...
   //  * MadhavInput.json is the whole input set for 5 sections.
@@ -468,7 +595,7 @@ describe("RegionBoolean", () => {
     testSelectedTangencySubsets(true, [1,2,3,4,1], [2,3,4,7,8], [], "UpperSymmetricQuad");
     testSelectedTangencySubsets(false, [4,5,6,7,4], [-1], [], "LowerRightLobeQuadA");
     testSelectedTangencySubsets(false, [3,5,6,8,3], [-1], [], "LowerRightLobeQuadB");
-    });
+  });
 });
 
 function testSelectedTangencySubsets(
