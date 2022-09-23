@@ -108,8 +108,7 @@ async function main() {
   // Boot the simulator if needed
   if (device.state !== "Booted") {
     log(`Booting simulator: ${device.name}`);
-    await simctl.bootDevice();
-    await simctl.startBootMonitor();
+    await simctl.startBootMonitor({ shouldPreboot: true});
   }
 
   // Install the app
@@ -121,18 +120,19 @@ async function main() {
     return;
   }
   const appPath = `${buildDir}/Debug-iphonesimulator/${appName}.app`;
-  log(`Installing app from: ${appPath}`);
+  log("Installing app");
   await simctl.installApp(appPath);
 
   // Copy the model to the simulator's Documents dir
   const container = await simctl.getAppContainer(bundleId, "data");
-  log(`Copying model from: ${assetsPath} into the app's Documents.`);
+  log(`Copying ${bimFile} model into the app's Documents.`);
   await copyFile(`${__dirname}/${assetsPath}/${bimFile}`, `${container}/Documents/${bimFile}`);
 
   // Launch the app instructing it to open the model and exit
   log("Launching app");
   simctl.execTimeout = 2 * 60 * 1000; // two minutes
   const launchOutput = await simctl.launchAppWithConsole(bundleId, `IMJS_STANDALONE_FILENAME=${bimFile}`, "IMJS_EXIT_AFTER_MODEL_OPENED=1");
+  // Note: the exit code from the app isn't passed back through simctl so we need to look for a specific string in the output.
   if (launchOutput.includes("iModel opened")) {
     process.exitCode = 0;
     log("Success!");
