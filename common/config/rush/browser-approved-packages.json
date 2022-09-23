@@ -819,6 +819,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-simctl",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "nodemon",
       "allowedCategories": [ "tools" ]
     },
