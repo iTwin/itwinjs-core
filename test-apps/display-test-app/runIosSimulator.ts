@@ -40,10 +40,10 @@ function runProgram(program: string, args: string[] = [], cwd: string | undefine
 }
 
 function log(message: string) {
-  const now = new Date();
-  const time = now.toISOString();
-  // const millis = now.getMilliseconds().toString().padStart(3, '0');
-  console.log(`${time}: ${message}`);
+  console.log(message);
+  // const now = new Date();
+  // const time = now.toLocaleString();
+  // console.log(`${time}: ${message}`);
 }
 
 async function main() {
