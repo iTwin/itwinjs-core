@@ -1969,7 +1969,7 @@ describe("iModel", () => {
             southWest: { latitude: 48, longitude: -120.5 },
             northEast: { latitude: 84, longitude: -109.5 },
           },
-        }, verticalCRS: { id: "ELLIPSOID" }
+        }, verticalCRS: { id: "ELLIPSOID" },
       };
 
       await convertTest("Error3.bim", userGCSWithinexistentGridFile, "WGS84", { x: 1473327.251, y: 1257049.636, z: 0.0 }, { p: { x: 473325.6830048648, y: 257049.77062273448, z: -47.87643904264457 }, s: GeoCoordStatus.NoDatumConverter });
