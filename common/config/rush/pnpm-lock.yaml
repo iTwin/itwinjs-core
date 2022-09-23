@@ -19,7 +19,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/object-storage-azure': 1.0.0
       '@itwin/object-storage-core': 1.0.0
-      '@opentelemetry/api': ^1.0.4
+      '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
@@ -74,7 +74,7 @@ importers:
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/api': 1.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/fs-extra': 4.0.12
@@ -104,7 +104,7 @@ importers:
     specifiers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@opentelemetry/api': ^1.0.4
+      '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^8.2.2
@@ -119,7 +119,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/api': 1.1.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.5
       '@types/mocha': 8.2.3
@@ -2550,7 +2550,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/presentation-common': workspace:*
-      '@opentelemetry/api': ^1.0.4
+      '@opentelemetry/api': 1.0.4
       '@opentelemetry/resources': ^1.5.0
       '@opentelemetry/sdk-trace-base': ^1.5.0
       '@opentelemetry/semantic-conventions': ^1.5.0
@@ -2567,9 +2567,9 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@itwin/presentation-common': link:../common
-      '@opentelemetry/api': 1.2.0
-      '@opentelemetry/resources': 1.7.0_@opentelemetry+api@1.2.0
-      '@opentelemetry/sdk-trace-base': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/api': 1.1.0
+      '@opentelemetry/resources': 1.6.0_@opentelemetry+api@1.1.0
+      '@opentelemetry/sdk-trace-base': 1.6.0_@opentelemetry+api@1.1.0
       '@opentelemetry/semantic-conventions': 1.7.0
       '@types/chai': 4.3.1
       '@types/mocha': 8.2.3
@@ -5109,7 +5109,7 @@ packages:
     resolution: {integrity: sha512-KxDlhXyMlh2Jhj2ykX6vNEU0Vou4nHr025KoSEiz7cS3BNiHNaZcdECk/DmLkEB0as5T7b/TpRcehJ5yV6NeXQ==}
     engines: {node: '>=12.0.0'}
     dependencies:
-      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/api': 1.1.0
       tslib: 2.4.0
     dev: false
 
@@ -8126,8 +8126,8 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: false
 
-  /@opentelemetry/api/1.2.0:
-    resolution: {integrity: sha512-0nBr+VZNKm9tvNDZFstI3Pq1fCTEDK5OZTnVKNvBNAKgd0yIvmwsP4m61rEv7ZP+tOUjWJhROpxK5MsnlF911g==}
+  /@opentelemetry/api/1.1.0:
+    resolution: {integrity: sha512-hf+3bwuBwtXsugA2ULBc95qxrOqP2pOekLz34BJhcAKawt94vfeNyUKpYc0lZQ/3sCP6LqRa7UAdHA7i5UODzQ==}
     engines: {node: '>=8.0.0'}
 
   /@opentelemetry/context-base/0.10.2:
@@ -8135,36 +8135,36 @@ packages:
     engines: {node: '>=8.0.0'}
     dev: false
 
-  /@opentelemetry/core/1.7.0_@opentelemetry+api@1.2.0:
+  /@opentelemetry/core/1.6.0_@opentelemetry+api@1.1.0:
     resolution: {integrity: sha512-AVqAi5uc8DrKJBimCTFUT4iFI+5eXpo4sYmGbQ0CypG0piOTHE2g9c5aSoTGYXu3CzOmJZf7pT6Xh+nwm5d6yQ==}
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.3.0'
     dependencies:
-      '@opentelemetry/api': 1.2.0
+      '@opentelemetry/api': 1.1.0
       '@opentelemetry/semantic-conventions': 1.7.0
     dev: true
 
-  /@opentelemetry/resources/1.7.0_@opentelemetry+api@1.2.0:
+  /@opentelemetry/resources/1.6.0_@opentelemetry+api@1.1.0:
     resolution: {integrity: sha512-u1M0yZotkjyKx8dj+46Sg5thwtOTBmtRieNXqdCRiWUp6SfFiIP0bI+1XK3LhuXqXkBXA1awJZaTqKduNMStRg==}
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.3.0'
     dependencies:
-      '@opentelemetry/api': 1.2.0
-      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/api': 1.1.0
+      '@opentelemetry/core': 1.6.0_@opentelemetry+api@1.1.0
       '@opentelemetry/semantic-conventions': 1.7.0
     dev: true
 
-  /@opentelemetry/sdk-trace-base/1.7.0_@opentelemetry+api@1.2.0:
+  /@opentelemetry/sdk-trace-base/1.6.0_@opentelemetry+api@1.1.0:
     resolution: {integrity: sha512-Iz84C+FVOskmauh9FNnj4+VrA+hG5o+tkMzXuoesvSfunVSioXib0syVFeNXwOm4+M5GdWCuW632LVjqEXStIg==}
     engines: {node: '>=14'}
     peerDependencies:
       '@opentelemetry/api': '>=1.0.0 <1.3.0'
     dependencies:
-      '@opentelemetry/api': 1.2.0
-      '@opentelemetry/core': 1.7.0_@opentelemetry+api@1.2.0
-      '@opentelemetry/resources': 1.7.0_@opentelemetry+api@1.2.0
+      '@opentelemetry/api': 1.1.0
+      '@opentelemetry/core': 1.6.0_@opentelemetry+api@1.1.0
+      '@opentelemetry/resources': 1.6.0_@opentelemetry+api@1.1.0
       '@opentelemetry/semantic-conventions': 1.7.0
     dev: true
 
