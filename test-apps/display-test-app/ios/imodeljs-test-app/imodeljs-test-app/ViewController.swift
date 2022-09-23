@@ -340,6 +340,9 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if let stringMessage = message.body as? String {
+                // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
+                // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
+                // on this string to know if it succeeded.
                 print("iModel opened: \(stringMessage)")
             }
             if exitOnMessage {
