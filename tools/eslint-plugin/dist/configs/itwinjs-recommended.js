@@ -50,7 +50,14 @@ module.exports = {
     "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/indent": [
       "error",
-      2
+      2,
+      // SEE: https://eslint.org/docs/latest/rules/indent#options
+      {
+        // not the above documented default (0) but seems to be the default in our version of @typescript-eslint/indent
+        SwitchCase: 1,
+        // intended non default arguments:
+        ignoredNodes: ["ConditionalExpression"],
+      },
     ],
     "@typescript-eslint/interface-name-prefix": "off",
     "@typescript-eslint/member-delimiter-style": [

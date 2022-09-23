@@ -6,7 +6,7 @@
  * @module ElementAspects
  */
 
-import { ChannelRootAspectProps, ElementAspectProps, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
+import { ChannelRootAspectProps, ElementAspectProps, EntityReferenceSet, ExternalSourceAspectProps, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -215,6 +215,14 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     val.version = this.version;
     val.jsonProperties = this.jsonProperties;
     return val;
+  }
+
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.scope.id);
+    referenceIds.addElement(this.element.id);
+    if (this.source)
+      referenceIds.addElement(this.source.id);
   }
 }
 
