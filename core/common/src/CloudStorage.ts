@@ -8,7 +8,12 @@
 
 import { UnexpectedErrors } from "@itwin/core-bentley";
 
-/** @beta */
+/* eslint-disable deprecation/deprecation */
+
+/**
+ * @beta
+ * @deprecated
+ */
 export enum CloudStorageProvider {
   Azure,
   Amazon,
@@ -17,14 +22,20 @@ export enum CloudStorageProvider {
   Unknown,
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export interface CloudStorageContainerDescriptor {
   provider?: CloudStorageProvider;
   name: string;
   resource?: string;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export interface CloudStorageContainerUrl {
   descriptor: CloudStorageContainerDescriptor;
   valid: number;
@@ -35,7 +46,10 @@ export interface CloudStorageContainerUrl {
   bound?: boolean;
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export namespace CloudStorageContainerUrl {
   export function empty(): CloudStorageContainerUrl {
     return {
@@ -47,7 +61,10 @@ export namespace CloudStorageContainerUrl {
   }
 }
 
-/** @beta */
+/**
+ * @beta
+ * @deprecated
+ */
 export abstract class CloudStorageCache<TContentId, TContentType> {
   private _containers: Map<string, CloudStorageContainerUrl>;
 

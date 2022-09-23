@@ -9,6 +9,7 @@ Table of contents:
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
 - [Display](#display)
+  - [Custom terrain providers](#custom-terrain-providers)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
   - [Improved display transform support](#improved-display-transform-support)
   - [Wait for scene completion](#wait-for-scene-completion)
@@ -21,6 +22,7 @@ Table of contents:
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
+- [Cloud storage changes](#cloud-storage-changes)
 
 ## Electron 17 support
 
@@ -45,6 +47,14 @@ const schema = loader.getSchema("BisCore");
 [SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
 
 ## Display
+
+### Custom terrain providers
+
+Previously, 3d terrain required access to [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/), a paid service. Now, applications can use their own sources of 3d terrain by registering a [TerrainProvider]($frontend) and implementing a [TerrainMeshProvider]($frontend) to produce 3d terrain meshes.
+
+The name of the provider is stored in [TerrainSettings.providerName]($common). The default is "CesiumWorldTerrain".
+
+See [BingTerrainProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example of a custom terrain provider.
 
 ### Ambient occlusion improvements
 
@@ -142,3 +152,11 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ### @itwin/core-transformer
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
+
+## Cloud storage changes
+
+The existing beta implementation of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) has been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
+
+[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
+
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.

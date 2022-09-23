@@ -24,9 +24,9 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RealityMeshParams } from "../render/RealityMeshParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
@@ -845,7 +845,7 @@ export interface GltfReaderArgs {
    * sometimes required - for example, for [ViewFlags.wiremesh]($common).
    */
   deduplicateVertices?: boolean;
-  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshPrimitive]] will be used instead.
+  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshParams]] will be used instead.
    * Reality meshes are simpler but do not support some features like lighting.
    */
   vertexTableRequired?: boolean;
@@ -1045,7 +1045,7 @@ export abstract class GltfReader {
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return gltfMesh.primitive.getGraphics(this._system, instances);
 
-    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
