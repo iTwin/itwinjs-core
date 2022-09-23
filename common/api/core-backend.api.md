@@ -137,6 +137,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
+import { Metadata } from '@itwin/object-storage-core';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
 import { ModelLoadProps } from '@itwin/core-common';
@@ -182,6 +183,7 @@ import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
+import { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
@@ -205,6 +207,7 @@ import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
 import { TextureProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
+import { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -233,7 +236,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
@@ -246,7 +249,7 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface AliCloudStorageServiceCredentials {
     // (undocumented)
     accessKeyId: string;
@@ -310,7 +313,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
     constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
@@ -372,6 +375,8 @@ export enum BackendLoggerCategory {
     Authorization = "core-backend.Authorization",
     CodeSpecs = "core-backend.CodeSpecs",
     // @internal
+    CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
+    // @internal
     DevTools = "core-backend.DevTools",
     ECDb = "core-backend.ECDb",
     // @alpha
@@ -381,6 +386,7 @@ export enum BackendLoggerCategory {
     IModelDb = "core-backend.IModelDb",
     IModelHost = "core-backend.IModelHost",
     IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
+    IModelTileStorage = "core-backend.IModelTileStorage",
     IModelTileUpload = "core-backend.IModelTileUpload",
     LinearReferencing = "core-backend.LinearReferencing",
     // @internal
@@ -851,7 +857,7 @@ export namespace CloudSqlite {
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
@@ -872,7 +878,7 @@ export abstract class CloudStorageService {
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
-// @internal (undocumented)
+// @beta @deprecated (undocumented)
 export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
@@ -880,7 +886,7 @@ export class CloudStorageTileUploader {
     cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
@@ -3029,13 +3035,15 @@ export class IModelHost {
     static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @internal
+    // @internal @deprecated (undocumented)
     static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
+    // @internal (undocumented)
+    static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
@@ -3069,7 +3077,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta (undocumented)
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
@@ -3100,8 +3108,10 @@ export interface IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
+    // @beta
+    tileCacheStorage?: ServerStorage;
     // @internal
     tileContentRequestTimeout?: number;
     // @internal

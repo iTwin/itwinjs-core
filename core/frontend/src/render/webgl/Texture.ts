@@ -20,8 +20,6 @@ import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 import { TextureOwnership } from "../RenderTexture";
 
-type CanvasOrImage = HTMLCanvasElement | HTMLImageElement;
-
 /** @internal */
 export type Texture2DData = Uint8Array | Float32Array;
 
@@ -41,7 +39,7 @@ function computeBytesUsed(width: number, height: number, format: GL.Texture.Form
 }
 
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
-function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, element?: CanvasOrImage): void {
+function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData, source?: TexImageSource): void {
   handle.bytesUsed = undefined !== bytes ? bytes.byteLength : computeBytesUsed(params.width, params.height, params.format, params.dataType);
 
   const tex = handle.getHandle()!;
@@ -68,8 +66,8 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   }
 
   // send the texture data
-  if (undefined !== element) {
-    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, element);
+  if (undefined !== source) {
+    gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.format, params.dataType, source);
   } else {
     const pixelData = undefined !== bytes ? bytes : null;
     gl.texImage2D(gl.TEXTURE_2D, 0, internalFormat, params.width, params.height, 0, params.format, params.dataType, pixelData);
@@ -96,7 +94,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
 function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void { loadTexture2DImageData(handle, params, bytes); }
 
 /** Associate cube texture data with a WebGLTexture from an image. */
-function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: CanvasOrImage[]): void {
+function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: TexImageSource[]): void {
   handle.bytesUsed = computeBytesUsed(params.dim * 6, params.dim, params.format, params.dataType);
 
   const tex = handle.getHandle()!;
@@ -238,7 +236,7 @@ class Texture2DCreateParams {
     targetWidth = Math.min(targetWidth, maxTexSize);
     targetHeight = Math.min(targetHeight, maxTexSize);
 
-    let element: CanvasOrImage = image;
+    let element: TexImageSource = image;
     if (targetWidth !== image.naturalWidth || targetHeight !== image.naturalHeight) {
       // Resize so dimensions are powers-of-two
       const canvas = document.createElement("canvas");
@@ -277,15 +275,20 @@ class Texture2DCreateParams {
       }
     }
 
-    // Always draw to canvas for ImageBitmap
-    const canvas = document.createElement("canvas");
-    canvas.width = targetWidth;
-    canvas.height = targetHeight;
-    const context = canvas.getContext("2d")!;
-    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    // If we have to resize, use a canvas
+    let source: TexImageSource = image;
+    if (image.width !== targetWidth || image.height !== targetHeight) {
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d")!;
+      context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      source = canvas;
+    }
 
     return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
-      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, canvas), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, source), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
   private static getImageProperties(type: RenderTexture.Type): TextureImageProperties {

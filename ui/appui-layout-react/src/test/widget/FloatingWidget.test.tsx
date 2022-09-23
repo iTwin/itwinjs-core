@@ -10,16 +10,16 @@ import { TestNineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
   it("should render", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -27,16 +27,16 @@ describe("FloatingWidget", () => {
   });
 
   it("should render minimized", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"], undefined, { minimized: true });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -44,16 +44,16 @@ describe("FloatingWidget", () => {
   });
 
   it("should render hidden", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], { hidden: true }, undefined);
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"], { hidden: true }, undefined);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -61,16 +61,16 @@ describe("FloatingWidget", () => {
   });
 
   it("should render hidden when hideWithUiWhenFloating is true", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"]);
-    nineZone = addTab(nineZone, "t1", { hideWithUiWhenFloating: true });
+    let state = createNineZoneState();
+    state = addTab(state, "t1", { hideWithUiWhenFloating: true });
+    state = addFloatingWidget(state, "w1", ["t1"]);
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -78,16 +78,16 @@ describe("FloatingWidget", () => {
   });
 
   it("should render dragged", () => {
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"], undefined, { minimized: true });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -102,17 +102,17 @@ describe("FloatingWidget", () => {
 
   it("should dispatch FLOATING_WIDGET_RESIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true, isFloatingStateWindowResizable: true });
-    nineZone = addTab(nineZone, "t1");
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addFloatingWidget(state, "w1", ["t1"], undefined, { minimized: true, isFloatingStateWindowResizable: true });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.w1!}
-          widget={nineZone.widgets.w1}
+          floatingWidget={state.floatingWidgets.byId.w1!}
+          widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
     );
@@ -130,17 +130,16 @@ describe("FloatingWidget", () => {
 
   it("tool settings should NOT have resize handles", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
-    let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "toolSettings", ["nz-tool-settings-tab"], undefined, { minimized: true, isFloatingStateWindowResizable: false });
-    nineZone = addTab(nineZone, "nz-tool-settings-tab");
+    let state = createNineZoneState();
+    state = addFloatingWidget(state, "toolSettings", ["nz-tool-settings-tab"], undefined, { minimized: true, isFloatingStateWindowResizable: false });
     const { container } = render(
       <TestNineZoneProvider
-        state={nineZone}
+        state={state}
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={nineZone.floatingWidgets.byId.toolSettings!}
-          widget={nineZone.widgets.toolSettings}
+          floatingWidget={state.floatingWidgets.byId.toolSettings!}
+          widget={state.widgets.toolSettings}
         />
       </TestNineZoneProvider>,
     );

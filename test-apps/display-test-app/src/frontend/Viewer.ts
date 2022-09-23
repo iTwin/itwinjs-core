@@ -26,6 +26,7 @@ import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
+import { HubPicker } from "./HubPicker";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -201,13 +202,23 @@ export class Viewer extends Window {
       },
     }));
 
-    this.toolBar.addItem(createToolButton({
+    this.toolBar.addDropDown({
       iconUnicode: "\ue9e0", // cloud-download
       tooltip: "Open iModel from hub",
-      click: async () => {
-        await this.selectHubIModel();
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new HubPicker(container, async (iModelId, iTwinId) => {
+          alert(`About to download and open hub iModel. Note that this could take quite some time without any feedback.`);
+          await this.openIModel({
+            iModelId,
+            iTwinId,
+            writable: this.surface.openReadWrite,
+          });
+          picker.close();
+        });
+        await picker.populate();
+        return picker;
       },
-    }));
+    });
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
@@ -462,11 +473,6 @@ export class Viewer extends Window {
   private async selectIModel(): Promise<void> {
     const fileName = await this.surface.selectFileName();
     return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
-  }
-
-  private async selectHubIModel(): Promise<void> {
-    const props = await this.surface.selectHubIModel();
-    return undefined !== props ? this.openIModel(props) : Promise.resolve();
   }
 
   private async openIModel(props: OpenIModelProps): Promise<void> {

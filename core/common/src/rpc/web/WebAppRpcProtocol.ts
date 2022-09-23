@@ -36,7 +36,7 @@ export interface HttpServerRequest extends Readable {
   statusCode?: number;
   statusMessage?: string;
   socket: any;
-  destroy(error?: Error): void;
+  destroy(error?: Error): this;
   body: string | Buffer;
   path: string;
   method: string;
@@ -122,6 +122,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case 502: return RpcRequestStatus.BadGateway;
       case 503: return RpcRequestStatus.ServiceUnavailable;
       case 504: return RpcRequestStatus.GatewayTimeout;
+      case 408: return RpcRequestStatus.RequestTimeout;
+      case 429: return RpcRequestStatus.TooManyRequests;
       default: return RpcRequestStatus.Unknown;
     }
   }
@@ -137,6 +139,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
       case RpcRequestStatus.BadGateway: return 502;
       case RpcRequestStatus.ServiceUnavailable: return 503;
       case RpcRequestStatus.GatewayTimeout: return 504;
+      case RpcRequestStatus.RequestTimeout: return 408;
+      case RpcRequestStatus.TooManyRequests: return 429;
       default: return 501;
     }
   }
