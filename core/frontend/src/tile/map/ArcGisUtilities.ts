@@ -38,7 +38,7 @@ export class ArcGisUtilities {
 
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
-      range = MapCartoRectangle.create();
+      range = MapCartoRectangle.createMaximum();
 
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }

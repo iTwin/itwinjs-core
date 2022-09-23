@@ -18,20 +18,21 @@ import {
   QPoint3dList, Quantization, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileReadStatus,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
-import { getImageSourceFormatForMimeType, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { PickableGraphicOptions } from "../render/GraphicBuilder";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
+import { RealityMeshParams } from "../render/RealityMeshParams";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { RealityMeshPrimitive } from "../render/primitives/mesh/RealityMeshPrimitive";
 import { Triangle } from "../render/primitives/Primitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { RealityTileGeometry, TileContent } from "./internal";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
+import { TextureImageSource } from "../render/RenderTexture";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -844,7 +845,7 @@ export interface GltfReaderArgs {
    * sometimes required - for example, for [ViewFlags.wiremesh]($common).
    */
   deduplicateVertices?: boolean;
-  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshPrimitive]] will be used instead.
+  /** If true, the graphics produced will always use a [[VertexTable]]; otherwise, where possible a [[RealityMeshParams]] will be used instead.
    * Reality meshes are simpler but do not support some features like lighting.
    */
   vertexTableRequired?: boolean;
@@ -916,7 +917,7 @@ export abstract class GltfReader {
   protected get _samplers(): GltfDictionary<GltfSampler> { return this._glTF.samplers ?? emptyDict; }
   protected get _textures(): GltfDictionary<GltfTexture> { return this._glTF.textures ?? emptyDict; }
 
-  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: HTMLImageElement }> { return this._glTF.images ?? emptyDict; }
+  protected get _images(): GltfDictionary<GltfImage & { resolvedImage?: TextureImageSource }> { return this._glTF.images ?? emptyDict; }
   protected get _buffers(): GltfDictionary<GltfBuffer & { resolvedBuffer?: Uint8Array }> { return this._glTF.buffers ?? emptyDict; }
 
   /* -----------------------------------
@@ -1044,7 +1045,7 @@ export abstract class GltfReader {
     if (!gltfMesh.points || !gltfMesh.pointRange)
       return gltfMesh.primitive.getGraphics(this._system, instances);
 
-    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshPrimitive.createFromGltfMesh(gltfMesh);
+    const realityMeshPrimitive = (this._vertexTableRequired || instances) ? undefined : RealityMeshParams.fromGltfMesh(gltfMesh);
     if (realityMeshPrimitive) {
       const realityMesh = this._system.createRealityMesh(realityMeshPrimitive);
       if (realityMesh)
@@ -1971,7 +1972,7 @@ export abstract class GltfReader {
     }
   }
 
-  private async resolveImage(image: GltfImage & { resolvedImage?: HTMLImageElement }): Promise<void> {
+  private async resolveImage(image: GltfImage & { resolvedImage?: TextureImageSource }): Promise<void> {
     if (image.resolvedImage)
       return;
 
@@ -1990,7 +1991,11 @@ export abstract class GltfReader {
       const offset = bufferView.byteOffset ?? 0;
       const bytes = bufferData.subarray(offset, offset + bufferView.byteLength);
       try {
-        image.resolvedImage = await imageElementFromImageSource(new ImageSource(bytes, format));
+        const imageSource = new ImageSource(bytes, format);
+        if (this._system.supportsCreateImageBitmap)
+          image.resolvedImage = await imageBitmapFromImageSource(imageSource);
+        else
+          image.resolvedImage = await imageElementFromImageSource(imageSource);
       } catch (_) {
         //
       }

@@ -49,6 +49,7 @@ import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4dProps } from '@itwin/core-geometry';
 import { Mutable } from '@itwin/core-bentley';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
+import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
@@ -64,8 +65,10 @@ import { Range3dProps } from '@itwin/core-geometry';
 import { Readable } from 'stream';
 import { RepositoryStatus } from '@itwin/core-bentley';
 import { RpcInterfaceStatus } from '@itwin/core-bentley';
+import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
+import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
 import { Writable } from 'stream';
@@ -1108,7 +1111,7 @@ export interface CloudContainerUri {
     readonly uriParams: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
@@ -1133,7 +1136,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageContainerDescriptor {
     // (undocumented)
     name: string;
@@ -1143,7 +1146,7 @@ export interface CloudStorageContainerDescriptor {
     resource?: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageContainerUrl {
     // (undocumented)
     bound?: boolean;
@@ -1161,13 +1164,13 @@ export interface CloudStorageContainerUrl {
     valid: number;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export namespace CloudStorageContainerUrl {
     // (undocumented)
     export function empty(): CloudStorageContainerUrl;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export enum CloudStorageProvider {
     // (undocumented)
     AliCloud = 2,
@@ -1181,7 +1184,7 @@ export enum CloudStorageProvider {
     Unknown = 4
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
     protected constructor();
     // (undocumented)
@@ -3737,6 +3740,9 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 export { GetMetaDataFunction }
 
 // @internal (undocumented)
+export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
+
+// @internal (undocumented)
 export class GlbHeader extends TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
@@ -4686,7 +4692,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // @beta
+    // @beta (undocumented)
+    getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
+    // @beta @deprecated
     getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
@@ -6541,13 +6549,38 @@ export class QPoint2d {
     copyFrom(src: QPoint2d): void;
     static create(pos: Point2d, params: QParams2d): QPoint2d;
     static fromScalars(x: number, y: number): QPoint2d;
-    init(pos: Point2d, params: QParams2d): void;
+    init(pos: XAndY, params: QParams2d): void;
     setFromScalars(x: number, y: number): void;
     unquantize(params: QParams2d, out?: Point2d): Point2d;
     get x(): number;
     set x(x: number);
     get y(): number;
     set y(y: number);
+}
+
+// @public
+export interface QPoint2dBuffer {
+    params: QParams2d;
+    points: Uint16Array;
+}
+
+// @public (undocumented)
+export namespace QPoint2dBuffer {
+    export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d;
+    export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d;
+}
+
+// @public
+export class QPoint2dBufferBuilder {
+    constructor(options: QPoint2dBufferBuilderOptions);
+    readonly buffer: Uint16ArrayBuilder;
+    finish(): QPoint2dBuffer;
+    get(pointIndex: number, result?: QPoint2d): QPoint2d;
+    get length(): number;
+    readonly params: QParams2d;
+    push(pt: XAndY): void;
+    pushXY(x: number, y: number): void;
+    unquantize(pointIndex: number, result?: Point2d): Point2d;
 }
 
 // @public
@@ -6576,7 +6609,7 @@ export class QPoint3d {
     static create(pos: Point3d, params: QParams3d): QPoint3d;
     equals(other: QPoint3d): boolean;
     static fromScalars(x: number, y: number, z: number, out?: QPoint3d): QPoint3d;
-    init(pos: Point3d, params: QParams3d): void;
+    init(pos: XYAndZ, params: QParams3d): void;
     setFromScalars(x: number, y: number, z: number): void;
     unquantize(params: QParams3d, out?: Point3d): Point3d;
     get x(): number;
@@ -6585,6 +6618,31 @@ export class QPoint3d {
     set y(y: number);
     get z(): number;
     set z(z: number);
+}
+
+// @public
+export interface QPoint3dBuffer {
+    params: QParams3d;
+    points: Uint16Array;
+}
+
+// @public (undocumented)
+export namespace QPoint3dBuffer {
+    export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d;
+    export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d;
+}
+
+// @public
+export class QPoint3dBufferBuilder {
+    constructor(options: QPoint3dBufferBuilderOptions);
+    readonly buffer: Uint16ArrayBuilder;
+    finish(): QPoint3dBuffer;
+    get(pointIndex: number, result?: QPoint3d): QPoint3d;
+    get length(): number;
+    readonly params: QParams3d;
+    push(pt: XYAndZ): void;
+    pushXYZ(x: number, y: number, z: number): void;
+    unquantize(pointIndex: number, result?: Point3d): Point3d;
 }
 
 // @public
@@ -8751,12 +8809,12 @@ export interface TerrainProps {
     providerName?: string;
 }
 
-// @public
-export type TerrainProviderName = "CesiumWorldTerrain";
+// @public @deprecated
+export type TerrainProviderName = string;
 
 // @public
 export class TerrainSettings {
-    constructor(providerName?: TerrainProviderName, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+    constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
     readonly applyLighting: boolean;
     clone(changedProps?: TerrainProps): TerrainSettings;
     // (undocumented)
@@ -8769,7 +8827,7 @@ export class TerrainSettings {
     readonly heightOriginMode: TerrainHeightOriginMode;
     // @internal
     get nonLocatable(): true | undefined;
-    readonly providerName: TerrainProviderName;
+    readonly providerName: string;
     // (undocumented)
     toJSON(): TerrainProps;
 }
