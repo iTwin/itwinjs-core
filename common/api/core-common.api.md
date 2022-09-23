@@ -49,6 +49,7 @@ import { Matrix3d } from '@itwin/core-geometry';
 import { Matrix4dProps } from '@itwin/core-geometry';
 import { Mutable } from '@itwin/core-bentley';
 import { NonFunctionPropertiesOf } from '@itwin/core-bentley';
+import type { ObjectReference } from '@itwin/object-storage-core/lib/common';
 import { OpenMode } from '@itwin/core-bentley';
 import { OrderedId64Iterable } from '@itwin/core-bentley';
 import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
@@ -64,6 +65,7 @@ import { Range3dProps } from '@itwin/core-geometry';
 import { Readable } from 'stream';
 import { RepositoryStatus } from '@itwin/core-bentley';
 import { RpcInterfaceStatus } from '@itwin/core-bentley';
+import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
 import { Transform } from '@itwin/core-geometry';
 import { TransformProps } from '@itwin/core-geometry';
 import { Vector2d } from '@itwin/core-geometry';
@@ -1108,7 +1110,7 @@ export interface CloudContainerUri {
     readonly uriParams: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export abstract class CloudStorageCache<TContentId, TContentType> {
     constructor();
     // (undocumented)
@@ -1133,7 +1135,7 @@ export abstract class CloudStorageCache<TContentId, TContentType> {
     protected supplyUrlBase(_container: CloudStorageContainerUrl, _id: TContentId): string | undefined;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageContainerDescriptor {
     // (undocumented)
     name: string;
@@ -1143,7 +1145,7 @@ export interface CloudStorageContainerDescriptor {
     resource?: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageContainerUrl {
     // (undocumented)
     bound?: boolean;
@@ -1161,13 +1163,13 @@ export interface CloudStorageContainerUrl {
     valid: number;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export namespace CloudStorageContainerUrl {
     // (undocumented)
     export function empty(): CloudStorageContainerUrl;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export enum CloudStorageProvider {
     // (undocumented)
     AliCloud = 2,
@@ -1181,7 +1183,7 @@ export enum CloudStorageProvider {
     Unknown = 4
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class CloudStorageTileCache extends CloudStorageCache<TileContentIdentifier, Uint8Array> {
     protected constructor();
     // (undocumented)
@@ -3737,6 +3739,9 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 export { GetMetaDataFunction }
 
 // @internal (undocumented)
+export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
+
+// @internal (undocumented)
 export class GlbHeader extends TileHeader {
     constructor(stream: ByteStream);
     // (undocumented)
@@ -4686,7 +4691,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
-    // @beta
+    // @beta (undocumented)
+    getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined>;
+    // @beta @deprecated
     getTileCacheContainerUrl(_tokenProps: IModelRpcProps, _id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl>;
     static readonly interfaceName = "IModelTileRpcInterface";
     static interfaceVersion: string;
