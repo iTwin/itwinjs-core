@@ -49,8 +49,6 @@ const schema = loader.getSchema("BisCore");
 
 ## Improved link table selection
 
-## SELECT * FROM Link Tables
-
 Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
 
 ## Display
