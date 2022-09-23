@@ -9,7 +9,9 @@
 import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
-import { Diagnostics, DiagnosticsOptions, InstanceKey } from "@itwin/presentation-common";
+import {
+  combineDiagnosticsSeverities, compareDiagnosticsSeverities, Diagnostics, DiagnosticsLogEntry, DiagnosticsOptions, InstanceKey,
+} from "@itwin/presentation-common";
 
 const ecPresentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/ECPresentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 const rulesEngine = require("@itwin/presentation-common/lib/cjs/assets/locales/en/RulesEngine.json"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -51,17 +53,28 @@ export function normalizeVersion(version?: string) {
 }
 
 /**
- * A function that can be called after receiving diagnostics.
+ * A function that received request diagnostics and, optionally, request context.
  * @beta
  */
-export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 /**
  * Data structure for backend diagnostics options.
  * @beta
  */
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-  handler: BackendDiagnosticsHandler;
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
+  /**
+   * An optional function to supply request context that'll be passed to [[handler]] when
+   * it's called after the request is fulfilled.
+   */
+  requestContextSupplier?: () => TContext;
+
+  /**
+   * Request diagnostics handler function that is called after the request is fulfilled. The handler
+   * receives request diagnostics as the first argument and, optionally, request context as the
+   * second (see [[requestContextSupplier]]).
+   */
+  handler: BackendDiagnosticsHandler<TContext>;
 }
 
 /**
@@ -76,8 +89,52 @@ export interface BackendDiagnosticsAttribute {
   diagnostics?: BackendDiagnosticsOptions;
 }
 
-/**
- * A callback function that can be called after receiving diagnostics.
- * @public
- */
-export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
+/** @internal */
+export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined {
+  const combinedOptions: DiagnosticsOptions = {};
+  options.forEach((d) => {
+    if (!d)
+      return;
+    if (d.perf === true || typeof d.perf === "object" && (!combinedOptions.perf || typeof combinedOptions.perf === "object" && d.perf.minimumDuration < combinedOptions.perf.minimumDuration)) {
+      combinedOptions.perf = d.perf;
+    }
+    const combinedDev = combineDiagnosticsSeverities(d.dev, combinedOptions.dev);
+    if (combinedDev)
+      combinedOptions.dev = combinedDev;
+    const combinedEditor = combineDiagnosticsSeverities(d.editor, combinedOptions.editor);
+    if (combinedEditor)
+      combinedOptions.editor = combinedEditor;
+  });
+  return (combinedOptions.dev || combinedOptions.editor || combinedOptions.perf) ? combinedOptions : undefined;
+}
+
+/** @internal */
+export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext) {
+  const stripped = diagnostics.logs ? stripDiagnostics(options, diagnostics.logs) : undefined;
+  stripped && options.handler({ logs: stripped }, context);
+}
+function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(options: DiagnosticsOptions, diagnostics: TEntry[]) {
+  const stripped: TEntry[] = [];
+  diagnostics.forEach((entry) => {
+    if (DiagnosticsLogEntry.isScope(entry)) {
+      const scopeLogs = stripDiagnostics(options, entry.logs ?? []);
+      const strippedScope = { ...entry, logs: scopeLogs };
+      if (!strippedScope.logs)
+        delete strippedScope.logs;
+      if (entry.duration !== undefined && (options.perf === true || typeof options.perf === "object" && entry.duration >= options.perf.minimumDuration)) {
+        stripped.push(strippedScope);
+      } else if (scopeLogs) {
+        delete strippedScope.duration;
+        delete strippedScope.scopeCreateTimestamp;
+        stripped.push(strippedScope);
+      }
+    } else {
+      const matchesDevSeverity = entry.severity.dev && compareDiagnosticsSeverities(entry.severity.dev, options.dev) >= 0;
+      const matchesEditorSeverity = entry.severity.editor && compareDiagnosticsSeverities(entry.severity.editor, options.editor) >= 0;
+      if (matchesDevSeverity || matchesEditorSeverity) {
+        stripped.push({ ...entry });
+      }
+    }
+  });
+  return stripped.length > 0 ? stripped : undefined;
+}

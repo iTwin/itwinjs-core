@@ -29,7 +29,7 @@ class Coverage {
     private _maximumZoomLevel: number) { }
 
   public overlaps(quadId: QuadId, tilingScheme: MapTilingScheme): boolean {
-    const range: Range2d = quadId.getLatLongRange(tilingScheme);
+    const range: Range2d = quadId.getLatLongRangeDegrees(tilingScheme);
     if (quadId.level < this._minimumZoomLevel)
       return false;
     if (quadId.level > this._maximumZoomLevel)

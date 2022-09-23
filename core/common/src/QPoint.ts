@@ -6,8 +6,10 @@
  * @module Geometry
  */
 
-import { assert } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
+import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import {
+  Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
+} from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -18,6 +20,7 @@ import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d } from "@itwin/c
  * These routines are chiefly used by classes like [[QPoint2d]] and [[QPoint3d]] to reduce the space required to store
  * coordinate values for [RenderGraphic]($frontend)s.
  * @public
+ * @extensions
  */
 export namespace Quantization {
   export const rangeScale16 = 0xffff;
@@ -62,6 +65,7 @@ export namespace Quantization {
  * @see [[QPoint2d]] for the quantized representation of a [Point2d]($core-geometry).
  * @see [[QPoint2dList]] for a list of [[QPoint2d]]s quantized using a [[QParams2d]].
  * @public
+ * @extensions
  */
 export class QParams2d {
   /** The origin of the quantization range. */
@@ -147,6 +151,7 @@ export class QParams2d {
  * @see [[QParams2d]] to define quantization parameters for a range of points.
  * @see [[QPoint2dList]] for a list of points all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint2d {
   private _x: number = 0;
@@ -169,8 +174,8 @@ export class QPoint2d {
   /** Construct with `x` and `y` initialized to zero. */
   public constructor() { }
 
-  /** Initialize this point by quantizing the supplied Point2d using the specified params */
-  public init(pos: Point2d, params: QParams2d) {
+  /** Initialize this point by quantizing the supplied { x, y } using the specified params */
+  public init(pos: XAndY, params: QParams2d) {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
   }
@@ -227,8 +232,62 @@ export class QPoint2d {
   }
 }
 
+/** A compact representation of a list of [[QPoint2d]]s stored in a `Uint16Array`
+ * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.uvs]($frontend).
+ * @see [[QPoint3dBuffer]] for 3d points.
+ * @public
+ * @extensions
+ */
+export interface QPoint2dBuffer {
+  /** The parameters used to quantize the [[points]]. */
+  params: QParams2d;
+  /** The [[QPoint2d]]s as pairs of unsigned 16-bit integers. The length must be a multiple of 2; the number of points in the array is half the array's length.
+   * To obtain the `n`th point, use `QPoint2d.fromScalars(buffer.points[n * 2], buffer.points[n * 2 + 1])`.
+   */
+  points: Uint16Array;
+}
+
+/** @public
+ * @extensions
+ */
+export namespace QPoint2dBuffer {
+  const scratchQPoint2d = new QPoint2d();
+
+  /** Extracts the point at the specified index from a buffer.
+   * @param points The buffer in which each consecutive pair of integers is a 2d quantized point.
+   * @param pointIndex The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [[QPoint2d]] to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint2d): QPoint2d {
+    const index = pointIndex * 2;
+    const x = points[index + 0];
+    const y = points[index + 1];
+    if (undefined === x || undefined === y)
+      throw new Error("Index out of range");
+
+    result = result ?? new QPoint2d();
+    result.setFromScalars(x, y);
+    return result;
+  }
+
+  /** Extracts and unquantizes the point at the specified index from a buffer.
+   * @param buffer The array of points and the quantization parameters.
+   * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [Point2d]($core-geometry) to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  export function unquantizePoint(buffer: QPoint2dBuffer, pointIndex: number, result?: Point2d): Point2d {
+    const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint2d);
+    return qpt.unquantize(buffer.params, result);
+  }
+}
+
 /** A list of [[QPoint2d]]s all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint2dList {
   /** Parameters used to quantize the points. */
@@ -335,6 +394,7 @@ export class QPoint2dList {
  * @see [[QPoint3d]] for the quantized representation of a [Point3d]($core-geometry).
  * @see [[QPoint3dList]] for a list of [[QPoint3d]]s quantized using a [[QParams3d]].
  * @public
+ * @extensions
  */
 export class QParams3d {
   /** The origin of the quantization range. */
@@ -452,6 +512,7 @@ export class QParams3d {
  * @see [[QParams3d]] to define quantization parameters for a range of points.
  * @see [[QPoint3dList]] for a list of points all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint3d {
   private _x: number = 0;
@@ -482,8 +543,8 @@ export class QPoint3d {
   /** Construct with all components initialized to zero. */
   public constructor() { }
 
-  /** Initialize this point by quantizing the supplied Point3d using the specified params */
-  public init(pos: Point3d, params: QParams3d): void {
+  /** Initialize this point by quantizing the supplied { x, y, z } using the specified params */
+  public init(pos: XYAndZ, params: QParams3d): void {
     this.x = Quantization.quantize(pos.x, params.origin.x, params.scale.x);
     this.y = Quantization.quantize(pos.y, params.origin.y, params.scale.y);
     this.z = Quantization.quantize(pos.z, params.origin.z, params.scale.z);
@@ -572,8 +633,62 @@ export class QPoint3d {
   }
 }
 
+/** A compact representation of a list of [[QPoint3d]]s stored in a `Uint16Array`.
+ * This representation is particularly useful when passing data to WebGL; for example, see [RealityMeshParams.positions]($frontend).
+ * @public
+ * @extensions
+ */
+export interface QPoint3dBuffer {
+  /** The parameters used to quantize the [[points]]. */
+  params: QParams3d;
+  /** The [[QPoint3d]]s as pairs of unsigned 16-bit integers. The length must be a multiple of 3; the number of points in the array is half the array's length.
+   * To obtain the `n`th point, use `QPoint3d.fromScalars(buffer.points[n * 3], buffer.points[n * 3 + 1], buffer.points[n * 3 + 2])`.
+   */
+  points: Uint16Array;
+}
+
+/** @public
+ * @extensions
+ */
+export namespace QPoint3dBuffer {
+  const scratchQPoint3d = new QPoint3d();
+
+  /** Extracts the point at the specified index from a buffer.
+   * @param points The buffer in which each consecutive pair of integers is a 3d quantized point.
+   * @param pointIndex The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [[QPoint3d]] to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  export function getQPoint(points: Uint16Array, pointIndex: number, result?: QPoint3d): QPoint3d {
+    const index = pointIndex * 3;
+    const x = points[index + 0];
+    const y = points[index + 1];
+    const z = points[index + 2];
+    if (undefined === x || undefined === y || undefined === z)
+      throw new Error("Index out of range");
+
+    result = result ?? new QPoint3d();
+    result.setFromScalars(x, y, z);
+    return result;
+  }
+
+  /** Extracts and unquantizes the point at the specified index from a buffer.
+   * @param buffer The array of points and the quantization parameters.
+   * @param The index of the point to extract, ranging from zero to one less than the number of points in the buffer.
+   * @param result If supplied, a preallocated [Point3d]($core-geometry) to initialize with the result and return.
+   * @returns The point at `pointIndex`.
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  export function unquantizePoint(buffer: QPoint3dBuffer, pointIndex: number, result?: Point3d): Point3d {
+    const qpt = getQPoint(buffer.points, pointIndex, scratchQPoint3d);
+    return qpt.unquantize(buffer.params, result);
+  }
+}
+
 /** A list of [[QPoint3d]]s all quantized to the same range.
  * @public
+ * @extensions
  */
 export class QPoint3dList {
   /** Parameters used to quantize the points. */
@@ -698,5 +813,178 @@ export class QPoint3dList {
   /** An iterator over the points in the list. */
   public [Symbol.iterator]() {
     return this.list[Symbol.iterator]();
+  }
+}
+
+/** Options used to construct a [[QPoint2dBufferBuilder]].
+ * @beta
+ * @extensions
+ */
+interface QPoint2dBufferBuilderOptions {
+  /** The range to which the points will be quantized. This must be large enough to contain all of the points that will be added to the buffer. */
+  range: Range2d;
+  /** The number of points for which to allocate space.
+   * @see [TypedArrayBuilderOptions.initialCapacity]($bentley).
+   */
+  initialCapacity?: number;
+  /** Multiplier used to compute new capacity when resizing the buffer.
+   * @see [TypedArrayBuilderOptions.growthFactor]($bentley).
+   */
+  growthFactor?: number;
+}
+
+/** Constructs a [[QPoint2dBuffer]] using a [Uint16ArrayBuilder]($bentley).
+ * @public
+ * @extensions
+ */
+export class QPoint2dBufferBuilder {
+  private readonly _scratchQPoint2d = new QPoint2d();
+
+  /** The parameters used to quantize the points in the [[buffer]]. */
+  public readonly params: QParams2d;
+  /** The buffer that holds the points. */
+  public readonly buffer: Uint16ArrayBuilder;
+
+  /** Construct a new buffer with a [[length]] of zero. */
+  public constructor(options: QPoint2dBufferBuilderOptions) {
+    this.params = QParams2d.fromRange(options.range);
+    const initialCapacity = options.initialCapacity ?? 0;
+    this.buffer = new Uint16ArrayBuilder({
+      growthFactor: options.growthFactor,
+      initialCapacity: 2 * initialCapacity,
+    });
+  }
+
+  /** Append a point with the specified quantized coordinates. */
+  public pushXY(x: number, y: number): void {
+    this.buffer.push(x);
+    this.buffer.push(y);
+  }
+
+  /** Append a point with the specified quantized coordinates. */
+  public push(pt: XAndY): void {
+    this.pushXY(pt.x, pt.y);
+  }
+
+  /** The number of points currently in the [[buffer]]. */
+  public get length(): number {
+    const len = this.buffer.length;
+    assert(len % 2 === 0);
+    return len / 2;
+  }
+
+  /** Returns the quantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [[QPoint2d]] to initialize with the result and return.
+   * @returns The quantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  public get(pointIndex: number, result?: QPoint2d): QPoint2d {
+    return QPoint2dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
+  }
+
+  /** Returns the unquantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [Point2d]($core-geometry) to initialize with the result and return.
+   * @returns The unquantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  public unquantize(pointIndex: number, result?: Point2d): Point2d {
+    return this.get(pointIndex, this._scratchQPoint2d).unquantize(this.params, result);
+  }
+
+  /** Obtain a [[QPoint2dBuffer]] containing all of the points that have been appended by this builder. */
+  public finish(): QPoint2dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
+  }
+}
+
+/** Options used to construct a [[QPoint3dBufferBuilder]].
+ * @beta
+ * @extensions
+ */
+interface QPoint3dBufferBuilderOptions {
+  /** The range to which the points will be quantized. This must be large enough to contain all of the points that will be added to the buffer. */
+  range: Range3d;
+  /** The number of points for which to allocate space.
+   * @see [TypedArrayBuilderOptions.initialCapacity]($bentley).
+   */
+  initialCapacity?: number;
+  /** Multiplier used to compute new capacity when resizing the buffer.
+   * @see [TypedArrayBuilderOptions.growthFactor]($bentley).
+   */
+  growthFactor?: number;
+}
+
+/** Constructs a [[QPoint3dBuffer]] using a [Uint16ArrayBuilder]($bentley).
+ * @public
+ * @extensions
+ */
+export class QPoint3dBufferBuilder {
+  private readonly _scratchQPoint3d = new QPoint3d();
+
+  /** The parameters used to quantize the points in the [[buffer]]. */
+  public readonly params: QParams3d;
+  /** The buffer that holds the points. */
+  public readonly buffer: Uint16ArrayBuilder;
+
+  /** Construct a new buffer with a [[length]] of zero. */
+  public constructor(options: QPoint3dBufferBuilderOptions) {
+    this.params = QParams3d.fromRange(options.range);
+    const initialCapacity = options.initialCapacity ?? 0;
+    this.buffer = new Uint16ArrayBuilder({
+      growthFactor: options.growthFactor,
+      initialCapacity: 3 * initialCapacity,
+    });
+  }
+
+  /** Append a point with the specified quantized coordinates. */
+  public pushXYZ(x: number, y: number, z: number): void {
+    this.buffer.push(x);
+    this.buffer.push(y);
+    this.buffer.push(z);
+  }
+
+  /** Append a point with the specified quantized coordinates. */
+  public push(pt: XYAndZ): void {
+    this.pushXYZ(pt.x, pt.y, pt.z);
+  }
+
+  /** The number of points currently in the [[buffer]]. */
+  public get length(): number {
+    const len = this.buffer.length;
+    assert(len % 3 === 0);
+    return len / 3;
+  }
+
+  /** Returns the quantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [[QPoint3d]] to initialize with the result and return.
+   * @returns The quantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  public get(pointIndex: number, result?: QPoint3d): QPoint3d {
+    return QPoint3dBuffer.getQPoint(this.buffer.toTypedArray(), pointIndex, result);
+  }
+
+  /** Returns the unquantized point at the specified index in [[buffer]].
+   * @param pointIndex The index of the point of interest, ranging from zero to one minus the number of points currently in the [[buffer]].
+   * @param result If supplied, a [Point3d]($core-geometry) to initialize with the result and return.
+   * @returns The unquantized point at the specified index in [[buffer]].
+   * @throws Error if `pointIndex` is out of bounds.
+   */
+  public unquantize(pointIndex: number, result?: Point3d): Point3d {
+    return this.get(pointIndex, this._scratchQPoint3d).unquantize(this.params, result);
+  }
+
+  /** Obtain a [[QPoint3dBuffer]] containing all of the points that have been appended by this builder. */
+  public finish(): QPoint3dBuffer {
+    return {
+      params: this.params,
+      points: this.buffer.toTypedArray(),
+    };
   }
 }

@@ -13,6 +13,7 @@ import { ToolbarHelper } from "@itwin/appui-react";
 import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
+import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
 
 /**
  * WidgetApiStageUiItemsProvider provides widget in the bottom panel that can exercise the Widget API on Widgets in the other panels.
@@ -24,6 +25,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
 
   public static register(localizationNamespace: string) {
     UiItemsManager.register(new WidgetApiStageUiItemsProvider(localizationNamespace), { stageIds: [WidgetApiStage.stageId] });
+    SetWidgetStateTool.register(localizationNamespace);
   }
 
   constructor(_localizationNamespace: string) {
@@ -47,16 +49,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         getWidgetContent: () => <h2>Left WL-A</h2>,
         hideWithUiWhenFloating: true,
       });
-      widgets.push({
-        id: "WL-B",
-        label: "WL-B",
-        canPopout: true,
-        icon: "icon-app-2",
-        defaultState: WidgetState.Open,
-        getWidgetContent: () => <h2>Left WL-B</h2>,
-        hideWithUiWhenFloating: true,
-
-      });
     } else if (section === StagePanelSection.End) {
       widgets.push({
         id: "WL-1",
@@ -79,14 +71,6 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
         icon: "icon-smiley-happy-very",
         canPopout: true,
         getWidgetContent: () => <h2>Left WL-3</h2>,
-      });
-      widgets.push({
-        id: "WL-4",
-        label: "WL-4",
-        icon: "icon-smiley-sad-very",
-        canPopout: true,
-        defaultState: WidgetState.Open,
-        getWidgetContent: () => <h2>Left WL-4</h2>,
       });
     }
     return widgets;

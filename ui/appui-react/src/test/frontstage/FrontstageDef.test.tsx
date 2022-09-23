@@ -8,11 +8,10 @@ import * as React from "react";
 import * as sinon from "sinon";
 import produce from "immer";
 import { MockRender } from "@itwin/core-frontend";
-import { CoreTools, Frontstage, FRONTSTAGE_SETTINGS_NAMESPACE, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, getFrontstageStateSettingName, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
+import { CoreTools, Frontstage, FrontstageDef, FrontstageManager, FrontstageProps, FrontstageProvider, StagePanelDef, UiFramework, WidgetDef } from "../../appui-react";
 import TestUtils, { storageMock } from "../TestUtils";
 import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@itwin/appui-abstract";
-import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState, NineZoneState } from "@itwin/appui-layout-react";
-import { UiStateStorageStatus } from "@itwin/core-react";
+import { addFloatingWidget, addPanelWidget, addPopoutWidget, addTab, createNineZoneState } from "@itwin/appui-layout-react";
 import { ProcessDetector } from "@itwin/core-bentley";
 
 describe("FrontstageDef", () => {
@@ -199,19 +198,19 @@ describe("FrontstageDef", () => {
 
   it("should be able to determine if widget is visible", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addFloatingWidget(state, "fw2", ["t4"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
     state = addTab(state, "t4");
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
+    state = addFloatingWidget(state, "fw2", ["t4"]);
 
     const frontstageDef = new FrontstageDef();
     frontstageDef.nineZoneState = state;
     const fw1Visible = frontstageDef.isWidgetDisplayed("t1");
-    expect (fw1Visible).to.be.true;
+    expect(fw1Visible).to.be.true;
 
     const t2 = new WidgetDef({
       id: "t2",
@@ -233,24 +232,25 @@ describe("FrontstageDef", () => {
     findWidgetDefGetter.returns(t3);
 
     const rightMiddleVisible = frontstageDef.isWidgetDisplayed("t2");
-    expect (rightMiddleVisible).to.be.true;
+    expect(rightMiddleVisible).to.be.true;
     const rightEndVisible = frontstageDef.isWidgetDisplayed("t3");
-    expect (rightEndVisible).to.be.false;
+    expect(rightEndVisible).to.be.false;
     const floatingWidgetVisible = frontstageDef.isWidgetDisplayed("t4");
-    expect (floatingWidgetVisible).to.be.true;
+    expect(floatingWidgetVisible).to.be.true;
     expect(frontstageDef.getWidgetCurrentState(t4)).to.eql(WidgetState.Floating);
   });
 
   it("should save size and position", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "pw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
+    sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(new WidgetDef({ id: "t1"}));
     sinon.stub(frontstageDef, "nineZoneState").get(() => state);
     sinon.stub(frontstageDef, "id").get(() => "testFrontstage");
     sinon.stub(frontstageDef, "version").get(() => 11);
@@ -260,28 +260,28 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerWidth").get(() => 999);
     sinon.stub(window, "innerHeight").get(() => 999);
 
-    await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
+    frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
 
-    const uiSettingsStorage = UiFramework.getUiStateStorage();
-    if (uiSettingsStorage) {
-      const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiStateStorageStatus.Success === settingsResult.status);
-      const newState = settingsResult.setting.nineZone as NineZoneState;
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
-    }
+    const widgetDef = frontstageDef.findWidgetDef("t1");
+    expect(widgetDef?.popoutBounds).to.eql({
+      left: 99,
+      top: 99,
+      right: 99 + 999,
+      bottom: 99 + 999,
+    });
   });
 
   it("should save size and position in Electron", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "pw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
+    sinon.stub(frontstageDef, "findWidgetDef").withArgs("t1").returns(new WidgetDef({ id: "t1"}));
     sinon.stub(frontstageDef, "nineZoneState").get(() => state);
     sinon.stub(frontstageDef, "id").get(() => "testFrontstage");
     sinon.stub(frontstageDef, "version").get(() => 11);
@@ -292,30 +292,27 @@ describe("FrontstageDef", () => {
     sinon.stub(window, "innerHeight").get(() => 999);
 
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => true);
-    await frontstageDef.saveChildWindowSizeAndPosition("fw1", window);
+    frontstageDef.saveChildWindowSizeAndPosition("pw1", window);
     sinon.stub(ProcessDetector, "isElectronAppFrontend").get(() => false);
 
-    const uiSettingsStorage = UiFramework.getUiStateStorage();
-    if (uiSettingsStorage) {
-      const settingsResult = await uiSettingsStorage.getSetting(FRONTSTAGE_SETTINGS_NAMESPACE, getFrontstageStateSettingName(frontstageDef.id));
-      expect(UiStateStorageStatus.Success === settingsResult.status);
-      const newState = settingsResult.setting.nineZone as NineZoneState;
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.height).to.eql(999 + 39);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.width).to.eql(999 + 16);
-      expect(newState.tabs.t1.preferredPopoutWidgetSize?.x).to.eql(99);
-    }
+    const widgetDef = frontstageDef.findWidgetDef("t1");
+    expect(widgetDef?.popoutBounds).to.eql({
+      left: 99,
+      top: 99,
+      right: 99 + 999 + 16,
+      bottom: 99 + 999 + 39,
+    });
   });
 });
 
 describe("float and dock widget", () => {
   it("panel widget should float", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPanelWidget(state, "right", "rightStart", ["t1"], { minimized: true });
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -331,12 +328,13 @@ describe("float and dock widget", () => {
 
   it("panel widget should popout", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
+    state = addTab(state, "t4");
     state = addPanelWidget(state, "left", "leftStart", ["t1"], { minimized: true });
     state = addPanelWidget(state, "right", "rightMiddle", ["t2", "t4"], { activeTabId: "t2" });
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
     state = produce(state, (draft) => {
       draft.panels.right.size = 300;
     });
@@ -384,12 +382,12 @@ describe("float and dock widget", () => {
 
   it("reopen popout window", async () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addTab(state, "t1");
+    state = addTab(state, "t2");
+    state = addTab(state, "t3");
     state = addPopoutWidget(state, "fw1", ["t1"]);
     state = addPopoutWidget(state, "fw2", ["t2"]);
     state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
-    state = addTab(state, "t1", { preferredPopoutWidgetSize: { width: 99, height: 99, x: 99, y: 99 } });
-    state = addTab(state, "t2");
-    state = addTab(state, "t3");
 
     const frontstageDef = new FrontstageDef();
 
@@ -431,12 +429,12 @@ describe("float and dock widget", () => {
 
   it("floating widget should dock", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addFloatingWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addFloatingWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -455,12 +453,12 @@ describe("float and dock widget", () => {
 
   it("popout widget should dock", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -479,12 +477,12 @@ describe("float and dock widget", () => {
 
   it("dock popout widget container given widget Id", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -503,12 +501,12 @@ describe("float and dock widget", () => {
 
   it("dock popout widget container given container Id", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -524,12 +522,12 @@ describe("float and dock widget", () => {
 
   it("popout widget should float", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addPopoutWidget(state, "fw1", ["t1"]);
-    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
-    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
     state = addTab(state, "t1");
     state = addTab(state, "t2");
     state = addTab(state, "t3");
+    state = addPopoutWidget(state, "fw1", ["t1"]);
+    state = addPanelWidget(state, "right", "rightMiddle", ["t2"]);
+    state = addPanelWidget(state, "right", "rightEnd", ["t3"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -546,8 +544,8 @@ describe("float and dock widget", () => {
 
   it("set floating widget bounds", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addFloatingWidget(state, "fw1", ["t1"]);
     state = addTab(state, "t1");
+    state = addFloatingWidget(state, "fw1", ["t1"]);
 
     const frontstageDef = new FrontstageDef();
     const nineZoneStateSetter = sinon.spy();
@@ -562,8 +560,8 @@ describe("float and dock widget", () => {
 
   it("get floating containers 1 available", () => {
     let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
-    state = addFloatingWidget(state, "fw1", ["t1"], { bounds: { top: 55, left: 105, bottom: 155, right: 255 } });
     state = addTab(state, "t1");
+    state = addFloatingWidget(state, "fw1", ["t1"], { bounds: { top: 55, left: 105, bottom: 155, right: 255 } });
     const frontstageDef = new FrontstageDef();
     sinon.stub(UiFramework, "uiVersion").get(() => "2");
     sinon.stub(frontstageDef, "nineZoneState").get(() => state);

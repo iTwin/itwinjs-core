@@ -80,7 +80,7 @@ describe("StandardNavigationToolsUiItemsProvider", () => {
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
       ToolbarOrientation.Horizontal, undefined).length).to.eq(6);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
-      ToolbarOrientation.Vertical, undefined).length).to.eq(2);
+      ToolbarOrientation.Vertical, undefined).length).to.eq(3);
 
     UiItemsManager.unregister(provider.id);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
@@ -93,6 +93,7 @@ describe("StandardNavigationToolsUiItemsProvider", () => {
       vertical: {
         walk: true,
         toggleCamera: true,
+        setupWalkCamera: true,
       },
     });
     UiItemsManager.register(provider, { stageIds: ["test"] });
@@ -100,7 +101,7 @@ describe("StandardNavigationToolsUiItemsProvider", () => {
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
       ToolbarOrientation.Horizontal, undefined).length).to.eq(0);
     expect(UiItemsManager.getToolbarButtonItems("test", StageUsage.General, ToolbarUsage.ViewNavigation,
-      ToolbarOrientation.Vertical, undefined).length).to.eq(2);
+      ToolbarOrientation.Vertical, undefined).length).to.eq(3);
     UiItemsManager.unregister(provider.id);
     expect(UiItemsManager.hasRegisteredProviders).to.be.false;
   });
