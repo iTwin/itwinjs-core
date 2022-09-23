@@ -23,6 +23,7 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Electron 17 support
@@ -161,6 +162,10 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
 
 ## Deprecations
+
+### @itwin/core-geometry
+
+`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
 
 ### @itwin/core-transformer
 
