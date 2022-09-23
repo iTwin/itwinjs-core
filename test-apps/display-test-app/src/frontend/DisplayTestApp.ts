@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
+import { RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -80,20 +80,6 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   return iModelConnection;
 }
 
-class FakeTileCache extends CloudStorageTileCache {
-  public constructor() { super(); }
-
-  protected override async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
-    const init: RequestInit = {
-      headers: container.headers,
-      method: "GET",
-    };
-
-    const url = `${container.url}/${this.formResourceName(id)}`;
-    return fetch(url, init);
-  }
-}
-
 function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
   const renderSystemOptions: RenderSystem.Options = {
     disabledExtensions: configuration.disabledExtensions as WebGLExtensionName[],
@@ -147,9 +133,6 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
-
-  if (configuration.useFakeCloudStorageTileCache)
-    (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
   return [renderSystemOptions, tileAdminProps];
 }

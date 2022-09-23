@@ -206,7 +206,7 @@ export namespace IModelJson {
      */
     xyVectors?: [XYZProps, XYZProps];
     /**
-     * Cartesian coordinate directions defined by X direction then Y direction.
+     * Cartesian coordinate directions defined by Z direction then X direction.
      * * The right side contains two vectors in an array.
      * * The first vector gives the z axis direction
      * * * This is normalized to unit length.
@@ -376,42 +376,44 @@ export namespace IModelJson {
   }
 
   /**
-   * Interface for Box (or frustum with all rectangular sections parallel to primary xy section)
-   * * Orientation may be given in any `AxesProp`s way (yawPitchRoll, xyVectors, zxVectors)
-   * * if topX or topY are omitted, each defaults to its baseX or baseY peer.
-   * * `topOrigin` is determined with this priority order:
-   * * * `topOrigin` overrides given `height`
-   * * * on the z axis at distance `height`
-   * * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`
+   * Interface for Box (or frustum with all rectangular sections parallel to primary xy section).
+   * * Orientation may be given in any `AxesProps` way (`yawPitchRollAngles`, `xyVectors`, `zxVectors`).
+   * * If `topX` or `topY` are omitted, each defaults to its `baseX` or `baseY` peer.
+   * * If `topOrigin` is given, `height` is unused.
+   * * If `topOrigin` is omitted and `height` is given, `topOrigin` is computed along the z axis at distance `height`.
+   * * If both `topOrigin` and `height` are omitted, `height` defaults to `baseX`, and `topOrigin` is computed as above.
    * @public
    */
   export interface BoxProps extends AxesProps {
     /** Origin of the box coordinate system  (required) */
-    origin: XYZProps;
+    baseOrigin: XYZProps;
+    /** @deprecated Use baseOrigin */
+    origin?: XYZProps;
     /** base x size (required) */
     baseX: number;
-    /** base size
-     * * if omitted, defaults to baseX.
+    /** base y size.
+     * * if omitted, baseX is used.
      */
-    baseY: number;
+    baseY?: number;
     /** top origin.
      * * This is NOT required to be on the z axis.
-     * * If omitted, a `heigh` must be present to given topOrigin on z axis.
+     * * If omitted, it is computed along the z axis at distance `height`.
      */
     topOrigin?: XYZProps;
-    /** optional height.  This is only used if `topOrigin` is omitted. */
+    /** optional height. This is only used if `topOrigin` is omitted.
+     * * If omitted, `baseX` is used.
+    */
     height?: number;
     /** x size on top section.
-     * * If omitted, `baseX` is used
+     * * If omitted, `baseX` is used.
      */
     topX?: number;
     /** y size on top section.
-     * * If omitted, `baseY` is used
+     * * If omitted, `baseY` is used.
      */
     topY?: number;
     /** optional capping flag. */
     capped?: boolean;
-
   }
 
   /**
@@ -537,6 +539,8 @@ export namespace IModelJson {
         const value = json[propertyName];
         if (Geometry.isNumberArray(value, 3))
           return Vector3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2))
+          return Vector3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value))
           return Vector3d.fromJSON(value);
       }
@@ -548,6 +552,8 @@ export namespace IModelJson {
         const value = json[propertyName];
         if (Geometry.isNumberArray(value, 3))
           return Point3d.create(value[0], value[1], value[2]);
+        if (Geometry.isNumberArray(value, 2))
+          return Point3d.create(value[0], value[1]);
         if (XYZ.isXAndY(value))
           return Point3d.fromJSON(value);
       }
@@ -1170,8 +1176,8 @@ export namespace IModelJson {
       const height = Reader.parseNumberProperty(json, "height", baseX);
       const axes = Reader.parseOrientation(json, true)!;
 
-      if (baseOrigin && !topOrigin)
-        topOrigin = Matrix3d.xyzMinusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+      if (baseOrigin && !topOrigin && height)
+        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined

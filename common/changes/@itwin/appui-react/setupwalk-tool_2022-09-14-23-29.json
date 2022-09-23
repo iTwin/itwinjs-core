@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Adding setup walk tool to standard navigation tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

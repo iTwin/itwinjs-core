@@ -2580,11 +2580,13 @@ export namespace IModelJson {
         points: [XYZProps];
     }
     export interface BoxProps extends AxesProps {
+        baseOrigin: XYZProps;
         baseX: number;
-        baseY: number;
+        baseY?: number;
         capped?: boolean;
         height?: number;
-        origin: XYZProps;
+        // @deprecated (undocumented)
+        origin?: XYZProps;
         topOrigin?: XYZProps;
         topX?: number;
         topY?: number;

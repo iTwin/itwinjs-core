@@ -335,7 +335,7 @@ interface ImdlAreaPattern {
   readonly type: "areaPattern";
   /** The Id of the [[ImdlAreaPatternSymbol]] containing the pattern geometry. */
   readonly symbolName: string;
-  /** A [ClipVector]($geometry-core) used to clip symbols to the pattern region's boundary. */
+  /** A [ClipVector]($core-geometry) used to clip symbols to the pattern region's boundary. */
   readonly clip: ClipVectorProps;
   /** Uniform scale applied to the pattern geometry. */
   readonly scale: number;

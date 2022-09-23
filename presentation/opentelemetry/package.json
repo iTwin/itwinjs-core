@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-opentelemetry",
-  "version": "3.4.0-dev.47",
+  "version": "3.4.0-dev.51",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
@@ -51,7 +51,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
-    "@opentelemetry/api": "^1.0.4",
+    "@opentelemetry/api": "1.0.4",
     "@opentelemetry/resources": "^1.5.0",
     "@opentelemetry/sdk-trace-base": "^1.5.0",
     "@opentelemetry/semantic-conventions": "^1.5.0",
