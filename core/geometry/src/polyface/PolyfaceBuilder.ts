@@ -1590,7 +1590,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     builder.endFace();
     return builder.claimPolyface();
   }
-  /** Create a polyface containing an array of faces of a HalfEdgeGraph, with test function to filter faces.
+  /** Create a polyface containing the faces of a HalfEdgeGraph that are specified by the HalfEdge array.
    * @internal
    */
   public static graphFacesToPolyface(graph: HalfEdgeGraph, faces: HalfEdge[]): IndexedPolyface {

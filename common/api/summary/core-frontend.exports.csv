@@ -644,6 +644,7 @@ public;TileRequest
 public;TileRequestChannel
 public;TileRequestChannels
 public;TileRequestChannelStatistics
+beta;TileStorage
 public;class TileTree
 public;TileTreeDiscloser
 public;TileTreeLoadStatus

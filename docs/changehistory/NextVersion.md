@@ -8,6 +8,8 @@ Table of contents:
 
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Improved link table selection](improved-link-table-selection)
+- [Cloud storage changes](#cloud-storage-changes)
 - [Display](#display)
   - [Custom terrain providers](#custom-terrain-providers)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
@@ -21,8 +23,8 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
+  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
-- [Cloud storage changes](#cloud-storage-changes)
 
 ## Electron 17 support
 
@@ -45,6 +47,18 @@ const schema = loader.getSchema("BisCore");
 ```
 
 [SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+
+## Improved link table selection
+
+Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
+
+## Cloud storage changes
+
+The existing beta implementations of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) have been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
+
+[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
+
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
 
 ## Display
 
@@ -149,14 +163,10 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 
 ## Deprecations
 
+### @itwin/core-geometry
+
+`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
+
 ### @itwin/core-transformer
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
-
-## Cloud storage changes
-
-The existing beta implementation of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) has been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
-
-[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
-
-A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
