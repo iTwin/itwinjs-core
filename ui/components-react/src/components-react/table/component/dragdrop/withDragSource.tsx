@@ -96,7 +96,9 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
         clientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
         initialClientOffset: { x: dragRect.left || 0, y: dragRect.top || 0 },
       };
-      if (props.dragProps.onDragSourceBegin) return props.dragProps.onDragSourceBegin(obj);
+      if (props.dragProps.onDragSourceBegin)
+        return props.dragProps.onDragSourceBegin(obj);
+
       return obj;
     },
     endDrag(props, monitor, component) {

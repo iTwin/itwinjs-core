@@ -143,8 +143,12 @@ export function TimeField({ time, timeDisplay, readOnly, onTimeChange }: TimeFie
     // istanbul ignore else
     if (event.key === SpecialKey.ArrowDown || event.key === SpecialKey.ArrowUp) {
       let newHours = hours + (event.key === SpecialKey.ArrowDown ? -1 : 1);
-      if (newHours < 0) newHours = 24;
-      if (newHours > 24 || (newHours > 23 && ((minutes + seconds) > 0))) newHours = 0;
+      if (newHours < 0)
+        newHours = 24;
+
+      if (newHours > 24 || (newHours > 23 && ((minutes + seconds) > 0)))
+        newHours = 0;
+
       setHoursText(getDisplayHours(newHours).toString().padStart(2, "0"));
       updateTimeSpec({ ...timeSpec, hours: newHours });
       showDayPeriod && setDayPeriodText(newHours >= 12 ? pmLabelRef.current : amLabelRef.current);
