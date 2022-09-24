@@ -277,7 +277,9 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
         }
         index++;
         return React.cloneElement(child, childProps);
-      } else return child; // Else, pass through unmodified
+      } else {
+        return child; // Else, pass through unmodified
+      }
     });
     this._length = index;
     return ch;
