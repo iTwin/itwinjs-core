@@ -281,7 +281,9 @@ export class IModelExporter {
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
       const alreadyDeletedSubModel = deletedSubModels.has(modelId);
-      if (alreadyDeletedSubModel) continue;
+      if (alreadyDeletedSubModel)
+        continue;
+
       this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {

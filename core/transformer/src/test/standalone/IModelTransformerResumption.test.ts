@@ -74,16 +74,22 @@ class CountdownTransformer extends IModelTransformer {
     const _this = this; // eslint-disable-line @typescript-eslint/no-this-alias
     const oldExportElem = this.exporter.exportElement; // eslint-disable-line @typescript-eslint/unbound-method
     this.exporter.exportElement = async function (...args) {
-      if (_this.elementExportsUntilCall === 0) await _this.callback?.();
+      if (_this.elementExportsUntilCall === 0)
+        await _this.callback?.();
+
       if (_this.elementExportsUntilCall !== undefined)
         _this.elementExportsUntilCall--;
+
       return oldExportElem.call(this, ...args);
     };
     const oldExportRel = this.exporter.exportRelationship; // eslint-disable-line @typescript-eslint/unbound-method
     this.exporter.exportRelationship = async function (...args) {
-      if (_this.relationshipExportsUntilCall === 0) await _this.callback?.();
+      if (_this.relationshipExportsUntilCall === 0)
+        await _this.callback?.();
+
       if (_this.relationshipExportsUntilCall !== undefined)
         _this.relationshipExportsUntilCall--;
+
       return oldExportRel.call(this, ...args);
     };
   }
@@ -127,8 +133,11 @@ function setupCrashingNativeAndTransformer({
           }
           const isConstructor = (o: Function): o is new (...a: any[]) => any =>
             "prototype" in o;
-          if (isConstructor(superValue)) return new superValue(...args);
-          else return superValue.call(this, ...args);
+          if (isConstructor(superValue))
+            return new superValue(...args);
+
+          else
+            return superValue.call(this, ...args);
         }
       );
     }
@@ -171,7 +180,9 @@ async function transformWithCrashAndRecover<
   transformer,
   disableCrashing,
   transformerProcessing = async (t, time = 0) => {
-    if (time === 0) await t.processSchemas();
+    if (time === 0)
+      await t.processSchemas();
+
     await t.processAll();
   },
 }: {
@@ -777,8 +788,10 @@ describe("test resuming transformations", () => {
             crashableCallsMade = 0;
             console.log(`crashed after ${timer.elapsed.seconds} seconds`); // eslint-disable-line no-console
           }
-          if (i === MAX_ITERS) assert.fail("crashed too many times");
+          if (i === MAX_ITERS)
+            assert.fail("crashed too many times");
         }
+
         console.log(`completed after ${crashCount} crashes`); // eslint-disable-line no-console
         const result = {
           resultDb: targetDb,
@@ -836,7 +849,9 @@ describe("test resuming transformations", () => {
     for (let i = 0; i < MAX_CRASHING_TRANSFORMS && totalCrashingTransformations < targetTotalCrashingTransformations; ++i) {
       // eslint-disable-next-line @typescript-eslint/no-shadow
       const result = await runAndCompareWithControl(true);
-      if (result.crashCount === 0) continue;
+      if (result.crashCount === 0)
+        continue;
+
       totalCrashingTransformations++;
       const proportionOfNonCrashingTransformTime = result.finalTransformationTime / avgNonCrashingTransformationsTime;
       const proportionOfNonCrashingTransformCalls = result.finalTransformationCallsMade / avgCrashableCallsMade;
@@ -849,6 +864,7 @@ describe("test resuming transformations", () => {
       /* eslint-enable no-console */
       totalCrashingTransformationsTime += result.finalTransformationTime;
     }
+
     const avgCrashingTransformationsTime = totalCrashingTransformationsTime / totalCrashingTransformations;
     /* eslint-disable no-console */
     console.log(`avg crashable calls made: ${avgCrashableCallsMade}`);
