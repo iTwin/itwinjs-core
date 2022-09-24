@@ -63,8 +63,15 @@ class RepositionAction extends UndoAction {
     assert(this._newParent !== undefined);
     this._newIndex = _elem.position();
   }
-  public reinstate() { this._newParent.add(this._elem, this._newIndex); }
-  public reverse() { this._oldParent.add(this._elem, this._oldIndex); if (this._elem.inSelection) MarkupApp.markup!.selected.drop(this._elem); }
+  public reinstate() {
+    this._newParent.add(this._elem, this._newIndex);
+  }
+
+  public reverse() {
+    this._oldParent.add(this._elem, this._oldIndex);
+    if (this._elem.inSelection)
+      MarkupApp.markup!.selected.drop(this._elem);
+  }
 }
 
 /** created when an existing element's properties are modified.
@@ -99,7 +106,11 @@ export class UndoManager {
 
   /** @internal */
   public get size() { return this._stack.length; }
-  private startCommand() { if (0 === this._grouped) ++this._currentCmd; }
+  private startCommand() {
+    if (0 === this._grouped)
+      ++this._currentCmd;
+  }
+
   private startGroup() { this.startCommand(); ++this._grouped; }
   private endGroup() { --this._grouped; }
 

@@ -452,8 +452,15 @@ export class SymbolTool extends RedlineTool {
 
   constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
 
-  public override async onInstall(): Promise<boolean> { if (undefined === this._symbolData) return false; return super.onInstall(); }
-  protected override showPrompt(): void { this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true); }
+  public override async onInstall(): Promise<boolean> {
+    if (undefined === this._symbolData)
+      return false;
+    return super.onInstall();
+  }
+
+  protected override showPrompt(): void {
+    this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true);
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (undefined === this._symbolData)

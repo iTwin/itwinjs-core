@@ -390,7 +390,8 @@ export class MarkupSelected {
   }
   public restart(el?: MarkupElement) {
     this.emptyAll();
-    if (el) this.add(el);
+    if (el)
+      this.add(el);
   }
   public constructor(public svg: G) { }
   public clearEditors() {
@@ -416,7 +417,10 @@ export class MarkupSelected {
    */
   public drop(el: MarkupElement): boolean { el.unHilite(); return this.elements.delete(el) ? (this.sizeChanged(), true) : false; }
   /** Replace an entry in the selection set with a different element. */
-  public replace(oldEl: MarkupElement, newEl: MarkupElement) { if (this.drop(oldEl)) this.add(newEl); }
+  public replace(oldEl: MarkupElement, newEl: MarkupElement) {
+    if (this.drop(oldEl))
+      this.add(newEl);
+  }
 
   public deleteAll(undo: UndoManager) {
     undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
@@ -446,9 +450,14 @@ export class MarkupSelected {
 
   public ungroupAll(undo: UndoManager) {
     const groups = new Set<MarkupElement>();
-    this.elements.forEach((el) => { if (el instanceof G) groups.add(el); });
+    this.elements.forEach((el) => {
+      if (el instanceof G)
+        groups.add(el);
+    });
+
     if (0 === groups.size)
       return;
+
     undo.performOperation(MarkupApp.getActionName("ungroup"), () => {
       groups.forEach((g) => {
         g.unHilite(); this.elements.delete(g); undo.onDelete(g);
@@ -485,9 +494,15 @@ export class SelectTool extends MarkupTool {
 
   public get flashedElement(): MarkupElement | undefined { return this._flashedElement; }
   public set flashedElement(el: MarkupElement | undefined) {
-    if (el === this._flashedElement) return;
-    if (undefined !== this._flashedElement) this._flashedElement.unFlash();
-    if (undefined !== el) el.flash();
+    if (el === this._flashedElement)
+      return;
+
+    if (undefined !== this._flashedElement)
+      this._flashedElement.unFlash();
+
+    if (undefined !== el)
+      el.flash();
+
     this._flashedElement = el;
   }
   protected unflashSelected(): void {
