@@ -386,9 +386,14 @@ export namespace IModelJson {
    */
   export interface BoxProps extends AxesProps {
     /** Origin of the box coordinate system  (required) */
-    baseOrigin: XYZProps;
-    /** @deprecated Use baseOrigin */
-    origin?: XYZProps;
+    origin: XYZProps;
+    /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
+     * Now both native and TypeScript accept either, preferring "origin", but "baseOrigin" is undocumented in TypeScript.
+     * It's also "deprecated" so that linter will warn to use the documented property instead.
+     * @internal
+     * @deprecated use origin
+     */
+    baseOrigin?: XYZProps;
     /** base x size (required) */
     baseX: number;
     /** base y size.
@@ -1167,7 +1172,10 @@ export namespace IModelJson {
     /** Parse box contents to `Box` instance */
     public static parseBox(json?: BoxProps): Box | undefined {
       const capped = Reader.parseBooleanProperty(json, "capped", false);
-      const baseOrigin = Reader.parsePoint3dProperty(json, "baseOrigin");
+
+      // A mismatch between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
+      // Native now outputs and accepts either, preferring "origin"; TypeScript continues to expose only "origin".
+      let origin = Reader.parsePoint3dProperty(json, "origin") ?? Reader.parsePoint3dProperty(json, "baseOrigin");
       const baseX = Reader.parseNumberProperty(json, "baseX");
       const baseY = Reader.parseNumberProperty(json, "baseY", baseX);
       let topOrigin = Reader.parsePoint3dProperty(json, "topOrigin");
@@ -1176,8 +1184,8 @@ export namespace IModelJson {
       const height = Reader.parseNumberProperty(json, "height", baseX);
       const axes = Reader.parseOrientation(json, true)!;
 
-      if (baseOrigin && !topOrigin && height)
-        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(baseOrigin, axes, Vector3d.create(0, 0, height));
+      if (origin && !topOrigin && height)
+        topOrigin = Matrix3d.xyzPlusMatrixTimesXYZ(origin, axes, Vector3d.create(0, 0, height));
 
       if (capped !== undefined
         && baseX !== undefined
@@ -1185,10 +1193,10 @@ export namespace IModelJson {
         && topY !== undefined
         && topX !== undefined
         && axes
-        && baseOrigin
+        && origin
         && topOrigin
       ) {
-        return Box.createDgnBoxWithAxes(baseOrigin, axes, topOrigin, baseX, baseY, topX, topY, capped);
+        return Box.createDgnBoxWithAxes(origin, axes, topOrigin, baseX, baseY, topX, topY, capped);
       }
       return undefined;
     }
@@ -1688,6 +1696,7 @@ export namespace IModelJson {
     public handleBox(box: Box): any {
       const out: any = {
         box: {
+          origin: box.getBaseOrigin().toJSON(),
           baseOrigin: box.getBaseOrigin().toJSON(),
           baseX: box.getBaseX(),
           baseY: box.getBaseY(),
