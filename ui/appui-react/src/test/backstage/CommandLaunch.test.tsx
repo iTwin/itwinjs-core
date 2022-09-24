@@ -49,7 +49,11 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute with args", () => {
       let argsPassed = false;
-      const testExecute = (args: any) => { if (args) argsPassed = true; };
+      const testExecute = (args: any) => {
+        if (args)
+          argsPassed = true;
+      };
+
       const wrapper = mount(
         <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" // eslint-disable-line deprecation/deprecation
           descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={testExecute}

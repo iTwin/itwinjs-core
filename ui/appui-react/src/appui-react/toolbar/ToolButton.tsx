@@ -52,7 +52,8 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore if
-    if (this._componentUnmounting) return;
+    if (this._componentUnmounting)
+      return;
 
     let refreshState = false;
     let newState: BaseItemState = { ...this.state };

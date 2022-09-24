@@ -51,8 +51,10 @@ export class PropsHelper {
   /** returns true if the two objects are the same using a shallow compare of each property */
   public static isShallowEqual(newObj: any, prevObj: any) {
     for (const key in newObj) {
-      if (newObj[key] !== prevObj[key]) return false;
+      if (newObj[key] !== prevObj[key])
+        return false;
     }
+
     return true;
   }
   public static getAbstractPropsForReactIcon(iconSpec: IconSpec, internalData?: Map<string, any>): Partial<AbstractWidgetProps> | Partial<BackstageItem> {

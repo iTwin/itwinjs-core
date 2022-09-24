@@ -102,7 +102,8 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     // istanbul ignore if
-    if (this._componentUnmounting) return;
+    if (this._componentUnmounting)
+      return;
 
     let refreshState = false;
     let newState: BaseItemState = { ...this.state };

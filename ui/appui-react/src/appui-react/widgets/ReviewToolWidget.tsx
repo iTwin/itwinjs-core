@@ -67,19 +67,29 @@ export class ReviewToolWidget extends React.Component<ReviewToolWidgetProps, any
 
     const horizontalToolbarItems = new ItemList();
     // istanbul ignore else
-    if (this.props.prefixHorizontalItems) horizontalToolbarItems.addItems(this.props.prefixHorizontalItems);
+    if (this.props.prefixHorizontalItems)
+      horizontalToolbarItems.addItems(this.props.prefixHorizontalItems);
+
     // istanbul ignore else
-    if (this._horizontalToolbarItems) horizontalToolbarItems.addItems(this._horizontalToolbarItems);
+    if (this._horizontalToolbarItems)
+      horizontalToolbarItems.addItems(this._horizontalToolbarItems);
+
     // istanbul ignore else
-    if (this.props.suffixHorizontalItems) horizontalToolbarItems.addItems(this.props.suffixHorizontalItems);
+    if (this.props.suffixHorizontalItems)
+      horizontalToolbarItems.addItems(this.props.suffixHorizontalItems);
 
     const verticalToolbarItems = new ItemList();
     // istanbul ignore else
-    if (this.props.prefixVerticalItems) verticalToolbarItems.addItems(this.props.prefixVerticalItems);
+    if (this.props.prefixVerticalItems)
+      verticalToolbarItems.addItems(this.props.prefixVerticalItems);
+
     // istanbul ignore else
-    if (this._verticalToolbarItems) verticalToolbarItems.addItems(this._verticalToolbarItems);
+    if (this._verticalToolbarItems)
+      verticalToolbarItems.addItems(this._verticalToolbarItems);
+
     // istanbul ignore else
-    if (this.props.suffixVerticalItems) verticalToolbarItems.addItems(this.props.suffixVerticalItems);
+    if (this.props.suffixVerticalItems)
+      verticalToolbarItems.addItems(this.props.suffixVerticalItems);
 
     return (
       <ToolWidget // eslint-disable-line deprecation/deprecation
