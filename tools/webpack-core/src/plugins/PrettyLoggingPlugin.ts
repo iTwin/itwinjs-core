@@ -61,7 +61,8 @@ export class PrettyLoggingPlugin {
   }
 
   public handlePluginLogs(logs?: Record<string, StatsLogging>) {
-    if (!logs) return;
+    if (!logs)
+      return;
 
     const logLevelColors: any = {
       error: chalk.red,
