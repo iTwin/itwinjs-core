@@ -1175,7 +1175,7 @@ export namespace IModelJson {
 
       // A mismatch between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
       // Native now outputs and accepts either, preferring "origin"; TypeScript continues to expose only "origin".
-      let origin = Reader.parsePoint3dProperty(json, "origin") ?? Reader.parsePoint3dProperty(json, "baseOrigin");
+      const origin = Reader.parsePoint3dProperty(json, "origin") ?? Reader.parsePoint3dProperty(json, "baseOrigin");
       const baseX = Reader.parseNumberProperty(json, "baseX");
       const baseY = Reader.parseNumberProperty(json, "baseY", baseX);
       let topOrigin = Reader.parsePoint3dProperty(json, "topOrigin");
