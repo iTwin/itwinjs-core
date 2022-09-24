@@ -288,7 +288,14 @@ export class ViewHandleArray {
   public onReinitialize(): void { this.handles.forEach((handle) => handle.onReinitialize()); }
   public onCleanup(): void { this.handles.forEach((handle) => handle.onCleanup()); }
   public motion(ev: BeButtonEvent): void { this.handles.forEach((handle) => handle.motion(ev)); }
-  public onWheel(ev: BeWheelEvent): boolean { let preventDefault = false; this.handles.forEach((handle) => { if (handle.onWheel(ev)) preventDefault = true; }); return preventDefault; }
+  public onWheel(ev: BeWheelEvent): boolean {
+    let preventDefault = false;
+    this.handles.forEach((handle) => {
+      if (handle.onWheel(ev))
+        preventDefault = true;
+    });
+    return preventDefault;
+  }
 
   /** determine whether a handle of a specific type exists */
   public hasHandle(handleType: ViewHandleType): boolean { return this.handles.some((handle) => handle.handleType === handleType); }
@@ -3505,10 +3512,27 @@ export class WindowAreaTool extends ViewTool {
 
   public override async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
   public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
-  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this._haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
-  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
+    if (!this._haveFirstPoint && startEv.isSingleTouch)
+      await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev);
+
+    return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No;
+  }
+
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+    if (this._haveFirstPoint)
+      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+  }
+
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+    if (this._haveFirstPoint)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+  }
+
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+    if (this._haveFirstPoint)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+  }
 
   private computeWindowCorners(): Point3d[] | undefined {
     const vp = this.viewport!;
@@ -4014,7 +4038,14 @@ export class SetupCameraTool extends PrimitiveTool {
   public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
   protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) await this.onReinitialize(); else await this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    if (this._haveEyePt)
+      await this.onReinitialize();
+    else
+      await this.exitTool();
+
+    return EventHandled.Yes;
+  }
 
   /** @beta */
   protected provideToolAssistance(): void {
@@ -4303,7 +4334,14 @@ export class SetupWalkCameraTool extends PrimitiveTool {
   public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
   protected setupAndPromptForNextAction(): void { IModelApp.accuSnap.enableSnap(true); this.provideToolAssistance(); }
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { if (this._haveEyePt) await this.onReinitialize(); else await this.exitTool(); return EventHandled.Yes; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    if (this._haveEyePt)
+      await this.onReinitialize();
+    else
+      await this.exitTool();
+
+    return EventHandled.Yes;
+  }
 
   /** @beta */
   protected provideToolAssistance(): void {

@@ -756,7 +756,12 @@ export class MeasureLocationTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorate(context: DecorateContext): void { if (!this.isCompatibleViewport(context.viewport, false)) return; this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
+  public override decorate(context: DecorateContext): void {
+    if (!this.isCompatibleViewport(context.viewport, false))
+      return;
+
+    this._acceptedLocations.forEach((marker) => marker.addDecoration(context));
+  }
   /** @internal */
   public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
@@ -1048,7 +1053,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
+  public override decorateSuspended(context: DecorateContext): void {
+    if (this._isComplete)
+      this.decorate(context);
+  }
 
   /** @internal */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -1148,7 +1156,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
       this._isComplete = true;
       this._points.length = 0;
-      for (const pt of points) this._points.push(pt);
+      for (const pt of points)
+        this._points.push(pt);
 
       await this.updateTotals();
       this.setupAndPromptForNextAction();
@@ -1228,7 +1237,10 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   protected abstract getOperation(): MassPropertiesOperation;
 
   /** @internal */
-  protected allowView(vp: Viewport) { return (MassPropertiesOperation.AccumulateVolumes === this.getOperation() ? vp.view.isSpatialView() : (vp.view.isSpatialView() || vp.view.isDrawingView())); }
+  protected allowView(vp: Viewport) {
+    return (MassPropertiesOperation.AccumulateVolumes === this.getOperation() ? vp.view.isSpatialView() : (vp.view.isSpatialView() || vp.view.isDrawingView()));
+  }
+
   /** @internal */
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
   /** @internal */
@@ -1236,7 +1248,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   /** @internal */
-  public override async onCleanup() { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+  public override async onCleanup() {
+    if (0 !== this._acceptedIds.length)
+      this.iModel.hilited.setHilite(this._acceptedIds, false);
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -1283,7 +1299,15 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorate(context: DecorateContext): void { if (!this.isCompatibleViewport(context.viewport, false)) return; this._acceptedMeasurements.forEach((marker) => marker.addDecoration(context)); if (undefined !== this._totalMarker) this._totalMarker.addDecoration(context); }
+  public override decorate(context: DecorateContext): void {
+    if (!this.isCompatibleViewport(context.viewport, false))
+      return;
+
+    this._acceptedMeasurements.forEach((marker) => marker.addDecoration(context));
+    if (undefined !== this._totalMarker)
+      this._totalMarker.addDecoration(context);
+  }
+
   /** @internal */
   public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
@@ -1440,7 +1464,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public async doMeasureSelectedElements(viewport: Viewport): Promise<void> {
     const candidates: Id64Array = [];
-    viewport.iModel.selectionSet.elements.forEach((val) => { if (!Id64.isInvalid(val) && !Id64.isTransient(val)) candidates.push(val); });
+    viewport.iModel.selectionSet.elements.forEach((val) => {
+      if (!Id64.isInvalid(val) && !Id64.isTransient(val))
+        candidates.push(val);
+    });
+
     if (0 === candidates.length)
       return;
 

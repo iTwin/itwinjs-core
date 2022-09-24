@@ -140,7 +140,9 @@ export class TentativePoint {
       ctx.beginPath();
       ctx.strokeStyle = "white";
       ctx.lineWidth = 1;
-      if (!this.isSnapped) ctx.setLineDash([4, 1]);
+      if (!this.isSnapped)
+        ctx.setLineDash([4, 1]);
+
       ctx.shadowColor = "black";
       ctx.shadowBlur = 5;
       ctx.moveTo(-tpSize, 0);

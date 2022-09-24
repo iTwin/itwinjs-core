@@ -598,7 +598,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
-    if (viewRot === undefined) viewRot = this.getRotation();
+    if (viewRot === undefined)
+      viewRot = this.getRotation();
+
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();

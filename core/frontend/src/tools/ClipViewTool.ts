@@ -729,7 +729,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
   }
 
   /** @internal */
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (this._points.length > 0 && undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
 
   /** @internal */
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -859,7 +862,10 @@ export class ViewClipByRangeTool extends ViewClipTool {
   }
 
   /** @internal */
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (undefined !== this._corner && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    if (undefined !== this._corner && undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
 
   /** @internal */
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -929,7 +935,11 @@ export class ViewClipByElementTool extends ViewClipTool {
     await super.onPostInstall();
     if (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive) {
       let useSelection = true;
-      this.targetView.iModel.selectionSet.elements.forEach((val) => { if (Id64.isInvalid(val) || Id64.isTransient(val)) useSelection = false; });
+      this.targetView.iModel.selectionSet.elements.forEach((val) => {
+        if (Id64.isInvalid(val) || Id64.isTransient(val))
+          useSelection = false;
+      });
+
       if (useSelection) {
         await this.doClipToSelectedElements(this.targetView);
         return;
@@ -986,7 +996,9 @@ export class ViewClipByElementTool extends ViewClipTool {
         const indices = Range3d.faceCornerIndices(canUseXZ ? 3 : 1);
         const corners = range.corners();
         const points: Point3d[] = [];
-        for (const index of indices) points.push(corners[index]);
+        for (const index of indices)
+          points.push(corners[index]);
+
         transform.multiplyPoint3dArrayInPlace(points);
         transform.multiplyVector(zDir, zDir);
         transform.setFrom(Transform.createOriginAndMatrix(points[0], Matrix3d.createRigidHeadsUp(zDir)));
@@ -1860,8 +1872,12 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       if (undefined === transform)
         continue;
 
-      const visPts: Point3d[] = []; for (const pt of shapePts) visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
-      const hidPts: Point3d[] = []; for (const pt of shapePts) hidPts.push(pt.clone());
+      const visPts: Point3d[] = []; for (const pt of shapePts)
+        visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
+
+      const hidPts: Point3d[] = []; for (const pt of shapePts)
+        hidPts.push(pt.clone());
+
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
       const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);

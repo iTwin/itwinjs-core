@@ -790,11 +790,15 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ModelState.classFullName; // use "BisCore:Model" as default class name
       params.where = queryParams.where || "";
       if (!queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       if (!queryParams.wantTemplate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsTemplate=FALSE ";
       }
       return IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelProps(iModel.getRpcProps(), params);
@@ -1021,7 +1025,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       params.from = queryParams.from || ViewState.classFullName; // use "BisCore:ViewDefinition" as default class name
       params.where = queryParams.where || "";
       if (queryParams.wantPrivate === undefined || !queryParams.wantPrivate) {
-        if (params.where.length > 0) params.where += " AND ";
+        if (params.where.length > 0)
+          params.where += " AND ";
+
         params.where += "IsPrivate=FALSE ";
       }
       const viewProps = await IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params);

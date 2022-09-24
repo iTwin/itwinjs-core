@@ -309,7 +309,13 @@ export class AccuDraw {
   /** @internal */
   public onInitialized() { this.enableForSession(); }
   /** @internal */
-  public getRotation(rMatrix?: Matrix3d): Matrix3d { if (!rMatrix) rMatrix = this._rMatrix; Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix); return rMatrix; }
+  public getRotation(rMatrix?: Matrix3d): Matrix3d {
+    if (!rMatrix)
+      rMatrix = this._rMatrix;
+
+    Matrix3d.createRows(this.axes.x, this.axes.y, this.axes.z, rMatrix);
+    return rMatrix;
+  }
 
   public get isActive(): boolean { return CurrentState.Active === this.currentState; }
   public get isEnabled(): boolean { return (this.currentState > CurrentState.NotEnabled); }
@@ -345,21 +351,27 @@ export class AccuDraw {
 
   /** @internal */
   public setCompassMode(mode: CompassMode): void {
-    if (mode === this.compassMode) return;
+    if (mode === this.compassMode)
+      return;
+
     this.compassMode = mode;
     this.onCompassModeChange();
   }
 
   /** @internal */
   public setRotationMode(mode: RotationMode): void {
-    if (mode === this.rotationMode) return;
+    if (mode === this.rotationMode)
+      return;
+
     this.rotationMode = mode;
     this.onRotationModeChange();
   }
 
   /** @internal */
   public setFieldLock(index: ItemField, locked: boolean): void {
-    if (locked === this._fieldLocked[index]) return;
+    if (locked === this._fieldLocked[index])
+      return;
+
     this._fieldLocked[index] = locked;
     this.onFieldLockChange(index);
   }
@@ -3184,21 +3196,36 @@ export class AccuDrawHintBuilder {
    */
   public sendHints(activate = true): boolean {
     let flags = 0;
-    if (this._flagOrigin) flags |= AccuDrawFlags.SetOrigin;
-    if (this.setOriginFixed) flags |= AccuDrawFlags.FixedOrigin;
-    if (this.setOriginAlways) flags |= AccuDrawFlags.AlwaysSetOrigin;
-    if (this._flagRotation) flags |= AccuDrawFlags.SetRMatrix;
-    if (this._flagXAxis) flags |= AccuDrawFlags.SetXAxis;
-    if (this._flagXAxis2) flags |= AccuDrawFlags.SetXAxis2;
-    if (this._flagNormal) flags |= AccuDrawFlags.SetNormal;
-    if (this._flagModePolar) flags |= AccuDrawFlags.SetModePolar;
-    if (this._flagModeRectangular) flags |= AccuDrawFlags.SetModeRect;
-    if (this.setLockDistance) flags |= AccuDrawFlags.LockDistance;
-    if (this.setLockAngle) flags |= AccuDrawFlags.LockAngle;
-    if (this.setLockX) flags |= AccuDrawFlags.Lock_X;
-    if (this.setLockY) flags |= AccuDrawFlags.Lock_Y;
-    if (this.setLockZ) flags |= AccuDrawFlags.Lock_Z;
-    if (this.enableSmartRotation) flags |= AccuDrawFlags.SmartRotation;
+    if (this._flagOrigin)
+      flags |= AccuDrawFlags.SetOrigin;
+    if (this.setOriginFixed)
+      flags |= AccuDrawFlags.FixedOrigin;
+    if (this.setOriginAlways)
+      flags |= AccuDrawFlags.AlwaysSetOrigin;
+    if (this._flagRotation)
+      flags |= AccuDrawFlags.SetRMatrix;
+    if (this._flagXAxis)
+      flags |= AccuDrawFlags.SetXAxis;
+    if (this._flagXAxis2)
+      flags |= AccuDrawFlags.SetXAxis2;
+    if (this._flagNormal)
+      flags |= AccuDrawFlags.SetNormal;
+    if (this._flagModePolar)
+      flags |= AccuDrawFlags.SetModePolar;
+    if (this._flagModeRectangular)
+      flags |= AccuDrawFlags.SetModeRect;
+    if (this.setLockDistance)
+      flags |= AccuDrawFlags.LockDistance;
+    if (this.setLockAngle)
+      flags |= AccuDrawFlags.LockAngle;
+    if (this.setLockX)
+      flags |= AccuDrawFlags.Lock_X;
+    if (this.setLockY)
+      flags |= AccuDrawFlags.Lock_Y;
+    if (this.setLockZ)
+      flags |= AccuDrawFlags.Lock_Z;
+    if (this.enableSmartRotation)
+      flags |= AccuDrawFlags.SmartRotation;
 
     const accuDraw = IModelApp.accuDraw;
     if (BentleyStatus.SUCCESS !== accuDraw.setContext(flags, this._origin, this._flagRotation ? this._rMatrix : this._axis, undefined, this._flagDistance ? this._distance : undefined, this._flagAngle ? this._angle : undefined))

@@ -71,7 +71,9 @@ export class TouchCursor implements CanvasDecoration {
     ctx.bezierCurveTo(-this._size, -this._size * 0.85, -this._size * 0.6, -this._yOffset * 0.6, 0, -this._yOffset * 0.8);
     ctx.bezierCurveTo(this._size * 0.6, -this._yOffset * 0.6, this._size, -this._size * 0.85, this._size, 0);
     ctx.arc(0, 0, this._size, 0, Math.PI);
-    if (filled) ctx.fill();
+    if (filled)
+      ctx.fill();
+
     ctx.stroke();
 
     ctx.beginPath();
@@ -625,13 +627,19 @@ export class AccuSnap implements Decorator {
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
     if (thisHit.isModelHit || thisHit.isMapHit || thisHit.isClassifier) {
       if (snapModes.includes(SnapMode.Nearest)) {
-        if (out) out.snapStatus = SnapStatus.Success;
+        if (out)
+          out.snapStatus = SnapStatus.Success;
+
         return new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.InRange);
       } else if (1 === snapModes.length && snapModes.includes(SnapMode.Intersection)) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        if (out)
+          out.snapStatus = SnapStatus.NoSnapPossible;
+
         return undefined;
       } else {
-        if (out) out.snapStatus = SnapStatus.Success;
+        if (out)
+          out.snapStatus = SnapStatus.Success;
+
         const realitySnap = new SnapDetail(thisHit, SnapMode.Nearest, SnapHeat.None);
         realitySnap.sprite = undefined; // Don't show a snap mode that isn't applicable, but still accept hit point...
         return realitySnap;
@@ -700,7 +708,9 @@ export class AccuSnap implements Decorator {
       }
 
       if (1 === snapModes.length && undefined === requestProps.intersectCandidates) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
+        if (out)
+          out.snapStatus = SnapStatus.NoSnapPossible;
+
         return undefined; // Don't make back end request when only doing intersection snap when we don't have another hit to intersect with...
       }
     }
@@ -708,7 +718,9 @@ export class AccuSnap implements Decorator {
     try {
       const result = await thisHit.iModel.requestSnap(requestProps);
 
-      if (out) out.snapStatus = result.status;
+      if (out)
+        out.snapStatus = result.status;
+
       if (result.status !== SnapStatus.Success)
         return undefined;
 
@@ -753,7 +765,9 @@ export class AccuSnap implements Decorator {
       const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
       return intersect;
     } catch (_err) {
-      if (out) out.snapStatus = SnapStatus.Aborted;
+      if (out)
+        out.snapStatus = SnapStatus.Aborted;
+
       return undefined;
     }
   }
@@ -949,15 +963,32 @@ export class AccuSnap implements Decorator {
   /** @internal */
   public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }
   /** @internal */
-  public onTouchStart(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchStart(ev); }
+  public onTouchStart(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor)
+      this.touchCursor.doTouchStart(ev);
+  }
+
   /** @internal */
-  public onTouchEnd(ev: BeTouchEvent): void { if (undefined !== this.touchCursor && 0 === ev.touchCount) this.touchCursor.doTouchEnd(ev); }
+  public onTouchEnd(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor && 0 === ev.touchCount)
+      this.touchCursor.doTouchEnd(ev);
+  }
+
   /** @internal */
-  public onTouchCancel(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchEnd(ev); }
+  public onTouchCancel(ev: BeTouchEvent): void {
+    if (undefined !== this.touchCursor)
+      this.touchCursor.doTouchEnd(ev);
+  }
+
   /** @internal */
-  public onTouchMove(ev: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMove(ev) : false; }
+  public onTouchMove(ev: BeTouchEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMove(ev) : false;
+  }
+
   /** @internal */
-  public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false; }
+  public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean {
+    return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false;
+  }
 
   /** @internal */
   public get wantVirtualCursor(): boolean {

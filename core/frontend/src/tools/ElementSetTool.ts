@@ -64,7 +64,10 @@ export class ElementAgenda {
   public getSource() { return this.groupMarks.length === 0 ? ModifyElementSource.Unknown : this.groupMarks[this.groupMarks.length - 1].source; }
 
   /** Set the source for the last group added to this agenda. */
-  public setSource(val: ModifyElementSource) { if (this.groupMarks.length > 0) this.groupMarks[this.groupMarks.length - 1].source = val; }
+  public setSource(val: ModifyElementSource) {
+    if (this.groupMarks.length > 0)
+      this.groupMarks[this.groupMarks.length - 1].source = val;
+  }
 
   public get isEmpty() { return this.length === 0; }
   public get count() { return this.length; }
@@ -144,7 +147,14 @@ export class ElementAgenda {
     const elements = this.elements;
     const groupMarks = this.groupMarks;
 
-    elements.some((entry, index) => { if (id !== entry) return false; pos = index; return true; });
+    elements.some((entry, index) => {
+      if (id !== entry)
+        return false;
+
+      pos = index;
+      return true;
+    });
+
     if (pos === -1)
       return false;
 
@@ -405,7 +415,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
    */
   protected async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
     const ids = new Set<Id64String>();
-    ss.elements.forEach((val) => { if (this.isElementIdValid(val, ModifyElementSource.SelectionSet)) ids.add(val); });
+    ss.elements.forEach((val) => {
+      if (this.isElementIdValid(val, ModifyElementSource.SelectionSet))
+        ids.add(val);
+    });
+
     return ids;
   }
 
@@ -535,7 +549,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
         }
         if (undefined !== outline && 0 !== outline.size) {
           const inside = new Set<string>();
-          contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
+          contents.forEach((id) => {
+            if (!outline.has(id))
+              inside.add(id);
+          });
+
           contents = inside;
         }
       } else {
@@ -705,7 +723,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.strokeStyle = bestContrastIsBlack ? "black" : "white";
       ctx.lineWidth = 1;
-      if (overlapSelection) ctx.setLineDash([5, 5]);
+      if (overlapSelection)
+        ctx.setLineDash([5, 5]);
+
       if (crossingLine) {
         ctx.beginPath();
         ctx.moveTo(0, 0);

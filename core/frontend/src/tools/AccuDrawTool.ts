@@ -1088,8 +1088,17 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
   public override async exitTool() { await super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
 
   public activateAccuDrawOnStart() { return true; }
-  public doManipulationStart() { if (this.activateAccuDrawOnStart()) IModelApp.accuDraw.activate(); this.doManipulation(undefined, true); }
-  public doManipulationStop(cancel: boolean) { if (!cancel) IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete(); }
+  public doManipulationStart() {
+    if (this.activateAccuDrawOnStart())
+      IModelApp.accuDraw.activate();
+    this.doManipulation(undefined, true);
+  }
+
+  public doManipulationStop(cancel: boolean) {
+    if (!cancel)
+      IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete();
+  }
+
   public onManipulationComplete(): AccuDrawFlags { return 0; }
   public abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
 }

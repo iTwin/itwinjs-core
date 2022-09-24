@@ -162,9 +162,15 @@ export class CurrentInputState {
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
   public onInstallTool() { this.clearKeyQualifiers(); this.lastWheelEvent = undefined; this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
-  public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
+  public clearViewport(vp: Viewport) {
+    if (vp === this.viewport)
+      this.viewport = undefined;
+  }
+
   private isAnyDragging() { return this.button.some((button) => button.isDragging); }
-  private setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  private setKeyQualifier(qual: BeModifierKeys, down: boolean) {
+    this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual));
+  }
 
   public setKeyQualifiers(ev: MouseEvent | KeyboardEvent | TouchEvent): void {
     this.setKeyQualifier(BeModifierKeys.Shift, ev.shiftKey);
@@ -942,7 +948,8 @@ export class ToolAdmin {
     if (this._canvasDecoration && this._canvasDecoration.onMouseLeave)
       this._canvasDecoration.onMouseLeave();
     this._canvasDecoration = dec;
-    if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+    if (ev && dec && dec.onMouseEnter)
+      dec.onMouseEnter(ev);
 
     vp.canvas.style.cursor = dec ? (dec.decorationCursor ? dec.decorationCursor : "pointer") : IModelApp.viewManager.cursor;
     vp.invalidateDecorations();

@@ -472,7 +472,8 @@ export class IModelApp {
   /** @internal */
   public static requestNextAnimation() {
     // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
-    if (IModelApp._noRender) return;
+    if (IModelApp._noRender)
+      return;
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;

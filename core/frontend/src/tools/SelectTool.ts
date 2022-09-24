@@ -303,7 +303,9 @@ export class SelectionTool extends PrimitiveTool {
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.strokeStyle = bestContrastIsBlack ? "black" : "white";
       ctx.lineWidth = 1;
-      if (overlapSelection) ctx.setLineDash([5, 5]);
+      if (overlapSelection)
+        ctx.setLineDash([5, 5]);
+
       if (crossingLine) {
         ctx.beginPath();
         ctx.moveTo(0, 0);
@@ -381,7 +383,11 @@ export class SelectionTool extends PrimitiveTool {
         }
         if (undefined !== outline && 0 !== outline.size) {
           const inside = new Set<string>();
-          contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
+          contents.forEach((id) => {
+            if (!outline.has(id))
+              inside.add(id);
+          });
+
           contents = inside;
         }
       } else {
@@ -588,9 +594,20 @@ export class SelectionTool extends PrimitiveTool {
     return (this._isSuspended || this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+  }
+
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+  }
+
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+    if (this._isSelectByPoints)
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+  }
 
   public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 

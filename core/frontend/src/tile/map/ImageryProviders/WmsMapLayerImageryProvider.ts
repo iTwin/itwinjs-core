@@ -114,7 +114,11 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const layers = new Array<string>();
     const queryable = this.getQueryableLayers();
     const visibleLayerNames = this.getVisibleLayers().map((layer) => layer.name);
-    queryable.forEach((layer: string) => { if (visibleLayerNames.includes(layer)) layers.push(layer); });
+    queryable.forEach((layer: string) => {
+      if (visibleLayerNames.includes(layer))
+        layers.push(layer);
+    });
+
     return layers.join("%2C");
   }
 
@@ -178,7 +182,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (!doToolTips || undefined === infoFormats)
       return;
     let formatString = infoFormats.find((format) => format === "text/html");
-    if (!formatString) formatString = infoFormats[0];
+    if (!formatString)
+      formatString = infoFormats[0];
 
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const layerString = this.getVisibleQueryableLayersString();

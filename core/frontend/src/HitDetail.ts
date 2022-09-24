@@ -401,7 +401,9 @@ export class HitList<T extends HitDetail> {
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): T | undefined {
-    if (hitNum < 0) hitNum = this.length - 1;
+    if (hitNum < 0)
+      hitNum = this.length - 1;
+
     return (hitNum >= this.length) ? undefined : this.hits[hitNum];
   }
 
@@ -487,20 +489,28 @@ export class HitList<T extends HitDetail> {
     const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
     // Prefer edges over surfaces, this is more important than z because we know the edge isn't obscured...
-    if (zOverride1 < zOverride2) return -1;
-    if (zOverride1 > zOverride2) return 1;
+    if (zOverride1 < zOverride2)
+      return -1;
+    if (zOverride1 > zOverride2)
+      return 1;
 
     // Compare xy distance from pick point, prefer hits closer to center...
-    if (hit1.distXY < hit2.distXY) return -1;
-    if (hit1.distXY > hit2.distXY) return 1;
+    if (hit1.distXY < hit2.distXY)
+      return -1;
+    if (hit1.distXY > hit2.distXY)
+      return 1;
 
     // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction > hit2.distFraction) return -1;
-    if (hit1.distFraction < hit2.distFraction) return 1;
+    if (hit1.distFraction > hit2.distFraction)
+      return -1;
+    if (hit1.distFraction < hit2.distFraction)
+      return 1;
 
     // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
-    if (hit1.priority < hit2.priority) return -1;
-    if (hit1.priority > hit2.priority) return 1;
+    if (hit1.priority < hit2.priority)
+      return -1;
+    if (hit1.priority > hit2.priority)
+      return 1;
 
     return 0;
   }

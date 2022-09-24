@@ -252,7 +252,9 @@ export function extractFlashedVolumeClassifierCommands(flashedId: Id64String, cm
       let j = i - 1;
       while (j >= 0 && "pushBatch" !== cmds[j].opcode) // Find batch for this primitive
         j--;
-      if (j < 0) continue;
+      if (j < 0)
+        continue;
+
       const pushBatch = cmds[j] as PushBatchCommand;
       const elemId = pushBatch.batch.featureTable.findElementId(surface.mesh.uniformFeatureId);
       if (undefined !== elemId && elemId === flashedId) {

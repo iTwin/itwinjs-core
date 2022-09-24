@@ -81,10 +81,14 @@ export class ViewRect {
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
   public extend(other: ViewRect) {
-    if (this.left > other.left) this.left = other.left;
-    if (this.top > other.top) this.top = other.top;
-    if (this.right < other.right) this.right = other.right;
-    if (this.bottom < other.bottom) this.bottom = other.bottom;
+    if (this.left > other.left)
+      this.left = other.left;
+    if (this.top > other.top)
+      this.top = other.top;
+    if (this.right < other.right)
+      this.right = other.right;
+    if (this.bottom < other.bottom)
+      this.bottom = other.bottom;
   }
 
   /** Inset this ViewRect by values in the x and y directions. Positive values make the ViewRect smaller, and negative values will make it larger.
