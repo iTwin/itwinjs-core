@@ -1693,7 +1693,7 @@ export namespace IModelJson {
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleBox(box: Box): SolidPrimitiveProps {
+    public handleBox(box: Box): any {
       const out: SolidPrimitiveProps = {
         box: {
           origin: box.getBaseOrigin().toJSON(),

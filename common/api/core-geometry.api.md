@@ -2750,7 +2750,7 @@ export namespace IModelJson {
         handleBagOfCurves(data: BagOfCurves): any;
         handleBezierCurve3d(curve: BezierCurve3d): any;
         handleBezierCurve3dH(curve: BezierCurve3dH): any;
-        handleBox(box: Box): SolidPrimitiveProps;
+        handleBox(box: Box): any;
         handleBSplineCurve3d(curve: BSplineCurve3d): any;
         handleBSplineCurve3dH(curve: BSplineCurve3dH): any;
         handleBSplineSurface3d(surface: BSplineSurface3d): any;
