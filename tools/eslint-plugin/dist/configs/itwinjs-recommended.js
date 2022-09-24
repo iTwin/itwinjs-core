@@ -306,6 +306,10 @@ module.exports = {
     "no-unused-labels": "error",
     "no-unused-vars": "off", // Using @typescript-eslint/no-unused-vars instead
     "no-var": "error",
+    "nonblock-statement-body-position": [
+      "error",
+      "below",
+    ],
     "object-shorthand": "error",
     "one-var": [
       "off",
