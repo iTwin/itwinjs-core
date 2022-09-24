@@ -655,8 +655,8 @@ export class Box extends SolidPrimitive {
     clone(): Box;
     cloneTransformed(transform: Transform): Box | undefined;
     constantVSection(zFraction: number): CurveCollection;
-    static createDgnBox(baseOrigin: Point3d, vectorX: Vector3d, vectorY: Vector3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
-    static createDgnBoxWithAxes(baseOrigin: Point3d, axes: Matrix3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
+    static createDgnBox(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
+    static createDgnBoxWithAxes(origin: Point3d, axes: Matrix3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
     static createRange(range: Range3d, capped: boolean): Box | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -2580,13 +2580,13 @@ export namespace IModelJson {
         points: [XYZProps];
     }
     export interface BoxProps extends AxesProps {
-        baseOrigin: XYZProps;
+        // @internal @deprecated
+        baseOrigin?: XYZProps;
         baseX: number;
         baseY?: number;
         capped?: boolean;
         height?: number;
-        // @deprecated (undocumented)
-        origin?: XYZProps;
+        origin: XYZProps;
         topOrigin?: XYZProps;
         topX?: number;
         topY?: number;
@@ -2750,7 +2750,7 @@ export namespace IModelJson {
         handleBagOfCurves(data: BagOfCurves): any;
         handleBezierCurve3d(curve: BezierCurve3d): any;
         handleBezierCurve3dH(curve: BezierCurve3dH): any;
-        handleBox(box: Box): any;
+        handleBox(box: Box): SolidPrimitiveProps;
         handleBSplineCurve3d(curve: BSplineCurve3d): any;
         handleBSplineCurve3dH(curve: BSplineCurve3dH): any;
         handleBSplineSurface3d(surface: BSplineSurface3d): any;
