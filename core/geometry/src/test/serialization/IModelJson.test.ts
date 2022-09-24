@@ -7,6 +7,7 @@ import { expect } from "chai";
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
+import { Box } from "../../solid/Box";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -319,5 +320,45 @@ describe("CreateIModelJsonSamples", () => {
     ck.checkpoint("BSIJSON.ParseIMJS");
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe.only("BoxProps", () => {
+  type BoxProps = IModelJson.BoxProps;
+
+  function makeBoxProps(originX: number, propertyName: "origin" | "baseOrigin"): BoxProps {
+    const origin = { x: originX, y: 1, z: 2 };
+    const props = { baseX: 10 };
+    if ("origin" === propertyName)
+      return { ...props, origin };
+
+    return { ...props, baseOrigin: origin } as BoxProps;
+  }
+
+  function parseBox(props: BoxProps): Box | undefined {
+    return IModelJson.Reader.parseBox(props);
+  }
+
+  function writeBox(box: Box): BoxProps {
+    const solidProps = new IModelJson.Writer().handleBox(box);
+    expect(solidProps.box).not.to.be.undefined;
+    return solidProps.box!;
+  }
+
+  function expectBoxOrigin(inputProps: BoxProps, expectedOrigin: number): void {
+    const box = parseBox(inputProps)!;
+    expect(box).not.to.be.undefined;
+    expect(box.getBaseOrigin().x).to.equal(expectedOrigin);
+  }
+
+  it("outputs both origin and baseOrigin", () => {
+  });
+
+  it("accepts either origin or baseOrigin", () => {
+  });
+
+  it("prefers origin if both origin and baseOrigin are specified", () => {
+  });
+
+  it("requires either origin or baseOrigin", () => {
+  });
 });

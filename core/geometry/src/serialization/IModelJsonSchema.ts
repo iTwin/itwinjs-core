@@ -1693,8 +1693,8 @@ export namespace IModelJson {
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleBox(box: Box): any {
-      const out: any = {
+    public handleBox(box: Box): SolidPrimitiveProps {
+      const out: SolidPrimitiveProps = {
         box: {
           origin: box.getBaseOrigin().toJSON(),
           baseOrigin: box.getBaseOrigin().toJSON(),
@@ -1704,11 +1704,13 @@ export namespace IModelJson {
           topOrigin: box.getTopOrigin().toJSON(),
         },
       };
-      Writer.insertXYOrientation(out.box, box.getVectorX(), box.getVectorY(), true);
+
+      const outBox = out.box!;
+      Writer.insertXYOrientation(outBox, box.getVectorX(), box.getVectorY(), true);
       if (!Geometry.isSameCoordinate(box.getTopX(), box.getBaseX()))
-        out.box.topX = box.getTopX();
+        outBox.topX = box.getTopX();
       if (!Geometry.isSameCoordinate(box.getTopY(), box.getBaseY()))
-        out.box.topY = box.getTopY();
+        outBox.topY = box.getTopY();
 
       return out;
     }
