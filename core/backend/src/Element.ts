@@ -332,9 +332,12 @@ export class Element extends Entity {
     val.model = this.model;
     val.userLabel = this.userLabel;
     val.federationGuid = this.federationGuid;
-    if (this.parent) val.parent = this.parent;
+    if (this.parent)
+      val.parent = this.parent;
+
     if (Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
+
     return val;
   }
 
@@ -394,7 +397,12 @@ export class Element extends Entity {
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
 
-  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+  private getAllUserProperties(): any {
+    if (!this.jsonProperties.UserProps)
+      this.jsonProperties.UserProps = new Object();
+
+    return this.jsonProperties.UserProps;
+  }
 
   /** Get a set of JSON user properties by namespace */
   public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }

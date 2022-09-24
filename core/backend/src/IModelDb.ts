@@ -656,10 +656,17 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += ` WHERE ${params.where}`;
-    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
-    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
-    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.where)
+      sql += ` WHERE ${params.where}`;
+
+    if (params.orderBy)
+      sql += ` ORDER BY ${params.orderBy}`;
+
+    if (typeof params.limit === "number" && params.limit > 0)
+      sql += ` LIMIT ${params.limit}`;
+
+    if (typeof params.offset === "number" && params.offset > 0)
+      sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -919,15 +926,21 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+
     return this._classMetaDataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
-  public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
+  public get relationships(): Relationships {
+    return this._relationships || (this._relationships = new Relationships(this));
+  }
 
   /** Get the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
+  public get codeSpecs(): CodeSpecs {
+    return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
+  }
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {

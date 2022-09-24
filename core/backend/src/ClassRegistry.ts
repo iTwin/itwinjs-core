@@ -85,7 +85,9 @@ export class ClassRegistry {
     let currentSuperclass = superclass;
     const MAX_ITERS = 1000;
     for (let i = 0; i < MAX_ITERS; ++i) {
-      if (currentSuperclass.schema.schemaName === "BisCore") break;
+      if (currentSuperclass.schema.schemaName === "BisCore")
+        break;
+
       if (!currentSuperclass.isGeneratedClass) {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
@@ -130,7 +132,9 @@ export class ClassRegistry {
             superImpl.call(this, referenceIds);
             for (const navProp of navigationProps) {
               const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
-              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
+              if (!relatedElem || !Id64.isValid(relatedElem.id))
+                continue;
+
               referenceIds.add(relatedElem.id);
             }
           },

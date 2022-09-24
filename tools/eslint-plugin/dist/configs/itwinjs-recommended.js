@@ -308,7 +308,7 @@ module.exports = {
     "no-var": "error",
     "nonblock-statement-body-position": [
       "error",
-      "below",
+      "below", // readability aside, you can't set breakpoint in debugger unless statement is on separate line.
     ],
     "object-shorthand": "error",
     "one-var": [
