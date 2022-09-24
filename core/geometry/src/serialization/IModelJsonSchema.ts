@@ -388,8 +388,8 @@ export namespace IModelJson {
     /** Origin of the box coordinate system  (required) */
     origin: XYZProps;
     /** A previous mismatch existed between native and TypeScript code: TypeScript used "origin" where native used "baseOrigin".
-     * Now both native and TypeScript accept either, preferring "origin", but "baseOrigin" is undocumented in TypeScript.
-     * It's also "deprecated" so that linter will warn to use the documented property instead.
+     * Now both native and TypeScript will output both and accept either, preferring "origin".
+     * "baseOrigin" is undocumented in TypeScript; it's also "deprecated" so that the linter will warn to use the documented property instead.
      * @internal
      * @deprecated use origin
      */
