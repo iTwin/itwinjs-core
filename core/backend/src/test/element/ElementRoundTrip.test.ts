@@ -8,7 +8,7 @@ import {
   BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
   Placement3dProps, QueryRowFormat, SubCategoryAppearance,
 } from "@itwin/core-common";
-import { Angle, Arc3d, BoxProps, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
 import { ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -823,29 +823,5 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
         },
       }
     );
-  });
-});
-
-describe.only("BoxProps", () => {
-  function makeBoxProps(originX: number, propertyName: "origin" | "baseOrigin"): BoxProps {
-    const origin = { x: originX, y: 1, z: 2 };
-    const props = { baseX: 10 };
-    if ("origin" === propertyName)
-      return { ...props, origin };
-
-    return { ...props, baseOrigin: origin } as BoxProps;
-  }
-
-  function expectBoxOrigin(inputProps: BoxProps, expectedOrigin: number): void {
-    const box = GeomJson.
-  }
-
-  it("outputs both origin and baseOrigin", () => {
-  });
-
-  it("accepts either origin or baseOrigin", () => {
-  });
-
-  it("prefers origin if both origin and baseOrigin are specified", () => {
   });
 });
