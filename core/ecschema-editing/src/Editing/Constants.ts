@@ -47,13 +47,15 @@ export class Constants {
    */
   public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (constantProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (constantProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newConstant = (await schema.createConstant(constantProps.name));
-    if (newConstant === undefined) {
+    if (newConstant === undefined)
       return { errorMessage: `Failed to create class ${constantProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newConstant.fromJSON(constantProps);
     return { itemKey: newConstant.key };

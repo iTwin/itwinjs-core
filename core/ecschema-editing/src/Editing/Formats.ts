@@ -49,13 +49,15 @@ export class Formats {
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: FormatProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (formatProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (formatProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newFormat = (await schema.createFormat(formatProps.name)) as MutableFormat;
-    if (newFormat === undefined) {
+    if (newFormat === undefined)
       return { errorMessage: `Failed to create class ${formatProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newFormat.fromJSON(formatProps);
     return { itemKey: newFormat.key };
