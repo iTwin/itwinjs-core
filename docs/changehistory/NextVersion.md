@@ -23,7 +23,6 @@ Table of contents:
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
-  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Electron 17 support
@@ -168,10 +167,6 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
 can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
 class, [IModelCloneContext]($transformer).
-
-### @itwin/core-geometry
-
-`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
 
 ### @itwin/core-transformer
 

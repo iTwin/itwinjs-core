@@ -803,25 +803,45 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       }
     );
 
-    const geom = [
-      { header: { flags: 0 } },
-      { box: { baseOrigin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
-    ];
+    interface TestBoxProps {
+      originX?: number;
+      baseOriginX?: number;
+    }
 
-    insertAndVerifyPlacement(
-      "geom-through-json",
-      {
-        geom,
-        elementGeometryBuilderParams: undefined,
-      },
-      {
-        expectedPlacementOverrides: {
-          bbox: {
-            low: { x: 0, y: 1, z: 2 },
-            high: { x: 10, y: 21, z: 12 },
-          },
+    // Previously, TypeScript BoxProps defined "origin" but native code only understood "baseOrigin".
+    // Now, native code accepts either, preferring "origin" if both are specified.
+    const testBox = (props: TestBoxProps, expectedXOffset: number) => {
+      const box: any = { };
+      if (undefined !== props.originX)
+        box.origin = [ props.originX, 1, 2 ];
+
+      if (undefined !== props.baseOriginX)
+        box.baseOrigin = [ props.baseOriginX, 1, 2 ];
+
+      const geom = [
+        { header: { flags: 0 } },
+        { box: { ...box, baseX: 10, baseY: 20 } },
+      ];
+
+      insertAndVerifyPlacement(
+        "geom-through-json",
+        {
+          geom,
+          elementGeometryBuilderParams: undefined,
         },
-      }
-    );
+        {
+          expectedPlacementOverrides: {
+            bbox: {
+              low: { x: expectedXOffset, y: 1, z: 2 },
+              high: { x: expectedXOffset + 10, y: 21, z: 12 },
+            },
+          },
+        }
+      );
+    };
+
+    testBox({ originX: 0 }, 0);
+    testBox({ baseOriginX: 5 }, 5);
+    testBox({ originX: 2, baseOriginX: 4 }, 2);
   });
 });
