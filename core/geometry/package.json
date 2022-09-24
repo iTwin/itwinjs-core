@@ -69,7 +69,8 @@
     ],
     "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@typescript-eslint/indent": "off"
+      "@typescript-eslint/indent": "off",
+      "nonblock-statement-body-position": "off"
     }
   }
 }
