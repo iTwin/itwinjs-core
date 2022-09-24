@@ -148,7 +148,11 @@ export class StopWatch {
    * @param description optional string stored with the StopWatch
    * @param startImmediately if true, StopWatch is started when created. Otherwise, call start() explicitly.
    */
-  constructor(public description?: string, startImmediately = false) { if (startImmediately) this.start(); }
+  constructor(public description?: string, startImmediately = false) {
+    if (startImmediately)
+      this.start();
+  }
+
   /** Start the stopwatch. Any future time measurements will be based on this new value. */
   public start(): void { this.reset(); this._start = BeTimePoint.now(); }
   /** Stop the stopwatch so that the duration can be viewed later. */

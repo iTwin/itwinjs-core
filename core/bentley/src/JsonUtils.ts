@@ -54,7 +54,12 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number) { if (val === defaultVal) delete json[key]; else json[key] = val; }
+  export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number) {
+    if (val === defaultVal)
+      delete json[key];
+    else
+      json[key] = val;
+  }
 
   /** Set or remove a boolean on a json object, given a key name, a value, and a default value. Sets `json[key] = val` if val is *not* equal to the default,
    * otherwise `delete json[key]`. This is used to omit values from JSON strings that are of known defaults.
@@ -63,7 +68,12 @@ export namespace JsonUtils {
    * @param val the value to set
    * @param defaultVal the default value.
    */
-  export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean) { if (val === defaultVal) delete json[key]; else json[key] = val; }
+  export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean) {
+    if (val === defaultVal)
+      delete json[key];
+    else
+      json[key] = val;
+  }
 
   /** Determine if a Javascript object is equivalent to `{}`.
    * @param json The JSON object to test.
