@@ -265,8 +265,11 @@ export class CodeSpec {
       this.properties = { scopeSpec: {} };
       this.scopeType = CodeScopeSpec.Type.Repository;
     }
-    if (undefined !== scopeType) this.scopeType = scopeType;
-    if (undefined !== scopeReq) this.scopeReq = scopeReq;
+    if (undefined !== scopeType)
+      this.scopeType = scopeType;
+
+    if (undefined !== scopeReq)
+      this.scopeReq = scopeReq;
   }
 
   /** Create a new CodeSpec from the specified parameters
@@ -312,7 +315,9 @@ export class CodeSpec {
     return true;
   }
   public set isManagedWithIModel(value: boolean) {
-    if (!this.properties.spec) this.properties.spec = {};
+    if (!this.properties.spec)
+      this.properties.spec = {};
+
     this.properties.spec.isManagedWithDgnDb = value;
   }
 }

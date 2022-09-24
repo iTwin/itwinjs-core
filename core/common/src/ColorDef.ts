@@ -440,11 +440,18 @@ export class ColorDef {
   /** Compute the 0xTTBBGGRR color corresponding to the specified hue, saturation, lightness values. */
   public static computeTbgrFromHSL(h: number, s: number, l: number, transparency = 0): ColorDefProps {
     const torgb = (p1: number, q1: number, t: number) => {
-      if (t < 0) t += 1;
-      if (t > 1) t -= 1;
-      if (t < 1 / 6) return p1 + (q1 - p1) * 6 * t;
-      if (t < 1 / 2) return q1;
-      if (t < 2 / 3) return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+      if (t < 0)
+        t += 1;
+      if (t > 1)
+        t -= 1;
+
+      if (t < 1 / 6)
+        return p1 + (q1 - p1) * 6 * t;
+      if (t < 1 / 2)
+        return q1;
+      if (t < 2 / 3)
+        return p1 + (q1 - p1) * 6 * (2 / 3 - t);
+
       return p1;
     };
 
