@@ -23,7 +23,7 @@ describe("Markup tests", async () => {
 
   after(async () => {
     vp.dispose();
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 

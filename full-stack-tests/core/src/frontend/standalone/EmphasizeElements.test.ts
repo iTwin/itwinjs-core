@@ -28,7 +28,7 @@ describe("EmphasizeElements tests", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 

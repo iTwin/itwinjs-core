@@ -35,7 +35,7 @@ describe("FeatureOverrides", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
