@@ -101,6 +101,9 @@
     "extends": [
       "plugin:@itwin/itwinjs-recommended",
       "plugin:@itwin/jsdoc"
-    ]
+    ],
+    "rules": {
+      "max-statements-per-line": "off"
+    }
   }
 }

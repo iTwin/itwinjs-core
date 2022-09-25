@@ -382,7 +382,10 @@ export class QPoint2dList {
     if (out) {
       qPoints = out;
       qPoints.reset(qParams);
-    } else qPoints = new QPoint2dList(qParams);
+    } else {
+      qPoints = new QPoint2dList(qParams);
+    }
+
     for (const point of points)
       qPoints.add(point);
 

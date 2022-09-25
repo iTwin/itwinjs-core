@@ -52,7 +52,8 @@ export abstract class MapLayerImageryProvider {
 
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, 22).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+      if (tileData !== undefined)
+        this._missingTileData = tileData.data as Uint8Array;
     });
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
