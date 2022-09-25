@@ -496,7 +496,12 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
   public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
   public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
-  public async onRestartTool() { const tool = new ProjectGeolocationMoveTool(); if (!await tool.run()) return this.exitTool(); }
+  public async onRestartTool() {
+    const tool = new ProjectGeolocationMoveTool();
+    if (!await tool.run())
+      return this.exitTool();
+  }
+
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
   protected provideToolAssistance(): void {

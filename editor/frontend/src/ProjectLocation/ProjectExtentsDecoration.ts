@@ -652,8 +652,10 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       if (undefined === transform)
         continue;
 
-      const visPts: Point3d[] = []; for (const pt of shapePts) visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
-      const hidPts: Point3d[] = []; for (const pt of shapePts) hidPts.push(pt.clone());
+      // deep copies because we're using a builder transform w/addLineString...
+      const visPts = shapePts.map((pt) => pt.clone());
+      const hidPts = shapePts.map((pt) => pt.clone());
+
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
       const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
