@@ -178,9 +178,11 @@ export function HueSlider({ isHorizontal, onHueChange, hsv, className, style }: 
     // istanbul ignore else
     if (undefined !== newHue) {
       // istanbul ignore if
-      if (newHue > 359) newHue = 359; // 360 is same as zero
+      if (newHue > 359)
+        newHue = 359; // 360 is same as zero
       // istanbul ignore if
-      if (newHue < 0) newHue = 0;
+      if (newHue < 0)
+        newHue = 0;
 
       const newColor = hsv.clone(newHue);
       // istanbul ignore else

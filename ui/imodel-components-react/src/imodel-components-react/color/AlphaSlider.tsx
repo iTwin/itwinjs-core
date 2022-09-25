@@ -93,9 +93,12 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     }
 
     // istanbul ignore if
-    if (t < 0) t = 0;
+    if (t < 0)
+      t = 0;
     // istanbul ignore if
-    if (t > 1) t = 1;
+    if (t > 1)
+      t = 1;
+
     // istanbul ignore next
     return (alpha !== t) ? t : undefined;
   };
@@ -144,9 +147,11 @@ export class AlphaSlider extends React.PureComponent<AlphaSliderProps> {
     // istanbul ignore else
     if (undefined !== newTransparency) {
       // istanbul ignore if
-      if (newTransparency > 1) newTransparency = 1;
+      if (newTransparency > 1)
+        newTransparency = 1;
       // istanbul ignore if
-      if (newTransparency < 0) newTransparency = 0;
+      if (newTransparency < 0)
+        newTransparency = 0;
       // istanbul ignore else
       if (this.props.onAlphaChange)
         this.props.onAlphaChange(newTransparency);
