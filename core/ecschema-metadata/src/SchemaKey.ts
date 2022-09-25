@@ -142,9 +142,12 @@ export class SchemaKey {
    * @return True if they match; otherwise, false.
    */
   public compareByName(rhs: SchemaKey | string | undefined): boolean {
-    if (undefined === rhs) { return false; }
+    if (undefined === rhs)
+      return false;
+
     if (typeof (rhs) === "string")
       return rhs.toLowerCase() === this.name.toLowerCase();
+
     return rhs.name.toLowerCase() === this.name.toLowerCase();
   }
 
