@@ -74,7 +74,9 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
   } as unknown as ViewState;
 }
 
-function delta(a: number, b: number): number { return Math.abs(a - b); }
+function delta(a: number, b: number): number {
+  return Math.abs(a - b);
+}
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
