@@ -48,10 +48,15 @@ export class UnexpectedErrors {
    */
   public static handle(error: any, notifyTelemetry = true): void {
     this._handler(error);
-    if (notifyTelemetry)
+    if (notifyTelemetry) {
       this._telemetry.forEach((telemetry) => {
-        try { telemetry(error); } catch (_) { } // ignore errors from telemetry trackers
+        try {
+          telemetry(error);
+        } catch (_) {
+          // ignore errors from telemetry trackers
+        }
       });
+    }
   }
 
   /** establish a new global *unexpected error* handler.

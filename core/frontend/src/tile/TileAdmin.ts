@@ -748,7 +748,11 @@ export class TileAdmin {
     const tileLoad = this.onTileLoad.addListener((tile) => callback(tile.tree.iModel));
     const treeLoad = this.onTileTreeLoad.addListener((tree) => callback(tree.iModel));
     const childLoad = this.onTileChildrenLoad.addListener((tile) => callback(tile.tree.iModel));
-    return () => { tileLoad(); treeLoad(); childLoad(); };
+    return () => {
+      tileLoad();
+      treeLoad();
+      childLoad();
+    };
   }
 
   /** Determine what information about the schedule script is needed to produce tiles.

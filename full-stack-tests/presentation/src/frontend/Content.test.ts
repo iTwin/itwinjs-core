@@ -707,7 +707,7 @@ describe("Content", () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const realRace = Promise.race;
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        (values as any).push(new Promise((_resolve, reject) => { reject("something"); }));
+        (values as any).push(new Promise((_resolve, reject) => reject("something")));
         return realRace.call(Promise, values);
       });
     });

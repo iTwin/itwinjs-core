@@ -259,7 +259,8 @@ export class BackgroundMapGeometry {
           doAccumulate(extremaPoint);
 
         if (isInside) {
-          if (eyePoint) doAccumulate(eyePoint);
+          if (eyePoint)
+            doAccumulate(eyePoint);
         } else {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {

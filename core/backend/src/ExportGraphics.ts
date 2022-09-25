@@ -273,11 +273,16 @@ export namespace ExportGraphics {
    * @public
    */
   export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean {
-    if (lhs.categoryId !== rhs.categoryId) return false;
-    if (lhs.subCategoryId !== rhs.subCategoryId) return false;
-    if (lhs.materialId !== rhs.materialId) return false;
-    if (lhs.elmTransparency !== rhs.elmTransparency) return false;
-    if (lhs.lineColor !== rhs.lineColor) return false;
+    if (lhs.categoryId !== rhs.categoryId)
+      return false;
+    if (lhs.subCategoryId !== rhs.subCategoryId)
+      return false;
+    if (lhs.materialId !== rhs.materialId)
+      return false;
+    if (lhs.elmTransparency !== rhs.elmTransparency)
+      return false;
+    if (lhs.lineColor !== rhs.lineColor)
+      return false;
     return true;
   }
 
