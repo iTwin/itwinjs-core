@@ -13,8 +13,12 @@ import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
 import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
 import { EditTools } from "../EditTool";
 
-function translatePrompt(key: string) { return EditTools.translate(`ProjectLocation:Prompts.${key}`); }
-function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
+function translatePrompt(key: string) {
+  return EditTools.translate(`ProjectLocation:Prompts.${key}`);
+}
+function translateMessage(key: string) {
+  return EditTools.translate(`ProjectLocation:Message.${key}`);
+}
 
 /** @internal */
 class LabelDecoration implements CanvasDecoration {
@@ -82,8 +86,16 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
+
   public async onRestartTool() { return this.exitTool(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
@@ -184,7 +196,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
       this._scale = 1.0;
 
     deco.viewport.invalidateDecorations();
-    setTimeout(() => { this.pulseDecoration(); }, 100);
+    setTimeout(() => this.pulseDecoration(), 100);
   }
 
   private unsuspendDecorations() {
@@ -349,8 +361,14 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
   public async onRestartTool() { return this.exitTool(); }
   public override async onUnsuspend() { this.provideToolAssistance(); }
 
@@ -494,8 +512,14 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
   public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
-  public override async onCleanup() { await super.onCleanup(); this.unsuspendDecorations(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+  public override async onCleanup() {
+    await super.onCleanup();
+    this.unsuspendDecorations();
+  }
   public async onRestartTool() {
     const tool = new ProjectGeolocationMoveTool();
     if (!await tool.run())
