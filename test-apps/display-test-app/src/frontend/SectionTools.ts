@@ -47,7 +47,10 @@ export class SectionsPanel extends ToolBarDropDown {
     div.style.textAlign = "center";
     createButton({
       value: "Define",
-      handler: async () => { await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
+      handler: async () => {
+        await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create());
+        setFocusToHome();
+      },
       parent: div,
       inline: true,
       tooltip: "Define clip",
