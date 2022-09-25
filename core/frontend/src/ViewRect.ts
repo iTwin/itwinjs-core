@@ -54,7 +54,12 @@ export class ViewRect {
   /** The area (width*height) of this ViewRect. */
   public get area() { return this.isNull ? 0 : this.width * this.height; }
   /** Initialize this ViewRect from its left/top/right/bottom parameters. */
-  public init(left: number, top: number, right: number, bottom: number) { this.left = left; this.bottom = bottom, this.right = right; this.top = top; }
+  public init(left: number, top: number, right: number, bottom: number) {
+    this.left = left;
+    this.bottom = bottom, this.right = right;
+    this.top = top;
+  }
+
   /** Initialize this ViewRect from two points.
    * @param topLeft The top-left corner.
    * @param bottomRight The bottom-right corner.

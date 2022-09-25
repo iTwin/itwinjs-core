@@ -107,7 +107,11 @@ export class ViewClipTool extends PrimitiveTool {
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.allow3dManipulations()); }
 
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
   /** @internal */
@@ -117,7 +121,10 @@ export class ViewClipTool extends PrimitiveTool {
   /** @internal */
   protected setupAndPromptForNextAction(): void { this.showPrompt(); }
   /** @internal */
-  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> { await this.onReinitialize(); return EventHandled.No; }
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    await this.onReinitialize();
+    return EventHandled.No;
+  }
 
   /** @internal */
   public static getPlaneInwardNormal(orientation: ContextRotationId, viewport: Viewport): Vector3d | undefined {
@@ -676,8 +683,10 @@ export class ViewClipByShapeTool extends ViewClipTool {
       currentPt = ev.point.clone();
     if (2 === points.length && !ev.isControlKey) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
-      const xLen = xDir.magnitude(); xDir.normalizeInPlace();
-      const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
+      const xLen = xDir.magnitude();
+      xDir.normalizeInPlace();
+      const yDir = xDir.crossProduct(normal);
+      yDir.normalizeInPlace();
       const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, ev.viewport!, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
@@ -1110,8 +1119,10 @@ export abstract class ViewClipModifyTool extends EditManipulator.HandleTool {
     const pt2 = anchorRay.fractionToPoint(1.0);
     const builder = context.createGraphicBuilder(GraphicType.ViewOverlay);
 
-    context.viewport.worldToView(pt1, pt1); pt1.z = 0.0;
-    context.viewport.worldToView(pt2, pt2); pt2.z = 0.0;
+    context.viewport.worldToView(pt1, pt1);
+    pt1.z = 0.0;
+    context.viewport.worldToView(pt2, pt2);
+    pt2.z = 0.0;
 
     builder.setSymbology(color, ColorDef.black, weight, LinePixels.Code5);
     builder.addLineString([pt1, pt2]);
@@ -1200,7 +1211,10 @@ export class ViewClipShapeModifyTool extends ViewClipModifyTool {
         zHigh = clipExtents.high + localOffset;
       const realZLow = (undefined === zLow ? clipExtents.low : zLow);
       const realZHigh = (undefined === zHigh ? clipExtents.high : zHigh);
-      if (realZLow > realZHigh) { zLow = realZHigh; zHigh = realZLow; }
+      if (realZLow > realZHigh) {
+        zLow = realZHigh;
+        zHigh = realZLow;
+      }
     }
 
     return ViewClipTool.doClipToShape(this._clipView, adjustedPts, clipShape.transformFromClip, zLow, zHigh);
@@ -1411,7 +1425,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       const midPtHi = shapePtsHi[i].interpolate(0.5, shapePtsHi[i + 1]);
       const faceCenter = midPtLo.interpolate(0.5, midPtHi);
       const edgeTangent = Vector3d.createStartEnd(shapePtsLo[i], shapePtsLo[i + 1]);
-      const faceNormal = edgeTangent.crossProduct(shapeArea.direction); faceNormal.normalizeInPlace();
+      const faceNormal = edgeTangent.crossProduct(shapeArea.direction);
+      faceNormal.normalizeInPlace();
       this._controls[i] = new ViewClipControlArrow(faceCenter, faceNormal, shapePtsLo.length > 5 ? 0.5 : 0.75);
     }
 
@@ -1465,7 +1480,8 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
 
       const defaultOrigin = plane.projectPointToPlane(viewRange.center);
       const defaultOutwardNormal = plane.getNormalRef().negate();
-      const expandedRange = viewRange.clone(); expandedRange.extend(defaultOrigin);
+      const expandedRange = viewRange.clone();
+      expandedRange.extend(defaultOrigin);
       const nonContribLoops = ClipUtilities.loopsOfConvexClipPlaneIntersectionWithRange(ConvexClipPlaneSet.createPlanes([this._clipPlanes.planes[i]]), expandedRange, true, false, true);
       const nonContribColor = ColorDef.from(250, 100, 100);
 
@@ -1872,11 +1888,9 @@ export class ViewClipDecoration extends EditManipulator.HandleProvider {
       if (undefined === transform)
         continue;
 
-      const visPts: Point3d[] = []; for (const pt of shapePts)
-        visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
-
-      const hidPts: Point3d[] = []; for (const pt of shapePts)
-        hidPts.push(pt.clone());
+      // deep copy beecause we're using a builder transform w/addLineString...
+      const visPts = shapePts.map((pt) => pt.clone());
+      const hidPts = shapePts.map((pt) => pt.clone());
 
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);

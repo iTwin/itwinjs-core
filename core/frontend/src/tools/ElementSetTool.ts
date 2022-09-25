@@ -61,7 +61,9 @@ export class ElementAgenda {
   public constructor(public iModel: IModelConnection) { }
 
   /** Get the source for the last group added to this agenda, if applicable. The "source" is merely an indication of what the collection of elements represents. */
-  public getSource() { return this.groupMarks.length === 0 ? ModifyElementSource.Unknown : this.groupMarks[this.groupMarks.length - 1].source; }
+  public getSource() {
+    return this.groupMarks.length === 0 ? ModifyElementSource.Unknown : this.groupMarks[this.groupMarks.length - 1].source;
+  }
 
   /** Set the source for the last group added to this agenda. */
   public setSource(val: ModifyElementSource) {
@@ -87,7 +89,11 @@ export class ElementAgenda {
   }
 
   /** Empties the agenda and clears hilite state when manageHiliteState is true. */
-  public clear() { this.setEntriesHiliteState(false); this.elements.length = 0; this.groupMarks.length = 0; }
+  public clear() {
+    this.setEntriesHiliteState(false);
+    this.elements.length = 0;
+    this.groupMarks.length = 0;
+  }
 
   private setEntriesHiliteState(onOff: boolean, groupStart = 0, groupEnd = 0) {
     if (!this.manageHiliteState)
@@ -716,8 +722,12 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const crossingLine = (BeButton.Reset === ev.button);
     const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
 
-    const position = vp.worldToView(this.dragStartPoint); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
-    const position2 = vp.worldToView(ev.point); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const position = vp.worldToView(this.dragStartPoint);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
+    const position2 = vp.worldToView(ev.point);
+    position2.x = Math.floor(position2.x) + 0.5;
+    position2.y = Math.floor(position2.y) + 0.5;
     const offset = position2.minus(position);
 
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {

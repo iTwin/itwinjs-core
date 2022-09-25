@@ -1049,7 +1049,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async getViewList(queryParams: ViewQueryParams): Promise<ViewSpec[]> {
       const views: ViewSpec[] = [];
       const viewProps: ViewDefinitionProps[] = await this.queryProps(queryParams);
-      viewProps.forEach((viewProp) => { views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName }); });
+      viewProps.forEach((viewProp) => {
+        views.push({ id: viewProp.id as string, name: viewProp.code.value!, class: viewProp.classFullName });
+      });
+
       return views;
     }
 

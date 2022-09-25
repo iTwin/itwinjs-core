@@ -237,7 +237,11 @@ export class SnapDetail extends HitDetail {
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
   public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
   /** Change the snap point. */
-  public setSnapPoint(point: Point3d, heat: SnapHeat) { this.snapPoint.setFrom(point); this.adjustedPoint.setFrom(point); this.heat = heat; }
+  public setSnapPoint(point: Point3d, heat: SnapHeat) {
+    this.snapPoint.setFrom(point);
+    this.adjustedPoint.setFrom(point);
+    this.heat = heat;
+  }
 
   /** Set curve primitive and HitGeometryType for this SnapDetail. */
   public setCurvePrimitive(primitive?: CurvePrimitive, localToWorld?: Transform, geomType?: HitGeomType): void {
@@ -394,7 +398,11 @@ export class HitList<T extends HitDetail> {
   public hits: T[] = [];
   public currHit = -1;
   public get length(): number { return this.hits.length; }
-  public empty(): void { this.hits.length = 0; this.currHit = -1; }
+  public empty(): void {
+    this.hits.length = 0;
+    this.currHit = -1;
+  }
+
   public resetCurrentHit(): void { this.currHit = -1; }
 
   /** Get a hit from a particular index into a HitList
@@ -421,7 +429,11 @@ export class HitList<T extends HitDetail> {
       this.hits.push(hit);
   }
 
-  public getNextHit(): T | undefined { this.currHit++; return this.getCurrentHit(); }
+  public getNextHit(): T | undefined {
+    this.currHit++;
+    return this.getCurrentHit();
+  }
+
   public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
 
   public setCurrentHit(hit: T): void {

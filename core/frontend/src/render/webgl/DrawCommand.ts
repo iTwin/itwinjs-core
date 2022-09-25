@@ -28,7 +28,11 @@ export class ShaderProgramParams {
   private _target?: Target;
   private _renderPass: RenderPass = RenderPass.None;
 
-  public get target(): Target { assert(undefined !== this._target); return this._target; }
+  public get target(): Target {
+    assert(undefined !== this._target);
+    return this._target;
+  }
+
   public get renderPass() { return this._renderPass; }
 
   public get projectionMatrix() { return this.target.uniforms.getProjectionMatrix32(this.isViewCoords); }
@@ -49,8 +53,15 @@ export class DrawParams {
   private _programParams?: ShaderProgramParams;
   private _geometry?: CachedGeometry;
 
-  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry; }
-  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams; }
+  public get geometry(): CachedGeometry {
+    assert(undefined !== this._geometry);
+    return this._geometry;
+  }
+
+  public get programParams(): ShaderProgramParams {
+    assert(undefined !== this._programParams);
+    return this._programParams;
+  }
 
   public get target() { return this.programParams.target; }
   public get renderPass() { return this.programParams.renderPass; }

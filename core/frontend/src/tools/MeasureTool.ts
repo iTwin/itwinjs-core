@@ -29,7 +29,9 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
-function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
+function translateBold(key: string) {
+  return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
+}
 
 /** @internal */
 class MeasureLabel implements CanvasDecoration {
@@ -181,7 +183,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -287,7 +293,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (xVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(xVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(xVec);
       segPoints.push(basePt);
       const colorX = ColorDef.red.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorX, ColorDef.black, 5);
@@ -296,7 +303,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (yVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(yVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(yVec);
       segPoints.push(basePt);
       const colorY = ColorDef.green.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorY, ColorDef.black, 5);
@@ -305,7 +313,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (zVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(zVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(zVec);
       segPoints.push(basePt);
       const colorZ = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorZ, ColorDef.black, 5);
@@ -680,7 +689,11 @@ export class MeasureLocationTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -906,7 +919,11 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -1001,8 +1018,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       currentPt = cursorPt.clone();
     if (2 === points.length && 0 === (IModelApp.toolAdmin.currentInputState.qualifiers & BeModifierKeys.Control)) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
-      const xLen = xDir.magnitude(); xDir.normalizeInPlace();
-      const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
+      const xLen = xDir.magnitude();
+      xDir.normalizeInPlace();
+      const yDir = xDir.crossProduct(normal);
+      yDir.normalizeInPlace();
       const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, this.targetView, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
@@ -1246,7 +1265,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onCleanup() {
     if (0 !== this._acceptedIds.length)
@@ -1571,7 +1594,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     if (0 === this._acceptedMeasurements.length) {
       await this.onReinitialize();
     } else {
-      if (0 !== this._acceptedIds.length) { this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false); this._acceptedIds.pop(); }
+      if (0 !== this._acceptedIds.length) {
+        this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false);
+        this._acceptedIds.pop();
+      }
+
       await this.updateTotals();
       this.setupAndPromptForNextAction();
     }

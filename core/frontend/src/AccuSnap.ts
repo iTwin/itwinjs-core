@@ -50,7 +50,9 @@ export class TouchCursor implements CanvasDecoration {
     if (!vp.viewRect.containsPoint(viewLocation))
       return false; // outside this viewport rect
 
-    viewLocation.x = Math.floor(viewLocation.x) + 0.5; viewLocation.y = Math.floor(viewLocation.y) + 0.5; viewLocation.z = 0.0;
+    viewLocation.x = Math.floor(viewLocation.x) + 0.5;
+    viewLocation.y = Math.floor(viewLocation.y) + 0.5;
+    viewLocation.z = 0.0;
     const offsetLocation = new Point3d(viewLocation.x, viewLocation.y - this._yOffset, viewLocation.z);
     if (!vp.viewRect.containsPoint(offsetLocation))
       return false; // outside this viewport rect
@@ -225,17 +227,29 @@ export class AccuSnap implements Decorator {
   public get isSnapEnabledByUser(): boolean { return this._settings.enableFlag; }
   private isFlashed(view: Viewport): boolean { return (this.areFlashed.has(view)); }
   private needsFlash(view: Viewport): boolean { return (this.needFlash.has(view)); }
-  private setNeedsFlash(view: Viewport) { this.needFlash.add(view); this.clearIsFlashed(view); view.invalidateDecorations(); }
+  private setNeedsFlash(view: Viewport) {
+    this.needFlash.add(view);
+    this.clearIsFlashed(view);
+    view.invalidateDecorations();
+  }
+
   private setIsFlashed(view: Viewport) { this.areFlashed.add(view); }
   private clearIsFlashed(view: Viewport) { this.areFlashed.delete(view); }
   private static toSnapDetail(hit?: HitDetail): SnapDetail | undefined { return (hit && hit instanceof SnapDetail) ? hit : undefined; }
   /** @internal */
   public getCurrSnapDetail(): SnapDetail | undefined { return AccuSnap.toSnapDetail(this.currHit); }
   /** Determine whether there is a current hit that is *hot*. */
-  public get isHot(): boolean { const currSnap = this.getCurrSnapDetail(); return !currSnap ? false : currSnap.isHot; }
+  public get isHot(): boolean {
+    const currSnap = this.getCurrSnapDetail();
+    return !currSnap ? false : currSnap.isHot;
+  }
 
   /** @internal */
-  public destroy(): void { this.currHit = undefined; this.aSnapHits = undefined; }
+  public destroy(): void {
+    this.currHit = undefined;
+    this.aSnapHits = undefined;
+  }
+
   private get _doSnapping(): boolean { return this.isSnapEnabled && this.isSnapEnabledByUser && !this._isSnapSuspended; }
   private get _isSnapSuspended(): boolean { return (0 !== this._suppressed || 0 !== this.toolState.suspended); }
 
@@ -1134,7 +1148,11 @@ export namespace AccuSnap { // eslint-disable-line no-redeclare
       this.locate = other.locate;
       this.suspended = other.suspended;
     }
-    public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+    public clone(): ToolState {
+      const val = new ToolState();
+      val.setFrom(this);
+      return val;
+    }
   }
 
   export class Settings {

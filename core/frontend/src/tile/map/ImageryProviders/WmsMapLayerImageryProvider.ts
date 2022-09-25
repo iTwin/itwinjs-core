@@ -104,9 +104,10 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       if (subLayer.queryable)
         layerNames.push(subLayer.name);
 
-      subLayer.children?.forEach((childSubLayer) => { getQueryableSubLayers(childSubLayer); });
+      subLayer.children?.forEach((childSubLayer) => getQueryableSubLayers(childSubLayer));
     });
-    this._capabilities?.layer?.subLayers?.forEach((subLayer) => { getQueryableSubLayers(subLayer); });
+
+    this._capabilities?.layer?.subLayers?.forEach((subLayer) => getQueryableSubLayers(subLayer));
     return layerNames;
   }
 
@@ -129,13 +130,13 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     let support4326: boolean|undefined;
     if (layersCrs) {
       for (const [_layerName, crs] of layersCrs) {
-        if (crs.find((layerCrs) => {return layerCrs.includes("3857");}) === undefined ) {
+        if (crs.find((layerCrs) => layerCrs.includes("3857")) === undefined ) {
           support3857 = false;
         } else if (support3857 === undefined) {
           support3857 = true;
         }
 
-        if (crs.find((layerCrs) => {return layerCrs.includes("4326");}) === undefined ) {
+        if (crs.find((layerCrs) => layerCrs.includes("4326")) === undefined ) {
           support4326 = false;
         } else if (support4326 === undefined) {
           support4326 = true;

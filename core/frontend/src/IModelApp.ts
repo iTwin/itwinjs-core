@@ -622,7 +622,10 @@ export class IModelApp {
     overlay.tabIndex = -1; // so we can catch keystroke events
 
     // function to remove modal dialog
-    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
+    const stop = (ev: Event) => {
+      root.removeChild(overlay);
+      ev.stopPropagation();
+    };
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;

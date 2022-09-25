@@ -131,7 +131,13 @@ export class AccudrawData {
   public readonly vector = new Vector3d(); // if ACCUDRAW_SetXAxis, etc.
   public distance = 0; // if ACCUDRAW_SetDistance
   public angle = 0; // if ACCUDRAW_SetAngle
-  public zero() { this.flags = this.distance = this.angle = 0; this.origin.setZero(); this.delta.setZero(); this.vector.setZero(); this.rMatrix.setIdentity(); }
+  public zero() {
+    this.flags = this.distance = this.angle = 0;
+    this.origin.setZero();
+    this.delta.setZero();
+    this.vector.setZero();
+    this.rMatrix.setIdentity();
+  }
 }
 
 /** @internal */
@@ -203,7 +209,12 @@ export class ThreeAxes {
     return result;
   }
   public toMatrix3d(out?: Matrix3d) { return Matrix3d.createRows(this.x, this.y, this.z, out); }
-  public clone(): ThreeAxes { const out = new ThreeAxes(); out.setFrom(this); return out; }
+  public clone(): ThreeAxes {
+    const out = new ThreeAxes();
+    out.setFrom(this);
+    return out;
+  }
+
   public equals(other: ThreeAxes): boolean { return this.x.isExactEqual(other.x) && this.y.isExactEqual(other.y) && this.z.isExactEqual(other.z); }
 }
 
@@ -590,6 +601,7 @@ export class AccuDraw {
     let rMatrix: Matrix3d;
     let myAxes: ThreeAxes;
     const vecP = Vector3d.createZero();
+    /* eslint-disable max-statements-per-line */
     switch (this.flags.baseRotation) {
       case RotationMode.Top:
         switch (whichVec) {
@@ -644,6 +656,8 @@ export class AccuDraw {
         }
         break;
     }
+    /* eslint-enable max-statements-per-line */
+
     return vecP;
   }
 
@@ -1998,7 +2012,8 @@ export class AccuDraw {
         radius = 1.0 + (factor * this._percentChanged);
       }
 
-      let angle = 0.0; const delta = (Math.PI * 2) / nSides;
+      let angle = 0.0;
+      const delta = (Math.PI * 2) / nSides;
       const pts: Point3d[] = [];
 
       for (let iSide = 0; iSide < nSides; iSide++, angle += delta)
@@ -3143,7 +3158,10 @@ export class AccuDrawHintBuilder {
   public enableSmartRotation = false;
 
   /** Add hint to specify a new compass origin */
-  public setOrigin(origin: Point3d): void { this._origin = origin.clone(); this._flagOrigin = true; }
+  public setOrigin(origin: Point3d): void {
+    this._origin = origin.clone();
+    this._flagOrigin = true;
+  }
 
   /** Add hint to fully specify compass orientation from a Matrix3d */
   public setMatrix(matrix: Matrix3d): boolean {
@@ -3155,28 +3173,56 @@ export class AccuDrawHintBuilder {
   }
 
   /** @internal Add hint to fully specify compass orientation from a Matrix3d in row format */
-  public setRotation(rowMatrix: Matrix3d): void { this._rMatrix = rowMatrix.clone(); this._flagRotation = true; this._flagXAxis = this._flagNormal = false; }
+  public setRotation(rowMatrix: Matrix3d): void {
+    this._rMatrix = rowMatrix.clone();
+    this._flagRotation = true;
+    this._flagXAxis = this._flagNormal = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation */
-  public setXAxis(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis = true; this._flagRotation = this._flagNormal = this._flagXAxis2 = false; }
+  public setXAxis(xAxis: Vector3d): void {
+    this._axis = xAxis.clone();
+    this._flagXAxis = true;
+    this._flagRotation = this._flagNormal = this._flagXAxis2 = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied x axis direction with the current base rotation preferring the result most closely aligned to the view */
-  public setXAxis2(xAxis: Vector3d): void { this._axis = xAxis.clone(); this._flagXAxis2 = true; this._flagRotation = this._flagNormal = this._flagXAxis = false; }
+  public setXAxis2(xAxis: Vector3d): void {
+    this._axis = xAxis.clone();
+    this._flagXAxis2 = true;
+    this._flagRotation = this._flagNormal = this._flagXAxis = false;
+  }
 
   /** Add hint to change compass orientation by combining the supplied z axis direction with the current base rotation */
-  public setNormal(normal: Vector3d): void { this._axis = normal.clone(); this._flagNormal = true; this._flagRotation = this._flagXAxis = this._flagXAxis2 = false; }
+  public setNormal(normal: Vector3d): void {
+    this._axis = normal.clone();
+    this._flagNormal = true;
+    this._flagRotation = this._flagXAxis = this._flagXAxis2 = false;
+  }
 
   /** Add hint to change compass to polar mode */
-  public setModePolar(): void { this._flagModePolar = true; this._flagModeRectangular = false; }
+  public setModePolar(): void {
+    this._flagModePolar = true;
+    this._flagModeRectangular = false;
+  }
 
   /** Add hint to change compass to rectangular mode */
-  public setModeRectangular(): void { this._flagModeRectangular = true; this._flagModePolar = false; }
+  public setModeRectangular(): void {
+    this._flagModeRectangular = true;
+    this._flagModePolar = false;
+  }
 
   /** Set current distance value in polar mode */
-  public setDistance(distance: number): void { this._distance = distance; this._flagDistance = true; }
+  public setDistance(distance: number): void {
+    this._distance = distance;
+    this._flagDistance = true;
+  }
 
   /** Set current angle value in polar mode */
-  public setAngle(angle: number): void { this._angle = angle; this._flagAngle = true; }
+  public setAngle(angle: number): void {
+    this._angle = angle;
+    this._flagAngle = true;
+  }
 
   /** Enable AccuDraw for the current tool without sending any hints */
   public static activate(): void { IModelApp.accuDraw.activate(); }

@@ -143,7 +143,10 @@ export class SelectionTool extends PrimitiveTool {
             { iconSpec: "icon-select-plus" },
             {
               iconSpec: "icon-select-minus",
-              isEnabledFunction: () => { const tool = IModelApp.toolAdmin.activeTool; return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false; },
+              isEnabledFunction: () => {
+                const tool = IModelApp.toolAdmin.activeTool;
+                return tool instanceof PrimitiveTool ? tool.iModel.selectionSet.isActive : false;
+              },
             },
           ],
         } as ButtonGroupEditorParams, {
@@ -296,8 +299,12 @@ export class SelectionTool extends PrimitiveTool {
     const crossingLine = (SelectionMethod.Line === this.selectionMethod || (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button));
     const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
 
-    const position = vp.worldToView(this._points[0]); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
-    const position2 = vp.worldToView(ev.point); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const position = vp.worldToView(this._points[0]);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
+    const position2 = vp.worldToView(ev.point);
+    position2.x = Math.floor(position2.x) + 0.5;
+    position2.y = Math.floor(position2.y) + 0.5;
     const offset = position2.minus(position);
 
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {

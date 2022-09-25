@@ -90,8 +90,16 @@ export class ToolSettingsState {
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = false;
-  public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
-  public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+  public setFrom(other: ToolState) {
+    this.coordLockOvr = other.coordLockOvr;
+    this.locateCircleOn = other.locateCircleOn;
+  }
+
+  public clone(): ToolState {
+    const val = new ToolState();
+    val.setFrom(this);
+    return val;
+  }
 }
 
 /** @internal */
@@ -160,7 +168,12 @@ export class CurrentInputState {
 
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public onInstallTool() { this.clearKeyQualifiers(); this.lastWheelEvent = undefined; this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
+  public onInstallTool() {
+    this.clearKeyQualifiers();
+    this.lastWheelEvent = undefined;
+    this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
+  }
+
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
   public clearViewport(vp: Viewport) {
     if (vp === this.viewport)
@@ -462,10 +475,10 @@ export class ToolAdmin {
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
 
-    ToolAdmin._removals.push(() => { window.onfocus = null; });
+    ToolAdmin._removals.push(() => window.onfocus = null);
   }
 
   /** @internal */
@@ -815,7 +828,11 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public async onInstallTool(tool: InteractiveTool): Promise<boolean> { this.currentInputState.onInstallTool(); return tool.onInstall(); }
+  public async onInstallTool(tool: InteractiveTool): Promise<boolean> {
+    this.currentInputState.onInstallTool();
+    return tool.onInstall();
+  }
+
   /** @internal */
   public async onPostInstallTool(tool: InteractiveTool) { return tool.onPostInstall(); }
 

@@ -69,7 +69,10 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
 
           // Make children of the root node visible.
           if (subLayer.parent && subLayer.parent === rootsSubLayer?.id && !hasTooManyLayers) {
-            const isUnnamedGroup = (layer: MapSubLayerProps) => { return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0); };
+            const isUnnamedGroup = (layer: MapSubLayerProps) => {
+              return layer.children && layer.children.length > 0 && (!layer.name || layer.name.length === 0);
+            };
+
             const makeChildrenVisible = (layers: MapSubLayerProps[] | undefined, layer: MapSubLayerProps) => {
               layer?.children?.forEach((childId) => {
                 const childSubLayer = subLayers?.find((child) => child?.id === childId);
@@ -134,7 +137,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
       let subLayerId = 0;
       capabilities?.contents?.layers.forEach((layer) => {
         const hasSupportedTms = supportedTms?.some((tms) => {
-          return layer.tileMatrixSetLinks.some((tmls) => { return (tmls.tileMatrixSet === tms.identifier); });
+          return layer.tileMatrixSetLinks.some((tmls) => tmls.tileMatrixSet === tms.identifier);
         });
         if (hasSupportedTms) {
           subLayers.push({
