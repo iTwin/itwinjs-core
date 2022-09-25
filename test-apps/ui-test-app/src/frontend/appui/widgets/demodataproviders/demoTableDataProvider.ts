@@ -107,13 +107,18 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
     return this._data.length;
   };
   public getRow = async (rowIndex: number, unfiltered?: boolean): Promise<RowItem> => {
-    if (rowIndex > this._data.length || this._data[rowIndex] === undefined) return { key: "", cells: [] };
-    if (unfiltered && !unfiltered) // suppress warning, unfiltered unused
+    if (rowIndex > this._data.length || this._data[rowIndex] === undefined)
       return { key: "", cells: [] };
+    else if (unfiltered && !unfiltered) // suppress warning, unfiltered unused
+      return { key: "", cells: [] };
+
     return mutableRowToRowItem(this._data[rowIndex], this);
   };
+
   public sort = async (columnIndex: number, sortDirection: SortDirection): Promise<void> => {
-    if (columnIndex && sortDirection) return;
+    if (columnIndex && sortDirection)
+      return;
+
     this._data.sort((row1: DemoMutableRow, row2: DemoMutableRow) => {
       const cell1 = getCellContentByKey(row1, columns[columnIndex].key);
       const cell2 = getCellContentByKey(row2, columns[columnIndex].key);
@@ -132,11 +137,13 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
     this.onRowsChanged.raiseEvent();
     return this._data.length - 1;
   };
+
   public insertRow = (rowItem: RowItem, index: number): number => {
     this._data.splice(index, 0, rowItemToMutableRow(rowItem));
     this.onRowsChanged.raiseEvent();
     return index;
   };
+
   public deleteRow = (rowItem: RowItem): void => {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
@@ -147,18 +154,22 @@ export class DemoMutableTableDataProvider implements MutableTableDataProvider {
       }
     }
   };
+
   public moveRow = (rowItem: RowItem, newIndex: number): number => {
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < this._data.length; i++) {
       const row = this._data[i];
       if (row.id === rowItem.key) {
         this._data.splice(newIndex, 0, row);
-        if (newIndex < i) i++;
+        if (newIndex < i)
+          i++;
+
         this._data.splice(i, 1);
         this.onRowsChanged.raiseEvent();
         return newIndex;
       }
     }
+
     return -1;
   };
 }
