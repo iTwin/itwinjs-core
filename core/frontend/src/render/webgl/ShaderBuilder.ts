@@ -75,7 +75,9 @@ namespace Convert {
       case VariableType.Sampler2D: return "sampler2D";
       case VariableType.SamplerCube: return "samplerCube";
       case VariableType.Uint: return "uint";
-      default: assert(false); return "undefined";
+      default:
+        assert(false);
+        return "undefined";
     }
   }
 
@@ -89,7 +91,9 @@ namespace Convert {
           return "varying";
       }
       case VariableScope.Uniform: return "uniform";
-      default: assert(false); return "undefined";
+      default:
+        assert(false);
+        return "undefined";
     }
   }
 
@@ -99,7 +103,9 @@ namespace Convert {
       case VariablePrecision.Low: return "lowp";
       case VariablePrecision.Medium: return "mediump";
       case VariablePrecision.High: return "highp";
-      default: assert(false); return "undefined";
+      default:
+        assert(false);
+        return "undefined";
     }
   }
 }
@@ -432,7 +438,10 @@ export class SourceBuilder {
   public newline(): void { this.add("\n"); }
 
   /* Append the specified string to the glsl source, followed by a new-line */
-  public addline(what: string): void { this.add(what); this.newline(); }
+  public addline(what: string): void {
+    this.add(what);
+    this.newline();
+  }
 
   /**
    * Construct a function definition given the function signature and body. For example:

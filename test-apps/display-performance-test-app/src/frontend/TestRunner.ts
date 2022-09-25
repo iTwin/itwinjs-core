@@ -478,10 +478,18 @@ export class TestRunner {
         if (undefined !== flag) {
           if (key === "renderMode" && typeof flag === "string") {
             switch (flag.toLowerCase()) {
-              case "solidfill": vf.renderMode = RenderMode.SolidFill; break;
-              case "hiddenline": vf.renderMode = RenderMode.HiddenLine; break;
-              case "wireframe": vf.renderMode = RenderMode.Wireframe; break;
-              case "smoothshade": vf.renderMode = RenderMode.SmoothShade; break;
+              case "solidfill":
+                vf.renderMode = RenderMode.SolidFill;
+                break;
+              case "hiddenline":
+                vf.renderMode = RenderMode.HiddenLine;
+                break;
+              case "wireframe":
+                vf.renderMode = RenderMode.Wireframe;
+                break;
+              case "smoothshade":
+                vf.renderMode = RenderMode.SmoothShade;
+                break;
             }
           } else {
             vf[key] = flag;
@@ -1108,14 +1116,20 @@ function getRenderOpts(opts: RenderSystem.Options): string {
         break;
       }
       case "displaySolarShadows":
-        if (!opts[key]) optString += "-solShd";
+        if (!opts[key])
+          optString += "-solShd";
+
         break;
       case "useWebGL2":
-        if (opts[key]) optString += "+webGL2";
+        if (opts[key])
+          optString += "+webGL2";
+
         break;
       case "antialiasSamples": {
         const value = opts[key];
-        if (undefined !== value && value > 1) optString += `+aa${value}`;
+        if (undefined !== value && value > 1)
+          optString += `+aa${value}`;
+
         break;
       }
     }
@@ -1131,16 +1145,24 @@ function getTileProps(props: TileAdmin.Props): string {
     const key = propName as keyof TileAdmin.Props;
     switch (key) {
       case "enableInstancing":
-        if (props[key]) tilePropsStr += "+inst";
+        if (props[key])
+          tilePropsStr += "+inst";
+
         break;
       case "disableMagnification":
-        if (props[key]) tilePropsStr += "-mag";
+        if (props[key])
+          tilePropsStr += "-mag";
+
         break;
       case "enableIndexedEdges":
-        if (!props[key]) tilePropsStr += "-idxEdg";
+        if (!props[key])
+          tilePropsStr += "-idxEdg";
+
         break;
       case "generateAllPolyfaceEdges":
-        if (!props[key]) tilePropsStr += "-pfEdg";
+        if (!props[key])
+          tilePropsStr += "-pfEdg";
+
         break;
     }
   }

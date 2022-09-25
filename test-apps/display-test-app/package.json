@@ -124,7 +124,8 @@
     "parserOptions": {
       "project": [
         "tsconfig.json",
-        "tsconfig.backend.json"
+        "tsconfig.backend.json",
+        "tsconfig.buildScripts.json"
       ]
     }
   }

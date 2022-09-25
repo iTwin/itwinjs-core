@@ -3115,7 +3115,9 @@ export class ScreenViewport extends Viewport {
     if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
       targetPointNpc.z = 0.5;
 
-    this.worldToNpc(pickPoint, projectedPt); projectedPt.z = targetPointNpc.z; this.npcToWorld(projectedPt, projectedPt);
+    this.worldToNpc(pickPoint, projectedPt);
+    projectedPt.z = targetPointNpc.z;
+    this.npcToWorld(projectedPt, projectedPt);
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
@@ -3153,7 +3155,10 @@ export class ScreenViewport extends Viewport {
   public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
-  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+  public get viewRect(): ViewRect {
+    this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+    return this._viewRange;
+  }
 
   /** @internal */
   protected override addDecorations(decorations: Decorations): void {

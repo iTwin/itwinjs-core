@@ -451,10 +451,6 @@
       "allowedCategories": [ "common" ]
     },
     {
-      "name": "appui-test-providers",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "assert",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -720,10 +716,6 @@
     },
     {
       "name": "i18next-http-backend",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "i18next-xhr-backend",
       "allowedCategories": [ "frontend" ]
     },
     {
