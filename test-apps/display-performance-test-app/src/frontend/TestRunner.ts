@@ -478,10 +478,18 @@ export class TestRunner {
         if (undefined !== flag) {
           if (key === "renderMode" && typeof flag === "string") {
             switch (flag.toLowerCase()) {
-              case "solidfill": vf.renderMode = RenderMode.SolidFill; break;
-              case "hiddenline": vf.renderMode = RenderMode.HiddenLine; break;
-              case "wireframe": vf.renderMode = RenderMode.Wireframe; break;
-              case "smoothshade": vf.renderMode = RenderMode.SmoothShade; break;
+              case "solidfill":
+                vf.renderMode = RenderMode.SolidFill;
+                break;
+              case "hiddenline":
+                vf.renderMode = RenderMode.HiddenLine;
+                break;
+              case "wireframe":
+                vf.renderMode = RenderMode.Wireframe;
+                break;
+              case "smoothshade":
+                vf.renderMode = RenderMode.SmoothShade;
+                break;
             }
           } else {
             vf[key] = flag;
