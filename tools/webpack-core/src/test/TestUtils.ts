@@ -35,7 +35,7 @@ export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsTo
     },
     plugins: pluginsToTest,
     externals: externalsToTest,
-    optimization: { minimize: false, runtimeChunk: true },
+    optimization: { minimize: false, runtimeChunk: true, moduleIds: "named" },
     module: {
       rules,
     },

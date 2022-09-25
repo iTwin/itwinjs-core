@@ -96,10 +96,10 @@ export class PrettyLoggingPlugin {
     if (warnings?.length) {
       if (process.env.CI) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.CI is set.\nMost CI servers set it automatically.\n`));
-        throw new PrettyLoggingError(warnings.join("\n\n"));
+        throw new PrettyLoggingError(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
       } else if (process.env.TF_BUILD) {
         console.log(chalk.yellow(`\nTreating warnings as errors because process.env.TF_BUILD is set.\nTFS sets this automatically.\n`));
-        throw new PrettyLoggingError(warnings.join("\n\n"));
+        throw new PrettyLoggingError(warnings.map((w) => JSON.stringify(w, null, 2)).join("\n\n"));
       }
 
       if (this.isInteractive)
