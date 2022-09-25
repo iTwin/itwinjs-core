@@ -68,6 +68,7 @@ export class DefaultMapFeatureInfoTool extends PrimitiveTool {
 
   public async onRestartTool() {
     const tool = new DefaultMapFeatureInfoTool();
-    if (!(await tool.run())) return this.exitTool();
+    if (!(await tool.run()))
+      return this.exitTool();
   }
 }
