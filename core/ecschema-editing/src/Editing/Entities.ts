@@ -93,10 +93,11 @@ export class Entities extends ECClasses {
       newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     }
 
-    if (mixins !== undefined) {
+    if (mixins !== undefined)
       mixins.forEach((m) => newClass.addMixin(m));
-    }
-    if (displayLabel) { newClass.setDisplayLabel(displayLabel); }
+
+    if (displayLabel)
+      newClass.setDisplayLabel(displayLabel);
 
     return { itemKey: newClass.key };
   }

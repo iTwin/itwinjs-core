@@ -34,9 +34,15 @@ export class Constants {
     newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
     newConstant.setDefinition(definition);
 
-    if (numerator) { newConstant.setNumerator(numerator); }
-    if (denominator) { newConstant.setDenominator(denominator); }
-    if (displayLabel) { newConstant.setDisplayLabel(displayLabel); }
+    if (numerator)
+      newConstant.setNumerator(numerator);
+
+    if (denominator)
+      newConstant.setDenominator(denominator);
+
+    if (displayLabel)
+      newConstant.setDisplayLabel(displayLabel);
+
     return { itemKey: newConstant.key };
   }
 

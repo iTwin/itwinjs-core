@@ -36,7 +36,9 @@ export class Formats {
         newFormat.addUnit(unitItem);
       }
     }
-    if (displayLabel) { newFormat.setDisplayLabel(displayLabel); }
+    if (displayLabel)
+      newFormat.setDisplayLabel(displayLabel);
+
     // TODO: Handle the setting of format traits, separators, etc....
     newFormat.setFormatType(formatType);
     return { itemKey: newFormat.key };
