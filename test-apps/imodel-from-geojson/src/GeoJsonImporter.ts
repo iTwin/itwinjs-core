@@ -48,9 +48,15 @@ export class GeoJsonImporter {
 
     let mapType;
     switch (mapTypeString) {
-      case "streets": mapType = BackgroundMapType.Street; break;
-      case "aerial": mapType = BackgroundMapType.Aerial; break;
-      case "hybrid": mapType = BackgroundMapType.Hybrid; break;
+      case "streets":
+        mapType = BackgroundMapType.Street;
+        break;
+      case "aerial":
+        mapType = BackgroundMapType.Aerial;
+        break;
+      case "hybrid":
+        mapType = BackgroundMapType.Hybrid;
+        break;
     }
 
     this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, backgroundMap: undefined !== mapType });
