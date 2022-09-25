@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1275,6 +1273,9 @@ export class ObservableSet<T> extends Set<T> {
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
 
+// @public
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+
 // @beta
 export class OneAtATimeAction<T> {
     constructor(run: (...args: any[]) => Promise<T>, msg?: string);
@@ -1556,6 +1557,25 @@ export class Tracing {
 // @public
 export class TransientIdSequence {
     get next(): Id64String;
+}
+
+// @public
+export class TupleKeyedMap<K extends readonly any[], V> {
+    // (undocumented)
+    [Symbol.iterator](): IterableIterator<[K, V]>;
+    // (undocumented)
+    get [Symbol.toStringTag](): string;
+    constructor(entries?: readonly (readonly [K, V])[] | null);
+    // (undocumented)
+    clear(): void;
+    // (undocumented)
+    get(key: K): V | undefined;
+    // (undocumented)
+    has(key: K): boolean;
+    // (undocumented)
+    set(key: K, value: V): this;
+    // (undocumented)
+    get size(): number;
 }
 
 // @public
