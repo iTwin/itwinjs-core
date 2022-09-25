@@ -147,7 +147,10 @@ export class ClassRegistry {
 
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
     if (schema.missingRequiredBehavior) {
-      const throwError = () => { throw new IModelError(IModelStatus.WrongHandler, `Schema [${domainName}] not registered, but is marked with SchemaHasBehavior`); };
+      const throwError = () => {
+        throw new IModelError(IModelStatus.WrongHandler, `Schema [${domainName}] not registered, but is marked with SchemaHasBehavior`);
+      };
+
       superclass.protectedOperations.forEach((operation) => (generatedClass as any)[operation] = throwError);
     }
 

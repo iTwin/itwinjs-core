@@ -518,14 +518,17 @@ export abstract class GeometricElement3d extends GeometricElement {
   public override toJSON(): GeometricElement3dProps {
     const val = super.toJSON() as GeometricElement3dProps;
     val.placement = this.placement;
-    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
+    if (undefined !== this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+
     return val;
   }
 
   /** @internal */
   protected override collectReferenceIds(referenceIds: Id64Set): void {
     super.collectReferenceIds(referenceIds);
-    if (undefined !== this.typeDefinition) { referenceIds.add(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition)
+      referenceIds.add(this.typeDefinition.id);
   }
 }
 
@@ -560,14 +563,17 @@ export abstract class GeometricElement2d extends GeometricElement {
   public override toJSON(): GeometricElement2dProps {
     const val = super.toJSON() as GeometricElement2dProps;
     val.placement = this.placement;
-    if (undefined !== this.typeDefinition) { val.typeDefinition = this.typeDefinition; }
+    if (undefined !== this.typeDefinition)
+      val.typeDefinition = this.typeDefinition;
+
     return val;
   }
 
   /** @internal */
   protected override collectReferenceIds(referenceIds: Id64Set): void {
     super.collectReferenceIds(referenceIds);
-    if (undefined !== this.typeDefinition) { referenceIds.add(this.typeDefinition.id); }
+    if (undefined !== this.typeDefinition)
+      referenceIds.add(this.typeDefinition.id);
   }
 }
 
@@ -933,7 +939,8 @@ export class SheetTemplate extends Document {
   /** @internal */
   protected override collectReferenceIds(referenceIds: Id64Set): void {
     super.collectReferenceIds(referenceIds);
-    if (undefined !== this.border) { referenceIds.add(this.border); }
+    if (undefined !== this.border)
+      referenceIds.add(this.border);
   }
 }
 
@@ -947,6 +954,7 @@ export class Sheet extends Document {
   public width: number;
   public scale?: number;
   public sheetTemplate?: Id64String;
+
   /** @internal */
   constructor(props: SheetProps, iModel: IModelDb) {
     super(props, iModel);
@@ -955,11 +963,14 @@ export class Sheet extends Document {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
+
   /** @internal */
   protected override collectReferenceIds(referenceIds: Id64Set): void {
     super.collectReferenceIds(referenceIds);
-    if (undefined !== this.sheetTemplate) { referenceIds.add(this.sheetTemplate); }
+    if (undefined !== this.sheetTemplate)
+      referenceIds.add(this.sheetTemplate);
   }
+
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DocumentListModel that contains the Sheet and provides the scope for its name.
@@ -990,8 +1001,13 @@ export abstract class DefinitionElement extends InformationContentElement {
   public static override get className(): string { return "DefinitionElement"; }
   /** If true, don't show this DefinitionElement in user interface lists. */
   public isPrivate: boolean;
+
   /** @internal */
-  constructor(props: DefinitionElementProps, iModel: IModelDb) { super(props, iModel); this.isPrivate = true === props.isPrivate; }
+  constructor(props: DefinitionElementProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.isPrivate = true === props.isPrivate;
+  }
+
   /** @internal */
   public override toJSON(): DefinitionElementProps {
     const val = super.toJSON() as DefinitionElementProps;
@@ -1090,12 +1106,15 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   /** @internal */
   public static override get className(): string { return "TypeDefinitionElement"; }
   public recipe?: RelatedElement;
+
   /** @internal */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+
   /** @internal */
   protected override collectReferenceIds(referenceIds: Id64Set): void {
     super.collectReferenceIds(referenceIds);
-    if (undefined !== this.recipe) { referenceIds.add(this.recipe.id); }
+    if (undefined !== this.recipe)
+      referenceIds.add(this.recipe.id);
   }
 }
 
