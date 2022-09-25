@@ -87,13 +87,20 @@ class SampleAppAccuSnap extends AccuSnap {
     const snaps: SnapMode[] = [];
     if (SampleAppIModelApp.store.getState().frameworkState) {
       const snapMode = SampleAppIModelApp.store.getState().frameworkState.configurableUiState.snapMode;
-      if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number) snaps.push(SnapMode.Bisector);
-      if ((snapMode & SnapMode.Center) === SnapMode.Center as number) snaps.push(SnapMode.Center);
-      if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number) snaps.push(SnapMode.Intersection);
-      if ((snapMode & SnapMode.MidPoint) === SnapMode.MidPoint as number) snaps.push(SnapMode.MidPoint);
-      if ((snapMode & SnapMode.Nearest) === SnapMode.Nearest as number) snaps.push(SnapMode.Nearest);
-      if ((snapMode & SnapMode.NearestKeypoint) === SnapMode.NearestKeypoint as number) snaps.push(SnapMode.NearestKeypoint);
-      if ((snapMode & SnapMode.Origin) === SnapMode.Origin as number) snaps.push(SnapMode.Origin);
+      if ((snapMode & SnapMode.Bisector) === SnapMode.Bisector as number)
+        snaps.push(SnapMode.Bisector);
+      if ((snapMode & SnapMode.Center) === SnapMode.Center as number)
+        snaps.push (SnapMode.Center);
+      if ((snapMode & SnapMode.Intersection) === SnapMode.Intersection as number)
+        snaps.push (SnapMode.Intersection);
+      if ((snapMode & SnapMode.MidPoint) === SnapMode.MidPoint as number)
+        snaps.push (SnapMode.MidPoint);
+      if ((snapMode & SnapMode.Nearest) === SnapMode.Nearest as number)
+        snaps.push (SnapMode.Nearest);
+      if ((snapMode & SnapMode.NearestKeypoint) === SnapMode.NearestKeypoint as number)
+        snaps.push (SnapMode.NearestKeypoint);
+      if ((snapMode & SnapMode.Origin) === SnapMode.Origin as number)
+        snaps.push (SnapMode.Origin);
     } else {
       snaps.push(SnapMode.NearestKeypoint);
     }
