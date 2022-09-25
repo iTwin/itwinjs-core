@@ -12,6 +12,7 @@ import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove
 /* eslint-disable nonblock-statement-body-position */
+/* eslint-disable max-statements-per-line */
 
 /** @public */
 export interface MarkupColor {

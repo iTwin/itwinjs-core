@@ -169,7 +169,11 @@ export class MarkupApp {
     return (undefined !== matrix ? matrix : new Matrix());
   }
   /** @internal */
-  public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
+  public static getVpToScreenMtx(): Matrix {
+    const rect = this.markup!.markupDiv.getBoundingClientRect();
+    return (new Matrix()).translateO(rect.left, rect.top);
+  }
+
   /** @internal */
   public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
   /** @internal */
@@ -366,7 +370,11 @@ export class MarkupApp {
   public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
 }
 
-const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
+const removeSvgNamespace = (svg: Svg) => {
+  svg.node.removeAttribute("xmlns:svgjs");
+  return svg;
+};
+
 const newSvgElement = (name: string) => adopt(create(name));
 
 /**

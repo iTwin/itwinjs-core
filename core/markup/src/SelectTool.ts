@@ -295,10 +295,17 @@ export class Handles {
     this.draw(); // show starting state
   }
 
-  public npcToBox(p: XAndY) { const pt = this.npcToVb(p); return this.vbToBox(pt, pt); }
+  public npcToBox(p: XAndY) {
+    const pt = this.npcToVb(p);
+    return this.vbToBox(pt, pt);
+  }
+
   public npcToVb(p: XAndY, result?: Point2d): Point2d { return this.npcToVbTrn.multiplyPoint2d(p, result); }
   public vbToBox(p: XAndY, result?: Point2d): Point2d { return this.vbToBoxTrn.multiplyPoint2d(p, result); }
-  public npcToVbArray(pts: Point2d[]): Point2d[] { pts.forEach((pt) => this.npcToVb(pt, pt)); return pts; }
+  public npcToVbArray(pts: Point2d[]): Point2d[] {
+    pts.forEach((pt) => this.npcToVb(pt, pt));
+    return pts;
+  }
 
   public draw() {
     const el = this.el;
@@ -415,7 +422,11 @@ export class MarkupSelected {
   /** Remove an element from the selection set and unhilite it.
    * @returns true if the element was in the SS and was removed.
    */
-  public drop(el: MarkupElement): boolean { el.unHilite(); return this.elements.delete(el) ? (this.sizeChanged(), true) : false; }
+  public drop(el: MarkupElement): boolean {
+    el.unHilite();
+    return this.elements.delete(el) ? (this.sizeChanged(), true) : false;
+  }
+
   /** Replace an entry in the selection set with a different element. */
   public replace(oldEl: MarkupElement, newEl: MarkupElement) {
     if (this.drop(oldEl))
@@ -423,7 +434,11 @@ export class MarkupSelected {
   }
 
   public deleteAll(undo: UndoManager) {
-    undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => { undo.onDelete(el); el.remove(); }));
+    undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => {
+      undo.onDelete(el);
+      el.remove();
+    }));
+
     this.emptyAll();
   }
 
@@ -435,14 +450,15 @@ export class MarkupSelected {
     const group = parent.group();
 
     const ordered: MarkupElement[] = [];
-    this.elements.forEach((el) => { ordered.push(el); });
+    this.elements.forEach((el) => ordered.push(el));
     ordered.sort((lhs, rhs) => parent.index(lhs) - parent.index(rhs)); // Preserve relative z ordering
 
     undo.performOperation(MarkupApp.getActionName("group"), () => {
       ordered.forEach((el) => {
         const oldParent = el.parent() as MarkupElement;
         const oldPos = el.position();
-        el.unHilite(); undo.onRepositioned(el.addTo(group), oldPos, oldParent);
+        el.unHilite();
+        undo.onRepositioned(el.addTo(group), oldPos, oldParent);
       }), undo.onAdded(group);
     });
     this.restart(group);
@@ -460,8 +476,16 @@ export class MarkupSelected {
 
     undo.performOperation(MarkupApp.getActionName("ungroup"), () => {
       groups.forEach((g) => {
-        g.unHilite(); this.elements.delete(g); undo.onDelete(g);
-        g.each((index, children) => { const child = children[index]; const oldPos = child.position(); child.toParent(g.parent()); undo.onRepositioned(child, oldPos, g); }, false);
+        g.unHilite();
+        this.elements.delete(g);
+        undo.onDelete(g);
+        g.each((index, children) => {
+          const child = children[index];
+          const oldPos = child.position();
+          child.toParent(g.parent());
+          undo.onRepositioned(child, oldPos, g);
+        }, false);
+
         g.untransform(); // Don't want undo of ungroup to push the current group transform...
         g.remove();
       });
@@ -520,7 +544,11 @@ export class SelectTool extends MarkupTool {
     this.markup.selected.emptyAll();
   }
   public override async onCleanup() { this.clearSelect(); }
-  public override async onPostInstall() { this.initSelect(); return super.onPostInstall(); }
+  public override async onPostInstall() {
+    this.initSelect();
+    return super.onPostInstall();
+  }
+
   public override async onRestartTool() { this.initSelect(); }
 
   protected override showPrompt(): void {
