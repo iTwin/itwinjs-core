@@ -169,7 +169,10 @@ export class IModelExporter {
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
   protected get handler(): IModelExportHandler {
-    if (undefined === this._handler) { throw new Error("IModelExportHandler not registered"); }
+    if (undefined === this._handler) {
+      throw new Error("IModelExportHandler not registered");
+    }
+
     return this._handler;
   }
 
@@ -319,7 +322,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new SchemaLoader((name: string) => { return this.sourceDb.getSchemaProps(name); });
+    const schemaLoader = new SchemaLoader((name: string) => this.sourceDb.getSchemaProps(name));
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
@@ -801,9 +804,14 @@ class ChangedInstanceOps {
   public deleteIds = new Set<Id64String>();
   public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
     if (undefined !== val) {
-      if ((undefined !== val.insert) && (Array.isArray(val.insert))) { val.insert.forEach((id: Id64String) => this.insertIds.add(id)); }
-      if ((undefined !== val.update) && (Array.isArray(val.update))) { val.update.forEach((id: Id64String) => this.updateIds.add(id)); }
-      if ((undefined !== val.delete) && (Array.isArray(val.delete))) { val.delete.forEach((id: Id64String) => this.deleteIds.add(id)); }
+      if ((undefined !== val.insert) && (Array.isArray(val.insert)))
+        val.insert.forEach((id: Id64String) => this.insertIds.add(id));
+
+      if ((undefined !== val.update) && (Array.isArray(val.update)))
+        val.update.forEach((id: Id64String) => this.updateIds.add(id));
+
+      if ((undefined !== val.delete) && (Array.isArray(val.delete)))
+        val.delete.forEach((id: Id64String) => this.deleteIds.add(id));
     }
   }
 }

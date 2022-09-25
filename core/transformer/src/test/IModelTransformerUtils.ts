@@ -494,7 +494,11 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => {
+        s.bindId(1, relInSource.ECClassId);
+        s.step();
+        return s.getValue(0).getString();
+      }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)

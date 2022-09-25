@@ -99,7 +99,9 @@ class CountdownTransformer extends IModelTransformer {
 class CountdownToCrashTransformer extends CountdownTransformer {
   public constructor(...args: ConstructorParameters<typeof CountdownTransformer>) {
     super(...args);
-    this.callback = () => { throw Error("crash"); };
+    this.callback = () => {
+      throw Error("crash");
+    };
   }
 }
 
@@ -221,7 +223,10 @@ async function transformNoCrash<
 >({
   targetDb,
   transformer,
-  transformerProcessing = async (t) => { await t.processSchemas(); await t.processAll(); },
+  transformerProcessing = async (t) => {
+    await t.processSchemas();
+    await t.processAll();
+  },
 }: {
   sourceDb: IModelDb;
   targetDb: IModelDb;
@@ -752,7 +757,10 @@ describe("test resuming transformations", () => {
   // TRANSFORMER_RESUMPTION_TEST_MAX_CRASHING_TRANSFORMATIONS (defaults to 200)
   it.skip("crashing transforms stats gauntlet", async () => {
     let crashableCallsMade = 0;
-    const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() { ++crashableCallsMade; } });
+    const { enableCrashes } = setupCrashingNativeAndTransformer({ onCrashableCallMade() {
+      ++crashableCallsMade;
+    } });
+
     // TODO: don't run a new control test to compare with every crash test,
     // right now trying to run assertIdentityTransform against the control transform target dbs in the control loop yields
     // BE_SQLITE_ERROR: Failed to prepare 'select * from (SELECT ECInstanceId FROM bis.Element) limit :sys_ecdb_count offset :sys_ecdb_offset'. The data source ECDb (parameter 'dataSourceECDb') must be a connection to the same ECDb file as the ECSQL parsing ECDb connection (parameter 'ecdb').
