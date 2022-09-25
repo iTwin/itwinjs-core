@@ -12,7 +12,7 @@ import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExt
 import { ExternalsPlugin } from "webpack";
 import { setApplicationDir } from "../utils/paths";
 
-describe("RequireMagicCommentsPlugin", () => {
+describe.skip("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
   let testConfig: any;
   const vol = new Volume();
 
