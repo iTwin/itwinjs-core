@@ -228,7 +228,11 @@ function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySear
 function registerTestClass(id: string, keyin: string, ns: string) {
   (class extends Tool {
     public static override toolId = id;
-    public override async run(): Promise<boolean> { lastCommand = keyin; return true; }
+    public override async run(): Promise<boolean> {
+      lastCommand = keyin;
+      return true;
+    }
+
     public static override get keyin(): string { return keyin; }
 
   }).register(ns);

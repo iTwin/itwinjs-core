@@ -376,7 +376,11 @@ class ShadowFrustumDecoration {
     this._targetVp = vp;
     const removeDecorator = IModelApp.viewManager.addDecorator(this);
     const removeOnRender = vp.onRender.addListener((_) => this.onRender());
-    this._cleanup = () => { removeDecorator(); removeOnRender(); };
+    this._cleanup = () => {
+      removeDecorator();
+      removeOnRender();
+    };
+
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
