@@ -96,12 +96,8 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
   public insertNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem, index: number = -1): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData)
-        parent.extendedData = {};
-
-      if (!parent.extendedData.children)
-        parent.extendedData.children = [];
-
+      if (!parent.extendedData) parent.extendedData = {};
+      if (!parent.extendedData.children) parent.extendedData.children = [];
       nodes = parent.extendedData.children;
     }
     if (index !== -1)
@@ -118,9 +114,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
   public removeNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return;
-
+      if (!parent.extendedData || !parent.extendedData.children) return;
       nodes = parent.extendedData.children;
     }
     const idx = nodes.findIndex((e) => e.id === child.id);
@@ -137,19 +131,13 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
   public moveNode = (parent: TreeNodeItem | undefined, newParent: TreeNodeItem | undefined, child: TreeNodeItem, newIndex: number = -1): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return;
-
+      if (!parent.extendedData || !parent.extendedData.children) return;
       nodes = parent.extendedData.children;
     }
     let toNodes = this._data;
     if (newParent) {
-      if (!newParent.extendedData)
-        newParent.extendedData = {};
-
-      if (!newParent.extendedData.children)
-        newParent.extendedData.children = [];
-
+      if (!newParent.extendedData) newParent.extendedData = {};
+      if (!newParent.extendedData.children) newParent.extendedData.children = [];
       toNodes = newParent.extendedData.children;
     }
     const index = nodes.findIndex((e) => e.id === child.id);
@@ -192,8 +180,7 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
       if (node.extendedData && node.extendedData.children && node.extendedData.children.length > 0) {
         for (const child of node.extendedData.children) {
           const n = this._getNodeById(child, id);
-          if (n)
-            return n;
+          if (n) return n;
         }
       }
     }
@@ -213,26 +200,21 @@ export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
         c = this._getNodeById(parent.extendedData.children, nodeItem.id);
       }
     }
-    if (c)
-      return true;
-
+    if (c) return true;
     return false;
   };
-
   public getNodeIndex = (parent: TreeNodeItem | undefined, node: TreeNodeItem): number => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return -1;
-
+      if (!parent.extendedData || !parent.extendedData.children) return -1;
       nodes = parent.extendedData.children;
     }
-
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < nodes.length; i++)
-      if (nodes[i].id === node.id)
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id === node.id) {
         return i;
-
+      }
+    }
     return -1;
   };
 }

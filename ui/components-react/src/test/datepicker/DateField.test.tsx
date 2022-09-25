@@ -41,22 +41,15 @@ class MdyFormatter implements DateFormatter {
 
   public parseDate(dateString: string) {
     const mdy = dateString.split("-").filter((value) => !!value);
-    if (mdy.length !== 3)
-      return undefined;
-
+    if (mdy.length !== 3) return undefined;
     const month = parseInt(mdy[0], 10);
     const day = parseInt(mdy[1], 10);
     const year = parseInt(mdy[2], 10);
 
     // validate
-    if (isNaN(month) || month < 0 || month > 12)
-      return undefined;
-
-    if (isNaN(day) || day < 0 || day > 31)
-      return undefined;
-
-    if (isNaN(year) || year < 1800 || year > 2300)
-      return undefined;
+    if (isNaN(month) || month < 0 || month > 12) return undefined;
+    if (isNaN(day) || day < 0 || day > 31) return undefined;
+    if (isNaN(year) || year < 1800 || year > 2300) return undefined;
 
     return new Date(year, month - 1, day);
   }

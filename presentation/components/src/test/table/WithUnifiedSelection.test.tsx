@@ -32,8 +32,7 @@ describe("Table withUnifiedSelection", () => {
   before(() => {
     // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
     // eslint-disable-next-line dot-notation
-    if (Symbol.asyncIterator === undefined)
-      ((Symbol as any).asyncIterator) = Symbol.for("asyncIterator");
+    if (Symbol.asyncIterator === undefined) ((Symbol as any).asyncIterator) = Symbol.for("asyncIterator");
   });
 
   beforeEach(() => {

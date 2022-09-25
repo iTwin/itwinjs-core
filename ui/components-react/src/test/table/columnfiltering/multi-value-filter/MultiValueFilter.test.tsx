@@ -65,11 +65,7 @@ describe("MultiValueFilter", () => {
 
   const testChecked = (cbs: HTMLInputElement[], testResult: number): void => {
     let checked = 0;
-    cbs.forEach((cb) => {
-      if (cb.checked)
-        checked++;
-    });
-
+    cbs.forEach((cb) => { if (cb.checked) checked++; });
     expect(checked).to.eq(testResult);
   };
 

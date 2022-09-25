@@ -75,13 +75,9 @@ describe("ViewportComponent", () => {
 
   const getViewState = (viewId: string): ViewState => {
     let vs: ViewState;
-    if (viewId === "id1")
-      vs = viewState;
-    else if (viewId === "id2")
-      vs = viewState2;
-    else
-      vs = undefined as unknown as ViewState;
-
+    if (viewId === "id1") vs = viewState;
+    else if (viewId === "id2") vs = viewState2;
+    else vs = undefined as unknown as ViewState;
     return vs;
   };
   viewsMock.setup((x) => x.load).returns(() => async (viewId: string) => getViewState(viewId));

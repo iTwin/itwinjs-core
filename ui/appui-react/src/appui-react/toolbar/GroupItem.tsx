@@ -212,9 +212,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
 
   private _handleSyncUiEvent = (args: UiSyncEventArgs): void => {
     // istanbul ignore next
-    if (this._componentUnmounting)
-      return;
-
+    if (this._componentUnmounting) return;
     let refreshState = false;
     // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)

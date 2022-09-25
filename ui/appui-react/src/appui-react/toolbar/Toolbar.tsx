@@ -264,12 +264,8 @@ export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     width = width ?? this._minToolbarSize;
     height = height ?? this._minToolbarSize;
     // do allow toolbar to go to a size that doesn't show at least one button;
-    if (width < this._minToolbarSize)
-      width = this._minToolbarSize;
-
-    if (height < this._minToolbarSize)
-      height = this._minToolbarSize;
-
+    if (width < this._minToolbarSize) width = this._minToolbarSize;
+    if (height < this._minToolbarSize) height = this._minToolbarSize;
     if (this.state.width !== width || this.state.height !== height) {
       const items = this.generateToolbarItems(this.props.items, new Size(width, height));
       if (this._isMounted)

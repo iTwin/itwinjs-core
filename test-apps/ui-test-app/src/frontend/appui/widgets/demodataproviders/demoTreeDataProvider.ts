@@ -51,11 +51,9 @@ export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [ // eslint-disable-line
 export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
   private _data: DelayLoadedTreeNodeItem[];
-
   constructor(data: DelayLoadedTreeNodeItem[]) {
     this._data = data;
   }
-
   public getNodes = async (parent?: TreeNodeItem, pageOptions?: PageOptions): Promise<TreeNodeItem[]> => {
     let start = 0;
     let end: number | undefined;
@@ -65,13 +63,11 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       if (pageOptions.size !== undefined)
         end = start + pageOptions.size;
     }
-
     if (parent) {
       if (parent && parent.extendedData && parent.extendedData.children)
         return parent.extendedData.children.slice(start, end);
       return [];
     }
-
     return this._data.slice(start, end);
   };
 
@@ -81,44 +77,33 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
         return parent.extendedData.children.length;
       return 0;
     }
-
     return this._data.length;
   };
 
   public insertNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem, index: number = -1): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData)
-        parent.extendedData = {};
-
-      if (!parent.extendedData.children)
-        parent.extendedData.children = [];
-
+      if (!parent.extendedData) parent.extendedData = {};
+      if (!parent.extendedData.children) parent.extendedData.children = [];
       nodes = parent.extendedData.children;
     }
-
     if (index !== -1)
       nodes.splice(index, 0, child);
     else
       nodes.push(child);
-
     if (parent) {
       const p = parent as DelayLoadedTreeNodeItem;
       p.hasChildren = true;
     }
-
     this.onTreeNodeChanged.raiseEvent([parent]);
   };
 
   public removeNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return;
-
+      if (!parent.extendedData || !parent.extendedData.children) return;
       nodes = parent.extendedData.children;
     }
-
     const idx = nodes.findIndex((e) => e.id === child.id);
     if (idx !== -1) {
       nodes.splice(idx, 1);
@@ -133,40 +118,30 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
   public moveNode = (parent: TreeNodeItem | undefined, newParent: TreeNodeItem | undefined, child: TreeNodeItem, newIndex: number = -1): void => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return;
-
+      if (!parent.extendedData || !parent.extendedData.children) return;
       nodes = parent.extendedData.children;
     }
-
     let toNodes = this._data;
     if (newParent) {
-      if (!newParent.extendedData)
-        newParent.extendedData = {};
-
-      if (!newParent.extendedData.children)
-        newParent.extendedData.children = [];
-
+      if (!newParent.extendedData) newParent.extendedData = {};
+      if (!newParent.extendedData.children) newParent.extendedData.children = [];
       toNodes = newParent.extendedData.children;
     }
-
     const index = nodes.findIndex((e) => e.id === child.id);
     if (parent === newParent && index === newIndex)
       return;
-
     if (index !== -1) {
       const node = nodes.splice(index, 1)[0];
       if (parent && nodes.length === 0) {
         const p = parent as DelayLoadedTreeNodeItem;
         p.hasChildren = false;
       }
-
       let parentsParent: DelayLoadedTreeNodeItem | undefined;
-      if (newIndex !== -1)
+      if (newIndex !== -1) {
         toNodes.splice(newIndex, 0, node);
-      else
+      } else {
         toNodes.push(node);
-
+      }
       const arr = [];
       if (newParent) {
         const np = newParent as DelayLoadedTreeNodeItem;
@@ -201,8 +176,7 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
       if (node.extendedData && node.extendedData.children && node.extendedData.children.length > 0) {
         for (const child of node.extendedData.children) {
           const n = this._getNodeById(child, id);
-          if (n)
-            return n;
+          if (n) return n;
         }
       }
     }
@@ -222,27 +196,21 @@ export class DemoMutableTreeDataProvider implements MutableTreeDataProvider {
         c = this._getNodeById(parent.extendedData.children, nodeItem.id);
       }
     }
-
-    if (c)
-      return true;
-
+    if (c) return true;
     return false;
   };
-
   public getNodeIndex = (parent: TreeNodeItem | undefined, node: TreeNodeItem): number => {
     let nodes = this._data;
     if (parent) {
-      if (!parent.extendedData || !parent.extendedData.children)
-        return -1;
-
+      if (!parent.extendedData || !parent.extendedData.children) return -1;
       nodes = parent.extendedData.children;
     }
-
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let i = 0; i < nodes.length; i++)
-      if (nodes[i].id === node.id)
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id === node.id) {
         return i;
-
+      }
+    }
     return -1;
   };
 }

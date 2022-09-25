@@ -589,20 +589,13 @@ export class AppTools {
         if (SampleAppIModelApp.store.getState().frameworkState) {
           const snapModes = IModelApp.accuSnap.getActiveSnapModes();
           for (const mode of snapModes) {
-            if (mode === SnapMode.Bisector)
-              displayString += " Bisector";
-            if (mode === SnapMode.Center)
-              displayString += " Center";
-            if (mode === SnapMode.Intersection)
-              displayString += " Intersection";
-            if (mode === SnapMode.MidPoint)
-              displayString += " MidPoint";
-            if (mode === SnapMode.Nearest)
-              displayString += " Nearest";
-            if (mode === SnapMode.NearestKeypoint)
-              displayString += " NearestKeypoint";
-            if (mode === SnapMode.Origin)
-              displayString += " Origin";
+            if (mode === SnapMode.Bisector) displayString += " Bisector";
+            if (mode === SnapMode.Center) displayString += " Center";
+            if (mode === SnapMode.Intersection) displayString += " Intersection";
+            if (mode === SnapMode.MidPoint) displayString += " MidPoint";
+            if (mode === SnapMode.Nearest) displayString += " Nearest";
+            if (mode === SnapMode.NearestKeypoint) displayString += " NearestKeypoint";
+            if (mode === SnapMode.Origin) displayString += " Origin";
           }
         }
 

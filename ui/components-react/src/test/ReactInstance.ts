@@ -16,12 +16,10 @@ export function findInstance(node: any, opts?: any): any {
   const options = Object.assign({}, optionsDefault, opts);
 
   const fiber = getFiberFromNode(node);
-  if (!fiber)
-    return false;
+  if (!fiber) return false;
 
   const instance = getInstanceFromFiber(fiber, options.maxIteration);
-  if (!instance)
-    return false;
+  if (!instance) return false;
 
   const target = getTargetInstance(instance, instance, options.componentName, options.maxIteration);
   return target;
@@ -61,8 +59,7 @@ function isInstanceFiber(fiber: any) {
 }
 function getTargetInstance(childInstance: any, parentInstance: any, componentName: any, i: number): any {
   // console.log('getting instance from fiber', childInstance, parentInstance);
-  if (!childInstance && !parentInstance)
-    return false;
+  if (!childInstance && !parentInstance) return false;
 
   if (childInstance && isTarget(childInstance, componentName)) {
     return childInstance;
@@ -88,8 +85,7 @@ function getTargetInstance(childInstance: any, parentInstance: any, componentNam
 }
 
 function isTarget(instance: any, componentName: any) {
-  if (!componentName)
-    return true;
+  if (!componentName) return true;
 
   return instance.constructor.name === componentName;
 }

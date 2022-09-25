@@ -164,15 +164,8 @@ export class PlaceBlockTool extends CreateElementTool {
     context.addDecorationFromBuilder(builderAccHid);
   }
 
-  public override decorateSuspended(context: DecorateContext): void {
-    if (this._isComplete)
-      this.decorate(context);
-  }
-
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
-    if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete)
-      ev.viewport.invalidateDecorations();
-  }
+  public override decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._points.length > 0 && undefined !== ev.viewport && !this._isComplete) ev.viewport.invalidateDecorations(); }
 
   protected async createElement(): Promise<void> {
     assert(this._matrix !== undefined, "should have defined orientation by now");
@@ -226,8 +219,7 @@ export class PlaceBlockTool extends CreateElementTool {
 
       this._isComplete = true;
       this._points.length = 0;
-      for (const pt of points)
-        this._points.push(pt);
+      for (const pt of points) this._points.push(pt);
 
       await this.createElement();
 
