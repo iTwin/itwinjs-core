@@ -154,9 +154,17 @@ export class StopWatch {
   }
 
   /** Start the stopwatch. Any future time measurements will be based on this new value. */
-  public start(): void { this.reset(); this._start = BeTimePoint.now(); }
+  public start(): void {
+    this.reset();
+    this._start = BeTimePoint.now();
+  }
+
   /** Stop the stopwatch so that the duration can be viewed later. */
-  public stop(): BeDuration { this._stop = BeTimePoint.now(); return this.elapsed; }
+  public stop(): BeDuration {
+    this._stop = BeTimePoint.now();
+    return this.elapsed;
+  }
+
   /** Clear the StopWatch */
   public reset(): void { this._start = this._stop = undefined; }
 }

@@ -15,37 +15,49 @@ export namespace JsonUtils {
    * @param defaultVal default value if json cannot be converted to boolean
    * @returns the value of json as a boolean, or default value
    */
-  export function asBool(json: any, defaultVal = false): boolean { return isNullOrUndefined(json) ? defaultVal : !!json; }
+  export function asBool(json: any, defaultVal = false): boolean {
+    return isNullOrUndefined(json) ? defaultVal : !!json;
+  }
   /** Get a value as an integer.
    * @param json the input JSON object
    * @param defaultVal default value if json cannot be converted to integer
    * @returns the value of json as an integer, or default value
    */
-  export function asInt(json: any, defaultVal = 0): number { return (typeof json === "number") ? Math.trunc(json) : defaultVal; }
+  export function asInt(json: any, defaultVal = 0): number {
+    return (typeof json === "number") ? Math.trunc(json) : defaultVal;
+  }
   /** Get a value as a double.
    * @param json the input JSON object
    * @param defaultVal default value if json cannot be converted to double
    * @returns the value of json as a double, or default value
    */
-  export function asDouble(json: any, defaultVal = 0): number { return (typeof json === "number") ? json : defaultVal; }
+  export function asDouble(json: any, defaultVal = 0): number {
+    return (typeof json === "number") ? json : defaultVal;
+  }
   /** Get a value as a string.
    * @param json the input JSON object
    * @param defaultVal default value if json cannot be converted to string
    * @returns the value of json as a string, or default value
    */
-  export function asString(json: any, defaultVal = ""): string { return isNullOrUndefined(json) ? defaultVal : json.toString(); }
+  export function asString(json: any, defaultVal = ""): string {
+    return isNullOrUndefined(json) ? defaultVal : json.toString();
+  }
 
   /** Get a value as an array.
    * @param json the input JSON object
    * @returns the input JSON object if it is an array, otherwise undefined
    */
-  export function asArray(json: any): any { return Array.isArray(json) ? json : undefined; }
+  export function asArray(json: any): any {
+    return Array.isArray(json) ? json : undefined;
+  }
 
   /** Get a value as an object.
    * @param json the input JSON object
    * @returns the input JSON object if it is an object, otherwise undefined
    */
-  export function asObject(json: any): any { return "object" === typeof json ? json : undefined; }
+  export function asObject(json: any): any {
+    return "object" === typeof json ? json : undefined;
+  }
 
   /** Set or remove a number on a json object, given a key name, a value, and a default value. Sets `json[key] = val` if val is *not* equal to the default,
    * otherwise `delete json[key]`. This is used to omit values from JSON strings that are of known defaults.
@@ -91,7 +103,9 @@ export namespace JsonUtils {
     return undefined === json || isEmptyObject(json);
   }
 
-  function isNullOrUndefined(json: any): boolean { return null === json || undefined === json; }
+  function isNullOrUndefined(json: any): boolean {
+    return null === json || undefined === json;
+  }
 
   /** Determine if the input is a non-empty Javascript object.
    * @param value The value to test.
@@ -119,7 +133,7 @@ export namespace JsonUtils {
     // if it's an array, convert each member.
     if (Array.isArray(val)) {
       const arr = new Array(val.length);
-      val.forEach((el, i) => { arr[i] = toObject(el); });
+      val.forEach((el, i) => arr[i] = toObject(el));
       return arr;
     }
 
