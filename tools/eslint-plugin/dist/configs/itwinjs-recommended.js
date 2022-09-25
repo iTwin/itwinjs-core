@@ -263,6 +263,10 @@ module.exports = {
     "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
+    "max-statements-per-line": [
+      "error",
+      { "max": 1 },
+    ],
     "new-parens": "error",
     "no-bitwise": "off",
     "no-caller": "error",
