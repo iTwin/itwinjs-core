@@ -256,7 +256,8 @@ export class HalfEdgeGraphOps {
  * @internal
  */
 export class HalfEdgeGraphMerge {
-  // return kC <= kB such that stored angles (at extra data index 0 !) kA<=k<kC match.
+  // return kC such that all angles k are equal, with kA <= k < kC <= kB.
+  // * Assume: angles k are stored at extra data index 0.
   // * Note that the usual case (when angle at kA is not repeated) is kA+1 === kC
   public static getCommonThetaEndIndex(clusters: ClusterableArray, order: Uint32Array, kA: number, kB: number): number{
     let kC = kA + 1;
@@ -291,7 +292,7 @@ export class HalfEdgeGraphMerge {
 
   }
   // assumptions about cluster array:
-  //   * data order is: x,y,theta, nodeIndex
+  //   * data order is: x,y,theta,nodeIndex
   //   * theta and nodeIndex are the "extra" data.
   //   * only want to do anything here when curves are present.
   //   * k0<=k<k1 are around a vertex
@@ -346,7 +347,7 @@ export class HalfEdgeGraphMerge {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
     graph.clearMask(HalfEdgeMask.NULL_FACE);
-    const clusters = new ClusterableArray(2, 2, numNodes);  // data order: x,y,theta, nodeIndex.  But theta is not set in first round.
+    const clusters = new ClusterableArray(2, 2, numNodes);  // data order: x,y,theta,nodeIndex.  But theta is not set in first round.
     for (let i = 0; i < numNodes; i++) {
       const nodeA = allNodes[i];
       const xA = nodeA.x;
@@ -359,7 +360,7 @@ export class HalfEdgeGraphMerge {
     const numK = order.length;
     for (let k1 = 0; k1 < numK; k1++) {
       if (order[k1] === ClusterableArray.clusterTerminator) {
-        // nodes identified in order[k0]..order[k1] are properly sorted around a vertex.
+        // nodes identified in order[k0]..order[k1-1] are at a vertex cluster; equate their xy
         if (k1 > k0) {
           const iA = clusters.getExtraData(order[k0], 1);
           const nodeA0 = allNodes[iA];
@@ -398,7 +399,7 @@ export class HalfEdgeGraphMerge {
     // now pinch each neighboring pair together
     for (let k1 = 0; k1 < numK; k1++) {
       if (order[k1] === ClusterableArray.clusterTerminator) {
-        // nodes identified in order[k0]..order[k1] are properly sorted around a vertex.
+        // nodes identified in order[k0]..order[k1-1] are properly sorted around a vertex.
         if (k1 > k0) {
           // const xy = clusters.getPoint2d(order[k0]);
           // eslint-disable-next-line no-console
@@ -435,12 +436,13 @@ export class HalfEdgeGraphMerge {
               if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
                 const nodeA1 = nodeA.faceSuccessor;
                 const nodeB1 = nodeB.edgeMate;
-                // WE TRUST -- nodeA1 and node B1 must have identical xy.
-                // pinch them together and mark the face loop as null ..
-                HalfEdge.pinch(nodeA1, nodeB1);
-                nodeA.setMask(HalfEdgeMask.NULL_FACE);
-                nodeB1.setMask(HalfEdgeMask.NULL_FACE);
-                unmatchedNullFaceNodes.push(nodeB1);
+                if (nodeA1.isEqualXY(nodeB1)) {   // rule out different edge curvatures
+                  // pinch them together and mark the face loop as null ..
+                  HalfEdge.pinch(nodeA1, nodeB1);
+                  nodeA.setMask(HalfEdgeMask.NULL_FACE);
+                  nodeB1.setMask(HalfEdgeMask.NULL_FACE);
+                  unmatchedNullFaceNodes.push(nodeB1);
+                }
               }
               nodeA = nodeB;
               thetaA = thetaB;

@@ -260,8 +260,8 @@ describe("RegionBoolean", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
-    let y0 = 0;
-    let z0 = 0;
+    const y0 = 0;
+    const z0 = 0;
     const delta = 10;
     const deltaFactorToNextTest = 5;
     let variant = 0;
@@ -284,7 +284,7 @@ describe("RegionBoolean", () => {
       ),
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
-    let loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
 
     // variant input #1: parity region from original input
     ++variant;
@@ -292,7 +292,7 @@ describe("RegionBoolean", () => {
     region.tryAddChild(outsideLoop);
     region.tryAddChild(insideLoop);
     x0 = variant * deltaFactorToNextTest * delta;
-    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
 
     // variant input #2: ccw inner with upward normal arc
     ++variant;
@@ -308,12 +308,12 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
 
     // variant input #3: parity region from variant #2
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
 
     // variant input #4: cw inner with upward normal arc
     ++variant;
@@ -329,12 +329,12 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(0, 2, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    loops = createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
 
     // variant input #5: parity region from variant #4
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    loops = createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ParityRegionWithCoincidentBoundary");
     expect(ck.getNumErrors()).equals(0);
