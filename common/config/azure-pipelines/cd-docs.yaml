@@ -54,7 +54,7 @@ stages:
     jobs:
     - template: ./jobs/docs/product-tests.yaml
       parameters:
-        env: DEV
+        env: Development
 
   # - stage: QA
   #   displayName: Deployment (QA)
