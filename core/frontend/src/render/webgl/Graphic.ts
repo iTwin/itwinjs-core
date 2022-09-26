@@ -321,7 +321,10 @@ export class Branch extends Graphic {
 
     if (opts.secondaryClassifiers) {
       this.secondaryClassifiers = new Array<PlanarClassifier>();
-      opts.secondaryClassifiers.forEach((classifier) => { if (classifier instanceof PlanarClassifier) this.secondaryClassifiers?.push(classifier); });
+      opts.secondaryClassifiers.forEach((classifier) => {
+        if (classifier instanceof PlanarClassifier)
+          this.secondaryClassifiers?.push(classifier);
+      });
     }
   }
 

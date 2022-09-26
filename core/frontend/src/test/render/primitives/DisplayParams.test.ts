@@ -47,8 +47,11 @@ describe("DisplayParams equality tests", () => {
   });
 
   it("two DisplayParams created with different colors should be non-equal", () => {
-    const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = ColorDef.white;
-    const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = ColorDef.black;
+    const gf0: GraphicParams = new GraphicParams();
+    gf0.lineColor = ColorDef.white
+    ;
+    const gf1: GraphicParams = new GraphicParams();
+    gf1.lineColor = ColorDef.black;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpMesh0.equals(dpMesh1)).to.be.false;
@@ -63,8 +66,10 @@ describe("DisplayParams equality tests", () => {
   it("two DisplayParams created with different colors (same alpha) should be equal if merge-comparing", () => {
     const cd0: ColorDef = ColorDef.create(ColorByName.white).withAlpha(64);
     const cd1: ColorDef = ColorDef.create(ColorByName.black).withAlpha(64);
-    const gf0: GraphicParams = new GraphicParams(); gf0.lineColor = cd0;
-    const gf1: GraphicParams = new GraphicParams(); gf1.lineColor = cd1;
+    const gf0: GraphicParams = new GraphicParams();
+    gf0.lineColor = cd0;
+    const gf1: GraphicParams = new GraphicParams();
+    gf1.lineColor = cd1;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);
     const dpMesh1: DisplayParams = DisplayParams.createForMesh(gf1, false);
     expect(dpMesh0.equals(dpMesh1, DisplayParams.ComparePurpose.Merge)).to.be.true;

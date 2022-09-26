@@ -265,7 +265,9 @@ export class LRUCache<K, V> {
    */
   public delete(key: K): V | undefined {
     const entry = this._container.get(key);
-    if (!entry) return;
+    if (!entry)
+      return;
+
     this._container.delete(entry.key);
     if (entry.newer && entry.older) {
       // re-link the older entry with the newer entry

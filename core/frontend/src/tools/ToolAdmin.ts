@@ -90,8 +90,16 @@ export class ToolSettingsState {
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
   public locateCircleOn = false;
-  public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
-  public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
+  public setFrom(other: ToolState) {
+    this.coordLockOvr = other.coordLockOvr;
+    this.locateCircleOn = other.locateCircleOn;
+  }
+
+  public clone(): ToolState {
+    const val = new ToolState();
+    val.setFrom(this);
+    return val;
+  }
 }
 
 /** @internal */
@@ -160,11 +168,22 @@ export class CurrentInputState {
 
   public isDragging(button: BeButton) { return this.button[button].isDragging; }
   public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
-  public onInstallTool() { this.clearKeyQualifiers(); this.lastWheelEvent = undefined; this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined; }
+  public onInstallTool() {
+    this.clearKeyQualifiers();
+    this.lastWheelEvent = undefined;
+    this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
+  }
+
   public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
-  public clearViewport(vp: Viewport) { if (vp === this.viewport) this.viewport = undefined; }
+  public clearViewport(vp: Viewport) {
+    if (vp === this.viewport)
+      this.viewport = undefined;
+  }
+
   private isAnyDragging() { return this.button.some((button) => button.isDragging); }
-  private setKeyQualifier(qual: BeModifierKeys, down: boolean) { this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual)); }
+  private setKeyQualifier(qual: BeModifierKeys, down: boolean) {
+    this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual));
+  }
 
   public setKeyQualifiers(ev: MouseEvent | KeyboardEvent | TouchEvent): void {
     this.setKeyQualifier(BeModifierKeys.Shift, ev.shiftKey);
@@ -456,10 +475,10 @@ export class ToolAdmin {
 
     ["keydown", "keyup"].forEach((type) => {
       document.addEventListener(type, ToolAdmin._keyEventHandler as EventListener, false);
-      ToolAdmin._removals.push(() => { document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false); });
+      ToolAdmin._removals.push(() => document.removeEventListener(type, ToolAdmin._keyEventHandler as EventListener, false));
     });
 
-    ToolAdmin._removals.push(() => { window.onfocus = null; });
+    ToolAdmin._removals.push(() => window.onfocus = null);
   }
 
   /** @internal */
@@ -809,7 +828,11 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public async onInstallTool(tool: InteractiveTool): Promise<boolean> { this.currentInputState.onInstallTool(); return tool.onInstall(); }
+  public async onInstallTool(tool: InteractiveTool): Promise<boolean> {
+    this.currentInputState.onInstallTool();
+    return tool.onInstall();
+  }
+
   /** @internal */
   public async onPostInstallTool(tool: InteractiveTool) { return tool.onPostInstall(); }
 
@@ -942,7 +965,8 @@ export class ToolAdmin {
     if (this._canvasDecoration && this._canvasDecoration.onMouseLeave)
       this._canvasDecoration.onMouseLeave();
     this._canvasDecoration = dec;
-    if (ev && dec && dec.onMouseEnter) dec.onMouseEnter(ev);
+    if (ev && dec && dec.onMouseEnter)
+      dec.onMouseEnter(ev);
 
     vp.canvas.style.cursor = dec ? (dec.decorationCursor ? dec.decorationCursor : "pointer") : IModelApp.viewManager.cursor;
     vp.invalidateDecorations();

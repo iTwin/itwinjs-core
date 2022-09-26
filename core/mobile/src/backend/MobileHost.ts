@@ -45,17 +45,23 @@ export abstract class MobileDevice {
   public emit(eventName: DeviceEvents, ...args: any[]) {
     switch (eventName) {
       case "memoryWarning":
-        MobileHost.onMemoryWarning.raiseEvent(...args); break;
+        MobileHost.onMemoryWarning.raiseEvent(...args);
+        break;
       case "orientationChanged":
-        MobileHost.onOrientationChanged.raiseEvent(...args); break;
+        MobileHost.onOrientationChanged.raiseEvent(...args);
+        break;
       case "enterForeground":
-        MobileHost.onEnterForeground.raiseEvent(...args); break;
+        MobileHost.onEnterForeground.raiseEvent(...args);
+        break;
       case "enterBackground":
-        MobileHost.onEnterBackground.raiseEvent(...args); break;
+        MobileHost.onEnterBackground.raiseEvent(...args);
+        break;
       case "willTerminate":
-        MobileHost.onWillTerminate.raiseEvent(...args); break;
+        MobileHost.onWillTerminate.raiseEvent(...args);
+        break;
       case "authAccessTokenChanged":
-        MobileHost.onAuthAccessTokenChanged.raiseEvent(args[0], args[1]); break;
+        MobileHost.onAuthAccessTokenChanged.raiseEvent(args[0], args[1]);
+        break;
     }
   }
 
@@ -156,7 +162,7 @@ export class MobileHost {
       }, progressCb);
       if (cancelRequest) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
-        cancelRequest.cancel = () => { return this.device.cancelDownloadTask(requestId); };
+        cancelRequest.cancel = () => this.device.cancelDownloadTask(requestId);
       }
     });
   }

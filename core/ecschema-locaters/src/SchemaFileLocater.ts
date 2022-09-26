@@ -8,6 +8,10 @@ import * as glob from "glob";
 import * as path from "path";
 import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 
+/** @packageDocumentation
+ * @module Locaters
+ */
+
 const formatString = (format: string, ...args: string[]) => {
   return format.replace(/{(\d+)}/g, (match, theNumber) => {
     return typeof args[theNumber] !== "undefined"
@@ -133,11 +137,13 @@ export abstract class SchemaFileLocater {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
-    if (!fs.existsSync(fullPath)) return;
+    if (!fs.existsSync(fullPath))
+      return;
 
     // Read the file
     const file = fs.readFileSync(fullPath);
-    if (!file) return;
+    if (!file)
+      return;
 
     // Get the schema key
     const key = this.getSchemaKey(file.toString());

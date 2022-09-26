@@ -22,7 +22,9 @@ export class MobileRpcRequest extends RpcRequest {
     this.protocol.requests.set(this.id, this);
     const parts = await MobileRpcProtocol.encodeRequest(this);
     this.protocol.sendToBackend(parts);
-    return new Promise<number>((resolve) => { this._res = resolve; });
+    return new Promise<number>((resolve) => {
+      this._res = resolve;
+    });
   }
 
   /** Loads the request. */

@@ -88,7 +88,11 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true; // No specific target, two spatial views are considered compatible.
 
     let allowView = false;
-    view.forEachModel((model) => { if (!allowView && this.targetView!.view.viewsModel(model.id)) allowView = true; });
+    view.forEachModel((model) => {
+      if (!allowView && this.targetView!.view.viewsModel(model.id))
+        allowView = true;
+    });
+
     return allowView; // Accept if this view shares a model in common with target.
   }
 
@@ -129,7 +133,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
   }
 
   /** Called on data button down event to lock the tool to its current target model. */
-  public autoLockTarget(): void { if (undefined === this.targetView) return; this.targetIsLocked = true; }
+  public autoLockTarget(): void {
+    if (undefined === this.targetView)
+      return;
+
+    this.targetIsLocked = true;
+  }
 
   /**  Returns the prompt based on the tool's current state. */
   public getPrompt(): string { return ""; }

@@ -41,14 +41,22 @@ export function createNumericInput(props: NumericInputProps, useFloat: boolean =
     }
   };
 
-  if (undefined !== props.id) input.id = props.id;
-  if (undefined !== props.display) input.style.display = props.display;
-  if (undefined !== props.min) input.min = props.min.toString();
-  if (undefined !== props.max) input.max = props.max.toString();
-  if (undefined !== props.step) input.step = props.step.toString();
-  if (undefined !== props.tooltip) input.title = props.tooltip;
-  if (undefined !== props.disabled) input.disabled = props.disabled;
-  if (undefined !== props.parent) props.parent.appendChild(input);
+  if (undefined !== props.id)
+    input.id = props.id;
+  if (undefined !== props.display)
+    input.style.display = props.display;
+  if (undefined !== props.min)
+    input.min = props.min.toString();
+  if (undefined !== props.max)
+    input.max = props.max.toString();
+  if (undefined !== props.step)
+    input.step = props.step.toString();
+  if (undefined !== props.tooltip)
+    input.title = props.tooltip;
+  if (undefined !== props.disabled)
+    input.disabled = props.disabled;
+  if (undefined !== props.parent)
+    props.parent.appendChild(input);
 
   return input;
 }
