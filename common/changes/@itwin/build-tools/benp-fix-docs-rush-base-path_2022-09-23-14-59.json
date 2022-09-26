@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/build-tools",
+      "comment": "Use Rush env variable to find root monorepo path",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/build-tools"
+}
