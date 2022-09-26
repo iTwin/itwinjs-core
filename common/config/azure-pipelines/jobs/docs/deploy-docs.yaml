@@ -7,7 +7,7 @@ parameters:
   - Production
 
 jobs:
-- job: Deploy to ${{ parameters.env }}
+- job: Deploy_${{ parameters.env }}
   pool:
     name: PRG Octo Deploy Only
     # demands: DotNetFramework -exists
