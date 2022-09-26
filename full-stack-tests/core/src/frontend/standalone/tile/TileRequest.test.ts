@@ -113,7 +113,9 @@ describe("IModelTileRequestChannels", () => {
       const tile = await getTile();
       const channel = getCloudStorageChannel();
 
-      channel.requestContent = async () => { throw new ServerTimeoutError("..."); };
+      channel.requestContent = async () => {
+        throw new ServerTimeoutError("...");
+      };
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(channel);
@@ -312,8 +314,12 @@ describe("IModelTileRequestChannels", () => {
 });
 
 describe("RPC channels", () => {
-  before(async () => { await TestUtility.startFrontend(); });
-  after(async () => { await TestUtility.shutdownFrontend(); });
+  before(async () => {
+    await TestUtility.startFrontend();
+  });
+  after(async () => {
+    await TestUtility.shutdownFrontend();
+  });
 
   it("use http or rpc concurrency based on type of app", async () => {
     const channels = IModelApp.tileAdmin.channels;
@@ -400,7 +406,7 @@ describe("TileStorage", () => {
 
   it("should refresh expired cached transfer config", async () => {
     const clock = sinon.useFakeTimers();
-    after(() => { clock.restore(); });
+    after(() => clock.restore());
     const dateExpiration = new Date(new Date().getTime()+(1000*60*60)); // 1 hour from now
     const transferConfig: TransferConfig = {
       baseUrl: "test",

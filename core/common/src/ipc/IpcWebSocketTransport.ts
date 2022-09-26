@@ -72,8 +72,13 @@ export abstract class IpcWebSocketTransport {
 
 interface Marker { ipc: "binary", type: number, index: number }
 const types = [Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
-function identify(value: any) { return Buffer.isBuffer(value) ? 0 : types.indexOf(value.constructor); }
-function lookup(value: Marker) { return types[value.type]; }
+function identify(value: any) {
+  return Buffer.isBuffer(value) ? 0 : types.indexOf(value.constructor);
+}
+
+function lookup(value: Marker) {
+  return types[value.type];
+}
 
 function replacer(this: any, _key: string, value: any) {
   const asBinary = replaceBinary(value);
@@ -111,7 +116,11 @@ function reviveBinary(value: Marker): ArrayBufferView {
 function makePromise<T>() {
   let resolve: (value: T | PromiseLike<T>) => void = () => { };
   let reject: (reason?: any) => void = () => { };
-  const promise = new Promise<T>((res, rej) => { resolve = res; reject = rej; });
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+
   return { promise, resolve, reject };
 }
 

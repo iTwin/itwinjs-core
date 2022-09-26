@@ -270,7 +270,10 @@ export class ViewAttributes {
       parent: this._element,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: ViewAttributes._expandViewFlags,
-      handler: (expanded) => { ViewAttributes._expandViewFlags = expanded; vfMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandViewFlags = expanded;
+        vfMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: flagsDiv,
     });
     (vfMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
@@ -723,7 +726,10 @@ export class ViewAttributes {
       parent: this._element,
       expand: ViewAttributes._expandEdgeDisplay,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
-      handler: (expanded) => { ViewAttributes._expandEdgeDisplay = expanded; nestedMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        ViewAttributes._expandEdgeDisplay = expanded;
+        nestedMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
       body: edgeDisplayDiv,
     });
     nestedMenu.label.style.fontWeight = "500";

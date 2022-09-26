@@ -656,10 +656,17 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += ` WHERE ${params.where}`;
-    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
-    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
-    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.where)
+      sql += ` WHERE ${params.where}`;
+
+    if (params.orderBy)
+      sql += ` ORDER BY ${params.orderBy}`;
+
+    if (typeof params.limit === "number" && params.limit > 0)
+      sql += ` LIMIT ${params.limit}`;
+
+    if (typeof params.offset === "number" && params.offset > 0)
+      sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -919,15 +926,21 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+
     return this._classMetaDataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
-  public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
+  public get relationships(): Relationships {
+    return this._relationships || (this._relationships = new Relationships(this));
+  }
 
   /** Get the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
+  public get codeSpecs(): CodeSpecs {
+    return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
+  }
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
@@ -1700,10 +1713,17 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (!usageInfo) {
         throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
+
       const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
       const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-        if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+        if (ids) {
+          ids.forEach((id) => {
+            if (!used.has(id))
+              this._iModel.elements.deleteElement(id);
+          });
+        }
       };
+
       try {
         this._iModel.nativeDb.beginPurgeOperation();
         deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
@@ -1723,12 +1743,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } finally {
         this._iModel.nativeDb.endPurgeOperation();
       }
+
       if (usageInfo.viewDefinitionIds) {
         // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
         let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.displayStyleIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.categorySelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.modelSelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
+
         if (viewRelatedIds.length > 0) {
           const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
@@ -1741,10 +1768,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             } finally {
               this._iModel.nativeDb.endPurgeOperation();
             }
-            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
+
+            viewRelatedIds.forEach((id) => {
+              if (!usedViewRelatedIdSet.has(id))
+                usedIdSet.delete(id);
+            });
           }
         }
       }
+
       return usedIdSet;
     }
 

@@ -41,7 +41,8 @@ export class FrontendDefaultsPlugin {
         value: any,
         options: Configuration
       ) => {
-        if (value) return value;
+        if (value)
+          return value;
 
         if (isProductionLikeMode(options))
           return (info: any) =>

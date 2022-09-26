@@ -254,14 +254,18 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => {
+          pm;
+        });
         addon.verifyAll();
       });
 
       it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
         const addonDirs = [path.join("/test", "primary-presentation-rules")];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => {
+          pm;
+        });
         addon.verifyAll();
       });
 

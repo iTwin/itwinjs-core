@@ -1204,7 +1204,11 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected override getAcceptedSubEntities(): SubEntityProps[] {
     const edges: SubEntityProps[] = [];
-    this._acceptedSubEntities.forEach((entry) => { if (undefined === entry.toolData) edges.push(entry.props); });
+    this._acceptedSubEntities.forEach((entry) => {
+      if (undefined === entry.toolData)
+        edges.push(entry.props);
+    });
+
     return edges;
   }
 }
@@ -1461,7 +1465,7 @@ export abstract class LocateFaceOrProfileTool extends LocateSubEntityTool {
 
     // Only want edges from wire bodies...
     const accept = (BRepEntityType.Wire === this.getBRepEntityTypeForSubEntity(id, hits[0].subEntity) ? SubEntityType.Edge : SubEntityType.Face);
-    return hits.filter((hit) => { return accept === hit.subEntity.type; });
+    return hits.filter((hit) => accept === hit.subEntity.type);
   }
 
   protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {

@@ -472,7 +472,8 @@ export class IModelApp {
   /** @internal */
   public static requestNextAnimation() {
     // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
-    if (IModelApp._noRender) return;
+    if (IModelApp._noRender)
+      return;
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
@@ -621,7 +622,10 @@ export class IModelApp {
     overlay.tabIndex = -1; // so we can catch keystroke events
 
     // function to remove modal dialog
-    const stop = (ev: Event) => { root.removeChild(overlay); ev.stopPropagation(); };
+    const stop = (ev: Event) => {
+      root.removeChild(overlay);
+      ev.stopPropagation();
+    };
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;
