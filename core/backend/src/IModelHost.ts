@@ -431,8 +431,6 @@ export class IModelHost {
 
       if (options.crashReportingConfig.enableNodeReport) {
         if (process.report !== undefined) {
-          process.report.signal = "SIGUSR2";
-          process.report.reportOnSignal = true;
           process.report.reportOnFatalError = true;
           process.report.reportOnUncaughtException = true;
           process.report.directory = options.crashReportingConfig.crashDir;
