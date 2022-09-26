@@ -883,11 +883,6 @@ describe("ITwinLocalization", () => {
         assert.equal(germanLocalization.getEnglishString("Test", "SecondTrivial.MissingString"), "SecondTrivial.MissingString");
         assert.equal(germanLocalization.getEnglishString("Test", "MissingKeyObject.MissingString"), "MissingKeyObject.MissingString");
       });
-
-      // White box test
-      it("en-US is an english fallback", () => {
-        assert.equal(localization.getEnglishString("Default", "OnlyEnglishUS"), "HelloUS");
-      });
     });
 
     describe("Nonexisting Namespace", () => {
