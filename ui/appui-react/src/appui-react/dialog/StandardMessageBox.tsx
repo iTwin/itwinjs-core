@@ -11,6 +11,7 @@ import { MessageBoxIconType, MessageBoxType, MessageBoxValue } from "@itwin/core
 import { DialogButtonDef, DialogButtonType, MessageSeverity } from "@itwin/appui-abstract";
 import { CommonProps, MessageBox } from "@itwin/core-react";
 import { ModalDialogManager } from "./ModalDialogManager";
+import { DialogManagerBase } from "./DialogManagerBase";
 
 /** Properties for [[StandardMessageBox]] React component
  * @public
@@ -97,7 +98,7 @@ export class StandardMessageBox extends React.PureComponent<StandardMessageBoxPr
     return (
       <MessageBox
         className={this.props.className}
-        style={this.props.style}
+        style={{ zIndex: DialogManagerBase.topZIndex, ...this.props.style }}
         opened={this.state.opened}
         title={this.props.title}
         severity={severity}
