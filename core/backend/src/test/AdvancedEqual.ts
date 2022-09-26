@@ -56,13 +56,18 @@ export function advancedDeepEqual(
   a: any,
   options: AdvancedEqualFuncOpts = {},
 ): boolean {
-  const normalizedClassNameProps
-    = options.normalizeClassNameProps === true
+  const normalizedClassNameProps = options.normalizeClassNameProps === true
       ? ["classFullName", "relClassName"]
       : options.normalizeClassNameProps || [];
-  if (options.tolerance === undefined) options.tolerance = defaultOpts.tolerance;
-  if (e === a) return true;
-  if (typeof e !== typeof a) return false;
+
+  if (options.tolerance === undefined)
+    options.tolerance = defaultOpts.tolerance;
+
+  if (e === a)
+    return true;
+  else if (typeof e !== typeof a)
+    return false;
+
   switch (typeof e) {
     case "number":
       return isAlmostEqualNumber(e, a, options.tolerance);
@@ -73,7 +78,9 @@ export function advancedDeepEqual(
     case "undefined":
       return false; // these objects can only be strict equal which was already tested
     case "object":
-      if ((e === null) !== (a === null)) return false;
+      if ((e === null) !== (a === null))
+        return false;
+
       const eSize = Object.keys(e).filter((k) => options.considerNonExistingAndUndefinedEqual && e[k] !== undefined).length;
       const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
       return (eSize === aSize || !!options.useSubsetEquality) && Object.keys(e).every(
@@ -94,7 +101,9 @@ Assertion.addMethod(
     expected: any,
     options: DeepEqualOpts = {}
   ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
+    if (options.tolerance === undefined)
+      options.tolerance = 1e-10;
+
     const actual = this._obj;
     const isDeep = util.flag(this, "deep");
     this.assert(
@@ -119,7 +128,9 @@ Assertion.addMethod(
     expected: any,
     options: DeepEqualOpts = {}
   ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
+    if (options.tolerance === undefined)
+      options.tolerance = 1e-10;
+
     const actual = this._obj;
     this.assert(
       advancedDeepEqual(expected, actual, {...options, useSubsetEquality: true }),

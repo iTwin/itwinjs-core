@@ -31,9 +31,9 @@ export class TupleKeyedMap<K extends readonly any[], V> {
 
   // argument types match those of Map
   public constructor(entries?: readonly (readonly [K, V])[] | null) {
-    if (entries) for (const [k, v] of entries) {
-      this.set(k, v);
-    }
+    if (entries)
+      for (const [k, v] of entries)
+        this.set(k, v);
   }
 
   public clear(): void {
@@ -49,11 +49,17 @@ export class TupleKeyedMap<K extends readonly any[], V> {
   public get(key: K): V | undefined {
     let cursor: Map<any, any> | V = this._map;
     for (const subkey of key) {
-      if (!(cursor instanceof Map)) throw this.makeKeyError();
+      if (!(cursor instanceof Map))
+        throw this.makeKeyError();
+
       cursor = cursor.get(subkey);
-      if (cursor === undefined) return undefined;
+      if (cursor === undefined)
+        return undefined;
     }
-    if (cursor instanceof Map) throw this.makeKeyError();
+
+    if (cursor instanceof Map)
+      throw this.makeKeyError();
+
     return cursor;
   }
 
@@ -72,8 +78,11 @@ export class TupleKeyedMap<K extends readonly any[], V> {
       }
       cursor = next;
     }
+
     const finalSubkey = key[key.length - 1];
-    if (!(cursor instanceof Map)) throw this.makeKeyError();
+    if (!(cursor instanceof Map))
+      throw this.makeKeyError();
+
     cursor.set(finalSubkey, value);
     this._size++;
     return this;
