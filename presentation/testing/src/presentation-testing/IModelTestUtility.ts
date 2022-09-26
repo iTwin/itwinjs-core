@@ -40,17 +40,6 @@ export class IModelTestUtility {
     return this._modelId;
   }
 
-  public addPhysicalObject(categoryId: string): void {
-    const element = IModelBuilder.createPhysicalObject(this._iModel, this._modelId, categoryId);
-    this._iModel.elements.insertElement(element.toJSON());
-    this._iModel.saveChanges("Added physical object");
-  }
-
-  public addDrawingGraphic(categoryId: string): void {
-    this._iModel.elements.insertElement(IModelBuilder.createDrawingGraphic(this._iModel, this._modelId, categoryId).toJSON());
-    this._iModel.saveChanges("Added drawing graphic");
-  }
-
   public addSpatialCategory(elementProps: ElementProps): string {
     const categoryId = this._iModel.elements.insertElement(new SpatialCategory(elementProps, this._iModel).toJSON());
     this._iModel.saveChanges("Added spatial category");
@@ -61,6 +50,16 @@ export class IModelTestUtility {
     const categoryId = this._iModel.elements.insertElement(new DrawingCategory(elementProps, this._iModel).toJSON());
     this._iModel.saveChanges("Added drawing category");
     return categoryId;
+  }
+
+  public addPhysicalObject(categoryId: string): void {
+    this._iModel.elements.insertElement(IModelBuilder.createPhysicalObject(this._iModel, this._modelId, categoryId).toJSON());
+    this._iModel.saveChanges("Added physical object");
+  }
+
+  public addDrawingGraphic(categoryId: string): void {
+    this._iModel.elements.insertElement(IModelBuilder.createDrawingGraphic(this._iModel, this._modelId, categoryId).toJSON());
+    this._iModel.saveChanges("Added drawing graphic");
   }
 
   public getSpatialCategoryCode(codeValue: string): Code {
