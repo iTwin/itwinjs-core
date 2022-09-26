@@ -33,18 +33,24 @@ export class ModelSelector extends DefinitionElement {
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
   /** @internal */
-  constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
+  constructor(props: ModelSelectorProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.models = props.models;
+  }
+
   /** @internal */
   public override toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
   }
+
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
   }
+
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
@@ -54,6 +60,7 @@ export class ModelSelector extends DefinitionElement {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
   /**
    * Create a ModelSelector to select which Models are displayed by a ViewDefinition.
    * @param iModelDb The iModel
@@ -99,18 +106,24 @@ export class CategorySelector extends DefinitionElement {
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
   /** @internal */
-  constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
+  constructor(props: CategorySelectorProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.categories = props.categories;
+  }
+
   /** @internal */
   public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
   }
+
   /** @internal */
   protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(referenceIds);
     this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
   }
+
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
@@ -120,6 +133,7 @@ export class CategorySelector extends DefinitionElement {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
   /**
    * Create a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb The iModel
@@ -139,6 +153,7 @@ export class CategorySelector extends DefinitionElement {
     };
     return new CategorySelector(categorySelectorProps, iModelDb);
   }
+
   /**
    * Insert a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb Insert into this iModel

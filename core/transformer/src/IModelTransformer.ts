@@ -165,7 +165,8 @@ class PartiallyCommittedEntity {
   ) {}
   public resolveReference(id: EntityReference) {
     this._missingReferences.delete(id);
-    if (this._missingReferences.size === 0) this._onComplete();
+    if (this._missingReferences.size === 0)
+      this._onComplete();
   }
   public forceComplete() {
     this._onComplete();
@@ -453,7 +454,9 @@ export class IModelTransformer extends IModelExportHandler {
     this.forEachTrackedElement((sourceElementId: Id64String, targetElementId: Id64String) => {
       this.context.remapElement(sourceElementId, targetElementId);
     });
-    if (args) return this.remapDeletedSourceElements(args);
+
+    if (args)
+      return this.remapDeletedSourceElements(args);
   }
 
   /** When processing deleted elements in a reverse synchronization, the [[provenanceDb]] (usually a branch iModel) has already
@@ -462,7 +465,8 @@ export class IModelTransformer extends IModelExportHandler {
    */
   private async remapDeletedSourceElements(args: InitFromExternalSourceAspectsArgs) {
     // we need a connected iModel with changes to remap elements with deletions
-    if (this.sourceDb.iTwinId === undefined) return;
+    if (this.sourceDb.iTwinId === undefined)
+      return;
 
     try {
       const startChangesetId = args.startChangesetId ?? this.sourceDb.changeset.id;
@@ -517,8 +521,12 @@ export class IModelTransformer extends IModelExportHandler {
    * @note Not relevant for processChanges when change history is known.
    */
   private shouldDetectDeletes(): boolean {
-    if (this._isFirstSynchronization) return false; // not necessary the first time since there are no deletes to detect
-    if (this._options.isReverseSynchronization) return false; // not possible for a reverse synchronization since provenance will be deleted when element is deleted
+    if (this._isFirstSynchronization)
+      return false; // not necessary the first time since there are no deletes to detect
+
+    if (this._options.isReverseSynchronization)
+      return false; // not possible for a reverse synchronization since provenance will be deleted when element is deleted
+
     return true;
   }
 
@@ -626,7 +634,8 @@ export class IModelTransformer extends IModelExportHandler {
       // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
       const referenceIdInTarget = this.context.findTargetEntityId(referenceId);
       const alreadyImported = EntityReferences.isValid(referenceIdInTarget);
-      if (alreadyImported) continue;
+      if (alreadyImported)
+        continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
       const referencedExistsInSource = EntityUnifier.exists(this.sourceDb, { entityReference: referenceId });
       if (!referencedExistsInSource) {
@@ -652,6 +661,7 @@ export class IModelTransformer extends IModelExportHandler {
         if (!this._partiallyCommittedEntities.has(entity))
           this._partiallyCommittedEntities.set(entity, thisPartialElem);
       }
+
       missingReferences.add(referenceId);
       const entityReference = EntityReferences.from(entity);
       this._pendingReferences.set({ referenced: referenceId, referencer: entityReference }, thisPartialElem);
@@ -664,9 +674,9 @@ export class IModelTransformer extends IModelExportHandler {
    */
   public async processElement(sourceElementId: Id64String): Promise<void> {
     await this.initialize();
-    if (sourceElementId === IModel.rootSubjectId) {
+    if (sourceElementId === IModel.rootSubjectId)
       throw new IModelError(IModelStatus.BadRequest, "The root Subject should not be directly imported");
-    }
+
     return this.exporter.exportElement(sourceElementId);
   }
 
@@ -699,20 +709,23 @@ export class IModelTransformer extends IModelExportHandler {
         // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
         assert(referenceType === ConcreteEntityTypes.Element || referenceType === ConcreteEntityTypes.Model);
         return mapId64(idContainer, (id) => {
-          if (id === Id64.invalid || id === IModel.rootSubjectId) return undefined; // not allowed to directly export the root subject
+          if (id === Id64.invalid || id === IModel.rootSubjectId)
+            return undefined; // not allowed to directly export the root subject
+
           if (!this.context.isBetweenIModels) {
             // Within the same iModel, can use existing DefinitionElements without remapping
             // This is relied upon by the TemplateModelCloner
             // TODO: extract this out to only be in the TemplateModelCloner
             const asDefinitionElem = this.sourceDb.elements.tryGetElement(id, DefinitionElement);
-            if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement)) {
+            if (asDefinitionElem && !(asDefinitionElem instanceof RecipeDefinitionElement))
               this.context.remapElement(id, id);
-            }
           }
           return id;
         })
           .filter((sourceReferenceId: Id64String | undefined): sourceReferenceId is Id64String => {
-            if (sourceReferenceId === undefined) return false;
+            if (sourceReferenceId === undefined)
+              return false;
+
             const referenceInTargetId = this.context.findTargetElementId(sourceReferenceId);
             const isInTarget = Id64.isValid(referenceInTargetId);
             return !isInTarget;
@@ -724,8 +737,10 @@ export class IModelTransformer extends IModelExportHandler {
       for (const reference of unresolvedReferences) {
         const processState = this.getElemTransformState(reference);
         // must export element first
-        if (processState.needsElemImport) await this.exporter.exportElement(reference);
-        if (processState.needsModelImport) await this.exporter.exportModel(reference);
+        if (processState.needsElemImport)
+          await this.exporter.exportElement(reference);
+        if (processState.needsModelImport)
+          await this.exporter.exportModel(reference);
       }
     }
   }
@@ -1363,10 +1378,11 @@ export class IModelTransformer extends IModelExportHandler {
       exporterState: this.exporter.saveStateToJson(),
       additionalState: this.getAdditionalStateJson(),
     };
+
     this.context.saveStateToDb(db);
-    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
-      `CREATE TABLE ${IModelTransformer.jsStateTable} (data TEXT)`
-    )) throw Error("Failed to create the js state table in the state database");
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`CREATE TABLE ${IModelTransformer.jsStateTable} (data TEXT)`))
+      throw Error("Failed to create the js state table in the state database");
+
     if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`
       CREATE TABLE ${IModelTransformer.lastProvenanceEntityInfoTable} (
         -- because we cannot bind the invalid id which we use for our null state, we actually store the id as a hex string
@@ -1375,14 +1391,18 @@ export class IModelTransformer extends IModelExportHandler {
         aspectVersion TEXT,
         aspectKind TEXT
       )
-    `)) throw Error("Failed to create the target state table in the state database");
+    `))
+      throw Error("Failed to create the target state table in the state database");
+
     db.saveChanges();
     db.withSqliteStatement(
       `INSERT INTO ${IModelTransformer.jsStateTable} (data) VALUES (?)`,
       (stmt) => {
         stmt.bindString(1, JSON.stringify(jsonState));
-        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+        if (DbResult.BE_SQLITE_DONE !== stmt.step())
+          throw Error("Failed to insert options into the state database");
       });
+
     db.withSqliteStatement(
       `INSERT INTO ${IModelTransformer.lastProvenanceEntityInfoTable} (entityId, aspectId, aspectVersion, aspectKind) VALUES (?,?,?,?)`,
       (stmt) => {
@@ -1390,8 +1410,10 @@ export class IModelTransformer extends IModelExportHandler {
         stmt.bindString(2, this._lastProvenanceEntityInfo.aspectId);
         stmt.bindString(3, this._lastProvenanceEntityInfo.aspectVersion);
         stmt.bindString(4, this._lastProvenanceEntityInfo.aspectKind);
-        if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert options into the state database");
+        if (DbResult.BE_SQLITE_DONE !== stmt.step())
+          throw Error("Failed to insert options into the state database");
       });
+
     db.saveChanges();
   }
 

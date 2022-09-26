@@ -279,7 +279,8 @@ export class ClassificationsPanel extends ToolBarDropDown {
 
   public async populate(): Promise<void> {
     this._selectedSpatialClassifiers = undefined;
-    if (this._vp.view.is2d()) return;
+    if (this._vp.view.is2d())
+      return;
 
     this._realityModelPickerMenu.div.style.display = "none";
     this.populateRealityModelList();

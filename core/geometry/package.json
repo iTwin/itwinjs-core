@@ -69,7 +69,9 @@
     ],
     "extends": "plugin:@itwin/itwinjs-recommended",
     "rules": {
-      "@typescript-eslint/indent": "off"
+      "@typescript-eslint/indent": "off",
+      "max-statements-per-line": "off",
+      "nonblock-statement-body-position": "off"
     }
   }
 }

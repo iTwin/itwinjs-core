@@ -24,7 +24,9 @@ export class ElectronRpcRequest extends RpcRequest {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
 
-    return new Promise<number>((resolve) => { this._res = resolve; });
+    return new Promise<number>((resolve) => {
+      this._res = resolve;
+    });
   }
 
   /** Loads the request. */

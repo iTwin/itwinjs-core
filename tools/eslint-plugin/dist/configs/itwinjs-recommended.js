@@ -270,6 +270,10 @@ module.exports = {
     "indent": "off",  // note you must disable the base rule as it can report incorrect errors
     "max-classes-per-file": "off",
     "max-len": "off",
+    "max-statements-per-line": [
+      "error",
+      { "max": 1 },
+    ],
     "new-parens": "error",
     "no-bitwise": "off",
     "no-caller": "error",
@@ -313,6 +317,10 @@ module.exports = {
     "no-unused-labels": "error",
     "no-unused-vars": "off", // Using @typescript-eslint/no-unused-vars instead
     "no-var": "error",
+    "nonblock-statement-body-position": [
+      "error",
+      "below", // readability aside, you can't set breakpoint in debugger unless statement is on separate line.
+    ],
     "object-shorthand": "error",
     "one-var": [
       "off",
