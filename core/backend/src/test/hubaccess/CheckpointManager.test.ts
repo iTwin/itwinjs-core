@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelHost, V2CheckpointAccessProps } from "../../core-backend";
+import { IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
