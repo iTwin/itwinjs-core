@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-transformer",
+      "comment": "select * on link tables now also includes SourceECClassId and TargetECClassId",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-transformer"
+}

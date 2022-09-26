@@ -198,8 +198,8 @@ export class HalfEdgeGraphSearch {
   /**
    * Collect arrays gathering faces by connected component.
    * @param graph graph to inspect
-   * @param parityEdgeTester (optional) function to test of an edge is a parity change.
-   * @param parityMask (optional, along with boundaryTestFunction) mask to apply indicating parity.  If this is Mask.NULL_MASK, there is no record of parity.
+   * @param parityEdgeTester (optional) function to test if an edge is a parity change (e.g., a boundary edge).
+   * @param parityMask (optional, along with parityEdgeTester) mask to apply indicating parity.  If this is Mask.NULL_MASK, there is no record of parity.
    */
   public static collectConnectedComponentsWithExteriorParityMasks(graph: HalfEdgeGraph, parityEdgeTester: HalfEdgeTestObject | undefined, parityMask: HalfEdgeMask = HalfEdgeMask.NULL_MASK): HalfEdge[][] {
     const components = [];

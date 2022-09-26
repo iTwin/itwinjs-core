@@ -15,8 +15,8 @@ import {
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool,
-  ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
+  TileAdmin, Tool, ToolAdmin,
 } from "@itwin/core-frontend";
 import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
@@ -52,6 +52,7 @@ import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer"
 import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
+import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -332,6 +333,9 @@ export class DisplayTestApp {
     ].forEach((tool) => tool.register(svtToolNamespace));
 
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
+
+    BingTerrainMeshProvider.register();
+
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize({ registerAllTools: true });

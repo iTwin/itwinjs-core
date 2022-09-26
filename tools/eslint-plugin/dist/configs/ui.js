@@ -16,6 +16,8 @@ module.exports = {
   ],
   "rules": {
     "jam3/no-sanitizer-with-danger": 2,
+    "max-statements-per-line": "off", // override itwinjs-recommended
+    "nonblock-statement-body-position": "off", // override itwinjs-recommended
     "@typescript-eslint/naming-convention": [
       "error",
       {

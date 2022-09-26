@@ -82,8 +82,12 @@ export class TextString {
     val.bold = this.bold;
     val.italic = this.italic;
     val.underline = this.underline;
-    if (!this.origin.isAlmostZero) val.origin = this.origin;
-    if (!this.rotation.isIdentity()) val.rotation = this.rotation;
+    if (!this.origin.isAlmostZero)
+      val.origin = this.origin;
+
+    if (!this.rotation.isIdentity())
+      val.rotation = this.rotation;
+
     return val;
   }
 

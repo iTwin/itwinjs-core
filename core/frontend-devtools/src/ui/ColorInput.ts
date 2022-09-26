@@ -67,11 +67,16 @@ export function createColorInput(props: ColorInputProps): ColorInput {
   }
   inputDiv.appendChild(colorInput);
 
-  if (undefined !== props.display) inputDiv.style.display = props.display;
-  if (undefined !== props.id) colorInput.id = props.id;
-  if (undefined !== props.tooltip) colorInput.title = props.tooltip;
-  if (undefined !== props.disabled) colorInput.disabled = props.disabled;
-  if (undefined !== props.parent) props.parent.appendChild(inputDiv);
+  if (undefined !== props.display)
+    inputDiv.style.display = props.display;
+  if (undefined !== props.id)
+    colorInput.id = props.id;
+  if (undefined !== props.tooltip)
+    colorInput.title = props.tooltip;
+  if (undefined !== props.disabled)
+    colorInput.disabled = props.disabled;
+  if (undefined !== props.parent)
+    props.parent.appendChild(inputDiv);
 
   return undefined !== colorLabel! ? { div: inputDiv, input: colorInput, label: colorLabel! } : { div: inputDiv, input: colorInput };
 }

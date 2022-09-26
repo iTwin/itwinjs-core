@@ -10,7 +10,9 @@ const { usedDeps } = require("../utils/resolve-recurse/resolve");
 
 function createTestCompiler(config: Configuration, vol?: any): Compiler {
   const compiler = webpack(config);
-  if (vol) compiler.inputFileSystem = vol;
+  if (vol)
+    compiler.inputFileSystem = vol;
+
   return compiler;
 }
 
@@ -33,7 +35,7 @@ export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsTo
     },
     plugins: pluginsToTest,
     externals: externalsToTest,
-    optimization: { minimize: false, runtimeChunk: true },
+    optimization: { minimize: false, runtimeChunk: true, moduleIds: "named" },
     module: {
       rules,
     },

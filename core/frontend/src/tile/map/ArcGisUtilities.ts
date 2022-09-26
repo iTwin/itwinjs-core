@@ -38,7 +38,7 @@ export class ArcGisUtilities {
 
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
-      range = MapCartoRectangle.create();
+      range = MapCartoRectangle.createMaximum();
 
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
@@ -106,7 +106,9 @@ export class ArcGisUtilities {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
       const json = await getJson(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
-      if (!json) break;
+      if (!json)
+        break;
+
       start = json.nextStart ? json.nextStart : -1;
       if (json !== undefined && Array.isArray(json.results)) {
         for (const result of json.results) {
