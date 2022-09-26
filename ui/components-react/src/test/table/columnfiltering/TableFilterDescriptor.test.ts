@@ -552,12 +552,6 @@ describe("TableFilterDescriptor", () => {
       const expression = filterDescriptor.getFilterExpression();
       expect(expression).to.eq("(col3 <2458797.5)");
     });
-
-    it("IsLessThan - number", () => {
-      const filterDescriptor = new TableFilterDescriptor(testTable, columns[3].key, columnTypes[3], FilterOperator.IsLessThan, 2458797.5);
-      const expression = filterDescriptor.getFilterExpression();
-      expect(expression).to.eq("(col3 <2440587.320115741)");
-    });
   });
 
   describe("getFilterExpression - boolean", () => {
