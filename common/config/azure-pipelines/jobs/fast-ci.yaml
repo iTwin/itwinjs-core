@@ -28,6 +28,7 @@ jobs:
     parameters:
       name: Node_16
       nodeVersion: 16.13.0
+      buildIos: true
       pool:
         name: $(name)
         demands:

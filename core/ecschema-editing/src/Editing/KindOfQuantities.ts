@@ -21,13 +21,15 @@ export class KindOfQuantities {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (koqProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newKoQ = (await schema.createKindOfQuantity(koqProps.name)) as MutableKindOfQuantity;
-    if (newKoQ === undefined) {
+    if (newKoQ === undefined)
       return { errorMessage: `Failed to create class ${koqProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newKoQ.fromJSON(koqProps);
     return { itemKey: newKoQ.key };
@@ -42,13 +44,18 @@ export class KindOfQuantities {
   public async addPresentationFormat(koqKey: SchemaItemKey, format: SchemaItemKey, isDefault: boolean = false): Promise<void> {
     const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
-    if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
-    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+    if (kindOfQuantity === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+
+    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
     const presentationFormat = await (this._schemaEditor.schemaContext.getSchemaItem<Format>(format));
     if (undefined === presentationFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${format.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
-    if (presentationFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${presentationFormat.fullName} to be of type Format.`);
+
+    if (presentationFormat.schemaItemType !== SchemaItemType.Format)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${presentationFormat.fullName} to be of type Format.`);
 
     kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
   }
@@ -56,8 +63,11 @@ export class KindOfQuantities {
   public async addPresentationOverrideFormat(koqKey: SchemaItemKey, overrideFormat: OverrideFormat, isDefault: boolean = false): Promise<void> {
     const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
-    if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
-    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+    if (kindOfQuantity === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+
+    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
     kindOfQuantity.addPresentationFormat(overrideFormat, isDefault);
   }
@@ -70,13 +80,18 @@ export class KindOfQuantities {
   public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     const kindOfQuantity = (await this._schemaEditor.schemaContext.getSchemaItem<MutableKindOfQuantity>(koqKey));
 
-    if (kindOfQuantity === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
-    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
+    if (kindOfQuantity === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Entity Class ${koqKey.fullName} not found in schema context.`);
+
+    if (kindOfQuantity.schemaItemType !== SchemaItemType.KindOfQuantity)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${koqKey.fullName} to be of type Kind Of Quantity.`);
 
     const parentFormat = await (this._schemaEditor.schemaContext.getSchemaItem<Format>(parent));
     if (undefined === parentFormat)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${parent.fullName}' for the presentation unit on KindOfQuantity ${koqKey.fullName}.`);
-    if (parentFormat.schemaItemType !== SchemaItemType.Format) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${parentFormat.fullName} to be of type Format.`);
+
+    if (parentFormat.schemaItemType !== SchemaItemType.Format)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${parentFormat.fullName} to be of type Format.`);
 
     return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
   }

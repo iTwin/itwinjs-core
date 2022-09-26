@@ -28,7 +28,7 @@ describe("Vertex buffer objects", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -96,7 +96,7 @@ describe("RenderTarget", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 

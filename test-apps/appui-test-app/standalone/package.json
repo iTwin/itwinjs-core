@@ -116,7 +116,7 @@
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/reality-data-client": "0.7.0",
-    "classnames": "^2.3.1",
+    "classnames": "2.3.1",
     "lorem-ipsum": "^2.0.3",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.0.0",
@@ -152,6 +152,8 @@
       ]
     },
     "rules": {
+      "nonblock-statement-body-position": "off",
+      "max-statements-per-line": "off",
       "@typescript-eslint/naming-convention": [
         "warn",
         {

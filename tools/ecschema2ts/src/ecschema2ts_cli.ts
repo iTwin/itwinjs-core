@@ -23,7 +23,8 @@ program.option("-o, --output <required>", "Directory to put the out typescript f
 program.option("-r, --references <optional>", "A comma-separated list of reference schema paths", commaSeparatedList);
 program.parse(process.argv);
 
-if (process.argv.length === 0) program.help();
+if (process.argv.length === 0)
+  program.help();
 
 if (!program.input || !program.output) {
   console.log(chalk.red("Invalid input. For help use the '-h' option."));

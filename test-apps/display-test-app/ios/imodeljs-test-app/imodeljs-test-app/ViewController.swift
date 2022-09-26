@@ -166,7 +166,8 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
             hashParams.append("&ignoreCache=true")
         }
 
-        webView.load(URLRequest(url: URL(string: "imodeljs://app" + hashParams)!))
+        let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
+        webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
     }
 

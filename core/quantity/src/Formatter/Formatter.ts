@@ -64,17 +64,23 @@ class FractionalNumeric {
   public get isZero(): boolean { return 0 === this._numerator; }
 
   public getIntegralString(): string {
-    if (this._textParts.length > 0) return this._textParts[0];
+    if (this._textParts.length > 0)
+      return this._textParts[0];
+
     return "";
   }
 
   public getNumeratorString(): string {
-    if (this._textParts.length >= 3) return this._textParts[1];
+    if (this._textParts.length >= 3)
+      return this._textParts[1];
+
     return "";
   }
 
   public getDenominatorString(): string {
-    if (this._textParts.length >= 3) return this._textParts[2];
+    if (this._textParts.length >= 3)
+      return this._textParts[2];
+
     return "";
   }
 
@@ -180,7 +186,8 @@ export class Formatter {
     if (spec.format.hasFormatTraitSet(FormatTraits.ShowUnitLabel)) {
       componentText = componentText + spec.format.uomSeparator + label;
     } else {
-      if (!isLastPart) componentText = `${componentText}:`;
+      if (!isLastPart)
+        componentText = `${componentText}:`;
     }
 
     return componentText;
@@ -210,7 +217,8 @@ export class Formatter {
       if (0 === i) {
         const precisionScale = Math.pow(10, 8);  // use a fixed round off precision of 8 to avoid loss of precision in actual magnitude
         unitValue = Math.floor(unitValue * precisionScale + FPV_ROUNDFACTOR) / precisionScale;
-        if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
+        if ((Math.abs(unitValue) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty))
+          return "";
       }
 
       if (i < spec.format.units!.length - 1) {
@@ -232,7 +240,8 @@ export class Formatter {
    */
   private static formatMagnitude(magnitude: number, spec: FormatterSpec): string {
     let posMagnitude = Math.abs(magnitude);
-    if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty)) return "";
+    if ((Math.abs(posMagnitude) < 0.0001) && spec.format.hasFormatTraitSet(FormatTraits.ZeroEmpty))
+      return "";
 
     if (spec.format.hasFormatTraitSet(FormatTraits.ApplyRounding))
       posMagnitude = Math.abs(Formatter.roundDouble(magnitude, spec.format.roundFactor));
@@ -257,10 +266,15 @@ export class Formatter {
 
       expInt = Math.floor(exp);
       if (spec.format.type === FormatType.Scientific) {
-        if (spec.format.scientificType === ScientificType.ZeroNormalized && posMagnitude > 1.0) expInt += 1.0;
-        else if (spec.format.scientificType === ScientificType.Normalized && posMagnitude < 1.0) expInt += 1.0;
-        if (negativeExp) expInt = -expInt;
+        if (spec.format.scientificType === ScientificType.ZeroNormalized && posMagnitude > 1.0)
+          expInt += 1.0;
+        else if (spec.format.scientificType === ScientificType.Normalized && posMagnitude < 1.0)
+          expInt += 1.0;
+
+        if (negativeExp)
+          expInt = -expInt;
       }
+
       const factor = Math.pow(10.0, -expInt);
       posMagnitude *= factor;
     }
@@ -289,7 +303,9 @@ export class Formatter {
         let fractionString = fractionPart.toFixed(spec.format.precision);
         // remove leading "0."
         fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
-        if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
+        if (!isKeepTrailingZeroes)
+          fractionString = Formatter.trimTrailingZeroes(fractionString);
+
         if (fractionString.length > 0)
           formattedValue = formattedValue + spec.format.decimalSeparator + fractionString;
         else {
@@ -327,7 +343,9 @@ export class Formatter {
         fractionString = (fractionPart/precisionScale).toFixed(spec.format.precision);
         // remove leading "0."
         fractionString = fractionString.substr(2).padEnd(spec.format.precision, "0");
-        if (!isKeepTrailingZeroes) fractionString = Formatter.trimTrailingZeroes(fractionString);
+        if (!isKeepTrailingZeroes)
+          fractionString = Formatter.trimTrailingZeroes(fractionString);
+
         formattedValue = stationString + spec.format.decimalSeparator + fractionString;
       } else {
         if (isKeepTrailingZeroes)
@@ -358,12 +376,17 @@ export class Formatter {
         break;
 
       case ShowSignOption.OnlyNegative:
-        if (valueIsNegative) prefix = "-";
+        if (valueIsNegative)
+          prefix = "-";
+
         break;
 
       case ShowSignOption.SignAlways:
-        if (valueIsNegative) prefix = "-";
-        else prefix = "+";
+        if (valueIsNegative)
+          prefix = "-";
+        else
+          prefix = "+";
+
         break;
 
       case ShowSignOption.NoSign:
