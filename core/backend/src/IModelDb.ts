@@ -1873,9 +1873,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
      */
-    public insertAspect(aspectProps: ElementAspectProps): Id64String {
+    public insertAspect(aspectProps: ElementAspectProps): void {
       try {
-        return this._iModel.nativeDb.insertElementAspect(aspectProps);
+        this._iModel.nativeDb.insertElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }

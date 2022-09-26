@@ -303,24 +303,16 @@ describe("test resuming transformations", () => {
       throw Error("unreachable");
     })();
 
-    const [elemMap, codeSpecMap, aspectMap] = new Array(3).fill(undefined).map(() => new Map<Id64String, Id64String>());
-    for (const [className, findMethod, map] of [
-      ["bis.Element", "findTargetElementId", elemMap],
-      ["bis.CodeSpec", "findTargetCodeSpecId", codeSpecMap],
-      ["bis.ElementAspect", "findTargetAspectId", aspectMap],
-    ] as const) {
+    const regularToResumedIdMap = new Map<Id64String, Id64String>();
+    for (const [className, findMethod] of [["bis.Element", "findTargetElementId"], ["bis.CodeSpec", "findTargetCodeSpecId"]] as const) {
       for await (const [sourceElemId] of sourceDb.query(`SELECT ECInstanceId from ${className}`)) {
         const idInRegular = regularTransformer.context[findMethod](sourceElemId);
         const idInResumed = resumedTransformer.context[findMethod](sourceElemId);
-        map.set(idInRegular, idInResumed);
+        regularToResumedIdMap.set(idInRegular, idInResumed);
       }
     }
 
-    await assertIdentityTransformation(regularTarget, resumedTarget, {
-      findTargetElementId: (id) => elemMap.get(id) ?? Id64.invalid,
-      findTargetCodeSpecId: (id) => codeSpecMap.get(id) ?? Id64.invalid,
-      findTargetAspectId: (id) => aspectMap.get(id) ?? Id64.invalid,
-    });
+    await assertIdentityTransformation(regularTarget, resumedTarget, (id) => regularToResumedIdMap.get(id) ?? Id64.invalid);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, resumedTarget);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, regularTarget);
   });

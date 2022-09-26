@@ -32,6 +32,7 @@ import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
+import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
@@ -1563,24 +1564,6 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
-export enum ConcreteEntityTypes {
-    // (undocumented)
-    Element = "e",
-    // (undocumented)
-    ElementAspect = "a",
-    // (undocumented)
-    Model = "m",
-    // (undocumented)
-    Relationship = "r"
-}
-
-// @alpha
-export namespace ConcreteEntityTypes {
-    // @internal
-    export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
-}
-
-// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -2808,21 +2791,6 @@ export interface EntityQueryParams {
     only?: boolean;
     orderBy?: string;
     where?: string;
-}
-
-// @alpha
-export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
-
-// @alpha
-export class EntityReferenceSet extends Set<EntityReference> {
-    // (undocumented)
-    addAspect(id: Id64String): void;
-    // (undocumented)
-    addElement(id: Id64String): void;
-    // (undocumented)
-    addModel(id: Id64String): void;
-    // (undocumented)
-    addRelationship(id: Id64String): void;
 }
 
 // @public
@@ -6953,14 +6921,6 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
-// @internal
-export interface RelTypeInfo {
-    // (undocumented)
-    source: ConcreteEntityTypes;
-    // (undocumented)
-    target: ConcreteEntityTypes;
-}
-
 // @public
 export type RemoveFunction = () => void;
 
@@ -7191,7 +7151,7 @@ export namespace RenderSchedule {
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
         // @internal
-        discloseIds(ids: EntityReferenceSet): void;
+        discloseIds(ids: Id64Set): void;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;

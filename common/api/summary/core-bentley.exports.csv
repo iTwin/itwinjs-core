@@ -89,7 +89,6 @@ public;MutableCompressedId64Set
 public;NonFunctionPropertiesOf
 public;NonFunctionPropertyNamesOf
 public;ObservableSet
-public;omit
 beta;OneAtATimeAction
 public;OnUnexpectedError = (error: any) => void
 public;OpenMode
@@ -119,7 +118,6 @@ public;StopWatch
 alpha;class SuccessCategory 
 alpha;Tracing
 public;TransientIdSequence
-public;TupleKeyedMap
 public;TypedArrayBuilder
 public;TypedArrayBuilderOptions
 public;Uint16ArrayBuilder 
