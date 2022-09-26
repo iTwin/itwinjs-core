@@ -6,12 +6,16 @@
  * @module IModelHost
  */
 
-import * as os from "os";
-import * as path from "path";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
+import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
+import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
+import { ServerStorage } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
+import { Container } from "inversify";
+import * as os from "os";
+import * as path from "path";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -27,6 +31,7 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
+import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
@@ -111,10 +116,16 @@ export interface IModelHostOptions {
 
   /**
    * @beta
-   * @note A reference implementation is set for [[AzureBlobStorage]] if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
-   *       set this property with a custom [[CloudStorageService]].
+   * @deprecated use tileCacheStorage
    */
-  tileCacheService?: CloudStorageService;
+  tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
+
+  /**
+   * @beta
+   * @note A reference implementation is set for AzureServerStorage from @itwin/object-storage-azure if [[tileCacheAzureCredentials]] property is set. To supply a different implementation for any service provider (such as AWS),
+   *       set this property with a custom ServerStorage.
+   */
+  tileCacheStorage?: ServerStorage;
 
   /** Whether to restrict tile cache URLs by client IP address (if available).
    * @beta
@@ -180,8 +191,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public hubAccess?: BackendHubAccess;
   /** @beta */
   public authorizationClient?: AuthorizationClient;
-  /** @beta */
-  public tileCacheService?: CloudStorageService;
+  /** @beta @deprecated */
+  public tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
   /** @beta */
   public restrictTileUrlsByClientIp?: boolean;
   public compressCachedTiles?: boolean;
@@ -330,12 +341,19 @@ export class IModelHost {
 
   /**
    * @internal
+   * @deprecated
    * @note Use [[IModelHostOptions.tileCacheService]] to set the service provider.
    */
-  public static tileCacheService?: CloudStorageService;
+  public static tileCacheService?: CloudStorageService; // eslint-disable-line deprecation/deprecation
 
   /** @internal */
-  public static tileUploader?: CloudStorageTileUploader;
+  public static tileStorage?: TileStorage;
+
+  /**
+   * @internal
+   * @deprecated
+   */
+  public static tileUploader?: CloudStorageTileUploader; // eslint-disable-line deprecation/deprecation
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
@@ -448,7 +466,6 @@ export class IModelHost {
     this.configuration = options;
     this.setupTileCache();
 
-    this.platform.setUseTileCache(IModelHost.tileCacheService ? false : true);
     process.once("beforeExit", IModelHost.shutdown);
     this.onAfterStartup.raiseEvent();
   }
@@ -497,8 +514,11 @@ export class IModelHost {
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
+    // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileCacheService = undefined;
+    // eslint-disable-next-line deprecation/deprecation
     IModelHost.tileUploader = undefined;
+    IModelHost.tileStorage = undefined;
     IModelHost._appWorkspace?.close();
     IModelHost._appWorkspace = undefined;
     ITwinWorkspace.finalize();
@@ -560,7 +580,7 @@ export class IModelHost {
    * @internal
    */
   public static get usingExternalTileCache(): boolean {
-    return undefined !== IModelHost.tileCacheService;
+    return undefined !== IModelHost.tileStorage;
   }
 
   /** Whether to restrict tile cache URLs by client IP address.
@@ -576,21 +596,48 @@ export class IModelHost {
   private static setupTileCache() {
     assert(undefined !== IModelHost.configuration);
     const config = IModelHost.configuration;
+    // eslint-disable-next-line deprecation/deprecation
     const service = config.tileCacheService;
+    const storage = config.tileCacheStorage;
     const credentials = config.tileCacheAzureCredentials;
 
-    if (!service && !credentials)
+    if (!service && !storage && !credentials) {
+      this.platform.setUseTileCache(true);
       return;
-
-    IModelHost.tileUploader = new CloudStorageTileUploader();
-
-    if (credentials && !service) {
-      IModelHost.tileCacheService = new AzureBlobStorage(credentials);
-    } else if (!credentials && service) {
-      IModelHost.tileCacheService = service;
-    } else {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
     }
+    this.platform.setUseTileCache(false);
+    // eslint-disable-next-line deprecation/deprecation
+    IModelHost.tileUploader = new CloudStorageTileUploader();
+    if (credentials) {
+      if (storage || service)
+        throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
+      this.setupAzureTileCache(credentials);
+    }
+    if (service) {
+      if (!storage)
+        Logger.logWarning(loggerCategory, "Using tileCacheService without tileCacheStorage is unsupported");
+      IModelHost.tileCacheService = service; // eslint-disable-line deprecation/deprecation
+    }
+    if (storage)
+      IModelHost.tileStorage = new TileStorage(storage);
+  }
+
+  private static setupAzureTileCache(credentials: AzureBlobStorageCredentials) {
+    const config = {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      ServerSideStorage: {
+        dependencyName: "azure",
+        accountName: credentials.account,
+        accountKey: credentials.accessKey,
+        baseUrl: credentials.baseUrl ?? `https://${credentials.account}.blob.core.windows.net`,
+      },
+    };
+    const ioc: Container = new Container();
+    ioc.bind<DependenciesConfig>(ExtensionTypes.dependenciesConfig).toConstantValue(config);
+    new AzureServerStorageBindings().register(ioc, config.ServerSideStorage);
+    IModelHost.tileStorage = new TileStorage(ioc.get(ServerStorage));
+    // eslint-disable-next-line deprecation/deprecation
+    IModelHost.tileCacheService = new AzureBlobStorage(credentials); // needed for backwards compatibility with old frontends
   }
 
   /** @internal */

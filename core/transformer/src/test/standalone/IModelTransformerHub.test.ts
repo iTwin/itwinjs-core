@@ -516,7 +516,9 @@ describe("IModelTransformerHub", () => {
         const statusOrResult = masterDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
         assert.isUndefined(statusOrResult.error);
         const result = statusOrResult.result;
-        if (result === undefined) throw Error("expected to be defined");
+        if (result === undefined)
+          throw Error("expected to be defined");
+
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => masterDeletedElementIds.add(id));
@@ -554,7 +556,9 @@ describe("IModelTransformerHub", () => {
         // below is one way of determining the set of elements that were deleted in a specific changeset
         const statusOrResult = replayedDb.nativeDb.extractChangedInstanceIdsFromChangeSets([changesetPath]);
         const result = statusOrResult.result;
-        if (result === undefined) throw Error("expected to be defined");
+        if (result === undefined)
+          throw Error("expected to be defined");
+
         assert.isDefined(result.element);
         if (result.element?.delete) {
           result.element.delete.forEach((id: Id64String) => replayedDeletedElementIds.add(id));
@@ -653,7 +657,9 @@ describe("IModelTransformerHub", () => {
 
       // check that the model selector has the expected change in the target
       const modelSelectorInTargetId = targetDb.elements.queryElementIdByCode(modelSelectorCode);
-      if (modelSelectorInTargetId === undefined) throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+      if (modelSelectorInTargetId === undefined)
+        throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+
       const modelSelectorInTarget = targetDb.elements.getElement<ModelSelector>(modelSelectorInTargetId, ModelSelector);
       expect(modelSelectorInTarget.models).to.have.length(2);
 

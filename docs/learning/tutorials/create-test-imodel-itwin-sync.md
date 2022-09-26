@@ -19,7 +19,7 @@ An iTwin project containing an empty iModel will be created for you.
 
 ## Download iTwin synchronizer
 
-Download and familiarize yourself with the [iTwin Synchronizer](https://www.bentley.com/en/Products/Product-Line/Digital-Twins/iTwin-Synchronizer), a free tool for synchronizing data in CAD/BIM files on your desktop and an iModel.
+Download and familiarize yourself with the [iTwin Synchronizer](https://www.bentley.com/software/itwin-synchronizer), a free tool for synchronizing data in CAD/BIM files on your desktop and an iModel.
 
 ## Run iTwin synchronizer
 

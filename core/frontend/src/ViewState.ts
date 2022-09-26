@@ -598,7 +598,9 @@ export abstract class ViewState extends ElementState {
 
   /** @internal */
   public computeWorldToNpc(viewRot?: Matrix3d, inOrigin?: Point3d, delta?: Vector3d, enforceFrontToBackRatio = true): { map: Map4d | undefined, frustFraction: number } {
-    if (viewRot === undefined) viewRot = this.getRotation();
+    if (viewRot === undefined)
+      viewRot = this.getRotation();
+
     const xVector = viewRot.rowX();
     const yVector = viewRot.rowY();
     const zVector = viewRot.rowZ();
@@ -2331,7 +2333,11 @@ export abstract class ViewState2d extends ViewState {
   public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
   public setExtents(delta: XAndY) { this.delta.set(delta.x, delta.y); }
   public setOrigin(origin: XAndY) { this.origin.set(origin.x, origin.y); }
-  public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
+  public setRotation(rot: Matrix3d) {
+    const xColumn = rot.getColumn(0);
+    this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x));
+  }
+
   public viewsModel(modelId: Id64String) { return this.baseModelId === modelId; }
   public forEachModel(func: (model: GeometricModelState) => void) {
     const model = this.iModel.models.getLoaded(this.baseModelId);

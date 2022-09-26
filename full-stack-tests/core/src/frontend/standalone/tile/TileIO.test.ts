@@ -74,7 +74,9 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
   } as unknown as ViewState;
 }
 
-function delta(a: number, b: number): number { return Math.abs(a - b); }
+function delta(a: number, b: number): number {
+  return Math.abs(a - b);
+}
 type ProcessGraphic = (graphic: RenderGraphic) => void;
 
 function processHeader(data: TileTestData, test: TileTestCase, numElements: number) {
@@ -268,7 +270,7 @@ describe("TileIO (WebGL)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -438,7 +440,7 @@ describe("TileIO (mock render)", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await TestUtility.shutdownFrontend();
   });
 
@@ -610,7 +612,7 @@ describe("mirukuru TileTree", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    await imodel?.close();
     await MockRender.App.shutdown();
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.shutdown();
