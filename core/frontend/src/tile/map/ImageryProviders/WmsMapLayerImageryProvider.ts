@@ -104,9 +104,10 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
       if (subLayer.queryable)
         layerNames.push(subLayer.name);
 
-      subLayer.children?.forEach((childSubLayer) => { getQueryableSubLayers(childSubLayer); });
+      subLayer.children?.forEach((childSubLayer) => getQueryableSubLayers(childSubLayer));
     });
-    this._capabilities?.layer?.subLayers?.forEach((subLayer) => { getQueryableSubLayers(subLayer); });
+
+    this._capabilities?.layer?.subLayers?.forEach((subLayer) => getQueryableSubLayers(subLayer));
     return layerNames;
   }
 
@@ -114,7 +115,11 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const layers = new Array<string>();
     const queryable = this.getQueryableLayers();
     const visibleLayerNames = this.getVisibleLayers().map((layer) => layer.name);
-    queryable.forEach((layer: string) => { if (visibleLayerNames.includes(layer)) layers.push(layer); });
+    queryable.forEach((layer: string) => {
+      if (visibleLayerNames.includes(layer))
+        layers.push(layer);
+    });
+
     return layers.join("%2C");
   }
 
@@ -125,13 +130,13 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     let support4326: boolean|undefined;
     if (layersCrs) {
       for (const [_layerName, crs] of layersCrs) {
-        if (crs.find((layerCrs) => {return layerCrs.includes("3857");}) === undefined ) {
+        if (crs.find((layerCrs) => layerCrs.includes("3857")) === undefined ) {
           support3857 = false;
         } else if (support3857 === undefined) {
           support3857 = true;
         }
 
-        if (crs.find((layerCrs) => {return layerCrs.includes("4326");}) === undefined ) {
+        if (crs.find((layerCrs) => layerCrs.includes("4326")) === undefined ) {
           support4326 = false;
         } else if (support4326 === undefined) {
           support4326 = true;
@@ -178,7 +183,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     if (!doToolTips || undefined === infoFormats)
       return;
     let formatString = infoFormats.find((format) => format === "text/html");
-    if (!formatString) formatString = infoFormats[0];
+    if (!formatString)
+      formatString = infoFormats[0];
 
     const bboxString = this.getEPSG3857ExtentString(quadId.row, quadId.column, quadId.level);
     const layerString = this.getVisibleQueryableLayersString();

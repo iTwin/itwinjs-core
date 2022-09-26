@@ -456,8 +456,9 @@ export class ViewManager implements Iterable<ScreenViewport> {
   public addToolTipProvider(provider: ToolTipProvider): () => void {
     if (this.toolTipProviders.includes(provider))
       throw new Error("tooltip provider already registered");
+
     this.toolTipProviders.push(provider);
-    return () => { this.dropToolTipProvider(provider); };
+    return () => this.dropToolTipProvider(provider);
   }
 
   /** Drop (remove) a [[ToolTipProvider]] so it is no longer active.
@@ -483,7 +484,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     this.decorators.push(decorator);
     this.invalidateDecorationsAllViews();
-    return () => { this.dropDecorator(decorator); };
+    return () => this.dropDecorator(decorator);
   }
 
   /** Drop (remove) a [[Decorator]] so it is no longer active.

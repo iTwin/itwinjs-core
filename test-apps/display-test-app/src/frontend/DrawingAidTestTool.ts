@@ -15,7 +15,10 @@ export class DrawingAidTestTool extends PrimitiveTool {
   protected _snapGeomId?: string;
 
   public override requireWriteableTarget(): boolean { return false; }
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);

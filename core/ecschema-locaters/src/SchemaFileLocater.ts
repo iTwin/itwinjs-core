@@ -137,11 +137,13 @@ export abstract class SchemaFileLocater {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     // If the file does not exist, end
-    if (!fs.existsSync(fullPath)) return;
+    if (!fs.existsSync(fullPath))
+      return;
 
     // Read the file
     const file = fs.readFileSync(fullPath);
-    if (!file) return;
+    if (!file)
+      return;
 
     // Get the schema key
     const key = this.getSchemaKey(file.toString());

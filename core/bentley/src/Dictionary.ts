@@ -14,7 +14,10 @@ class DictionaryIterator<K, V> implements Iterator<DictionaryEntry<K, V>> {
   private _values: V[];
   private _curIndex = -1;
 
-  public constructor(keys: K[], values: V[]) { this._keys = keys; this._values = values; }
+  public constructor(keys: K[], values: V[]) {
+    this._keys = keys;
+    this._values = values;
+  }
 
   public next(): IteratorResult<DictionaryEntry<K, V>> {
     if (++this._curIndex >= this._keys.length) {

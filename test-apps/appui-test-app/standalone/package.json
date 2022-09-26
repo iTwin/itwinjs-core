@@ -152,6 +152,8 @@
       ]
     },
     "rules": {
+      "nonblock-statement-body-position": "off",
+      "max-statements-per-line": "off",
       "@typescript-eslint/naming-convention": [
         "warn",
         {

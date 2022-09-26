@@ -135,13 +135,21 @@ export class MapLayerSources {
   }
   public get layers(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (!source.baseMap) layers.push(source); });
+    this._sources.forEach((source) => {
+      if (!source.baseMap)
+        layers.push(source);
+    });
+
     return layers;
   }
   public get allSource() { return this._sources; }
   public get bases(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
-    this._sources.forEach((source) => { if (source.baseMap) layers.push(source); });
+    this._sources.forEach((source) => {
+      if (source.baseMap)
+        layers.push(source);
+    });
+
     return layers;
   }
 

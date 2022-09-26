@@ -61,7 +61,7 @@ const dtaWebMain = (async () => {
   app.get("/v3/swagger.json", (req: any, res: any) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
   app.post("*", async (req: any, res: any) => cloudConfig.protocol.handleOperationPostRequest(req, res));
   app.get(/\/imodel\//, async (req: any, res: any) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-  app.use("*", (_req: any, res: any) => { res.send("<h1>iTwin.js RPC Server</h1>"); });
+  app.use("*", (_req: any, res: any) => res.send("<h1>iTwin.js RPC Server</h1>"));
 
   // ---------------------------------------------
   // Run the server...
