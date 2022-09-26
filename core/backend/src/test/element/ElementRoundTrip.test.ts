@@ -59,12 +59,18 @@ interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectPr
 interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements { }
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
-  if (expectedValue.i) assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
-  if (expectedValue.l) assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
-  if (expectedValue.d) assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
-  if (expectedValue.b) assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
-  if (expectedValue.dt) assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
-  if (expectedValue.s) assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
+  if (expectedValue.i)
+    assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
+  if (expectedValue.l)
+    assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
+  if (expectedValue.d)
+    assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
+  if (expectedValue.b)
+    assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
+  if (expectedValue.dt)
+    assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
+  if (expectedValue.s)
+    assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d?.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d?.y, "'Point2d.y' type property did not roundtrip as expected");
@@ -74,8 +80,10 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
     assert.equal(actualValue.p3d?.y, expectedValue.p3d?.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d?.z, "'Point3d.z' type property did not roundtrip as expected");
   }
-  if (expectedValue.bin) assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  if (expectedValue.g) expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
+  if (expectedValue.bin)
+    assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
+  if (expectedValue.g)
+    expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
 }
 
 function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValue: IPrimitiveArrayBase) {

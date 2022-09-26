@@ -502,6 +502,28 @@ describe("Content", () => {
                   label: "TestClass",
                 },
                 targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
                   id: "0x84",
                   name: "BisCore:LinkElement",
                   label: "Link",
@@ -852,6 +874,48 @@ describe("Content", () => {
                 isForwardRelationship: true,
               },
             ],
+            [
+              {
+                sourceClassInfo: {
+                  id: "0x1a0",
+                  name: "PCJ_TestSchema:TestClass",
+                  label: "TestClass",
+                },
+                targetClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x8e",
+                  name: "BisCore:GeometricElement3dHasTypeDefinition",
+                  label: "GeometricElement3dHasTypeDefinition",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+              {
+                sourceClassInfo: {
+                  id: "0x52",
+                  name: "BisCore:TypeDefinitionElement",
+                  label: "Type Definition",
+                },
+                targetClassInfo: {
+                  id: "0x86",
+                  name: "BisCore:ElementMultiAspect",
+                  label: "Element Multi-Aspect",
+                },
+                isPolymorphicTargetClass: true,
+                relationshipInfo: {
+                  id: "0x87",
+                  name: "BisCore:ElementOwnsMultiAspects",
+                  label: "ElementOwnsMultiAspects",
+                },
+                isPolymorphicRelationship: true,
+                isForwardRelationship: true,
+              },
+            ],
           ],
           navigationPropertyClasses: [
             {
@@ -981,7 +1045,7 @@ describe("Content", () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       const realRace = Promise.race;
       raceStub = sinon.stub(Promise, "race").callsFake(async (values) => {
-        (values as any).push(new Promise((_resolve, reject) => { reject("something"); }));
+        (values as any).push(new Promise((_resolve, reject) => reject("something")));
         return realRace.call(Promise, values);
       });
     });

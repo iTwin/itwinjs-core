@@ -129,26 +129,70 @@ export interface BlobOptions extends BaseReaderOptions {
 export class QueryOptionsBuilder {
   public constructor(private _options: QueryOptions = {}) { }
   public getOptions(): QueryOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setAbbreviateBlobs(val: boolean) { this._options.abbreviateBlobs = val; return this; }
-  public setSuppressLogErrors(val: boolean) { this._options.suppressLogErrors = val; return this; }
-  public setConvertClassIdsToNames(val: boolean) { this._options.convertClassIdsToClassNames = val; return this; }
-  public setLimit(val: QueryLimit) { this._options.limit = val; return this; }
-  public setRowFormat(val: QueryRowFormat) { this._options.rowFormat = val; return this; }
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  public setAbbreviateBlobs(val: boolean) {
+    this._options.abbreviateBlobs = val;
+    return this;
+  }
+  public setSuppressLogErrors(val: boolean) {
+    this._options.suppressLogErrors = val;
+    return this;
+  }
+  public setConvertClassIdsToNames(val: boolean) {
+    this._options.convertClassIdsToClassNames = val;
+    return this;
+  }
+  public setLimit(val: QueryLimit) {
+    this._options.limit = val;
+    return this;
+  }
+  public setRowFormat(val: QueryRowFormat) {
+    this._options.rowFormat = val;
+    return this;
+  }
+
 }
 /** @beta */
 export class BlobOptionsBuilder {
   public constructor(private _options: BlobOptions = {}) { }
   public getOptions(): BlobOptions { return this._options; }
-  public setPriority(val: number) { this._options.priority = val; return this; }
-  public setRestartToken(val: string) { this._options.restartToken = val; return this; }
-  public setQuota(val: QueryQuota) { this._options.quota = val; return this; }
-  public setUsePrimaryConnection(val: boolean) { this._options.usePrimaryConn = val; return this; }
-  public setRange(val: BlobRange) { this._options.range = val; return this; }
+  public setPriority(val: number) {
+    this._options.priority = val;
+    return this;
+  }
+  public setRestartToken(val: string) {
+    this._options.restartToken = val;
+    return this;
+  }
+  public setQuota(val: QueryQuota) {
+    this._options.quota = val;
+    return this;
+  }
+  public setUsePrimaryConnection(val: boolean) {
+    this._options.usePrimaryConn = val;
+    return this;
+  }
+  public setRange(val: BlobRange) {
+    this._options.range = val;
+    return this;
+  }
 }
+
 /** @internal */
 enum QueryParamType {
   Boolean = 0,

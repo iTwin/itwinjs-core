@@ -796,7 +796,11 @@ describe("iModel", () => {
   it("should iterate ViewDefinitions", () => {
     // imodel2 contains 3 SpatialViewDefinitions and no other views.
     let numViews = 0;
-    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return true; });
+    let result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(3);
 
@@ -813,13 +817,21 @@ describe("iModel", () => {
 
     // Query specifically for 2d views
     numViews = 0;
-    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => { ++numViews; return true; });
+    result = imodel2.views.iterateViews({ from: "BisCore.ViewDefinition2d" }, (_view: ViewDefinition) => {
+      ++numViews;
+      return true;
+    });
+
     expect(result).to.be.true;
     expect(numViews).to.equal(0);
 
     // Terminate iteration on first view
     numViews = 0;
-    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => { ++numViews; return false; });
+    result = imodel2.views.iterateViews(IModelDb.Views.defaultQueryParams, (_view: ViewDefinition) => {
+      ++numViews;
+      return false;
+    });
+
     expect(result).to.be.false;
     expect(numViews).to.equal(1);
   });
@@ -1002,8 +1014,12 @@ describe("iModel", () => {
   it("update the project extents", async () => {
     const originalExtents = imodel1.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
-    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    newExtents.low.x -= 50;
+    newExtents.low.y -= 25;
+    newExtents.low.z -= 189;
+    newExtents.high.x += 1087;
+    newExtents.high.y += 19;
+    newExtents.high.z += .001;
     imodel1.updateProjectExtents(newExtents);
 
     const updatedProps = imodel1.nativeDb.getIModelProps();
@@ -2159,7 +2175,9 @@ describe("iModel", () => {
     };
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: { accessToken: "sas" } as any }; });
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
+      return { dbName: "fakeDb", container: { accessToken: "sas" } as any };
+    });
     const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
@@ -2190,7 +2208,9 @@ describe("iModel", () => {
     assert.include(infoLogStub.args[1][1], "refreshed checkpoint");
 
     errorLogStub.resetHistory();
-    queryStub.callsFake(async () => { throw new Error("no checkpoint"); });
+    queryStub.callsFake(async () => {
+      throw new Error("no checkpoint");
+    });
     await expect(checkpoint.refreshContainerSas(accessToken)).to.eventually.be.rejectedWith("no checkpoint");
 
     checkpoint.close();
@@ -2310,8 +2330,8 @@ describe("iModel", () => {
     assert.equal(snapshotDb3, SnapshotDb.tryFindByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, SnapshotDb.findByKey(snapshotDb3.key));
     assert.equal(snapshotDb3, IModelDb.findByKey(snapshotDb3.key));
-    assert.throws(() => { BriefcaseDb.findByKey(snapshotDb1.key); }); // lookup of key for SnapshotDb via BriefcaseDb should throw
-    assert.throws(() => { StandaloneDb.findByKey(snapshotDb1.key); }); // likewise for StandaloneDb
+    assert.throws(() => BriefcaseDb.findByKey(snapshotDb1.key)); // lookup of key for SnapshotDb via BriefcaseDb should throw
+    assert.throws(() => StandaloneDb.findByKey(snapshotDb1.key)); // likewise for StandaloneDb
     assert.isTrue(snapshotDb1.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb2.isReadonly, "Expect snapshots to be read-only after open");
     assert.isTrue(snapshotDb3.isReadonly, "Expect snapshots to be read-only after open");

@@ -21,6 +21,11 @@ exports[`StandardMessageBox MediumAlert & Question 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={3}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />
@@ -43,6 +48,11 @@ exports[`StandardMessageBox OK button & NoSymbol 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={0}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />
@@ -69,6 +79,11 @@ exports[`StandardMessageBox OK/Cancel buttons & Information 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={1}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />
@@ -95,6 +110,11 @@ exports[`StandardMessageBox Yes/No buttons & Question 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={2}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />
@@ -125,6 +145,11 @@ exports[`StandardMessageBox YesNoCancel & Critical 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={4}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />
@@ -155,6 +180,11 @@ exports[`StandardMessageBox YesNoCancel & Warning 1`] = `
   onEscape={[Function]}
   opened={true}
   severity={3}
+  style={
+    Object {
+      "zIndex": 12000,
+    }
+  }
   title="My Title"
   width="512px"
 />

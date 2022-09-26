@@ -181,7 +181,8 @@ export class SchemaContextEditor {
    */
   public async setVersion(schemaKey: SchemaKey, readVersion?: number, writeVersion?: number, minorVersion?: number): Promise<SchemaEditResults> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     schema.setVersion(readVersion || schema.readVersion, writeVersion || schema.writeVersion, minorVersion || schema.minorVersion);
     return {};
@@ -193,7 +194,8 @@ export class SchemaContextEditor {
    */
   public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
     const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest));
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
     return {};
