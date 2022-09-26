@@ -27,10 +27,10 @@ export interface PresentationInstanceFilterCondition {
 }
 
 /** @alpha */
-export interface PropertyInfo {
+export interface InstanceFilterPropertyInfo {
   sourceClassIds: ClassId[];
   field: PropertiesField;
   propertyDescription: PropertyDescription;
-  className?: string;
+  className: string;
   categoryLabel?: string;
 }

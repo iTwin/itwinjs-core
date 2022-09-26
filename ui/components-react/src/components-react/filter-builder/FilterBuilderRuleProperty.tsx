@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { ComboBox, MenuItem, SelectOption} from "@itwin/itwinui-react";
+import { ComboBox, MenuItem, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 
 /** @alpha */
@@ -12,12 +12,12 @@ export interface PropertyFilterBuilderRulePropertyProps {
   properties: PropertyDescription[];
   selectedProperty?: PropertyDescription;
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
-  itemBuilder?: (name: string) => JSX.Element;
+  propertyRenderer?: (name: string) => JSX.Element;
 }
 
 /** @alpha */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
-  const { selectedProperty, properties, onSelectedPropertyChanged, itemBuilder } = props;
+  const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer } = props;
 
   const selectOptions = React.useMemo<SelectOption<string>[]>(() => properties.map((property) => ({
     id: property.name,
@@ -35,11 +35,11 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       onSelectedPropertyChanged(currentSelectedProperty);
   }, [properties, selectedProperty, onSelectedPropertyChanged]);
 
-  const getItemBuilderElement = React.useCallback((selectOption: SelectOption<string>) => {
-    return <MenuItem key={selectOption.id}>
-      {itemBuilder?.(selectOption.value)}
+  const getPropertyRendererElement = React.useCallback((selectOption: SelectOption<string>, { isSelected, id }) => {
+    return <MenuItem key={id} id={id} isSelected={isSelected}>
+      {propertyRenderer ? propertyRenderer(selectOption.value) : selectOption.label}
     </MenuItem>;
-  }, [itemBuilder]);
+  }, [propertyRenderer]);
 
   return <div className="rule-property">
     <ComboBox
@@ -49,7 +49,7 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       inputProps={{
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
       }}
-      itemRenderer={props.itemBuilder ? getItemBuilderElement : undefined}
+      itemRenderer={getPropertyRendererElement}
     />
   </div>;
 }

@@ -22,7 +22,7 @@ import { GridWidget } from "../grid-widget/GridWidget";
 import { IModelSelector } from "../imodel-selector/IModelSelector";
 import { PropertiesWidget } from "../properties-widget/PropertiesWidget";
 import { RulesetSelector } from "../ruleset-selector/RulesetSelector";
-import { FilterBuilderWidget } from "../tree-widget/TreeWidget";
+import { TreeWidget } from "../tree-widget/TreeWidget";
 import { UnitSystemSelector } from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
 
@@ -163,6 +163,7 @@ export default class App extends React.Component<{}, State> {
       // selection originated from the viewport - don't change what it's displaying by zooming in
       return;
     }
+
     // determine what the viewport is hiliting
     const hiliteSet = await Presentation.selection.getHiliteSet(args.imodel);
     if (hiliteSet.elements) {
@@ -209,7 +210,7 @@ export default class App extends React.Component<{}, State> {
             style={{
               gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
             }}>
-            <FilterBuilderWidget imodel={imodel}/>
+            <TreeWidget imodel={imodel} rulesetId={rulesetId} />
             <div className="app-content-right-separator">
               <hr />
               <ElementSeparator
