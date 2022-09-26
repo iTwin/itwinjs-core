@@ -79,7 +79,7 @@ export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
   constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) { }
 
-  public static rectangleScratch = MapCartoRectangle.create();
+  public static rectangleScratch = MapCartoRectangle.createMaximum();
 
   public findNode(level: number, x: number, y: number, nodes: QuadTreeNode[]) {
     for (const node of nodes) {

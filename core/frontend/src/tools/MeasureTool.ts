@@ -122,32 +122,32 @@ interface Segment { distance: number, slope: number, start: Point3d, end: Point3
 
 /** @internal */
 function adjustPoint(ev: BeButtonEvent, segments?: Array<Segment>, locations?: Array<Location>): Point3d {
-  // If the point was from a hit we must transform it by the model display transform of what got hit.
-  if (undefined === ev.viewport || undefined === ev.viewport.view.modelDisplayTransformProvider)
+  // If the point was from a hit we must transform it by the display transform of what got hit.
+  const hit = IModelApp.accuSnap.currHit;
+  if (!hit || !ev.viewport || !hit.modelId)
     return ev.point;
-  if (undefined !== IModelApp.accuSnap.currHit && undefined !== IModelApp.accuSnap.currHit.modelId) {
-    if ("0" !== IModelApp.accuSnap.currHit.modelId) {
-      const newPoint = ev.point.clone();
-      ev.viewport.view.transformPointByModelDisplayTransform(IModelApp.accuSnap.currHit.modelId, newPoint, true);
-      return newPoint;
-    } else {
-      // Must have snapped to a decoration, so look through previous any segments & locations for a match to get an adjusted point.
-      if (undefined !== segments) {
-        for (const seg of segments) {
-          if (seg.start.isExactEqual(ev.point))
-            return seg.adjustedStart.clone();
-          if (seg.end.isExactEqual(ev.point))
-            return seg.adjustedEnd.clone();
-        }
-      }
-      if (undefined !== locations) {
-        for (const loc of locations) {
-          if (loc.point.isExactEqual(ev.point))
-            return loc.adjustedPoint.clone();
-        }
-      }
+
+  if ("0" !== hit.modelId) {
+    const transform = ev.viewport.view.computeDisplayTransform({ modelId: hit.modelId, elementId: hit.sourceId });
+    return transform?.multiplyInversePoint3d(ev.point) ?? ev.point;
+  }
+
+  // Must have snapped to a decoration, so look through previous any segments & locations for a match to get an adjusted point.
+  if (segments) {
+    for (const seg of segments) {
+      if (seg.start.isExactEqual(ev.point))
+        return seg.adjustedStart.clone();
+
+      if (seg.end.isExactEqual(ev.point))
+        return seg.adjustedEnd.clone();
     }
   }
+
+  if (locations)
+    for (const loc of locations)
+      if (loc.point.isExactEqual(ev.point))
+        return loc.adjustedPoint.clone();
+
   return ev.point;
 }
 

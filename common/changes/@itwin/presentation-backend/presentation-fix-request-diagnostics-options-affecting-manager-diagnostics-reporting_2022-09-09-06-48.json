@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-backend",
+      "comment": "Add a way to capture current context so it can be used by diagnostics handler when the request is fulfilled",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-backend"
+}

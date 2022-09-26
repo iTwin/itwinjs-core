@@ -14,7 +14,7 @@ import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
-import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetState, WidgetState } from "../state/WidgetState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
@@ -22,6 +22,7 @@ import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 import { WidgetTarget } from "../target/WidgetTarget";
 import { WidgetOutline } from "../outline/WidgetOutline";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
 type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
@@ -49,6 +50,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     const boundsRect = Rectangle.create(bounds);
     const { height, width } = boundsRect.getSize();
     const position = boundsRect.topLeft();
+    // istanbul ignore next
     return {
       ...CssProperties.transformFromPosition(position),
       height: minimized || autoSized ? undefined : height,
@@ -62,6 +64,7 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
     minimized && "nz-minimized",
     hideFloatingWidget && "nz-hidden",
   ), [minimized, hideFloatingWidget]);
+
   return (
     <FloatingWidgetIdContext.Provider value={id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>
@@ -217,6 +220,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);
     handleDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",

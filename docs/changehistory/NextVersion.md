@@ -6,20 +6,70 @@ publish: false
 
 Table of contents:
 
-- [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
-- [Transformer API](#transformer-api)
+- [Electron 17 support](#electron-17-support)
+- [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Improved link table selection](improved-link-table-selection)
+- [Cloud storage changes](#cloud-storage-changes)
+- [Display](#display)
+  - [Custom terrain providers](#custom-terrain-providers)
+  - [Ambient occlusion improvements](#ambient-occlusion-improvements)
+  - [Improved display transform support](#improved-display-transform-support)
+  - [Wait for scene completion](#wait-for-scene-completion)
 - [Presentation](#presentation)
-  - [Restoring Presentation tree state](#restoring-presentation-tree-state)
-  - [OpenTelemetry](#opentelemetry)
+  - [Restoring presentation tree state](#restoring-presentation-tree-state)
+  - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
   - [Localization changes](#localization-changes)
-- [Electron versions support](#electron-versions-support)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
-- [SELECT * FROM Link Tables](#select-*-from-link-tables)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
-## Ambient Occlusion Improvements
+## Electron 17 support
+
+In addition to the already supported Electron 14, iTwin.js now supports Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), and [17](https://www.electronjs.org/blog/electron-17-0). At the moment, support for Electron 18 and 19 is blocked due to a [bug in the V8 javascript engine](https://github.com/electron/electron/issues/35043).
+
+## IModelSchemaLoader replaced
+
+The `IModelSchemaLoader` class has been replaced with [SchemaLoader]($ecschema-metadata) for obtaining schemas from an iModel. This allows us to remove the @itwin/ecschema-metadata dependency from @itwin/core-backend.
+
+```typescript
+// Old
+import { IModelSchemaLoader } from "@itwin/core-backend";
+const loader = new IModelSchemaLoader(iModel);
+const schema = loader.getSchema("BisCore");
+
+// New
+import { SchemaLoader } from "@itwin/ecschema-metadata";
+const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
+const schema = loader.getSchema("BisCore");
+```
+
+[SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+
+## Improved link table selection
+
+Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
+
+## Cloud storage changes
+
+The existing beta implementations of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) have been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
+
+[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
+
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
+
+## Display
+
+### Custom terrain providers
+
+Previously, 3d terrain required access to [Cesium World Terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/), a paid service. Now, applications can use their own sources of 3d terrain by registering a [TerrainProvider]($frontend) and implementing a [TerrainMeshProvider]($frontend) to produce 3d terrain meshes.
+
+The name of the provider is stored in [TerrainSettings.providerName]($common). The default is "CesiumWorldTerrain".
+
+See [BingTerrainProvider](https://github.com/iTwin/itwinjs-core/blob/master/test-apps/display-test-app/src/frontend/BingTerrainProvider.ts) for an example of a custom terrain provider.
+
+### Ambient occlusion improvements
 
 The ambient occlusion effect has undergone some quality improvements.
 
@@ -39,16 +89,30 @@ New effect, shown below:
 
 For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
 
-## Transformer API
+### Improved display transform support
 
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
-It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
-awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
-changes instead of the full source contents.
+In some cases, geometry is displayed within a [Viewport]($frontend) at a different location, orientation, and/or scale than that with which it is persisted in the iModel. For example:
+
+- A [DisplayStyle]($backend) may use [PlanProjectionSettings.elevation]($common) to adjust a plan projection model's position on the Z axis.
+- A [ModelDisplayTransformProvider]($frontend) may supply [Transform]($core-geometry)s to be applied to specific models.
+- A [RenderSchedule.Script]($common) may apply [Transform]($core-geometry)s to groups of elements belonging to a [RenderSchedule.ElementTimeline]($common).
+
+Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
+
+### Wait for scene completion
+
+As you navigate inside a [Viewport]($frontend), [Tile]($frontend)s, texture images, and other resources are streamed in asynchronously to display the contents of the view. Sometimes, you may want to wait until the scene has been fully rendered - for example, so that you can capture a complete image of the viewport's contents. [Viewport.waitForSceneCompletion]($frontend) provides a `Promise` that resolves when the scene has been fully rendered. Here's an example that captures an image of the fully-rendered scene:
+
+```ts
+async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
+  await vp.waitForSceneCompletion();
+  return vp.readImageBuffer();
+}
+```
 
 ## Presentation
 
-### Restoring Presentation tree state
+### Restoring presentation tree state
 
 It is now possible to restore previously saved Presentation tree state on component mount.
 
@@ -62,28 +126,13 @@ const seedTreeModel = exampleRetrieveStoredTreeModel();
 const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
 ```
 
-### OpenTelemetry
+### Diagnostics improvements and OpenTelemetry
 
-It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
+The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has been upgraded from `@alpha` to `@beta`. Several new features have also been added:
 
-Example usage:
-
-```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
-
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
-});
-
-Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
-  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
-  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-  traceExporter.export(spans, () => {});
-} });
-```
+- Ability to retrieve backend version when sending a request from the frontend. See [Getting request diagnostics on the frontend](../presentation/advanced/Diagnostics.md#getting-request-diagnostics-on-the-frontend) section for an example.
+- Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
+- Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
 
 ### Localization Changes
 
@@ -96,28 +145,6 @@ In case of a backend-only application, localization may be setup by providing a 
 - PresentationManagerProps.localeDirectories
 - PresentationManagerProps.defaultLocale
 - PresentationManager.activeLocale
-
-## IModelSchemaLoader replaced with SchemaLoader
-
-Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
-
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
-
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
-
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
-
-## Electron versions support
-
-In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
 
 ## Geometry
 
@@ -135,11 +162,6 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 
 ## Deprecations
 
-### @itwin/core-geometry
+### @itwin/core-transformer
 
-`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
-
-## SELECT * FROM Link Tables
-
-Previously when we did SELECT * on a link table, it would only return ECInstanceId, ECClassId, SourceECInstanceId and TargetECInstanceId. We were skipping SourceECClassId and TargetECClassId. This behavior was dropped as technically SELECT * on a link table should also return SourceECClassId and TargetECClassId.
-The new behavior is that we would return ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceId, TargetECClassId when we do SELECT * on a link table.
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.

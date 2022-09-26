@@ -214,10 +214,12 @@ export class PushPullStatusField extends React.Component<CommonProps, PushPullSt
         style={this.props.style}
       >
         <div id="simple-editor-app-statusFields-pushPull-buttons">
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div title={pushTitleTxt} onClick={async () => SyncManager.syncChanges(true)}>
             <Icon iconSpec={pushIcon} />
           </div>
           <span> </span>
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div title={pullTitleTxt} onClick={async () => SyncManager.syncChanges(false)}>
             {pullChangeCount}<Icon iconSpec={pullIcon} />
           </div>

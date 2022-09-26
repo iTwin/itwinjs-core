@@ -5,12 +5,11 @@
 /** @packageDocumentation
  * @module Tiles
  */
-
 import {
   assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, CloudStorageTileCache, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
   IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
@@ -18,9 +17,10 @@ import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileTree,
+  DisclosedTileTreeSet, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileLoadStatus, TileRequest, TileRequestChannels, TileStorage, TileTree,
   TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
 } from "./internal";
+import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -166,6 +166,7 @@ export class TileAdmin {
   private _maxTotalTileContentBytes?: number;
   private _gpuMemoryLimit: GpuMemoryLimit = "none";
   private readonly _isMobile: boolean;
+  private readonly _cloudStorage?: FrontendStorage;
 
   /** Create a TileAdmin suitable for passing to [[IModelApp.startup]] via [[IModelAppOptions.tileAdmin]] to customize aspects of
    * its behavior.
@@ -234,6 +235,7 @@ export class TileAdmin {
     this.useLargerTiles = options.useLargerTiles ?? defaultTileOptions.useLargerTiles;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
     this.cesiumIonKey = options.cesiumIonKey;
+    this._cloudStorage = options.tileStorage;
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
     let gpuMemoryLimit: GpuMemoryLimit | undefined;
@@ -289,6 +291,22 @@ export class TileAdmin {
           user.invalidateScene();
       });
     });
+  }
+
+  private _tileStorage?: TileStorage;
+  private async getTileStorage(): Promise<TileStorage> {
+    if (this._tileStorage === undefined) {
+      if (this._cloudStorage !== undefined) {
+        this._tileStorage = new TileStorage(this._cloudStorage);
+      } else {
+        await import("reflect-metadata");
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const azureFrontend = await require("./object-storage-azure")();
+        const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
+        this._tileStorage = new TileStorage(azureStorage);
+      }
+    }
+    return this._tileStorage;
   }
 
   /** @internal */
@@ -615,7 +633,12 @@ export class TileAdmin {
 
   /** @internal */
   public async requestCachedTileContent(tile: { iModelTree: IModelTileTree, contentId: string }): Promise<Uint8Array | undefined> {
-    return CloudStorageTileCache.getCache().retrieve(this.getTileRequestProps(tile));
+    if (tile.iModelTree.iModel.iModelId === undefined)
+      throw new Error("Provided iModel has no iModelId");
+
+    const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);
+    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
+    return content;
   }
 
   /** @internal */
@@ -944,6 +967,14 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
    * @public
    */
   export interface Props {
+    /**
+     * The client side storage implementation of @itwin/object-storage-core to use for retrieving tiles from tile cache.
+     *
+     * Defaults to AzureFrontendStorage
+     * @beta
+     */
+    tileStorage?: FrontendStorage;
+
     /** The maximum number of simultaneously active requests for IModelTileTreeProps. Requests are fulfilled in FIFO order.
      *
      * Default value: 10
