@@ -131,6 +131,10 @@
       "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cloud-agnostic-core",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
       "name": "@itwin/components-react",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -305,6 +309,14 @@
     {
       "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/object-storage-azure",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
+      "name": "@itwin/object-storage-core",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
@@ -707,10 +719,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "ignore-styles",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
@@ -729,6 +737,10 @@
     {
       "name": "internal-tools",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "inversify",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -941,6 +953,10 @@
     {
       "name": "redux",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "reflect-metadata",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "require-dir",
