@@ -28,15 +28,19 @@ describe("ECReferenceTypesCache", () => {
   });
 
   it("should be able to assume that all non-codespec classes in biscore have one of the known roots", async () => {
-    const schemaLoader = new SchemaLoader((name: string) => { return testIModel.getSchemaProps(name); });
+    const schemaLoader = new SchemaLoader((name: string) => testIModel.getSchemaProps(name));
     const schema = schemaLoader.getSchema("BisCore");
     for (const ecclass of schema.getClasses()) {
       const unsupportedClassNames = ["CodeSpec", "ElementDrivesElement", "SpatialIndex"];
-      if (unsupportedClassNames.includes(ecclass.name)) continue;
+      if (unsupportedClassNames.includes(ecclass.name))
+        continue;
+
       const isEntityClass = ecclass.schemaItemType === SchemaItemType.EntityClass;
       const isEntityRelationship = ecclass instanceof Relationship;
       const isEntity = isEntityClass || isEntityRelationship;
-      if (!isEntity) continue;
+      if (!isEntity)
+        continue;
+
       // eslint-disable-next-line @typescript-eslint/dot-notation
       const rootBisClass = await testFixtureRefCache["getRootBisClass"](ecclass);
       // eslint-disable-next-line @typescript-eslint/dot-notation

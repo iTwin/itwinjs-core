@@ -100,23 +100,31 @@ export class IModelCloneContext extends IModelElementCloneContext {
               const targetType = stmt.getValue(3).getString() as ConcreteEntityTypes | "error";
               if (sourceType === "error" || targetType === "error")
                 throw Error("relationship end had unknown root class");
+
               return {
                 sourceId: `${sourceType}${sourceId}`,
                 targetId: `${targetType}${targetId}`,
               } as const;
             }
+
             if (status !== DbResult.BE_SQLITE_DONE)
               throw new IModelError(status, "unexpected query failure");
+
             return undefined;
           });
-        if (relInSource === undefined) break;
+
+        if (relInSource === undefined)
+          break;
+
         // just in case prevent recursion
         if (relInSource.sourceId === sourceEntityId || relInSource.targetId === sourceEntityId)
           throw Error("link table relationship end was resolved to itself. This should be impossible");
+
         const relInTarget = {
           sourceId: this.findTargetEntityId(relInSource.sourceId),
           targetId: this.findTargetEntityId(relInSource.targetId),
         };
+
         const relInTargetId = this.sourceDb.withPreparedStatement(
           `
           SELECT ECInstanceId
@@ -133,9 +141,11 @@ export class IModelCloneContext extends IModelElementCloneContext {
               throw new IModelError(status, "unexpected query failure");
             return Id64.invalid;
           });
+
         return `r${relInTargetId}`;
       }
     }
+
     return `${type}${Id64.invalid}`;
   }
 
@@ -171,9 +181,9 @@ export class IModelCloneContext extends IModelElementCloneContext {
 
   public override saveStateToDb(db: SQLiteDb): void {
     super.saveStateToDb(db);
-    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
-      `CREATE TABLE ${IModelCloneContext.aspectRemapTableName} (Source INTEGER, Target INTEGER)`
-    )) throw Error("Failed to create the aspect remap table in the state database");
+    if (DbResult.BE_SQLITE_DONE !== db.executeSQL(`CREATE TABLE ${IModelCloneContext.aspectRemapTableName} (Source INTEGER, Target INTEGER)`))
+      throw Error("Failed to create the aspect remap table in the state database");
+
     db.saveChanges();
     db.withPreparedSqliteStatement(
       `INSERT INTO ${IModelCloneContext.aspectRemapTableName} (Source, Target) VALUES (?, ?)`,
@@ -182,7 +192,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
           stmt.reset();
           stmt.bindId(1, source);
           stmt.bindId(2, target);
-          if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert aspect remapping into the state database");
+          if (DbResult.BE_SQLITE_DONE !== stmt.step())
+            throw Error("Failed to insert aspect remapping into the state database");
         }
       });
   }
@@ -197,6 +208,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
         const target = stmt.getValue(1).getId();
         this._aspectRemapTable.set(source, target);
       }
+
       assert(status === DbResult.BE_SQLITE_DONE);
     });
   }

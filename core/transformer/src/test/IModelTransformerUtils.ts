@@ -1454,7 +1454,9 @@ export async function runWithCpuProfiler<F extends () => any>(
   const stopProfiler = async (thisSession: inspector.Session, funcName: "Profiler.stop", writePath: string) => {
     return new Promise<void>((resolve, reject) => {
       thisSession.post(funcName, async (err, res) => {
-        if (err) return reject(err);
+        if (err)
+          return reject(err);
+
         await fs.promises.writeFile(writePath, JSON.stringify(res.profile));
         resolve();
       });

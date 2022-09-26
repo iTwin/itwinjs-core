@@ -594,11 +594,16 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   private static transformCallbackFor(transformer: IModelTransformer, entity: ConcreteEntity): EntityTransformHandler {
-    if (entity instanceof Element) return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof Element) return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof Relationship) return transformer.onTransformRelationship as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof ElementAspect) return transformer.onTransformElementAspect as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
+    if (entity instanceof Element)
+      return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Element)
+      return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Relationship)
+      return transformer.onTransformRelationship as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof ElementAspect)
+      return transformer.onTransformElementAspect as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else
+      assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
   }
 
   /** callback to perform when a partial element says it's ready to be completed
@@ -824,7 +829,9 @@ export class IModelTransformer extends IModelExportHandler {
     for (const referencer of this._pendingReferences.getReferencers(entity)) {
       const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
-      if (!pendingRef) continue;
+      if (!pendingRef)
+        continue;
+
       pendingRef.resolveReference(EntityReferences.from(entity));
       this._pendingReferences.delete(key);
     }
@@ -1200,7 +1207,9 @@ export class IModelTransformer extends IModelExportHandler {
    * Overriders must call `super.initialize()` first
    */
   public async initialize(args?: InitFromExternalSourceAspectsArgs) {
-    if (this._initialized) return;
+    if (this._initialized)
+      return;
+
     await this.context.initialize();
     // eslint-disable-next-line deprecation/deprecation
     await this.initFromExternalSourceAspects(args);
