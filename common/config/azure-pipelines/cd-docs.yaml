@@ -18,6 +18,7 @@ resources:
   pipelines:
   - pipeline: itwinjs-docs
     source: iTwin.js Docs - YAML
+    version: 20220926.22
     trigger:
       branches:
         include:
