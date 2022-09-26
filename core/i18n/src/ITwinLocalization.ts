@@ -160,7 +160,6 @@ export class ITwinLocalization implements Localization {
   }
 
   /** Gets the English translation.
-   * @note Checks locales 'en', 'en-US' - in that order
    * @param namespace - the namespace that identifies the particular localization file that contains the property.
    * @param key - the key that matches a property in the JSON localization file.
    * @returns The string corresponding to the first key that resolves.
