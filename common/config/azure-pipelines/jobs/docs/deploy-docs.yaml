@@ -10,7 +10,7 @@ jobs:
 - job: Deploy - ${{ parameters.env }}
   pool:
     name: PRG Octo Deploy Only
-    demands: DotNetFramework -exists
+    # demands: DotNetFramework -exists
   steps:
     - script: |
         echo * * * * * * * * * *
