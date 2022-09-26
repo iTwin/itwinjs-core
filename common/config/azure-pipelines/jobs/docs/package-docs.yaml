@@ -2,7 +2,7 @@
 # and running a step to combine everything.
 
 jobs:
-  - job:
+  - job: Package Docs
     workspace:
       clean: all
     pool:
