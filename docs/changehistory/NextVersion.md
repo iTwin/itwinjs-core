@@ -162,13 +162,6 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 
 ## Deprecations
 
-### @itwin/core-backend
-
-The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
-can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
-class, [IModelCloneContext]($transformer).
-
 ### @itwin/core-transformer
 
-The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it.
-If you are not using a `process*` function to run the transformer, then you do need to replace it with [IModelTransformer.initialize]($transformer).
+The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.

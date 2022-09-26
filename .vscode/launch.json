@@ -64,7 +64,7 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/core/{backend,common,transformer}/lib/**/*.js"
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
       ],
       "console": "integratedTerminal"
     },
@@ -81,13 +81,9 @@
       "runtimeArgs": [
         "test"
       ],
-      "env": {
-        "LOG_TRANSFORMER_IN_TESTS": "1"
-      },
       "outFiles": [
-        "${workspaceFolder}/core/{backend,common,transformer}/lib/**/*.js"
-      ],
-      "console": "integratedTerminal"
+        "${workspaceFolder}/core/{backend,transformer}/lib/**/*.js"
+      ]
     },
     {
       "name": "Bentley Tests",

@@ -34,6 +34,7 @@ export class Transformer extends IModelTransformer {
   public static async transformAll(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions): Promise<void> {
     // might need to inject RequestContext for schemaExport.
     const transformer = new Transformer(sourceDb, targetDb, options);
+    transformer.initialize(options);
     await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
     await transformer.processAll();
@@ -52,6 +53,7 @@ export class Transformer extends IModelTransformer {
       return this.transformAll(sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
+    transformer.initialize(options);
     await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
     await transformer.processChanges(requestContext, sourceStartChangesetId);
@@ -86,6 +88,7 @@ export class Transformer extends IModelTransformer {
       }
     }
     const transformer = new IsolateElementsTransformer(sourceDb, targetDb, options);
+    transformer.initialize(options);
     await transformer.processSchemas();
     await transformer.saveChanges("processSchemas");
     for (const id of isolatedElementIds)
@@ -101,7 +104,9 @@ export class Transformer extends IModelTransformer {
 
   private constructor(sourceDb: IModelDb, targetDb: IModelDb, options?: TransformerOptions) {
     super(sourceDb, new IModelImporter(targetDb, { simplifyElementGeometry: options?.simplifyElementGeometry }), options);
+  }
 
+  private initialize(options?: TransformerOptions): void {
     Logger.logInfo(loggerCategory, `sourceDb=${this.sourceDb.pathName}`);
     Logger.logInfo(loggerCategory, `targetDb=${this.targetDb.pathName}`);
     this.logChangeTrackingMemoryUsed();

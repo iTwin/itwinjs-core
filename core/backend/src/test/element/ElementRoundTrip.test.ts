@@ -765,14 +765,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       imodel.saveChanges();
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
+      expect(inMemoryCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
 
       // reload db since there is a different path for loading properties not in memory that we want to force
       imodel.close();
       imodel = SnapshotDb.openFile(imodelPath);
 
       const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(readFromDbCopy.placement).to.deep.advancedEqual(expectedPlacement);
+      expect(readFromDbCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
 
       imodel.close();
     };

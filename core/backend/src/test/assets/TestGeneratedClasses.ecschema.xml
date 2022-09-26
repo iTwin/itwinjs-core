@@ -3,19 +3,8 @@
     xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
     <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
 
-    <ECEntityClass typeName="TestModelWithNavProp" description="a sample model with nav properties">
-        <BaseClass>bis:DefinitionModel</BaseClass>
-        <ECNavigationProperty propertyName="elemNavProp" relationshipName="ModelToElemNavRel" direction="Forward"/>
-        <ECNavigationProperty propertyName="aspectNavProp" relationshipName="ModelToAspectNavRel" direction="Forward"/>
-        <!--
-        # disabled for now due to a potential bug loading this nav prop
-        <ECNavigationProperty propertyName="relNavProp" relationshipName="ModelToRelNavRel" direction="Forward"/>
-        -->
-    </ECEntityClass>
-
-    <ECEntityClass typeName="TestEntity" description="a sample (element) entity for the end of the test relationships">
+    <ECEntityClass typeName="TestEntity" description="a sample entity for the end of the test relationships">
         <BaseClass>bis:DefinitionElement</BaseClass>
-        <BaseClass>bis:ISubModeledElement</BaseClass>
         <ECProperty propertyName="prop" typeName="string" description="a sample property"/>
     </ECEntityClass>
 
@@ -30,7 +19,7 @@
 
     <ECRelationshipClass typeName="NonElemRel" strength="referencing" description="non elem rel 2" modifier="sealed">
         <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="TestAspectWithNavProp"/>
+            <Class class="TestNonElementWithNavProp"/>
         </Source>
         <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
             <Class class="TestEntity"/>
@@ -46,77 +35,7 @@
         </Target>
     </ECRelationshipClass>
 
-    <ECRelationshipClass typeName="LinkTableRelToElemNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="LinkTableRelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="TestEntity"/>
-        </Target>
-    </ECRelationshipClass>
-
-    <ECRelationshipClass typeName="LinkTableRelToModelNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="LinkTableRelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="TestModelWithNavProp"/>
-        </Target>
-    </ECRelationshipClass>
-
-    <ECRelationshipClass typeName="LinkTableRelToAspectNavRel" strength="referencing" description="elem rel 4" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="LinkTableRelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="TestAspectWithNavProp"/>
-        </Target>
-    </ECRelationshipClass>
-
-    <ECRelationshipClass typeName="ModelToElemNavRel" strength="referencing" description="model nav rel pointing to element" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="TestModelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="TestEntity"/>
-        </Target>
-    </ECRelationshipClass>
-
-    <ECRelationshipClass typeName="ModelToAspectNavRel" strength="referencing" description="model nav rel pointing to aspect" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="TestModelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="TestAspectWithNavProp"/>
-        </Target>
-    </ECRelationshipClass>
-
-    <!--
-    <ECRelationshipClass typeName="ModelToRelNavRel" strength="referencing" description="model nav rel pointing to rel" modifier="sealed">
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="false">
-            <Class class="TestModelWithNavProp"/>
-        </Source>
-        <Target multiplicity="(0..1)" roleLabel="is referenced by" polymorphic="false">
-            <Class class="LinkTableRelWithNavProp"/>
-        </Target>
-    </ECRelationshipClass>
-    -->
-
-    <ECRelationshipClass typeName="LinkTableRelWithNavProp" strength="referencing" description="link table rel" modifier="sealed">
-        <BaseClass>bis:ElementRefersToElements</BaseClass>
-        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
-            <Class class="TestEntity"/>
-        </Source>
-        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
-            <Class class="TestEntity"/>
-        </Target>
-        <ECNavigationProperty propertyName="elemNavProp" relationshipName="LinkTableRelToElemNavRel" direction="Forward"/>
-        <ECNavigationProperty propertyName="modelNavProp" relationshipName="LinkTableRelToModelNavRel" direction="Forward"/>
-        <ECNavigationProperty propertyName="aspectNavProp" relationshipName="LinkTableRelToAspectNavRel" direction="Forward"/>
-        <!-- awaiting a fix of a bug in mapping nav props to link table relationship instances to add a navprop to another linktable rel -->
-    </ECRelationshipClass>
-
-    <ECEntityClass typeName="TestAspectWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
+    <ECEntityClass typeName="TestNonElementWithNavProp" description="A test domain class that doesn't derive from Bis:Element and has a nav prop.">
         <BaseClass>bis:ElementMultiAspect</BaseClass>
         <ECNavigationProperty propertyName="navProp" relationshipName="NonElemRel" direction="Forward"/>
     </ECEntityClass>
