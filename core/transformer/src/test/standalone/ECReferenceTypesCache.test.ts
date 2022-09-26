@@ -127,7 +127,7 @@ describe("ECReferenceTypesCache", () => {
     expect(thisTestRefCache.getNavPropRefType("BisCore", "PhysicalType", "PhysicalMaterial")).to.equal(ConcreteEntityTypes.Element);
   });
 
-  it("should not init schemas of a lower or equal version", async () => {
+  it.skip("should not init schemas of a lower or equal version", async () => { // @MichaelBelousov
     const thisTestRefCache = new ECReferenceTypesCache();
 
     const pathForEmpty1 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
