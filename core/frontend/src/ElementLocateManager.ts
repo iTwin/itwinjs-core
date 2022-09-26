@@ -163,7 +163,10 @@ export class ElementPicker {
   /** Return a hit from the list of hits created the last time pickElements was called. */
   public getHit(i: number): HitDetail | undefined { return this.hitList ? this.hitList.getHit(i) : undefined; }
 
-  public resetCurrentHit(): void { if (this.hitList) this.hitList.resetCurrentHit(); }
+  public resetCurrentHit(): void {
+    if (this.hitList)
+      this.hitList.resetCurrentHit();
+  }
 
   private getPixelPriority(pixel: Pixel.Data) {
     switch (pixel.type) {
@@ -183,12 +186,19 @@ export class ElementPicker {
   private comparePixel(pixel1: Pixel.Data, pixel2: Pixel.Data, distXY1: number, distXY2: number) {
     const priority1 = this.getPixelPriority(pixel1);
     const priority2 = this.getPixelPriority(pixel2);
-    if (priority1 < priority2) return -1;
-    if (priority1 > priority2) return 1;
-    if (distXY1 < distXY2) return -1;
-    if (distXY1 > distXY2) return 1;
-    if (pixel1.distanceFraction > pixel2.distanceFraction) return -1;
-    if (pixel1.distanceFraction < pixel2.distanceFraction) return 1;
+    if (priority1 < priority2)
+      return -1;
+    if (priority1 > priority2)
+      return 1;
+    if (distXY1 < distXY2)
+      return -1;
+    if (distXY1 > distXY2)
+      return 1;
+    if (pixel1.distanceFraction > pixel2.distanceFraction)
+      return -1;
+    if (pixel1.distanceFraction < pixel2.distanceFraction)
+      return 1;
+
     return 0;
   }
 

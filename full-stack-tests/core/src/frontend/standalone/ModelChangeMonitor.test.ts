@@ -81,12 +81,16 @@ if (!ProcessDetector.isMobileAppFrontend) {
         const newGuid = model.geometryGuid!;
         expect(newGuid).not.to.equal(prevGuid);
 
-        modelIds = await getBufferedChanges(async () => { await imodel.txns.reverseSingleTxn(); });
+        modelIds = await getBufferedChanges(async () => {
+          await imodel.txns.reverseSingleTxn();
+        });
         expect(modelIds.size).to.equal(1);
         expect(modelIds.has(model.id)).to.be.true;
         expect(model.geometryGuid).to.equal(prevGuid);
 
-        modelIds = await getBufferedChanges(async () => { await imodel.txns.reinstateTxn(); });
+        modelIds = await getBufferedChanges(async () => {
+          await imodel.txns.reinstateTxn();
+        });
         expect(modelIds.size).to.equal(1);
         expect(modelIds.has(model.id)).to.be.true;
         expect(model.geometryGuid).to.equal(newGuid);

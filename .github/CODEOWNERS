@@ -158,6 +158,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/synchro-schedule-importer        @iTwin/itwinjs-core-display
 /test-apps/ui-test-app                      @iTwin/itwinjs-core-ui
 /test-apps/ui-items-providers-test          @iTwin/itwinjs-core-ui
+/test-apps/appui-test-app                   @iTwin/itwinjs-core-ui
+
 
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig

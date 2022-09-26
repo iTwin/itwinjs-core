@@ -114,7 +114,7 @@ rush install -c
 
 ## Environment Variables
 
-You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you can create a file named `.env.local.mobile` to hold mobile versions of the OIDC environment variables, while having Electron versions of the same variables in a file named `.env.local`.
 
 * IMJS_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.

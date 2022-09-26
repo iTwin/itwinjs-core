@@ -30,9 +30,9 @@ describe("Schema", () => {
 
     it("with invalid version numbers should fail", () => {
       const context = new SchemaContext();
-      expect(() => { new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5); }).to.throw(ECObjectsError);
-      expect(() => { new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6); }).to.throw(ECObjectsError);
-      expect(() => { new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000); }).to.throw(ECObjectsError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidReadVersion", "new", 9999, 4, 5)).to.throw(ECObjectsError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidWriteVersion", "new", 12, 9999, 6)).to.throw(ECObjectsError);
+      expect(() => new Schema(context, "NewSchemaWithInvalidMinorVersion", "new", 12, 34, 56700000)).to.throw(ECObjectsError);
     });
   });
 

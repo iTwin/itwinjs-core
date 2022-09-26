@@ -253,7 +253,8 @@ export class RealityTileTree extends TileTree {
         const displayedDescendants = displayedTileDescendants[index];
         if (0 === displayedDescendants.length || !this.loader.parentsAndChildrenExclusive || selectedTile.allChildrenIncluded(displayedDescendants)) {
           targetBranch.add(graphics);
-          if (selectBuilder) selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
+          if (selectBuilder)
+            selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
         } else {
           if (selectBuilder)
             selectedTile.addBoundingGraphic(selectBuilder, ColorDef.red);

@@ -189,7 +189,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
       this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+        if (tileData !== undefined)
+          this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");

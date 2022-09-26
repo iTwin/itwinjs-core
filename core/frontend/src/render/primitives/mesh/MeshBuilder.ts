@@ -32,7 +32,9 @@ export class MeshBuilder {
 
   /** create reference for triangleSet on demand */
   public get triangleSet(): TriangleSet {
-    if (undefined === this._triangleSet) this._triangleSet = new TriangleSet();
+    if (undefined === this._triangleSet)
+      this._triangleSet = new TriangleSet();
+
     return this._triangleSet;
   }
 

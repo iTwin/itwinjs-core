@@ -538,7 +538,11 @@ describe("CompressedId64Set", () => {
 
       // Round-tripping removes duplicate Ids.
       const duplicates: string[] = [];
-      ids.forEach((x) => { duplicates.push(x); duplicates.push(x); });
+      ids.forEach((x) => {
+        duplicates.push(x);
+        duplicates.push(x);
+      });
+
       const decompressedDuplicates = CompressedId64Set.compressArray(duplicates);
       expect(decompressedDuplicates).to.equal(compressedArray);
     };
@@ -585,9 +589,26 @@ describe("MutableCompressedId64Set", () => {
   it("should buffer insertions and removals", () => {
     type Test = [OrderedId64Iterable, (set: MutableCompressedId64Set) => void, OrderedId64Iterable];
     const tests: Test[] = [
-      [[], (set) => { set.add("0x1"); set.add("0x2"); set.add("0x3"); }, ["0x1", "0x2", "0x3"]],
-      [["0x1", "0x2", "0x3"], (set) => { set.delete("0x3"); set.delete("0x1"); set.delete("0x4"); }, ["0x2"]],
-      [["0x1", "0x3", "0xe"], (set) => { set.delete("0x1"); set.add("0x4"); set.add("0x1"); set.add("0x1"); set.add("0x4"); set.delete("0x4"); set.delete("0x5"); set.add("0x5"); }, ["0x1", "0x3", "0x5", "0xe"]],
+      [[], (set) => {
+        set.add("0x1");
+        set.add("0x2");
+        set.add("0x3");
+      }, ["0x1", "0x2", "0x3"]],
+      [["0x1", "0x2", "0x3"], (set) => {
+        set.delete("0x3");
+        set.delete("0x1");
+        set.delete("0x4");
+      }, ["0x2"]],
+      [["0x1", "0x3", "0xe"], (set) => {
+        set.delete("0x1");
+        set.add("0x4");
+        set.add("0x1");
+        set.add("0x1");
+        set.add("0x4");
+        set.delete("0x4");
+        set.delete("0x5");
+        set.add("0x5");
+      }, ["0x1", "0x3", "0x5", "0xe"]],
     ];
 
     for (const test of tests) {

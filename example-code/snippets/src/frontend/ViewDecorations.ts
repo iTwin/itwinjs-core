@@ -66,7 +66,9 @@ export class ExampleCanvasDecoration {
     const vp = context.viewport;
     const size = Math.floor(vp.pixelsPerInch * 0.25) + 0.5;
     const sizeOutline = size + 1;
-    const position = context.viewport.npcToView(NpcCenter); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position = context.viewport.npcToView(NpcCenter);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       // Show black outline (with shadow) around white line for good visibility regardless of view background color.
       ctx.beginPath();

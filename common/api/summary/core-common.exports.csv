@@ -104,11 +104,17 @@ public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
 beta;class CloudStorageCache
+deprecated;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
+deprecated;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageProvider
+deprecated;CloudStorageProvider
 beta;CloudStorageTileCache 
+deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -306,6 +312,7 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference
 internal;GlbHeader 
 public;GlobeMode
 internal;GltfChunk

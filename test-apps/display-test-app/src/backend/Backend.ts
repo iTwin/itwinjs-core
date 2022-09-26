@@ -166,13 +166,15 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     // Electron only
     try {
       const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
-      if (app !== undefined) app.exit();
+      if (app !== undefined)
+        app.exit();
     } catch {
 
     }
 
     // Browser only
-    if (DtaRpcInterface.backendServer) DtaRpcInterface.backendServer.close();
+    if (DtaRpcInterface.backendServer)
+      DtaRpcInterface.backendServer.close();
   }
 
   public override async getAccessToken(): Promise<string> {
