@@ -49,7 +49,7 @@ For incremental builds, the `rush build` command can be used to only build packa
 3. Ensure linting passes when run locally: `rush lint`
 4. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
 5. Repeat steps 1-4 until ready to push changes
-6. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`.
+6. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`. __Note:__ before doing this, first do the following:
     - Be sure that your branch is up to date with the target branch (i.e. `git merge origin/master`)
     - Cleanup your build output: `rush clean`
     - Rebuild the project: `rush build`

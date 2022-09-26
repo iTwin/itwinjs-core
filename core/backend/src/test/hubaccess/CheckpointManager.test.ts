@@ -143,7 +143,7 @@ describe("Checkpoint Manager", () => {
     snapshot.close();
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => { return undefined; });
+    sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => undefined);
 
     const v1Spy = sinon.stub(V1CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
       IModelJsFs.copySync(dbPath, arg.localFile);

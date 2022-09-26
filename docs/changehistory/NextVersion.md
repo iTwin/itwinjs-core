@@ -8,6 +8,8 @@ Table of contents:
 
 - [Electron 17 support](#electron-17-support)
 - [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
+- [Improved link table selection](improved-link-table-selection)
+- [Cloud storage changes](#cloud-storage-changes)
 - [Display](#display)
   - [Custom terrain providers](#custom-terrain-providers)
   - [Ambient occlusion improvements](#ambient-occlusion-improvements)
@@ -17,12 +19,12 @@ Table of contents:
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
   - [Localization changes](#localization-changes)
+  - [Content sources](#content-sources)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
-- [Cloud storage changes](#cloud-storage-changes)
 
 ## Electron 17 support
 
@@ -45,6 +47,18 @@ const schema = loader.getSchema("BisCore");
 ```
 
 [SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+
+## Improved link table selection
+
+Previously when we did `SELECT *` on a link table, it would only return `ECInstanceId`, `ECClassId`, `SourceECInstanceId` and `TargetECInstanceId`. It would omit `SourceECClassId` and `TargetECClassId`. Those two omitted columns are now included in the query result rows.
+
+## Cloud storage changes
+
+The existing beta implementations of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) have been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
+
+[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
+
+A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.
 
 ## Display
 
@@ -121,7 +135,7 @@ The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has 
 - Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
 - Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
 
-### Localization Changes
+### Localization changes
 
 Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
@@ -132,6 +146,50 @@ In case of a backend-only application, localization may be setup by providing a 
 - PresentationManagerProps.localeDirectories
 - PresentationManagerProps.defaultLocale
 - PresentationManager.activeLocale
+
+### Content sources
+
+Presentation API provides the [PresentationManager.getContentSources]($presentation-backend) function to retrieve a list of classes that are used to build content for a given class of elements. It used to create this list based on actual instances in the given iModel, which made the call very expensive on large iModels. Requesting this for `bis.Element` would result in a response like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "ConcreteElementClassA" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectX" },
+      }], [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectY" },
+      }],
+      // ... and so on for every different concrete related property class
+    ],
+  },
+  {
+    selectClassInfo: { name: "ConcreteElementClassB" },
+  },
+  // ... and so on for every different element class that has instances
+]
+```
+
+It turns out that for purposes this function is intended for, it's not necessary to get concrete classes and their base classes can be used instead. So now, when requesting this for `bis.Element`, the response is like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "bis.Element" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "bis.ElementMultiAspect" },
+      }],
+    ],
+  },
+]
+```
+
+This allows the result to be created purely by looking at ECSchemas in the iModel instead of querying actual instances and relationships, which provides an orders of magnitude performance improvement over the previous approach.
 
 ## Geometry
 
@@ -152,11 +210,3 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ### @itwin/core-transformer
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
-
-## Cloud storage changes
-
-The existing beta implementation of cloud storage tile cache ([CloudStorageService]($backend) - [AzureBlobStorage]($backend), [AliCloudStorageService]($backend)) has been deprecated in favor of the [iTwin/object-storage](https://github.com/iTwin/object-storage) project, which exposes a unified cloud-agnostic object storage interface in turn simplifying the setup of Microsoft Azure or S3 based (OSS, MinIO) cloud storage providers.
-
-[CloudStorageService]($backend) remains to support older frontends, however the new implementation of cloud storage still has to be setup. This is done automatically if [IModelHostOptions.tileCacheAzureCredentials]($backend) are used.
-
-A different cloud provider may be set in [IModelHostOptions.tileCacheStorage]($backend) and `IModelAppOptions.tileAdmin.tileStorage`, which could be any of [the implementations iTwin/object-storage](https://github.com/iTwin/object-storage/tree/main/storage) provides.

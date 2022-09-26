@@ -641,7 +641,9 @@ function isSubCategory(props: ElementProps): props is SubCategoryProps {
 
 /** check if element props are a subcategory without loading the element */
 function isDefaultSubCategory(props: SubCategoryProps): boolean {
-  if (props.id === undefined) return false;
+  if (props.id === undefined)
+    return false;
+
   if (!Id64.isId64(props.id))
     throw new IModelError(IModelStatus.BadElement, `subcategory had invalid id`);
   if (props.parent?.id === undefined)

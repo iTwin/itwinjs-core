@@ -169,11 +169,21 @@ describe("RpcInterface", () => {
       return;
     }
 
-    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    try {
+      await RpcManager.getClientForInterface(LocalInterface).op();
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
-    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    try {
+      await RpcManager.getClientForInterface(LocalInterface).op();
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();

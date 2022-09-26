@@ -22,7 +22,9 @@ export type CloneFunction<T> = (value: T) => T;
  * @returns the input value.
  * @public
  */
-export function shallowClone<T>(value: T) { return value; }
+export function shallowClone<T>(value: T) {
+  return value;
+}
 
 /**
  * Given a sorted array, computes the position at which the specified value should be inserted into the array so that the array remains sorted.
