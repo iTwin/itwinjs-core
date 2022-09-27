@@ -58,12 +58,12 @@ export interface CrashReportingConfig {
   enableCrashDumps?: boolean;
   /** If enableCrashDumps is true, do you want a full-memory dump? Defaults to false. */
   wantFullMemoryDumps?: boolean;
-  /** Enable node-report? If so, node-report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
+  /** Enable Node.js crash reporting? If so, report files will be generated in the event of an unhandled exception or fatal error and written to crashDir. The default is false. */
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
-  /** Run this .js file to process .dmp and node-report files in the event of a crash.
-   * This script will be executed with a single command-line parameter: the name of the dump or node-report file.
+  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.
+   * This script will be executed with a single command-line parameter: the name of the dump or Node.js report file.
    * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
    * Since it runs in a separate process, this script will have no access to the Javascript
    * context of the exiting backend. No default.
@@ -430,15 +430,13 @@ export class IModelHost {
       });
 
       if (options.crashReportingConfig.enableNodeReport) {
-        try {
-          // node-report reports on V8 fatal errors and unhandled exceptions/Promise rejections.
-          const nodereport = require("node-report/api"); // eslint-disable-line @typescript-eslint/no-var-requires
-          nodereport.setEvents("exception+fatalerror+apicall");
-          nodereport.setDirectory(options.crashReportingConfig.crashDir);
-          nodereport.setVerbose("yes");
-          Logger.logTrace(loggerCategory, "Configured native crash reporting (node-report)");
-        } catch (err) {
-          Logger.logWarning(loggerCategory, "node-report is not installed.");
+        if (process.report !== undefined) {
+          process.report.reportOnFatalError = true;
+          process.report.reportOnUncaughtException = true;
+          process.report.directory = options.crashReportingConfig.crashDir;
+          Logger.logTrace(loggerCategory, "Configured Node.js crash reporting");
+        } else {
+          Logger.logWarning(loggerCategory, "Unable to configure Node.js crash reporting");
         }
       }
     }
