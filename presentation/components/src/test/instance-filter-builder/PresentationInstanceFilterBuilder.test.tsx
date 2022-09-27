@@ -369,5 +369,4 @@ describe("PresentationPropertyRenderer", () => {
     expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
     expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
   });
-
 });
