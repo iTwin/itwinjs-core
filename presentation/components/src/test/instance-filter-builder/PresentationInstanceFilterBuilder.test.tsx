@@ -322,7 +322,7 @@ describe("usePresentationInstanceFilteringProps", () => {
   });
 });
 
-describe("PresentationPropertyRenderer", () => {
+describe("PresentationInstanceFilterProperty", () => {
   stubRaf();
   const className = "TestClassName";
   const schemaName = "TestSchema";
