@@ -139,7 +139,7 @@
     "@itwin/itwinui-react": "~1.42.0",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/itwinui-icons": "^1.14.0",
-    "classnames": "2.3.1",
+    "classnames": "^2.3.1",
     "immer": "9.0.6",
     "lodash": "^4.17.10",
     "react-dnd": "^11.1.3",
