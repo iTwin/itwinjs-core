@@ -11,15 +11,17 @@ import {
   ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsProvider,
   WidgetState,
 } from "@itwin/appui-abstract";
-import { StateManager, SyncUiEventDispatcher } from "@itwin/appui-react";
+import { CommandItemDef, ModelessDialogManager, StateManager, SyncUiEventDispatcher, ToolbarHelper } from "@itwin/appui-react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@itwin/core-frontend";
 import * as React from "react";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { getTestProviderState, setHideCustomDialogButton } from "../../store";
 import { OpenCustomDialogTool } from "../../tools/OpenCustomDialogTool";
+import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { CustomContentFrontstage } from "../frontstages/CustomContent";
 import visibilitySemiTransparentSvg from "../icons/visibility-semi-transparent.svg";
 import { SelectedElementDataWidgetComponent } from "../widgets/SelectedElementDataWidget";
+import { SvgWindowAdd } from "@itwin/itwinui-icons-react";
 
 /**
  * Test UiItemsProvider that provide buttons, and backstage item to stage.
@@ -86,7 +88,21 @@ export class CustomContentStageUiProvider implements UiItemsProvider {
         },
       );
 
-      return [customActionButton, openCustomDialogActionButton, toggleHiddenButton];
+      const dialogId = "sampleModeless";
+      const openSampleModelessItem = new CommandItemDef({
+        iconSpec: <SvgWindowAdd />,
+        labelKey: "SampleApp:buttons.sampleModelessDialog",
+        execute: () => {
+          ModelessDialogManager.openDialog(
+            <SampleModelessDialog
+              opened={true}
+              dialogId={dialogId}
+            />, dialogId);
+        },
+      });
+      const sampleModelessToolButton = ToolbarHelper.createToolbarItemFromItemDef(17, openSampleModelessItem, { groupPriority: 3000 });
+
+      return [customActionButton, openCustomDialogActionButton, toggleHiddenButton, sampleModelessToolButton];
     }
     return [];
   }
