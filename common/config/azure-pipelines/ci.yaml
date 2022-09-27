@@ -23,14 +23,6 @@ schedules:
         - master
         - releases/*
 
-# jobs:
-#   - template: jobs/ci-core.yaml
-#     parameters:
-#       name: Node_16
-#       nodeVersion: 16.13.0
-#       pool:
-#         vmImage: $(OS)
-
 jobs:
 - job:
   variables:

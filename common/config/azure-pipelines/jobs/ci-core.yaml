@@ -1,38 +1,10 @@
+# File no longer needed. All contents were integrated with core-build.yaml
+
 parameters:
 - name: nodeVersion
   default: ''
-# - name: gitRepo
-#   default: self
-# - name: gitBranch
-#   default: master
-
-# jobs:
-# - job:
-#   strategy:
-#     matrix:
-#       "Windows_${{ parameters.name }}":
-#         OS: windows-latest
-#         platform: Windows_NT
-#         name: $(win_pool)
-#       "Linux_${{ parameters.name }}":
-#         OS: ubuntu-latest
-#         platform: Linux
-#         name: $(linux_pool)
-#       "MacOS_${{ parameters.name }}":
-#         OS: macOS-latest
-#         platform: Darwin
-#         name: $(mac_pool)
-
-#   timeoutInMinutes: 120
-
-#   workspace:
-#     clean: all
 
 steps:
-  # - checkout: ${{ parameters.gitRepo }} #iTwinjs-core-templates #FIXME, branch name must be the same on both native and TS side
-  #     clean: true
-  # - script: git checkout ${{ parameters.gitBranch }}
-
   - task: NodeTool@0
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:

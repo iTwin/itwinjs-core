@@ -12,16 +12,6 @@ pr:
       - master
       - release/*
 
-# jobs:
-#   - template: ci-core.yaml
-#     parameters:
-#       name: Node_16
-#       nodeVersion: 16.13.0
-#       pool:
-#         name: $(name)
-#         demands:
-#           - Agent.OS -equals $(platform)
-
 jobs:
 - job:
   variables:
