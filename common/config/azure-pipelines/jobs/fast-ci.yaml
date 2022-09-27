@@ -33,3 +33,4 @@ jobs:
         name: $(name)
         demands:
           - Agent.OS -equals $(platform)
+          - Agent.Name -equals BuildMacMinion04-A
