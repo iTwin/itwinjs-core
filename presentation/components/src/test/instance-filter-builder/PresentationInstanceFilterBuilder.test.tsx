@@ -348,7 +348,6 @@ describe("PresentationPropertyRenderer", () => {
       className: `${schemaName}:${className}`,
       categoryLabel: "TestCategoryLabel",
     });
-
     const { container, queryByText } = render(<PresentationInstanceFilterProperty
       instanceFilterPropertyInfo={testPropertyInfo} />);
 
@@ -358,20 +357,17 @@ describe("PresentationPropertyRenderer", () => {
     fireEvent.mouseEnter(propertyBadgeSelector!);
     expect(queryByText(className)).to.not.be.null;
     expect(queryByText(schemaName)).to.not.be.null;
-
   });
 
   it("renders without badge", () => {
     const TestPropertyInfoWithoutBadge = createTestInstanceFilterPropertyInfo({
       className: `${schemaName}:${className}`,
     });
-
     const { container, queryByText } = render(<PresentationInstanceFilterProperty
       instanceFilterPropertyInfo={TestPropertyInfoWithoutBadge} />);
 
     expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
-    const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
-    expect(propertyBadgeSelector).to.be.null;
+    expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
   });
 
 });

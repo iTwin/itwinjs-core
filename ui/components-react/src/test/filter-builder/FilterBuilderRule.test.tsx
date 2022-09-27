@@ -100,10 +100,11 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     it("renders with property renderer", () => {
       const actions = new PropertyFilterBuilderActions(sinon.spy());
       const propertyRendererSpy = sinon.spy();
-      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, { actions, properties: [defaultProperty] }, { propertyRenderer: propertyRendererSpy });
+      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+        { actions, properties: [defaultProperty] }, { propertyRenderer: propertyRendererSpy });
+
       expect(propertyRendererSpy).to.be.calledWith(defaultProperty.name);
     });
-
   });
 
   it("dispatches property change when property is selected", () => {
@@ -186,5 +187,4 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
 
     expect(setRuleValueSpy).to.be.calledOnceWith(defaultProps.path, newValue);
   });
-
 });
