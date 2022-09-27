@@ -35,7 +35,7 @@ export abstract class DevToolsRpcInterface extends RpcInterface {
   /** The semantic version of the interface.
    * @note The DevToolsRpcInterface will remain at 0.x since it is for testing only and not intended for production.
    */
-  public static interfaceVersion = "0.6.0";
+  public static interfaceVersion = "0.7.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
