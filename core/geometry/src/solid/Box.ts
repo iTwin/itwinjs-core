@@ -80,7 +80,7 @@ export class Box extends SolidPrimitive {
 
   /**
    * Create a new box from vector and size daa.
-   * @param baseOrigin Origin of base rectangle
+   * @param origin Origin of base rectangle
    * @param vectorX  Direction for base rectangle
    * @param vectorY Direction for base rectangle
    * @param topOrigin origin of top rectangle
@@ -90,18 +90,18 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBox(baseOrigin: Point3d, vectorX: Vector3d, vectorY: Vector3d,
+  public static createDgnBox(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d,
     topOrigin: Point3d,
     baseX: number, baseY: number, topX: number, topY: number,
     capped: boolean): Box | undefined {
-    const vectorZ = baseOrigin.vectorTo(topOrigin);
-    const localToWorld = Transform.createOriginAndMatrixColumns(baseOrigin, vectorX, vectorY, vectorZ);
+    const vectorZ = origin.vectorTo(topOrigin);
+    const localToWorld = Transform.createOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
     return new Box(localToWorld, baseX, baseY, topX, topY, capped);
   }
 
   /**
    * Create a new box with xy directions taken from columns of the `axes` matrix.
-   * @param baseOrigin Origin of base rectangle
+   * @param origin Origin of base rectangle
    * @param axes  Direction for base rectangle
    * @param topOrigin origin of top rectangle
    * @param baseX size factor for base rectangle (multiplies vectorX)
@@ -110,11 +110,11 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBoxWithAxes(baseOrigin: Point3d, axes: Matrix3d,
+  public static createDgnBoxWithAxes(origin: Point3d, axes: Matrix3d,
     topOrigin: Point3d,
     baseX: number, baseY: number, topX: number, topY: number,
     capped: boolean): Box | undefined {
-    return Box.createDgnBox(baseOrigin, axes.columnX(), axes.columnY(), topOrigin,
+    return Box.createDgnBox(origin, axes.columnX(), axes.columnY(), topOrigin,
       baseX, baseY, topX, topY, capped);
   }
 

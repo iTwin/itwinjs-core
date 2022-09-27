@@ -19,11 +19,11 @@ Table of contents:
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
   - [Localization changes](#localization-changes)
+  - [Content sources](#content-sources)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
-  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Electron 17 support
@@ -135,7 +135,7 @@ The Presentation [Diagnostics API](../presentation/advanced/Diagnostics.md) has 
 - Ability to request diagnostics on the backend at the [PresentationManager]($presentation-backend) level. See [Getting diagnostics for all requests](../presentation/advanced/Diagnostics.md#getting-diagnostics-for-all-requests) section for an example.
 - Introduced a new `@itwin/presentation-opentelemetry` package that provides an easy way to convert Presentation Diagnostics objects to OpenTelemetry objects. See [Diagnostics and OpenTelemetry](../presentation/advanced/Diagnostics.md#diagnostics-and-opentelemetry) section for an example.
 
-### Localization Changes
+### Localization changes
 
 Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
 
@@ -146,6 +146,50 @@ In case of a backend-only application, localization may be setup by providing a 
 - PresentationManagerProps.localeDirectories
 - PresentationManagerProps.defaultLocale
 - PresentationManager.activeLocale
+
+### Content sources
+
+Presentation API provides the [PresentationManager.getContentSources]($presentation-backend) function to retrieve a list of classes that are used to build content for a given class of elements. It used to create this list based on actual instances in the given iModel, which made the call very expensive on large iModels. Requesting this for `bis.Element` would result in a response like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "ConcreteElementClassA" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectX" },
+      }], [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectY" },
+      }],
+      // ... and so on for every different concrete related property class
+    ],
+  },
+  {
+    selectClassInfo: { name: "ConcreteElementClassB" },
+  },
+  // ... and so on for every different element class that has instances
+]
+```
+
+It turns out that for purposes this function is intended for, it's not necessary to get concrete classes and their base classes can be used instead. So now, when requesting this for `bis.Element`, the response is like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "bis.Element" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "bis.ElementMultiAspect" },
+      }],
+    ],
+  },
+]
+```
+
+This allows the result to be created purely by looking at ECSchemas in the iModel instead of querying actual instances and relationships, which provides an orders of magnitude performance improvement over the previous approach.
 
 ## Geometry
 
@@ -162,10 +206,6 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 ![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
 
 ## Deprecations
-
-### @itwin/core-geometry
-
-`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
 
 ### @itwin/core-transformer
 
