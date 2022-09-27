@@ -37,10 +37,15 @@ describe("ImageRenderer", () => {
 
     it("renders svg", () => {
       const image = imageRenderer.render({ sourceType: "svg", value: svg });
-
       const imageRender = render(<>{image}</>);
 
       expect(imageRender.container.innerHTML).to.matchSnapshot();
+
+      // render a second time to see if it produces identical value
+      const image2 = imageRenderer.render({ sourceType: "svg", value: svg });
+      const imageRender2 = render(<>{image2}</>);
+
+      expect(imageRender.container.innerHTML).to.be.eq(imageRender2.container.innerHTML);
     });
 
     it("renders url", () => {
