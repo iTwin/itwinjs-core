@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-components",
-      "comment": "Added property renderer",
+      "comment": "Improved instance filter builder property renderer to avoid duplicate entries",
       "type": "none"
     }
   ],

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "",
+      "comment": "remove typescript retries for v2 checkpoint downloads",
       "type": "none"
     }
   ],

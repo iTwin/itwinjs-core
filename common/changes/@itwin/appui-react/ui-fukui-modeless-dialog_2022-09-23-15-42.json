@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Move the management of zIndex for modal and modeless dialogs to DialogManagerBase to allow modal dialogs (MessageBox) to use the topZIndex so that they open on top of any modeless dialogs that are open. ContentDialog still maintains its own zIndex at a much lower elevation.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
