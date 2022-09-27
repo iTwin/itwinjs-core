@@ -7,6 +7,7 @@ import { expect } from "chai";
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
+import { Box } from "../../solid/Box";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -319,5 +320,56 @@ describe("CreateIModelJsonSamples", () => {
     ck.checkpoint("BSIJSON.ParseIMJS");
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("BoxProps", () => {
+  type BoxProps = IModelJson.BoxProps;
+
+  function parseBox(props: BoxProps): Box | undefined {
+    return IModelJson.Reader.parseBox(props);
+  }
+
+  function expectBoxOrigin(inputProps: BoxProps, expectedOrigin: number): void {
+    const box = parseBox(inputProps)!;
+    expect(box).not.to.be.undefined;
+    expect(box.getBaseOrigin().x).to.equal(expectedOrigin);
+  }
+
+  it("accepts either origin or baseOrigin", () => {
+    expectBoxOrigin({ origin: [3, 2, 1], baseX: 10 }, 3);
+    expectBoxOrigin({ baseOrigin: [4, 5, 6], baseX: 5 } as BoxProps, 4);
+  });
+
+  it("prefers origin if both origin and baseOrigin are specified", () => {
+    expectBoxOrigin({
+      origin: [5, 5, 5],
+      baseOrigin: [6, 6, 6],
+      baseX: 7,
+    }, 5);
+  });
+
+  it("requires either origin or baseOrigin", () => {
+    expect(parseBox({ baseX: 123 } as BoxProps)).to.be.undefined;
+  });
+
+  it("outputs both origin and baseOrigin", () => {
+    const box = parseBox({ origin: [1, 2, 3], baseX: 4 })!;
+    expect(box).not.to.be.undefined;
+
+    const solidProps = new IModelJson.Writer().handleBox(box);
+    const props = solidProps.box!;
+    expect(props).not.to.be.undefined;
+
+    expect(props.origin).not.to.be.undefined;
+    const origin = Point3d.fromJSON(props.origin);
+    expect(origin.x).to.equal(1);
+    expect(origin.y).to.equal(2);
+    expect(origin.z).to.equal(3);
+
+    expect(props.baseOrigin).not.to.be.undefined;
+    const baseOrigin = Point3d.fromJSON(props.baseOrigin);
+    expect(baseOrigin?.x).to.equal(1);
+    expect(baseOrigin?.y).to.equal(2);
+    expect(baseOrigin?.z).to.equal(3);
+  });
 });

@@ -63,19 +63,19 @@ export class CustomViewState3dCreator {
       const modelExtentsStopWatch = new StopWatch("getModelExtents query", false);
       try {
         await new Promise((resolve) => setImmediate(resolve)); // Free up main thread temporarily. Ideally we get queryModelExtents off the main thread and do not need to do this.
-        Logger.logInfo(loggerCategory, "Starting getModelExtents query.", () => ({modelId: id}));
+        Logger.logInfo(loggerCategory, "Starting getModelExtents query.", {modelId: id});
         modelExtentsStopWatch.start();
         const props = this._imodel.nativeDb.queryModelExtents({ id }).modelExtents;
         modelExtentsStopWatch.stop();
-        Logger.logInfo(loggerCategory, "Finished getModelExtents query.", () => ({timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id}));
+        Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id});
         modelExtents.union(Range3d.fromJSON(props), modelExtents);
       } catch (err: any) {
         modelExtentsStopWatch.stop();
         if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
-          Logger.logInfo(loggerCategory, "Finished getModelExtents query with NoGeometry error.", () => ({timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id}));
+          Logger.logInfo(loggerCategory, "Finished getModelExtents query with NoGeometry error.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id});
           continue;
         }
-        Logger.logInfo(loggerCategory, "Finished getModelExtents query with error.", () => ({timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id, errorMessage: err?.message, errorNumber: err?.errorNumber}));
+        Logger.logInfo(loggerCategory, "Finished getModelExtents query with error.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id, errorMessage: err?.message, errorNumber: err?.errorNumber});
 
         if (modelIds.size === 1)
           throw err; // if they're asking for more than one model, don't throw on error.
