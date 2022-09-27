@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { HalfEdge, HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
@@ -158,12 +159,19 @@ export class PlanarSubdivision {
     } while (he !== faceSeed);
     return loop;
   }
-// return true if there are only two edges.
-  // In a line-only graph, this is a null-area face.
+  // Return true if there are only two edges in the face loop, and their start curvatures are the same.
   private static isNullFace(he: HalfEdge): boolean {
-    return he.faceSuccessor.faceSuccessor === he;
+    const faceHasTwoEdges = (he.faceSuccessor.faceSuccessor === he);
+    let faceIsBanana = false;
+    if (faceHasTwoEdges) {
+      const c0 = HalfEdgeGraphMerge.curvatureSortKey(he);
+      const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor);
+      if (!Geometry.isSameCoordinate(c0, c1)) // default tol!
+        faceIsBanana = true;
+    }
+    return faceHasTwoEdges && !faceIsBanana;
   }
-  // Look  across edge mates (possibly several) for a nonnull mate face.
+  // Look across edge mates (possibly several) for a nonnull mate face.
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
     if (this.isNullFace (e))
       return undefined;

@@ -214,7 +214,30 @@ describe("RegionBoolean", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  function createXYRegions(curvesAndRegions: AnyCurve | AnyCurve[], ck: Checker, allGeometry: GeometryQuery[], x0: number, y0: number, z0: number, delta: number): SignedLoops[] {
+  interface CreateXYRegionsProps {
+    ck: Checker;
+    allGeometry: GeometryQuery[];
+    x0?: number;
+    y0?: number;
+    z0?: number;
+    delta?: number;
+  }
+
+  interface SignedLoopCounts {
+    numPositiveAreaLoops: number;
+    numNegativeAreaLoops: number;
+    numSlivers: number;
+    numEdges?: number;
+  }
+
+  function createXYRegions(curvesAndRegions: AnyCurve | AnyCurve[], props: CreateXYRegionsProps, expected?: SignedLoopCounts[]): SignedLoops[] {
+    const ck = props.ck;
+    const allGeometry = props.allGeometry;
+    let x0 = props.x0 ?? 0;
+    let y0 = props.y0 ?? 0;
+    let z0 = props.z0 ?? 0;
+    const delta = props.delta ?? 0;
+
     if (Array.isArray(curvesAndRegions))
       for (const geom of curvesAndRegions) {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, geom, x0, y0, z0);
@@ -224,7 +247,16 @@ describe("RegionBoolean", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, curvesAndRegions, x0, y0, z0);
 
     const outLoops = RegionOps.constructAllXYRegionLoops(curvesAndRegions);
-    ck.testTrue(outLoops.length > 0);   // TODO: more assertions?
+    if (undefined !== expected) {
+      if (ck.testExactNumber(outLoops.length, expected.length, "created expected number of SignedRegions")) {
+        for (let i = 0; i < outLoops.length; ++i) {
+          ck.testExactNumber(outLoops[i].positiveAreaLoops.length, expected[i].numPositiveAreaLoops);
+          ck.testExactNumber(outLoops[i].negativeAreaLoops.length, expected[i].numNegativeAreaLoops);
+          ck.testExactNumber(outLoops[i].slivers.length, expected[i].numSlivers);
+          ck.testExactNumber(outLoops[i].edges?.length ?? 0, expected[i].numEdges ?? 0);
+        }
+      }
+    }
 
     x0 += delta;
     y0 = 0;
@@ -284,7 +316,9 @@ describe("RegionBoolean", () => {
       ),
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
-    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    const expected: SignedLoopCounts[] = [{numPositiveAreaLoops: 2, numNegativeAreaLoops: 1, numSlivers: 2, numEdges: 8}];
+
+    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     // variant input #1: parity region from original input
     ++variant;
@@ -292,7 +326,7 @@ describe("RegionBoolean", () => {
     region.tryAddChild(outsideLoop);
     region.tryAddChild(insideLoop);
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     // variant input #2: ccw inner with upward normal arc
     ++variant;
@@ -308,12 +342,12 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(-2, 0, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     // variant input #3: parity region from variant #2
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     // variant input #4: cw inner with upward normal arc
     ++variant;
@@ -329,14 +363,31 @@ describe("RegionBoolean", () => {
       LineSegment3d.createXYXY(0, 2, 0, 0),
     );
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions([outsideLoop, insideLoop], ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions([outsideLoop, insideLoop], {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     // variant input #5: parity region from variant #4
     ++variant;
     x0 = variant * deltaFactorToNextTest * delta;
-    createXYRegions(region, ck, allGeometry, x0, y0, z0, delta);
+    createXYRegions(region, {ck, allGeometry, x0, y0, z0, delta}, expected);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ParityRegionWithCoincidentBoundary");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  // a 2-edge face that is NOT null
+  it("BananaRegion", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+
+    const banana = Loop.create(
+      Arc3d.create(Point3d.create(1,0), Vector3d.create(1,0), Vector3d.create(0,1), AngleSweep.createStartEndDegrees(-180, -360)),
+      Arc3d.create(Point3d.create(1,0), Vector3d.create(1,0), Vector3d.create(0,2), AngleSweep.createStartEndDegrees(0, 180))
+    );
+    const expected: SignedLoopCounts[] = [{numPositiveAreaLoops: 1, numNegativeAreaLoops: 1, numSlivers: 0, numEdges: 2}];
+
+    createXYRegions(banana, {ck, allGeometry}, expected);
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "BananaRegion");
     expect(ck.getNumErrors()).equals(0);
   });
 

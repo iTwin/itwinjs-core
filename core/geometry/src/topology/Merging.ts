@@ -320,8 +320,8 @@ export class HalfEdgeGraphMerge {
   }
   // Return the sort key for sorting by curvature.
   // This is the signed distance from the curve to center of curvature.
-  // This should need to be upgraded to account for higher derivatives in the case of higher-than-tangent match.
-  private static curvatureSortKey(node: HalfEdge): number {
+  // NOTE: Currently does not account for higher derivatives in the case of higher-than-tangent match.
+  public static curvatureSortKey(node: HalfEdge): number {
     const cld = node.edgeTag as CurveLocationDetail;
     if (cld !== undefined) {
       const fraction = cld.fraction;
@@ -355,7 +355,8 @@ export class HalfEdgeGraphMerge {
       HalfEdge.pinch(nodeA, nodeA.vertexSuccessor);  // pull it out of its current vertex loop.
       clusters.addDirect(xA, yA, 0.0, i);
     }
-    const order = clusters.clusterIndicesLexical();
+    const clusterTol = Geometry.smallMetricDistance;
+    const order = clusters.clusterIndicesLexical(clusterTol);
     let k0 = 0;
     const numK = order.length;
     for (let k1 = 0; k1 < numK; k1++) {
@@ -433,15 +434,24 @@ export class HalfEdgeGraphMerge {
               // NO leave nodeA and thetaA   ignore nodeB -- later step will get the outside of its banana.
             } else {
               HalfEdge.pinch(nodeA, nodeB);
+
+              // Detect null face using the heuristic:
+              //  * near vertex angles are same (periodic, toleranced)
+              //  * far vertex is clustered (exactly equal)
+              //  * near vertex curvatures are same (toleranced)
+              // Note that near vertex is already clustered.
               if (Angle.isAlmostEqualRadiansAllowPeriodShift(thetaA, thetaB)) {
                 const nodeA1 = nodeA.faceSuccessor;
                 const nodeB1 = nodeB.edgeMate;
-                if (nodeA1.isEqualXY(nodeB1)) {   // rule out different edge curvatures
-                  // pinch them together and mark the face loop as null ..
-                  HalfEdge.pinch(nodeA1, nodeB1);
-                  nodeA.setMask(HalfEdgeMask.NULL_FACE);
-                  nodeB1.setMask(HalfEdgeMask.NULL_FACE);
-                  unmatchedNullFaceNodes.push(nodeB1);
+                if (nodeA1.isEqualXY(nodeB1)) {
+                  const cA = this.curvatureSortKey(nodeA);
+                  const cB = this.curvatureSortKey(nodeB);
+                  if (Geometry.isSameCoordinate(cA, cB, clusterTol)) {  // rule out banana
+                    HalfEdge.pinch(nodeA1, nodeB1);
+                    nodeA.setMask(HalfEdgeMask.NULL_FACE);
+                    nodeB1.setMask(HalfEdgeMask.NULL_FACE);
+                    unmatchedNullFaceNodes.push(nodeB1);
+                  }
                 }
               }
               nodeA = nodeB;
