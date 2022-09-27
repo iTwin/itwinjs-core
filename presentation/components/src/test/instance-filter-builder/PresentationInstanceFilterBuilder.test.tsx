@@ -21,7 +21,7 @@ import {
   PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { stubRaf } from "./Common";
-import { InstanceFilterPropertyInfo } from "../../presentation-components";
+import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
 
 export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
   sourceClassIds: ["0x1"],
@@ -344,37 +344,32 @@ describe("PresentationPropertyRenderer", () => {
   });
 
   it("renders with badge", () => {
-
     const testPropertyInfo = createTestInstanceFilterPropertyInfo({
       className: `${schemaName}:${className}`,
       categoryLabel: "TestCategoryLabel",
     });
 
-    const { container, getByText } = render(<PresentationInstanceFilterProperty
+    const { container, queryByText } = render(<PresentationInstanceFilterProperty
       instanceFilterPropertyInfo={testPropertyInfo} />);
 
-    getByText(testPropertyInfo.propertyDescription.displayLabel);
-
+    expect(queryByText(testPropertyInfo.propertyDescription.displayLabel)).to.not.be.null;
     const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
     expect(propertyBadgeSelector).to.not.be.null;
     fireEvent.mouseEnter(propertyBadgeSelector!);
-
-    getByText(className);
-    getByText(schemaName);
+    expect(queryByText(className)).to.not.be.null;
+    expect(queryByText(schemaName)).to.not.be.null;
 
   });
 
   it("renders without badge", () => {
-
     const TestPropertyInfoWithoutBadge = createTestInstanceFilterPropertyInfo({
       className: `${schemaName}:${className}`,
     });
 
-    const { container, getByText } = render(<PresentationInstanceFilterProperty
+    const { container, queryByText } = render(<PresentationInstanceFilterProperty
       instanceFilterPropertyInfo={TestPropertyInfoWithoutBadge} />);
 
-    getByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel);
-
+    expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
     const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
     expect(propertyBadgeSelector).to.be.null;
   });

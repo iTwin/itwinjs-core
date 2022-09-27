@@ -12,7 +12,7 @@ export interface PropertyFilterBuilderRulePropertyProps {
   properties: PropertyDescription[];
   selectedProperty?: PropertyDescription;
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
-  propertyRenderer?: (name: string) => JSX.Element;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -35,7 +35,7 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       onSelectedPropertyChanged(currentSelectedProperty);
   }, [properties, selectedProperty, onSelectedPropertyChanged]);
 
-  const getPropertyRendererElement = React.useCallback((selectOption: SelectOption<string>, { isSelected, id }) => {
+  const itemRenderer = React.useCallback((selectOption: SelectOption<string>, { isSelected, id }) => {
     return <MenuItem key={id} id={id} isSelected={isSelected}>
       {propertyRenderer ? propertyRenderer(selectOption.value) : selectOption.label}
     </MenuItem>;
@@ -49,7 +49,7 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       inputProps={{
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
       }}
-      itemRenderer={getPropertyRendererElement}
+      itemRenderer={itemRenderer}
     />
   </div>;
 }

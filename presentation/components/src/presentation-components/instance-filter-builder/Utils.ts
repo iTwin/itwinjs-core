@@ -83,8 +83,8 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): In
 
     fields.push(...createPropertyInfos(descriptor, {
       categoryName: category.name,
-      name: getPrefixedString(`${category.name}/`, parentInfo.name),
-      label: parentInfo.label ? getPrefixedLabel(category.label, `${parentInfo.label} |`) : category.label,
+      name: `${parentInfo.name}/${category.name}`,
+      label: parentInfo.label ? `${parentInfo.label} | ${category.label}` : category.label,
     }));
   }
 
@@ -133,14 +133,6 @@ function getSourceClassIds(field: Field) {
     return field.actualPrimaryClassIds;
 
   return undefined;
-}
-
-function getPrefixedLabel(label: string, prefix: string) {
-  return `${prefix} ${label}`;
-}
-
-function getPrefixedString(value: string, prefix?: string) {
-  return `${prefix ?? ""}${value}`;
 }
 
 /** @alpha */

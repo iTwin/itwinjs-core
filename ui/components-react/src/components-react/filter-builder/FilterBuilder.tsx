@@ -22,7 +22,7 @@ export interface PropertyFilterBuilderProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   ruleGroupDepthLimit?: number;
-  propertyRenderer?: (name: string) => JSX.Element;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -40,7 +40,7 @@ export const PropertyFilterBuilderContext = React.createContext<PropertyFilterBu
 export interface PropertyFilterBuilderRuleRenderingContextProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
-  propertyRenderer?: (name: string) => JSX.Element;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -60,7 +60,7 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(
-    () => ({ actions, properties, onRulePropertySelected, ruleGroupDepthLimit}),
+    () => ({ actions, properties, onRulePropertySelected, ruleGroupDepthLimit }),
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(

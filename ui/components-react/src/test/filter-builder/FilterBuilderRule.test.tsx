@@ -97,7 +97,6 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
   });
 
   describe("rule property", () => {
-
     it("renders with property renderer", () => {
       const actions = new PropertyFilterBuilderActions(sinon.spy());
       const propertyRendererSpy = sinon.spy();

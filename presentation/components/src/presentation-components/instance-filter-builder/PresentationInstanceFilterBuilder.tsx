@@ -149,7 +149,7 @@ export function PresentationInstanceFilterProperty(props: PresentationInstanceFi
       </div>
     </Tooltip>
     <div className="property-badge-container">
-      {instanceFilterPropertyInfo.categoryLabel && <Tooltip content={CategoryTooltipContent({ instanceFilterPropertyInfo })} placement="bottom" style={{ textAlign: "left" }}>
+      {instanceFilterPropertyInfo.categoryLabel && <Tooltip content={<CategoryTooltipContent instanceFilterPropertyInfo={instanceFilterPropertyInfo} />} placement="bottom" style={{ textAlign: "left" }}>
         <div className="badge">
           <Badge className="property-category-badge" backgroundColor={"montecarlo"}>
             {instanceFilterPropertyInfo.categoryLabel}

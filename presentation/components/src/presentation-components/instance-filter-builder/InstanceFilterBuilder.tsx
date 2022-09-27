@@ -27,7 +27,7 @@ export interface InstanceFilterBuilderProps {
   onClearClasses: () => void;
   onPropertySelected?: (property: PropertyDescription) => void;
   ruleGroupDepthLimit?: number;
-  propertyRenderer?: (name: string) => JSX.Element;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
