@@ -33,7 +33,7 @@ Array [
     },
     "propertyDescription": Object {
       "displayLabel": "Properties Field",
-      "name": "nested1/#PropertiesField",
+      "name": "nested1#PropertiesField",
       "typename": "string",
     },
     "sourceClassIds": Array [
@@ -71,7 +71,7 @@ Array [
     },
     "propertyDescription": Object {
       "displayLabel": "Properties Field",
-      "name": "nested2/nested21/#PropertiesField",
+      "name": "nested2/nested21#PropertiesField",
       "typename": "string",
     },
     "sourceClassIds": Array [

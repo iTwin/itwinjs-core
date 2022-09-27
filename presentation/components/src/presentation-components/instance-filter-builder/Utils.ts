@@ -83,7 +83,7 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): In
 
     fields.push(...createPropertyInfos(descriptor, {
       categoryName: category.name,
-      name: `${parentInfo.name}/${category.name}`,
+      name: parentInfo.name ? `${parentInfo.name}/${category.name}` : category.name,
       label: parentInfo.label ? `${parentInfo.label} | ${category.label}` : category.label,
     }));
   }
