@@ -5276,7 +5276,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(databaseName: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+    getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
@@ -5312,9 +5312,7 @@ export namespace WorkspaceContainer {
         isPublic?: boolean;
         syncOnConnect?: boolean;
     }
-    export type TokenFunc = (
-    props: Props,
-    account: WorkspaceAccount.Props) => Promise<AccessToken>;
+    export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 // @beta

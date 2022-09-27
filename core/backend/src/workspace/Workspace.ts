@@ -72,14 +72,11 @@ export namespace WorkspaceContainer {
   }
 
   /** A function to supply an [AccessToken]($bentley) for a `WorkspaceContainer`.
+   * @param props The properties of the WorkspaceContainer necessary to obtain the access token
+   * @param account The properties of the account for the container
    * @returns a Promise that resolves to the AccessToken for the container.
    */
-  export type TokenFunc = (
-    /** The properties of the WorkspaceContainer necessary to obtain the access token */
-    props: Props,
-    /** The properties of the account for the container  */
-    account: WorkspaceAccount.Props
-  ) => Promise<AccessToken>;
+  export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 /** @beta */
@@ -252,11 +249,12 @@ export interface Workspace {
    */
   getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
 
-  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb name.
-   * @param databaseName the database name, resolved via [[resolveDatabase]].
-   * @see [[getWorkspaceDbFromProps]]
+  /** Get an opened [[WorkspaceDb]] from a WorkspaceDb alias.
+   * @param dbAlias the database alias, resolved via [[resolveDatabase]].
+   * @param tokenFunc optional function to obtain an AccessToken for the resolved WorkspaceContainer. This function will only be called the first
+   * time a container is used.
    */
-  getWorkspaceDb(databaseName: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
+  getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
 
   /** Load a WorkspaceResource of type string, parse it, and add it to the current Settings for this Workspace.
    * @note settingsRsc must specify a resource holding a stringified JSON representation of a [[SettingDictionary]]

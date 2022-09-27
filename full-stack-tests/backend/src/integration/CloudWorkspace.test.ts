@@ -151,7 +151,7 @@ describe("Cloud workspace containers", () => {
       return CloudSqliteTest.makeSasToken(props.containerId, "r");
     });
     expect(db.dbFileName).equal("testDb:1.2.4");
-    expect(db.dbName).equal("testDb");
+    expect(db.dbName).equal(testDbName);
     expect(db.container.id).equal(containerId);
 
     const db2 = await workspace3.getWorkspaceDb("test/test1", async () => {
