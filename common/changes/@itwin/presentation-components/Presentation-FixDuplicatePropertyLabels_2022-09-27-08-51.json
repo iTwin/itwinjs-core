@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Added property renderer",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
