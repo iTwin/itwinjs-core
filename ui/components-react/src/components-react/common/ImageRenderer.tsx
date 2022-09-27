@@ -16,6 +16,8 @@ import { Image, ImageFileFormat, LoadedBinaryImage, LoadedImage } from "./IImage
  * @internal
  */
 export class ImageRenderer {
+  private static _svgCache: Map<string, string> = new Map();
+
   private hexToBase64(hexstring: string) {
     const match = hexstring.match(/\w{2}/g);
     // istanbul ignore next
@@ -59,7 +61,12 @@ export class ImageRenderer {
 
   /** Render svg string into JSX */
   private renderSvg(svg: string) {
-    const svgAsDataUri = this.convertSvgToDataUri(svg.trim());
+    let svgAsDataUri = ImageRenderer._svgCache.get(svg);
+    if (undefined === svgAsDataUri) {
+      svgAsDataUri = this.convertSvgToDataUri(svg.trim());
+      ImageRenderer._svgCache.set(svg, svgAsDataUri);
+    }
+
     const iconSpec = IconSpecUtilities.createWebComponentIconSpec(svgAsDataUri);
     return (
       <div><Icon iconSpec={iconSpec} /></div>
