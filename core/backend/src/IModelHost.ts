@@ -62,8 +62,8 @@ export interface CrashReportingConfig {
   enableNodeReport?: boolean;
   /** Additional name, value pairs to write to iModelJsNativeCrash*.properties.txt file in the event of a crash. */
   params?: CrashReportingConfigNameValuePair[];
-  /** Run this .js file to process .dmp and node-report files in the event of a crash.
-   * This script will be executed with a single command-line parameter: the name of the dump or node-report file.
+  /** Run this .js file to process .dmp and Node.js crash reporting .json files in the event of a crash.
+   * This script will be executed with a single command-line parameter: the name of the dump or Node.js report file.
    * In the case of a dump file, there will be a second file with the same basename and the extension ".properties.txt".
    * Since it runs in a separate process, this script will have no access to the Javascript
    * context of the exiting backend. No default.
