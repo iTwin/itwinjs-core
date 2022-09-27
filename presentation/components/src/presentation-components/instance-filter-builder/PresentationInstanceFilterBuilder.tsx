@@ -15,7 +15,8 @@ import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter} from "./Utils";
+import { translate } from "../common/Utils";
 import { Badge, Tooltip } from "@itwin/itwinui-react";
 import "./PresentationInstanceFilterBuilder.scss";
 
@@ -116,19 +117,19 @@ function CategoryTooltipContent(props: CategoryTooltipContentProps) {
   return <table>
     <tbody>
       <tr>
-        <th className="tooltip-content-header">CATEGORY: </th>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.category")}</th>
         <td className="tooltip-content-data">{instanceFilterPropertyInfo.categoryLabel}</td>
       </tr>
     </tbody>
     <tbody>
       <tr>
-        <th className="tooltip-content-header">CLASS: </th>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.class")}</th>
         <td className="tooltip-content-data">{className}</td>
       </tr>
     </tbody>
     <tbody>
       <tr>
-        <th className="tooltip-content-header">SCHEMA: </th>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.schema")}</th>
         <td className="tooltip-content-data">{schemaName}</td>
       </tr>
     </tbody>
