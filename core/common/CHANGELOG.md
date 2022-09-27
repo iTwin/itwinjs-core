@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Thu, 08 Sep 2022 19:00:04 GMT and should not be manually modified.
+This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- add 408,429, and consider 408,429, and 500 transient fault
 
 ## 3.3.4
 Thu, 08 Sep 2022 19:00:04 GMT

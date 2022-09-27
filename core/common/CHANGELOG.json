@@ -2,6 +2,18 @@
   "name": "@itwin/core-common",
   "entries": [
     {
+      "version": "3.3.5",
+      "tag": "@itwin/core-common_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add 408,429, and consider 408,429, and 500 transient fault"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.4",
       "tag": "@itwin/core-common_v3.3.4",
       "date": "Thu, 08 Sep 2022 19:00:04 GMT",
