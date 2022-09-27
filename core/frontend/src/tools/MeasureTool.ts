@@ -29,7 +29,9 @@ import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButtonEvent, BeModifierKeys, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "./ToolAssistance";
 
-function translateBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
+function translateBold(key: string) {
+  return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
+}
 
 /** @internal */
 class MeasureLabel implements CanvasDecoration {
@@ -181,7 +183,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -287,7 +293,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (xVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(xVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(xVec);
       segPoints.push(basePt);
       const colorX = ColorDef.red.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorX, ColorDef.black, 5);
@@ -296,7 +303,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (yVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(yVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(yVec);
       segPoints.push(basePt);
       const colorY = ColorDef.green.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorY, ColorDef.black, 5);
@@ -305,7 +313,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
     if (zVec.magnitude() > 1.0e-5) {
       const segPoints: Point3d[] = [];
-      segPoints.push(basePt); basePt = basePt.plus(zVec);
+      segPoints.push(basePt);
+      basePt = basePt.plus(zVec);
       segPoints.push(basePt);
       const colorZ = ColorDef.blue.adjustedForContrast(context.viewport.view.backgroundColor);
       builderAxes.setSymbology(colorZ, ColorDef.black, 5);
@@ -680,7 +689,11 @@ export class MeasureLocationTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -756,7 +769,12 @@ export class MeasureLocationTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorate(context: DecorateContext): void { if (!this.isCompatibleViewport(context.viewport, false)) return; this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
+  public override decorate(context: DecorateContext): void {
+    if (!this.isCompatibleViewport(context.viewport, false))
+      return;
+
+    this._acceptedLocations.forEach((marker) => marker.addDecoration(context));
+  }
   /** @internal */
   public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
@@ -901,7 +919,11 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -996,8 +1018,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
       currentPt = cursorPt.clone();
     if (2 === points.length && 0 === (IModelApp.toolAdmin.currentInputState.qualifiers & BeModifierKeys.Control)) {
       const xDir = Vector3d.createStartEnd(points[0], points[1]);
-      const xLen = xDir.magnitude(); xDir.normalizeInPlace();
-      const yDir = xDir.crossProduct(normal); yDir.normalizeInPlace();
+      const xLen = xDir.magnitude();
+      xDir.normalizeInPlace();
+      const yDir = xDir.crossProduct(normal);
+      yDir.normalizeInPlace();
       const cornerPt = AccuDrawHintBuilder.projectPointToLineInView(currentPt, points[1], yDir, this.targetView, true);
       if (undefined !== cornerPt) {
         points.push(cornerPt);
@@ -1048,7 +1072,10 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorateSuspended(context: DecorateContext): void { if (this._isComplete) this.decorate(context); }
+  public override decorateSuspended(context: DecorateContext): void {
+    if (this._isComplete)
+      this.decorate(context);
+  }
 
   /** @internal */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -1148,7 +1175,8 @@ export class MeasureAreaByPointsTool extends PrimitiveTool {
 
       this._isComplete = true;
       this._points.length = 0;
-      for (const pt of points) this._points.push(pt);
+      for (const pt of points)
+        this._points.push(pt);
 
       await this.updateTotals();
       this.setupAndPromptForNextAction();
@@ -1228,15 +1256,26 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   protected abstract getOperation(): MassPropertiesOperation;
 
   /** @internal */
-  protected allowView(vp: Viewport) { return (MassPropertiesOperation.AccumulateVolumes === this.getOperation() ? vp.view.isSpatialView() : (vp.view.isSpatialView() || vp.view.isDrawingView())); }
+  protected allowView(vp: Viewport) {
+    return (MassPropertiesOperation.AccumulateVolumes === this.getOperation() ? vp.view.isSpatialView() : (vp.view.isSpatialView() || vp.view.isDrawingView()));
+  }
+
   /** @internal */
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
   /** @internal */
   public override requireWriteableTarget(): boolean { return false; }
   /** @internal */
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
+
   /** @internal */
-  public override async onCleanup() { if (0 !== this._acceptedIds.length) this.iModel.hilited.setHilite(this._acceptedIds, false); }
+  public override async onCleanup() {
+    if (0 !== this._acceptedIds.length)
+      this.iModel.hilited.setHilite(this._acceptedIds, false);
+  }
+
   /** @internal */
   public override async onUnsuspend() { this.showPrompt(); }
 
@@ -1283,7 +1322,15 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   }
 
   /** @internal */
-  public override decorate(context: DecorateContext): void { if (!this.isCompatibleViewport(context.viewport, false)) return; this._acceptedMeasurements.forEach((marker) => marker.addDecoration(context)); if (undefined !== this._totalMarker) this._totalMarker.addDecoration(context); }
+  public override decorate(context: DecorateContext): void {
+    if (!this.isCompatibleViewport(context.viewport, false))
+      return;
+
+    this._acceptedMeasurements.forEach((marker) => marker.addDecoration(context));
+    if (undefined !== this._totalMarker)
+      this._totalMarker.addDecoration(context);
+  }
+
   /** @internal */
   public override decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
@@ -1440,7 +1487,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   /** @internal */
   public async doMeasureSelectedElements(viewport: Viewport): Promise<void> {
     const candidates: Id64Array = [];
-    viewport.iModel.selectionSet.elements.forEach((val) => { if (!Id64.isInvalid(val) && !Id64.isTransient(val)) candidates.push(val); });
+    viewport.iModel.selectionSet.elements.forEach((val) => {
+      if (!Id64.isInvalid(val) && !Id64.isTransient(val))
+        candidates.push(val);
+    });
+
     if (0 === candidates.length)
       return;
 
@@ -1543,7 +1594,11 @@ export abstract class MeasureElementTool extends PrimitiveTool {
     if (0 === this._acceptedMeasurements.length) {
       await this.onReinitialize();
     } else {
-      if (0 !== this._acceptedIds.length) { this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false); this._acceptedIds.pop(); }
+      if (0 !== this._acceptedIds.length) {
+        this.iModel.hilited.setHilite(this._acceptedIds[this._acceptedIds.length - 1], false);
+        this._acceptedIds.pop();
+      }
+
       await this.updateTotals();
       this.setupAndPromptForNextAction();
     }

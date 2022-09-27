@@ -455,7 +455,7 @@ describe("PresentationManager", () => {
 
     it("requests localized root nodes from proxy", async () => {
       i18nMock.reset();
-      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() => { return "LocalizedString"; });
+      i18nMock.setup((x) => x.getLocalizedString("EN:LocalizableString", moq.It.isAny())).returns(() =>  "LocalizedString");
       const prelocalizedNode = [createRandomECInstancesNode({ label: { rawValue: "@EN:LocalizableString@", displayValue: "@EN:LocalizableString@", typeName: "string" } })];
       const options: Paged<HierarchyRequestOptions<IModelConnection, NodeKey>> = {
         imodel: testData.imodelMock.object,

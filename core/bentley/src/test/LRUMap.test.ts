@@ -166,7 +166,7 @@ describe("LRUMap", () => {
     assert.equal(e[1], 3);
 
     // c2 should be empty
-    c2.forEach(() => { assert(false); });
+    c2.forEach(() => assert(false));
     assert.equal(c2.size, 0);
   });
 
@@ -197,7 +197,7 @@ describe("LRUMap", () => {
     assert.equal(c.size, 1);
     c.shift();
     assert.equal(c.size, 0);
-    c.forEach(() => { assert(false); });
+    c.forEach(() => assert(false));
 
     const manyEntries = [
       ["mimi", 1],

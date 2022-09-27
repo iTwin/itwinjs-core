@@ -68,7 +68,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
       return;
 
     const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
+    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {

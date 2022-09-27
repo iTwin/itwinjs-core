@@ -210,8 +210,13 @@ describe("LRUTileList", () => {
         expect(actual[i]).to.equal(expected[i]);
     }
 
-    function expectSelected(...expected: LRUTileListNode[]) { expectPartition("selected", ...expected); }
-    function expectUnselected(...expected: LRUTileListNode[]) { expectPartition("unselected", ...expected); }
+    function expectSelected(...expected: LRUTileListNode[]) {
+      expectPartition("selected", ...expected);
+    }
+
+    function expectUnselected(...expected: LRUTileListNode[]) {
+      expectPartition("unselected", ...expected);
+    }
 
     expectSelected();
     expectUnselected();

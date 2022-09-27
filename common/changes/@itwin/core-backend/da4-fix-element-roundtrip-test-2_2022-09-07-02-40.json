@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "BoxProps.origin name changed to baseOrigin to agree with json format",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

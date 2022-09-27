@@ -218,7 +218,7 @@ export class CutLoopMergeContext {
 export class PolygonOps {
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
-   * * Sum the areas(absolute, without regard to orientation) all these triangles.
+   * * Sum the absolute areas (without regard to orientation) all these triangles.
    * @returns sum of absolute triangle areas.
    */
   public static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number {
@@ -284,8 +284,8 @@ export class PolygonOps {
 
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
-   * * Sum the areas(absolute, without regard to orientation) all these triangles.
-   * @returns sum of absolute triangle areas.
+   * * Sum the signed areas of all these triangles. (An area can be negative at a concave corner.)
+   * @returns sum of signed triangle areas.
    */
   public static sumTriangleAreasXY(points: Point3d[]): number {
     let s = 0.0;
