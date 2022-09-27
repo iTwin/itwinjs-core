@@ -176,6 +176,7 @@ import { RenderTimelineProps } from '@itwin/core-common';
 import { RepositoryLinkProps } from '@itwin/core-common';
 import { RequestNewBriefcaseProps } from '@itwin/core-common';
 import { RpcActivity } from '@itwin/core-common';
+import { RpcInterfaceEndpoints } from '@itwin/core-common';
 import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
@@ -1197,10 +1198,11 @@ export class DevTools {
     static ping(): boolean;
     static setLogLevel(inLoggerCategory: string, newLevel: LogLevel): LogLevel | undefined;
     static stats(): DevToolsStats;
-    static versions(): {
+    static versions(): Promise<{
         application: string;
         iTwinJs: any;
-    };
+        availableRpcs: RpcInterfaceEndpoints[];
+    }>;
 }
 
 // @internal
