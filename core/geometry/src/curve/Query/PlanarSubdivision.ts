@@ -165,9 +165,9 @@ export class PlanarSubdivision {
     let faceIsBanana = false;
     if (faceHasTwoEdges) {
       const c0 = HalfEdgeGraphMerge.curvatureSortKey(he);
-      const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor);
+      const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor.edgeMate);
       if (!Geometry.isSameCoordinate(c0, c1)) // default tol!
-        faceIsBanana = true;
+        faceIsBanana = true;  // heuristic: we could also check end curvatures, and/or higher derivatives...
     }
     return faceHasTwoEdges && !faceIsBanana;
   }

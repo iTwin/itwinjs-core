@@ -318,9 +318,10 @@ export class HalfEdgeGraphMerge {
       k = kB;
     }
   }
-  // Return the sort key for sorting by curvature.
-  // This is the signed distance from the curve to center of curvature.
-  // NOTE: Currently does not account for higher derivatives in the case of higher-than-tangent match.
+  /** Return the sort key for sorting by curvature.
+   * * This is the signed distance from the curve at the edge start, to center of curvature.
+   * * NOTE: Currently does not account for higher derivatives in the case of higher-than-tangent match.
+   */
   public static curvatureSortKey(node: HalfEdge): number {
     const cld = node.edgeTag as CurveLocationDetail;
     if (cld !== undefined) {
