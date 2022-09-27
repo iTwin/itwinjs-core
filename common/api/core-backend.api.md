@@ -3253,7 +3253,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string): WorkspaceDb;
+    getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     // (undocumented)
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     // (undocumented)
@@ -3333,7 +3333,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     // (undocumented)
     open(): void;
     // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined;
+    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
     // (undocumented)
     queryFileResource(rscName: WorkspaceResource.Name): {
         localFileName: string;
@@ -5276,7 +5276,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
+    getWorkspaceDb(databaseName: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
@@ -5312,6 +5312,9 @@ export namespace WorkspaceContainer {
         isPublic?: boolean;
         syncOnConnect?: boolean;
     }
+    export type TokenFunc = (
+    props: Props,
+    account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 // @beta
@@ -5355,7 +5358,7 @@ export interface WorkspaceDb {
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;
-    prefetch(): void;
+    prefetch(): CloudSqlite.CloudPrefetch;
 }
 
 // @beta

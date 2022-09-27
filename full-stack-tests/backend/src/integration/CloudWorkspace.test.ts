@@ -20,6 +20,7 @@ describe("Cloud workspace containers", () => {
   }
   it("cloud workspace", async () => {
 
+    const testDbName = "testDb";
     const containerId = "test-1-2-3";
     const containerDict = {
       "cloudSqlite/accountProps": CloudSqliteTest.storage,
@@ -41,8 +42,6 @@ describe("Cloud workspace containers", () => {
     const workspace2 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace2"), testCloudCache: makeCloudCache("test2") });
     const settings = workspace1.settings;
     settings.addDictionary("containers", SettingsPriority.application, containerDict);
-
-    const testDbName = "testDb";
 
     await initializeContainer(containerId);
     const wsCont1 = workspace1.getContainer({ containerId, writeable: true, accessToken: CloudSqliteTest.makeSasToken(containerId, "rwadl") }, CloudSqliteTest.storage);
@@ -116,8 +115,52 @@ describe("Cloud workspace containers", () => {
     expect(ws2.getString("string 1")).equals("value of string 1");
     expect(ws2.getString("myVersion")).equals("3.0.0");
     ws2.container.dropWorkspaceDb(ws2);
+
     workspace1.close();
     workspace2.close();
+
+    const dict = {
+      "cloud/accounts": [
+        {
+          name: "test/account",
+          accessName: "devstoreaccount1",
+          storageType: "azure?emulator=127.0.0.1:10000&sas=1",
+        },
+      ],
+      "cloud/containers": [
+        {
+          name: "test/container1",
+          accountName: "test/account",
+          containerId,
+        },
+      ],
+      "workspace/databases": [
+        {
+          name: "test/test1",
+          dbName: testDbName,
+          containerName: "test/container1",
+          version: "^1",
+        },
+      ],
+    };
+    const workspace3 = new ITwinWorkspace(new BaseSettings(), { containerDir: join(IModelHost.cacheDir, "TestWorkspace3"), testCloudCache: makeCloudCache("test3") });
+    workspace3.settings.addDictionary("testDict", SettingsPriority.application, dict);
+    const db = await workspace3.getWorkspaceDb("test/test1", async (props, account) => {
+      expect(props.containerId).equal(containerId);
+      expect(account.accessName).equal("devstoreaccount1");
+      return CloudSqliteTest.makeSasToken(props.containerId, "r");
+    });
+    expect(db.dbFileName).equal("testDb:1.2.4");
+    expect(db.dbName).equal("testDb");
+    expect(db.container.id).equal(containerId);
+
+    const db2 = await workspace3.getWorkspaceDb("test/test1", async () => {
+      expect(false).true; // should not be called since we already loaded the container
+      return "";
+    });
+    expect(db2).equal(db);
+
+    workspace3.close();
   });
 
 });
