@@ -126,7 +126,7 @@ export class AngleSweep implements BeJSONFunctions {
   /** Reverse the start and end angle in place. */
   public reverseInPlace() { const a = this._radians0; this._radians0 = this._radians1; this._radians1 = a; }
   /**  return a sweep for the "other" part of the circe.
-   * @param reverse true to retain the start and move backwards, false to more forwards.
+   * @param reverseDirection true to retain the start and move backwards, false to more forwards.
    */
   public cloneComplement(reverseDirection: boolean = false, result?: AngleSweep): AngleSweep {
     const s = this.sweepRadians >= 0 ? 2.0 : -2.0;
