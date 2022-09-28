@@ -14,6 +14,7 @@ import { PropertyEditorProps } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { SvgCaretDownSmall } from "@itwin/itwinui-icons-react";
 import { NavigationPropertyInfo } from "@itwin/presentation-common";
+import { translate } from "../common/Utils";
 import {
   NavigationPropertyTarget, useNavigationPropertyTargetsLoader, useNavigationPropertyTargetsRuleset,
 } from "./UseNavigationPropertyTargetsLoader";
@@ -61,6 +62,8 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
       autoFocus={setFocus}
       value={selectedTarget}
       debounceTimeout={500}
+      placeholder={<>{translate("navigation-property-editor.select-target-instance")}</>}
+      loadingMessage={() => translate("navigation-property-editor.loading-target-instances")}
       styles={{
         control: () => ({ height: "27px" }),
         valueContainer: () => ({ height: "27px" }),

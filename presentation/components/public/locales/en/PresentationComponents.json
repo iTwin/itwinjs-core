@@ -21,6 +21,7 @@
     "presentation-components-muted-node": "Too many child nodes."
   },
   "navigation-property-editor": {
-    "choose-value": "Choose value"
+    "select-target-instance": "Select target instance",
+    "loading-target-instances": "Loading target instances"
   }
 }
