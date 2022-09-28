@@ -38,8 +38,8 @@ describe("Viewport", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
-    if (imodel2) await imodel2.close();
+    await imodel?.close();
+    await imodel2?.close();
     await TestUtility.shutdownFrontend();
   });
 

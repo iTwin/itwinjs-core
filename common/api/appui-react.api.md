@@ -2038,12 +2038,18 @@ export class DialogManagerBase {
     // (undocumented)
     emitDialogChangedEvent(): void;
     // (undocumented)
+    static getDialogZIndexDefault(): number;
+    static initialize(): void;
+    // (undocumented)
     get onDialogChangedEvent(): DialogChangedEvent;
     openDialog(dialog: React_2.ReactNode, id?: string, parentDocument?: Document): void;
     // (undocumented)
     pushDialog(dialogInfo: DialogInfo): void;
     // (undocumented)
     removeDialog(dialog: React_2.ReactNode): void;
+    // (undocumented)
+    static get topZIndex(): number;
+    static set topZIndex(zIndex: number);
     // (undocumented)
     update(): void;
 }
@@ -2064,6 +2070,8 @@ export class DialogRendererBase extends React_2.PureComponent<DialogRendererProp
 export interface DialogRendererProps {
     // (undocumented)
     dialogManager: DialogManagerBase;
+    // (undocumented)
+    style?: React_2.CSSProperties;
 }
 
 // @internal

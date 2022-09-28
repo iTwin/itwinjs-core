@@ -1,5 +1,43 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`CategoryTree #integration does not show private 2d categories 1`] = `
+Array [
+  Object {
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Test DrawingCategory",
+        "value": "Test DrawingCategory",
+        "valueFormat": 0,
+      },
+    },
+  },
+]
+`;
+
+exports[`CategoryTree #integration does not show private 3d categories 1`] = `
+Array [
+  Object {
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "Test SpatialCategory",
+        "value": "Test SpatialCategory",
+        "valueFormat": 0,
+      },
+    },
+  },
+]
+`;
+
 exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
 <body>
   <div>

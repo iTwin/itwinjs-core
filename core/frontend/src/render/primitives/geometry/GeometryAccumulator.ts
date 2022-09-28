@@ -142,7 +142,10 @@ export class GeometryAccumulator {
     return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams, this.currentFeature));
   }
 
-  public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }
+  public addGeometry(geom: Geometry): boolean {
+    this.geometries.push(geom);
+    return true;
+  }
 
   public clear(): void { this.geometries.clear(); }
 

@@ -151,10 +151,22 @@ export class ImageryMapTileTree extends RealityTileTree {
     return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
   }
   public get imageryLoader(): ImageryTileLoader { return this._imageryLoader; }
-  public override get is3d(): boolean { assert(false); return false; }
-  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return {}; }
-  public override get isContentUnbounded(): boolean { assert(false); return true; }
-  protected override _selectTiles(_args: TileDrawArgs): Tile[] { assert(false); return []; }
+  public override get is3d(): boolean {
+    assert(false);
+    return false;
+  }
+  public override get viewFlagOverrides(): ViewFlagOverrides {
+    assert(false);
+    return {};
+  }
+  public override get isContentUnbounded(): boolean {
+    assert(false);
+    return true;
+  }
+  protected override _selectTiles(_args: TileDrawArgs): Tile[] {
+    assert(false);
+    return [];
+  }
   public override draw(_args: TileDrawArgs): void { assert(false); }
 
   private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
@@ -196,7 +208,10 @@ class ImageryTileLoader extends RealityTileLoader {
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
-  public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> { assert(false); return undefined; }
+  public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> {
+    assert(false);
+    return undefined;
+  }
   public async requestTileContent(tile: Tile, _isCanceled: () => boolean): Promise<TileRequest.Response> {
     const quadId = QuadId.createFromContentId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);

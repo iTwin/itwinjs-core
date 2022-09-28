@@ -52,13 +52,15 @@ export class RelationshipClasses extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
-    if (relationshipProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
+    if (relationshipProps.name === undefined)
+      return { errorMessage: `No name was supplied within props.` };
+
     const newClass = (await schema.createRelationshipClass(relationshipProps.name)) as MutableRelationshipClass;
-    if (newClass === undefined) {
+    if (newClass === undefined)
       return { errorMessage: `Failed to create class ${relationshipProps.name} in schema ${schemaKey.toString(true)}.` };
-    }
 
     await newClass.fromJSON(relationshipProps);
     await newClass.source.fromJSON(relationshipProps.source);
@@ -70,8 +72,11 @@ export class RelationshipClasses extends ECClasses {
   public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<PropertyEditResults> {
     const relationshipClass = (await this._schemaEditor.schemaContext.getSchemaItem<MutableRelationshipClass>(relationshipKey));
 
-    if (relationshipClass === undefined) throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
-    if (relationshipClass.schemaItemType !== SchemaItemType.RelationshipClass) throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${relationshipKey.fullName} to be of type Relationship Class.`);
+    if (relationshipClass === undefined)
+      throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `Relationship Class ${relationshipKey.fullName} not found in schema context.`);
+
+    if (relationshipClass.schemaItemType !== SchemaItemType.RelationshipClass)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, `Expected ${relationshipKey.fullName} to be of type Relationship Class.`);
 
     await relationshipClass.createNavigationProperty(name, relationship, direction);
     return { itemKey: relationshipKey, propertyName: name };

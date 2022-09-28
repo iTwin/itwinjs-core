@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-webpack-tools",
+      "comment": "Fix PrettyLoggingPlugin output when CI env var set\"",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-webpack-tools"
+}

@@ -50,7 +50,9 @@ describe("PresentationRpcInterface", () => {
     RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
   });
 
-  function toArguments(..._arguments: any[]) { return arguments; }
+  function toArguments(..._arguments: any[]) {
+    return arguments;
+  }
 
   describe("calls forwarding", () => {
 

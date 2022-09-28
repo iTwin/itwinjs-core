@@ -19,13 +19,13 @@ Table of contents:
   - [Restoring presentation tree state](#restoring-presentation-tree-state)
   - [Diagnostics improvements and OpenTelemetry](#diagnostics-improvements-and-opentelemetry)
   - [Localization changes](#localization-changes)
+  - [Content sources](#content-sources)
 - [Geometry](#geometry)
   - [Coplanar facet consolidation](#coplanar-facet-consolidation)
   - [Filling mesh holes](#filling-mesh-holes)
 - [AppUi](#appui)
   - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
 - [Deprecations](#deprecations)
-  - [@itwin/core-geometry](#itwincore-geometry)
   - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Electron 17 support
@@ -149,6 +149,50 @@ In case of a backend-only application, localization may be setup by providing a 
 - PresentationManagerProps.defaultLocale
 - PresentationManager.activeLocale
 
+### Content sources
+
+Presentation API provides the [PresentationManager.getContentSources]($presentation-backend) function to retrieve a list of classes that are used to build content for a given class of elements. It used to create this list based on actual instances in the given iModel, which made the call very expensive on large iModels. Requesting this for `bis.Element` would result in a response like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "ConcreteElementClassA" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectX" },
+      }], [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "ConcreteAspectY" },
+      }],
+      // ... and so on for every different concrete related property class
+    ],
+  },
+  {
+    selectClassInfo: { name: "ConcreteElementClassB" },
+  },
+  // ... and so on for every different element class that has instances
+]
+```
+
+It turns out that for purposes this function is intended for, it's not necessary to get concrete classes and their base classes can be used instead. So now, when requesting this for `bis.Element`, the response is like the following:
+
+```json
+[
+  {
+    selectClassInfo: { name: "bis.Element" },
+    relatedPropertyPaths: [
+      [{
+        relationshipInfo: { name: "bis.ElementOwnsMultiAspects" },
+        targetClassInfo: { name: "bis.ElementMultiAspect" },
+      }],
+    ],
+  },
+]
+```
+
+This allows the result to be created purely by looking at ECSchemas in the iModel instead of querying actual instances and relationships, which provides an orders of magnitude performance improvement over the previous approach.
+
 ## Geometry
 
 ### Coplanar facet consolidation
@@ -170,10 +214,6 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
 ## Deprecations
-
-### @itwin/core-geometry
-
-`BoxProps.origin` has been replaced with `BoxProps.baseOrigin` to align with the "box" JSON format.
 
 ### @itwin/core-transformer
 

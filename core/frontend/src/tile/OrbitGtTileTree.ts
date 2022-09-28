@@ -400,8 +400,12 @@ export namespace OrbitGtTileTree {
         blobStringUrl = UrlFS.getAzureBlobSasUrl(accountName, containerName, blobFileName, sasToken);
     }
 
-    if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
-    if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
+    if (Downloader.INSTANCE == null)
+      Downloader.INSTANCE = new DownloaderXhr();
+
+    if (CRSManager.ENGINE == null)
+      CRSManager.ENGINE = await OnlineEngine.create();
+
     // wrap a caching layer (16 MB) around the blob file
     const urlFS: UrlFS = new UrlFS();
     const blobFileSize: ALong = await urlFS.getFileLength(blobStringUrl);

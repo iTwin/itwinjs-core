@@ -288,28 +288,6 @@ describe("CubeNavigationAid", () => {
         const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
         expect(mat2.matrix.isAlmostEqual(expectedMatrix)).is.true;
       });
-      it.skip(`${shouldStr} touch drag cube`, async () => { // Touch isn't currently supported so we can't test it...
-        sinon.replaceGetter(IModelApp, "toolAdmin", () => ({markupView: lockedViewport}) as ToolAdmin);
-        const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={lockedViewport} />);
-
-        const topFace = component.getByTestId("components-cube-face-top");
-        const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
-
-        expect(topCenterCell.classList.contains("cube-active")).to.be.false;
-
-        const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-        expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
-        const touchStart = new Touch({ identifier: 0, target: topCenterCell, clientX: 2, clientY: 2 }); // <== ReferenceError: Touch is not defined
-        const touchMove1 = new Touch({ identifier: 0, target: topCenterCell, clientX: 10, clientY: 2 });
-        const touchMove2 = new Touch({ identifier: 0, target: topCenterCell, clientX: 20, clientY: 2 });
-        const touchEnd = new Touch({ identifier: 0, target: topCenterCell, clientX: 20, clientY: 2 });
-        topCenterCell.dispatchEvent(new TouchEvent("touchstart", { bubbles: true, cancelable: true, view: window, touches: [touchStart], changedTouches: [touchStart], targetTouches: [touchStart] }));
-        topCenterCell.dispatchEvent(new TouchEvent("touchmove", { bubbles: true, cancelable: true, view: window, touches: [touchMove1], changedTouches: [touchMove1], targetTouches: [touchMove1] }));
-        topCenterCell.dispatchEvent(new TouchEvent("touchmove", { bubbles: true, cancelable: true, view: window, touches: [touchMove2], changedTouches: [touchMove2], targetTouches: [touchMove2] }));
-        topCenterCell.dispatchEvent(new TouchEvent("touchend", { bubbles: true, cancelable: true, view: window, touches: [touchEnd], changedTouches: [touchEnd] }));
-        const mat2 = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
-        expect(mat2.isIdentity).to.equal(!!lockedViewport);
-      });
     });
 
     describe("onViewRotationChangeEvent", () => {
