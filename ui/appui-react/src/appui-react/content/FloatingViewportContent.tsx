@@ -27,7 +27,7 @@ export interface FloatingViewportContentProps {
   onContextMenu?: (e: React.MouseEvent) => boolean;
   /** viewport/content control uniqueId */
   contentId: string;
-  /** The initial view state used to create the viewport, or a function that returns it */
+  /** The initial view state used to create the viewport, or a function that returns it (will refresh when the function changes) */
   initialViewState: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
