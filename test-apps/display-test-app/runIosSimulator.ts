@@ -19,15 +19,15 @@ const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, un
 
 // Similar to the launchApp function but doesn't retry, adds the --console option, and allows for args.
 Simctl.prototype.launchAppWithConsole = async function (bundleId: string, ...args: [string]) {
-  const {stdout} = await this.exec('launch', { args: ["--console", this.requireUdid('launch'), bundleId, ...args] });
+  const { stdout } = await this.exec('launch', { args: ["--console", this.requireUdid('launch'), bundleId, ...args] });
   return stdout.trim();
 }
 
 Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = 'iOS') {
-  const {stdout} = await this.exec('list', { args: ['runtimes', '--json'] });
-  const runtimes: [{version: string, identifier: string, name: string}] = JSON.parse(stdout).runtimes;
+  const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
+  const runtimes: [{ version: string, identifier: string, name: string }] = JSON.parse(stdout).runtimes;
   runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
-  for (const {version, name} of runtimes) {
+  for (const { version, name } of runtimes) {
     if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
       return version;
     }
@@ -36,7 +36,7 @@ Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string,
 };
 
 function runProgram(program: string, args: string[] = [], cwd: string | undefined = undefined) {
-  return execFileSync(program, args, { stdio: ['ignore', 'pipe', 'ignore'], cwd, encoding: "utf8"});
+  return execFileSync(program, args, { stdio: ['ignore', 'pipe', 'ignore'], cwd, encoding: "utf8" });
 }
 
 function log(message: string) {
@@ -48,7 +48,7 @@ function log(message: string) {
 
 async function main() {
   const simctl = new Simctl();
-  
+
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
 
@@ -65,11 +65,11 @@ async function main() {
     desiredDevice = "iPad Pro (11-inch) (1st generation)";
     desiredRuntime = "13"; // so that it runs on M1 without requiring the iOS arm64 simulator binaries
   } else {
-    desiredDevice = "iPad Pro (11-inch) (3rd generation)";    
-    desiredRuntime = keys.length > 0 ? keys[0]: "15"; // use latest runtime if we have any, otherwise 15
+    desiredDevice = "iPad Pro (11-inch) (3rd generation)";
+    desiredRuntime = keys.length > 0 ? keys[0] : "15"; // use latest runtime if we have any, otherwise 15
   }
-  
-  keys = keys.filter(key => key.startsWith(desiredRuntime));   
+
+  keys = keys.filter(key => key.startsWith(desiredRuntime));
   var device: { name: string; sdk: string; udid: string; state: string; } | undefined;
   if (keys.length) {
     // Look for a booted simulator
@@ -92,7 +92,7 @@ async function main() {
     log(`Creating simulator: ${desiredDevice} sdk: ${sdk}`);
     const udid = await simctl.createDevice(desiredDevice, desiredDevice, sdk);
     if (udid) {
-      device = { name: desiredDevice, sdk, udid, state: 'Inactive'};
+      device = { name: desiredDevice, sdk, udid, state: 'Inactive' };
     }
   }
 
@@ -108,18 +108,11 @@ async function main() {
   // Boot the simulator if needed
   if (device.state !== "Booted") {
     log(`Booting simulator: ${device.name}`);
-    await simctl.startBootMonitor({ shouldPreboot: true});
+    await simctl.startBootMonitor({ shouldPreboot: true });
   }
 
   // Install the app
-  log("Getting build directory");
-  const output = runProgram("xcodebuild", ["-showBuildSettings"], `${__dirname}/ios/imodeljs-test-app`);
-  const buildDir = output.split("\n").find(line => line.includes("BUILD_DIR = "))?.trim().substring(12).slice(0, -9); // removes the "BUILD_DIR = " prefix, and the "/Products" suffix
-  if (!buildDir) {
-    log("Unable to determine BUILD_DIR from xcodebuild -showBuildSettings");
-    return;
-  }
-  const appPath = `${buildDir}/Debug-iphonesimulator/${appName}.app`;
+  const appPath = `${__dirname}/ios/${appName}/build/DerivedData/Build/Products/Debug-iphonesimulator/${appName}.app`;
   log("Installing app");
   await simctl.installApp(appPath);
 
