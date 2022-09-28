@@ -112,7 +112,6 @@ export class BackendDefaultsPlugin {
         "@bentley/imodeljs-native",
         "@bentley/imodeljs-native/package.json",
         "dtrace-provider",
-        "node-report/api",
         "applicationinsights-native-metrics",
         "@opentelemetry/tracing",
         "keytar",

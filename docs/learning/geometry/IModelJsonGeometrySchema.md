@@ -24,7 +24,7 @@
 |----|----|---|
 | Sphere.createCenterRadius(center, radius) | full sphere | `{"sphere":{"center":[1,1,0],"radius":3}}`|
 | Cone.createAxisPoints(centerA, centerB, radiusA, radiusB, capped) | full sphere | `{"cone":{"capped":true,"start":[-1,1,0],"end":[3,2,0],"startRadius":1.5,"endRadius":2,"xyVectors":[[-0.24253562503633297,0.9701425001453319,0],[0,0,1]]}}`|
-| Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped) | box with sides slanting inward | `{"box":{"baseOrigin":[-1,1,0],"baseX":4,"baseY":3,"capped":true,"topOrigin":[-1,2,4],"topY":2}}`|
+| Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped) | box with sides slanting inward | `{"box":{"origin":[-1,1,0],"baseX":4,"baseY":3,"capped":true,"topOrigin":[-1,2,4],"topY":2}}`|
 | TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped) | 90 degree elbos | `{"torusPipe":{"center":[1,1,1],"majorRadius":3,"minorRadius":1,"xyVectors":[[0,1,0],[-0.8320502943378437,0,0.5547001962252291]],"sweepAngle":90,"capped":true}}`|
 | LinearSweep.create(contour, sweepVector, capped) | swept hexagon | `{"linearSweep":{"contour":{"loop":[{"lineString":[[2,0,0],[1.5,0.8660254037844386,0],[0.5,0.8660254037844387,0],[0,0,0],[0.5,-0.8660254037844385,0],[1.5,-0.866025403784439,0],[2,0,0]]}]},"capped":true,"vector":[0,0,4]}}`|
 | RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped) | hexagon rotated | `{"rotationalSweep":{"axis":[0,1,0],"contour":{"loop":[{"lineString":[[2,0,0],[1.5,0.8660254037844386,0],[0.5,0.8660254037844387,0],[0,0,0],[0.5,-0.8660254037844385,0],[1.5,-0.866025403784439,0],[2,0,0]]}]},"capped":true,"center":[-1,0,0],"sweepAngle":135}}`|
