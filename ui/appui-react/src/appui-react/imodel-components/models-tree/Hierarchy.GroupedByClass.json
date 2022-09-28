@@ -230,6 +230,7 @@
               }
             ]
           ],
+          "instanceFilter": "NOT this.IsPrivate",
           "suppressSimilarAncestorsCheck": true,
           "hideIfNoChildren": true,
           "groupByClass": false,
