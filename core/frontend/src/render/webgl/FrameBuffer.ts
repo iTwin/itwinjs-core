@@ -172,7 +172,10 @@ export class FrameBuffer implements WebGLDisposable {
     this._bindState = FrameBufferBindState.Unbound;
   }
 
-  public suspend() { assert(this.isBound); this._bindState = FrameBufferBindState.Suspended; }
+  public suspend() {
+    assert(this.isBound);
+    this._bindState = FrameBufferBindState.Suspended;
+  }
 
   public markTargetsDirty(): void {
     for (const msBuff of this._colorMsBuffers) {

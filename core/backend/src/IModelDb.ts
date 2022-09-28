@@ -15,7 +15,7 @@ import {
 import {
   AxisAlignedBox3d, BRepGeometryCreate, BriefcaseId, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code,
   CodeProps, CodeSpec, CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DbQueryRequest, DisplayStyleProps,
-  DomainOptions, EcefLocation, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
+  DomainOptions, EcefLocation, ECSchemaProps, ECSqlReader, ElementAspectProps, ElementGeometryRequest, ElementGraphicsRequestProps, ElementLoadProps, ElementProps,
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
@@ -29,6 +29,7 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
+import { CloudSqlite } from "./CloudSqlite";
 import { CodeService } from "./CodeService";
 import { CodeSpecs } from "./CodeSpecs";
 import { ConcurrentQuery } from "./ConcurrentQuery";
@@ -45,7 +46,6 @@ import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
 import { ServerBasedLocks } from "./ServerBasedLocks";
-import { SQLiteDb } from "./SQLiteDb";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -656,10 +656,17 @@ export abstract class IModelDb extends IModel {
     if (params.only)
       sql += "ONLY ";
     sql += params.from;
-    if (params.where) sql += ` WHERE ${params.where}`;
-    if (params.orderBy) sql += ` ORDER BY ${params.orderBy}`;
-    if (typeof params.limit === "number" && params.limit > 0) sql += ` LIMIT ${params.limit}`;
-    if (typeof params.offset === "number" && params.offset > 0) sql += ` OFFSET ${params.offset}`;
+    if (params.where)
+      sql += ` WHERE ${params.where}`;
+
+    if (params.orderBy)
+      sql += ` ORDER BY ${params.orderBy}`;
+
+    if (typeof params.limit === "number" && params.limit > 0)
+      sql += ` LIMIT ${params.limit}`;
+
+    if (typeof params.offset === "number" && params.offset > 0)
+      sql += ` OFFSET ${params.offset}`;
 
     const ids = new Set<string>();
     this.withPreparedStatement(sql, (stmt) => {
@@ -919,15 +926,21 @@ export abstract class IModelDb extends IModel {
    * @internal
    */
   public get classMetaDataRegistry(): MetaDataRegistry {
-    if (this._classMetaDataRegistry === undefined) this._classMetaDataRegistry = new MetaDataRegistry();
+    if (this._classMetaDataRegistry === undefined)
+      this._classMetaDataRegistry = new MetaDataRegistry();
+
     return this._classMetaDataRegistry;
   }
 
   /** Get the linkTableRelationships for this IModel */
-  public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
+  public get relationships(): Relationships {
+    return this._relationships || (this._relationships = new Relationships(this));
+  }
 
   /** Get the CodeSpecs in this IModel. */
-  public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
+  public get codeSpecs(): CodeSpecs {
+    return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this));
+  }
 
   /** @internal */
   public insertCodeSpec(codeSpec: CodeSpec): Id64String {
@@ -1031,6 +1044,15 @@ export abstract class IModelDb extends IModel {
     // Recursive, to make sure that base classes are cached.
     if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
       metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
+  }
+
+  /** Returns the full schema for the input name.
+   * @param name The name of the schema e.g. 'BisCore'
+   * @returns The SchemaProps for the requested schema
+   * @throws if the schema can not be found or loaded.
+   */
+  public getSchemaProps(name: string): ECSchemaProps {
+    return this.nativeDb.getSchemaProps(name);
   }
 
   /** Query if this iModel contains the definition of the specified class.
@@ -1691,10 +1713,17 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       if (!usageInfo) {
         throw new IModelError(IModelStatus.BadRequest, "Error querying for DefinitionElement usage");
       }
+
       const usedIdSet = usageInfo.usedIds ? Id64.toIdSet(usageInfo.usedIds) : new Set<Id64String>();
       const deleteIfUnused = (ids: Id64Array | undefined, used: Id64Set): void => {
-        if (ids) { ids.forEach((id) => { if (!used.has(id)) { this._iModel.elements.deleteElement(id); } }); }
+        if (ids) {
+          ids.forEach((id) => {
+            if (!used.has(id))
+              this._iModel.elements.deleteElement(id);
+          });
+        }
       };
+
       try {
         this._iModel.nativeDb.beginPurgeOperation();
         deleteIfUnused(usageInfo.spatialCategoryIds, usedIdSet);
@@ -1714,12 +1743,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } finally {
         this._iModel.nativeDb.endPurgeOperation();
       }
+
       if (usageInfo.viewDefinitionIds) {
         // take another pass in case a deleted ViewDefinition was the only usage of these view-related DefinitionElements
         let viewRelatedIds: Id64Array = [];
-        if (usageInfo.displayStyleIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.categorySelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id))); }
-        if (usageInfo.modelSelectorIds) { viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id))); }
+        if (usageInfo.displayStyleIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.displayStyleIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.categorySelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.categorySelectorIds.filter((id) => usedIdSet.has(id)));
+
+        if (usageInfo.modelSelectorIds)
+          viewRelatedIds = viewRelatedIds.concat(usageInfo.modelSelectorIds.filter((id) => usedIdSet.has(id)));
+
         if (viewRelatedIds.length > 0) {
           const viewRelatedUsageInfo = this._iModel.nativeDb.queryDefinitionElementUsage(viewRelatedIds);
           if (viewRelatedUsageInfo) {
@@ -1732,10 +1768,15 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
             } finally {
               this._iModel.nativeDb.endPurgeOperation();
             }
-            viewRelatedIds.forEach((id) => { if (!usedViewRelatedIdSet.has(id)) { usedIdSet.delete(id); } });
+
+            viewRelatedIds.forEach((id) => {
+              if (!usedViewRelatedIdSet.has(id))
+                usedIdSet.delete(id);
+            });
           }
         }
       }
+
       return usedIdSet;
     }
 
@@ -2153,7 +2194,7 @@ export interface TokenArg {
  */
 export interface CloudContainerArgs {
   /** @internal */
-  container?: SQLiteDb.CloudContainer;
+  container?: CloudSqlite.CloudContainer;
 }
 
 /** Options to open a [SnapshotDb]($backend).

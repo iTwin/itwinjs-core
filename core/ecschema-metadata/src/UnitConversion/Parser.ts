@@ -40,5 +40,7 @@ export function parseDefinition(definition: string): Map<string, DefinitionFragm
     }
 
     return unitMap;
-  } else throw new Error("Invalid definition expression.");
+  } else {
+    throw new Error("Invalid definition expression.");
+  }
 }

@@ -577,7 +577,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const modelRange = await model.queryModelRange();
       const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
-      return MapCartoRectangle.create(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
+      return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
     if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);

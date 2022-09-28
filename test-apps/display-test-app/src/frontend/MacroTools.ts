@@ -16,11 +16,13 @@ export class MacroTool extends Tool {
     const macroStr2 = macroString.replace (re, "");
     const commands = macroStr2.split ("\n");
     commands.forEach((item, index) => {
-      if(item === "") commands.splice(index,1);
+      if(item === "")
+        commands.splice(index,1);
     });
-    if (commands.length === 0)
+
+    if (commands.length === 0) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "File not found or no content"));
-    else {
+    } else {
       for (const cmd of commands) {
         let message: string | undefined;
         try {

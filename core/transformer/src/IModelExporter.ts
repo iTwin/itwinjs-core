@@ -7,13 +7,13 @@
  */
 
 import { AccessToken, assert, CompressedId64Set, DbResult, Id64, Id64String, IModelStatus, Logger, YieldManager } from "@itwin/core-bentley";
-import { ECVersion, Schema, SchemaKey } from "@itwin/ecschema-metadata";
+import { ECVersion, Schema, SchemaKey, SchemaLoader } from "@itwin/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, DefinitionModel, ECSqlStatement, Element, ElementAspect,
   ElementMultiAspect, ElementRefersToElements, ElementUniqueAspect, GeometricElement, IModelDb,
-  IModelHost, IModelJsNative, IModelSchemaLoader, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
+  IModelHost, IModelJsNative, Model, RecipeDefinitionElement, Relationship, RelationshipProps,
 } from "@itwin/core-backend";
 
 const loggerCategory = TransformerLoggerCategory.IModelExporter;
@@ -169,7 +169,10 @@ export class IModelExporter {
   private _handler: IModelExportHandler | undefined;
   /** The handler called by this IModelExporter. */
   protected get handler(): IModelExportHandler {
-    if (undefined === this._handler) { throw new Error("IModelExportHandler not registered"); }
+    if (undefined === this._handler) {
+      throw new Error("IModelExportHandler not registered");
+    }
+
     return this._handler;
   }
 
@@ -281,7 +284,9 @@ export class IModelExporter {
     // WIP: handle ElementAspects?
     for (const modelId of this._sourceDbChanges.model.deleteIds) {
       const alreadyDeletedSubModel = deletedSubModels.has(modelId);
-      if (alreadyDeletedSubModel) continue;
+      if (alreadyDeletedSubModel)
+        continue;
+
       this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {
@@ -317,7 +322,7 @@ export class IModelExporter {
     if (schemaNamesToExport.length === 0)
       return;
 
-    const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+    const schemaLoader = new SchemaLoader((name: string) => this.sourceDb.getSchemaProps(name));
     await Promise.all(schemaNamesToExport.map(async (schemaName) => {
       const schema = schemaLoader.getSchema(schemaName);
       Logger.logTrace(loggerCategory, `exportSchema(${schemaName})`);
@@ -799,9 +804,14 @@ class ChangedInstanceOps {
   public deleteIds = new Set<Id64String>();
   public addFromJson(val: IModelJsNative.ChangedInstanceOpsProps | undefined): void {
     if (undefined !== val) {
-      if ((undefined !== val.insert) && (Array.isArray(val.insert))) { val.insert.forEach((id: Id64String) => this.insertIds.add(id)); }
-      if ((undefined !== val.update) && (Array.isArray(val.update))) { val.update.forEach((id: Id64String) => this.updateIds.add(id)); }
-      if ((undefined !== val.delete) && (Array.isArray(val.delete))) { val.delete.forEach((id: Id64String) => this.deleteIds.add(id)); }
+      if ((undefined !== val.insert) && (Array.isArray(val.insert)))
+        val.insert.forEach((id: Id64String) => this.insertIds.add(id));
+
+      if ((undefined !== val.update) && (Array.isArray(val.update)))
+        val.update.forEach((id: Id64String) => this.updateIds.add(id));
+
+      if ((undefined !== val.delete) && (Array.isArray(val.delete)))
+        val.delete.forEach((id: Id64String) => this.deleteIds.add(id));
     }
   }
 }

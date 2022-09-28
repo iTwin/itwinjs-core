@@ -13,12 +13,12 @@ import { CommonProps, Icon, Point, Rectangle, Timer, useRefs, useResizeObserver 
 import { assert } from "@itwin/core-bentley";
 import { useDragTab } from "../base/DragManager";
 import { MeasureContext, NineZoneDispatchContext, ShowWidgetIconContext, TabNodeContext } from "../base/NineZone";
-import { TabState } from "../base/NineZoneState";
+import { TabState } from "../state/TabState";
 import { PointerCaptorArgs, PointerCaptorEvent, usePointerCaptor } from "../base/PointerCaptor";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabsEntryContext } from "./Tabs";
-import { restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
+import { ActiveTabIdContext, restrainInitialWidgetSize, WidgetContext, WidgetStateContext } from "./Widget";
 import { TabIdContext } from "./ContentRenderer";
 import { TabTarget } from "../target/TabTarget";
 import { WidgetMenuTab } from "./MenuTab";
@@ -76,14 +76,13 @@ const WidgetTabComponent = React.memo<WidgetTabProps>(function WidgetTabComponen
   const side = React.useContext(PanelSideContext);
   const widget = React.useContext(WidgetStateContext);
   assert(!!widget);
-
-  const { id } = tab;
+  const activeTabId = React.useContext(ActiveTabIdContext);
 
   const resizeObserverRef = useResizeObserver<HTMLDivElement>(widgetTabsEntryContext?.onResize);
   const pointerCaptorRef = useTabInteractions({});
   const refs = useRefs<HTMLDivElement>(resizeObserverRef, pointerCaptorRef);
 
-  const active = widget.activeTabId === id;
+  const active = activeTabId === tab.id;
   const className = classnames(
     "nz-widget-tab",
     active && "nz-active",
@@ -171,7 +170,7 @@ export function useTabInteractions<T extends HTMLElement>({
   const handleDragTabStart = useDragTab({
     tabId: id,
   });
-  const handleDragStart = React.useCallback(() => {
+  const handleDragStart = React.useCallback((pointerPosition: Point) => {
     assert(!!ref.current);
     assert(!!initialPointerPosition.current);
     const nzBounds = measure();
@@ -186,8 +185,13 @@ export function useTabInteractions<T extends HTMLElement>({
       position = initialPointerPosition.current.offset(nzOffset);
       position = position.offset({ x: -7, y: -7 });
     }
+
+    const dragOffset = initialPointerPosition.current.getOffsetTo(pointerPosition);
+    position = position.offset(dragOffset);
+
     handleDragTabStart({
       initialPointerPosition: Point.create(initialPointerPosition.current),
+      pointerPosition,
       widgetSize,
     });
     dispatch({
@@ -215,10 +219,12 @@ export function useTabInteractions<T extends HTMLElement>({
     // istanbul ignore next
     if (!initialPointerPosition.current)
       return;
-    const distance = initialPointerPosition.current.getDistanceTo({ x: args.clientX, y: args.clientY });
+
+    const pointerPosition = new Point(args.clientX, args.clientY);
+    const distance = initialPointerPosition.current.getDistanceTo(pointerPosition);
     if (distance < 10)
       return;
-    handleDragStart();
+    handleDragStart(pointerPosition);
   }, [handleDragStart]);
   const handlePointerUp = React.useCallback(() => {
     clickCount.current++;

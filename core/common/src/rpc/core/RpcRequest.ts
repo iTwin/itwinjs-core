@@ -252,8 +252,16 @@ export abstract class RpcRequest<TResponse = any> {
     this.operation = RpcOperation.lookup(client.constructor as any, operation);
     this.parameters = parameters;
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);
-    this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
-    this._rawPromise = new Promise((resolve, reject) => { this._resolveRaw = resolve; this._rejectRaw = reject; });
+    this.response = new Promise((resolve, reject) => {
+      this._resolve = resolve;
+      this._reject = reject;
+    });
+
+    this._rawPromise = new Promise((resolve, reject) => {
+      this._resolveRaw = resolve;
+      this._rejectRaw = reject;
+    });
+
     this.id = RpcConfiguration.requestContext.getId(this) || Guid.createValue();
     this.setStatus(RpcRequestStatus.Created);
     this.operation.policy.requestCallback(this);

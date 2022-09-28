@@ -315,10 +315,10 @@ describe("BeEvent tests", () => {
       let result: string | undefined;
 
       const event1 = "ev1";
-      const fn1 = (_dummy: Dummy | undefined, nr: number) => { result = `ev1:${nr}`; };
+      const fn1 = (_dummy: Dummy | undefined, nr: number) => result = `ev1:${nr}`;
 
       const event2 = "ev2";
-      const fn2 = (_dummy: Dummy | undefined, nr: number) => { result = `ev2:${nr}`; };
+      const fn2 = (_dummy: Dummy | undefined, nr: number) => result = `ev2:${nr}`;
 
       list.get(event1).addListener(fn1);
       list.get(event2).addListener(fn2);

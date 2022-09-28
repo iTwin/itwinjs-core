@@ -11,8 +11,8 @@ import { extname, join } from "path";
 import * as readline from "readline";
 import * as Yargs from "yargs";
 import {
-  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb,
-  SqliteStatement, WorkspaceAccount, WorkspaceContainer, WorkspaceDb, WorkspaceResource,
+  CloudSqlite, EditableWorkspaceDb, IModelHost, IModelJsFs, ITwinWorkspaceContainer, ITwinWorkspaceDb, SQLiteDb, SqliteStatement, WorkspaceAccount,
+  WorkspaceContainer, WorkspaceDb, WorkspaceResource,
 } from "@itwin/core-backend";
 import { BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
@@ -110,7 +110,10 @@ interface UploadOptions extends TransferOptions {
 
 async function askQuestion(query: string) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise<string>((resolve) => rl.question(query, (ans) => { rl.close(); resolve(ans); }));
+  return new Promise<string>((resolve) => rl.question(query, (ans) => {
+    rl.close();
+    resolve(ans);
+  }));
 }
 
 function flushLog() {
@@ -124,7 +127,7 @@ function showMessage(msg: string) {
 }
 
 /** perform a vacuum on a database, with a message while it's happening */
-function doVacuum(dbName: string, container?: SQLiteDb.CloudContainer) {
+function doVacuum(dbName: string, container?: CloudSqlite.CloudContainer) {
   process.stdout.write(`Vacuuming ${dbName} ... `);
   const db = new SQLiteDb();
   db.withOpenDb({ dbName, openMode: OpenMode.ReadWrite, container }, () => db.vacuum());
@@ -168,7 +171,7 @@ function getContainer(args: EditorOpts) {
 }
 
 /** get a WorkspaceContainer that is expected to be a cloud container, throw otherwise. */
-function getCloudContainer(args: EditorOpts): SQLiteDb.CloudContainer {
+function getCloudContainer(args: EditorOpts): CloudSqlite.CloudContainer {
   args.syncOnConnect = true;
   const container = getContainer(args);
   const cloudContainer = container.cloudContainer;
@@ -207,7 +210,7 @@ async function listWorkspaceDb(args: ListOptions) {
   await readWorkspace(args, async (file, args) => {
     const cloudContainer = file.container.cloudContainer;
     const timer = new StopWatch("list", true);
-    let prefetch: SQLiteDb.CloudPrefetch | undefined;
+    let prefetch: CloudSqlite.CloudPrefetch | undefined;
     if (args.prefetch && cloudContainer) {
       console.log(`start prefetch`);
       prefetch = file.prefetch({ nRequests: args.nRequests });
@@ -362,7 +365,7 @@ async function vacuumWorkspaceDb(args: WorkspaceDbOpt) {
 }
 
 /** Either upload or download a WorkspaceDb to/from a cloud WorkspaceContainer. Shows progress % during transfer */
-async function performTransfer(container: SQLiteDb.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
+async function performTransfer(container: CloudSqlite.CloudContainer, direction: CloudSqlite.TransferDirection, args: TransferOptions) {
   fixVersionArg(args);
   const localFileName = args.localFileName;
 
@@ -439,7 +442,7 @@ async function initializeWorkspace(args: InitializeOpts) {
     if (yesNo[0].toUpperCase() !== "Y")
       return;
   }
-  const container = SQLiteDb.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
+  const container = CloudSqlite.createCloudContainer(args as CloudSqlite.ContainerAccessProps);
   container.initializeContainer({ checksumBlockNames: true });
   showMessage(`container "${args.containerId} initialized`);
 }
@@ -485,7 +488,7 @@ async function preFetchWorkspaceDb(args: WorkspaceDbOpt) {
   fixVersionArg(args);
   const container = getCloudContainer(args);
   const timer = new StopWatch("prefetch", true);
-  const prefetch = SQLiteDb.startCloudPrefetch(container, args.dbFileName);
+  const prefetch = CloudSqlite.startCloudPrefetch(container, args.dbFileName);
   await prefetch.promise;
   showMessage(`preFetched WorkspaceDb [${args.dbFileName}] in ${sayContainer(args)}, time=${timer.elapsedSeconds.toString()}`);
 }

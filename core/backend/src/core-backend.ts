@@ -9,6 +9,7 @@ export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeService";
 export * from "./CodeSpecs";
+export * from "./CloudSqlite";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
@@ -43,10 +44,9 @@ export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
-export { CloudSqlite, IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
+export { IModelJsNative, NativeCloudSqlite, NativeLoggerCategory } from "@bentley/imodeljs-native";
 export * from "./IModelCloneContext";
 export * from "./IModelHost";
-export * from "./IModelSchemaLoader";
 export * from "./IpcHost";
 export * from "./NativeAppStorage";
 export * from "./NativeHost";
@@ -160,6 +160,10 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description AliCloudStorageService
  * Classes for working with cloud storage using AliCloud.
+ */
+/**
+ * @docs-group-description TileStorage
+ * Class for working with cloud storage using iTwin/object-storage cloud providers
  */
 /**
  * @docs-group-description Authentication

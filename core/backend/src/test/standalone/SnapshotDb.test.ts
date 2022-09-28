@@ -48,7 +48,9 @@ describe("SnapshotDb.refreshContainerSas", () => {
     clock.setSystemTime(Date.parse("2021-01-01T00:00:00Z"));
 
     sinon.stub(IModelHost, "hubAccess").get(() => HubMock);
-    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => { return { dbName: "fakeDb", container: cloudContainer } as any; });
+    sinon.stub(V2CheckpointManager, "attach").callsFake(async () => {
+      return { dbName: "fakeDb", container: cloudContainer } as any;
+    });
     const queryStub = sinon.stub(IModelHost.hubAccess, "queryV2Checkpoint").callsFake(async () => mockCheckpointV2);
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);

@@ -35,10 +35,10 @@ describe("NativeApp storage backend", () => {
 
     // Close storage show now all function to throw exception
     test1.close();
-    assert.throw(() => { test1.close(); });
-    assert.throw(() => { test1.setData("t", ""); });
-    assert.throw(() => { test1.getData("t"); });
-    assert.throw(() => { test1.removeData("t"); });
+    assert.throw(() => test1.close());
+    assert.throw(() => test1.setData("t", ""));
+    assert.throw(() => test1.getData("t"));
+    assert.throw(() => test1.removeData("t"));
 
     // Reopen it.
     const test2 = NativeAppStorage.open("backend_test_1");
@@ -57,7 +57,7 @@ describe("NativeApp storage backend", () => {
     // return same storage if it was previously opened
     assert.equal(test3, test2);
     test2.close(true);
-    assert.throw(() => { test3.close(); });
+    assert.throw(() => test3.close());
   });
 
   it("should override and type check", () => {

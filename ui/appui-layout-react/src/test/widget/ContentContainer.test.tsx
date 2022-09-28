@@ -5,9 +5,10 @@
 import * as React from "react";
 import { render } from "@testing-library/react";
 import {
-  createWidgetState, EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
+  EventEmitter, TabState, WidgetContentContainer, WidgetContentManagerContext, WidgetContentManagerContextArgs,
   WidgetStateContext,
 } from "../../appui-layout-react";
+import { createWidgetState } from "../../appui-layout-react/state/internal/WidgetStateHelpers";
 
 describe("WidgetContentContainer ", () => {
   it("should render minimized", () => {
