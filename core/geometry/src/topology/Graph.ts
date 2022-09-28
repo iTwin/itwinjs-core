@@ -778,16 +778,16 @@ export class HalfEdge {
   }
 
   /** Return true if x and y coordinates of this and other are exactly equal */
-  public isEqualXY(other: XAndY): boolean {
+  public isEqualXY(other: XAndY | HalfEdge): boolean {
     return this.x === other.x && this.y === other.y;
   }
 
-  /** Return true if x and y coordinates of this and other are exactly equal */
+  /** Return distance between xy coordinates of this and other node */
   public distanceXY(other: HalfEdge): number {
     return Geometry.distanceXYXY(this.x, this.y, other.x, other.y);
   }
 
-  /** Return true if x and y coordinates of this and other are exactly equal */
+  /** Return distance between xyz coordinates of this and other node */
   public distanceXYZ(other: HalfEdge): number {
     return Geometry.distanceXYZXYZ(this.x, this.y, this.z, other.x, other.y, other.z);
   }

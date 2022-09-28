@@ -2446,7 +2446,7 @@ export class HalfEdge {
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
     i: number;
     get id(): any;
-    isEqualXY(other: XAndY): boolean;
+    isEqualXY(other: XAndY | HalfEdge): boolean;
     isFaceConvex(): boolean;
     get isIsolatedEdge(): boolean;
     isMaskedAroundFace(mask: HalfEdgeMask, value?: boolean): boolean;
