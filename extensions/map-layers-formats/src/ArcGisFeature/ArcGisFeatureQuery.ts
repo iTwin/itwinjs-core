@@ -7,6 +7,10 @@ export type ArcGisFeatureResultType = "none" | "standard" | "tile";
 export type ArcGisFeatureGeometryType = "esriGeometryPoint" | "esriGeometryMultipoint" | "esriGeometryPolyline" | "esriGeometryPolygon" | "esriGeometryEnvelope";
 export type ArcGisFeatureSpatialRel =  "esriSpatialRelIntersects" | "esriSpatialRelContains" | "esriSpatialRelCrosses" | "esriSpatialRelEnvelopeIntersects" | "esriSpatialRelIndexIntersects" | "esriSpatialRelOverlaps" | "esriSpatialRelTouches" | "esriSpatialRelWithin";
 
+export interface ArcGisGeometry {
+  type: ArcGisFeatureGeometryType;
+  geom: ArcGisExtent | ArcGisPointGeometry;
+}
 export interface ArcGisSpatialReference {
   wkid: number;
   latestWkid: number;
@@ -17,6 +21,12 @@ export interface ArcGisExtent {
   xmax: number;
   ymin: number;
   ymax: number;
+  spatialReference: ArcGisSpatialReference;
+}
+
+export interface ArcGisPointGeometry {
+  x: number;
+  y: number;
   spatialReference: ArcGisSpatialReference;
 }
 
@@ -51,14 +61,22 @@ export interface ArcGisFeatureQueryParams {
 
   /** If true, the result includes the geometry associated with each feature returned. */
   returnGeometry?: boolean;
-  geometry?: ArcGisExtent;
+  geometry?: ArcGisGeometry;
   geometryType?: ArcGisFeatureGeometryType;
   spatialRel?: ArcGisFeatureSpatialRel;
   resultType?: ArcGisFeatureResultType;
   maxRecordCountFactor?: number;
   returnExceededLimitFeatures?: boolean;
-  outSR?: number;
   quantizationParameters?: FeatureQueryQuantizationParams;
+
+  /** The list of fields to be included in the returned result set. This list is a comma-delimited list of field names.
+   * You can also specify the wildcard "*" as the value of this parameter.
+   *  */
+  outFields?: string;
+
+  /** The buffer distance for the input geometries.
+   *  */
+  distance?: number;
 }
 export class ArcGisFeatureQuery {
   public baseUrl: string;
@@ -67,36 +85,38 @@ export class ArcGisFeatureQuery {
   public resultRecordCount?: number;
   public resultOffset?: number;
   public returnGeometry?: boolean;
-  public geometry?: ArcGisExtent;
-  public geometryType?: ArcGisFeatureGeometryType;
+  public geometry?: ArcGisGeometry;
   public spatialRel?: ArcGisFeatureSpatialRel;
   public resultType?: ArcGisFeatureResultType;
   public maxRecordCountFactor?: number;
   public returnExceededLimitFeatures?: boolean;
-  public outSR?: number;
+  public outSR: number;
+  public outFields?: string;
+  public distance?: number;
 
   // public envelopeFilter?: CartographicRange;
   public quantizationParams?: FeatureQueryQuantizationParams;
 
   // base url is expected ito be in the format of:
   // https://<hostname>/arcgis/rest/services/<ServiceName>/FeatureServer
-  public constructor(baseUrl: string, layerIdx: number, format: ArcGisFeatureFormat, params?: ArcGisFeatureQueryParams) {
+  public constructor(baseUrl: string, layerIdx: number, format: ArcGisFeatureFormat, outSR: number, params?: ArcGisFeatureQueryParams) {
     this.baseUrl = baseUrl;
     this.layerIdx = layerIdx;
     this.format = format;
+    this.outSR = outSR;
 
     if (params !== undefined) {
       this.resultRecordCount = params.resultRecordCount;
       this.resultOffset = params.resultOffset;
       this.returnGeometry = params.returnGeometry;
       this.geometry = params.geometry;
-      this.geometryType = params.geometryType;
       this.spatialRel = params.spatialRel;
       this.resultType = params.resultType;
       this.maxRecordCountFactor = params.maxRecordCountFactor;
       this.returnExceededLimitFeatures = params.returnExceededLimitFeatures;
-      this.outSR = params.outSR;
       this.quantizationParams = params.quantizationParameters;
+      this.outFields = params.outFields;
+      this.distance = params.distance;
     }
 
   }
@@ -132,35 +152,19 @@ export class ArcGisFeatureQuery {
       customParams = ArcGisFeatureQuery.appendParam(customParams, "outSR", `${this.outSR}`);
     }
 
-    if (this.geometry || this.geometryType || this.spatialRel) {
+    if (this.geometry || this.spatialRel) {
 
       if (this.spatialRel) {
         customParams = ArcGisFeatureQuery.appendParam(customParams, "spatialRel", this.spatialRel);
       }
 
-      if (this.geometryType) {
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "geometryType", this.geometryType);
-      }
-
       if (this.geometry) {
-        // Basic geometry expression is used : geometryType=esriGeometryEnvelope&geometry=<xmin>,<ymin>,<xmax>,<ymax>
-        // A more advanced JSON structure exists in the service API if we ever need it.
-        // We assume the extent to be in EPSG:3857 (Esri SR ID: 102100)
-        // customParams = ArcGisFeatureQuery.appendParam(customParams, "geometryType", "esriGeometryEnvelope");
-        /*
-        const radianRange = this.envelopeFilter.getLongitudeLatitudeBoundingBox();
-        const bbox: Range2d = new Range2d(
-          Angle.radiansToDegrees(radianRange.xLow), Angle.radiansToDegrees(radianRange.yLow),
-          Angle.radiansToDegrees(radianRange.xHigh), Angle.radiansToDegrees(radianRange.yHigh));
-*/
-        // customParams = ArcGisFeatureQuery.appendParam(customParams, "geometry", `${this.envelopeFilter.xLow},${this.envelopeFilter.yLow},${this.envelopeFilter.xHigh},${this.envelopeFilter.yHigh}`);
-        // customParams = ArcGisFeatureQueryUrl.appendParam(customParams, "geometry", `${bbox.xLow},${bbox.yLow},${bbox.xHigh},${bbox.yHigh}`);
+        customParams = ArcGisFeatureQuery.appendParam(customParams, "geometryType", this.geometry.type);
 
-        const geomStr = JSON.stringify(this.geometry);
+        const geomStr = JSON.stringify(this.geometry.geom);
         customParams = ArcGisFeatureQuery.appendParam(customParams, "geometry", geomStr);
 
-        customParams = ArcGisFeatureQuery.appendParam(customParams, "inSR", `${this.geometry.spatialReference.wkid}`);
-        // customParams = ArcGisFeatureQueryUrl.appendParam(customParams, "inSR", "4326");
+        customParams = ArcGisFeatureQuery.appendParam(customParams, "inSR", `${this.geometry.geom.spatialReference.wkid}`);
       }
     } else {
       // No custom params, fetch all geometries
@@ -172,10 +176,15 @@ export class ArcGisFeatureQuery {
       customParams = ArcGisFeatureQuery.appendParam(customParams, "quantizationParameters", quantizationParamsStr);
     }
 
-    // TODO: Removed hardcoded 102100 SR (EPSG:3857)
-    // return `${this.baseUrl}/${this.layerIdx}/query/?f=json&${customParams}&outSR=102100`;
+    if (this.outFields) {
+      customParams = ArcGisFeatureQuery.appendParam(customParams, "outFields", this.outFields);
+    }
 
-    return `${this.baseUrl}/${this.layerIdx}/query/?f=${this.format}&${customParams}&outSR=102100`;
+    if (this.distance) {
+      customParams = ArcGisFeatureQuery.appendParam(customParams, "distance", `${this.distance}`);
+    }
+
+    return `${this.baseUrl}/${this.layerIdx}/query/?f=${this.format}&${customParams}`;
   }
 
   private static  appendParam(urlToAppend: string, paramName: string, paramValue: string) {

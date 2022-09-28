@@ -1604,6 +1604,7 @@ importers:
 
   ../../extensions/map-layers-formats:
     specifiers:
+      '@itwin/appui-abstract': workspace:*
       '@itwin/build-tools': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -1630,6 +1631,7 @@ importers:
     dependencies:
       google-protobuf: 3.20.1
     devDependencies:
+      '@itwin/appui-abstract': link:../../ui/appui-abstract
       '@itwin/build-tools': link:../../tools/build
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common

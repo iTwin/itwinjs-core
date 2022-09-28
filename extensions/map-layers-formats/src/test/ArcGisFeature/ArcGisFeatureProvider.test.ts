@@ -12,7 +12,7 @@ import { ArcGisUtilities } from "@itwin/core-frontend";
 import { NewYorkDataset } from "./NewYorkDataset";
 
 const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId};
-describe.only("ArcGisFeatureProvider", () => {
+describe("ArcGisFeatureProvider", () => {
 
   const sandbox = sinon.createSandbox();
 

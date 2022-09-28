@@ -5,16 +5,17 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
+import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation } from "@itwin/core-frontend";
-import { esriPBuffer } from "./esriPBuffer.gen";
+import { ArcGisErrorCode, ArcGisUtilities, ImageryMapTileTree, IModelApp, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
-import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
+import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFeaturePBF } from "./ArcGisFeaturePBF";
 import { ArcGisFeatureJSON } from "./ArcGisFeatureJSON";
+import { ArcGisFeatureResponse, ArcGisResponseData } from "./ArcGisFeatureResponse";
+import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 
 const levelToken = "{level}";
 const rowToken = "{row}";
@@ -31,80 +32,30 @@ const loggerCategory = "ArcGISFeatureProvider";
 */
 interface ArcGisFeatureUrl {
   url: string;
-  envelope: ArcGisExtent;
+  envelope?: ArcGisExtent;    // envelope representing the current computed URL, requiered to refine request.
 }
 
-/**
-* @internal
-*/
-interface ArcGisResponseData {
-  data: any;
-  exceedTransferLimit: boolean;
-}
-
-/**
-* @internal
-*/
-class ArcGisFeatureReponse {
-
-  public readonly format: ArcGisFeatureFormat;
-  public readonly envelope: ArcGisExtent;
-
-  private _response: Promise<Response>;
-
-  constructor(format: ArcGisFeatureFormat,  response: Promise<Response>, envelope: ArcGisExtent) {
-    this.format = format;
-    this._response = response;
-    this.envelope = envelope;
-  }
-
-  public async getResponseData(): Promise<ArcGisResponseData|undefined> {
-
-    let data: any|undefined;
-    try {
-      const tileResponse = await this._response;
-      if (tileResponse === undefined || tileResponse.status !== 200  )
-        return undefined;
-
-      if (this.format === "PBF") {
-        const byteArray: Uint8Array = new Uint8Array(await tileResponse.arrayBuffer());
-        if (!byteArray || (byteArray.length === 0))
-          return undefined;
-
-        data = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
-        const collection = data as esriPBuffer.FeatureCollectionPBuffer;
-        return {data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit};
-
-      } else {
-        if (tileResponse.text === undefined)
-          return undefined;
-
-        data = await tileResponse.json();
-        return {data, exceedTransferLimit: data?.exceededTransferLimit};
-      }
-
-    } catch(_e) {
-      return undefined;
-    }
-  }
-}
-
-/**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
+/**  Provide tiles from a ESRI ArcGIS Feature service
 * @internal
 */
 export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   private _supportsCoordinatesQuantization = false;
+  private _drawDebugInfo = false;
+  private _querySupported = false;
   private _layerId = 0;
-  private _layerInfo: any;
-  private _format: ArcGisFeatureFormat|undefined;
+  private _layerMetadata: any;
+  private _format: ArcGisFeatureFormat = "JSON";
   public serviceJson: any;
   private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
   private static readonly _nbSubTiles = 2;
+  private _outSR = 102100;
+
+  private _accessClient: MapLayerAccessClient|undefined;
+  private _lastAccessToken: MapLayerAccessToken|undefined;
 
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
-
   // We should not be making any request if layer is currently out of range,
   // but since minimum LOD is not correctely supported by iTwin tile, we dont use it for now.
   // public get minimumZoomLevel(): number { return this._minDepthFromLod; }
@@ -112,6 +63,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
+    if (IModelApp.mapLayerFormatRegistry)
+      this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
   }
 
   public override async initialize(): Promise<void> {
@@ -127,6 +80,12 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     if (json === undefined) {
       Logger.logError(loggerCategory, "Could not get service JSON");
       throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
+
+    if (json.capabilities) {
+      this._querySupported = json.capabilities.indexOf("Query") >= 0;
+      if (!this._querySupported)
+        throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
     if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
@@ -173,7 +132,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
             if (layerJson.defaultVisibility) {
               this._layerId = layer.id;
-              this._layerInfo = layerJson;
+              this._layerMetadata = layerJson;
               break;
             }
           }
@@ -186,9 +145,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     // Make sure we cache layer info (i.e. rendering info)
-    if (!this._layerInfo) {
+    if (!this._layerMetadata) {
       try {
-        this._layerInfo = await this.getLayerMetadata(this._layerId);
+        this._layerMetadata = await this.getLayerMetadata(this._layerId);
       } catch {
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
@@ -196,8 +155,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     // Check supported query formats: JSON and PBF are currently implemented by this provider
     // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
-    if (this._layerInfo.supportedQueryFormats) {
-      const formats: string[] = this._layerInfo.supportedQueryFormats.split(", ");
+    if (this._layerMetadata.supportedQueryFormats) {
+      const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
       if (formats.includes("PBF")) {
         this._format = "PBF";
       } else if (formats.includes ("JSON"))  {
@@ -210,20 +169,21 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
     // If not supported, transformation will be applied client side.
-    if (this._layerInfo.supportsCoordinatesQuantization) {
+    if (this._layerMetadata.supportsCoordinatesQuantization) {
       this._supportsCoordinatesQuantization = true;
     }
 
     // Check for minScale / max scale
-    const minScale = this._layerInfo?.minScale || undefined;  // undefined, 0 -> undefined
-    const maxScale = this._layerInfo?.maxScale || undefined;  // undefined, 0 -> undefined
+    const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
+    const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
     const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
     if (scales.minLod)
       this._minDepthFromLod = scales.minLod;
     if (scales.maxLod)
       this._maxDepthFromLod = scales.maxLod;
 
-    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerInfo?.drawingInfo?.renderer);
+    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.drawingInfo?.renderer);
+
   }
 
   protected async getLayerMetadata(layerId: number) {
@@ -239,35 +199,47 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   }
 
   public override get tileSize(): number { return 512; }
-  public get format(): ArcGisFeatureFormat|undefined { return this._format; }
+  public get format(): ArcGisFeatureFormat { return this._format; }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
+  protected async getJson(url: URL) {
+    const response = await fetch(url.toString(), { method: "GET" });
+    return response.json();
+  }
   // We dont use this method inside this provider (see constructFeatureUrl), but since this is an anstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
     return "";
   }
 
-  public constructFeatureUrl(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): ArcGisFeatureUrl | undefined {
+  public constructFeatureUrl(row: number, column: number, zoomLevel: number, geomOverride?: ArcGisGeometry, outFields?: string, tolerance?: number, returnGeometry?: boolean): ArcGisFeatureUrl | undefined {
 
-    if (!this.format) {
-      return undefined;
-    }
     const tileExtent = this.getEPSG3857Extent(row, column, zoomLevel);
-
     const tileEnvelope = {
       xmin: tileExtent.left, ymin: tileExtent.bottom,
       xmax: tileExtent.right, ymax: tileExtent.top,
       spatialReference: {wkid:102100, latestWkid:3857},
     };
 
+    // Actual spatial filter.
+    // By default, we request the tile extent.  If 'cartoPoint' is specified,
+    // we restrict the spatial to specific point. (i.e. GetFeatureInfo requests)
+    // We a refine enveloppe is provided, it has the priority over 'cartoPoint'
+    let geometry: ArcGisGeometry|undefined;
+    if (geomOverride) {
+      geometry = geomOverride;
+    } else {
+      geometry = {geom: tileEnvelope, type: "esriGeometryEnvelope"};
+    }
+
     let quantizationParameters: FeatureQueryQuantizationParams|undefined;
+    const toleranceWorld = (tileExtent.top - tileExtent.bottom) / this.tileSize;
     if (this._supportsCoordinatesQuantization) {
       quantizationParameters = {
         mode: "view",
         originPosition: "upperLeft",
-        tolerance: (tileExtent.top - tileExtent.bottom) / this.tileSize, // pixel size in world units
+        tolerance: toleranceWorld, // pixel size in world units
         extent: tileEnvelope,
       };
     }
@@ -275,19 +247,68 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       this._settings.url,
       this._layerId,
       this.format,
-      {
-        geometry: refineEnvelope ?? tileEnvelope,
+      this._outSR,
+      { geometry,
         geometryType: "esriGeometryEnvelope",
         returnExceededLimitFeatures: false,
         maxRecordCountFactor: 3,    // This was grabbed from the ESRI web viewer request, not sure where this factor come from
         resultType: "tile",
         quantizationParameters,
-      });
-    return  {url: url.toString(), envelope: refineEnvelope ?? tileEnvelope} ;
+        outFields,
+        returnGeometry,
+        distance: (tolerance ? tolerance*toleranceWorld :undefined) });
+
+    let envelope: ArcGisExtent | undefined;
+    if (geomOverride && geomOverride.type === "esriGeometryEnvelope"){
+      envelope = geomOverride.geom as ArcGisExtent;
+    } else {
+      envelope = tileEnvelope;
+    }
+
+    return  {url: url.toString(), envelope} ;
 
   }
 
-  private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<ArcGisFeatureReponse | undefined> {
+  // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
+  public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
+    if (!this._querySupported)
+      return;
+
+    const cartoPoint = {
+      x: this.getEPSG3857X(carto.longitudeDegrees),
+      y: this.getEPSG3857Y(carto.latitudeDegrees),
+      spatialReference: {wkid:102100, latestWkid:3857},
+    };
+    const infoUrl = this.constructFeatureUrl(quadId.row, quadId.column, quadId.level, {geom: cartoPoint, type: "esriGeometryPoint"}, "*", 3 /* tolerance in pixel*/, false);
+    if (!infoUrl || infoUrl.url.length === 0) {
+      Logger.logError(loggerCategory, `Could not construct feature info query URL`);
+      return undefined;
+    }
+
+    try {
+      const response = fetch(infoUrl.url, { method: "GET" });
+      const featureResponse = new ArcGisFeatureResponse(this.format, response);
+      const responseData = await featureResponse.getResponseData();
+      if (!responseData) {
+        Logger.logError(loggerCategory, `Could not get feature info data`);
+        return;
+      }
+
+      if (responseData.exceedTransferLimit) {
+        Logger.logError(loggerCategory, `Could not get feature info : transfert limit exeeded.`);
+        return;
+      }
+      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
+      featureReader.readFeatureInfo(responseData, featureInfos);
+
+    } catch (e) {
+      Logger.logError(loggerCategory, `Exception occured while loading feature info data : ${e}`);
+      return;
+    }
+
+  }
+
+  private async fetchTile(row: number, column: number, zoomLevel: number, refineEnvelope?: ArcGisExtent): Promise<ArcGisFeatureResponse | undefined> {
     if (!this.format) {
       assert(!"No supported query format");
       return undefined;
@@ -295,7 +316,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     // const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "JSON" ? "text" : "arraybuffer" };
     // tileRequestOptions.auth = this.getRequestAuthorization();
-    const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, refineEnvelope);
+
+    const geomOverride: ArcGisGeometry|undefined = (refineEnvelope ? {geom: refineEnvelope, type: "esriGeometryEnvelope"} : undefined);
+    const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, geomOverride);
     if (!tileUrl || tileUrl.url.length === 0) {
       Logger.logError(loggerCategory, `Could not construct feature query URL for tile ${zoomLevel}/${row}/${column}`);
       return undefined;
@@ -303,7 +326,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
     // return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
     const response = fetch(tileUrl.url, { method: "GET" });
-    return new ArcGisFeatureReponse(this.format, response, tileUrl.envelope);
+    return new ArcGisFeatureResponse(this.format, response, tileUrl.envelope);
   }
 
   public  drawTileDebugInfo(row: number, column: number, zoomLevel: number, context: CanvasRenderingContext2D ){
@@ -362,7 +385,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       }
 
       const renderer = new ArcGisFeatureRenderer(ctx, this._symbologyRenderer, transfo);
-      const featureReader = this.format === "PBF" ? new ArcGisFeaturePBF() : new ArcGisFeatureJSON();
+      const featureReader: ArcGisFeatureReader = this.format === "PBF" ? new ArcGisFeaturePBF(this._settings, this._layerMetadata) : new ArcGisFeatureJSON(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
         const dx = (envelope.xmax - envelope.xmin) * 0.5;
@@ -385,7 +408,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       // In the latter case, we subdivise the previous request enveloppe in for 4 sub-envelopes,
       // and repeat again until we get data.
       const renderData = async (envelope?: ArcGisExtent) => {
-        let response: ArcGisFeatureReponse | undefined;
+        let response: ArcGisFeatureResponse | undefined;
         let responseData: ArcGisResponseData | undefined;
         try {
           response = await this.fetchTile(row, column, zoomLevel, envelope);
@@ -405,18 +428,23 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
         }
 
         if (responseData.exceedTransferLimit) {
-          const subEnvelopes = getSubEnvelopes(response.envelope);
-          const renderPromises = [];
-          for (const subEnvelope of subEnvelopes) {
-            renderPromises.push(renderData(subEnvelope));
+          if (response.envelope) {
+            const subEnvelopes = getSubEnvelopes(response.envelope);
+            const renderPromises = [];
+            for (const subEnvelope of subEnvelopes) {
+              renderPromises.push(renderData(subEnvelope));
+            }
+            await Promise.all(renderPromises);
+          } else {
+            Logger.logError(loggerCategory, `Request exceeded transfert limit, could not refine request`);
           }
-          await Promise.all(renderPromises);
         } else {
-          featureReader.readAndRender(responseData.data, renderer);
+          featureReader.readAndRender(responseData, renderer);
         }
       };
       await renderData();
-      this.drawTileDebugInfo(row, column, zoomLevel, ctx);
+      if (this._drawDebugInfo)
+        this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
       Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
     }
