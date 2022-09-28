@@ -12,10 +12,11 @@ import { PropertyFilter } from "@itwin/components-react";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
+import { NavigationPropertyEditorContext, NavigationPropertyEditorContextProps } from "../properties/NavigationPropertyEditor";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { PresentationInstanceFilter, PropertyInfo } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter } from "./Utils";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
@@ -37,11 +38,15 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
     onInstanceFilterChanged(presentationFilter);
   }, [descriptor, onInstanceFilterChanged]);
 
-  return <InstanceFilterBuilder
-    {...filteringProps}
-    onFilterChanged={onFilterChanged}
-    ruleGroupDepthLimit={ruleGroupDepthLimit}
-  />;
+  const contextProps = useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor);
+
+  return <NavigationPropertyEditorContext.Provider value={contextProps}>
+    <InstanceFilterBuilder
+      {...filteringProps}
+      onFilterChanged={onFilterChanged}
+      ruleGroupDepthLimit={ruleGroupDepthLimit}
+    />
+  </NavigationPropertyEditorContext.Provider>;
 }
 
 /** @alpha */
@@ -51,7 +56,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
   const properties = React.useMemo(() => {
     const matchingClassesSet = getClassesSet(selectedClasses.map((selectedClass) => selectedClass.id), classHierarchyProvider);
     return propertyInfos
-      .filter((info) => !matchingClassesSet || info.sourceClassIds.some((id) => matchingClassesSet.has(id, {isDerived: true, isBase: true})))
+      .filter((info) => !matchingClassesSet || info.sourceClassIds.some((id) => matchingClassesSet.has(id, { isDerived: true, isBase: true })))
       .map((info) => info.propertyDescription);
   }, [propertyInfos, selectedClasses, classHierarchyProvider]);
 
@@ -97,6 +102,20 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
   };
 }
 
+/** @internal */
+export function useFilterBuilderNavigationPropertyEditorContextProps(imodel: IModelConnection, descriptor: Descriptor) {
+  return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
+    imodel,
+    getNavigationPropertyInfo: async (record) => {
+      const field = descriptor.getFieldByName(getInstanceFilterFieldName(record.property));
+      if (!field || !field.isPropertiesField())
+        return undefined;
+
+      return field.properties[0].property.navigationPropertyInfo;
+    },
+  }), [imodel, descriptor]);
+}
+
 function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassHierarchyProvider): ClassHierarchiesSet | undefined {
   if (!classHierarchyProvider || classIds.length === 0)
     return undefined;
@@ -117,15 +136,15 @@ function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableC
   // find class infos that has property (class info is or is derived from property class) and
   // are derived from selected classes
   const propertyClassInfos = availableClasses.filter((classInfo) => {
-    return propertyClassesSet.has(classInfo.id, {isDerived: true}) &&
-     (!selectedClassesSet || selectedClassesSet.has(classInfo.id, {isDerived: true}));
+    return propertyClassesSet.has(classInfo.id, { isDerived: true }) &&
+      (!selectedClassesSet || selectedClassesSet.has(classInfo.id, { isDerived: true }));
   });
   /* istanbul ignore if */
   if (propertyClassInfos.length === 0)
     return undefined;
 
   // filter out currently selected classes that do not have this property (currently selected class should be derived class of property classes)
-  const selectedClasses = currentClasses.filter((currentClass) => propertyClassesSet.has(currentClass.id, {isDerived: true}));
+  const selectedClasses = currentClasses.filter((currentClass) => propertyClassesSet.has(currentClass.id, { isDerived: true }));
 
   // add classes that have this property to the list
   let addedNewClass = false;

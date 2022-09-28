@@ -112,7 +112,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
           : undefined}
         {this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive
           ? <div className="components-property-record-value">
-            <span>{this.props.valueElementRenderer ? this.props.valueElementRenderer() : this.props.valueElement}</span>
+            {this.props.valueElementRenderer ? this.props.valueElementRenderer() : this.props.valueElement}
           </div>
           : undefined
         }

@@ -16,7 +16,7 @@ import { PresentationInstanceFilter, PresentationInstanceFilterCondition, Proper
 /** @alpha */
 export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[] {
   const rootCategoryName = findRootCategoryName(descriptor.categories);
-  return createPropertyInfos(descriptor, {categoryName: rootCategoryName});
+  return createPropertyInfos(descriptor, { categoryName: rootCategoryName });
 }
 
 /** @internal */
@@ -26,7 +26,8 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
   return createPresentationInstanceFilterCondition(descriptor, filter);
 }
 
-function getInstanceFilterFieldName(property: PropertyDescription) {
+/** @internal */
+export function getInstanceFilterFieldName(property: PropertyDescription) {
   const [_, fieldName] = property.name.split(INSTANCE_FILTER_FIELD_SEPARATOR);
   return fieldName;
 }
@@ -105,9 +106,6 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
   if (field.category.name !== parentInfo.categoryName || !field.isPropertiesField())
     return [];
 
-  if (field.type.typeName.toLowerCase() === "navigation")
-    return [];
-
   const fieldName = getPrefixedFieldName(field.name, fieldNamePrefix);
   const propertyDescription = createPropertyDescriptionFromFieldInfo({
     name: getCategorizedFieldName(fieldName, parentInfo.name),
@@ -142,7 +140,7 @@ function getPrefixedString(value: string, prefix?: string) {
 }
 
 /** @alpha */
-export const INSTANCE_FILTER_FIELD_SEPARATOR="#";
+export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
 }

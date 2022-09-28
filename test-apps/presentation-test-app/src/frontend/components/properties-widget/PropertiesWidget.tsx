@@ -6,21 +6,22 @@
 import "./PropertiesWidget.css";
 import * as React from "react";
 import { useResizeDetector } from "react-resize-detector";
-import { IModelApp, IModelConnection } from "@itwin/core-frontend";
-import { Field } from "@itwin/presentation-common";
-import {
-  DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, PresentationPropertyDataProvider,
-  usePropertyDataProviderWithUnifiedSelection,
-} from "@itwin/presentation-components";
-import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import {
   ActionButtonRendererProps, CompositeFilterType, CompositePropertyDataFilterer, DisplayValuePropertyDataFilterer, FilteredPropertyData,
-  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory, PropertyCategoryLabelFilterer,
-  PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue, VirtualizedPropertyGridWithDataProvider,
+  FilteringInput, FilteringInputStatus, FilteringPropertyDataProvider, HighlightInfo, LabelPropertyDataFilterer, PropertyCategory,
+  PropertyCategoryLabelFilterer, PropertyData, PropertyGridContextMenuArgs, useAsyncValue, useDebouncedAsyncValue,
+  VirtualizedPropertyGridWithDataProvider,
 } from "@itwin/components-react";
+import { IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Orientation, useDisposable } from "@itwin/core-react";
 import { ToggleSwitch } from "@itwin/itwinui-react";
+import { Field } from "@itwin/presentation-common";
+import {
+  DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, NavigationPropertyEditorContext,
+  PresentationPropertyDataProvider, useNavigationPropertyEditingContextProps, usePropertyDataProviderWithUnifiedSelection,
+} from "@itwin/presentation-components";
+import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
 
 const FAVORITES_SCOPE = FavoritePropertiesScope.IModel;
@@ -166,6 +167,8 @@ function PropertyGrid(props: PropertyGridProps) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
+  const contextProps = useNavigationPropertyEditingContextProps(imodel, dataProvider);
+
   if (numSelectedElements === 0) {
     return <FillCentered>{IModelApp.localization.getLocalizedString("Sample:property-grid.no-elements-selected")}</FillCentered>;
   }
@@ -175,20 +178,23 @@ function PropertyGrid(props: PropertyGridProps) {
   }
 
   return <>
-    <VirtualizedPropertyGridWithDataProvider
-      width={width}
-      height={height}
-      dataProvider={filteringDataProvider}
-      isPropertyHoverEnabled={true}
-      onPropertyContextMenu={onPropertyContextMenu}
-      actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
-      orientation={Orientation.Horizontal}
-      horizontalOrientationMinWidth={500}
-      highlight={(filterText && filterText.length !== 0)
-        ? { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }
-        : undefined
-      }
-    />
+    <NavigationPropertyEditorContext.Provider value={contextProps}>
+      <VirtualizedPropertyGridWithDataProvider
+        width={width}
+        height={height}
+        dataProvider={filteringDataProvider}
+        isPropertyHoverEnabled={true}
+        onPropertyContextMenu={onPropertyContextMenu}
+        actionButtonRenderers={[renderFavoritesActionButton, renderCopyActionButton]}
+        orientation={Orientation.Horizontal}
+        horizontalOrientationMinWidth={500}
+        highlight={(filterText && filterText.length !== 0)
+          ? { highlightedText: filterText, activeHighlight, filteredTypes: filteringResult?.filteredTypes }
+          : undefined
+        }
+        isPropertyEditingEnabled={true}
+      />
+    </NavigationPropertyEditorContext.Provider>
     {contextMenuArgs && <PropertiesWidgetContextMenu args={contextMenuArgs} dataProvider={dataProvider} onFindSimilar={onFindSimilar} onCloseContextMenu={onCloseContextMenu} />}
   </>;
 }

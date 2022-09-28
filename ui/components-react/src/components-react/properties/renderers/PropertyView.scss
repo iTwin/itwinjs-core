@@ -55,14 +55,6 @@ $text-font-color: $buic-text-color;
 
 .components-property-record-value {
   @include record-cell;
-  overflow: hidden;
-
-  span {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 100%;
-  }
 
   .core-underlined-button {
     // Offset by 2px, because value is centered vertically
