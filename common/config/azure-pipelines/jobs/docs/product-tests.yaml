@@ -22,13 +22,9 @@ jobs:
       SeleniumTestUrl: https://imodeljs.org
 
   steps:
-    - task: DownloadPipelineArtifact@2
+    - download: bemetalsmith-tests
+      artifact: DocsSeleniumTests
       displayName: Download Selenium Tests
-      inputs:
-        source: specific
-        project: iModelTechnologies
-        pipeline: 2179
-        runVersion: latest
 
     - powershell: '((Get-Item "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe").VersionInfo)'
       displayName: PowerShell Script
@@ -36,7 +32,7 @@ jobs:
     - task: qetza.replacetokens.replacetokens-task.replacetokens@3
       displayName: Replace tokens in settings.xml
       inputs:
-        rootDirectory: $(Pipeline.Workspace)/Bemetalsmith-Selenium-Tests/DocsSeleniumTests
+        rootDirectory: $(Pipeline.Workspace)/bemetalsmith-tests/DocsSeleniumTests
         targetFiles: settings.xml
         escapeType: none
 
@@ -47,7 +43,7 @@ jobs:
       displayName: Run Selenium Tests
       inputs:
         testAssemblyVer2: imodeljs-docs-selenium-tests.dll
-        searchFolder: $(Pipeline.Workspace)/Bemetalsmith-Selenium-Tests/DocsSeleniumTests
+        searchFolder: $(Pipeline.Workspace)/bemetalsmith-tests/DocsSeleniumTests
         vsTestVersion: toolsInstaller
         rerunFailedTests: true
         rerunType: basedOnTestFailureCount
