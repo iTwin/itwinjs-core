@@ -60,7 +60,7 @@ export class IModelJsFs {
   public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }
 
   /** Get the file and directory names in the specified directory. Excludes "." and "..". */
-  public static readdirSync(pathname: string): string[] { return fs.readdirSync(pathname); }
+  public static readdirSync(pathname: string): string[] { return fs.existsSync(pathname) ? fs.readdirSync(pathname) : []; }
 
   /** Read file */
   public static readFileSync(pathname: string): string | Buffer { return fs.readFileSync(pathname); }
