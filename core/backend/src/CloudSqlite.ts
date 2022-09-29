@@ -179,7 +179,7 @@ export namespace CloudSqlite {
      * @param mask A bitmask of `LoggingMask` values
      * @note this method does nothing if [[isDaemon]] is true. Daemon logging is configured when the daemon is started.
      * @note HTTP logging can be happen on multiple threads and may be buffered. To see buffered log messages, periodically call
-     * [IModelHost.flushLog]($backend).
+     * `IModelHost.flushLog`
      */
     setLogMask(mask: number): void;
     /** destroy this CloudCache. All CloudContainers should be detached before calling this. */
