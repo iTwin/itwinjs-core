@@ -748,7 +748,6 @@ export namespace CloudSqlite {
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
-        // (undocumented)
         setLogMask(mask: number): void;
     }
     export interface CloudContainer {
@@ -824,6 +823,14 @@ export namespace CloudSqlite {
         container: CloudContainer;
         dbName: string;
         user: string;
+    }
+    export enum LoggingMask {
+        AddToDelete = 4,
+        All = 255,
+        DirtyBlocks = 2,
+        HTTP = 1,
+        LifecycleEvents = 8,
+        None = 0
     }
     // @internal
     export interface ObtainLockParams {
