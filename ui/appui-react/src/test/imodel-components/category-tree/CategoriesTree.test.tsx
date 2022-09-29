@@ -522,7 +522,8 @@ describe("CategoryTree", () => {
       const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
 
-      expect(hierarchy).to.matchSnapshot();
+      expect(hierarchy).to.be.an("array").with.lengthOf(1);
+      expect({hierarchy}).to.nested.include({"hierarchy[0].label.value.value": "Test SpatialCategory"});
     });
 
     it("does not show private 2d categories", async () => {
@@ -559,99 +560,8 @@ describe("CategoryTree", () => {
       const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
 
-      expect(hierarchy).to.matchSnapshot();
-    });
-  });
-
-  describe("#integration", () => {
-    beforeEach(async () => {
-      await initializePresentationTesting({
-        backendProps: {
-          caching: {
-            hierarchies: {
-              mode: HierarchyCacheMode.Memory,
-            },
-          },
-        },
-      });
-    });
-
-    afterEach(async () => {
-      await terminatePresentationTesting();
-    });
-
-    it("does not show private 3d categories", async () => {
-      const testUtility = new IModelTestUtility();
-
-      testUtility.createIModel();
-      testUtility.addPhysicalModel();
-
-      // Insert a SpatialCategory
-      const spatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test SpatialCategory"),
-      };
-      const spatialCategoryId: Id64String = testUtility.addSpatialCategory(spatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(spatialCategoryId));
-
-      // Insert a private SpatialCategory
-      const privateSpatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test private SpatialCategory"),
-        isPrivate: true,
-      };
-      const privateSpatialCategoryId: Id64String = testUtility.addSpatialCategory(privateSpatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateSpatialCategoryId));
-
-      testUtility.addPhysicalObject(spatialCategoryId);
-      testUtility.addPhysicalObject(privateSpatialCategoryId);
-      testUtility.closeIModel();
-
-      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "3d");
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
-      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
-
-      expect(hierarchy).to.matchSnapshot();
-    });
-
-    it("does not show private 2d categories", async () => {
-      const testUtility = new IModelTestUtility();
-
-      testUtility.createIModel();
-      testUtility.addDrawingModel();
-
-      // Insert a DrawingCategory
-      const drawingCategoryProps: CategoryProps = {
-        classFullName: "BisCore:DrawingCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getDrawingCategoryCode("Test DrawingCategory"),
-      };
-      const drawingCategoryId: Id64String = testUtility.addDrawingCategory(drawingCategoryProps);
-      assert.isTrue(Id64.isValidId64(drawingCategoryId));
-
-      // Insert a private DrawingCategory
-      const privateDrawingCategoryProps: CategoryProps = {
-        classFullName: "BisCore:DrawingCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getDrawingCategoryCode("Test private DrawingCategory"),
-        isPrivate: true,
-      };
-      const privateDrawingCategoryId: Id64String = testUtility.addDrawingCategory(privateDrawingCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateDrawingCategoryId));
-
-      testUtility.addDrawingGraphic(drawingCategoryId);
-      testUtility.addDrawingGraphic(privateDrawingCategoryId);
-      testUtility.closeIModel();
-
-      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "2d");
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
-      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
-
-      expect(hierarchy).to.matchSnapshot();
+      expect(hierarchy).to.be.an("array").with.lengthOf(1);
+      expect({hierarchy}).to.nested.include({"hierarchy[0].label.value.value": "Test DrawingCategory"});
     });
   });
 });
