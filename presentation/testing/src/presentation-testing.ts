@@ -27,9 +27,9 @@ export * from "./presentation-testing/ContentBuilder";
 export * from "./presentation-testing/Helpers";
 
 /**
- * @module TestUtilities
+ * @module IModel
  *
- * @docs-group-description TestUtilities
- * Various test helpers.
+ * @docs-group-description IModel
+ * IModel builder for tests.
  */
-export * from "./presentation-testing/IModelTestUtility";
+export * from "./presentation-testing/IModelBuilder";

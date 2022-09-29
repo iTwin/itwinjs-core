@@ -2,19 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
+import { BeEvent, Id64String } from "@itwin/core-bentley";
+import { IModelConnection, ScreenViewport, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@itwin/presentation-common";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import {
-  HierarchyBuilder,
-  HierarchyCacheMode, IModelTestUtility, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
+  buildTestIModel, HierarchyBuilder,
+  HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting, TestIModelBuilder,
 } from "@itwin/presentation-testing";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@itwin/components-react";
@@ -23,7 +23,8 @@ import { CategoryTree, RULESET_CATEGORIES, toggleAllCategories } from "../../../
 import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
-import { CategoryProps, IModel } from "@itwin/core-common";
+import { CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { join } from "path";
 
 describe("CategoryTree", () => {
 
@@ -473,6 +474,7 @@ describe("CategoryTree", () => {
             },
           },
         },
+        testOutputDir: join(__dirname, "output"),
       });
     });
 
@@ -480,78 +482,132 @@ describe("CategoryTree", () => {
       await terminatePresentationTesting();
     });
 
-    it("does not show private 3d categories", async () => {
-      const testUtility = new IModelTestUtility();
+    it("does not show private 3d categories with RULESET_CATEGORIES", async () => {
+      const iModel: IModelConnection = await buildTestIModel("CategoriesTree3d", (builder) => {
+        const partitionId = addPhysicalPartition(builder);
+        const modelId = addPhysicalModel(builder, partitionId);
 
-      testUtility.createIModel();
-      testUtility.addPhysicalModel();
+        const categoryId = addSpatialCategory(builder, modelId, "Test Spatial Category");
+        addPhysicalObject(builder, modelId, categoryId);
 
-      // Insert a SpatialCategory
+        const privateCategoryId = addSpatialCategory(builder, modelId, "Private Test Spatial Category", true);
+        addPhysicalObject(builder, modelId, privateCategoryId);
+      });
+
+      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "3d");
+
+      const hierarchyBuilder = new HierarchyBuilder({ imodel: iModel });
+      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
+
+      expect(hierarchy).to.matchSnapshot();
+    });
+
+    it("does not show private 2d categories with RULESET_CATEGORIES", async () => {
+      const iModel: IModelConnection = await buildTestIModel("CategoriesTree2d", (builder) => {
+        const partitionId = addDrawingPartition(builder);
+        const modelId = addDrawingModel(builder, partitionId);
+
+        const categoryId = addDrawingCategory(builder, modelId, "Test Drawing Category");
+        addDrawingGraphic(builder, modelId, categoryId);
+
+        const privateCategoryId = addDrawingCategory(builder, modelId, "Private Test Drawing Category", true);
+        addDrawingGraphic(builder, modelId, privateCategoryId);
+      });
+
+      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "2d");
+
+      const hierarchyBuilder = new HierarchyBuilder({ imodel: iModel });
+      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
+
+      expect(hierarchy).to.matchSnapshot();
+    });
+
+    const addPhysicalPartition = (builder: TestIModelBuilder, parentId = IModel.rootSubjectId) => {
+      const parentProps: RelatedElementProps = {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: parentId,
+      };
+
+      const partitionProps: ElementProps = {
+        classFullName: "BisCore:PhysicalPartition",
+        model: IModel.repositoryModelId,
+        parent: parentProps,
+        code: builder.getUniqueModelCode("TestPhysicalModel"),
+      };
+      return builder.insertElement(partitionProps);
+    };
+
+    const addPhysicalModel = (builder: TestIModelBuilder, partitionId: string) => {
+      const modelProps: ModelProps = {
+        modeledElement: new RelatedElement({ id: partitionId }),
+        classFullName: "BisCore:PhysicalModel",
+        isPrivate: false,
+      };
+      return builder.insertModel(modelProps);
+    };
+
+    const addSpatialCategory = (builder: TestIModelBuilder, modelId: string, name: string, isPrivate?: boolean) => {
       const spatialCategoryProps: CategoryProps = {
         classFullName: "BisCore:SpatialCategory",
         model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test SpatialCategory"),
+        code: builder.createCode(modelId, "bis:SpatialCategory", name),
+        isPrivate,
       };
-      const spatialCategoryId: Id64String = testUtility.addSpatialCategory(spatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(spatialCategoryId));
+      return builder.insertElement(spatialCategoryProps);
+    };
 
-      // Insert a private SpatialCategory
-      const privateSpatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test private SpatialCategory"),
-        isPrivate: true,
+    const addPhysicalObject = (builder: TestIModelBuilder, modelId: string, categoryId: string, elemCode = Code.createEmpty()) => {
+      const physicalObjectProps: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: modelId,
+        category: categoryId,
+        code: elemCode,
       };
-      const privateSpatialCategoryId: Id64String = testUtility.addSpatialCategory(privateSpatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateSpatialCategoryId));
+      builder.insertElement(physicalObjectProps);
+    };
 
-      testUtility.addPhysicalObject(spatialCategoryId);
-      testUtility.addPhysicalObject(privateSpatialCategoryId);
-      testUtility.closeIModel();
+    const addDrawingPartition = (builder: TestIModelBuilder, parentId = IModel.rootSubjectId) => {
+      const parentProps: RelatedElementProps = {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: parentId,
+      };
 
-      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "3d");
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
-      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
+      const partitionProps: ElementProps = {
+        classFullName: "BisCore:Drawing",
+        model: IModel.repositoryModelId,
+        parent: parentProps,
+        code: builder.getUniqueModelCode("TestDrawingModel"),
+      };
+      return builder.insertElement(partitionProps);
+    };
 
-      expect(hierarchy).to.matchSnapshot();
-    });
+    const addDrawingModel = (builder: TestIModelBuilder, partitionId: string) => {
+      const modelProps: ModelProps = {
+        modeledElement: new RelatedElement({ id: partitionId }),
+        classFullName: "BisCore:DrawingModel",
+        isPrivate: false,
+      };
+      return builder.insertModel(modelProps);
+    };
 
-    it("does not show private 2d categories", async () => {
-      const testUtility = new IModelTestUtility();
-
-      testUtility.createIModel();
-      testUtility.addDrawingModel();
-
-      // Insert a DrawingCategory
-      const drawingCategoryProps: CategoryProps = {
+    const addDrawingCategory = (builder: TestIModelBuilder, modelId: string, name: string, isPrivate?: boolean) => {
+      const spatialCategoryProps: CategoryProps = {
         classFullName: "BisCore:DrawingCategory",
         model: IModel.dictionaryId,
-        code: testUtility.getDrawingCategoryCode("Test DrawingCategory"),
+        code: builder.createCode(modelId, "bis:DrawingCategory", name),
+        isPrivate,
       };
-      const drawingCategoryId: Id64String = testUtility.addDrawingCategory(drawingCategoryProps);
-      assert.isTrue(Id64.isValidId64(drawingCategoryId));
+      return builder.insertElement(spatialCategoryProps);
+    };
 
-      // Insert a private DrawingCategory
-      const privateDrawingCategoryProps: CategoryProps = {
-        classFullName: "BisCore:DrawingCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getDrawingCategoryCode("Test private DrawingCategory"),
-        isPrivate: true,
+    const addDrawingGraphic = (builder: TestIModelBuilder, modelId: string, categoryId: string, elemCode = Code.createEmpty()) => {
+      const physicalObjectProps: PhysicalElementProps = {
+        classFullName: "BisCore:DrawingGraphic",
+        model: modelId,
+        category: categoryId,
+        code: elemCode,
       };
-      const privateDrawingCategoryId: Id64String = testUtility.addDrawingCategory(privateDrawingCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateDrawingCategoryId));
-
-      testUtility.addDrawingGraphic(drawingCategoryId);
-      testUtility.addDrawingGraphic(privateDrawingCategoryId);
-      testUtility.closeIModel();
-
-      await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "2d");
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
-      const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
-
-      expect(hierarchy).to.matchSnapshot();
-    });
+      builder.insertElement(physicalObjectProps);
+    };
   });
 });

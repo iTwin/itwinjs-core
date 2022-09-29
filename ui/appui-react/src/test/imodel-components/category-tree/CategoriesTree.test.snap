@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CategoryTree #integration does not show private 2d categories 1`] = `
+exports[`CategoryTree #integration does not show private 2d categories with RULESET_CATEGORIES 1`] = `
 Array [
   Object {
     "label": PropertyRecord {
@@ -10,8 +10,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Test DrawingCategory",
-        "value": "Test DrawingCategory",
+        "displayValue": "Test Drawing Category",
+        "value": "Test Drawing Category",
         "valueFormat": 0,
       },
     },
@@ -19,7 +19,7 @@ Array [
 ]
 `;
 
-exports[`CategoryTree #integration does not show private 3d categories 1`] = `
+exports[`CategoryTree #integration does not show private 3d categories with RULESET_CATEGORIES 1`] = `
 Array [
   Object {
     "label": PropertyRecord {
@@ -29,8 +29,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Test SpatialCategory",
-        "value": "Test SpatialCategory",
+        "displayValue": "Test Spatial Category",
+        "value": "Test Spatial Category",
         "valueFormat": 0,
       },
     },
@@ -38,7 +38,7 @@ Array [
 ]
 `;
 
-exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
+exports[`CategoryTree #unit <CategoryTree /> should match snapshot 1`] = `
 <body>
   <div>
     <div
