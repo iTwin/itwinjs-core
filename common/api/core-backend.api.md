@@ -748,7 +748,6 @@ export namespace CloudSqlite {
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
-        // (undocumented)
         setLogMask(mask: number): void;
     }
     export interface CloudContainer {
@@ -824,6 +823,14 @@ export namespace CloudSqlite {
         container: CloudContainer;
         dbName: string;
         user: string;
+    }
+    export enum LoggingMask {
+        AddToDelete = 4,
+        All = 255,
+        DirtyBlocks = 2,
+        HTTP = 1,
+        LifecycleEvents = 8,
+        None = 0
     }
     // @internal
     export interface ObtainLockParams {
@@ -911,13 +918,11 @@ export interface CodeService {
     // @internal (undocumented)
     addAllCodeSpecs(iModel: IModelDb): Promise<void>;
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-    // (undocumented)
-    readonly appParams: CodeService.AuthorAndOrigin;
+    readonly appParams: CloudSqlite.ObtainLockParams & CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
     readonly codeIndex: CodeIndex;
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
     reserveCode(code: CodeService.ProposedCode): Promise<void>;
     reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
     reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
@@ -4095,9 +4100,9 @@ export enum ProgressStatus {
 
 // @alpha
 export interface PropertyStore {
+    readonly appParams: CloudSqlite.ObtainLockParams;
     deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
     deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
-    readonly lockParams: CloudSqlite.ObtainLockParams;
     sasToken: AccessToken;
     saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
     saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
