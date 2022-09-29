@@ -59,7 +59,7 @@ export class IModelJsFs {
   /** Make a copy of a file */
   public static copySync(src: string, dest: string, opts?: any): void { fs.copySync(src, dest, opts); }
 
-  /** Checks if the path exists before getting the file and directory names in the specified directory. Excludes "." and "..". */
+  /** Gets the file and directory names in the specified directory. Excludes "." and "..". Returns an empty array if the specified directory does not exist. */
   public static readdirSync(pathname: string): string[] { return fs.existsSync(pathname) ? fs.readdirSync(pathname) : []; }
 
   /** Read file */
