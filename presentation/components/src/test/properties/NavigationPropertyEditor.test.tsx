@@ -100,6 +100,19 @@ describe("<NavigationPropertyEditor />", () => {
 });
 
 describe("<NavigationPropertyTargetEditor />", () => {
+  beforeEach(async () => {
+    await NoRenderApp.startup({
+      localization: new EmptyLocalization(),
+    });
+    await Presentation.initialize();
+  });
+
+  afterEach(async () => {
+    sinon.restore();
+    Presentation.terminate();
+    await IModelApp.shutdown();
+  });
+
   it("renders selector when rendered inside context", async () => {
     const { container } = render(<NavigationPropertyTargetEditor />, {});
     expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.not.be.null;
