@@ -15,9 +15,9 @@ import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes,
   Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
-  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, KeySet, LabelDefinition,
-  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus,
-  PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, isComputeSelectionRequestOptions, KeySet,
+  LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError,
+  PresentationStatus, PresentationUnitSystem, RequestPriority, Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -102,6 +102,13 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
    * along side iModel.
    */
   directory?: string;
+  /**
+   * While the cache itself is stored on a disk, there's still a required small in-memory cache.
+   * The parameter allows controlling size of that cache. Defaults to `32768000` (32 MB).
+   *
+   * @alpha
+   */
+  memoryCacheSize?: number;
 }
 
 /**
@@ -236,6 +243,16 @@ export interface PresentationManagerProps {
   taskAllocationsMap?: { [priority: number]: number };
 
   /**
+   * Each slot (see [[taskAllocationsMap]]) may open a worker connection to an iModel used for a request. This
+   * means there could be  `{slots count} * {iModels count}` number of worker connections. Each worker connection
+   * uses a memory cache to increase iModel read performance. This parameter allows controlling the size of that
+   * cache. Defaults to `32768000` (32 MB).
+   *
+   * @alpha
+   */
+  workerConnectionCacheSize?: number;
+
+  /**
    * Presentation manager working mode. Backends that use iModels in read-write mode should
    * use `ReadWrite`, others might want to set to `ReadOnly` for better performance.
    *
@@ -333,6 +350,7 @@ export class PresentationManager {
         id: this._props.id ?? "",
         localeDirectories: createLocaleDirectoryList(props),
         taskAllocationsMap: createTaskAllocationsMap(props),
+        workerConnectionCacheSize: this._props.workerConnectionCacheSize,
         mode,
         isChangeTrackingEnabled,
         cacheConfig: createCacheConfig(this._props.cacheConfig),
