@@ -22,6 +22,7 @@ export interface PropertyFilterBuilderProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
   ruleGroupDepthLimit?: number;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -39,6 +40,7 @@ export const PropertyFilterBuilderContext = React.createContext<PropertyFilterBu
 export interface PropertyFilterBuilderRuleRenderingContextProps {
   ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React.ReactNode;
   ruleValueRenderer?: (props: PropertyFilterBuilderRuleValueProps) => React.ReactNode;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -48,7 +50,7 @@ const ROOT_GROUP_PATH: string[] = [];
 
 /** @alpha */
 export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
-  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit } = props;
+  const { properties, onFilterChanged, onRulePropertySelected, ruleOperatorRenderer, ruleValueRenderer, ruleGroupDepthLimit, propertyRenderer } = props;
   const { state, actions } = usePropertyFilterBuilderState();
   const rootRef = React.useRef<HTMLDivElement>(null);
 
@@ -58,12 +60,12 @@ export function PropertyFilterBuilder(props: PropertyFilterBuilderProps) {
   }, [filter, onFilterChanged]);
 
   const contextValue = React.useMemo<PropertyFilterBuilderContextProps>(
-    () => ({actions, properties, onRulePropertySelected, ruleGroupDepthLimit}),
+    () => ({ actions, properties, onRulePropertySelected, ruleGroupDepthLimit }),
     [actions, properties, onRulePropertySelected, ruleGroupDepthLimit]
   );
   const renderingContextValue = React.useMemo<PropertyFilterBuilderRuleRenderingContextProps>(
-    () => ({ruleOperatorRenderer, ruleValueRenderer}),
-    [ruleOperatorRenderer, ruleValueRenderer]
+    () => ({ ruleOperatorRenderer, ruleValueRenderer, propertyRenderer }),
+    [ruleOperatorRenderer, ruleValueRenderer, propertyRenderer]
   );
   return (
     <PropertyFilterBuilderRuleRenderingContext.Provider value={renderingContextValue}>
