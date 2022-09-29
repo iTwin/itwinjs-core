@@ -623,16 +623,16 @@ describe("Table", () => {
           expect(onPropertyEditing.calledOnce).to.be.true;
         });
 
-        it.skip("deselects other rows when selects a row", async () => {
-          const isRowSelected = () => true;
-          table.setProps({ isRowSelected });
-          table.update();
-          expect(table.find(selectedRowClassName).length).to.be.greaterThan(1);
+        it("deselects other rows when selects a row", async () => {
+          const lastRow = table.find(rowClassName).last();
+          lastRow.simulate("click");
+          await verifyRowIterator(["9"], selectedRowsIterator);
+
           const row = table.find(rowClassName).first();
           row.simulate("click");
-
           await verifyRowIterator(["0"], selectedRowsIterator);
-          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
           onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
           expect(table.find(selectedRowClassName).length).to.be.equal(1);
         });

@@ -61,10 +61,15 @@ export class ElementAgenda {
   public constructor(public iModel: IModelConnection) { }
 
   /** Get the source for the last group added to this agenda, if applicable. The "source" is merely an indication of what the collection of elements represents. */
-  public getSource() { return this.groupMarks.length === 0 ? ModifyElementSource.Unknown : this.groupMarks[this.groupMarks.length - 1].source; }
+  public getSource() {
+    return this.groupMarks.length === 0 ? ModifyElementSource.Unknown : this.groupMarks[this.groupMarks.length - 1].source;
+  }
 
   /** Set the source for the last group added to this agenda. */
-  public setSource(val: ModifyElementSource) { if (this.groupMarks.length > 0) this.groupMarks[this.groupMarks.length - 1].source = val; }
+  public setSource(val: ModifyElementSource) {
+    if (this.groupMarks.length > 0)
+      this.groupMarks[this.groupMarks.length - 1].source = val;
+  }
 
   public get isEmpty() { return this.length === 0; }
   public get count() { return this.length; }
@@ -84,7 +89,11 @@ export class ElementAgenda {
   }
 
   /** Empties the agenda and clears hilite state when manageHiliteState is true. */
-  public clear() { this.setEntriesHiliteState(false); this.elements.length = 0; this.groupMarks.length = 0; }
+  public clear() {
+    this.setEntriesHiliteState(false);
+    this.elements.length = 0;
+    this.groupMarks.length = 0;
+  }
 
   private setEntriesHiliteState(onOff: boolean, groupStart = 0, groupEnd = 0) {
     if (!this.manageHiliteState)
@@ -144,7 +153,14 @@ export class ElementAgenda {
     const elements = this.elements;
     const groupMarks = this.groupMarks;
 
-    elements.some((entry, index) => { if (id !== entry) return false; pos = index; return true; });
+    elements.some((entry, index) => {
+      if (id !== entry)
+        return false;
+
+      pos = index;
+      return true;
+    });
+
     if (pos === -1)
       return false;
 
@@ -405,7 +421,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
    */
   protected async getSelectionSetCandidates(ss: SelectionSet): Promise<Id64Arg> {
     const ids = new Set<Id64String>();
-    ss.elements.forEach((val) => { if (this.isElementIdValid(val, ModifyElementSource.SelectionSet)) ids.add(val); });
+    ss.elements.forEach((val) => {
+      if (this.isElementIdValid(val, ModifyElementSource.SelectionSet))
+        ids.add(val);
+    });
+
     return ids;
   }
 
@@ -535,7 +555,11 @@ export abstract class ElementSetTool extends PrimitiveTool {
         }
         if (undefined !== outline && 0 !== outline.size) {
           const inside = new Set<string>();
-          contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
+          contents.forEach((id) => {
+            if (!outline.has(id))
+              inside.add(id);
+          });
+
           contents = inside;
         }
       } else {
@@ -698,14 +722,20 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const crossingLine = (BeButton.Reset === ev.button);
     const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
 
-    const position = vp.worldToView(this.dragStartPoint); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
-    const position2 = vp.worldToView(ev.point); position2.x = Math.floor(position2.x) + 0.5; position2.y = Math.floor(position2.y) + 0.5;
+    const position = vp.worldToView(this.dragStartPoint);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
+    const position2 = vp.worldToView(ev.point);
+    position2.x = Math.floor(position2.x) + 0.5;
+    position2.y = Math.floor(position2.y) + 0.5;
     const offset = position2.minus(position);
 
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.strokeStyle = bestContrastIsBlack ? "black" : "white";
       ctx.lineWidth = 1;
-      if (overlapSelection) ctx.setLineDash([5, 5]);
+      if (overlapSelection)
+        ctx.setLineDash([5, 5]);
+
       if (crossingLine) {
         ctx.beginPath();
         ctx.moveTo(0, 0);

@@ -142,8 +142,12 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     } else {
       filePath = this.getFilePath(fileName);
     }
-    if (!IModelJsFs.existsSync(filePath)) createFilePath(filePath);
-    if (IModelJsFs.existsSync(fileName)) IModelJsFs.unlinkSync(fileName);
+    if (!IModelJsFs.existsSync(filePath))
+      createFilePath(filePath);
+
+    if (IModelJsFs.existsSync(fileName))
+      IModelJsFs.unlinkSync(fileName);
+
     const buf = Buffer.from(png, "base64");
     IModelJsFs.writeFileSync(fileName, buf);
   }
@@ -164,12 +168,18 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     await IModelHost.shutdown();
 
     // Electron only
-    if (app !== undefined) app.exit();
+    if (app !== undefined)
+      app.exit();
 
     // Browser only
-    if (DisplayPerfRpcInterface.webServer) DisplayPerfRpcInterface.webServer.close();
-    if (DisplayPerfRpcInterface.backendServer) DisplayPerfRpcInterface.backendServer.close();
-    if (DisplayPerfRpcInterface.chrome) await DisplayPerfRpcInterface.chrome.kill();
+    if (DisplayPerfRpcInterface.webServer)
+      DisplayPerfRpcInterface.webServer.close();
+
+    if (DisplayPerfRpcInterface.backendServer)
+      DisplayPerfRpcInterface.backendServer.close();
+
+    if (DisplayPerfRpcInterface.chrome)
+      await DisplayPerfRpcInterface.chrome.kill();
   }
 
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {

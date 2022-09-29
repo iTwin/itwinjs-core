@@ -34,7 +34,7 @@ describe("GeoCoord", () => {
   });
 
   after(async () => {
-    if (iModel) await iModel.close();
+    await iModel?.close();
     await TestUtility.shutdownFrontend();
   });
 

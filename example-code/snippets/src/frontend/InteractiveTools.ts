@@ -154,7 +154,10 @@ export class CreateByPointsTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onPostInstall() { await super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override async onPostInstall() {
+    await super.onPostInstall();
+    this.setupAndPromptForNextAction();
+  }
   // __PUBLISH_EXTRACT_END__
 
   public async onRestartTool() {

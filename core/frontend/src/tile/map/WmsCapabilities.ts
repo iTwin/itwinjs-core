@@ -28,7 +28,7 @@ async function getXml(url: string, credentials?: RequestBasicCredentials): Promi
   return data.text;
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
-  return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.createFromDegrees(json[0], json[1], json[2], json[3]) : undefined;
+  return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
 }
 
 function rangeFromJSON(json: any): MapCartoRectangle | undefined {

@@ -45,6 +45,12 @@ function createConfig(shouldInstrument) {
         stream: require.resolve("stream-browserify"),
         zlib: require.resolve("browserify-zlib"),
       },
+      alias: {
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js",
+        "@azure/logger$": "@azure/logger/dist-esm/src/index.js",
+        "supports-color$": "supports-color/browser.js"
+      }
     },
     module: {
       noParse: [
@@ -97,6 +103,10 @@ function createConfig(shouldInstrument) {
             ),
           }
         ),
+      }),
+      // certa doesn't like chunks
+      new webpack.optimize.LimitChunkCountPlugin({
+        maxChunks: 1,
       }),
     ],
   };

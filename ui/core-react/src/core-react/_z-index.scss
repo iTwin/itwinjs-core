@@ -35,7 +35,7 @@ $uicore-internal-z-index-layers: view-overlay,
 $uicore-z-index-step: 1000;
 
 @function uicore-internal-get-next-z-index-step($counter) {
-  @return $counter +$uicore-z-index-step;
+  @return $counter + $uicore-z-index-step;
 }
 
 $uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicore-internal-z-index-layers, get-function(uicore-internal-get-next-z-index-step), 0);

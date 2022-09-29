@@ -8,12 +8,13 @@
 
 import { BackgroundMapProps } from "./BackgroundMapSettings";
 
-/** The current set of supported terrain providers. Currently only CesiumWorldTerrain.
- * @see [[TerrainProps]]
+/** Identifies a [TerrainProvider]($frontend).
+ * @see [[TerrainSettings.providerName]] and [[TerrainProps.providerName]].
  * @public
  * @extensions
+ * @deprecated Use string instead.
  */
-export type TerrainProviderName = "CesiumWorldTerrain";
+export type TerrainProviderName = string;
 
 /**  JSON representation of the settings of the terrain applied to background map display by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -22,7 +23,9 @@ export type TerrainProviderName = "CesiumWorldTerrain";
  * @extensions
  */
 export interface TerrainProps {
-  /** Identifies the provider currently only CesiumWorldTerrain is supported. */
+  /** Identifies the [TerrainProvider]($frontend) that will supply terrain meshes.
+   * If omitted, it defaults to "CesiumWorldTerrain".
+   */
   providerName?: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled.false (or 1.0) indicate no exaggeration. Default value: 1.0 */
   exaggeration?: number;
@@ -57,8 +60,10 @@ export enum TerrainHeightOriginMode {
  */
 export class TerrainSettings {
   private _nonLocatable: true | undefined;
-  /** Identifies the provider currently only CesiumWorldTerrain supported. */
-  public readonly providerName: TerrainProviderName;
+  /** Identifies the [TerrainProvider]($frontend) that will supply terrain meshes.
+   * Defaults to "CesiumWorldTerrain".
+   */
+  public readonly providerName: string;
   /** A value greater than one will cause terrain height to be exaggerated/scaled. 1.0 indicates no exaggeration. Default value: 1.0 */
   public readonly exaggeration: number;
   /**  Applying lighting can help to visualize subtle terrain variations. Default value: false */
@@ -75,7 +80,7 @@ export class TerrainSettings {
     return this._nonLocatable;
   }
 
-  constructor(providerName: TerrainProviderName = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
+  constructor(providerName: string = "CesiumWorldTerrain", exaggeration: number = 1.0, applyLighting = false, heightOrigin = 0.0, heightOriginMode = TerrainHeightOriginMode.Geodetic) {
     this.providerName = providerName;
     this.exaggeration = Math.min(100, Math.max(0.1, exaggeration));
     this.applyLighting = applyLighting;
@@ -95,7 +100,7 @@ export class TerrainSettings {
     if (undefined === json)
       return new TerrainSettings();
 
-    const providerName = "CesiumWorldTerrain";    // This is only terrain provider currently supported.
+    const providerName = json?.providerName ?? "CesiumWorldTerrain";
     const settings = new TerrainSettings(providerName, json.exaggeration, json.applyLighting, json.heightOrigin, json.heightOriginMode);
     if (true === json.nonLocatable)
       settings._nonLocatable = true;

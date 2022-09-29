@@ -22,7 +22,6 @@ export interface DtaBooleanConfiguration {
   logarithmicZBuffer?: boolean; // default ON (if extension supported)
   filterMapTextures?: boolean;  // default OFF
   filterMapDrapeTextures?: boolean; // default ON (if extension supported)
-  useFakeCloudStorageTileCache?: boolean; // default OFF
   dpiAwareViewports?: boolean; // default ON
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
@@ -220,8 +219,6 @@ export const getConfig = (): DtaConfiguration => {
   const extensions = process.env.IMJS_DISABLED_EXTENSIONS;
   if (undefined !== extensions)
     configuration.disabledExtensions = extensions.split(";");
-
-  configuration.useFakeCloudStorageTileCache = undefined !== process.env.IMJS_FAKE_CLOUD_STORAGE;
 
   configuration.disableEdges = undefined !== process.env.IMJS_DISABLE_EDGE_DISPLAY;
   configuration.alwaysLoadEdges = undefined !== process.env.IMJS_ALWAYS_LOAD_EDGES;

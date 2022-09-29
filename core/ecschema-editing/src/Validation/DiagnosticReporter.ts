@@ -154,7 +154,9 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
   }
 
   private assertDefined<T>(value: T | null | undefined, message?: string): T {
-    if (value === undefined || value === null) return assert(false, message) as never;
+    if (value === undefined || value === null)
+      return assert(false, message) as never;
+
     return value;
   }
 }

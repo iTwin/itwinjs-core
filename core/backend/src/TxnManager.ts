@@ -295,7 +295,10 @@ export class TxnManager {
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
-  public reportError(error: ValidationError) { this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
+  public reportError(error: ValidationError) {
+    this.validationErrors.push(error);
+    this._nativeDb.logTxnError(error.fatal);
+  }
 
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
   public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
