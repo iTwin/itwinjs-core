@@ -68,7 +68,7 @@
     "@itwin/reality-data-client": "0.7.0",
     "@itwin/browser-authorization": "^0.5.1",
     "@itwin/electron-authorization": "^0.8.3",
-    "@itwin/object-storage-core": "1.0.0",
+    "@itwin/object-storage-core": "1.4.0",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {

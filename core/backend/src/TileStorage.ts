@@ -39,7 +39,8 @@ export class TileStorage {
       await this.storage.upload(
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
         Buffer.from(IModelHost.compressCachedTiles ? await promisify(gzip)(content.buffer) : content.buffer),
-        metadata
+        metadata,
+        IModelHost.compressCachedTiles ? { contentEncoding: "gzip" } : undefined,
       );
     } catch (err) {
       this.logException("Failed to upload tile", err);
