@@ -159,6 +159,16 @@ export namespace CloudSqlite {
     get rootDir(): LocalDirName;
     /** The guid for this CloudCache. Used for acquiring write lock. */
     get guid(): GuidString;
+    /** Configure logging for this CloudCache.
+     * @param mask A bitmask of logging categories to enable.
+     * 0x01 = log all HTTP requests and responses
+     * 0x02 = log as blocks become dirty and must be uploaded
+     * 0x04 = log as blocks are added to the delete list
+     * 0x08 = log container lifecycle events (e.g. authorization requests, disconnects, and state transitions)
+     * @note this method does nothing if [[isDaemon]] is true. Daemon logging is configured when the daemon is started.
+     * @note HTTP logging can be happen on multiple threads and may be buffered. To see buffered log messages, periodically call
+     * [IModelHost.flushLog]($backend).
+     */
     setLogMask(mask: number): void;
     /** destroy this CloudCache. All CloudContainers should be detached before calling this. */
     destroy(): void;
