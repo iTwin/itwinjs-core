@@ -60,7 +60,6 @@
   "devDependencies": {
     "@itwin/core-backend": "workspace:*",
     "@itwin/express-server": "workspace:*",
-    "@itwin/imodels-access-backend": "^2.0.0",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "@types/chai": "4.3.1",

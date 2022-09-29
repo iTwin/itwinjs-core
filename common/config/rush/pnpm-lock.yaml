@@ -3197,6 +3197,7 @@ importers:
       '@itwin/imodels-access-backend': ^2.0.0
       '@itwin/imodels-access-frontend': ^2.0.0
       '@itwin/imodels-client-authoring': ^2.0.0
+      '@itwin/imodels-client-management': ^2.0.0
       '@itwin/object-storage-core': 1.0.0
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': workspace:*
@@ -3252,6 +3253,7 @@ importers:
       '@itwin/imodels-access-backend': 2.1.0
       '@itwin/imodels-access-frontend': 2.1.0
       '@itwin/imodels-client-authoring': 2.1.0
+      '@itwin/imodels-client-management': 2.1.0
       '@itwin/object-storage-core': 1.0.0
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
