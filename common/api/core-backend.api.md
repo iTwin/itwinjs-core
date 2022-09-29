@@ -134,6 +134,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
+import { Metadata } from '@itwin/object-storage-core';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
 import { ModelLoadProps } from '@itwin/core-common';
@@ -179,6 +180,7 @@ import { SchemaState } from '@itwin/core-common';
 import { SectionDrawingLocationProps } from '@itwin/core-common';
 import { SectionDrawingProps } from '@itwin/core-common';
 import { SectionType } from '@itwin/core-common';
+import { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
@@ -202,6 +204,7 @@ import { TextureLoadProps } from '@itwin/core-common';
 import { TextureMapProps } from '@itwin/core-common';
 import { TextureProps } from '@itwin/core-common';
 import { ThumbnailProps } from '@itwin/core-common';
+import { TransferConfig } from '@itwin/object-storage-core';
 import { Transform } from '@itwin/core-geometry';
 import { TxnNotifications } from '@itwin/core-common';
 import { TypeDefinition } from '@itwin/core-common';
@@ -230,7 +233,7 @@ export interface AcquireNewBriefcaseIdArg extends IModelIdArg {
     readonly briefcaseAlias?: string;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: AliCloudStorageServiceCredentials);
     // (undocumented)
@@ -243,7 +246,7 @@ export class AliCloudStorageService extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface AliCloudStorageServiceCredentials {
     // (undocumented)
     accessKeyId: string;
@@ -307,7 +310,7 @@ export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class AzureBlobStorage extends CloudStorageService {
     constructor(credentials: AzureBlobStorageCredentials);
     // (undocumented)
@@ -369,6 +372,8 @@ export enum BackendLoggerCategory {
     Authorization = "core-backend.Authorization",
     CodeSpecs = "core-backend.CodeSpecs",
     // @internal
+    CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
+    // @internal
     DevTools = "core-backend.DevTools",
     ECDb = "core-backend.ECDb",
     // @alpha
@@ -378,6 +383,7 @@ export enum BackendLoggerCategory {
     IModelDb = "core-backend.IModelDb",
     IModelHost = "core-backend.IModelHost",
     IModelTileRequestRpc = "core-backend.IModelTileRequestRpc",
+    IModelTileStorage = "core-backend.IModelTileStorage",
     IModelTileUpload = "core-backend.IModelTileUpload",
     LinearReferencing = "core-backend.LinearReferencing",
     // @internal
@@ -742,7 +748,6 @@ export namespace CloudSqlite {
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
-        // (undocumented)
         setLogMask(mask: number): void;
     }
     export interface CloudContainer {
@@ -819,6 +824,14 @@ export namespace CloudSqlite {
         dbName: string;
         user: string;
     }
+    export enum LoggingMask {
+        AddToDelete = 4,
+        All = 255,
+        DirtyBlocks = 2,
+        HTTP = 1,
+        LifecycleEvents = 8,
+        None = 0
+    }
     // @internal
     export interface ObtainLockParams {
         nRetries: number;
@@ -848,7 +861,7 @@ export namespace CloudSqlite {
     export type WriteLockBusyHandler = (lockedBy: string, expires: string) => Promise<void | "stop">;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
@@ -869,7 +882,7 @@ export abstract class CloudStorageService {
     abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
-// @internal (undocumented)
+// @beta @deprecated (undocumented)
 export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
@@ -877,7 +890,7 @@ export class CloudStorageTileUploader {
     cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export interface CloudStorageUploadOptions {
     // (undocumented)
     cacheControl?: string;
@@ -905,11 +918,12 @@ export interface CodeService {
     // @internal (undocumented)
     addAllCodeSpecs(iModel: IModelDb): Promise<void>;
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-    readonly appParams: CloudSqlite.ObtainLockParams & CodeService.AuthorAndOrigin;
+    readonly appParams: CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
     readonly codeIndex: CodeIndex;
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+    readonly lockParams: CloudSqlite.ObtainLockParams;
     reserveCode(code: CodeService.ProposedCode): Promise<void>;
     reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
     reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
@@ -1352,7 +1366,6 @@ export interface DownloadRequest {
     readonly checkpoint: CheckpointProps;
     localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
-    readonly retries?: number;
 }
 
 // @internal (undocumented)
@@ -2969,13 +2982,15 @@ export class IModelHost {
     static startup(options?: IModelHostOptions): Promise<void>;
     // @alpha (undocumented)
     static readonly telemetry: TelemetryManager;
-    // @internal
+    // @internal @deprecated (undocumented)
     static tileCacheService?: CloudStorageService;
     // @internal
     static get tileContentRequestTimeout(): number;
+    // @internal (undocumented)
+    static tileStorage?: TileStorage;
     // @internal
     static get tileTreeRequestTimeout(): number;
-    // @internal (undocumented)
+    // @internal @deprecated (undocumented)
     static tileUploader?: CloudStorageTileUploader;
     // @internal
     static get usingExternalTileCache(): boolean;
@@ -3009,7 +3024,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta (undocumented)
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
     // @internal (undocumented)
     tileContentRequestTimeout: number;
@@ -3040,8 +3055,10 @@ export interface IModelHostOptions {
     restrictTileUrlsByClientIp?: boolean;
     // @beta
     tileCacheAzureCredentials?: AzureBlobStorageCredentials;
-    // @beta
+    // @beta @deprecated (undocumented)
     tileCacheService?: CloudStorageService;
+    // @beta
+    tileCacheStorage?: ServerStorage;
     // @internal
     tileContentRequestTimeout?: number;
     // @internal
@@ -3243,7 +3260,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string): WorkspaceDb;
+    getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     // (undocumented)
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     // (undocumented)
@@ -3323,7 +3340,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     // (undocumented)
     open(): void;
     // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined;
+    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
     // (undocumented)
     queryFileResource(rscName: WorkspaceResource.Name): {
         localFileName: string;
@@ -4084,9 +4101,9 @@ export enum ProgressStatus {
 
 // @alpha
 export interface PropertyStore {
-    readonly appParams: CloudSqlite.ObtainLockParams;
     deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
     deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    readonly lockParams: CloudSqlite.ObtainLockParams;
     sasToken: AccessToken;
     saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
     saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
@@ -5266,7 +5283,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
+    getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
@@ -5302,6 +5319,7 @@ export namespace WorkspaceContainer {
         isPublic?: boolean;
         syncOnConnect?: boolean;
     }
+    export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 // @beta
@@ -5345,7 +5363,7 @@ export interface WorkspaceDb {
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;
-    prefetch(): void;
+    prefetch(): CloudSqlite.CloudPrefetch;
 }
 
 // @beta

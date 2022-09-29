@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "Fix window setting not being set after opening new main window.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Use createImageBitmap when creating textures for reality models (currently enabled for Chromium only)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

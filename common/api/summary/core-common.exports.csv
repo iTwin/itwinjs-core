@@ -104,11 +104,17 @@ public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
 beta;class CloudStorageCache
+deprecated;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
+deprecated;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageProvider
+deprecated;CloudStorageProvider
 beta;CloudStorageTileCache 
+deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -306,6 +312,7 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference
 internal;GlbHeader 
 public;GlobeMode
 internal;GltfChunk
@@ -539,8 +546,14 @@ beta;PropertyMetaDataProps
 public;QParams2d
 public;QParams3d
 public;QPoint2d
+public;QPoint2dBuffer
+public;QPoint2dBuffer
+public;QPoint2dBufferBuilder
 public;QPoint2dList
 public;QPoint3d
+public;QPoint3dBuffer
+public;QPoint3dBuffer
+public;QPoint3dBufferBuilder
 public;QPoint3dList
 public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
@@ -708,7 +721,8 @@ beta;SynchronizationConfigLinkProps
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps
-public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainProviderName = string
+deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
 public;TextString
@@ -754,6 +768,7 @@ internal;TileTreeContentIds
 internal;TileTreeMetadata
 internal;TileTreeProps
 public;TileVersionInfo
+public;TranslationOptions
 alpha;TreeFlags
 public;Tween
 public;TweenCallback = (obj: any) => void

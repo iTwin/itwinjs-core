@@ -216,7 +216,9 @@ export const enum RenderOrder {
 }
 
 /** @internal */
-export function isPlanar(order: RenderOrder): boolean { return order >= RenderOrder.PlanarBit; }
+export function isPlanar(order: RenderOrder): boolean {
+  return order >= RenderOrder.PlanarBit;
+}
 
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal
