@@ -47,8 +47,8 @@ rush.json       @iTwin/itwinjs-core-admins
 /common/**/express-server/                    @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                @iTwin/itwinjs-core-display @Ellord207
 /common/**/frontend-devtools/                 @iTwin/itwinjs-core-display @Ellord207
-/common/**/core-geometry.*                    @bbastings @mgooding @dassaf4
-/common/**/core-geometry/                     @bbastings @mgooding @dassaf4
+/common/**/core-geometry.*                    @bbastings @dassaf4 @saeeedtorabi
+/common/**/core-geometry/                     @bbastings @dassaf4 @saeeedtorabi
 /common/**/hypermodeling-frontend.*           @iTwin/itwinjs-core-display @bbastings
 /common/**/hypermodeling-frontend/            @iTwin/itwinjs-core-display @bbastings
 /common/**/core-backend.*                     @iTwin/itwinjs-core-admins
@@ -104,7 +104,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /core/frontend                  @kabentley @bbastings @iTwin/itwinjs-core-display
 /core/frontend/src/extension    @calebmshafer @wgoehrig @aruniverse @kckst8 @johnnyd710
 /core/frontend-devtools         @iTwin/itwinjs-core-display @Ellord207
-/core/geometry                  @bbastings @mgooding @dassaf4
+/core/geometry                  @bbastings @dassaf4 @saeeedtorabi
 /core/hypermodeling             @bbastings @iTwin/itwinjs-core-display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/markup                    @kabentley @pmconne @bbastings
@@ -148,7 +148,7 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
 /test-apps/export-gltf                      @mgooding @MichaelBelousov
 /test-apps/export-obj                       @mgooding @MichaelBelousov
-/test-apps/imjs-importer                    @bbastings @dassaf4
+/test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
