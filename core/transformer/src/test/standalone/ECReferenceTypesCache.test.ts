@@ -17,6 +17,8 @@ describe("ECReferenceTypesCache", () => {
   let testIModel: SnapshotDb;
   const testSchemaPath = path.join(BackendTestsKnownLocations.assetsDir, "TestGeneratedClasses.ecschema.xml");
   const testFixtureRefCache = new ECReferenceTypesCache();
+  let pathForEmpty: string;
+  let emptyWithBrandNewBiscore: SnapshotDb;
 
   before(async () => {
     const seedFileName = IModelTestUtils.resolveAssetFile("test.bim");
@@ -25,18 +27,23 @@ describe("ECReferenceTypesCache", () => {
     assert.exists(testIModel);
     await testIModel.importSchemas([testSchemaPath]); // will throw an exception if import fails
     await testFixtureRefCache.initAllSchemasInIModel(testIModel);
+
+    pathForEmpty = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
+    emptyWithBrandNewBiscore= SnapshotDb.createEmpty(pathForEmpty, { rootSubject: { name: "empty "}});
   });
 
   it("should be able to assume that all non-codespec classes in biscore have one of the known roots", async () => {
-    const schemaLoader = new SchemaLoader((name: string) => { return testIModel.getSchemaProps(name); });
+    const schemaLoader = new SchemaLoader((name: string) => testIModel.getSchemaProps(name));
     const schema = schemaLoader.getSchema("BisCore");
     for (const ecclass of schema.getClasses()) {
       const unsupportedClassNames = ["CodeSpec", "ElementDrivesElement", "SpatialIndex"];
-      if (unsupportedClassNames.includes(ecclass.name)) continue;
+      if (unsupportedClassNames.includes(ecclass.name))
+        continue;
       const isEntityClass = ecclass.schemaItemType === SchemaItemType.EntityClass;
       const isEntityRelationship = ecclass instanceof Relationship;
       const isEntity = isEntityClass || isEntityRelationship;
-      if (!isEntity) continue;
+      if (!isEntity)
+        continue;
       // eslint-disable-next-line @typescript-eslint/dot-notation
       const rootBisClass = await testFixtureRefCache["getRootBisClass"](ecclass);
       // eslint-disable-next-line @typescript-eslint/dot-notation
@@ -103,9 +110,6 @@ describe("ECReferenceTypesCache", () => {
   it("should add new schema data when encountering a schema of a higher version", async () => {
     const thisTestRefCache = new ECReferenceTypesCache();
 
-    const pathForEmpty = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
-    const emptyWithBrandNewBiscore = SnapshotDb.createEmpty(pathForEmpty, { rootSubject: { name: "empty "}});
-
     const bisVersionInEmpty = emptyWithBrandNewBiscore.querySchemaVersion("BisCore");
     assert(bisVersionInEmpty !== undefined);
 
@@ -126,12 +130,10 @@ describe("ECReferenceTypesCache", () => {
   it("should not init schemas of a lower or equal version", async () => {
     const thisTestRefCache = new ECReferenceTypesCache();
 
-    const pathForEmpty1 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
-    const emptyWithBrandNewBiscore1 = SnapshotDb.createEmpty(pathForEmpty1, { rootSubject: { name: "empty "}});
-    const pathForEmpty2 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty.bim");
+    const pathForEmpty2 = IModelTestUtils.prepareOutputFile("ECReferenceTypesCache", "empty2.bim");
     const emptyWithBrandNewBiscore2 = SnapshotDb.createEmpty(pathForEmpty2, { rootSubject: { name: "empty "}});
 
-    const bisVersionInEmpty1 = emptyWithBrandNewBiscore1.querySchemaVersion("BisCore");
+    const bisVersionInEmpty1 = emptyWithBrandNewBiscore.querySchemaVersion("BisCore");
     assert(bisVersionInEmpty1 !== undefined);
 
     const bisVersionInEmpty2 = emptyWithBrandNewBiscore2.querySchemaVersion("BisCore");
@@ -143,11 +145,11 @@ describe("ECReferenceTypesCache", () => {
     assert(Semver.eq(bisVersionInEmpty1, bisVersionInEmpty2));
     assert(Semver.gt(bisVersionInEmpty1, bisVersionInSeed));
     expect(() => testIModel.getMetaData("BisCore:RenderTimeline")).not.to.throw;
-    expect(() => emptyWithBrandNewBiscore1.getMetaData("BisCore:RenderTimeline")).to.throw;
+    expect(() => emptyWithBrandNewBiscore.getMetaData("BisCore:RenderTimeline")).to.throw;
 
     const initSchemaSpy = sinon.spy(thisTestRefCache, "initSchema" as keyof ECReferenceTypesCache);
 
-    await thisTestRefCache.initAllSchemasInIModel(emptyWithBrandNewBiscore1);
+    await thisTestRefCache.initAllSchemasInIModel(emptyWithBrandNewBiscore);
     expect(initSchemaSpy.getCalls().find((c) => (c.args[0] as Schema).name === "BisCore")).not.to.be.undefined;
     initSchemaSpy.resetHistory();
 
