@@ -11,18 +11,31 @@ import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Descriptor, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestSimpleContentField,
+  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
-  PresentationInstanceFilterBuilder, useFilterBuilderNavigationPropertyEditorContextProps, usePresentationInstanceFilteringProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContextProps, usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
 import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 import { stubRaf } from "./Common";
+import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
+
+export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
+  sourceClassIds: ["0x1"],
+  field: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }], category: createTestCategoryDescription() }),
+  propertyDescription: {
+    name: "TestName",
+    displayLabel: "TestDisplayLabel",
+    typename: "string",
+  },
+  className: props?.className ? props?.className : "testSchema:testClass",
+  ...props,
+});
 
 describe("PresentationInstanceFilter", () => {
   stubRaf();
@@ -308,6 +321,55 @@ describe("usePresentationInstanceFilteringProps", () => {
       result.current.onPropertySelected({ name: "invalidProp", displayLabel: "InvalidProp", typename: "string" });
       expect(result.current.selectedClasses).to.be.empty;
     });
+  });
+});
+
+describe("PresentationInstanceFilterProperty", () => {
+  stubRaf();
+  const className = "TestClassName";
+  const schemaName = "TestSchema";
+
+  before(async () => {
+    await NoRenderApp.startup({
+      localization: new EmptyLocalization(),
+    });
+    await UiComponents.initialize(new EmptyLocalization());
+    await Presentation.initialize();
+    Element.prototype.scrollIntoView = sinon.stub();
+  });
+
+  after(async () => {
+    Presentation.terminate();
+    UiComponents.terminate();
+    await IModelApp.shutdown();
+    sinon.restore();
+  });
+
+  it("renders with badge", () => {
+    const testPropertyInfo = createTestInstanceFilterPropertyInfo({
+      className: `${schemaName}:${className}`,
+      categoryLabel: "TestCategoryLabel",
+    });
+    const { container, queryByText } = render(<PresentationInstanceFilterProperty
+      instanceFilterPropertyInfo={testPropertyInfo} />);
+
+    expect(queryByText(testPropertyInfo.propertyDescription.displayLabel)).to.not.be.null;
+    const propertyBadgeSelector = container.querySelector<HTMLInputElement>(".badge");
+    expect(propertyBadgeSelector).to.not.be.null;
+    fireEvent.mouseEnter(propertyBadgeSelector!);
+    expect(queryByText(className)).to.not.be.null;
+    expect(queryByText(schemaName)).to.not.be.null;
+  });
+
+  it("renders without badge", () => {
+    const TestPropertyInfoWithoutBadge = createTestInstanceFilterPropertyInfo({
+      className: `${schemaName}:${className}`,
+    });
+    const { container, queryByText } = render(<PresentationInstanceFilterProperty
+      instanceFilterPropertyInfo={TestPropertyInfoWithoutBadge} />);
+
+    expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
+    expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
   });
 });
 

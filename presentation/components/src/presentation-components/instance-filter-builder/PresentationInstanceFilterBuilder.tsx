@@ -9,14 +9,17 @@
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter } from "@itwin/components-react";
-import { Id64String } from "@itwin/core-bentley";
+import { assert, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { NavigationPropertyEditorContext, NavigationPropertyEditorContextProps } from "../properties/NavigationPropertyEditor";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
-import { PresentationInstanceFilter, PropertyInfo } from "./Types";
+import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+import { translate } from "../common/Utils";
+import { Badge, Tooltip } from "@itwin/itwinui-react";
+import "./PresentationInstanceFilterBuilder.scss";
 
 /** @alpha */
 export interface PresentationInstanceFilterBuilderProps {
@@ -91,11 +94,18 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     });
   }, [classes, propertyInfos, classHierarchyProvider, enableClassFiltering]);
 
+  const propertyRenderer = React.useCallback((name: string) => {
+    const instanceFilterPropertyInfo = propertyInfos.find((info) => info.propertyDescription.name === name);
+    assert(instanceFilterPropertyInfo !== undefined);
+    return <PresentationInstanceFilterProperty instanceFilterPropertyInfo={instanceFilterPropertyInfo} />;
+  }, [propertyInfos]);
+
   return {
     onPropertySelected,
     onClearClasses,
     onClassDeselected,
     onClassSelected,
+    propertyRenderer,
     properties,
     classes,
     selectedClasses,
@@ -116,6 +126,60 @@ export function useFilterBuilderNavigationPropertyEditorContextProps(imodel: IMo
   }), [imodel, descriptor]);
 }
 
+interface CategoryTooltipContentProps {
+  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+}
+
+function CategoryTooltipContent(props: CategoryTooltipContentProps) {
+  const { instanceFilterPropertyInfo } = props;
+  const [schemaName, className] = instanceFilterPropertyInfo.className.split(":");
+  return <table>
+    <tbody>
+      <tr>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.category")}</th>
+        <td className="tooltip-content-data">{instanceFilterPropertyInfo.categoryLabel}</td>
+      </tr>
+    </tbody>
+    <tbody>
+      <tr>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.class")}</th>
+        <td className="tooltip-content-data">{className}</td>
+      </tr>
+    </tbody>
+    <tbody>
+      <tr>
+        <th className="tooltip-content-header">{translate("instance-filter-builder.schema")}</th>
+        <td className="tooltip-content-data">{schemaName}</td>
+      </tr>
+    </tbody>
+  </table>;
+}
+
+interface PresentationInstanceFilterPropertyProps {
+  instanceFilterPropertyInfo: InstanceFilterPropertyInfo;
+}
+
+/** @alpha */
+export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps) {
+  const { instanceFilterPropertyInfo } = props;
+  return <div className="property-item-line">
+    <Tooltip content={instanceFilterPropertyInfo.propertyDescription.displayLabel} placement="bottom">
+      <div className="property-display-label" title={instanceFilterPropertyInfo.propertyDescription.displayLabel}>
+        {instanceFilterPropertyInfo.propertyDescription.displayLabel}
+      </div>
+    </Tooltip>
+    <div className="property-badge-container">
+      {instanceFilterPropertyInfo.categoryLabel && <Tooltip content={<CategoryTooltipContent instanceFilterPropertyInfo={instanceFilterPropertyInfo} />} placement="bottom" style={{ textAlign: "left" }}>
+        <div className="badge">
+          <Badge className="property-category-badge" backgroundColor={"montecarlo"}>
+            {instanceFilterPropertyInfo.categoryLabel}
+          </Badge>
+        </div>
+      </Tooltip>}
+    </div>
+  </div>;
+}
+
 function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassHierarchyProvider): ClassHierarchiesSet | undefined {
   if (!classHierarchyProvider || classIds.length === 0)
     return undefined;
@@ -123,7 +187,7 @@ function getClassesSet(classIds: Id64String[], classHierarchyProvider?: ECClassH
   return classHierarchyProvider.getClassHierarchiesSet(classIds);
 }
 
-function computeSelectedClassesByProperty(propertyInfo: PropertyInfo, availableClasses: ClassInfo[], currentClasses: ClassInfo[], classHierarchyProvider?: ECClassHierarchyProvider) {
+function computeSelectedClassesByProperty(propertyInfo: InstanceFilterPropertyInfo, availableClasses: ClassInfo[], currentClasses: ClassInfo[], classHierarchyProvider?: ECClassHierarchyProvider) {
   // get set of classes that have property
   const propertyClassesSet = getClassesSet(propertyInfo.sourceClassIds, classHierarchyProvider);
   /* istanbul ignore if */

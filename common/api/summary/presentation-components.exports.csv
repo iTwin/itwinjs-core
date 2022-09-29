@@ -8,7 +8,7 @@ public;ContentDataProviderProps
 public;ControlledPresentationTreeFilteringProps
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
-alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[]
+alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[]
 internal;createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined
 internal;createPropertyDescriptionFromFieldInfo(info: FieldInfo): PropertyDescription
 public;DataProvidersFactory
@@ -33,6 +33,7 @@ public;IFilteredPresentationTreeDataProvider
 alpha;INSTANCE_FILTER_FIELD_SEPARATOR = "#"
 alpha;InstanceFilterBuilder(props: InstanceFilterBuilderProps): JSX.Element
 alpha;InstanceFilterBuilderProps
+alpha;InstanceFilterPropertyInfo
 beta;InstanceKeyValueRenderer 
 public;IPresentationDataProvider 
 public;IPresentationLabelsProvider
@@ -52,6 +53,7 @@ alpha;PresentationInstanceFilterBuilder(props: PresentationInstanceFilterBuilder
 alpha;PresentationInstanceFilterBuilderProps
 alpha;PresentationInstanceFilterCondition
 alpha;PresentationInstanceFilterConditionGroup
+alpha;PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element
 public;PresentationLabelsProvider 
 public;PresentationLabelsProviderProps
 public;PresentationPropertyDataProvider 
@@ -67,7 +69,6 @@ alpha;PresentationTreeNodeRenderer(props: PresentationTreeNodeRendererProps): JS
 alpha;PresentationTreeNodeRendererProps 
 alpha;PresentationTreeRenderer(props: TreeRendererProps): JSX.Element
 public;PropertyDataProviderWithUnifiedSelectionProps
-alpha;PropertyInfo
 internal;class PropertyRecordsBuilder 
 internal;ReloadedHierarchyPart
 internal;reloadVisibleHierarchyParts(visibleNodes: VisibleTreeNodes, renderedItems: RenderedItemsRange, dataProvider: IPresentationTreeDataProvider): Promise

@@ -77,7 +77,7 @@ describe("PropertyFilterBuilder", () => {
     const rule = container.querySelector(".rule");
     expect(rule).to.not.be.null;
 
-    fireEvent.blur(group!, {relatedTarget: rule});
+    fireEvent.blur(group!, { relatedTarget: rule });
     expect(container.querySelector(".rule-group[data-isactive=true]")).to.not.be.null;
   });
 
@@ -85,9 +85,9 @@ describe("PropertyFilterBuilder", () => {
     const defaultRule: PropertyFilterBuilderRule = {
       id: "rule",
       groupId: "rootGroup",
-      property: {name: "prop", displayLabel: "Prop", typename: "string"},
+      property: { name: "prop", displayLabel: "Prop", typename: "string" },
       operator: PropertyFilterRuleOperator.IsEqual,
-      value: {valueFormat: PropertyValueFormat.Primitive, value: "test string"},
+      value: { valueFormat: PropertyValueFormat.Primitive, value: "test string" },
     };
 
     it("returns undefined when rule does not have property", () => {
@@ -117,7 +117,7 @@ describe("PropertyFilterBuilder", () => {
     it("returns undefined when rule has non primitive value", () => {
       const rule: PropertyFilterBuilderRule = {
         ...defaultRule,
-        value: {valueFormat: PropertyValueFormat.Array, items: [], itemsTypeName: "arrayType"},
+        value: { valueFormat: PropertyValueFormat.Array, items: [], itemsTypeName: "arrayType" },
       };
       expect(buildPropertyFilter(rule)).to.be.undefined;
     });
