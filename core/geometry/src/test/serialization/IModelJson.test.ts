@@ -7,6 +7,7 @@ import { expect } from "chai";
 // Requires for grabbing json object from external file
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
+import { Box } from "../../solid/Box";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -17,6 +18,7 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 import { IndexedPolyface } from "../../polyface/Polyface";
+import { testGeometryQueryRoundTrip } from "./FlatBuffer.test";
 // cspell:word geomlibs
 // cspell:word BSIJSON
 // directory containing imjs files produced by native geomlibs tests:
@@ -247,6 +249,12 @@ describe("CreateIModelJsonSamples", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
+    const expectedJsonMismatchList = ["indexedMesh.numPerFace.",  // the mesh flips to zero-terminated
+                                      "cone.imjs",                // cone can change to cylinder
+                                      "box.minimal.imjs",         // minimal box gets remaining fields populated
+                                     ];
+    const expectedFBMismatchList = ["point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
+                                   ];
     // read imjs files from various places -- some produced by native, some by core-geometry ...
     for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
       const items = fs.readdirSync(sourceDirectory);
@@ -256,13 +264,10 @@ describe("CreateIModelJsonSamples", () => {
       for (const i of items) {
         const currFile = sourceDirectory + i;
         // skip known non-round-trip files ...
-        let numSkip = 0;
-        for (const candidate of skipList) {
-          if (currFile.lastIndexOf(candidate) >= 0)
-            numSkip++;
-        }
-        if (numSkip > 0)
-          continue;
+        let isFiltered = false;
+        for (const candidate of skipList)
+          if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+        if (isFiltered) continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
         if (Checker.noisy.reportRoundTripFileNames)
@@ -284,22 +289,27 @@ describe("CreateIModelJsonSamples", () => {
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
             const geometryQuery3 = IModelJson.Reader.parse(jsonObject3);
             if (deepAlmostEqual(geometryQuery1, geometryQuery3)) {
-              console.log(" json round trip warning.  json round trip mismatch but secondary geometry round trip matches ", currFile);
-              const match0 = currFile.search("indexedMesh.numPerFace."); // The mesh flips to zero-terminated
-              const match1 = currFile.search("cone.imjs");  // cone can change to cylinder
-              if (match0 > 0 || match1 > 0) {
-                console.log("   (This is expected for this file)");
-                } else{
+              isFiltered = false;
+              for (const candidate of expectedJsonMismatchList)
+                if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+              console.log("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
+              if (!isFiltered) {
                 console.log("jsonObject1:", prettyPrint(jsonObject1));
                 console.log("jsonObject3:", prettyPrint(jsonObject3));
               }
             } else {
-              ck.announceError("imjs => GeometryQuery =>imjs round trip failure", currFile);
+              ck.announceError("imjs => GeometryQuery => imjs round trip failure", currFile);
               console.log("jsonObject1:", prettyPrint(jsonObject1));
               console.log("jsonObject2:", prettyPrint(jsonObject2));
               if (Checker.noisy.printJSONFailure) { console.log(`FAIL: ${i}`); console.log(compareObj.errorTracker); }
             }
           }
+          // test geometry roundtrip thru flatbuffer (and IMJS again)
+          isFiltered = false;
+          for (const candidate of expectedFBMismatchList)
+            if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+          if (isFiltered) continue;
+          testGeometryQueryRoundTrip(ck, geometryQuery1);
         }
       }
       if (Checker.noisy.printJSONSuccess) {
@@ -310,5 +320,56 @@ describe("CreateIModelJsonSamples", () => {
     ck.checkpoint("BSIJSON.ParseIMJS");
     expect(ck.getNumErrors()).equals(0);
   });
+});
 
+describe("BoxProps", () => {
+  type BoxProps = IModelJson.BoxProps;
+
+  function parseBox(props: BoxProps): Box | undefined {
+    return IModelJson.Reader.parseBox(props);
+  }
+
+  function expectBoxOrigin(inputProps: BoxProps, expectedOrigin: number): void {
+    const box = parseBox(inputProps)!;
+    expect(box).not.to.be.undefined;
+    expect(box.getBaseOrigin().x).to.equal(expectedOrigin);
+  }
+
+  it("accepts either origin or baseOrigin", () => {
+    expectBoxOrigin({ origin: [3, 2, 1], baseX: 10 }, 3);
+    expectBoxOrigin({ baseOrigin: [4, 5, 6], baseX: 5 } as BoxProps, 4);
+  });
+
+  it("prefers origin if both origin and baseOrigin are specified", () => {
+    expectBoxOrigin({
+      origin: [5, 5, 5],
+      baseOrigin: [6, 6, 6],
+      baseX: 7,
+    }, 5);
+  });
+
+  it("requires either origin or baseOrigin", () => {
+    expect(parseBox({ baseX: 123 } as BoxProps)).to.be.undefined;
+  });
+
+  it("outputs both origin and baseOrigin", () => {
+    const box = parseBox({ origin: [1, 2, 3], baseX: 4 })!;
+    expect(box).not.to.be.undefined;
+
+    const solidProps = new IModelJson.Writer().handleBox(box);
+    const props = solidProps.box!;
+    expect(props).not.to.be.undefined;
+
+    expect(props.origin).not.to.be.undefined;
+    const origin = Point3d.fromJSON(props.origin);
+    expect(origin.x).to.equal(1);
+    expect(origin.y).to.equal(2);
+    expect(origin.z).to.equal(3);
+
+    expect(props.baseOrigin).not.to.be.undefined;
+    const baseOrigin = Point3d.fromJSON(props.baseOrigin);
+    expect(baseOrigin?.x).to.equal(1);
+    expect(baseOrigin?.y).to.equal(2);
+    expect(baseOrigin?.z).to.equal(3);
+  });
 });

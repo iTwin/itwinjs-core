@@ -20,6 +20,12 @@ export enum BackendLoggerCategory {
    */
   CodeSpecs = "core-backend.CodeSpecs",
 
+  /** The logger category used by the following classes:
+   * - [[CustomViewState3dCreator]]
+   * @internal
+   */
+  CustomViewState3dCreator = "core-backend.CustomViewState3dCreator",
+
   /** The logger category used by the [[DevTools]] class and related classes.
    * @internal
    */
@@ -64,6 +70,11 @@ export enum BackendLoggerCategory {
   IModelTileUpload = "core-backend.IModelTileUpload",
 
   /** The logger category used by the following classes:
+   * - TileStorage (tile upload/download)
+   */
+  IModelTileStorage = "core-backend.IModelTileStorage",
+
+  /** The logger category used by the following classes:
    * - [[Relationship]]
    */
   Relationship = "core-backend.Relationship",
@@ -81,12 +92,6 @@ export enum BackendLoggerCategory {
    * - [[EventSink]]
    */
   EventSink = "core-backend.EventSink",
-
-  /** The logger category used by the following classes:
-   * - [[IModelSchemaLoader]]
-   * @alpha
-   */
-  IModelSchemaLoader = "core-backend.IModelSchemaLoader",
 
   /** The logger category used by the following classes:
    * - [[iModels]]

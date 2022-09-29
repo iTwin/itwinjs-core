@@ -11,7 +11,7 @@ import { Localization } from "@itwin/core-common";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
-import { LocalizationHelper } from "./LocalizationHelper";
+import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { PresentationManager, PresentationManagerProps } from "./PresentationManager";
 import { SelectionManager, SelectionManagerProps } from "./selection/SelectionManager";
 import { SelectionScopesManager } from "./selection/SelectionScopesManager";
@@ -93,7 +93,7 @@ export class Presentation {
     }
     // eslint-disable-next-line @typescript-eslint/unbound-method
     presentationManager.onNewiModelConnection = favoritePropertiesManager.initializeConnection.bind(favoritePropertiesManager);
-    await LocalizationHelper.registerNamespaces();
+    await FrontendLocalizationHelper.registerNamespaces();
     for (const handler of initializationHandlers) {
       const cleanup = await handler();
       if (cleanup)
@@ -110,7 +110,7 @@ export class Presentation {
     terminationHandlers.length = 0;
 
     if (localization)
-      LocalizationHelper.unregisterNamespaces();
+      FrontendLocalizationHelper.unregisterNamespaces();
 
     if (presentationManager)
       presentationManager.dispose();

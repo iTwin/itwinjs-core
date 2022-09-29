@@ -2,13 +2,16 @@ sep=;
 Release Tag;API Item
 public;AcquireNewBriefcaseIdArg 
 beta;AliCloudStorageService 
+deprecated;AliCloudStorageService 
 beta;AliCloudStorageServiceCredentials
+deprecated;AliCloudStorageServiceCredentials
 public;AnnotationElement2d 
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
+deprecated;AzureBlobStorage 
 beta;AzureBlobStorageCredentials
 beta;BackendHubAccess
 public;BackendLoggerCategory
@@ -39,9 +42,17 @@ internal;CheckpointManager
 public;CheckpointProps 
 public;ClassRegistry
 public;CloudContainerArgs
+beta;CloudSqlite
+internal;CloudPrefetch
+internal;LockAndOpenArgs
+internal;ObtainLockParams
+internal;transferDb(direction: TransferDirection, container: CloudContainer, props: TransferDbProps): Promise
 beta;class CloudStorageService
-internal;CloudStorageTileUploader
+deprecated;class CloudStorageService
+beta;CloudStorageTileUploader
+deprecated;CloudStorageTileUploader
 beta;CloudStorageUploadOptions
+deprecated;CloudStorageUploadOptions
 alpha;CodeIndex
 alpha;CodeService
 alpha;CodeService
@@ -206,7 +217,6 @@ public;IModelIdArg
 public;IModelJsFs
 public;IModelJsFsStats
 public;IModelNameArg 
-alpha;IModelSchemaLoader
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -280,6 +290,8 @@ public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => ProgressStatus
 public;ProgressStatus
+alpha;PropertyStore
+alpha;PropertyStore
 public;PullChangesArgs = ToChangesetArgs
 public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
@@ -334,11 +346,7 @@ public;class SpatialModel
 public;SpatialViewDefinition 
 public;SQLiteDb 
 public;SQLiteDb
-internal;BlobIO = IModelJsNative.BlobIO
-internal;CloudCache = IModelJsNative.CloudCache
-internal;CloudContainer = IModelJsNative.CloudContainer
-internal;CloudPrefetch = IModelJsNative.CloudPrefetch
-internal;LockAndOpenArgs
+internal;BlobIO
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType

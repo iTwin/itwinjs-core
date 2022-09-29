@@ -8,7 +8,7 @@
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
 import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
-import { GeometryClass } from "@itwin/core-common";
+import { ColorDefProps, GeometryClass } from "@itwin/core-common";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -31,8 +31,8 @@ export interface ExportLinesInfo {
   elementId: Id64String;
   /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** The linework for these graphics */
@@ -71,8 +71,8 @@ export interface ExportGraphicsInfo {
   elementId: Id64String;
   /** ID for the [SubCategory]($core-backend) for these graphics  */
   subCategory: Id64String;
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
@@ -179,8 +179,8 @@ export interface ExportGraphicsOptions {
  * @public
  */
 export interface ExportPartInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** If defined, ID for the [RenderMaterialElement]($core-backend) for these graphics */
@@ -202,8 +202,8 @@ export type ExportPartFunction = (info: ExportPartInfo) => void;
  * @public
  */
 export interface ExportPartLinesInfo {
-  /** The color and transparency for these graphics, laid out in TBGR format, see [ColorDef]($core-common) */
-  color: number;
+  /** The color and transparency for these graphics */
+  color: ColorDefProps;
   /** GeometryClass for these graphics */
   geometryClass: GeometryClass;
   /** The linework for these graphics */
@@ -273,11 +273,16 @@ export namespace ExportGraphics {
    * @public
    */
   export function arePartDisplayInfosEqual(lhs: ExportPartDisplayInfo, rhs: ExportPartDisplayInfo): boolean {
-    if (lhs.categoryId !== rhs.categoryId) return false;
-    if (lhs.subCategoryId !== rhs.subCategoryId) return false;
-    if (lhs.materialId !== rhs.materialId) return false;
-    if (lhs.elmTransparency !== rhs.elmTransparency) return false;
-    if (lhs.lineColor !== rhs.lineColor) return false;
+    if (lhs.categoryId !== rhs.categoryId)
+      return false;
+    if (lhs.subCategoryId !== rhs.subCategoryId)
+      return false;
+    if (lhs.materialId !== rhs.materialId)
+      return false;
+    if (lhs.elmTransparency !== rhs.elmTransparency)
+      return false;
+    if (lhs.lineColor !== rhs.lineColor)
+      return false;
     return true;
   }
 

@@ -442,11 +442,15 @@ export namespace WmtsCapability {
       const lowerCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.LOWERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
       const upperCorner = _json[OwsConstants.WGS84BOUNDINGBOX_XMLTAG]?.[OwsConstants.UPPERCORNER_XMLTAG]?._text?.split(" ").map((x: string) => +x);
       if (lowerCorner?.length === 2 && upperCorner?.length === 2)
-        this.wsg84BoundingBox = MapCartoRectangle.createFromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
+        this.wsg84BoundingBox = MapCartoRectangle.fromDegrees(lowerCorner[0], lowerCorner[1], upperCorner[0], upperCorner[1]);
 
       // If we could not initialized WSG84 bounding box, attempt to initialized it from Bounding Box
       if (!this.wsg84BoundingBox && (this.boundingBox?.crs?.includes("EPSG:4326") || this.boundingBox?.crs?.includes("CRS:84"))) {
-        this.wsg84BoundingBox = MapCartoRectangle.createFromDegrees(this.boundingBox.range?.low.x, this.boundingBox.range?.low.y, this.boundingBox.range?.high.x, this.boundingBox.range?.high.y);
+        const range = this.boundingBox.range;
+        if (range)
+          this.wsg84BoundingBox = MapCartoRectangle.fromDegrees(range.low.x, range.low.y, range.high.x, range.high.y);
+        else
+          this.wsg84BoundingBox = MapCartoRectangle.createMaximum();
       }
 
       // Style

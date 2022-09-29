@@ -371,29 +371,52 @@ export class ViewFlags {
   /** Convert to JSON representation. */
   public toJSON(): ViewFlagProps {
     const out: ViewFlagProps = {};
-    if (!this.constructions) out.noConstruct = true;
-    if (!this.dimensions) out.noDim = true;
-    if (!this.patterns) out.noPattern = true;
-    if (!this.weights) out.noWeight = true;
-    if (!this.styles) out.noStyle = true;
-    if (!this.transparency) out.noTransp = true;
-    if (!this.fill) out.noFill = true;
-    if (this.grid) out.grid = true;
-    if (this.acsTriad) out.acs = true;
-    if (!this.textures) out.noTexture = true;
-    if (!this.materials) out.noMaterial = true;
-    if (!this.lighting) out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
-    if (this.visibleEdges) out.visEdges = true;
-    if (this.hiddenEdges) out.hidEdges = true;
-    if (this.shadows) out.shadows = true;
-    if (this.clipVolume) out.clipVol = true;
-    if (this.monochrome) out.monochrome = true;
-    if (this.backgroundMap) out.backgroundMap = true;
-    if (this.ambientOcclusion) out.ambientOcclusion = true;
-    if (this.thematicDisplay) out.thematicDisplay = true;
-    if (this.wiremesh) out.wiremesh = true;
-    if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
-    if (!this.whiteOnWhiteReversal) out.noWhiteOnWhiteReversal = true;
+    if (!this.constructions)
+      out.noConstruct = true;
+    if (!this.dimensions)
+      out.noDim = true;
+    if (!this.patterns)
+      out.noPattern = true;
+    if (!this.weights)
+      out.noWeight = true;
+    if (!this.styles)
+      out.noStyle = true;
+    if (!this.transparency)
+      out.noTransp = true;
+    if (!this.fill)
+      out.noFill = true;
+    if (this.grid)
+      out.grid = true;
+    if (this.acsTriad)
+      out.acs = true;
+    if (!this.textures)
+      out.noTexture = true;
+    if (!this.materials)
+      out.noMaterial = true;
+    if (!this.lighting)
+      out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
+    if (this.visibleEdges)
+      out.visEdges = true;
+    if (this.hiddenEdges)
+      out.hidEdges = true;
+    if (this.shadows)
+      out.shadows = true;
+    if (this.clipVolume)
+      out.clipVol = true;
+    if (this.monochrome)
+      out.monochrome = true;
+    if (this.backgroundMap)
+      out.backgroundMap = true;
+    if (this.ambientOcclusion)
+      out.ambientOcclusion = true;
+    if (this.thematicDisplay)
+      out.thematicDisplay = true;
+    if (this.wiremesh)
+      out.wiremesh = true;
+    if (this.forceSurfaceDiscard)
+      out.forceSurfaceDiscard = true;
+    if (!this.whiteOnWhiteReversal)
+      out.noWhiteOnWhiteReversal = true;
 
     out.renderMode = this.renderMode;
     return out;

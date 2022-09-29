@@ -45,13 +45,13 @@
   ],
   "devDependencies": {
     "@axe-core/react": "4.3.1",
-    "@bentley/react-scripts": "5.0.0-dev.4",
+    "@bentley/react-scripts": "^5.0.0",
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "@types/lorem-ipsum": "^1.0.2",
-    "@types/node": "16.11.7",
+    "@types/node": "16.11.59",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",
     "@types/react-redux": "^7.1.18",
@@ -63,7 +63,7 @@
     "cross-env": "^5.1.4",
     "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
-    "electron": "^14.0.0",
+    "electron": "^17.0.0",
     "eslint": "^7.11.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
@@ -106,7 +106,7 @@
     "@itwin/imodels-access-frontend": "^2.0.0",
     "@itwin/imodels-client-authoring": "^2.0.0",
     "@itwin/imodels-client-management": "^2.0.0",
-    "@itwin/itwinui-react": "^1.38.1",
+    "@itwin/itwinui-react": "~1.42.0",
     "@itwin/itwinui-css": "0.x",
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/map-layers": "workspace:*",
@@ -116,7 +116,7 @@
     "@itwin/presentation-components": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/reality-data-client": "0.9.0",
-    "classnames": "^2.3.1",
+    "classnames": "2.3.1",
     "lorem-ipsum": "^2.0.3",
     "react": "^17.0.0",
     "react-beautiful-dnd": "^13.0.0",
@@ -152,6 +152,8 @@
       ]
     },
     "rules": {
+      "nonblock-statement-body-position": "off",
+      "max-statements-per-line": "off",
       "@typescript-eslint/naming-convention": [
         "warn",
         {

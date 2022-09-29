@@ -1,5 +1,202 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ModelsTree #integration does not show private categories 1`] = `
+Array [
+  Object {
+    "autoExpand": true,
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "extendedData": Object {
+                  "categoryId": "0x12",
+                  "modelId": "0x11",
+                },
+                "icon": "icon-item",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Physical Object [0-M]",
+                    "value": "Physical Object [0-M]",
+                    "valueFormat": 0,
+                  },
+                },
+              },
+            ],
+            "extendedData": Object {
+              "isCategory": true,
+              "modelId": "0x11",
+            },
+            "hasChildren": true,
+            "icon": "icon-layers",
+            "label": PropertyRecord {
+              "property": Object {
+                "displayLabel": "Label",
+                "name": "node_label",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "Test SpatialCategory",
+                "value": "Test SpatialCategory",
+                "valueFormat": 0,
+              },
+            },
+          },
+        ],
+        "extendedData": Object {
+          "isModel": true,
+        },
+        "hasChildren": true,
+        "icon": "icon-model",
+        "label": PropertyRecord {
+          "property": Object {
+            "displayLabel": "Label",
+            "name": "node_label",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "TestPhysicalModel",
+            "value": "TestPhysicalModel",
+            "valueFormat": 0,
+          },
+        },
+      },
+    ],
+    "extendedData": Object {
+      "isSubject": true,
+    },
+    "hasChildren": true,
+    "icon": "icon-imodel-hollow-2",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "IModelTest",
+        "value": "IModelTest",
+        "valueFormat": 0,
+      },
+    },
+  },
+]
+`;
+
+exports[`ModelsTree #integration does not show private categories with class grouping 1`] = `
+Array [
+  Object {
+    "autoExpand": true,
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "extendedData": Object {
+                      "categoryId": "0x12",
+                      "modelId": "0x11",
+                    },
+                    "icon": "icon-item",
+                    "label": PropertyRecord {
+                      "property": Object {
+                        "displayLabel": "Label",
+                        "name": "node_label",
+                        "typename": "string",
+                      },
+                      "value": Object {
+                        "displayValue": "Physical Object [0-M]",
+                        "value": "Physical Object [0-M]",
+                        "valueFormat": 0,
+                      },
+                    },
+                  },
+                ],
+                "description": "The generic:PhysicalObject class is used for bis:PhysicalElements which cannot be further classified. More-specific bis:PhysicalElement subclasses should be used wherever possible.",
+                "hasChildren": true,
+                "icon": "icon-ec-class",
+                "label": PropertyRecord {
+                  "property": Object {
+                    "displayLabel": "Label",
+                    "name": "node_label",
+                    "typename": "string",
+                  },
+                  "value": Object {
+                    "displayValue": "Physical Object",
+                    "value": "Physical Object",
+                    "valueFormat": 0,
+                  },
+                },
+              },
+            ],
+            "extendedData": Object {
+              "isCategory": true,
+              "modelId": "0x11",
+            },
+            "hasChildren": true,
+            "icon": "icon-layers",
+            "label": PropertyRecord {
+              "property": Object {
+                "displayLabel": "Label",
+                "name": "node_label",
+                "typename": "string",
+              },
+              "value": Object {
+                "displayValue": "Test SpatialCategory",
+                "value": "Test SpatialCategory",
+                "valueFormat": 0,
+              },
+            },
+          },
+        ],
+        "extendedData": Object {
+          "isModel": true,
+        },
+        "hasChildren": true,
+        "icon": "icon-model",
+        "label": PropertyRecord {
+          "property": Object {
+            "displayLabel": "Label",
+            "name": "node_label",
+            "typename": "string",
+          },
+          "value": Object {
+            "displayValue": "TestPhysicalModel",
+            "value": "TestPhysicalModel",
+            "valueFormat": 0,
+          },
+        },
+      },
+    ],
+    "extendedData": Object {
+      "isSubject": true,
+    },
+    "hasChildren": true,
+    "icon": "icon-imodel-hollow-2",
+    "label": PropertyRecord {
+      "property": Object {
+        "displayLabel": "Label",
+        "name": "node_label",
+        "typename": "string",
+      },
+      "value": Object {
+        "displayValue": "IModelTest",
+        "value": "IModelTest",
+        "valueFormat": 0,
+      },
+    },
+  },
+]
+`;
+
 exports[`ModelsTree #integration renders component with real data and no active viewport 1`] = `
 <div>
   <div

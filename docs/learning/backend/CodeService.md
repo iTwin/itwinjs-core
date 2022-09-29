@@ -48,6 +48,14 @@ The following rules may be helpful:
 - If in element in an iModel with a `CodeService` has a Code, its `FederationGuid` must match the Guid in the `CodeService`.
 - Elements in different iModels of an iTwin *may* have the same Code. The `CodeService` does *not* record where/if Codes are used, and cannot be used to "find" elements. However, the `CodeService` does record the "origin" of a Code. If the origin was an iModel, there's a good chance that there is (or was) an element in that iModel with that Code.
 
+## CodeService's Role in the "Code Ecosystem"
+
+The purpose of the CodeService is to enforce uniqueness of Codes within an iTwin and to enforce that everywhere a Code is used, the correct `federationGuid` is stored on its element. It does not provide any way of telling whether or where Codes are actually *used* on a project (though the `origin` property can give a clue where it *may* be.)
+
+Many organizations will have an [ERP](https://en.wikipedia.org/wiki/Enterprise_resource_planning) system or some other "authority" used for managing their assets and identifiers. The usual workflow is to obtain "codes" from that system, and then enter their properties (CodeValue, CodeId) in the CodeService so they are tracked at the iTwin level. `CodeService` is not a replacement for an ERP, asset management, or inventory system. It merely stores values obtained from those systems.
+
+However, there are some CodeSpecs that exist solely for concepts within the iTwin itself (e.g. Category names, Model Names, etc.) In that case the CodeService may be used to find new unique values for those Codes.
+
 ## CodeService API
 
 The `CodeService` interface in iTwin.js provides an api to integrate the Code system for elements in an iModel, with a `CodeService` that can:

@@ -32,7 +32,7 @@ export type ClipVectorProps = ClipPrimitiveProps[];
 
 /** Class holding an array structure of shapes defined by `ClipPrimitive`
  * * The `ClipVector` defines an intersection of the member `ClipPrimitive` regions.
- * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker flag indicating that they outside of each hole is live.
+ * * In the most common usage, one of the `ClipPrimitive` will be an outer region, and all others are holes with marker flag indicating that the outside of each hole is live.
  * @public
  */
 export class ClipVector implements Clipper {

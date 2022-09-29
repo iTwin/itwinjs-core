@@ -167,7 +167,10 @@ export class BeButtonEvent implements BeButtonEventProps {
   /** Whether this event came from a pointing device (e.g. mouse) or a touch device. */
   public inputSource = InputSource.Unknown;
 
-  public constructor(props?: BeButtonEventProps) { if (props) this.init(props); }
+  public constructor(props?: BeButtonEventProps) {
+    if (props)
+      this.init(props);
+  }
 
   /** Determine whether this BeButtonEvent has valid data.
    * @note BeButtonEvents may be constructed as "blank", and are not considered to hold valid data unless the [[viewport]] member is defined.
@@ -197,17 +200,28 @@ export class BeButtonEvent implements BeButtonEventProps {
 
   /** Initialize the values of this BeButtonEvent. */
   public init(props: BeButtonEventProps) {
-    if (undefined !== props.point) this.point = props.point;
-    if (undefined !== props.rawPoint) this.rawPoint = props.rawPoint;
-    if (undefined !== props.viewPoint) this.viewPoint = props.viewPoint;
-    if (undefined !== props.viewport) this.viewport = props.viewport;
-    if (undefined !== props.coordsFrom) this.coordsFrom = props.coordsFrom;
-    if (undefined !== props.keyModifiers) this.keyModifiers = props.keyModifiers;
-    if (undefined !== props.isDown) this.isDown = props.isDown;
-    if (undefined !== props.isDoubleClick) this.isDoubleClick = props.isDoubleClick;
-    if (undefined !== props.isDragging) this.isDragging = props.isDragging;
-    if (undefined !== props.button) this.button = props.button;
-    if (undefined !== props.inputSource) this.inputSource = props.inputSource;
+    if (undefined !== props.point)
+      this.point = props.point;
+    if (undefined !== props.rawPoint)
+      this.rawPoint = props.rawPoint;
+    if (undefined !== props.viewPoint)
+      this.viewPoint = props.viewPoint;
+    if (undefined !== props.viewport)
+      this.viewport = props.viewport;
+    if (undefined !== props.coordsFrom)
+      this.coordsFrom = props.coordsFrom;
+    if (undefined !== props.keyModifiers)
+      this.keyModifiers = props.keyModifiers;
+    if (undefined !== props.isDown)
+      this.isDown = props.isDown;
+    if (undefined !== props.isDoubleClick)
+      this.isDoubleClick = props.isDoubleClick;
+    if (undefined !== props.isDragging)
+      this.isDragging = props.isDragging;
+    if (undefined !== props.button)
+      this.button = props.button;
+    if (undefined !== props.inputSource)
+      this.inputSource = props.inputSource;
   }
 
   /** Determine whether the control key was pressed  */
@@ -567,7 +581,17 @@ export abstract class InteractiveTool extends Tool {
    * @note default placement tool behavior is to treat press, drag, and release of data button the same as click, click by calling onDataButtonDown.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
    */
-  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> { if (BeButton.Data !== ev.button) return EventHandled.No; if (ev.isDown) return this.onDataButtonDown(ev); const downEv = ev.clone(); downEv.isDown = true; return this.onDataButtonDown(downEv); }
+  public async onMouseEndDrag(ev: BeButtonEvent): Promise<EventHandled> {
+    if (BeButton.Data !== ev.button)
+      return EventHandled.No;
+
+    if (ev.isDown)
+      return this.onDataButtonDown(ev);
+
+    const downEv = ev.clone();
+    downEv.isDown = true;
+    return this.onDataButtonDown(downEv);
+  }
 
   /** Invoked when the mouse wheel moves.
    * @return Yes if event completely handled by tool and event should not be passed on to the IdleTool.
@@ -1118,7 +1142,10 @@ export class ToolRegistry {
   public getToolList(): ToolList {
     if (this._keyinList === undefined) {
       this._keyinList = [];
-      this.tools.forEach((thisTool) => { if (!thisTool.hidden) this._keyinList!.push(thisTool); });
+      this.tools.forEach((thisTool) => {
+        if (!thisTool.hidden)
+          this._keyinList!.push(thisTool);
+      });
     }
     return this._keyinList;
   }

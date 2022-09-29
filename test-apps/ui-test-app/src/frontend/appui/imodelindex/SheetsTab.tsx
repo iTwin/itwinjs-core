@@ -87,7 +87,9 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     this.props.onAddHeader(
       <>
         <SearchBox placeholder="Search Views..." onValueChanged={this._handleSearchChanged.bind(this)} />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <span className={classDetails} title="List" onClick={this._onChangeView.bind(this, true)} />
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <span className={classThumbnails} title="Thumbnails" onClick={this._onChangeView.bind(this, false)} />
       </>);
   }

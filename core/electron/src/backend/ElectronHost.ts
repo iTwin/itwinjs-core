@@ -18,6 +18,10 @@ import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfigur
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 
+// This will not be transpiled into JavaScript files as long as it isn't used for more than it's type definition.
+// See: https://www.typescriptlang.org/docs/handbook/modules.html#optional-module-loading-and-other-advanced-loading-scenarios
+import * as ElectronModuleExports from "electron";
+
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
 class ElectronIpc implements IpcSocketBackend {
@@ -89,15 +93,15 @@ export interface WindowSizeAndPositionProps {
 export class ElectronHost {
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
-  private static _electron: typeof Electron;
+  private static _electron: typeof ElectronModuleExports;
   private static _electronFrontend = "electron://frontend/";
   private static _mainWindow?: BrowserWindow;
   public static webResourcesPath: string;
   public static appIconPath: string;
   public static frontendURL: string;
   public static rpcConfig: RpcConfiguration;
-  public static get ipcMain() { return this._electron.ipcMain; }
-  public static get app() { return this._electron.app; }
+  public static get ipcMain() { return this._electron?.ipcMain; }
+  public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
 
   private constructor() { }
@@ -178,6 +182,8 @@ export class ElectronHost {
       mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
+
+      saveMaximized(mainWindow.isMaximized());
     }
   }
 
@@ -255,7 +261,14 @@ export class ElectronHost {
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
-        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+        this.electron.protocol.registerSchemesAsPrivileged([{
+          scheme: "electron",
+          privileges: {
+            standard: true,
+            secure: true,
+            supportFetchAPI: true,
+          },
+        }]);
       const eopt = opts?.electronHost;
       this._developmentServer = eopt?.developmentServer ?? false;
       const frontendPort = eopt?.frontendPort ?? 3000;

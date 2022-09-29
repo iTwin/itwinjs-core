@@ -4,8 +4,16 @@ parameters:
   - name: workingDir
     type: string
     default: $(System.DefaultWorkingDirectory)
+  - name: rushBuildCacheEnabled
+    type: number
+    default: 1
+  - name: buildIos
+    type: boolean
+    default: false
 
 steps:
+  - script: node common/scripts/set-rush-write-cache-variables.js
+    displayName: 'Set Rush Write Cache Variables'
   - script: node common/scripts/install-run-rush.js check
     displayName: rush check
     workingDirectory: ${{ parameters.workingDir }}
@@ -28,10 +36,22 @@ steps:
     displayName: rush build:ci
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), not(and(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))))
+    env:
+      RUSH_BUILD_CACHE_CREDENTIAL: $(RushBuildCacheSAS)
+      RUSH_BUILD_CACHE_ENABLED: ${{parameters.rushBuildCacheEnabled}}
+
   - script: node common/scripts/install-run-rush.js build -v -p max
     displayName: rush build
     workingDirectory: ${{ parameters.workingDir }}
     condition: and(succeeded(), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Agent.OS'], 'Darwin'))
+  - script: npm run build:ios
+    workingDirectory: "test-apps/display-test-app"
+    displayName: "Build iOS display-test-app typescript"
+    condition: and(succeeded(), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')), eq(variables['Agent.OS'], 'Darwin'))
+  - script: npm run build:ios-app
+    workingDirectory: "test-apps/display-test-app"
+    displayName: "Build iOS display-test-app swift"
+    condition: and(succeeded(), eq('${{ parameters.buildIos }}',true), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}

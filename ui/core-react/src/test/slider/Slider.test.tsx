@@ -128,11 +128,4 @@ describe("Slider", () => {
     expect(spyOnChange.calledOnce).to.be.true;
   });
 
-  // it.only("should render with showTooltip", () => {
-  //   const component = render(<Slider min={0} max={50} values={[0, 25]} showTooltip={true} />);
-  //   const item = component.getByTestId("core-slider-track");
-  //   item.dispatchEvent(TestUtils.createBubbledEvent("mouseenter"));
-  //   expect(component.getByTestId("core-slider-tooltip")).to.exist;
-  // });
-
 });

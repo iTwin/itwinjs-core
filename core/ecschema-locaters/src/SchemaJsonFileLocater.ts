@@ -10,6 +10,10 @@ import {
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
+/** @packageDocumentation
+ * @module Locaters
+ */
+
 /**
  * A SchemaLocator implementation for locating JSON Schema files
  * from the file system using configurable search paths.

@@ -5,12 +5,11 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { mount } from "enzyme";
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
 import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
-import TestUtils from "../TestUtils";
+import TestUtils, { classesFromElement } from "../TestUtils";
 
 describe("ContextMenu", () => {
 
@@ -388,13 +387,6 @@ describe("ContextMenu", () => {
         expect(component.container.querySelector(".core-context-menu-bottom")).not.to.be.null;
         expect(component.container.querySelector(".core-context-menu-right")).not.to.be.null;
       });
-      it("should support changing direction", () => {
-        const wrapper = mount<ContextMenu>(<ContextMenu opened={true} direction={ContextMenuDirection.Right} />);
-        expect(wrapper.state().direction === ContextMenuDirection.Right);
-        wrapper.setProps({ direction: ContextMenuDirection.Left, opened: false });
-        expect(wrapper.state().direction === ContextMenuDirection.Left);
-        wrapper.unmount();
-      });
     });
   });
 
@@ -635,15 +627,18 @@ describe("ContextMenu", () => {
       item.focus();
       expect(document.activeElement).to.eq(item);
     });
-    it("should support changing direction", () => {
-      const wrapper = mount<ContextSubMenu>(
+    it("should support changing direction (COVERAGE ONLY)", () => {
+      // THIS TEST IS ONLY ADDING COVERAGE, AS STATED ABOVE, THE DIRECTION DO NOT CHANGE HERE!
+      const {rerender} = render(
         <ContextSubMenu label="test" autoflip={true}>
           <ContextMenuItem>Test</ContextMenuItem>
         </ContextSubMenu>);
-      expect(wrapper.state().direction === ContextMenuDirection.Right);
-      wrapper.setProps({ direction: ContextMenuDirection.Left });
-      expect(wrapper.state().direction === ContextMenuDirection.Left);
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-bottom");
+
+      rerender(<ContextSubMenu label="test" autoflip={true} direction={ContextMenuDirection.Right}>
+        <ContextMenuItem>Test</ContextMenuItem>
+      </ContextSubMenu>);
+      expect(classesFromElement(screen.getByRole("menu"))).to.include("core-context-menu-right");
     });
     it("handles label change correctly", () => {
       const component = render(

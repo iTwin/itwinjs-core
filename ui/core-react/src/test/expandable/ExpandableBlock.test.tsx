@@ -3,16 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { SpecialKey } from "@itwin/appui-abstract";
 import { ExpandableBlock } from "../../core-react";
-import TestUtils from "../TestUtils";
+import TestUtils, { classesFromElement } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("ExpandableBlock", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiCore();
@@ -20,85 +24,67 @@ describe("ExpandableBlock", () => {
 
   describe("<ExpandableBlock />", () => {
     it("should render collapsed", () => {
-      const wrapper = mount(
+      render(
         <ExpandableBlock title="Test" isExpanded={false} onClick={sinon.spy()}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(wrapper.find(".is-collapsed").length).to.eq(1);
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("is-collapsed");
     });
 
     it("should render expanded", () => {
-      const wrapper = mount(
+      render(
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(wrapper.find(".is-expanded").length).to.eq(1);
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("is-expanded");
     });
 
     it("should render with caption", () => {
-      const wrapper = mount(
+      render(
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} caption="Test Caption">
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(wrapper.find(".with-caption").length).to.eq(1);
-      wrapper.unmount();
+      expect(classesFromElement(screen.getByRole("button").parentElement)).to.include("with-caption");
+      expect(screen.getByText("Test Caption")).to.exist;
     });
 
     it("should render with title given in a tooltip", () => {
-      const wrapper = mount(
+      render(
         <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} tooltip={"hello"}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(wrapper.find(".title").equals(<div className="title" title="hello">Test</div>)).to.be.true;
-      wrapper.unmount();
+      expect(screen.getByTitle("hello")).to.equal(screen.getByText("Test"));
     });
 
-    it("should render title as undefined if tooltip is not given and title is JSX.Element", () => {
-      const title = <div />; // title may be JSX.Element when passing a highlighted text
-      const wrapper = mount(
+    it("should render empty title if tooltip is not given and title is JSX.Element", () => {
+      const title = <span>JSX Title</span>; // title may be JSX.Element when passing a highlighted text
+      render(
         <ExpandableBlock title={title} isExpanded={true} onClick={sinon.spy()}>
           <div>Hello</div>
         </ExpandableBlock>);
-      expect(wrapper.find(".title").get(0).props.title).to.be.undefined;
-      wrapper.unmount();
+      expect(screen.getByText("JSX Title").parentElement?.title).to.be.empty;
     });
 
-    it("should support click", () => {
+    it("should support click", async () => {
       const spyMethod = sinon.fake();
-      const wrapper = mount(
+      render(
         <ExpandableBlock title="Test" isExpanded={true} onClick={spyMethod}>
           <div>Hello</div>
         </ExpandableBlock>);
-      wrapper.find(".header").simulate("click");
+
+      await theUserTo.click(screen.getByRole("button"));
       spyMethod.calledOnce.should.true;
-      wrapper.unmount();
     });
 
-    it("should support keypress", () => {
+    it("should support keypress", async () => {
       const spyMethod = sinon.fake();
-      const wrapper = mount(
-        <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()} onKeyPress={spyMethod}>
+      render(
+        <ExpandableBlock title={"Test"} isExpanded={true} onClick={sinon.spy()} onKeyPress={spyMethod}>
           <div>Hello</div>
         </ExpandableBlock>);
-      wrapper.find(".header").simulate("keypress", { key: SpecialKey.ArrowDown /* <Down> */ });
+      await theUserTo.tab();
+      await theUserTo.keyboard("t");
       spyMethod.calledOnce.should.true;
-      wrapper.unmount();
-    });
-
-    it("renders correctly collapsed", () => {
-      shallow(
-        <ExpandableBlock title="Test" isExpanded={false} onClick={sinon.spy()}>
-          <div>Hello</div>
-        </ExpandableBlock>).should.matchSnapshot();
-    });
-
-    it("renders correctly expanded", () => {
-      shallow(
-        <ExpandableBlock title="Test" isExpanded={true} onClick={sinon.spy()}>
-          <div>Hello</div>
-        </ExpandableBlock>).should.matchSnapshot();
     });
   });
 });

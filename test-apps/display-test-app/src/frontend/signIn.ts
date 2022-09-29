@@ -6,6 +6,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib
 import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
+import { getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
@@ -25,14 +26,20 @@ export async function signIn(): Promise<boolean> {
   let authClient: ElectronRendererAuthorization | BrowserAuthorizationClient | undefined;
   if (ProcessDetector.isElectronAppFrontend) {
     authClient = new ElectronRendererAuthorization();
-  } else if (ProcessDetector.isMobileAppFrontend){
-    // not implemented
+  } else if (ProcessDetector.isMobileAppFrontend) {
+    // The default auth client works on mobile
+    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    return accessToken !== undefined && accessToken.length > 0;
   } else {
+    const clientId = getConfigurationString("oidcClientId") ?? "imodeljs-spa-test";
+    const redirectUri = getConfigurationString("oidcRedirectUri") ?? "http://localhost:3000/signin-callback";
+    const scope = getConfigurationString("oidcScope") ?? "openid email profile organization itwinjs";
+    const responseType = "code";
     authClient = new BrowserAuthorizationClient({
-      clientId: "imodeljs-spa-test",
-      redirectUri: "http://localhost:3000/signin-callback",
-      scope: "openid email profile organization itwinjs",
-      responseType: "code",
+      clientId,
+      redirectUri,
+      scope,
+      responseType,
     });
     try {
       await authClient.signInSilent();

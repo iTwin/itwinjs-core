@@ -86,15 +86,14 @@
 			<key>CFBundleTypeIconFiles</key>
 			<array/>
 			<key>CFBundleTypeName</key>
-			<string>Bentley iModels</string>
+			<string>iModel (.bim)</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
 			<key>LSHandlerRank</key>
-			<string>Owner</string>
+			<string>Alternate</string>
 			<key>LSItemContentTypes</key>
 			<array>
-				<string>com.bentley.app.bim</string>
-				<string>public.data</string>
+				<string>com.bentley.bim-imodel</string>
 			</array>
 		</dict>
 	</array>
@@ -108,15 +107,17 @@
 				<string>public.data</string>
 			</array>
 			<key>UTTypeDescription</key>
-			<string>Bentley iModels</string>
+			<string>iModel (.bim)</string>
 			<key>UTTypeIdentifier</key>
-			<string>com.bentley.app.bim</string>
-			<key>UTTypeIconFile</key>
-			<string></string>
+			<string>com.bentley.bim-imodel</string>
 			<key>UTTypeTagSpecification</key>
 			<dict>
 				<key>public.filename-extension</key>
-				<string>bim</string>
+				<array>
+					<string>bim</string>
+				</array>
+				<key>public.mime-type</key>
+				<string>application/bim-imodel</string>
 			</dict>
 		</dict>
 	</array>

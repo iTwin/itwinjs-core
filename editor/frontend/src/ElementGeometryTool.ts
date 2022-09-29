@@ -98,7 +98,10 @@ export class SubEntityData {
   constructor(props: SubEntityProps) { this._props = props; }
 
   public get props(): SubEntityProps { return this._props; }
-  public set props(value: SubEntityProps) { this.cleanupGraphic(); this._props = value; }
+  public set props(value: SubEntityProps) {
+    this.cleanupGraphic();
+    this._props = value;
+  }
 
   public get geometry(): SubEntityGeometryProps | undefined { return this._geometry; }
   public set geometry(value: SubEntityGeometryProps | undefined) { this._geometry = value; }
@@ -211,7 +214,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
       return;
 
     const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
+    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -504,7 +507,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
   protected getAcceptedSubEntities(): SubEntityProps[] {
     const accepted: SubEntityProps[] = [];
-    this._acceptedSubEntities.forEach((entry) => { accepted.push(entry.props); });
+    this._acceptedSubEntities.forEach((entry) => accepted.push(entry.props));
     return accepted;
   }
 
@@ -513,7 +516,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   }
 
   protected drawAcceptedSubEntities(context: DecorateContext): void {
-    this._acceptedSubEntities.forEach((entry) => { this.drawSubEntity(context, entry, true); });
+    this._acceptedSubEntities.forEach((entry) => this.drawSubEntity(context, entry, true));
   }
 
   public override decorate(context: DecorateContext): void {
@@ -546,12 +549,13 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     if (undefined === ev.viewport)
       return 0.0;
 
-    // NOTE: Compute a world coordinate radius for ray test, try getting aperature size at point on element...
+    // NOTE: Compute a world coordinate radius for ray test, try getting aperture size at point on element...
     const hit = IModelApp.accuSnap.currHit;
     const vec: Point3d[] = [];
 
     vec[0] = ev.viewport.worldToView(hit ? hit.hitPoint : ev.point);
-    vec[1] = vec[0].clone(); vec[1].x += 1;
+    vec[1] = vec[0].clone();
+    vec[1].x += 1;
     ev.viewport.viewToWorldArray(vec);
 
     // The edge and vertex hits get post-filtered on xy distance, so this is fine for perspective views...
@@ -857,7 +861,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   public override changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
     super.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
 
-    // Keep showing locate circle when identifing sub-entities even if done locating elements...
+    // Keep showing locate circle when identifying sub-entities even if done locating elements...
     if (!IModelApp.toolAdmin.isLocateCircleOn && this.wantAdditionalSubEntities)
       IModelApp.toolAdmin.setLocateCircleOn(true);
   }
@@ -887,7 +891,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected clearSubEntityGraphics(): void {
     if (undefined !== this._currentSubEntity)
       this._currentSubEntity.cleanupGraphic();
-    this._acceptedSubEntities.forEach((entry) => { entry.cleanupGraphic(); });
+
+    this._acceptedSubEntities.forEach((entry) => entry.cleanupGraphic());
   }
 
   public override async onCleanup(): Promise<void> {

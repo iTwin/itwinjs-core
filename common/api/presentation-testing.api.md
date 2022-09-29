@@ -4,7 +4,10 @@
 
 ```ts
 
+import { Code } from '@itwin/core-common';
 import { Content } from '@itwin/presentation-common';
+import { ElementProps } from '@itwin/core-common';
+import { GuidString } from '@itwin/core-bentley';
 import { HierarchyCacheMode } from '@itwin/presentation-backend';
 import { IModelApp } from '@itwin/core-frontend';
 import { IModelAppOptions } from '@itwin/core-frontend';
@@ -69,6 +72,36 @@ export interface IContentBuilderDataProvider {
     getContent: (options?: PageOptions) => Promise<Readonly<Content> | undefined>;
     getContentSetSize: () => Promise<number>;
     keys: Readonly<KeySet>;
+}
+
+// @internal
+export class IModelTestUtility {
+    // (undocumented)
+    addDrawingCategory(elementProps: ElementProps): string;
+    // (undocumented)
+    addDrawingGraphic(categoryId: string): void;
+    // (undocumented)
+    addDrawingModel(): string;
+    // (undocumented)
+    addPhysicalModel(): string;
+    // (undocumented)
+    addPhysicalObject(categoryId: string): void;
+    // (undocumented)
+    addSpatialCategory(elementProps: ElementProps): string;
+    // (undocumented)
+    closeIModel(): void;
+    // (undocumented)
+    createIModel(): void;
+    // (undocumented)
+    getDrawingCategoryCode(codeValue: string): Code;
+    // (undocumented)
+    getSpatialCategoryCode(codeValue: string): Code;
+    // (undocumented)
+    iModelId: string;
+    // (undocumented)
+    iTwinId: GuidString;
+    // (undocumented)
+    outputFile: string;
 }
 
 // @public
