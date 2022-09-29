@@ -16,9 +16,9 @@
   },
   "instance-filter-builder": {
     "classes": "Classes",
-    "category": "Category: ",
-    "class": "Class: ",
-    "schema": "Schema: "
+    "category": "Category:",
+    "class": "Class:",
+    "schema": "Schema:"
   },
   "tree": {
     "presentation-components-muted-node": "Too many child nodes."
