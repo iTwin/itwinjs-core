@@ -21,6 +21,21 @@ import { Transform } from "./Transform";
 import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
+ *
+ * @param numA first candidate -- presumed 0 or positive
+ * @param numB second candidate -- may be undefined, invalid if outside closed interval 0..numA
+ * @param multiplyBy second candidate multiplier (applied only if candidate is defined)
+ */
+function selectOptionalClampedMin(numA: number, numB: number | undefined, multiplyBy: number): number {
+
+  if (numB !== undefined){
+    const numC = numB * multiplyBy;
+    if (numC >= 0 && numC <= numA)
+      return numC;
+    }
+  return numA;
+}
+/**
  * The `NumberArray` class contains static methods that act on arrays of numbers.
  * @public
  */
@@ -676,20 +691,22 @@ export class Point3dArray {
     }
     return true;
   }
+
   /**
    * Sum lengths of edges.
    * @param data points.
    */
-  public static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge: boolean = false): number {
+  public static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge: boolean = false, maxPointsToUse?: number): number {
     let sum = 0.0;
+
     if (Array.isArray(data)) {
-      const n = data.length - 1;
+      const n = selectOptionalClampedMin (data.length, maxPointsToUse, 1) - 1;
       for (let i = 0; i < n; i++) sum += data[i].distance(data[i + 1]);
       if (addClosureEdge && n > 0)
         sum += data[0].distance(data[n]);
 
     } else if (data instanceof Float64Array) {
-      const numXYZ = data.length;
+      const numXYZ = selectOptionalClampedMin (data.length, maxPointsToUse, 3);
       let i = 0;
       for (; i + 5 < numXYZ; i += 3) {  // final i points at final point x
         sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i],
@@ -704,6 +721,27 @@ export class Point3dArray {
     }
     return sum;
   }
+
+  /**
+   * Count the number of points, but ...
+   * * ignore trailing duplicates of point 0.
+   * * return 0 if there are any duplicates within the remaining points.
+   * @param points points to examine.
+   */
+   public static countNonDuplicates(points: Point3d[], tolerance: number = Geometry.smallMetricDistance): number {
+    let n = points.length;
+    // strip of (allow) trailing duplicates ...
+    while (n > 1){
+      if (points[0].isAlmostEqual (points[n-1], tolerance))
+        n--;
+      else
+      break;
+      }
+    for (let i = 0; i+1 < n; i++)
+      if (points[i].isAlmostEqual (points[i+1], tolerance))
+        return 0;
+    return n;
+    }
 
   /**
    * Return an array containing clones of the Point3d data[]

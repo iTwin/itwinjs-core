@@ -13,7 +13,6 @@ import { ImageRenderer } from "../../components-react/common/ImageRenderer";
 describe("ImageRenderer", () => {
   const imageRenderer = new ImageRenderer();
   const svg = `
-    <?xml version="1.0" encoding="UTF-8" standalone="no"?>
     <svg xmlns="http://www.w3.org/2000/svg" version="1.0" width="480" height="543.03003" viewBox="0 0 257.002 297.5" xml:space="preserve">
       <g transform="matrix(0.8526811,0,0,0.8526811,18.930632,21.913299)">
         <polygon points="8.003,218.496 0,222.998 0,74.497 8.003,78.999 8.003,218.496 "/>
@@ -38,10 +37,15 @@ describe("ImageRenderer", () => {
 
     it("renders svg", () => {
       const image = imageRenderer.render({ sourceType: "svg", value: svg });
-
       const imageRender = render(<>{image}</>);
 
       expect(imageRender.container.innerHTML).to.matchSnapshot();
+
+      // render a second time to see if it produces identical value
+      const image2 = imageRenderer.render({ sourceType: "svg", value: svg });
+      const imageRender2 = render(<>{image2}</>);
+
+      expect(imageRender.container.innerHTML).to.be.eq(imageRender2.container.innerHTML);
     });
 
     it("renders url", () => {

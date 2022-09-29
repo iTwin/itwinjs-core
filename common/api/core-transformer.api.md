@@ -133,6 +133,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     set autoExtendProjectExtents(val: Required<IModelImportOptions>["autoExtendProjectExtents"]);
     computeProjectExtents(): void;
     deleteElement(elementId: Id64String): void;
+    deleteModel(modelId: Id64String): void;
     deleteRelationship(relationshipProps: RelationshipProps): void;
     readonly doNotUpdateElementIds: Set<string>;
     protected getAdditionalStateJson(): any;
@@ -146,6 +147,7 @@ export class IModelImporter implements Required<IModelImportOptions> {
     loadStateFromJson(state: IModelImporterState): void;
     protected onDeleteElement(elementId: Id64String): void;
     protected onDeleteElementAspect(targetElementAspect: ElementAspect): void;
+    protected onDeleteModel(modelId: Id64String): void;
     protected onDeleteRelationship(relationshipProps: RelationshipProps): void;
     protected onInsertElement(elementProps: ElementProps): Id64String;
     protected onInsertElementAspect(aspectProps: ElementAspectProps): void;
@@ -204,6 +206,8 @@ export class IModelTransformer extends IModelExportHandler {
     protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
+    // @deprecated (undocumented)
     initFromExternalSourceAspects(): void;
     // @internal
     static readonly jsStateTable = "TransformerJsState";
@@ -212,7 +216,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected loadAdditionalStateJson(_additionalState: any): void;
     protected loadStateFromDb(db: SQLiteDb): void;
     onDeleteElement(sourceElementId: Id64String): void;
-    onDeleteModel(_sourceModelId: Id64String): void;
+    onDeleteModel(sourceModelId: Id64String): void;
     onDeleteRelationship(sourceRelInstanceId: Id64String): void;
     onExportCodeSpec(sourceCodeSpec: CodeSpec): void;
     onExportElement(sourceElement: Element_2): void;
@@ -276,6 +280,14 @@ export interface IModelTransformOptions {
     preserveElementIdsForFiltering?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
+}
+
+// @beta
+export interface InitFromExternalSourceAspectsArgs {
+    // (undocumented)
+    accessToken?: AccessToken;
+    // (undocumented)
+    startChangesetId?: string;
 }
 
 // @beta

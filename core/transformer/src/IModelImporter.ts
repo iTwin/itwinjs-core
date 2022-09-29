@@ -272,6 +272,20 @@ export class IModelImporter implements Required<IModelImportOptions> {
     this.onDeleteElement(elementId);
   }
 
+  /** Delete the specified Model from the target iModel.
+   * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteModel`.
+   */
+  protected onDeleteModel(modelId: Id64String): void {
+    this.targetDb.models.deleteModel(modelId);
+    Logger.logInfo(loggerCategory, `Deleted model ${modelId}`);
+    this.trackProgress();
+  }
+
+  /** Delete the specified Model from the target iModel. */
+  public deleteModel(modelId: Id64String): void {
+    this.onDeleteModel(modelId);
+  }
+
   /** Format an Element for the Logger. */
   private formatElementForLogger(elementProps: ElementProps): string {
     const namePiece: string = elementProps.code.value ? `${elementProps.code.value} ` : elementProps.userLabel ? `${elementProps.userLabel} ` : "";
@@ -627,7 +641,9 @@ function isSubCategory(props: ElementProps): props is SubCategoryProps {
 
 /** check if element props are a subcategory without loading the element */
 function isDefaultSubCategory(props: SubCategoryProps): boolean {
-  if (props.id === undefined) return false;
+  if (props.id === undefined)
+    return false;
+
   if (!Id64.isId64(props.id))
     throw new IModelError(IModelStatus.BadElement, `subcategory had invalid id`);
   if (props.parent?.id === undefined)

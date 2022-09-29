@@ -62,7 +62,8 @@ export abstract class MapLayerImageryProvider {
 
   public async initialize(): Promise<void> {
     this.loadTile(0, 0, this.defaultMaximumZoomLevel).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
+      if (tileData !== undefined)
+        this._missingTileData = tileData.data as Uint8Array;
     });
   }
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
@@ -96,7 +97,7 @@ export abstract class MapLayerImageryProvider {
 
   public async getToolTip(strings: string[], quadId: QuadId, _carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     if (doDebugToolTips) {
-      const range = quadId.getLatLongRange(tree.tilingScheme);
+      const range = quadId.getLatLongRangeDegrees(tree.tilingScheme);
       strings.push(`QuadId: ${quadId.debugString}, Lat: ${range.low.x} - ${range.high.x} Long: ${range.low.y} - ${range.high.y}`);
     }
   }

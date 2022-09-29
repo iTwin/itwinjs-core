@@ -65,7 +65,10 @@ function getImageBufferData(): Uint8Array {
   let currentBufferIdx = 0;
   const color = ColorDef.from(54, 117, 255);
   for (let i = 0; i < 1024; i++, currentBufferIdx += 4) {
-    buffer[currentBufferIdx] = color.colors.r; buffer[currentBufferIdx + 1] = color.colors.g; buffer[currentBufferIdx + 2] = color.colors.b; buffer[currentBufferIdx + 3] = color.getAlpha();
+    buffer[currentBufferIdx] = color.colors.r;
+    buffer[currentBufferIdx + 1] = color.colors.g;
+    buffer[currentBufferIdx + 2] = color.colors.b;
+    buffer[currentBufferIdx + 3] = color.getAlpha();
   }
   return buffer;
 }

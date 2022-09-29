@@ -467,6 +467,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
           <span>{toastMessage}</span>
         </div>
         <a target="_blank" rel="noopener noreferrer" href="https://docs.bentley.com/LiveContent/web/ProjectWise%20Explorer%20Help-v9/en/GUID-7D468087-663C-96F6-A664-E204EC65484B.html">{IModelApp.localization.getLocalizedString("SampleApp:iModelIndex.learnMore")}</a>
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
         <span className="close" onClick={this._onCloseToast}>&times;</span>
       </div>
     );

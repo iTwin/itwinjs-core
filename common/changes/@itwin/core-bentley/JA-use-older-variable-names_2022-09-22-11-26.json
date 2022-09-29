@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Use older variable names from opentelemetry",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

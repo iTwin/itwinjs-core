@@ -2,64 +2,63 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { ProgressSpinner, SpinnerSize } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<ProgressSpinner />", () => {
-  it("should render", () => {
-    const wrapper = mount(
-      <ProgressSpinner />,
-    );
-    wrapper.unmount();
-  });
-
-  it("renders correctly", () => {
-    shallow(
-      <ProgressSpinner />,
-    ).should.matchSnapshot();
-  });
-
   it("should render with value", () => {
-    shallow(<ProgressSpinner value={50} />).should.matchSnapshot();
+    const {container} = render(<ProgressSpinner value={50} />);
+
+    expect(container.querySelector<SVGCircleElement>(".fill")?.style).to.include({strokeDashoffset: "50"});
+    expect((container.firstElementChild as HTMLDivElement).style).to.include({height: "40px", width: "40px"});
   });
 
   it("should render with displayed value", () => {
-    shallow(<ProgressSpinner value={63}>63</ProgressSpinner>).should.matchSnapshot();
+    render(<ProgressSpinner value={63}>63</ProgressSpinner>);
+
+    expect(screen.getByText("63", {selector: "span.uicore-progress-spinner-content"})).to.exist;
   });
 
   it("should render indeterminate", () => {
-    shallow(<ProgressSpinner indeterminate />).should.matchSnapshot();
+    const {container} = render(<ProgressSpinner indeterminate />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("indeterminate");
   });
 
   it("should render with success", () => {
-    shallow(<ProgressSpinner success />).should.matchSnapshot();
+    const {container} = render(<ProgressSpinner success />);
+
+    expect(container.querySelector(".icon-checkmark")).to.exist;
   });
 
   it("should render with error", () => {
-    shallow(<ProgressSpinner error />).should.matchSnapshot();
+    const {container} = render(<ProgressSpinner error />);
+
+    expect(container.querySelector(".icon-close-2")).to.exist;
   });
 
-  it("should render small", () => {
-    shallow(<ProgressSpinner size={SpinnerSize.Small} />).should.matchSnapshot();
-  });
+  ([
+    ["Small", "16px"],
+    ["Medium", "32px"],
+    ["Large", "64px"],
+    ["XLarge", "96px"],
+  ] as [keyof typeof SpinnerSize, string][]).map(([size, pixels]) => {
+    it(`should render ${size}`, () => {
+      const {container} = render(<ProgressSpinner size={SpinnerSize[size]} />);
 
-  it("should render medium", () => {
-    shallow(<ProgressSpinner size={SpinnerSize.Medium} />).should.matchSnapshot();
-  });
-
-  it("should render large", () => {
-    shallow(<ProgressSpinner size={SpinnerSize.Large} />).should.matchSnapshot();
-  });
-
-  it("should render x-large", () => {
-    shallow(<ProgressSpinner size={SpinnerSize.XLarge} />).should.matchSnapshot();
+      expect((container.firstElementChild as HTMLDivElement).style).to.include({height: pixels, width: pixels});
+    });
   });
 
   it("should render with style", () => {
-    shallow(<ProgressSpinner style={{ width: "100px", height: "100px" }} />).should.matchSnapshot();
+    const {container} = render(<ProgressSpinner style={{ width: "100px", height: "100px" }} />);
+
+    expect((container.firstElementChild as HTMLDivElement).style).to.include({ width: "100px", height: "100px" });
   });
 
 });

@@ -2,6 +2,78 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-frontend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-frontend_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-frontend_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Support non-modifiable preview of a ClipVector that isn't a single ClipShape/ConvexClipPlaneSet."
+          },
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Update links to BIS documentation."
+          },
+          {
+            "comment": "Clear drag state when button let up outside view. Don't send tools drag events if they didn't get button down event."
+          },
+          {
+            "comment": "Transport RPC requests over IPC when available."
+          },
+          {
+            "comment": "Move ServiceExtensionProvider to the @itwin/extension-client package"
+          },
+          {
+            "comment": "Restore the possibility to attach any cesium asset using getCesiumAssetUrl"
+          },
+          {
+            "comment": "Prevent duplicate logo cards from displaying when clicking the iTwin.js logo in a viewport."
+          },
+          {
+            "comment": "Add option to quantize positions in TileAdmin.requestElementGraphics."
+          },
+          {
+            "comment": "Fix reality models failing to cast shadows."
+          },
+          {
+            "comment": "Convert negative ViewRect coordinates to zero."
+          },
+          {
+            "comment": "EmphasizeElements ignores script overrides for de-emphasized elements if other elements are being emphasized."
+          },
+          {
+            "comment": "Promote Tool Settings APIs to public."
+          },
+          {
+            "comment": "Add support for applying schedule scripts without requiring the script to be hosted by a persistent element."
+          },
+          {
+            "comment": "Fixes for updateDynamics to supply ajusted point."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-frontend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.8",
       "tag": "@itwin/core-frontend_v3.2.8",
       "date": "Tue, 09 Aug 2022 15:52:41 GMT",

@@ -164,7 +164,7 @@ class ChangedEntitiesProc {
         ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
         : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
-        const stmt = sql.stmt!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
+        const stmt = sql.stmt;
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
           const id = stmt.getValueId(0);
           const classId = stmt.getValueId(2);
@@ -295,7 +295,10 @@ export class TxnManager {
   /** Dependency handlers may call method this to report a validation error.
    * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
    */
-  public reportError(error: ValidationError) { this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
+  public reportError(error: ValidationError) {
+    this.validationErrors.push(error);
+    this._nativeDb.logTxnError(error.fatal);
+  }
 
   /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
   public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }

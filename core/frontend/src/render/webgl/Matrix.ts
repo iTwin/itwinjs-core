@@ -36,9 +36,15 @@ export class Matrix3 {
   }
 
   public setValues(m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number) {
-    this.m00 = m00; this.m01 = m01; this.m02 = m02;
-    this.m10 = m10; this.m11 = m11; this.m12 = m12;
-    this.m20 = m20; this.m21 = m21; this.m22 = m22;
+    this.m00 = m00;
+    this.m01 = m01;
+    this.m02 = m02;
+    this.m10 = m10;
+    this.m11 = m11;
+    this.m12 = m12;
+    this.m20 = m20;
+    this.m21 = m21;
+    this.m22 = m22;
   }
   public static fromValues(m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number, out?: Matrix3) {
     const mat = undefined !== out ? out : new Matrix3();
@@ -82,8 +88,15 @@ export class Matrix3 {
     return mat;
   }
 
-  public get(index: number) { assert(index < this.data.length); return this.data[index]; }
-  public set(index: number, value: number) { assert(index < this.data.length); this.data[index] = value; }
+  public get(index: number) {
+    assert(index < this.data.length);
+    return this.data[index];
+  }
+
+  public set(index: number, value: number) {
+    assert(index < this.data.length);
+    this.data[index] = value;
+  }
 
   public at(row: number, col: number) { return this.get(col * 3 + row); }
   public setAt(row: number, col: number, value: number) { this.set(col * 3 + row, value); }
@@ -139,11 +152,24 @@ export class Matrix4 {
   }
 
   public setValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number) {
-    this.m00 = m00; this.m01 = m01; this.m02 = m02; this.m03 = m03;
-    this.m10 = m10; this.m11 = m11; this.m12 = m12; this.m13 = m13;
-    this.m20 = m20; this.m21 = m21; this.m22 = m22; this.m23 = m23;
-    this.m30 = m30; this.m31 = m31; this.m32 = m32; this.m33 = m33;
+    this.m00 = m00;
+    this.m01 = m01;
+    this.m02 = m02;
+    this.m03 = m03;
+    this.m10 = m10;
+    this.m11 = m11;
+    this.m12 = m12;
+    this.m13 = m13;
+    this.m20 = m20;
+    this.m21 = m21;
+    this.m22 = m22;
+    this.m23 = m23;
+    this.m30 = m30;
+    this.m31 = m31;
+    this.m32 = m32;
+    this.m33 = m33;
   }
+
   public static fromValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
     mat.setValues(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
@@ -358,8 +384,15 @@ export class Matrix4 {
     }
   }
 
-  public get(index: number) { assert(index < this.data.length); return this.data[index]; }
-  public set(index: number, value: number) { assert(index < this.data.length); this.data[index] = value; }
+  public get(index: number) {
+    assert(index < this.data.length);
+    return this.data[index];
+  }
+
+  public set(index: number, value: number) {
+    assert(index < this.data.length);
+    this.data[index] = value;
+  }
 
   public at(row: number, col: number) { return this.get(col * 4 + row); }
   public setAt(row: number, col: number, value: number) { this.set(col * 4 + row, value); }

@@ -11,8 +11,8 @@ import { assert, dispose, disposeArray, IDisposable } from "@itwin/core-bentley"
 import { ColorDef, Quantization, RenderTexture } from "@itwin/core-common";
 import { Matrix4d, Range2d, Range3d, Transform, Vector2d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
+import { RealityMeshParams } from "../RealityMeshParams";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
 import { RenderPlanarClassifier } from "../RenderPlanarClassifier";
@@ -204,11 +204,11 @@ export class RealityMeshGeometryParams extends IndexedGeometryParams {
 
   }
 
-  public static createFromRealityMesh(mesh: RealityMeshPrimitive) {
-    const posBuf = QBufferHandle3d.create(mesh.pointQParams, mesh.points);
-    const uvParamBuf = QBufferHandle2d.create(mesh.uvQParams, mesh.uvs);
-    const normalBuf = mesh.normals ? BufferHandle.createArrayBuffer(mesh.normals) : undefined;
-    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, mesh.indices, normalBuf, mesh.featureID);
+  public static fromRealityMesh(params: RealityMeshParams) {
+    const posBuf = QBufferHandle3d.create(params.positions.params, params.positions.points);
+    const uvParamBuf = QBufferHandle2d.create(params.uvs.params, params.uvs.points);
+    const normalBuf = params.normals ? BufferHandle.createArrayBuffer(params.normals) : undefined;
+    return (undefined === posBuf || undefined === uvParamBuf) ? undefined : this.createFromBuffers(posBuf, uvParamBuf, params.indices, normalBuf, params.featureID ?? 0);
   }
 
   public override get isDisposed(): boolean {
@@ -268,16 +268,25 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
       dispose(this.textureParams);
   }
 
-  public static createFromTerrainMesh(terrainMesh: TerrainMeshPrimitive, transform: Transform | undefined, disableTextureDisposal = false) {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(terrainMesh);
-    return params ? new RealityMeshGeometry({realityMeshParams: params, transform, baseIsTransparent: false, isTerrain: true, disableTextureDisposal}) : undefined;
-  }
-
-  public static createFromRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false): RealityMeshGeometry | undefined {
-    const params = RealityMeshGeometryParams.createFromRealityMesh(realityMesh);
+  public static createForTerrain(mesh: RealityMeshParams, transform: Transform | undefined, disableTextureDisposal = false) {
+    const params = RealityMeshGeometryParams.fromRealityMesh(mesh);
     if (!params)
       return undefined;
-    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
+
+    return new RealityMeshGeometry({
+      realityMeshParams: params,
+      transform,
+      baseIsTransparent: false,
+      isTerrain: true,
+      disableTextureDisposal,
+    });
+  }
+
+  public static createFromRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    const params = RealityMeshGeometryParams.fromRealityMesh(realityMesh);
+    if (!params)
+      return undefined;
+    const texture = realityMesh.texture ? new TerrainTexture(realityMesh.texture, realityMesh.featureID ?? 0, Vector2d.create(1.0, -1.0), Vector2d.create(0.0, 1.0), Range2d.createXYXY(0, 0, 1, 1), 0, 0) : undefined;
 
     return new RealityMeshGeometry({realityMeshParams: params, textureParams: texture ? RealityTextureParams.create([texture]) : undefined, baseIsTransparent: false, isTerrain: false, disableTextureDisposal});
   }
@@ -369,9 +378,6 @@ export class RealityMeshGeometry extends IndexedGeometry implements IDisposable,
   public get techniqueId(): TechniqueId { return TechniqueId.RealityMesh; }
 
   public override getPass(target: Target) {
-    if (target.isDrawingShadowMap)
-      return "none";
-
     if (this._baseIsTransparent || (target.wantThematicDisplay && target.uniforms.thematic.wantIsoLines))
       return "translucent";
 

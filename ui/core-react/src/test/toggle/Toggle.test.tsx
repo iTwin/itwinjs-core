@@ -3,111 +3,82 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { Toggle, ToggleButtonType } from "../../core-react";
+import { classesFromElement } from "../TestUtils";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("<Toggle />", () => {
-  it("should render", () => {
-    const wrapper = mount(
-      <Toggle />,
-    );
-
-    let label = wrapper.find("label.core-toggle");
-    label.length.should.eq(1);
-    label = wrapper.find("label.core-toggle.core-toggle-rounded");
-    label.length.should.eq(1);
-
-    wrapper.unmount();
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
 
   it("renders correctly", () => {
-    shallow(
+    const {container} = render(
       <Toggle />,
-    ).should.matchSnapshot();
+    );
+
+    expect(classesFromElement(container.firstElementChild)).to.include.members(["core-toggle", "core-toggle-rounded"]);
   });
 
   it("renders large correctly", () => {
-    shallow(<Toggle large={true} />).should.matchSnapshot();
+    const {container} = render(<Toggle large={true} />);
+
+    expect(classesFromElement(container.firstElementChild)).to.include("core-toggle-large");
   });
 
-  it("Toggle should call onChange handler", () => {
+  it("Toggle should call onChange handler", async () => {
     const fakeTimers = sinon.useFakeTimers();
+    const throttleMs = 16;
+    theUserTo = userEvent.setup({
+      advanceTimers:(delay) => {
+        fakeTimers.tick(delay);
+      },
+      delay: throttleMs,
+    });
     const spyMethod = sinon.spy();
-    let checked = false;
-    const handleChange = (_checked: boolean) => {
-      checked = _checked;
-      spyMethod();
-    };
 
-    const wrapper = mount(
-      <Toggle isOn={false} onChange={handleChange} />,
-    );
+    const {container} = render(<Toggle isOn={false} onChange={spyMethod} />);
 
-    const input = wrapper.find("input.core-toggle-input");
-    input.length.should.eq(1);
-
-    input.simulate("change", { checked: true });
-    wrapper.update();
-
-    let toggling = wrapper.find(".core-toggling");
-    toggling.length.should.not.eq(0);
-
-    spyMethod.calledOnce.should.true;
-    expect(checked).to.be.true;
+    await theUserTo.click(screen.getByRole("checkbox"));
+    expect(classesFromElement(container.querySelector(".core-toggle-handle"))).to.include("core-toggling");
+    expect(spyMethod).to.be.calledWith(true);
 
     fakeTimers.tick(1000);
     fakeTimers.restore();
-    wrapper.update();
-    toggling = wrapper.find(".core-toggling");
-    toggling.length.should.eq(0);
-
-    wrapper.unmount();
+    expect(classesFromElement(container.querySelector(".core-toggle-handle"))).to.not.include("core-toggling");
   });
 
   it("Toggle should call onBlur handler", () => {
     const spyMethod = sinon.spy();
 
-    const wrapper = mount(
-      <Toggle isOn={false} onBlur={spyMethod} />,
-    );
+    const {container} = render(<Toggle isOn={false} onBlur={spyMethod} />);
 
-    const input = wrapper.find("input.core-toggle-input");
-    input.length.should.eq(1);
-
-    input.simulate("blur");
+    fireEvent.blur(screen.getByRole("checkbox"));
     spyMethod.calledOnce.should.false;
 
-    const label = wrapper.find("label.core-toggle");
-    label.length.should.eq(1);
-
-    label.simulate("blur");
+    fireEvent.blur(container.firstElementChild!);
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
   });
 
   it("Toggle should update on props.isOn change", () => {
     const spyMethod = sinon.spy();
-    const handleChange = (_checked: boolean) => {
-      spyMethod();
-    };
 
-    const component = render(<Toggle isOn={false} onChange={handleChange} />);
-    let input = component.container.querySelector("input[type='checkbox']");
-    expect((input as HTMLInputElement).checked).to.be.false;
+    const {rerender} = render(<Toggle isOn={false} onChange={spyMethod} />);
+    expect(screen.getByRole<HTMLInputElement>("checkbox").checked).to.be.false;
 
-    component.rerender(<Toggle isOn={true} onChange={handleChange} />);
-    input = component.container.querySelector("input[type='checkbox']");
-    expect((input as HTMLInputElement).checked).to.be.true;
+    rerender(<Toggle isOn={true} onChange={spyMethod} />);
+    expect(screen.getByRole<HTMLInputElement>("checkbox").checked).to.be.true;
 
-    component.rerender(<Toggle isOn={false} onChange={handleChange} />);
-    input = component.container.querySelector("input[type='checkbox']");
-    expect((input as HTMLInputElement).checked).to.be.false;
+    rerender(<Toggle isOn={false} onChange={spyMethod} />);
+    expect(screen.getByRole<HTMLInputElement>("checkbox").checked).to.be.false;
+
+    expect(spyMethod).not.to.have.been.called;
   });
 
   it("Toggle should update on props.disabled change", () => {
@@ -116,29 +87,25 @@ describe("<Toggle />", () => {
       spyMethod();
     };
 
-    const wrapper = mount(
+    const {container, rerender} = render(
       // eslint-disable-next-line deprecation/deprecation
       <Toggle isOn={false} onChange={handleChange} disabled={false} buttonType={ToggleButtonType.Primary} showCheckmark={true} rounded={false} />,
     );
 
-    wrapper.setProps({ disabled: true });
-    wrapper.update();
+    rerender(
+      // eslint-disable-next-line deprecation/deprecation
+      <Toggle isOn={false} onChange={handleChange} disabled={true} buttonType={ToggleButtonType.Primary} showCheckmark={true} rounded={false} />,
+    );
 
-    const input = wrapper.find("input.core-toggle-input");
-    input.length.should.eq(1);
-    input.getDOMNode().hasAttribute("disabled").should.true;
-    const label = wrapper.find("label.core-toggle.uicore-disabled");
-    label.length.should.eq(1);
-
-    wrapper.unmount();
+    expect(screen.getByRole<HTMLInputElement>("checkbox").disabled).to.be.true;
+    expect(classesFromElement(container.firstElementChild)).to.include("uicore-disabled");
   });
 
   it("focus into input with setFocus prop", () => {
-    const component = render(<Toggle setFocus={true} />);
-    const input = component.container.querySelector("input[type='checkbox']");
+    render(<Toggle setFocus={true} />);
+    const input = screen.getByRole("checkbox");
 
-    const element = document.activeElement as HTMLElement;
-    expect(element && element === input).to.be.true;
+    expect(document.activeElement).to.eq(input);
   });
 
 });

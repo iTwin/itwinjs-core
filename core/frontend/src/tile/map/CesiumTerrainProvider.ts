@@ -6,17 +6,17 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { assert, BeDuration, BeTimePoint, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, BeDuration, BeTimePoint, ByteStream, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
-import { nextPoint3d64FromByteStream, OctEncodedNormal, QParams3d, QPoint2d } from "@itwin/core-common";
+import { nextPoint3d64FromByteStream, OctEncodedNormal, QPoint2d } from "@itwin/core-common";
 import { MessageSeverity } from "@itwin/appui-abstract";
 import { request, RequestOptions } from "../../request/Request";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, Tile, TileAvailability,
+  GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
+  TerrainMeshProviderOptions, Tile, TileAvailability,
 } from "../internal";
 
 /** @internal */
@@ -80,7 +80,7 @@ function notifyTerrainError(detailedDescription?: string): void {
 }
 
 /** @internal */
-export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId: Id64String, wantSkirts: boolean, wantNormals: boolean, exaggeration: number): Promise<TerrainMeshProvider | undefined> {
+export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
   const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
     notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
@@ -122,17 +122,19 @@ export async function getCesiumTerrainProvider(iModel: IModelConnection, modelId
   }
 
   let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
-  if (wantNormals)
+  if (opts.wantNormals)
     tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumTerrainProvider(iModel, modelId, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, wantSkirts, tilingScheme, tileAvailability, layers.metadataAvailability, exaggeration);
+  return new CesiumTerrainProvider(opts, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
 }
+
 function zigZagDecode(value: number) {
   return (value >> 1) ^ (-(value & 1));
 }
+
 /**
  * Decodes delta and ZigZag encoded vertices. This modifies the buffers in place.
  *
@@ -156,15 +158,17 @@ function zigZagDeltaDecode(uBuffer: Uint16Array, vBuffer: Uint16Array, heightBuf
   }
 }
 
-function getIndexArray(vertexCount: number, streamBuffer: ByteStream, indexCount: number): Uint16Array | Uint32Array {
-  const indicesAre32Bit = vertexCount > 64 * 1024;
-  const indexArray = (indicesAre32Bit) ? new Uint32Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount) : new Uint16Array(streamBuffer.arrayBuffer, streamBuffer.curPos, indexCount);
-  streamBuffer.advance(indexCount * (indicesAre32Bit ? Uint32Array.BYTES_PER_ELEMENT : Uint16Array.BYTES_PER_ELEMENT));
-  return indexArray;
-}
-
 /** @internal */
 class CesiumTerrainProvider extends TerrainMeshProvider {
+  private _accessToken: string;
+  private readonly _tileUrlTemplate: string;
+  private readonly _maxDepth: number;
+  private readonly _wantSkirts: boolean;
+  private readonly _tilingScheme: MapTilingScheme;
+  private readonly _tileAvailability?: TileAvailability;
+  private readonly _metaDataAvailableLevel?: number;
+  private readonly _exaggeration: number;
+
   private static _scratchQPoint2d = QPoint2d.fromScalars(0, 0);
   private static _scratchPoint2d = Point2d.createZero();
   private static _scratchPoint = Point3d.createZero();
@@ -179,9 +183,19 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
-  constructor(iModel: IModelConnection, modelId: Id64String, private _accessToken: string, private _tileUrlTemplate: string,
-    private _maxDepth: number, private readonly _wantSkirts: boolean, private _tilingScheme: MapTilingScheme, private _tileAvailability: TileAvailability | undefined, private _metaDataAvailableLevel: number | undefined, private _exaggeration: number) {
-    super(iModel, modelId);
+  constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
+    tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
+    super();
+    this._wantSkirts = opts.wantSkirts;
+    this._exaggeration = opts.exaggeration;
+
+    this._accessToken = accessToken;
+    this._tileUrlTemplate = tileUrlTemplate;
+    this._maxDepth = maxDepth;
+    this._tilingScheme = tilingScheme;
+    this._tileAvailability = tileAvailability;
+    this._metaDataAvailableLevel = metaDataAvailableLevel;
+
     this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
   }
 
@@ -197,27 +211,48 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   public get maxDepth(): number { return this._maxDepth; }
   public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
 
-  public isTileAvailable(quadId: QuadId) {
+  public override isTileAvailable(quadId: QuadId) {
     if (quadId.level > this.maxDepth)
       return false;
 
     return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
 
-  public override async getMesh(tile: MapTile, data: Uint8Array): Promise<TerrainMeshPrimitive | undefined> {
+  public override async requestMeshData(args: RequestMeshDataArgs): Promise<Uint8Array | undefined> {
+    const tile = args.tile;
+    const quadId = tile.quadId;
+    const tileUrl = this.constructUrl(quadId.row, quadId.column, quadId.level);
+    const requestOptions: RequestOptions = {
+      method: "GET",
+      responseType: "arraybuffer",
+      headers: { authorization: `Bearer ${this._accessToken}` },
+      accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01",
+    };
+
+    try {
+      const response = await request(tileUrl, requestOptions);
+      return response.status === 200 ? new Uint8Array(response.body) : undefined;
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
+    // ###TODO why does he update the access token when reading the mesh instead of when requesting it?
+    // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
       const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-      if (!accessTokenAndEndpointUrl.token) {
-        assert(false);
+      if (!accessTokenAndEndpointUrl.token || args.isCanceled())
         return undefined;
-      }
 
       this._accessToken = accessTokenAndEndpointUrl.token;
       this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
     }
 
+    const { data, tile } = args;
     assert(data instanceof Uint8Array);
     assert(tile instanceof MapTile);
+
     const blob = data;
     const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
@@ -243,13 +278,10 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     zigZagDeltaDecode(uBuffer, vBuffer, heightBuffer);
 
-    let bytesPerIndex = Uint16Array.BYTES_PER_ELEMENT;
+    // ###TODO: This alleges to handle 32-bit indices, but RealityMeshParams uses a Uint16Array to store indices...
+    const typedArray = pointCount > 0xffff ? Uint32Array : Uint16Array;
+    const bytesPerIndex = typedArray.BYTES_PER_ELEMENT;
     const triangleElements = 3;
-
-    if (pointCount > 64 * 1024) {
-      // More than 64k vertices, so indices are 32-bit.
-      bytesPerIndex = Uint32Array.BYTES_PER_ELEMENT;
-    }
 
     // skip over any additional padding that was added for 2/4 byte alignment
     if (streamBuffer.curPos % bytesPerIndex !== 0)
@@ -258,7 +290,14 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const triangleCount = streamBuffer.nextUint32;
     const indexCount = triangleCount * triangleElements;
 
-    const indices = getIndexArray(pointCount, streamBuffer, indexCount);
+    const getIndexArray = (numIndices: number) => {
+      const indexArray = new typedArray(streamBuffer.arrayBuffer, streamBuffer.curPos, numIndices);
+      streamBuffer.advance(numIndices * bytesPerIndex);
+      return indexArray;
+    };
+
+    const indices = getIndexArray(indexCount);
+
     // High water mark decoding based on decompressIndices_ in webgl-loader's loader.js.
     // https://code.google.com/p/webgl-loader/source/browse/trunk/samples/loader.js?r=99#55
     // Copyright 2012 Google Inc., Apache 2.0 license.
@@ -275,22 +314,17 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     CesiumTerrainProvider._scratchHeightRange.low = minHeight - skirtHeight;
     CesiumTerrainProvider._scratchHeightRange.high = maxHeight;
     const projection = terrainTile.getProjection(CesiumTerrainProvider._scratchHeightRange);
-    const pointQParams = QParams3d.fromRange(projection.localRange);
-
     const uvScale = 1.0 / 32767.0;
     const heightScale = uvScale * (maxHeight - minHeight);
 
-    const westCount = streamBuffer.nextUint32;
-    const westIndices = getIndexArray(pointCount, streamBuffer, westCount);
-
-    const southCount = streamBuffer.nextUint32;
-    const southIndices = getIndexArray(pointCount, streamBuffer, southCount);
-
-    const eastCount = streamBuffer.nextUint32;
-    const eastIndices = getIndexArray(pointCount, streamBuffer, eastCount);
-
-    const northCount = streamBuffer.nextUint32;
-    const northIndices = getIndexArray(pointCount, streamBuffer, northCount);
+    const westCount = streamBuffer.nextUint32,
+      westIndices = getIndexArray(westCount),
+      southCount = streamBuffer.nextUint32,
+      southIndices = getIndexArray(southCount),
+      eastCount = streamBuffer.nextUint32,
+      eastIndices = getIndexArray(eastCount),
+      northCount = streamBuffer.nextUint32,
+      northIndices = getIndexArray(northCount);
 
     // Extensions...
     let encodedNormalsBuffer;
@@ -329,78 +363,88 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
           streamBuffer.advance(extensionLength);
           break;
       }
-
     }
 
-    const mesh = TerrainMeshPrimitive.create({ pointQParams, pointCount, indexCount, wantSkirts: this._wantSkirts, westCount, eastCount, southCount, northCount, wantNormals: undefined !== encodedNormalsBuffer });
-    for (let i = 0; i < indexCount;)
-      this.addTriangle(mesh, indices[i++], indices[i++], indices[i++]);
+    let initialIndexCapacity = indexCount;
+    let initialVertexCapacity = pointCount;
+    if (this._wantSkirts) {
+      initialIndexCapacity += 6 * (Math.max(0, northCount - 1) + Math.max(0, southCount - 1) + Math.max(0, eastCount - 1) + Math.max(0, westCount - 1));
+      initialVertexCapacity += (northCount + southCount + eastCount + westCount);
+    }
 
+    const wantNormals = undefined !== encodedNormalsBuffer;
+    const builder = new RealityMeshParamsBuilder({
+      positionRange: projection.localRange,
+      initialIndexCapacity,
+      initialVertexCapacity,
+      wantNormals,
+    });
+
+    for (let i = 0; i < indexCount; i += 3)
+      builder.addTriangle(indices[i], indices[i + 1], indices[i + 2]);
+
+    const position = new Point3d();
+    const uv = new QPoint2d();
+    const normal = new Vector3d();
     const worldToEcef = tile.iModel.getEcefTransform().matrix;
     for (let i = 0; i < pointCount; i++) {
       const u = uBuffer[i];
       const v = vBuffer[i];
-      projection.getPoint(uvScale * u, uvScale * v, minHeight + heightBuffer[i] * heightScale, CesiumTerrainProvider._scratchPoint);
-      CesiumTerrainProvider._scratchQPoint2d.setFromScalars(u * 2, v * 2);
+      projection.getPoint(uvScale * u, uvScale * v, minHeight + heightBuffer[i] * heightScale, position);
+      uv.setFromScalars(u * 2, v * 2);
+      let oen;
       if (encodedNormalsBuffer) {
         const normalIndex = i * 2;
-        OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], CesiumTerrainProvider._scratchNormal);
-        worldToEcef.multiplyTransposeVector(CesiumTerrainProvider._scratchNormal, CesiumTerrainProvider._scratchNormal);
-        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d, OctEncodedNormal.encode(CesiumTerrainProvider._scratchNormal));
-      } else {
-        mesh.addVertex(CesiumTerrainProvider._scratchPoint, CesiumTerrainProvider._scratchQPoint2d);
-      }
-    }
-
-    if (this._wantSkirts) {
-      westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-      eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
-      northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-      southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
-      const wantNormals = (encodedNormalsBuffer !== undefined);
-      this.generateSkirts(mesh, westIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
-      this.generateSkirts(mesh, eastIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
-      this.generateSkirts(mesh, southIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
-      this.generateSkirts(mesh, northIndices, projection, -skirtHeight, heightBuffer, minHeight, heightScale, wantNormals);
-    }
-    assert(mesh.isCompleted);
-    return mesh;
-  }
-
-  private addTriangle(mesh: TerrainMeshPrimitive, i0: number, i1: number, i2: number) {
-    mesh.addTriangle(i0, i1, i2);
-  }
-
-  private generateSkirts(mesh: TerrainMeshPrimitive, indices: Uint16Array | Uint32Array, projection: MapTileProjection, skirtOffset: number, heightBuffer: Uint16Array, minHeight: number, heightScale: number, wantNormals: boolean) {
-    for (let i = 0; i < indices.length; i++) {
-      const index = indices[i];
-      const paramIndex = index * 2;
-      const height = minHeight + heightBuffer[index] * heightScale;
-      CesiumTerrainProvider._scratchQPoint2d.setFromScalars(mesh.uvs[paramIndex], mesh.uvs[paramIndex + 1]);
-      const uv = mesh.uvQParams.unquantize(CesiumTerrainProvider._scratchQPoint2d.x, CesiumTerrainProvider._scratchQPoint2d.y, CesiumTerrainProvider._scratchPoint2d);
-      if (wantNormals && mesh.normals) {
-        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d, mesh.normals[index]);
-      } else {
-        mesh.addVertex(projection.getPoint(uv.x, uv.y, height + skirtOffset), CesiumTerrainProvider._scratchQPoint2d);
+        OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], normal);
+        worldToEcef.multiplyTransposeVector(normal, normal);
+        oen = OctEncodedNormal.encode(normal);
       }
 
-      if (i) {
-        this.addTriangle(mesh, index, indices[i - 1], mesh.nextPointIndex - 2);
-        this.addTriangle(mesh, index, mesh.nextPointIndex - 2, mesh.nextPointIndex - 1);
-      }
+      builder.addVertex(position, uv, oen);
     }
-  }
-  public override get requestOptions(): RequestOptions {
-    return { method: "GET", responseType: "arraybuffer", headers: { authorization: `Bearer ${this._accessToken}` }, accept: "application/vnd.quantized-mesh;" /* extensions=octvertexnormals, */ + "application/octet-stream;q=0.9,*/*;q=0.01" };
+
+    if (!this._wantSkirts)
+      return builder.finish();
+
+    westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+    eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
+    northIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+    southIndices.sort((a, b) => uBuffer[a] - uBuffer[b]);
+
+    const generateSkirts = (indexes: Uint16Array | Uint32Array) => {
+      const quv = new QPoint2d();
+      const param = new Point2d();
+      for (let i = 0; i < indexes.length; i++) {
+        const index = indexes[i];
+        const uvIndex = index * 2;
+        const height = minHeight + heightBuffer[index] * heightScale;
+
+        quv.setFromScalars(builder.uvs.buffer.at(uvIndex), builder.uvs.buffer.at(uvIndex + 1));
+        builder.uvs.params.unquantize(quv.x, quv.y, param);
+
+        const oen = wantNormals && builder.normals ? builder.normals.at(index) : undefined;
+        builder.addVertex(projection.getPoint(param.x, param.y, height - skirtHeight), quv, oen);
+
+        if (i !== 0) {
+          const nextPointIndex = builder.positions.length;
+          builder.addTriangle(index, indexes[i - 1], nextPointIndex - 2);
+          builder.addTriangle(index, nextPointIndex - 2, nextPointIndex - 1);
+        }
+      }
+    };
+
+    generateSkirts(westIndices);
+    generateSkirts(eastIndices);
+    generateSkirts(southIndices);
+    generateSkirts(northIndices);
+
+    return builder.finish();
   }
 
-  public override constructUrl(row: number, column: number, zoomLevel: number): string {
+  public constructUrl(row: number, column: number, zoomLevel: number): string {
     return this._tileUrlTemplate.replace("{z}", zoomLevel.toString()).replace("{x}", column.toString()).replace("{y}", row.toString());
   }
 
-  public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : (parent).heightRange;
-  }
   /**
    * Specifies the quality of terrain created from heightmaps.  A value of 1.0 will
    * ensure that adjacent heightmap vertices are separated by no more than

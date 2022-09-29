@@ -12,16 +12,14 @@ import { Point, SizeProps } from "@itwin/core-react";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";
-import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, TabState, WidgetDragDropTargetState, WidgetState } from "./NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { TabState } from "../state/TabState";
 import { getUniqueId } from "./NineZone";
+import { DropTargetState, isTabDragDropTargetState, isWidgetDragDropTargetState, PanelDropTargetState, TabDragDropTargetState, TabDropTargetState, WidgetDragDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
 export interface DragStartArgs {
   initialPointerPosition: Point;
-}
-
-/** @internal */
-export interface WidgetDragStartArgs extends DragStartArgs {
   pointerPosition: Point;
 }
 
@@ -75,10 +73,10 @@ export function useDragTab(args: UseDragTabArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleDragStart = React.useCallback(({ initialPointerPosition, widgetSize }: TabDragStartArgs) => {
+  const handleDragStart = React.useCallback(({ initialPointerPosition, pointerPosition, widgetSize }: TabDragStartArgs) => {
     onDragStart({
       initialPointerPosition,
-      pointerPosition: initialPointerPosition,
+      pointerPosition,
       lastPointerPosition: initialPointerPosition,
       widgetSize,
     });
@@ -140,7 +138,7 @@ export function useDragWidget(args: UseDragWidgetArgs) {
     onDrag: handleDrag,
     onDragEnd: handleDragEnd,
   });
-  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: WidgetDragStartArgs) => {
+  const handleWidgetDragStart = React.useCallback(({ initialPointerPosition, pointerPosition }: DragStartArgs) => {
     onItemDragStart({
       initialPointerPosition,
       pointerPosition,

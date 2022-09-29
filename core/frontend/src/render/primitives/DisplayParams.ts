@@ -116,17 +116,28 @@ export class DisplayParams {
     else if (rhs === this)
       return true;
 
-    if (this.type !== rhs.type) return false;
-    if (this.ignoreLighting !== rhs.ignoreLighting) return false;
-    if (this.width !== rhs.width) return false;
-    if (this.linePixels !== rhs.linePixels) return false;
-    if (this.fillFlags !== rhs.fillFlags) return false;
-    if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
-    if (this.material !== rhs.material) return false;
-    if (this.textureMapping !== rhs.textureMapping) return false;
+    if (this.type !== rhs.type)
+      return false;
+    if (this.ignoreLighting !== rhs.ignoreLighting)
+      return false;
+    if (this.width !== rhs.width)
+      return false;
+    if (this.linePixels !== rhs.linePixels)
+      return false;
+    if (this.fillFlags !== rhs.fillFlags)
+      return false;
+    if (this.wantRegionOutline !== rhs.wantRegionOutline)
+      return false;
+    if (this.material !== rhs.material)
+      return false;
+    if (this.textureMapping !== rhs.textureMapping)
+      return false;
 
-    if (!this.fillColor.equals(rhs.fillColor)) return false;
-    if (!this.lineColor.equals(rhs.lineColor)) return false;
+    if (!this.fillColor.equals(rhs.fillColor))
+      return false;
+    if (!this.lineColor.equals(rhs.lineColor))
+      return false;
+
     return true;
   }
 

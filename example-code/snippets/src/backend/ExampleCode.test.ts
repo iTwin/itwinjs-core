@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { AccessToken, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
-import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, ElementAspect, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
+import { BisCoreSchema, BriefcaseDb, ClassRegistry, Element, IModelHost, PhysicalModel, SettingDictionary, SettingsPriority, StandaloneDb } from "@itwin/core-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
@@ -29,8 +29,12 @@ describe("Example Code", () => {
     // This is an example of how to expand an iModel's project extents.
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
-    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    newExtents.low.x -= 50;
+    newExtents.low.y -= 25;
+    newExtents.low.z -= 189;
+    newExtents.high.x += 1087;
+    newExtents.high.y += 19;
+    newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
   });
@@ -197,11 +201,16 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
   });
 
-  it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
+});
+
+namespace Snippets {
+  // this snippet isn't a test because it uses a fake ElementAspect class "SomeDomain:SomeAspectClass" that doesn't exist
+  export function elementAspectSnippet() {
+    const iModel = IModelTestUtils.openIModelForWrite("test.bim");
     const elementId = Id64.invalid;
-    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
-    const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);
+    const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
+    const elementAspects = iModel.elements.getAspects(elementId, elementAspectClassFullName);
     // __PUBLISH_EXTRACT_END__
     elementAspects;
 
@@ -214,6 +223,6 @@ describe("Example Code", () => {
     };
     iModel.elements.insertAspect(aspectProps);
     // __PUBLISH_EXTRACT_END__
-  });
-
-});
+  }
+}
+Snippets.elementAspectSnippet;

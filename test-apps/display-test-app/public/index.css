@@ -442,3 +442,9 @@ hr {
   margin: 2px 0;
   padding: 0;
 }
+
+.inputDiv {
+  padding: 5px;
+  display: flex;
+  justify-content: flex-end;
+}

@@ -38,7 +38,7 @@ export class ArcGisUtilities {
 
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
-      range = MapCartoRectangle.create();
+      range = MapCartoRectangle.createMaximum();
 
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
@@ -106,7 +106,9 @@ export class ArcGisUtilities {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
       const json = await getJson(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
-      if (!json) break;
+      if (!json)
+        break;
+
       start = json.nextStart ? json.nextStart : -1;
       if (json !== undefined && Array.isArray(json.results)) {
         for (const result of json.results) {
@@ -195,31 +197,6 @@ export class ArcGisUtilities {
       return json;
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
-      return undefined;
-    }
-  }
-
-  private static _footprintCache = new Map<string, any>();
-  public static async getFootprintJson(url: string, credentials?: RequestBasicCredentials): Promise<any> {
-    const cached = ArcGisUtilities._footprintCache.get(url);
-    if (cached !== undefined)
-      return cached;
-
-    try {
-      const tmpUrl = new URL(url);
-      tmpUrl.searchParams.append("f", "json");
-      tmpUrl.searchParams.append("option", "footprints");
-      tmpUrl.searchParams.append("outSR", "4326");
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
-      if (accessClient) {
-        await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName: credentials?.user, password: credentials?.password });
-      }
-
-      const json = await getJson(tmpUrl.toString());
-      ArcGisUtilities._footprintCache.set(url, json);
-      return json;
-    } catch (_error) {
-      ArcGisUtilities._footprintCache.set(url, undefined);
       return undefined;
     }
   }

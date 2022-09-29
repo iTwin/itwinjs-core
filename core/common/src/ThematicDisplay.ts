@@ -55,21 +55,17 @@ export enum ThematicGradientColorScheme {
  * @extensions
  **/
 export interface ThematicGradientSettingsProps {
-  /** The thematic image mode used to generate and apply the thematic gradient. Defaults to [[ThematicGradientMode.Smooth]]. */
+  /** See [[ThematicGradientSettings.mode]]. */
   mode?: ThematicGradientMode;
-  /** The step count value used for [[ThematicGradientMode.Stepped]], [[ThematicGradientMode.SteppedWithDelimiter]], and [[ThematicGradientMode.IsoLines]]. Defaults to 10. Cannot be less than 2. */
+  /** See [[ThematicGradientSettings.stepCount]]. */
   stepCount?: number;
-  /** The margin color used at the extremes of the gradient, when outside the applied range. Defaults to a black color using [[ColorDef.fromJSON]] with no arguments. */
+  /** See [[ThematicGradientSettings.marginColor]]. */
   marginColor?: ColorDefProps;
-  /** The color scheme used to generate the colors of the gradient within the applied range. Defaults to [[ThematicGradientColorScheme.BlueRed]]. */
+  /** See [[ThematicGradientSettings.colorScheme]]. */
   colorScheme?: ThematicGradientColorScheme;
-  /** The key color values that must be provided when using a custom thematic color scheme.
-   * Defaults to empty, unless using a custom thematic color scheme. In that case, this defaults to two key colors going from white to black.
-   * When using a custom thematic color scheme, there must be at least two entries in here. If there are not, it will revert to the default settings.
-   */
+  /** See [[ThematicGradientSettings.customKeys. */
   customKeys?: Gradient.KeyColorProps[];
-  /** The percentage to mix in the original color with the thematic display gradient color (0-1).
-   * Applies to background map terrain and point clouds only.  Defaults to 0. */
+  /** See [[ThematicGradientSettings.colorMix]]. */
   colorMix?: number;
 }
 

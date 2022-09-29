@@ -1,6 +1,32 @@
 # Change Log - @itwin/imodel-components-react
 
-This log was last generated on Tue, 09 Aug 2022 15:52:41 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+_Version update only_
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Add ability to specify locale and format of Data and Time shown by timeline component.
+- Navicube is now locked when Markup is active
+- Ensure Timeline's current duration value is with valid range.
+- Update iTwinUI-react to 1.38.1
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+_Version update only_
 
 ## 3.2.8
 Tue, 09 Aug 2022 15:52:41 GMT

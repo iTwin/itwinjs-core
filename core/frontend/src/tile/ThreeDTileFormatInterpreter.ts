@@ -37,7 +37,9 @@ export class ThreeDTileFormatInterpreter  {
     if (undefined === json?.root) {
       Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - no root in json`);
       // return first 1024 char from the json
-      const getMetaData: LoggingMetaData = () => {return {json: JSON.stringify(json).substring(0,1024)};};
+      const getMetaData: LoggingMetaData = () => {
+        return {json: JSON.stringify(json).substring(0,1024)};
+      };
       const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data - no root in json", getMetaData);
       throw error;
     }
@@ -99,7 +101,9 @@ export class ThreeDTileFormatInterpreter  {
     } catch (e) {
       Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret json`);
       // return first 1024 char from the json
-      const getMetaData: LoggingMetaData = () => {return {json: JSON.stringify(json).substring(0,1024)};};
+      const getMetaData: LoggingMetaData = () => {
+        return {json: JSON.stringify(json).substring(0,1024)};
+      };
       const error = new RealityDataError(RealityDataStatus.InvalidData, "Invalid or unknown data", getMetaData);
       throw error;
     }

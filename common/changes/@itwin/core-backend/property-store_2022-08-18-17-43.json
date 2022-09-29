@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add PropertyStore interface",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -480,7 +480,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   private _clearCommands(): void {
-    this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
+    this._commands.forEach((cmds: DrawCommands) => cmds.splice(0));
     this._layers.clear();
   }
 
@@ -739,10 +739,17 @@ export class RenderCommands implements Iterable<DrawCommands> {
       for (const cmd of cmds) {
         let index;
         switch (cmd.opcode) {
-          case "drawPrimitive": index = 0; break;
-          case "pushBatch": index = 1; break;
-          case "pushBranch": index = 2; break;
-          default: continue;
+          case "drawPrimitive":
+            index = 0;
+            break;
+          case "pushBatch":
+            index = 1;
+            break;
+          case "pushBranch":
+            index = 2;
+            break;
+          default:
+            continue;
         }
 
         dump[index].count++;

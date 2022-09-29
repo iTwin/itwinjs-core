@@ -5,18 +5,19 @@
 import { expect } from "chai";
 import { it } from "mocha";
 import * as moq from "typemoq";
-import { IModelConnection } from "@itwin/core-frontend";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
-import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { PrimitiveValue } from "@itwin/appui-abstract";
 import {
   computeVisibleNodes, MutableTreeModel, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, UiComponents,
 } from "@itwin/components-react";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { Node, RegisteredRuleset, RulesetVariable, StandardNodeTypes, VariableValueTypes } from "@itwin/presentation-common";
+import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
 import {
-  applyHierarchyChanges, PresentationTreeNodeLoaderProps, reloadVisibleHierarchyParts, usePresentationTreeNodeLoader,
+  applyHierarchyChanges, PresentationTreeNodeLoaderProps, PresentationTreeNodeLoaderResult, reloadVisibleHierarchyParts,
+  usePresentationTreeNodeLoader,
 } from "../../../presentation-components/tree/controlled/TreeHooks";
 import { createTreeNodeItem } from "../../../presentation-components/tree/Utils";
 import { mockPresentationManager } from "../../_helpers/UiComponents";
@@ -294,13 +295,11 @@ describe("usePresentationNodeLoader", () => {
     });
 
     it("creates a fresh `TreeModelSource` when nodeLoader changes", async () => {
-      const { result, rerender, waitForNextUpdate } = renderHook(
-        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-        { initialProps: { ...initialProps, ruleset: "initial" } },
+      const seedTreeModel = createTreeModel(["test"]);
+      const { result, rerender, waitForNextUpdate } = renderHook<PresentationTreeNodeLoaderProps, PresentationTreeNodeLoaderResult>(
+        (props) => usePresentationTreeNodeLoader(props),
+        { initialProps: { ...initialProps, ruleset: "initial", seedTreeModel } },
       );
-      const initialModelSource = result.current.nodeLoader.modelSource;
-      expectTree(initialModelSource.getModel(), []);
-      initialModelSource.modifyModel((treeModel) => treeModel.insertChild(undefined, createNodeInput("test"), 0));
 
       // Update tree so that `info.treeModel` is not undefined
       onRulesetModified.raiseEvent(
@@ -333,6 +332,18 @@ describe("usePresentationNodeLoader", () => {
 
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
       presentationManagerMock.verifyAll();
+    });
+  });
+
+  describe("seed tree model", () => {
+    it("initializes tree with the provided model", () => {
+      const treeHierarchy = [{ root1: ["child1", "child2"] }, "root2"];
+      const seedTreeModel = createTreeModel(treeHierarchy);
+      const { result } = renderHook(
+        (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
+        { initialProps: { ...initialProps, seedTreeModel } },
+      );
+      expectTree(result.current.nodeLoader.modelSource.getModel(), treeHierarchy);
     });
   });
 });
