@@ -41,7 +41,7 @@ export class CopyExternalsPlugin {
 
     let packageJsonPath = "";
     try {
-      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer?.context ?? ""] });
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [compilation.moduleGraph.getIssuer(currentModule)?.context ?? ""] });
     } catch (error) {
       // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
