@@ -16,7 +16,8 @@ import { WidgetState } from "../state/WidgetState";
 import { WidgetIdContext, WidgetStateContext } from "../widget/Widget";
 import { TabIdContext } from "../widget/ContentRenderer";
 import { assert } from "@itwin/core-bentley";
-import { useAllowedWidgetTarget, withTargetVersion } from "./TargetOptions";
+import { withTargetVersion } from "./TargetOptions";
+import { useAllowedWidgetTarget } from "./useAllowedWidgetTarget";
 import { TabDropTargetState } from "../state/DropTargetState";
 
 /** @internal */

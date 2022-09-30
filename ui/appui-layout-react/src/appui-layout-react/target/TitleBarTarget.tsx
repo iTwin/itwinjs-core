@@ -15,7 +15,8 @@ import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { WidgetState } from "../state/WidgetState";
 import { WidgetIdContext } from "../widget/Widget";
 import { TabOutline } from "../outline/TabOutline";
-import { useAllowedWidgetTarget, withTargetVersion } from "./TargetOptions";
+import { withTargetVersion } from "./TargetOptions";
+import { useAllowedWidgetTarget } from "./useAllowedWidgetTarget";
 import { WidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */

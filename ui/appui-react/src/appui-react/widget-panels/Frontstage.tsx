@@ -301,6 +301,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widget.hideWithUiWhenFloating,
+      allowedPanelTargets: widget.allowedPanelTargets,
     });
     tabs.push(widget.id);
   }
@@ -760,6 +761,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
         iconSpec: widgetDef.iconSpec,
         canPopout: widgetDef.canPopout,
         isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+        allowedPanelTargets: widgetDef.allowedPanelTargets,
       };
     });
   }

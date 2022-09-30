@@ -14,7 +14,7 @@ import { DraggedWidgetIdContext, useTarget } from "../base/DragManager";
 import { CursorTypeContext, DraggedTabContext, getUniqueId } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { isHorizontalPanelSide, PanelSideContext } from "../widget-panels/Panel";
-import { useAllowedPanelTarget } from "./PanelTarget";
+import { useAllowedPanelTarget } from "./useAllowedPanelTarget";
 import { SectionDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
@@ -31,7 +31,7 @@ export function SectionTarget(props: SectionTargetProps) {
   const direction = useTargetDirection();
   const [ref, targeted] = useTarget<HTMLDivElement>(useSectionTargetArgs(sectionIndex));
   const allowedTarget = useAllowedPanelTarget();
-  const hidden = (!draggedTab && !draggedWidgetId) || !allowedTarget;
+  const hidden = !allowedTarget || (!draggedTab && !draggedWidgetId);
   const className = classnames(
     "nz-target-sectionTarget",
     `nz-${direction}`,

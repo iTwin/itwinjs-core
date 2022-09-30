@@ -14,7 +14,7 @@ import { CursorTypeContext, DraggedTabContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
 import { WidgetState } from "../state/WidgetState";
 import { WidgetDropTargetState } from "../state/DropTargetState";
-import { useAllowedWidgetTarget } from "./TargetOptions";
+import { useAllowedWidgetTarget } from "./useAllowedWidgetTarget";
 
 /** @internal */
 export interface MergeTargetProps {
