@@ -4,10 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ChildWindowManager } from "../../appui-react";
+import { ChildWindowManager, FrontstageManager } from "../../appui-react";
 import { copyStyles } from "../../appui-react/childwindow/CopyStyles";
+import TestUtils from "../TestUtils";
 
 describe("ChildWindowManager", () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(async () => {
+    TestUtils.terminateUiFramework();
+  });
+
   afterEach(() => {
     sinon.restore();
   });
@@ -32,6 +41,7 @@ describe("ChildWindowManager", () => {
 
     expect(manager.findChildWindowId(window)).to.be.eql("child");
     expect(manager.findChildWindow("child")).to.not.be.undefined;
+    sinon.replaceGetter(FrontstageManager, "activeFrontstageDef", () => ({dockPopoutWidgetContainer: sinon.spy()} as any));
     expect(manager.closeChildWindow("child", false)).to.eql(true);
   });
 
