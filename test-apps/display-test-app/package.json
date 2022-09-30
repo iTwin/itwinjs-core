@@ -62,6 +62,7 @@
     "@itwin/editor-frontend": "workspace:*",
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
+    "@itwin/map-layers-formats": "workspace:*",
     "@itwin/appui-abstract": "workspace:*",
     "@itwin/webgl-compatibility": "workspace:*",
     "@itwin/imodels-client-management": "^1.0.1",
