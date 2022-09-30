@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "React to new RPC packages.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-rpc-backend",
+      "comment": "New RPC packages.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-rpc-backend"
+}
