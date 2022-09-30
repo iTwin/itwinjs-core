@@ -13,26 +13,25 @@ export interface BrowserFileSelector {
 }
 
 async function sendMessageToMobile(handlerName: string): Promise<string | undefined> {
-    const anyWindow = (window as any);
-    const messageHandlers = anyWindow.webkit?.messageHandlers;
-    if (!messageHandlers)
-      return undefined;
-
-    const handler = messageHandlers[handlerName];
-    if (handler) {
-      // formulate unique name for the resolver and pass it to the native code as a parameter
-      const promiseName = `DTA_${handlerName}Resolver`;
-      // create a promise that will be resolved by native code (via js injection)
-      const messageResponse = new Promise<string | undefined>((resolve) => {
-        anyWindow[promiseName] = resolve;
-      });
-      handler.postMessage(promiseName);
-      const result = await messageResponse;
-      delete anyWindow[promiseName];
-      return null !== result ? result : undefined;
-    }
+  const anyWindow = (window as any);
+  const messageHandlers = anyWindow.webkit?.messageHandlers;
+  if (!messageHandlers)
     return undefined;
 
+  const handler = messageHandlers[handlerName];
+  if (handler) {
+    // formulate unique name for the resolver and pass it to the native code as a parameter
+    const promiseName = `DTA_${handlerName}Resolver`;
+    // create a promise that will be resolved by native code (via js injection)
+    const messageResponse = new Promise<string | undefined>((resolve) => {
+      anyWindow[promiseName] = resolve;
+    });
+    handler.postMessage(promiseName);
+    const result = await messageResponse;
+    delete anyWindow[promiseName];
+    return null !== result ? result : undefined;
+  }
+  return undefined;
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
@@ -49,7 +48,7 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
 
   if (ProcessDetector.isMobileAppFrontend) {
     // send message to native code to open a model (iOS/webkit only for now)
-    const filename = await sendMessageToMobile("openModel")
+    const filename = await sendMessageToMobile("openModel");
     return filename;
   }
 
