@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "`IModelJsFs.readdirSync` will now check if dir exists before reading",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
