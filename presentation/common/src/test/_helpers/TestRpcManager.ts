@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
+import { RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition } from "@itwin/core-rpc-common";
 
 /**
  * @internal Used for testing only.

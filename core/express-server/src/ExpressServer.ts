@@ -5,7 +5,7 @@
 import * as express from "express";
 import * as enableWs from "express-ws";
 import { Server as HttpServer } from "http";
-import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, RpcConfiguration, WebAppRpcProtocol } from "@itwin/core-rpc-common";
 import { LocalhostIpcHost } from "@itwin/core-backend";
 
 /**

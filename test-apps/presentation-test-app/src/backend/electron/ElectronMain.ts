@@ -5,7 +5,7 @@
 import * as path from "path";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { RpcInterfaceDefinition } from "@itwin/core-common";
+import { RpcInterfaceDefinition } from "@itwin/core-rpc-common";
 import { SampleIpcHandler } from "../SampleIpcHandler";
 import { IModelHostOptions } from "@itwin/core-backend";
 

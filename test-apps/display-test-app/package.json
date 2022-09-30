@@ -55,6 +55,7 @@
     "@itwin/imodels-access-frontend": "^1.0.1",
     "@itwin/imodels-client-authoring": "^1.0.1",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-backend": "workspace:*",

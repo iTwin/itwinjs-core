@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-rpc-common";
 import { MobileHost } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";

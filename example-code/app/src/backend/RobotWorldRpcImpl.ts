@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcInterface, RpcInterfaceDefinition } from "@itwin/core-rpc-common";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
 import { RobotWorldEngine } from "./RobotWorldEngine";
@@ -48,7 +49,7 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
 }
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeForCloud
-import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-rpc-common";
 
 export function initializeRpcImplBentleyCloud(interfaces: RpcInterfaceDefinition[]) {
   const cloudParams: BentleyCloudRpcParams = { info: { title: "RobotWorldEngine", version: "v1.0" } };

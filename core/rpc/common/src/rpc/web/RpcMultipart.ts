@@ -8,7 +8,7 @@
 
 import { Buffer } from "buffer";
 import { Readable } from "stream";
-import { BentleyStatus, IModelError } from "../../IModelError";
+import { BentleyStatus, RpcError } from "../../RpcError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
@@ -35,12 +35,12 @@ export class RpcMultipart {
 
   /** Creates a multipart stream for an RPC value. */
   public static createStream(_value: RpcSerializedValue): ReadableFormData {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+    throw new RpcError(BentleyStatus.ERROR, "Not implemented.");
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
   public static async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+    throw new RpcError(BentleyStatus.ERROR, "Not implemented.");
   }
 
   /** @internal */

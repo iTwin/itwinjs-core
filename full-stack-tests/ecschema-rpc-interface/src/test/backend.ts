@@ -8,7 +8,7 @@
 import * as path from "path";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
-import { BentleyCloudRpcManager, RpcConfiguration, RpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration, RpcManager } from "@itwin/core-rpc-common";
 import { getRpcInterfaces } from "../common/Settings";
 import * as fs from "fs";
 import { IModelsClient } from "@itwin/imodels-client-authoring";

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { GuidString } from "@itwin/core-bentley";
+import { GuidString } from "./Id";
 
 /** Properties that identify a session.
  * @public

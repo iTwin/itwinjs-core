@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { RpcConfiguration } from "@itwin/core-common";
+import { RpcConfiguration } from "@itwin/core-rpc-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";

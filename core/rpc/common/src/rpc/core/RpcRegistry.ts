@@ -7,7 +7,7 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
+import { RpcError } from "../../RpcError";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcPendingQueue } from "./RpcPendingQueue";
 import { initializeRpcRequest } from "./RpcRequest";
@@ -56,7 +56,7 @@ export class RpcRegistry {
 
   public lookupInterfaceDefinition(name: string): RpcInterfaceDefinition {
     if (!this.definitionClasses.has(name))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${name}" is not initialized.`);
+      throw new RpcError(BentleyStatus.ERROR, `RPC interface "${name}" is not initialized.`);
 
     return this.definitionClasses.get(name) as RpcInterfaceDefinition;
   }
@@ -164,7 +164,7 @@ export class RpcRegistry {
 
     const registeredImplementation = this.implementationClasses.get(definition.interfaceName) as RpcInterfaceImplementation<TImplementation>;
     if (!registeredImplementation)
-      throw new IModelError(BentleyStatus.ERROR, `An RPC interface implementation class for "${definition.interfaceName}" is not registered.`);
+      throw new RpcError(BentleyStatus.ERROR, `An RPC interface implementation class for "${definition.interfaceName}" is not registered.`);
 
     if (definition.prototype.configurationSupplier)
       registeredImplementation.prototype.configurationSupplier = definition.prototype.configurationSupplier;
@@ -172,7 +172,7 @@ export class RpcRegistry {
     const supplied = this.suppliedImplementations.get(definition.interfaceName);
     const implementation = supplied || new registeredImplementation();
     if (!(implementation instanceof registeredImplementation))
-      throw new IModelError(BentleyStatus.ERROR, `Invalid RPC interface implementation.`);
+      throw new RpcError(BentleyStatus.ERROR, `Invalid RPC interface implementation.`);
 
     if (supplied) {
       (supplied.configuration as any) = RpcConfiguration.supply(supplied);
@@ -217,7 +217,7 @@ export class RpcRegistry {
 
   private checkInitialized<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
     if (!this.definitionClasses.has(definition.interfaceName))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface "${definition.interfaceName}" is not initialized.`);
+      throw new RpcError(BentleyStatus.ERROR, `RPC interface "${definition.interfaceName}" is not initialized.`);
   }
 
   private configureOperations<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {

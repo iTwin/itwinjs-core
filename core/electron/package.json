@@ -35,6 +35,7 @@
     "@itwin/core-backend": "workspace:^3.5.0-dev.0",
     "@itwin/core-bentley": "workspace:^3.5.0-dev.0",
     "@itwin/core-common": "workspace:^3.5.0-dev.0",
+    "@itwin/core-rpc-common": "workspace:^3.5.0-dev.0",
     "@itwin/core-frontend": "workspace:^3.5.0-dev.0",
     "@itwin/presentation-common": "workspace:^3.5.0-dev.0",
     "electron": ">=14.0.0 <18.0.0"
@@ -44,6 +45,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-common": "workspace:*",

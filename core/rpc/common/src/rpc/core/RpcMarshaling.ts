@@ -8,7 +8,7 @@
 
 import { Buffer } from "buffer";
 import { Readable } from "stream";
-import { BentleyStatus, IModelError } from "../../IModelError";
+import { BentleyStatus, RpcError } from "../../RpcError";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
@@ -80,7 +80,7 @@ export class RpcMarshaling {
       result = JSON.parse(value.objects, WireFormat.unmarshal);
     } catch (error) {
       if (error instanceof SyntaxError)
-        throw new IModelError(BentleyStatus.ERROR, `Invalid JSON: "${value.objects}"`);
+        throw new RpcError(BentleyStatus.ERROR, `Invalid JSON: "${value.objects}"`);
       throw error;
     }
     marshalingTarget = undefined as any;
@@ -152,7 +152,7 @@ class WireFormat {
 
   private static unmarshalBinary(value: MarshalingBinaryMarker): any {
     if (value.index >= marshalingTarget.data.length) {
-      throw new IModelError(BentleyStatus.ERROR, `Cannot unmarshal missing binary value.`);
+      throw new RpcError(BentleyStatus.ERROR, `Cannot unmarshal missing binary value.`);
     }
 
     if (value.chunks === 0) {

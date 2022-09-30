@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface, RpcManager } from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 import * as http from "http";
 import * as https from "https";
 import { DtaConfiguration } from "./DtaConfiguration";

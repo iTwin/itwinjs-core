@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
-import { BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcManager } from "@itwin/core-rpc-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
 // __PUBLISH_EXTRACT_END__

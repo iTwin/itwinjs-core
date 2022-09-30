@@ -10,9 +10,8 @@ import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { BentleyCloudRpcManager, BentleyCloudRpcParams } from "@itwin/core-rpc-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
@@ -208,7 +207,7 @@ class ExitTool extends Tool {
 
 function createHubAccess(configuration: DtaConfiguration) {
   if (configuration.urlPrefix) {
-    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${configuration.urlPrefix}api.bentley.com/imodels` } }));
   } else {
     return new FrontendIModelsAccess();
   }

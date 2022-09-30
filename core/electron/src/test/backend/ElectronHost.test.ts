@@ -6,7 +6,8 @@
 import * as path from "path";
 import { assert } from "chai";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
-import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterface, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { RpcInterface, RpcRegistry } from "@itwin/core-rpc-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronHost, ElectronHostOptions } from "../../ElectronBackend";
 import { TestSuite } from "./ElectronBackendTests";

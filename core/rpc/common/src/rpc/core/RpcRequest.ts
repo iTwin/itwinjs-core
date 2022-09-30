@@ -7,8 +7,8 @@
  */
 
 import { BeEvent, BentleyStatus, Guid } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { BackendError, IModelError, NoContentError } from "../../IModelError";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
+import { BackendError, NoContentError, RpcError } from "../../RpcError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";
@@ -29,17 +29,17 @@ export class ResponseLike implements Response {
   private _data: Promise<any>;
   public get body() { return null; }
   public async arrayBuffer(): Promise<ArrayBuffer> { return this._data; }
-  public async blob(): Promise<Blob> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public async formData(): Promise<FormData> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public async blob(): Promise<Blob> { throw new RpcError(BentleyStatus.ERROR, "Not implemented."); }
+  public async formData(): Promise<FormData> { throw new RpcError(BentleyStatus.ERROR, "Not implemented."); }
   public async json(): Promise<any> { return this._data; }
   public async text(): Promise<string> { return this._data; }
   public get bodyUsed() { return false; }
-  public get headers(): Headers { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public get headers(): Headers { throw new RpcError(BentleyStatus.ERROR, "Not implemented."); }
   public get ok(): boolean { return this.status >= 200 && this.status <= 299; }
   public get redirected() { return false; }
   public get status() { return 200; }
   public get statusText() { return ""; }
-  public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public get trailer(): Promise<Headers> { throw new RpcError(BentleyStatus.ERROR, "Not implemented."); }
   public get type(): ResponseType { return "basic"; }
   public get url() { return ""; }
   public clone() { return { ...this }; }
@@ -373,7 +373,7 @@ export abstract class RpcRequest<TResponse = any> {
   }
 
   protected handleUnknownResponse(code: number) {
-    this.reject(new IModelError(BentleyStatus.ERROR, `Unknown response ${code}.`));
+    this.reject(new RpcError(BentleyStatus.ERROR, `Unknown response ${code}.`));
   }
 
   private handleResponse(code: number, value: RpcSerializedValue) {
@@ -477,7 +477,7 @@ export abstract class RpcRequest<TResponse = any> {
     let resubmitted = false;
     RpcRequest.notFoundHandlers.raiseEvent(this, response, () => {
       if (resubmitted)
-        throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
+        throw new RpcError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
       resubmitted = true;
       this.submit(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -495,7 +495,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     if (this._hasRawListener) {
       if (typeof (this._raw) === "undefined") {
-        throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
+        throw new RpcError(BentleyStatus.ERROR, "Cannot access raw response.");
       }
 
       this._resolveRaw(new ResponseLike(this._raw));
@@ -507,7 +507,7 @@ export abstract class RpcRequest<TResponse = any> {
 
   private resolveRaw() {
     if (typeof (this._response) === "undefined") {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot access raw response.");
+      throw new RpcError(BentleyStatus.ERROR, "Cannot access raw response.");
     }
 
     this._active = false;
@@ -563,7 +563,7 @@ export abstract class RpcRequest<TResponse = any> {
     this._retryAfter = this.computeRetryAfter(this._attempts - 1);
 
     if (this._transientFaults > this.protocol.configuration.transientFaultLimit) {
-      this.reject(new IModelError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
+      this.reject(new RpcError(BentleyStatus.ERROR, `Exceeded transient fault limit.`));
     } else {
       this.setStatus(status);
       RpcRequest.events.raiseEvent(RpcRequestEvent.TransientErrorReceived, this);
@@ -655,3 +655,10 @@ export const initializeRpcRequest = (() => {
     });
   };
 })();
+
+/** @internal */
+export class InterceptedRequest extends RpcRequest {
+  protected override async load(): Promise<RpcSerializedValue> { throw new Error(); }
+  protected override async send(): Promise<number> { throw new Error(); }
+  protected override setHeader(_name: string, _value: string): void { throw new Error(); }
+}

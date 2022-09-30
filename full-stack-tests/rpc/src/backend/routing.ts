@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyCloudRpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "@itwin/core-common";
+import { BentleyCloudRpcProtocol, RpcRequestFulfillment, SerializedRpcRequest } from "@itwin/core-rpc-common";
 
 export function initializeWebRoutingTest(protocol: BentleyCloudRpcProtocol) {
   const realFulfill = protocol.fulfill; // eslint-disable-line @typescript-eslint/unbound-method

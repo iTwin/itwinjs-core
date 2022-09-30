@@ -7,7 +7,8 @@ import * as nock from "nock";
 import * as path from "path";
 import { IModelDb, IModelHost, IModelJsFs, NativeHost } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
-import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 import { TestRpcInterface } from "../common/RpcInterfaces";
 
 export class TestRpcImpl extends RpcInterface implements TestRpcInterface {

@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { IModelHost } from "@itwin/core-backend";
-import { RpcManager } from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-rpc-common";
 import SampleRpcInterface from "../common/SampleRpcInterface";
 
 /** The backend implementation of SampleRpcInterface. */

@@ -8,8 +8,7 @@
 
 import { LogLevel } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 
 /** Options to get the backend statistics
  * @internal

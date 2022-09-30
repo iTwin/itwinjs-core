@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@itwin/core-common";
+import { RpcOperation, RpcRequest, RpcRequestEvent, ServerError, ServerTimeoutError } from "@itwin/core-rpc-common";
 import { TestOp1Params, TestRpcInterface } from "../common/TestRpcInterface";
 
 if (false) {

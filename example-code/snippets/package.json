@@ -20,6 +20,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-transformer": "workspace:*",

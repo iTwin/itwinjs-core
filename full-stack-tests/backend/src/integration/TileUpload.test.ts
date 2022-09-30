@@ -6,8 +6,9 @@ import { assert } from "chai";
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
   BatchType, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelTileRpcInterface, iModelTileTreeIdToString,
-  RpcManager, RpcRegistry, TileContentSource,
+  TileContentSource,
 } from "@itwin/core-common";
+import { RpcManager, RpcRegistry } from "@itwin/core-rpc-common";
 import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -95,7 +96,7 @@ describe("TileUpload", () => {
 
   after(async () => {
     // Delete cached tile
-    if(objectReference)
+    if (objectReference)
       await IModelHost.tileStorage!.storage.deleteObject(objectReference);
     // Restart backend with default config
     await IModelHost.shutdown();
@@ -103,7 +104,7 @@ describe("TileUpload", () => {
   });
 
   it("should upload tile to external cache with metadata", async () => {
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({accessToken, iTwinId, iModelId});
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId, iModelId });
     assert.isDefined(iModel);
 
     // Generate tile

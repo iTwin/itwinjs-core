@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { RpcManager } from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-rpc-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";

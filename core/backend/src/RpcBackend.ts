@@ -9,7 +9,8 @@
 // cspell:ignore calltrace
 
 import { assert, Logger, SpanKind, Tracing } from "@itwin/core-bentley";
-import { BentleyStatus, HttpServerRequest, IModelError, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-common";
+import { BentleyStatus, IModelError } from "@itwin/core-common";
+import { HttpServerRequest, RpcActivity, RpcInvocation, RpcMultipart, RpcSerializedValue } from "@itwin/core-rpc-common";
 import { AsyncLocalStorage } from "async_hooks";
 import * as FormData from "form-data";
 import * as multiparty from "multiparty";

@@ -8,8 +8,7 @@
 
 import { ChangedElements } from "../ChangedElements";
 import { IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 
 /** The purpose of this class is to house WIP RPC methods. For example:
  * - WIP methods where signatures or behavior is still changing

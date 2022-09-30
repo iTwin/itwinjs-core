@@ -7,8 +7,8 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
+import { RpcError } from "../../RpcError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
@@ -62,7 +62,7 @@ export class RpcOperation {
 
     const proto = (definition.prototype as any);
     if (!proto.hasOwnProperty(propertyName))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${definition.interfaceName}" does not does not declare operation "${operationName}"`);
+      throw new RpcError(BentleyStatus.ERROR, `RPC interface class "${definition.interfaceName}" does not does not declare operation "${operationName}"`);
 
     return proto[propertyName][OPERATION];
   }

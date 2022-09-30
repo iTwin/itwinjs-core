@@ -8,7 +8,7 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { Buffer } from "buffer";
-import { IModelError, ServerError, ServerTimeoutError } from "../../IModelError";
+import { RpcError, ServerError, ServerTimeoutError } from "../../RpcError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcContentType, RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { SerializedRpcActivity } from "../core/RpcInvocation";
@@ -91,7 +91,7 @@ export class WebAppRpcRequest extends RpcRequest {
     }
 
     if (!request.id) {
-      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Missing required activity ID.`);
+      throw new RpcError(BentleyStatus.ERROR, `Invalid request: Missing required activity ID.`);
     }
 
     return request;
@@ -220,7 +220,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
         const response = this._response;
         if (!response) {
-          reject(new IModelError(BentleyStatus.ERROR, "Invalid state."));
+          reject(new RpcError(BentleyStatus.ERROR, "Invalid state."));
           return;
         }
 

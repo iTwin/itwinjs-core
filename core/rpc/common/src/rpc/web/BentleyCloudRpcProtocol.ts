@@ -7,8 +7,8 @@
  */
 
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
+import { RpcError } from "../../RpcError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcOperation } from "../core/RpcOperation";
 import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
@@ -58,7 +58,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     // The encodedRequest should be base64 - fail now if any other characters detected.
     if (/[^A-z0-9=+\/]/.test(encodedRequest))
-      throw new IModelError(BentleyStatus.ERROR, `Invalid request: Malformed URL parameters detected.`);
+      throw new RpcError(BentleyStatus.ERROR, `Invalid request: Malformed URL parameters detected.`);
 
     const firstHyphen = operationComponent.indexOf("-");
     const lastHyphen = operationComponent.lastIndexOf("-");
@@ -98,7 +98,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         if (RpcConfiguration.disableRoutingValidation) {
           token = { key: "" };
         } else {
-          throw new IModelError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request");
+          throw new RpcError(BentleyStatus.ERROR, "Invalid iModelToken for RPC operation request");
         }
       }
 

@@ -8,8 +8,8 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { Buffer } from "buffer";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
+import { RpcError } from "../../RpcError";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcInterfaceEndpoints, RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
@@ -126,7 +126,7 @@ export class RpcControlChannel {
 
     if (!this._initialized) {
       if (this._configuration.interfaces().length)
-        throw new IModelError(BentleyStatus.ERROR, `Invalid state.`);
+        throw new RpcError(BentleyStatus.ERROR, `Invalid state.`);
 
       this.initialize();
     }
@@ -141,7 +141,7 @@ export class RpcControlChannel {
   /** @internal */
   public initialize() {
     if (this._initialized)
-      throw new IModelError(BentleyStatus.ERROR, `Already initialized.`);
+      throw new RpcError(BentleyStatus.ERROR, `Already initialized.`);
 
     this._initialized = true;
 

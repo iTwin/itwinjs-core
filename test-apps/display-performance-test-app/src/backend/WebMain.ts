@@ -6,7 +6,8 @@ import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-rpc-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 

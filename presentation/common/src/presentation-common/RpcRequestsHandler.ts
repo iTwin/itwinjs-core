@@ -7,7 +7,8 @@
  */
 
 import { Guid, IDisposable, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcManager } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-rpc-common";
 import { PresentationCommonLoggerCategory } from "./CommonLoggerCategory";
 import { DescriptorJSON, DescriptorOverrides } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";

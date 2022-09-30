@@ -6,12 +6,11 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, Tracing } from "@itwin/core-bentley";
+import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, SessionProps, Tracing } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
-import { IModelRpcProps } from "../../IModel";
-import { IModelError } from "../../IModelError";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
+import { RpcError } from "../../RpcError";
 import { RpcInterface } from "../../RpcInterface";
-import { SessionProps } from "../../SessionProps";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus } from "./RpcConstants";
 import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
@@ -112,7 +111,7 @@ export class RpcInvocation {
         const backend = this.operation.interfaceVersion;
         const frontend = this.request.operation.interfaceVersion;
         if (!RpcInterface.isVersionCompatible(backend, frontend)) {
-          throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
+          throw new RpcError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
         }
       } catch (error) {
         if (this.handleUnknownOperation(error)) {
@@ -189,7 +188,7 @@ export class RpcInvocation {
 
         if (!RpcInvocation.compareTokens(parameter, inflated)) {
           if (RpcConfiguration.throwOnTokenMismatch) {
-            throw new IModelError(BentleyStatus.ERROR, "IModelRpcProps mismatch detected for this request.");
+            throw new RpcError(BentleyStatus.ERROR, "IModelRpcProps mismatch detected for this request.");
           } else {
             Logger.logWarning(CommonLoggerCategory.RpcInterfaceBackend, "IModelRpcProps mismatch detected for this request.");
           }
@@ -290,7 +289,7 @@ export class RpcInvocation {
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => Promise<any> {
     const func = (implementation as any)[this.operation.operationName];
     if (!func || typeof (func) !== "function")
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
+      throw new RpcError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
 
     return func;
   }

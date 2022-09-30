@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-common";
+import { RpcProtocolEvent, RpcRequest, RpcRequestFulfillment } from "@itwin/core-rpc-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** @beta */

@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
-import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-rpc-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
@@ -44,7 +43,7 @@ export class DisplayPerfTestApp {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     iModelApp.hubAccess = process.env.IMJS_URL_PREFIX
-      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` }}))
+      ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
     iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface];
@@ -69,10 +68,10 @@ export class DisplayPerfTestApp {
 }
 
 async function signIn(): Promise<void> {
-  if(process.env.IMJS_OIDC_HEADLESS)
+  if (process.env.IMJS_OIDC_HEADLESS)
     return;
   let authorizationClient;
-  if(ProcessDetector.isElectronAppFrontend)
+  if (ProcessDetector.isElectronAppFrontend)
     authorizationClient = new ElectronRendererAuthorization();
   else
     authorizationClient = new BrowserAuthorizationClient({
@@ -89,7 +88,7 @@ async function main() {
     const configStr = await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
     const props = JSON.parse(configStr) as TestSetsProps;
 
-    if(props.signIn)
+    if (props.signIn)
       await signIn();
 
     const runner = new TestRunner(props);

@@ -45,6 +45,8 @@
     "@itwin/core-bentley": "workspace:^3.5.0-dev.0",
     "@itwin/core-common": "workspace:^3.5.0-dev.0",
     "@itwin/core-geometry": "workspace:^3.5.0-dev.0",
+    "@itwin/core-rpc-common": "workspace:^3.5.0-dev.0",
+    "@itwin/core-rpc-frontend": "workspace:^3.5.0-dev.0",
     "@itwin/core-orbitgt": "workspace:^3.5.0-dev.0",
     "@itwin/core-quantity": "workspace:^3.5.0-dev.0",
     "@itwin/webgl-compatibility": "workspace:^3.5.0-dev.0"
@@ -59,6 +61,8 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
+    "@itwin/core-rpc-frontend": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",

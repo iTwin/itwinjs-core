@@ -7,8 +7,9 @@
  */
 
 import {
-  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface, SnapshotOpenOptions,
+  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, SnapshotIModelRpcInterface, SnapshotOpenOptions,
 } from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 

@@ -37,6 +37,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/body-parser": "^1.17.0",

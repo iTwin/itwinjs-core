@@ -47,6 +47,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",

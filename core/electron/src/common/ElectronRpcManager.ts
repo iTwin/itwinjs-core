@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry } from "@itwin/core-rpc-common";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 

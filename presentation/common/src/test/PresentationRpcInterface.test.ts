@@ -6,7 +6,8 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { Id64String, using } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
+import { IModelRpcProps } from "@itwin/core-common";
+import { RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-rpc-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, ContentSourcesRpcRequestOptions, DisplayLabelRpcRequestOptions,
   DisplayLabelsRpcRequestOptions, DistinctValuesRpcRequestOptions, HierarchyRpcRequestOptions, KeySet, Paged, PresentationRpcInterface,

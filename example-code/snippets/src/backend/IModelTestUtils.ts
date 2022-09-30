@@ -7,7 +7,8 @@ import * as path from "path";
 import { OpenMode } from "@itwin/core-bentley";
 import { ProjectsAccessClient } from "@itwin/projects-client";
 import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
-import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
+import { IModelReadRpcInterface } from "@itwin/core-common";
+import { RpcManager } from "@itwin/core-rpc-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 

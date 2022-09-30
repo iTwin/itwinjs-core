@@ -7,8 +7,9 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { Guid, Logger } from "@itwin/core-bentley";
 import {
-  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
+  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString,
 } from "@itwin/core-common";
+import { RpcActivity, RpcManager, RpcRegistry } from "@itwin/core-rpc-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";

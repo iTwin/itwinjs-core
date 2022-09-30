@@ -5,10 +5,8 @@
 
 import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketBackend, SnapshotIModelRpcInterface } from "@itwin/core-common";
+import { RpcInterfaceDefinition } from "@itwin/core-rpc-common";
 import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { ProgressCallback } from "./Request";
 import { PresentationRpcInterface } from "@itwin/presentation-common";

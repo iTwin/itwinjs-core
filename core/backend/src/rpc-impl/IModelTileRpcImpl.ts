@@ -10,9 +10,10 @@ import type { TransferConfig } from "@itwin/object-storage-core";
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
 import {
   CloudStorageContainerDescriptor, CloudStorageContainerUrl, CloudStorageTileCache, ElementGraphicsRequestProps, IModelRpcProps,
-  IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse, TileContentIdentifier,
+  IModelTileRpcInterface, IModelTileTreeProps, TileContentIdentifier,
   TileContentSource, TileTreeContentIds, TileVersionInfo,
 } from "@itwin/core-common";
+import { RpcInterface, RpcInvocation, RpcManager, RpcPendingResponse } from "@itwin/core-rpc-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";

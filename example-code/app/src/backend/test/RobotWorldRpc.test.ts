@@ -8,9 +8,11 @@ import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
-  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
+  GeometricElement3dProps, IModel, IModelReadRpcInterface, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
+import {
+  BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition, TestRpcManager,
+} from "@itwin/core-rpc-common";
 import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";

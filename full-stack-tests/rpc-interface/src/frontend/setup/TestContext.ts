@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-rpc-common";
 import { NoRenderApp } from "@itwin/core-frontend";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,

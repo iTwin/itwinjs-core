@@ -33,6 +33,7 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*"
   },
@@ -40,6 +41,7 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",

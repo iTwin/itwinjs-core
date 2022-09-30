@@ -191,6 +191,18 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@itwin/core-rpc-backend",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@itwin/core-rpc-common",
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/core-rpc-frontend",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@itwin/core-telemetry",
       "allowedCategories": [ "backend", "frontend" ]
     },

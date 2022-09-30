@@ -6,7 +6,8 @@
  * @module RpcInterface
  */
 import { LogLevel } from "@itwin/core-bentley";
-import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import { DevToolsRpcInterface, DevToolsStatsOptions, IModelRpcProps } from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 import { DevTools, DevToolsStatsFormatter } from "../DevTools";
 
 /** The backend implementation of WipRpcInterface.

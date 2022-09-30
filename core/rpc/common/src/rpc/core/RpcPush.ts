@@ -10,7 +10,7 @@
  */
 
 import { assert, BeEvent, BentleyStatus } from "@itwin/core-bentley";
-import { IModelError } from "../../IModelError";
+import { RpcError } from "../../RpcError";
 
 /** @internal */
 export type RpcPushMessageListener<T> = (message: T) => void;
@@ -81,7 +81,7 @@ export class RpcPushChannel<T> {
   }
 
   /** Creates a new RpcPushChannel.
-   * @throws IModelError if a channel with the specified name and service already exist.
+   * @throws RpcError if a channel with the specified name and service already exist.
    */
   public static create<T>(name: string, service = RpcPushService.dedicated): RpcPushChannel<T> {
     return this.get<T>(name, service, false);
@@ -97,7 +97,7 @@ export class RpcPushChannel<T> {
     let channel = this._channels.get(id);
     if (channel) {
       if (!reuseExisting)
-        throw new IModelError(BentleyStatus.ERROR, `Channel "${id}" already exists.`);
+        throw new RpcError(BentleyStatus.ERROR, `Channel "${id}" already exists.`);
 
       ++channel._refCount;
       return channel;
@@ -143,7 +143,7 @@ export class RpcPushSubscription<T> {
  */
 export abstract class RpcPushConnection<T> {
   public static for<T>(_channel: RpcPushChannel<T>, _client: unknown = undefined): RpcPushConnection<T> {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+    throw new RpcError(BentleyStatus.ERROR, "Not implemented.");
   }
 
   public readonly channel: RpcPushChannel<T>;

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { IModelRpcProps } from "./IModel";
+import { IModelRpcProps } from "./RpcForwardDeclarations";
 import { RpcOperation } from "./rpc/core/RpcOperation";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";

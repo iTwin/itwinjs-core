@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import { LocalhostIpcHost } from "@itwin/core-backend";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
+import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-rpc-common";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";

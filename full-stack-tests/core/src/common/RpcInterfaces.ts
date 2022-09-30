@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, SnapshotIModelRpcInterface,
   WipRpcInterface,
 } from "@itwin/core-common";
+import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
 export abstract class TestRpcInterface extends RpcInterface {

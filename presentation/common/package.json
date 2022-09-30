@@ -48,12 +48,14 @@
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.5.0-dev.0",
     "@itwin/core-common": "workspace:^3.5.0-dev.0",
+    "@itwin/core-rpc-common": "workspace:^3.5.0-dev.0",
     "@itwin/core-quantity": "workspace:^3.5.0-dev.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
+    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@types/chai": "4.3.1",

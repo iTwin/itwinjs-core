@@ -10,8 +10,9 @@ import {
 } from "@itwin/core-bentley";
 import {
   BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
-  IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
+  IModelTileTreeProps, RenderSchedule, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@itwin/core-common";
+import { RpcOperation, RpcResponseCacheControl } from "@itwin/core-rpc-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";

@@ -10,11 +10,8 @@ import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { TileContentIdentifier } from "../CloudStorageTileCache";
-import { RpcResponseCacheControl } from "./core/RpcConstants";
-import { RpcOperation } from "./core/RpcOperation";
 import { IModelRpcProps } from "../IModel";
-import { RpcInterface } from "../RpcInterface";
-import { RpcManager } from "../RpcManager";
+import { RpcInterface, RpcManager, RpcOperation, RpcResponseCacheControl } from "@itwin/core-rpc-common";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
 import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 

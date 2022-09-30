@@ -7,7 +7,7 @@
  */
 
 import { BeEvent } from "@itwin/core-bentley";
-import { IModelRpcProps } from "../../IModel";
+import { IModelRpcProps } from "../../RpcForwardDeclarations";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcProtocolEvent, RpcRequestStatus, RpcResponseCacheControl } from "./RpcConstants";

@@ -9,12 +9,11 @@
 import * as semver from "semver";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
-import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
+import { aggregateLoad, InterceptedRequest, RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
 import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
-import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
 import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
-import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
+import { BentleyStatus, NoContentError, RpcError } from "./RpcError";
 import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
@@ -78,12 +77,6 @@ export abstract class RpcInterface {
 }
 
 RpcInterface.prototype.configurationSupplier = undefined;
-
-class InterceptedRequest extends RpcRequest {
-  protected override async load(): Promise<RpcSerializedValue> { throw new Error(); }
-  protected override async send(): Promise<number> { throw new Error(); }
-  protected override setHeader(_name: string, _value: string): void { throw new Error(); }
-}
 
 async function intercept(session: IpcSession, client: RpcInterface, operation: string, parameters: any[]) {
   const request = new InterceptedRequest(client, operation, []);
@@ -150,7 +143,7 @@ async function handleNotFound(request: InterceptedRequest, status: RpcManagedSta
 
     RpcRequest.notFoundHandlers.raiseEvent(request, status.responseValue as RpcNotFoundResponse, async () => {
       if (resubmitted) {
-        throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
+        throw new RpcError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
       }
 
       resubmitted = true;
