@@ -600,7 +600,6 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._rowGetterAsync.cache.clear!();
     this.setState({ rowsCount, rows: [] });
-    this._rowGetterAsync(0, true); // eslint-disable-line @typescript-eslint/no-floating-promises
     return UpdateStatus.Continue;
   }
 
@@ -916,13 +915,13 @@ export class Table extends React.Component<TableProps, TableState> {
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount), false); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this._rowGetterAsync(i - (i % this._pageAmount)); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
   };
 
-  private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
+  private _rowGetterAsync = memoize(async (index: number): Promise<void> => {
     // istanbul ignore next
     if (index < 0)
       return;
@@ -949,7 +948,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this.selectCells(loadResult.selectedCellKeys);
     this.setState((prev) => {
-      const rows = clearRows ? [] : [...prev.rows];
+      const rows = [...prev.rows];
       loadResult.rows.forEach((r, i) => { rows[index + i] = r; });
       return { rows };
     }, async () => {
