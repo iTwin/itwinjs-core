@@ -2,14 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { render, screen } from "@testing-library/react";
 import { expect } from "chai";
-import { HTMLAttributes, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { MessageManager, ValidationTextbox } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { userEvent } from "../TestUtils";
 
 describe("ValidationTextbox", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
+
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -21,16 +26,21 @@ describe("ValidationTextbox", () => {
   const onValueChanged = sinon.spy();
   const onEnterPressed = sinon.spy();
   const onEscPressed = sinon.spy();
-  let simpleBox: ReactWrapper<any, any>;
-  let simpleInput: ReactWrapper<HTMLAttributes, any>;
-  let box: ReactWrapper<any, any>;
-  let input: ReactWrapper<HTMLAttributes, any>;
 
   beforeEach(async () => {
     onValueChanged.resetHistory();
     onEnterPressed.resetHistory();
     onEscPressed.resetHistory();
-    box = mount(
+  });
+
+  it("should render correctly", () => {
+    render(<ValidationTextbox />);
+
+    expect(screen.getByRole("textbox")).to.exist;
+  });
+
+  it("should use onValueChanged function provided", async () => {
+    render(
       <ValidationTextbox
         onValueChanged={onValueChanged}
         onEnterPressed={onEnterPressed}
@@ -38,53 +48,71 @@ describe("ValidationTextbox", () => {
         errorText="Error"
       />,
     );
-    input = box.find("input");
+    await theUserTo.type(screen.getByRole("textbox"), "a");
+    expect(onValueChanged.called).to.be.true;
+  });
 
-    simpleBox = mount(
+  it("should use default value check if none provided", async () => {
+    render(
       <ValidationTextbox
         placeholder="Placeholder"
         size={12}
         errorText="Error"
       />,
     );
-    simpleInput = simpleBox.find("input");
+    await theUserTo.type(screen.getByRole("textbox"), "t");
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("t");
   });
 
-  it("should render correctly", () => {
-    shallow(
-      <ValidationTextbox />,
-    ).should.matchSnapshot();
-  });
-
-  it("should use onValueChanged function provided", () => {
-    input.simulate("change");
-    expect(onValueChanged.called).to.be.true;
-  });
-
-  it("should use default value check if none provided", () => {
-    simpleInput.simulate("change");
-    expect(onValueChanged.called).to.be.false;
-  });
-
-  it("should hide message when value is valid", () => {
+  it("should hide message when value is valid", async () => {
+    render(
+      <ValidationTextbox
+        placeholder="Placeholder"
+        size={12}
+        errorText="Error"
+      />,
+    );
     const hideMessage = sinon.spy(MessageManager, "hideInputFieldMessage");
-    simpleInput.simulate("change", { target: { value: "test" } });
+    await theUserTo.type(screen.getByRole("textbox"), "test");
     expect(hideMessage.called).to.be.true;
   });
 
-  it("should show message when value is invalid", () => {
+  it("should show message when value is invalid", async () => {
+    render(
+      <ValidationTextbox
+        placeholder="Placeholder"
+        size={12}
+        errorText="Error"
+      />,
+    );
     const showMessage = sinon.spy(MessageManager, "displayInputFieldMessage");
-    simpleInput.simulate("change", { target: { value: "" } });
+    await theUserTo.type(screen.getByRole("textbox"), "t[Backspace]");
     expect(showMessage.called).to.be.true;
   });
 
-  it("should manage escape press", () => {
-    input.simulate("keyUp", { key: "Escape" });
+  it("should manage escape press", async () => {
+    render(
+      <ValidationTextbox
+        onValueChanged={onValueChanged}
+        onEnterPressed={onEnterPressed}
+        onEscPressed={onEscPressed}
+        errorText="Error"
+      />,
+    );
+    await theUserTo.type(screen.getByRole("textbox"), "[Escape]");
     expect(onEscPressed.called).to.be.true;
   });
 
-  it("should manage enter press", () => {
-    input.simulate("keyUp", { key: "Enter" });
+  it("should manage enter press", async () => {
+    render(
+      <ValidationTextbox
+        onValueChanged={onValueChanged}
+        onEnterPressed={onEnterPressed}
+        onEscPressed={onEscPressed}
+        errorText="Error"
+      />,
+    );
+    await theUserTo.type(screen.getByRole("textbox"), "[Enter]");
     expect(onEnterPressed.called).to.be.true;
   });
 });
