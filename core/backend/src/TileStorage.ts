@@ -39,7 +39,8 @@ export class TileStorage {
       await this.storage.upload(
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
         Buffer.from(IModelHost.compressCachedTiles ? await promisify(gzip)(content.buffer) : content.buffer),
-        metadata
+        metadata,
+        IModelHost.compressCachedTiles ? { contentEncoding: "gzip" } : undefined,
       );
     } catch (err) {
       this.logException("Failed to upload tile", err);
@@ -61,7 +62,7 @@ export class TileStorage {
   }
 
   public async getCachedTiles(iModelId: string, _prefix: string): Promise<{ treeId: string, contentId: string, guid?: string }[]> {
-    return (await this.storage.list({ baseDirectory: iModelId }))
+    return (await this.storage.listObjects({ baseDirectory: iModelId }))
       .map((objectReference) => ({
         parts: objectReference.relativeDirectory?.split("/") ?? [""],
         objectName: objectReference.objectName,
