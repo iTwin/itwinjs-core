@@ -13,8 +13,8 @@ import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
-import { RpcConfiguration } from '@itwin/core-common';
-import { RpcInterfaceDefinition } from '@itwin/core-common';
+import { RpcConfiguration } from '@itwin/core-rpc-common';
+import { RpcInterfaceDefinition } from '@itwin/core-rpc-common';
 
 // @beta
 export type DialogModuleMethod = ExtractLiterals<AsyncMethodsOf<Electron.Dialog>, "showMessageBox" | "showOpenDialog" | "showSaveDialog">;

@@ -6,7 +6,7 @@
 
 import { ECSchemaRpcInterface } from '@itwin/ecschema-rpcinterface-common';
 import { IModelRpcProps } from '@itwin/core-common';
-import { RpcInterface } from '@itwin/core-common';
+import { RpcInterface } from '@itwin/core-rpc-common';
 import { SchemaKeyProps } from '@itwin/ecschema-metadata';
 import { SchemaProps } from '@itwin/ecschema-metadata';
 
@@ -16,7 +16,6 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]>;
     static register(): void;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

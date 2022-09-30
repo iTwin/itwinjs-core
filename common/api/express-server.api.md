@@ -7,9 +7,9 @@
 /// <reference types="node" />
 
 import { Application } from 'express';
-import { RpcConfiguration } from '@itwin/core-common';
+import { RpcConfiguration } from '@itwin/core-rpc-common';
 import { Server } from 'http';
-import { WebAppRpcProtocol } from '@itwin/core-common';
+import { WebAppRpcProtocol } from '@itwin/core-rpc-common';
 
 // @public
 export class IModelJsExpressServer {

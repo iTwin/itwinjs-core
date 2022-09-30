@@ -4,7 +4,7 @@
 
 ```ts
 
-import { RpcActivity } from '@itwin/core-common';
+import { RpcActivity } from '@itwin/core-rpc-common';
 
 // @alpha (undocumented)
 export interface TelemetryClient {
@@ -61,7 +61,6 @@ export class TelemetryManager {
     // (undocumented)
     postTelemetry(requestContext: RpcActivity, telemetryEvent: TelemetryEvent): Promise<void>;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

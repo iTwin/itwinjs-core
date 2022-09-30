@@ -6,7 +6,7 @@
 
 import { IModelRpcProps } from '@itwin/core-common';
 import { ISchemaLocater } from '@itwin/ecschema-metadata';
-import { RpcInterface } from '@itwin/core-common';
+import { RpcInterface } from '@itwin/core-rpc-common';
 import { Schema } from '@itwin/ecschema-metadata';
 import { SchemaContext } from '@itwin/ecschema-metadata';
 import { SchemaKey } from '@itwin/ecschema-metadata';
@@ -34,7 +34,6 @@ export class ECSchemaRpcLocater implements ISchemaLocater {
     // (undocumented)
     readonly token: IModelRpcProps;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

@@ -1,0 +1,111 @@
+sep=;
+Release Tag;API Item
+internal;aggregateLoad:
+public;BackendError 
+internal;class BentleyCloudRpcConfiguration 
+internal;BentleyCloudRpcManager 
+internal;BentleyCloudRpcParams
+internal;class BentleyCloudRpcProtocol 
+public;CommonLoggerCategory
+internal;CURRENT_INVOCATION: unique symbol
+internal;CURRENT_REQUEST: unique symbol
+internal;FormDataCommon
+internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
+public;HttpServerRequest 
+public;HttpServerResponse 
+internal;initializeRpcRequest: () => void
+internal;INSTANCE: unique symbol
+internal;InterceptedRequest 
+internal;InterceptedRpcRequest
+internal;class IpcSession
+internal;MarshalingBinaryMarker
+internal;MarshalingBinaryMarker
+public;NoContentError 
+internal;OpenAPIContentMap
+internal;OpenAPIDocument
+internal;OpenAPIEncoding
+public;OpenAPIInfo
+internal;OpenAPIMediaType
+internal;OpenAPIOperation
+internal;OpenAPIParameter
+internal;OpenAPIPathItem
+internal;OpenAPIPaths
+internal;OpenAPIRequestBody
+internal;OpenAPIResponse
+internal;OpenAPIResponses
+internal;OpenAPISchema
+internal;OPERATION: unique symbol
+internal;POLICY: unique symbol
+internal;ReadableFormData 
+internal;REGISTRY: unique symbol
+internal;ResponseLike 
+public;RpcActivity 
+internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
+internal;class RpcConfiguration
+internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
+public;RpcContentType
+internal;RpcControlChannel
+public;class RpcControlResponse
+internal;RpcDefaultConfiguration 
+internal;RpcDirectProtocol 
+internal;RpcDirectRequest 
+public;RpcEndpoint
+public;RpcError 
+public;class RpcInterface
+internal;RpcInterfaceDefinition
+internal;RpcInterfaceEndpoints
+internal;RpcInterfaceImplementation
+internal;RpcInvocation
+internal;RpcManagedStatus
+internal;RpcManager
+internal;RpcMarshaling
+internal;RpcMultipart
+public;RpcNotFoundResponse 
+internal;RpcOpenAPIDescription
+internal;RpcOperation
+internal;RpcOperation
+internal;RpcOperationPolicy
+internal;RpcOperationPolicyProps = Partial
+internal;RpcOperationsProfile
+internal;RpcPendingQueue
+public;RpcPendingResponse 
+internal;class RpcProtocol
+public;RpcProtocolEvent
+internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcProtocolVersion
+internal;RpcPushChannel
+internal;class RpcPushConnection
+internal;RpcPushMessageListener
+internal;RpcPushService
+internal;RpcPushSubscription
+internal;class RpcPushTransport
+internal;RpcRegistry
+internal;class RpcRequest
+internal;RpcRequestCallback_T = (request: RpcRequest) => void
+internal;RpcRequestContext
+public;RpcRequestEvent
+internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
+internal;RpcRequestFulfillment
+internal;RpcRequestFulfillment
+internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+public;RpcRequestStatus
+public;RpcRequestStatus
+internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
+public;RpcResponseCacheControl
+internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+internal;RpcRoutingMap 
+internal;RpcRoutingMap
+internal;RpcRoutingToken
+internal;RpcSerializedValue
+internal;RpcSerializedValue
+internal;RpcSessionInvocation 
+public;SerializedRpcActivity
+internal;SerializedRpcOperation
+internal;SerializedRpcRequest 
+public;ServerError 
+public;ServerTimeoutError 
+internal;TestRpcManager
+internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcProtocol 
+internal;WebAppRpcRequest 

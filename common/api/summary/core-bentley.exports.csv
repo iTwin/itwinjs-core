@@ -108,6 +108,7 @@ public;ReadonlySortedArray
 alpha;RealityDataStatus
 beta;RepositoryStatus
 beta;RpcInterfaceStatus
+public;SessionProps
 public;shallowClone
 public;SortedArray
 alpha;SpanKind

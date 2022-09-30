@@ -1476,6 +1476,13 @@ export enum RpcInterfaceStatus {
 }
 
 // @public
+export interface SessionProps {
+    readonly applicationId: string;
+    readonly applicationVersion: string;
+    readonly sessionId: GuidString;
+}
+
+// @public
 export function shallowClone<T>(value: T): T;
 
 // @public
