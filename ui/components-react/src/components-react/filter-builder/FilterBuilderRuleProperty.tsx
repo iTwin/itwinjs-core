@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { PropertyDescription } from "@itwin/appui-abstract";
-import { ComboBox, SelectOption } from "@itwin/itwinui-react";
+import { ComboBox, MenuItem, SelectOption } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 
 /** @alpha */
@@ -12,11 +12,12 @@ export interface PropertyFilterBuilderRulePropertyProps {
   properties: PropertyDescription[];
   selectedProperty?: PropertyDescription;
   onSelectedPropertyChanged: (property?: PropertyDescription) => void;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
 export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRulePropertyProps) {
-  const { selectedProperty, properties, onSelectedPropertyChanged } = props;
+  const { selectedProperty, properties, onSelectedPropertyChanged, propertyRenderer } = props;
 
   const selectOptions = React.useMemo<SelectOption<string>[]>(() => properties.map((property) => ({
     id: property.name,
@@ -34,6 +35,12 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       onSelectedPropertyChanged(currentSelectedProperty);
   }, [properties, selectedProperty, onSelectedPropertyChanged]);
 
+  const itemRenderer = React.useCallback((selectOption: SelectOption<string>, { isSelected, id }) => {
+    return <MenuItem key={id} id={id} isSelected={isSelected}>
+      {propertyRenderer ? propertyRenderer(selectOption.value) : selectOption.label}
+    </MenuItem>;
+  }, [propertyRenderer]);
+
   return <div className="rule-property">
     <ComboBox
       options={selectOptions}
@@ -42,6 +49,7 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
       inputProps={{
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
       }}
+      itemRenderer={itemRenderer}
     />
   </div>;
 }

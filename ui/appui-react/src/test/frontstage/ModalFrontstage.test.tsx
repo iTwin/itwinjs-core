@@ -2,11 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { MockRender } from "@itwin/core-frontend";
+import { render } from "@testing-library/react";
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { FrontstageManager, ModalFrontstage, ModalFrontstageInfo } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils from "../TestUtils";
 
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();
@@ -52,9 +54,11 @@ describe("ModalFrontstage", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+    await MockRender.App.startup();
   });
 
-  after(() => {
+  after(async () => {
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
 
@@ -69,18 +73,18 @@ describe("ModalFrontstage", () => {
     FrontstageManager.openModalFrontstage(modalFrontstage);
     expect(changedEventSpy.calledOnce).to.be.true;
 
-    mount(renderModalFrontstage(false));
+    const {baseElement, rerender} = render(renderModalFrontstage(false));
 
-    const wrapper = mount(renderModalFrontstage(true));
-    expect(wrapper.find("div.uifw-modal-frontstage").length).to.eq(1);
+    rerender(renderModalFrontstage(true));
+    expect(baseElement.querySelectorAll("div.uifw-modal-frontstage").length).to.eq(1);
 
-    const backButton = wrapper.find("button.nz-toolbar-button-back");
+    const backButton = baseElement.querySelectorAll<HTMLButtonElement>("button.nz-toolbar-button-back");
     expect(backButton.length).to.eq(1);
 
     FrontstageManager.updateModalFrontstage();
     expect(changedEventSpy.calledTwice).to.be.true;
 
-    backButton.simulate("click");
+    backButton[0].click();
     expect(navigationBackSpy.calledOnce).to.be.true;
     expect(closeModalSpy.calledOnce).to.be.true;
 

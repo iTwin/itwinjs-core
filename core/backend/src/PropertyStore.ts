@@ -20,8 +20,8 @@ export interface PropertyStore {
   /** The collection of property values in the PropertyStore as of the last time it was synchronized. */
   readonly values: PropertyStore.Values;
 
-  /** Application-supplied parameters for obtaining the write lock on the container for a PropertyStore.*/
-  readonly appParams: CloudSqlite.ObtainLockParams;
+  /** Parameters for obtaining the write lock on the container for a PropertyStore.*/
+  readonly lockParams: CloudSqlite.ObtainLockParams;
 
   /**
    * The token that grants access to the cloud container for this PropertyStore. If it does not grant write permissions, all
