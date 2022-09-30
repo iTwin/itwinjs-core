@@ -19,7 +19,7 @@
     "build:frontend": "tsc",
     "build:frontend-webpack": "cross-env DISABLE_NEW_JSX_TRANSFORM=true SKIP_PREFLIGHT_CHECK=true DISABLE_ESLINT_PLUGIN=true TRANSPILE_DEPS=false USE_FAST_SASS=true react-scripts --max_old_space_size=8192 build",
     "build:webpack": "npm run build:frontend-webpack && npm run build:backend-webpack",
-    "clean": "rimraf build lib .rush/temp/package-deps*.json",
+    "clean": "rimraf build lib .rush/temp/package-deps*.json ios/imodeljs-test-app/build",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
