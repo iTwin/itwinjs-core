@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/components-react",
+      "comment": "decrease threshold to 99.8 for test coverage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/components-react"
+}
