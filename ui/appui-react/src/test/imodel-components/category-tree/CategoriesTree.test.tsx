@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
-import { IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
+import { IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@itwin/core-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, Node, NodePathElement, StandardNodeTypes } from "@itwin/presentation-common";
 import { IPresentationTreeDataProvider, PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
@@ -32,9 +32,11 @@ describe("CategoryTree", () => {
 
     before(async () => {
       await TestUtils.initializeUiFramework();
+      await MockRender.App.startup();
     });
 
-    after(() => {
+    after(async () => {
+      await MockRender.App.shutdown();
       TestUtils.terminateUiFramework();
       Presentation.terminate();
     });
@@ -119,7 +121,7 @@ describe("CategoryTree", () => {
         visibilityHandler.setup((x) => x.onVisibilityChange).returns(() => new BeEvent<VisibilityChangeListener>());
       };
 
-      it("should match snapshot", async () => {
+      it("should have expected structure", async () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
         const result = render(
           <CategoryTree
@@ -130,8 +132,14 @@ describe("CategoryTree", () => {
             categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        await waitFor(() => result.getByText("test-node"));
-        expect(result.baseElement).to.matchSnapshot();
+        let node: HTMLElement;
+        await waitFor(() => node = result.getByText("test-node"));
+        const tree = result.getByRole("tree");
+        const item = result.getByRole("treeitem");
+        const check = result.getByRole("checkbox");
+        expect(tree.contains(item)).to.be.true;
+        expect(item.contains(check)).to.be.true;
+        expect(item.contains(node!)).to.be.true;
       });
 
       it("renders without viewport", async () => {
@@ -514,7 +522,8 @@ describe("CategoryTree", () => {
       const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
 
-      expect(hierarchy).to.matchSnapshot();
+      expect(hierarchy).to.be.an("array").with.lengthOf(1);
+      expect({hierarchy}).to.nested.include({"hierarchy[0].label.value.value": "Test SpatialCategory"});
     });
 
     it("does not show private 2d categories", async () => {
@@ -551,7 +560,8 @@ describe("CategoryTree", () => {
       const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_CATEGORIES);
 
-      expect(hierarchy).to.matchSnapshot();
+      expect(hierarchy).to.be.an("array").with.lengthOf(1);
+      expect({hierarchy}).to.nested.include({"hierarchy[0].label.value.value": "Test DrawingCategory"});
     });
   });
 });
