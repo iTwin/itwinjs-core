@@ -7,6 +7,7 @@ Table of contents:
 
 - [AppUi](#appui)
   - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
+  
 ## AppUi
 
 ### Setting allowed panel zones for widgets
