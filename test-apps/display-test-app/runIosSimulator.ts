@@ -58,14 +58,15 @@ async function main() {
   var keys = Object.keys(results).sort(numericCompareDescending);
 
   // determine desired device and runtime
+  const deviceBaseName = "iPad Pro (11-inch)";
   var desiredDevice: string;
   var desiredRuntime: string;
   const isAppleCpu = runProgram("sysctl", ["-n", "machdep.cpu.brand_string"]).startsWith("Apple");
   if (isAppleCpu) {
-    desiredDevice = "iPad Pro (11-inch) (1st generation)";
+    desiredDevice = `${deviceBaseName} (1st generation)`;
     desiredRuntime = "13"; // so that it runs on M1 without requiring the iOS arm64 simulator binaries
   } else {
-    desiredDevice = "iPad Pro (11-inch) (2nd generation)";
+    desiredDevice = `${deviceBaseName} (2nd generation)`;
     desiredRuntime = keys.length > 0 ? keys[0] : "15"; // use latest runtime if we have any, otherwise 15
   }
 
@@ -78,9 +79,9 @@ async function main() {
       if (device)
         break;
     }
-    // If none are booted, use the desiredDevice or fall back to the first one
+    // If none are booted, use the deviceBaseName or fall back to the first one
     if (!device) {
-      device = results[keys[0]].find((device: { name: string; }) => device.name === desiredDevice) ?? results[keys[0]][0];
+      device = results[keys[0]].find((device: { name: string; }) => device.name.startsWith(deviceBaseName)) ?? results[keys[0]][0];
     }
   } else {
     // try to create a simulator
