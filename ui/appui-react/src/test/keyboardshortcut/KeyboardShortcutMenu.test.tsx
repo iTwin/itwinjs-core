@@ -6,14 +6,16 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { CommandItemDef, KeyboardShortcutManager, KeyboardShortcutMenu, KeyboardShortcutProps } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
-import { FunctionKey, SpecialKey } from "@itwin/appui-abstract";
+import TestUtils, { userEvent } from "../TestUtils";
+import { FunctionKey } from "@itwin/appui-abstract";
 import { UiFramework } from "../../appui-react/UiFramework";
+import { render, screen } from "@testing-library/react";
 
 describe("KeyboardShortcutMenu", () => {
   const testSpyMethod = sinon.spy();
   let testCommand: CommandItemDef;
   let keyboardShortcutList: KeyboardShortcutProps[];
+  let theUserTo: ReturnType<typeof userEvent.setup>;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -72,46 +74,44 @@ describe("KeyboardShortcutMenu", () => {
   beforeEach(() => {
     testSpyMethod.resetHistory();
     KeyboardShortcutManager.shortcutContainer.emptyData();
+    theUserTo = userEvent.setup();
   });
 
-  it("Should render shortcuts and close on Escape", () => {
+  it("Should render shortcuts and close on Escape", async () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
     expect(UiFramework.isContextMenuOpen).to.be.false;
 
-    const wrapper = mount(
+    render(
       <KeyboardShortcutMenu />,
     );
 
     KeyboardShortcutManager.displayShortcutsMenu();
-    wrapper.update();
 
-    expect(wrapper.find("div.core-context-menu").length).to.not.eq(0);
+    expect(screen.getAllByRole("menuitem")).to.have.lengthOf(3);
     expect(UiFramework.isContextMenuOpen).to.be.true;
 
-    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });  // Does nothing because of ignoreNextKeyUp=true
-    wrapper.find("div.core-context-menu").at(0).simulate("keyUp", { key: SpecialKey.Escape /* <Esc> */ });
-    wrapper.update();
+    await theUserTo.type(screen.getAllByTestId("core-context-menu-root")[0], "[Escape]", {skipClick: true}); // Does nothing because of ignoreNextKeyUp=true
+    expect(screen.queryAllByRole("menuitem")).to.have.lengthOf(3);
 
-    expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
+    await theUserTo.type(screen.getAllByTestId("core-context-menu-root")[0], "[Escape]");
+    expect(screen.queryAllByRole("menuitem")).to.have.lengthOf(0);
     expect(UiFramework.isContextMenuOpen).to.be.false;
   });
 
   it("Should render shortcuts and execute item on click", async () => {
     KeyboardShortcutManager.loadKeyboardShortcuts(keyboardShortcutList);
 
-    const wrapper = mount(
+    render(
       <KeyboardShortcutMenu />,
     );
 
     KeyboardShortcutManager.displayShortcutsMenu();
-    wrapper.update();
 
-    expect(wrapper.find("div.core-context-menu-item").length).to.eq(3);
+    expect(screen.queryAllByRole("menuitem")).to.have.lengthOf(3);
 
-    wrapper.find("div.core-context-menu-item").at(0).simulate("click");
-    wrapper.update();
+    await theUserTo.click(screen.getByRole("menuitem", {name: "A Test"}));
 
-    expect(wrapper.find("div.core-context-menu-item").length).to.eq(0);
+    expect(screen.queryAllByRole("menuitem")).to.have.lengthOf(0);
 
     await TestUtils.flushAsyncOperations();
     expect(testSpyMethod.calledOnce).to.be.true;
