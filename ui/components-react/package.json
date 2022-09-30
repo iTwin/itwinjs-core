@@ -147,10 +147,10 @@
       "ts-node/register"
     ],
     "check-coverage": true,
-    "statements": 99.8,
-    "branches": 99.8,
+    "statements": 100,
+    "branches": 100,
     "functions": 100,
-    "lines": 99.8
+    "lines": 100
   },
   "eslintConfig": {
     "plugins": [
