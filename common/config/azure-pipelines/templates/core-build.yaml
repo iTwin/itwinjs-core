@@ -52,6 +52,10 @@ steps:
     workingDirectory: "test-apps/display-test-app"
     displayName: "Build iOS display-test-app swift"
     condition: and(succeeded(), eq('${{ parameters.buildIos }}',true), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')), eq(variables['Agent.OS'], 'Darwin'))
+  - script: npm run ios
+    workingDirectory: "test-apps/display-test-app"
+    displayName: "Run iOS display-test-app"
+    condition: and(succeeded(), eq('${{ parameters.buildIos }}',true), or(eq(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.Reason'], 'Manual')), eq(variables['Agent.OS'], 'Darwin'))
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
     workingDirectory: ${{ parameters.workingDir }}
