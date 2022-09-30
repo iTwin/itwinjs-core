@@ -65,7 +65,7 @@ async function main() {
     desiredDevice = "iPad Pro (11-inch) (1st generation)";
     desiredRuntime = "13"; // so that it runs on M1 without requiring the iOS arm64 simulator binaries
   } else {
-    desiredDevice = "iPad Pro (11-inch) (3rd generation)";
+    desiredDevice = "iPad Pro (11-inch) (2nd generation)";
     desiredRuntime = keys.length > 0 ? keys[0] : "15"; // use latest runtime if we have any, otherwise 15
   }
 
@@ -132,6 +132,10 @@ async function main() {
   } else {
     log("Failed.");
   }
+
+  // Shut down simulator
+  log("Shutting down simulator");
+  await simctl.shutdownDevice();
 }
 
 main();
