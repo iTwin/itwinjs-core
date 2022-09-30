@@ -228,7 +228,7 @@ export class SavedViewPicker extends ToolBarDropDown {
     let selectedElementsString;
     if (this._imodel.selectionSet.size > 0) {
       const seList: string[] = [];
-      this._imodel.selectionSet.elements.forEach((id) => { seList.push(id); });
+      this._imodel.selectionSet.elements.forEach((id) => seList.push(id));
       selectedElementsString = JSON.stringify(seList);
     }
     let overrideElementsString;

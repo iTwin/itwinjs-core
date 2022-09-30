@@ -621,7 +621,15 @@ export class MapTileTreeReference extends TileTreeReference {
   private _symbologyOverrides: FeatureSymbology.Overrides | undefined;
   private _planarClipMask?: PlanarClipMaskState;
 
-  public constructor(settings: BackgroundMapSettings, private _baseLayerSettings: BaseLayerSettings | undefined, private _layerSettings: MapLayerSettings[], iModel: IModelConnection, tileUserId: number, public isOverlay: boolean, private _isDrape: boolean, private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
+  public constructor(
+    settings: BackgroundMapSettings,
+    private _baseLayerSettings: BaseLayerSettings | undefined,
+    private _layerSettings: MapLayerSettings[],
+    iModel: IModelConnection,
+    tileUserId: number,
+    public isOverlay: boolean,
+    private _isDrape: boolean,
+    private _overrideTerrainDisplay?: CheckTerrainDisplayOverride) {
     super();
     this._tileUserId = tileUserId;
     this._settings = settings;
@@ -659,7 +667,10 @@ export class MapTileTreeReference extends TileTreeReference {
     if (! this._settings.applyTerrain || this._isDrape)
       return undefined;     // Don't bother generating non-terrain (flat) geometry.
 
-    const ref = new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => { return { produceGeometry: true }; });
+    const ref = new MapTileTreeReference(this._settings, undefined, [], this._iModel, this._tileUserId, false, false, () => {
+      return { produceGeometry: true };
+    });
+
     assert(undefined !== ref.collectTileGeometry);
     return ref as GeometryTileTreeReference;
   }

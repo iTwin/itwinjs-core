@@ -175,7 +175,9 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         this._querySupported = json.capabilities.indexOf("Query") >= 0;
         this._tileMapSupported = json.capabilities.indexOf("Tilemap") >= 0;
       }
-      if (json.copyrightText) this._copyrightText = json.copyrightText;
+      if (json.copyrightText)
+        this._copyrightText = json.copyrightText;
+
       if (false !== (this._usesCachedTiles = json.tileInfo !== undefined && this.isEpsg3857Compatible(json.tileInfo))) {
         if (json.maxScale !== undefined && json.maxScale !== 0 && Array.isArray(json.tileInfo.lods)) {
           for (; this._maxDepthFromLod < json.tileInfo.lods.length && json.tileInfo.lods[this._maxDepthFromLod].scale > json.maxScale; this._maxDepthFromLod++)
@@ -348,7 +350,11 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
   protected getLayerString(prefix = "show"): string {
     const layers = new Array<string>();
-    this._settings.subLayers.forEach((subLayer) => { if (this._settings.isSubLayerVisible(subLayer)) layers.push(subLayer.idString); });
+    this._settings.subLayers.forEach((subLayer) => {
+      if (this._settings.isSubLayerVisible(subLayer))
+        layers.push(subLayer.idString);
+    });
+
     return `${prefix}: ${layers.join(",")} `;
   }
 

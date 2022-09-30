@@ -47,9 +47,14 @@ export function deepEqualWithFpTolerance(
   b: any,
   options: DeepEqualWithFpToleranceOpts = {},
 ): boolean {
-  if (options.tolerance === undefined) options.tolerance = defaultOpts.tolerance;
-  if (a === b) return true;
-  if (typeof a !== typeof b) return false;
+  if (options.tolerance === undefined)
+    options.tolerance = defaultOpts.tolerance;
+
+  if (a === b)
+    return true;
+  else if (typeof a !== typeof b)
+    return false;
+
   switch (typeof a) {
     case "number":
       return isAlmostEqualNumber(a, b, options.tolerance);
@@ -60,7 +65,9 @@ export function deepEqualWithFpTolerance(
     case "undefined":
       return false; // these objects can only be strict equal which was already tested
     case "object":
-      if ((a === null) !== (b === null)) return false;
+      if ((a === null) !== (b === null))
+        return false;
+
       const aSize = Object.keys(a).filter((k) => options.considerNonExistingAndUndefinedEqual && a[k] !== undefined).length;
       const bSize = Object.keys(b).filter((k) => options.considerNonExistingAndUndefinedEqual && b[k] !== undefined).length;
       return aSize === bSize && Object.keys(a).every(
@@ -79,7 +86,9 @@ Assertion.addMethod(
     expected: any,
     options: DeepEqualWithFpToleranceOpts = {}
   ) {
-    if (options.tolerance === undefined) options.tolerance = 1e-10;
+    if (options.tolerance === undefined)
+      options.tolerance = 1e-10;
+
     const actual = this._obj;
     const isDeep = util.flag(this, "deep");
     this.assert(

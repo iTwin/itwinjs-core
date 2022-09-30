@@ -189,7 +189,8 @@ describe("ECSqlStatement", () => {
       assert.equal(rowNo, 100); // expect all rows
     });
   });
-  it("should restart query", async () => {
+
+  it.skip("should restart query", async () => { // Issue #4355 @khanaffan
     await using(ECDbTestHelper.createECDb(outDir, "cancelquery.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
