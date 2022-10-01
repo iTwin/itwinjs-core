@@ -112,27 +112,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-rpc-common",
-      "projectFolder": "core/rpc/common",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-rpc-frontend",
-      "projectFolder": "core/rpc/frontend",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/core-rpc-backend",
-      "projectFolder": "core/rpc/backend",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/editor-common",
       "projectFolder": "editor/common",
       "reviewCategory": "edit",

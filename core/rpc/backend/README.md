@@ -1,10 +1,10 @@
-# @itwin/core-common
+# @itwin/core-rpc-backend
 
 Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
-The __@itwin/core-common__ package contains classes for working with iModels that can be used in both the frontend and backend.
+The __@itwin/core-rpc-backend__ package contains classes that implement RPC communication on the backend.
 
 ## Documentation
 
