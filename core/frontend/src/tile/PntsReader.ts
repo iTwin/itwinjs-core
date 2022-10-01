@@ -270,7 +270,15 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   features.add(new Feature(modelId), 1);
   const voxelSize = props.params.rangeDiagonal.maxAbs() / 256;
 
-  let renderGraphic = system.createPointCloud(new PointCloudArgs(props.points, props.params, props.colors, features, voxelSize), iModel);
+  let renderGraphic = system.createPointCloud({
+    positions: props.points,
+    qparams: props.params,
+    colors: props.colors,
+    features: features.toFeatureIndex(),
+    voxelSize,
+    colorFormat: "rgb",
+  }, iModel);
+
   renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
   return renderGraphic;
 }
