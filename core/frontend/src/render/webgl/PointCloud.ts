@@ -31,7 +31,6 @@ export class PointCloudGeometry extends CachedGeometry {
 
   private readonly _voxelSize: number;
   public readonly colorIsBgr: boolean;
-  public readonly minimumPointSize: number;
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
   public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
@@ -55,7 +54,6 @@ export class PointCloudGeometry extends CachedGeometry {
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
     this._voxelSize = pointCloud.voxelSize;
     this.colorIsBgr = pointCloud.colorIsBgr;
-    this.minimumPointSize = pointCloud.minimumPointSize;
 
     if (undefined !== pointCloud.colors) {
       this._colorHandle = BufferHandle.createArrayBuffer(pointCloud.colors);

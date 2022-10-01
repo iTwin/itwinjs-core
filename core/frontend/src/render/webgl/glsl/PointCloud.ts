@@ -78,7 +78,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
     prog.addGraphicUniform("u_pointCloudParams", (uniform, params) => {
       const pointCloud = params.geometry.asPointCloud!;
       scratchPointCloudParams[0] = pointCloud.colorIsBgr ? 1 : 0;      // Volume classifier, by element color.
-      scratchPointCloudParams[1] = pointCloud.minimumPointSize;
+      scratchPointCloudParams[1] = 0; // ###TODO this is never read by shader pointCloud.minimumPointSize;
       uniform.setUniform2fv(scratchPointCloudParams);
     });
   });
