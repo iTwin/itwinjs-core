@@ -37,7 +37,7 @@
         - [Change detection](#change-detection)
   - [Connector SDK](#connector-sdk)
     - [Getting started](#getting-started)
-    - [BridgeRunner](#bridgerunner)
+    - [ConnectorRunner](#connectorrunner)
     - [Synchronizer](#synchronizer)
     - [Connector interface methods](#connector-interface-methods)
       - [InitializeJob](#initializejob)
@@ -62,16 +62,12 @@
     - [Locks & Codes](#locks--codes)
     - [More information](#more-information)
 
-## New ConnectorFramework
-
-A new ConnectorFramework dependent upon iTwin.js 3.x is forthcoming early in 2022. The old iModelBridge code delivered with old iModel.js mono repo has been deprecated and removed. It was moved to its own repository and will be available in its own npm package.
-
 ### Porting a connector
 
 To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
 
 1. Change the dependencies to the [New Connector Framework](#new-connectorframework)
-2. Search and replace "iModelBridge" with "BaseConnector", "BridgeJobDefArgs" with "ConnectorJobDefArgs" and "BridgeRunner" with "ConnectorRunner" and so on.
+2. Search and replace "iModelBridge" with "BaseConnector", "BridgeJobDefArgs" with "JobArgs" and "BridgeRunner" with "ConnectorRunner" and so on.
 
 ## Introduction
 
@@ -146,7 +142,7 @@ An iTwin Connector provides a workflow to easily synchronize information from va
 
 #### Briefcases
 
-[Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
+[Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the ConnectorRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
 
 #### Element
 
@@ -436,26 +432,20 @@ The ConnectorFramework SDK exposes its functionality through three main classes:
 
 Constructor
 
-The ConnectorRunner has a constructor which takes a ConnectorJobDefArgs as its lone parameter. The ConnectorJobDefArgs has properties to describe the significant pieces to the Connector job:
-
-1. sourcePath - your native data (i.e., where the data is coming from) has nothing to do with source code.
-2. outputDir - this is the target for your iModel (i.e., where the data is going to)
-3. ConnectorModule - path to your javascript source code. This must extend BaseConnector and implement its methods
-4. IsSnapshot - write the iModel to the disk
+The ConnectorRunner has a constructor which takes JobArgs and HubArgs as parameters.
 
 Methods
 
-The ConnectorRunner has a Synchronize method that runs your bridge module.
+The ConnectorRunner has a Run method that runs your connector module.
 
 ```ts
-    const conncectorJobDef = new ConnectorJobDefArgs();
-    conncectorJobDef.sourcePath = "c:\tmp\mynativefile.txt";
-    conncectorJobDef.bridgeModule = "./HelloWorldConnector.js";
-    conncectorJobDef.outputDir = "c:\tmp\out\";
-    conncectorJobDef.isSnapshot = true;
+    const jobArgs = new JobArgs({"c:\tmp\mynativefile.txt" : source, "c:\tmp\out\" : stagingDir, "snapshot" : dbType});
 
-    const runner = new ConnectorRunner(conncectorJobDef);
-    const status = await runner.synchronize();
+    const hubArgs = new HubArgs();
+
+    const runner = new ConnectorRunner(jobArgs, hubArgs);
+
+    const status = await runner.run("./HelloWorldConnector.js");
 
 ```
 
@@ -465,7 +455,7 @@ An iTwin Connector has a private Synchronizer member which can be gotten or set 
 
 ### Connector interface methods
 
-The bridgeModule assigned to the BridgeJobDefArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
+The connectorModule assigned to the JobArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
 ```ts
 class HelloWorldConnector extends BaseConnector {
@@ -533,13 +523,16 @@ Your source data may have non-graphical data best represented as definitions. Ty
 Use this method to import any domain schema that is required to publish your data.
 
 ```ts
-  public async importDomainSchema(_requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
+  public async importDomainSchema(_requestContext: AccessToken): Promise<any> {
+
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
     }
-    TestBridgeSchema.registerSchema();
-    const fileName = TestBridgeSchema.schemaFilePath;
-    await this.synchronizer.imodel.importSchemas(_requestContext, [fileName]);
+    TestConnectorSchema.registerSchema();
+
+    const fileName = path.join(__dirname, "..", "..", "..", "test", "assets", "TestConnector.ecschema.xml");
+
+    await this.synchronizer.imodel.importSchemas([fileName]);
   }
 
 ```
@@ -560,35 +553,43 @@ This method is the main workhorse of your Connector. When UpdateExistingData is 
     const physicalModelId = this.queryPhysicalModel();
     const definitionModelId = this.queryDefinitionModel();
     if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
-const error =`Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
-      throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
+      const error = `Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
+      throw new IModelError(IModelStatus.BadArg, error);
     }
 
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
+    this.issueReporter?.reportIssue(physicalModelId, "source", "Warning", "Test", "Test Message", "Type");
 
     if (this._sourceDataState === ItemState.New) {
       this.insertCategories();
       this.insertMaterials();
       this.insertGeometryParts();
+
+      // Create this (unused) Subject here just to generate the following code path for the tests:
+      // While running in its own private channel ...
+      // ... a connector inserts an element that is a child of its channel parent ...
+      // ... and that element is inserted into the repository model.
+      // That is perfectly legal ... as long as the correct locks are held. The HubMock and integration
+      // tests should fail if the correct locks are not held.
+      Subject.insert(this.synchronizer.imodel, this.jobSubject.id, "Child Subject");
     }
 
     this.convertGroupElements(groupModelId);
     this.convertPhysicalElements(physicalModelId, definitionModelId, groupModelId);
-    this.synchronizer.imodel.views.setDefaultViewId(this.createView(definitionModelId, physicalModelId, "TestBridgeView"));
+    this.synchronizer.imodel.views.setDefaultViewId(this.createView(definitionModelId, physicalModelId, "TestConnectorView"));
+
+    this.synchronizer.detectDeletedElements();
   }
 
 ```
 
 ### Execution Sequence
 
-The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
+The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the ConnectorRunner class. A ConnectorRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
 
-- BridgeRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
+- ConnectorRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
   - Connector: Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
-  - BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
+  - ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -596,8 +597,8 @@ The ultimate purpose of a Connector is to synchronize an iModel with the data in
     - [Transform](#data-alignment) the new or changed source data into the target BIS schema.
     - Write the resulting BIS data to the local briefcase.
     - Remove BIS data corresponding to deleted source data.
-  - BridgeRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and code server.
-- BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
+  - ConnectorRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and code server.
+- ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
 
 ### Analyzing the Connector output
 
