@@ -34,8 +34,7 @@
   },
   "dependencies": {
     "@itwin/core-bentley": "workspace:*",
-    "@itwin/core-common": "workspace:*",
-    "@itwin/core-rpc-common": "workspace:*"
+    "@itwin/core-common": "workspace:*"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

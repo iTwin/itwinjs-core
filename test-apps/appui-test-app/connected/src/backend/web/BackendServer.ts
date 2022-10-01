@@ -5,7 +5,7 @@
 import { Logger } from "@itwin/core-bentley";
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
-import { BentleyCloudRpcManager } from "@itwin/core-rpc-common";
+import { BentleyCloudRpcManager } from "@itwin/core-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 

@@ -14,7 +14,7 @@ import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
-import { RpcInterface } from '@itwin/core-rpc-common';
+import { RpcInterface } from '@itwin/core-common';
 import { UnitSystemKey } from '@itwin/core-quantity';
 
 // @alpha (undocumented)

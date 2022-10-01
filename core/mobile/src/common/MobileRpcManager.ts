@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@itwin/core-rpc-common";
+import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
 /** RPC supported mobile platforms.

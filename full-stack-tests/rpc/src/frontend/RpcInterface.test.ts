@@ -8,13 +8,10 @@ import * as semver from "semver";
 import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
 import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
 import {
-  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, WipRpcInterface,
-} from "@itwin/core-common";
-import {
-  NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
+  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
   RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WebAppRpcRequest,
-} from "@itwin/core-rpc-common";
+  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
+} from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
   AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,

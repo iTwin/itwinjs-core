@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { RpcRegistry } from "@itwin/core-rpc-common";
+import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";

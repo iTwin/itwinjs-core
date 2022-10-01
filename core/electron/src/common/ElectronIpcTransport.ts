@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
-import { IModelError, iTwinChannel } from "@itwin/core-common";
-import { RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest } from "@itwin/core-rpc-common";
+import {
+  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+} from "@itwin/core-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";

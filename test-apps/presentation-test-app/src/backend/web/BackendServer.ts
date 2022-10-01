@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
-import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-rpc-common";
+import { BentleyCloudRpcManager, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 
 /**
  * Initializes Web Server backend

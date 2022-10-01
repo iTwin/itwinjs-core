@@ -12,7 +12,7 @@ import { loggerCategory } from "../common/TestAppConfiguration";
 import { initializeElectron } from "./electron/ElectronMain";
 import { initializeLogging } from "./logging";
 import { initializeWeb } from "./web/BackendServer";
-import { RpcManager } from "@itwin/core-rpc-common";
+import { RpcManager } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 import { ECSchemaRpcImpl } from "@itwin/ecschema-rpcinterface-impl";
 

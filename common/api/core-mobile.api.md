@@ -17,13 +17,13 @@ import { Listener } from '@itwin/core-bentley';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PromiseReturnType } from '@itwin/core-bentley';
-import { RpcConfiguration } from '@itwin/core-rpc-common';
-import { RpcEndpoint } from '@itwin/core-rpc-common';
-import { RpcInterfaceDefinition } from '@itwin/core-rpc-common';
-import { RpcProtocol } from '@itwin/core-rpc-common';
-import { RpcRequest } from '@itwin/core-rpc-common';
-import { RpcRequestFulfillment } from '@itwin/core-rpc-common';
-import { RpcSerializedValue } from '@itwin/core-rpc-common';
+import { RpcConfiguration } from '@itwin/core-common';
+import { RpcEndpoint } from '@itwin/core-common';
+import { RpcInterfaceDefinition } from '@itwin/core-common';
+import { RpcProtocol } from '@itwin/core-common';
+import { RpcRequest } from '@itwin/core-common';
+import { RpcRequestFulfillment } from '@itwin/core-common';
+import { RpcSerializedValue } from '@itwin/core-common';
 
 // @beta (undocumented)
 export enum BatteryState {

@@ -37,7 +37,6 @@
     "@itwin/core-electron": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@itwin/core-common": "workspace:*",
-    "@itwin/core-rpc-common": "workspace:*",
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-quantity": "workspace:*",

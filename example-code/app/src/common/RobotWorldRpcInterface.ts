@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.definition
-import { IModelRpcProps } from "@itwin/core-common";
-import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
+import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { Id64String } from "@itwin/core-bentley";
 
 // The RPC query interface that may be exposed by the RobotWorldEngine.

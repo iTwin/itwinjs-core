@@ -10,8 +10,7 @@
 
 import { Store } from "redux";
 import { GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { Localization } from "@itwin/core-common";
-import { RpcActivity } from "@itwin/core-rpc-common";
+import { Localization, RpcActivity } from "@itwin/core-common";
 import { IModelApp, IModelConnection, SnapMode, ViewState } from "@itwin/core-frontend";
 import { Presentation } from "@itwin/presentation-frontend";
 import { TelemetryEvent } from "@itwin/core-telemetry";

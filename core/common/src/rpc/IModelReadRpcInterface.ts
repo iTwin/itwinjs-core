@@ -10,6 +10,8 @@ import { CompressedId64Set, GuidString, Id64String } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
+import { RpcResponseCacheControl } from "./core/RpcConstants";
+import { RpcOperation } from "./core/RpcOperation";
 import { ElementLoadOptions, ElementProps } from "../ElementProps";
 import { EntityQueryParams } from "../EntityProps";
 import { FontMapProps } from "../Fonts";
@@ -21,10 +23,13 @@ import { GeometrySummaryRequestProps } from "../GeometrySummary";
 import { IModelConnectionProps, IModelRpcOpenProps, IModelRpcProps } from "../IModel";
 import { MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps } from "../MassProperties";
 import { ModelProps } from "../ModelProps";
-import { RpcInterface, RpcManager, RpcNotFoundResponse, RpcOperation, RpcResponseCacheControl, RpcRoutingToken } from "@itwin/core-rpc-common";
+import { RpcInterface } from "../RpcInterface";
+import { RpcManager } from "../RpcManager";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
 import { TextureData, TextureLoadProps } from "../TextureProps";
 import { CustomViewState3dCreatorOptions, CustomViewState3dProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SubCategoryResultRow, ViewStateLoadProps, ViewStateProps } from "../ViewProps";
+import { RpcNotFoundResponse } from "./core/RpcControl";
+import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)

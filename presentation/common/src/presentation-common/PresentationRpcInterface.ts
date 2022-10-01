@@ -7,8 +7,7 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { IModelRpcProps } from "@itwin/core-common";
-import { RpcInterface, RpcOperation } from "@itwin/core-rpc-common";
+import { IModelRpcProps, RpcInterface, RpcOperation } from "@itwin/core-common";
 import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";

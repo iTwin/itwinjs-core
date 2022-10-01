@@ -11,10 +11,10 @@ import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
 import {
-  AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface,
+  AuthorizationClient,
+  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
   SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import { RpcInterfaceDefinition, RpcManager } from "@itwin/core-rpc-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";

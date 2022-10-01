@@ -6,8 +6,7 @@
  * @module IModelApp
  */
 
-import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
-import { InterceptedRpcRequest, IpcSession } from "@itwin/core-rpc-common";
+import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 

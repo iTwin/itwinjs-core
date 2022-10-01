@@ -8,7 +8,7 @@
 
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { DisposeFunc, Logger } from "@itwin/core-bentley";
-import { RpcManager } from "@itwin/core-rpc-common";
+import { RpcManager } from "@itwin/core-common";
 import { PresentationError, PresentationRpcInterface, PresentationStatus } from "@itwin/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PresentationIpcHandler } from "./PresentationIpcHandler";

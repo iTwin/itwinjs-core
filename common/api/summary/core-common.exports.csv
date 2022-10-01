@@ -4,6 +4,7 @@ public;AdditionalTransform
 public;AdditionalTransformProps
 public;AffineTransform 
 public;AffineTransformProps
+internal;aggregateLoad:
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
@@ -41,6 +42,10 @@ public;BaseMapLayerSettings
 public;BaseReaderOptions
 public;BasicPlanarClipMaskArgs
 public;BatchType
+internal;class BentleyCloudRpcConfiguration 
+internal;BentleyCloudRpcManager 
+internal;BentleyCloudRpcParams
+internal;class BentleyCloudRpcProtocol 
 public;BisCodeSpec
 internal;bisectTileRange2d(range: Range3d, takeUpper: boolean): void
 internal;bisectTileRange3d(range: Range3d, takeUpper: boolean): void
@@ -138,6 +143,8 @@ internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandalone
 public;CreateIModelProps 
 public;CreateSnapshotIModelProps 
 internal;CreateStandaloneIModelProps 
+internal;CURRENT_INVOCATION: unique symbol
+internal;CURRENT_REQUEST: unique symbol
 internal;CurrentImdlVersion
 beta;CustomAttribute
 internal;CustomViewState3dCreatorOptions
@@ -253,6 +260,7 @@ public;FontMap
 public;FontMapProps
 public;FontProps
 public;FontType
+internal;FormDataCommon
 public;FresnelSettings
 public;FresnelSettingsProps
 public;Frustum
@@ -337,6 +345,9 @@ public;HorizontalCRSProps
 public;HSLColor
 public;HSVColor
 public;HSVConstants
+internal;HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace"
+public;HttpServerRequest 
+public;HttpServerResponse 
 internal;HydrateViewStateRequestProps
 internal;HydrateViewStateResponseProps
 internal;I3dmHeader 
@@ -375,6 +386,9 @@ internal;IModelTileTreeProps
 public;IModelVersion
 public;IModelVersionProps =
 public;InformationPartitionElementProps 
+internal;initializeRpcRequest: () => void
+internal;INSTANCE: unique symbol
+internal;InterceptedRpcRequest
 beta;InternetConnectivityStatus
 public;Interpolation:
 public;InterpolationFunction = (v: any, k: number) => number
@@ -383,6 +397,7 @@ internal;IpcAppFunctions
 internal;IpcAppNotifications
 internal;IpcInvokeReturn =
 public;IpcListener = (evt: Event, ...args: any[]) => void
+internal;class IpcSession
 public;IpcSocket
 public;IpcSocketBackend 
 public;IpcSocketFrontend 
@@ -420,6 +435,8 @@ public;class MapLayerSettings
 public;MapSubLayerProps
 public;MapSubLayerSettings
 public;mapToGeoServiceStatus(s: GeoCoordStatus): GeoServiceStatus
+internal;MarshalingBinaryMarker
+internal;MarshalingBinaryMarker
 public;MassPropertiesOperation
 public;MassPropertiesPerCandidateRequestProps
 public;MassPropertiesPerCandidateResponseProps 
@@ -460,9 +477,23 @@ public;NpcCenter: Point3d
 public;NpcCorners: Point3d[]
 public;OctEncodedNormal
 internal;OctEncodedNormalPair
+internal;OpenAPIContentMap
+internal;OpenAPIDocument
+internal;OpenAPIEncoding
+public;OpenAPIInfo
+internal;OpenAPIMediaType
+internal;OpenAPIOperation
+internal;OpenAPIParameter
+internal;OpenAPIPathItem
+internal;OpenAPIPaths
+internal;OpenAPIRequestBody
+internal;OpenAPIResponse
+internal;OpenAPIResponses
+internal;OpenAPISchema
 public;OpenBriefcaseOptions
 public;OpenBriefcaseProps 
 public;OpenDbKey
+internal;OPERATION: unique symbol
 alpha;OrbitGtBlobProps
 beta;OverriddenBy
 public;OverrideElementAppearanceOptions 
@@ -494,6 +525,7 @@ public;PlanProjectionSettingsProps
 internal;PntsHeader 
 public;Point2dProps = number[]
 beta;PointWithStatus
+internal;POLICY: unique symbol
 internal;PolylineData
 internal;PolylineEdgeArgs
 internal;PolylineFlags
@@ -538,6 +570,7 @@ beta;QueryRowProxy
 beta;QueryStats
 beta;QueryValueType = any
 public;Rank
+internal;ReadableFormData 
 internal;readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription
 beta;RealityData
 beta;RealityDataAccess
@@ -547,6 +580,7 @@ beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
 beta;RealityDataSourceProps
+internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
@@ -564,17 +598,82 @@ public;RenderTimelineLoadProps
 public;RenderTimelineProps 
 public;RepositoryLinkProps 
 public;RequestNewBriefcaseProps
+internal;ResponseLike 
 public;RgbColor
 public;RgbColorProps
 public;RgbFactorProps = number[]
 public;RootSubjectProps
+public;RpcActivity 
+internal;RpcActivityRun = (activity: RpcActivity, fn: () => Promise
+internal;class RpcConfiguration
+internal;RpcConfigurationSupplier = (routing?: RpcRoutingToken) =>
+public;RpcContentType
+internal;RpcControlChannel
+public;class RpcControlResponse
+internal;RpcDefaultConfiguration 
+internal;RpcDirectProtocol 
+internal;RpcDirectRequest 
+public;RpcEndpoint
+public;class RpcInterface
+internal;RpcInterfaceDefinition
+internal;RpcInterfaceEndpoints
+internal;RpcInterfaceImplementation
+internal;RpcInvocation
+internal;RpcManagedStatus
+internal;RpcManager
+internal;RpcMarshaling
+internal;RpcMultipart
+public;RpcNotFoundResponse 
+internal;RpcOpenAPIDescription
+internal;RpcOperation
+internal;RpcOperation
+internal;RpcOperationPolicy
+internal;RpcOperationPolicyProps = Partial
+internal;RpcOperationsProfile
+internal;RpcPendingQueue
+public;RpcPendingResponse 
+internal;class RpcProtocol
+public;RpcProtocolEvent
+internal;RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcRequest | RpcInvocation, err?: any) => void
+internal;RpcProtocolVersion
+internal;RpcPushChannel
+internal;class RpcPushConnection
+internal;RpcPushMessageListener
+internal;RpcPushService
+internal;RpcPushSubscription
+internal;class RpcPushTransport
+internal;RpcRegistry
+internal;class RpcRequest
+internal;RpcRequestCallback_T = (request: RpcRequest) => void
+internal;RpcRequestContext
+public;RpcRequestEvent
+internal;RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest) => void
+internal;RpcRequestFulfillment
+internal;RpcRequestFulfillment
+internal;RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfiguration) => number
+internal;RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void
+public;RpcRequestStatus
+public;RpcRequestStatus
+internal;RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelRpcProps | undefined
+public;RpcResponseCacheControl
+internal;RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl
+internal;RpcRoutingMap 
+internal;RpcRoutingMap
+internal;RpcRoutingToken
+internal;RpcSerializedValue
+internal;RpcSerializedValue
+internal;RpcSessionInvocation 
 beta;SchemaState
 public;SectionDrawingLocationProps 
 public;SectionDrawingProps 
 public;SectionDrawingViewProps
 public;SectionType
+public;SerializedRpcActivity
+internal;SerializedRpcOperation
+internal;SerializedRpcRequest 
 public;ServerError 
 public;ServerTimeoutError 
+public;SessionProps
 beta;SheetBorderTemplateProps 
 public;SheetProps 
 beta;SheetTemplateProps 
@@ -625,6 +724,7 @@ public;TerrainProps
 public;TerrainProviderName = string
 deprecated;TerrainProviderName = string
 public;TerrainSettings
+internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
@@ -701,6 +801,9 @@ public;ViewFlagsProperties = Mutable
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
+internal;WEB_RPC_CONSTANTS:
+internal;class WebAppRpcProtocol 
+internal;WebAppRpcRequest 
 public;WhiteOnWhiteReversalProps
 public;WhiteOnWhiteReversalSettings
 internal;class WipRpcInterface 

@@ -14,9 +14,8 @@ import {
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
+  LocalDirName, LocalFileName, RequestNewBriefcaseProps, RpcActivity,
 } from "@itwin/core-common";
-import { RpcActivity } from "@itwin/core-rpc-common";
 import { TelemetryEvent } from "@itwin/core-telemetry";
 import { AcquireNewBriefcaseIdArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";

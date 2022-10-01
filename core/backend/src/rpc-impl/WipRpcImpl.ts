@@ -7,8 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ChangedElements, IModelRpcProps, WipRpcInterface } from "@itwin/core-common";
-import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
+import { ChangedElements, IModelRpcProps, RpcInterface, RpcManager, WipRpcInterface } from "@itwin/core-common";
 import { ChangedElementsManager } from "../ChangedElementsManager";
 import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { BriefcaseDb } from "../IModelDb";

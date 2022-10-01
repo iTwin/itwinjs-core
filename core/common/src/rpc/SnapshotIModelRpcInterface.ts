@@ -7,7 +7,11 @@
  */
 
 import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
-import { RpcInterface, RpcManager, RpcOperation, RpcRequestTokenSupplier_T, RpcRoutingToken } from "@itwin/core-rpc-common";
+import { RpcInterface } from "../RpcInterface";
+import { RpcManager } from "../RpcManager";
+import { RpcOperation } from "./core/RpcOperation";
+import { RpcRequestTokenSupplier_T } from "./core/RpcRequest";
+import { RpcRoutingToken } from "./core/RpcRoutingToken";
 
 const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefined", key: req.parameters[0] });
 

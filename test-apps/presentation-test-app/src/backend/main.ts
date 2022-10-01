@@ -7,7 +7,7 @@ import { app as electron } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel } from "@itwin/core-bentley";
-import { RpcInterfaceDefinition } from "@itwin/core-rpc-common";
+import { RpcInterfaceDefinition } from "@itwin/core-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization.Imports
 import { Presentation, PresentationProps } from "@itwin/presentation-backend";
 // __PUBLISH_EXTRACT_END__

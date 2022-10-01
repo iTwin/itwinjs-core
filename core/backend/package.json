@@ -44,8 +44,6 @@
     "@itwin/core-bentley": "workspace:^3.5.0-dev.0",
     "@itwin/core-common": "workspace:^3.5.0-dev.0",
     "@itwin/core-geometry": "workspace:^3.5.0-dev.0",
-    "@itwin/core-rpc-common": "workspace:^3.5.0-dev.0",
-    "@itwin/core-rpc-backend": "workspace:^3.5.0-dev.0",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
@@ -62,8 +60,6 @@
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-rpc-common": "workspace:*",
-    "@itwin/core-rpc-backend": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
     "@opentelemetry/api": "1.0.4",

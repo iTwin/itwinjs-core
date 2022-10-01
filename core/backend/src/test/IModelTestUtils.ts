@@ -13,10 +13,9 @@ import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
   ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
   GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, LocalFileName,
-  PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, SkyBoxImageType, SubCategoryAppearance,
-  SubCategoryOverride, SyncMode,
+  PhysicalElementProps, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, RequestNewBriefcaseProps, RpcConfiguration, RpcManager,
+  RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@itwin/core-common";
-import { RpcConfiguration, RpcManager, RpcPendingResponse } from "@itwin/core-rpc-common";
 import { Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { RequestNewBriefcaseArg } from "../BriefcaseManager";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";

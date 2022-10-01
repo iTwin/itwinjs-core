@@ -13,8 +13,9 @@ const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.co
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { AuthorizationClient, IModelStatus, Localization, RealityDataAccess } from "@itwin/core-common";
-import { RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity } from "@itwin/core-rpc-common";
+import {
+  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+} from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@itwin/webgl-compatibility";

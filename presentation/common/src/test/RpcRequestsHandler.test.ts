@@ -7,8 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { Id64, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps } from "@itwin/core-common";
-import { RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-rpc-common";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides, DistinctValuesRpcRequestOptions, KeySet, KeySetJSON, Paged, PresentationError, PresentationRpcInterface,
   PresentationRpcRequestOptions, PresentationRpcResponse, PresentationStatus, RpcRequestsHandler, SelectionInfo, SelectionScopeRequestOptions,

@@ -10,11 +10,8 @@ import * as rimraf from "rimraf";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
 import {
-  IModelReadRpcInterface, SnapshotIModelRpcInterface,
+  IModelReadRpcInterface, RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
-import {
-  RpcConfiguration, RpcDefaultConfiguration, RpcInterfaceDefinition,
-} from "@itwin/core-rpc-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import {
   HierarchyCacheMode, Presentation as PresentationBackend, PresentationManagerProps as PresentationBackendProps, PresentationManagerMode,

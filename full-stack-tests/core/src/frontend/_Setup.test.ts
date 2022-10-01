@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-rpc-common";
+import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
 
@@ -95,9 +95,11 @@ Assertion.addMethod(
       isDeep
         ? deepEqualWithFpTolerance(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${isDeep ? "deep equality of " : " "
+      `expected ${
+        isDeep ? "deep equality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${isDeep ? "deep inequality of " : " "
+      `expected ${
+        isDeep ? "deep inequality of " : " "
       }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual

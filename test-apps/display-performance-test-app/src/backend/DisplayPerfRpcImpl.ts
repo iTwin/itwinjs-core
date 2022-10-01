@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { RpcManager } from "@itwin/core-rpc-common";
+import { RpcManager } from "@itwin/core-common";
 import { Reporter } from "@itwin/perf-tools";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";

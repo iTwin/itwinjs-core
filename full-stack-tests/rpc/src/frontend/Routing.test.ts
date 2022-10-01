@@ -5,7 +5,7 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import { TestRpcInterface, WebRoutingInterface } from "../common/TestRpcInterface";
-import { BentleyCloudRpcProtocol, RpcProtocol, RpcProtocolVersion, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-rpc-common";
+import { BentleyCloudRpcProtocol, RpcProtocol, RpcProtocolVersion, WebAppRpcProtocol, WebAppRpcRequest } from "@itwin/core-common";
 import { currentEnvironment } from "./_Setup.test";
 
 if (!ProcessDetector.isElectronAppFrontend) {

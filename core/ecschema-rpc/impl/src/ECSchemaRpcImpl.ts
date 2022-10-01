@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as backend from "@itwin/core-backend";
-import { IModelRpcProps, QueryRowFormat } from "@itwin/core-common";
-import { RpcInterface, RpcManager } from "@itwin/core-rpc-common";
+import { IModelRpcProps, QueryRowFormat, RpcInterface, RpcManager } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 

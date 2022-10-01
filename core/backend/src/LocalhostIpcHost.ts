@@ -7,8 +7,7 @@
  */
 
 import * as ws from "ws";
-import { IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
-import { InterceptedRpcRequest, RpcSessionInvocation } from "@itwin/core-rpc-common";
+import { InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, RpcSessionInvocation } from "@itwin/core-common";
 import { IpcHandler, IpcHost } from "./IpcHost";
 import { IModelHostOptions } from "./IModelHost";
 

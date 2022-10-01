@@ -8,7 +8,6 @@ public;HierarchyBuilder
 public;HierarchyBuilderProps
 public;HierarchyNode 
 public;IContentBuilderDataProvider
-internal;IModelTestUtility
 public;initialize: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
 public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode

@@ -6,8 +6,9 @@ import * as path from "path";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
-import { Code, FeatureGates, IModelReadRpcInterface } from "@itwin/core-common";
-import { RpcInterfaceDefinition, RpcManager, TestRpcManager } from "@itwin/core-rpc-common";
+import {
+  Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+} from "@itwin/core-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
 import { Robot } from "./RobotElement";

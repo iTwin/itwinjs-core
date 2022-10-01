@@ -29,7 +29,6 @@ export * from "./OrderedSet";
 export * from "./partitionArray";
 export * from "./PriorityQueue";
 export * from "./ProcessDetector";
-export * from "./SessionProps";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";

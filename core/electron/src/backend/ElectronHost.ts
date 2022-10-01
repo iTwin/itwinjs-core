@@ -14,8 +14,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction } from "@itwin/core-common";
-import { RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-rpc-common";
+import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod } from "../common/ElectronIpcInterface";
 

@@ -13,12 +13,11 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbQueryRequest, DbResult, EcefLocation, EcefLocationProps, ECSqlReader, ElementLoadOptions,
   ElementProps, EntityQueryParams, FontMap, GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps,
   GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelStatus,
-  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d,
-  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
+  mapToGeoServiceStatus, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, ModelQueryParams, NoContentError, Placement, Placement2d, Placement3d,
+  QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat, RpcManager, SnapRequestProps, SnapResponseProps, SnapshotIModelRpcInterface, SubCategoryAppearance,
   SubCategoryResultRow,
   TextureData, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
-import { NoContentError, RpcManager } from "@itwin/core-rpc-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { CheckpointConnection } from "./CheckpointConnection";

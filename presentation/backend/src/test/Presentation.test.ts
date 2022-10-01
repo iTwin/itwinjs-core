@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
-import { RpcManager } from "@itwin/core-rpc-common";
+import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
 import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

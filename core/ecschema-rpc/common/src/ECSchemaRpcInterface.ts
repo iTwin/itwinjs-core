@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { IModelRpcProps } from "@itwin/core-common";
-import { RpcInterface, RpcManager, RpcOperation } from "@itwin/core-rpc-common";
+import { IModelRpcProps, RpcInterface, RpcManager, RpcOperation } from "@itwin/core-common";
 import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
 
 /***
