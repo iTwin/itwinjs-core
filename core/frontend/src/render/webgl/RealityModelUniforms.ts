@@ -7,7 +7,9 @@
  * @module WebGL
  */
 
+import { PointCloudDisplaySettings, RealityModelDisplaySettings } from "@itwin/core-common";
 import { UniformHandle } from "./UniformHandle";
+import { desync, sync } from "./Sync";
 
 /** A Target keeps track of the current settings for drawing point clouds.
  * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing
@@ -17,26 +19,51 @@ import { UniformHandle } from "./UniformHandle";
  * @internal
  */
 export class PointCloudUniforms {
+  public syncKey = 0;
+  private _settings = PointCloudDisplaySettings.defaults;
+
   // vec3 u_pointSize
   // x = fixed point size in pixels if > 0, else scale applied to voxel size.
   // y = minimum size in pixels if using voxel size.
   // z = maximum size in pixels if using voxel size
   // w = 1.0 if drawing square points instead of round.
-  private readonly _vec4 = new Float32Array([-1, 2, 20, 0]);
+  private readonly _vec4 = new Float32Array(4);
+
+  public constructor() {
+    this.initialize(this._settings);
+  }
+
+  public update(settings: PointCloudDisplaySettings): void {
+    if (this._settings.equals(settings))
+      return;
+
+    this._settings = settings;
+    desync(this);
+    this.initialize(settings);
+  }
 
   public bind(uniform: UniformHandle): void {
-    // ###TODO sync, desync
-    uniform.setUniform4fv(this._vec4);
+    if (!sync(this, uniform))
+      uniform.setUniform4fv(this._vec4);
+  }
+
+  private initialize(settings: PointCloudDisplaySettings): void {
+    this._vec4[0] = "pixel" === settings.sizeMode ? settings.pixelSize : -settings.voxelScale;
+    this._vec4[1] = settings.minPixelsPerVoxel;
+    this._vec4[2] = settings.maxPixelsPerVoxel;
+    this._vec4[3] = "square" === settings.shape ? 1 : 0;
   }
 }
 
-export class RealityMeshUniforms {
-}
-
 export class RealityModelUniforms {
-  public readonly mesh = new RealityMeshUniforms();
+  // ###TODO when we need it: public readonly mesh = new RealityMeshUniforms();
   public readonly pointCloud = new PointCloudUniforms();
   private _overrideColorMix = 0.5;
+
+  public update(settings: RealityModelDisplaySettings): void {
+    this._overrideColorMix = settings.overrideColorRatio;
+    this.pointCloud.update(settings.pointCloud);
+  }
 
   public bindOverrideColorMix(uniform: UniformHandle): void {
     uniform.setUniform1f(this._overrideColorMix);
