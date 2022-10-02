@@ -93,7 +93,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 
   builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_pointCloudSettings", (uniform, params) => {
-      params.target.uniforms.pointCloud.bind(uniform);
+      params.target.uniforms.realityModel.pointCloud.bind(uniform);
     });
   });
 

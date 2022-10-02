@@ -12,7 +12,7 @@ import { Matrix4d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
 import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
@@ -230,13 +230,12 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   });
 }
 
-function addColorOverrideMix(frag: FragmentShaderBuilder) {
+export function addColorOverrideMix(frag: ShaderBuilder) {
   frag.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.asRealityMesh!.overrideColorMix);
+      params.target.uniforms.realityModel.bindOverrideColorMix(uniform);
     });
   });
-
 }
 
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
@@ -264,7 +263,7 @@ export function createRealityMeshHiliter(): ProgramBuilder {
 }
 
 /** @internal */
-export default function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
+export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
   vert.set(VertexShaderComponent.ComputePosition, computePosition);

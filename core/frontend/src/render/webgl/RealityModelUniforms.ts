@@ -29,3 +29,16 @@ export class PointCloudUniforms {
     uniform.setUniform4fv(this._vec4);
   }
 }
+
+export class RealityMeshUniforms {
+}
+
+export class RealityModelUniforms {
+  public readonly mesh = new RealityMeshUniforms();
+  public readonly pointCloud = new PointCloudUniforms();
+  private _overrideColorMix = 0.5;
+
+  public bindOverrideColorMix(uniform: UniformHandle): void {
+    uniform.setUniform1f(this._overrideColorMix);
+  }
+}
