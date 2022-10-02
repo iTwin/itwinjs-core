@@ -52,7 +52,7 @@ const computePosition = `
   // Convert voxel size in meters into pixel size, taking perspective into account.
   mat4 toView = u_viewportTransformation * MAT_MVP;
   float scale = length(toView[0].xyz);
-  gl_PointSize = clamp(u_pointCloud.x * scale / pos.w, u_pointCloudSettings.y, u_pointCloudSettings.z);
+  gl_PointSize = -u_pointCloudSettings.x * clamp(u_pointCloud.x * scale / pos.w, u_pointCloudSettings.y, u_pointCloudSettings.z);
   return pos;
 `;
 

@@ -18,11 +18,11 @@ import { UniformHandle } from "./UniformHandle";
  */
 export class PointCloudUniforms {
   // vec3 u_pointSize
-  // x = fixed point size in pixels, or <= 0 if using voxel size.
+  // x = fixed point size in pixels if > 0, else scale applied to voxel size.
   // y = minimum size in pixels if using voxel size.
   // z = maximum size in pixels if using voxel size
   // w = 1.0 if drawing square points instead of round.
-  private readonly _vec4 = new Float32Array([0, 2, 20, 0]);
+  private readonly _vec4 = new Float32Array([-1, 2, 20, 0]);
 
   public bind(uniform: UniformHandle): void {
     // ###TODO sync, desync
