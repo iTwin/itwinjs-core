@@ -39,7 +39,7 @@ const computePosition = `
   vec4 pos = MAT_MVP * rawPos;
   if (u_pointCloudSettings.x > 0.0) {
     // Size is specified in pixels.
-    gl_PointSize = u_pointCloud.x;
+    gl_PointSize = u_pointCloudSettings.x;
     return pos;
   }
 
