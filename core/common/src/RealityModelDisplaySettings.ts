@@ -19,12 +19,9 @@ export interface PointCloudDisplayProps {
   shape?: PointCloudShape;
 }
 
-export interface RealityMeshDisplayProps {
-}
-
 export interface RealityModelDisplayProps {
   pointCloud?: PointCloudDisplayProps;
-  mesh?: RealityMeshDisplayProps;
+  // ###TODO when we need it: mesh?: RealityMeshDisplayProps;
   overrideColorRatio?: number;
 }
 
@@ -35,6 +32,8 @@ export class PointCloudDisplaySettings {
   public readonly voxelScale: number;
   public readonly minPixelsPerVoxel: number;
   public readonly maxPixelsPerVoxel: number;
+
+  public static defaults = new PointCloudDisplaySettings();
 
   private constructor(props?: PointCloudDisplayProps) {
     this.shape = props?.shape ?? "round";
@@ -51,10 +50,11 @@ export class PointCloudDisplaySettings {
     return props ? new PointCloudDisplaySettings(props) : this.defaults;
   }
 
-  public static defaults = new PointCloudDisplaySettings();
-
-  public toJSON(): PointCloudDisplayProps {
+  public toJSON(): PointCloudDisplayProps | undefined {
     const defs = PointCloudDisplaySettings.defaults;
+    if (this.equals(defs))
+      return undefined;
+
     const props: PointCloudDisplayProps = { };
     if (this.shape !== defs.shape)
       props.shape = this.shape;
@@ -75,5 +75,63 @@ export class PointCloudDisplaySettings {
       props.maxPixelsPerVoxel = this.maxPixelsPerVoxel;
 
     return props;
+  }
+
+  public clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings {
+    return PointCloudDisplaySettings.fromJSON({
+      ...this.toJSON(),
+      ...changedProps,
+    });
+  }
+
+  public equals(other: PointCloudDisplaySettings): boolean {
+    return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
+      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel;
+  }
+}
+
+export class RealityModelDisplaySettings {
+  public readonly overrideColorRatio: number;
+  public readonly pointCloud: PointCloudDisplaySettings;
+
+  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults);
+
+  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings) {
+    this.overrideColorRatio = overrideColorRatio ?? 0.5;
+    this.pointCloud = pointCloud;
+  }
+
+  public static fromJSON(props?: RealityModelDisplayProps): RealityModelDisplaySettings {
+    if (!props)
+      return this.defaults;
+
+    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud));
+  }
+
+  public toJSON(): RealityModelDisplayProps | undefined {
+    const pointCloud = this.pointCloud.toJSON();
+    const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
+
+    if (undefined === pointCloud && undefined === overrideColorRatio)
+      return undefined;
+
+    const props: RealityModelDisplayProps = { };
+    if (undefined !== pointCloud)
+      props.pointCloud = pointCloud;
+
+    if (undefined !== overrideColorRatio)
+      props.overrideColorRatio = overrideColorRatio;
+
+    return props;
+  }
+
+  public equals(other: RealityModelDisplaySettings): boolean {
+    return this.overrideColorRatio === other.overrideColorRatio && this.pointCloud.equals(other.pointCloud);
+  }
+
+  public clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings {
+    const pointCloud = changedProps.pointCloud ? this.pointCloud.clone(changedProps.pointCloud) : this.pointCloud;
+    const colorRatio = changedProps.overrideColorRatio ?? this.overrideColorRatio;
+    return new RealityModelDisplaySettings(colorRatio, pointCloud);
   }
 }
