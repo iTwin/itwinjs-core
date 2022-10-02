@@ -17,23 +17,15 @@ import { UniformHandle } from "./UniformHandle";
  * @internal
  */
 export class PointCloudUniforms {
-  // vec4 u_pointSize
-  // x = mode (1=pixel, 0=voxel) ###TODO could just make size negative to indicate mode.
-  // y = size in pixels or voxel scale
-  // z = minimum size in pixels in voxel mode
-  // w = maximum size in pixels in voxel mode
-  private readonly _pointSize = new Float32Array([0, 1, 2, 20]);
+  // vec3 u_pointSize
+  // x = fixed point size in pixels, or <= 0 if using voxel size.
+  // y = minimum size in pixels if using voxel size.
+  // z = maximum size in pixels if using voxel size
+  // w = 1.0 if drawing square points instead of round.
+  private readonly _vec4 = new Float32Array([0, 2, 20, 0]);
 
-  // bool u_squarePoints - true if points should be drawn as squares instead of circles.
-  private _squarePoints = false;
-
-  public bindPointSize(uniform: UniformHandle): void {
+  public bind(uniform: UniformHandle): void {
     // ###TODO sync, desync
-    uniform.setUniform4fv(this._pointSize);
-  }
-
-  public bindPointShape(uniform: UniformHandle): void {
-    // ###TODO sync, desync
-    uniform.setUniform1i(this._squarePoints ? 1 : 0);
+    uniform.setUniform4fv(this._vec4);
   }
 }

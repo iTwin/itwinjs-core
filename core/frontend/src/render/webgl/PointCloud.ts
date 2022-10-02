@@ -29,7 +29,7 @@ export class PointCloudGeometry extends CachedGeometry {
   private readonly _colorHandle: BufferHandle | undefined = undefined;
   private readonly _hasFeatures: boolean;
 
-  private readonly _voxelSize: number;
+  public readonly voxelSize: number;
   public readonly colorIsBgr: boolean;
 
   public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
@@ -52,7 +52,7 @@ export class PointCloudGeometry extends CachedGeometry {
     this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false)]);
     this._vertexCount = pointCloud.positions.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
-    this._voxelSize = pointCloud.voxelSize;
+    this.voxelSize = pointCloud.voxelSize;
     this.colorIsBgr = "bgr" === pointCloud.colorFormat;
 
     if (undefined !== pointCloud.colors) {
@@ -87,8 +87,10 @@ export class PointCloudGeometry extends CachedGeometry {
     System.instance.context.drawArrays(GL.PrimitiveType.Points, 0, this._vertexCount);
     this.buffers.unbind();
   }
+
+  // ###TODO delete this.
   public override getLineWeight(_params: ShaderProgramParams): number {
     // If line weight < 0 it is real size in meters (voxel size).
-    return (this._voxelSize > 0) ? - this._voxelSize : 1;
+    return (this.voxelSize > 0) ? - this.voxelSize : 1;
   }
 }

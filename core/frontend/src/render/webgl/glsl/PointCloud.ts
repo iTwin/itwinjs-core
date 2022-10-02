@@ -19,13 +19,13 @@ import { addThematicDisplay } from "./Thematic";
 import { addTexture } from "./Surface";
 
 const computeColor = `
-  return u_colorBgr ? vec4(a_color.b, a_color.g, a_color.r, 1.0) : vec4(a_color, 1.0);
+  return u_pointCloud.y == 1.0 ? vec4(a_color.b, a_color.g, a_color.r, 1.0) : vec4(a_color, 1.0);
 `;
 
 const computeBaseColor = "return v_color;";
 
 const roundPointDiscard = `
-  if (u_squarePoints)
+  if (u_pointCloudSettings.w == 1.0)
     return false;
 
   vec2 pointXY = (2.0 * gl_PointCoord - 1.0);
@@ -37,9 +37,9 @@ const checkForClassifiedDiscard = "return baseColor.a == 0.0;";
 const computePosition = `
   gl_PointSize = 1.0;
   vec4 pos = MAT_MVP * rawPos;
-  if (u_pointSize.x == 1.0) {
+  if (u_pointCloudSettings.x > 0.0) {
     // Size is specified in pixels.
-    gl_PointSize = u_pointSize.y;
+    gl_PointSize = u_pointCloud.x;
     return pos;
   }
 
@@ -52,7 +52,7 @@ const computePosition = `
   // Convert voxel size in meters into pixel size, taking perspective into account.
   mat4 toView = u_viewportTransformation * MAT_MVP;
   float scale = length(toView[0].xyz);
-  gl_PointSize = clamp(u_pointSize.y * scale / pos.w, u_pointSize.z, u_pointSize.w);
+  gl_PointSize = clamp(u_pointCloud.x * scale / pos.w, u_pointCloudSettings.y, u_pointCloudSettings.z);
   return pos;
 `;
 
@@ -65,6 +65,8 @@ function createBuilder(): ProgramBuilder {
 
   return builder;
 }
+
+const scratchPointCloud = new Float32Array([0, 0]);
 
 /** @internal */
 export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
@@ -89,22 +91,18 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
     addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
   }
 
-  builder.vert.addUniform("u_pointSize", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_pointSize", (uniform, params) => {
-      params.target.uniforms.pointCloud.bindPointSize(uniform);
+  builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_pointCloudSettings", (uniform, params) => {
+      params.target.uniforms.pointCloud.bind(uniform);
     });
   });
 
-  builder.vert.addUniform("u_colorBgr", VariableType.Boolean, (prog) => {
-    prog.addGraphicUniform("u_colorBgr", (uniform, params) => {
-      assert(undefined !== params.geometry.asPointCloud);
-      uniform.setUniform1i(params.geometry.asPointCloud.colorIsBgr ? 1 : 0);
-    });
-  });
-
-  builder.frag.addUniform("u_squarePoints", VariableType.Boolean, (prog) => {
-    prog.addGraphicUniform("u_squarePoints", (uniform, params) => {
-      params.target.uniforms.pointCloud.bindPointShape(uniform);
+  builder.vert.addUniform("u_pointCloud", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_pointCloud", (uniform, params) => {
+      assert(params.geometry.asPointCloud !== undefined);
+      scratchPointCloud[0] = params.geometry.asPointCloud.voxelSize;
+      scratchPointCloud[1] = params.geometry.asPointCloud.colorIsBgr ? 1 : 0;
+      uniform.setUniform2fv(scratchPointCloud);
     });
   });
 
