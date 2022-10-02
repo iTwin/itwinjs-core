@@ -35,6 +35,7 @@ import { Cartographic } from "./geometry/Cartographic";
 import { IModel } from "./IModel";
 import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -54,6 +55,10 @@ export interface DisplayStyleSubCategoryProps extends SubCategoryAppearance.Prop
  */
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
   /** The Id of the model whose appearance is to be overridden. */
+  modelId: Id64String;
+}
+
+export interface DisplayStyleRealityModelDisplayProps extends RealityModelDisplayProps {
   modelId?: Id64String;
 }
 
@@ -128,6 +133,7 @@ export interface DisplayStyleSettingsProps {
    * See [[DisplayStyleSettings.overrideModelAppearance]].
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
+  realityModelDisplay?: DisplayStyleRealityModelDisplayProps[];
   /** See [[DisplayStyleSettings.clipStyle]]. */
   clipStyle?: ClipStyleProps;
   /** See [[DisplayStyleSettings.planarClipMasks]]. */
@@ -288,7 +294,7 @@ class ExcludedElements implements OrderedId64Iterable {
   }
 }
 
-type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
+type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "realityModelDisplay";
 
 /** An implementation of Map that is based on a JSON array, used for a display styles subcategory overrides, model appearance overrides,
  * and planar clip masks. Ensures:
@@ -411,6 +417,7 @@ export class DisplayStyleSettings {
   private _monochromeMode: MonochromeMode;
   private readonly _subCategoryOverrides: OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>;
   private readonly _modelAppearanceOverrides: OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>;
+  private readonly _realityModelDisplaySettings: OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>;
   private readonly _planarClipMasks: OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>;
   private readonly _excludedElements: ExcludedElements;
   private _backgroundMap: BackgroundMapSettings;
@@ -476,6 +483,7 @@ export class DisplayStyleSettings {
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
+  public readonly onRealityModelDisplaySettingsChanged = new BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
@@ -543,6 +551,12 @@ export class DisplayStyleSettings {
         const app = FeatureAppearance.fromJSON(props);
         return app.anyOverridden ? app : undefined;
       });
+
+    this._realityModelDisplaySettings = new OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>(this._json, "realityModelDisplay", this.onRealityModelDisplaySettingsChanged,
+      (props) => props.modelId,
+      (settings, modelId) => { return { ...settings.toJSON(), modelId }; },
+      (props) => RealityModelDisplaySettings.fromJSON(props),
+    );
 
     this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onPlanarClipMaskChanged,
       (props) => props.modelId,
@@ -794,6 +808,17 @@ export class DisplayStyleSettings {
     return this.modelAppearanceOverrides.size > 0;
   }
 
+  public getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined {
+    return this._realityModelDisplaySettings.get(modelId);
+  }
+
+  public setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void {
+    if (settings)
+      this._realityModelDisplaySettings.set(modelId, settings);
+    else
+      this._realityModelDisplaySettings.delete(modelId);
+  }
+
   /** The set of elements that will not be drawn by this display style.
    * @returns An iterable over the elements' Ids.
    */
@@ -994,6 +1019,11 @@ export class DisplayStyleSettings {
     if (overrides.modelOvr) {
       this._json.modelOvr = [...overrides.modelOvr];
       this._modelAppearanceOverrides.populate();
+    }
+
+    if (overrides.realityModelDisplay) {
+      this._json.realityModelDisplay = [...overrides.realityModelDisplay];
+      this._realityModelDisplaySettings.populate();
     }
 
     if (overrides.excludedElements)
