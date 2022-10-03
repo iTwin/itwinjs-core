@@ -101,19 +101,23 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   colorCb.addEventListener("click", () => {
     colorInput.disabled = !colorCb.checked;
-    colorRatio.input.disabled = !colorCb.checked;
+    colorRatio.slider.disabled = !colorCb.checked;
     updateColor();
   });
 
-  const colorRatio = createLabeledNumericInput({
-    parent: colorDiv, id: "rms_ratio", name: " Ratio:",
-    value: model.settings.overrideColorRatio,
-    parseAsFloat: true,
-    display: "inline", divDisplay: "inline",
-    min: 0, max: 1, step: 0.05,
-    handler: (value) => updateSettings({ overrideColorRatio: value }),
-    disabled: !colorCb.checked,
+  const colorRatio = createSlider({
+    parent: colorDiv, id: "rms_ratio", name: " Ratio ",
+    min: "0", max: "1", step: "0.05",
+    value: model.settings.overrideColorRatio.toString(),
+    verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const overrideColorRatio = Number.parseFloat(slider.value);
+      if (!Number.isNaN(overrideColorRatio))
+        updateSettings({ overrideColorRatio });
+    },
   });
+  colorRatio.div.style.display = "inline";
+  colorRatio.slider.disabled = !colorCb.checked;
 
   // Point shape
   const updatePointCloud = (props: PointCloudDisplayProps) => updateSettings(model.settings.clone({ pointCloud: props }));
