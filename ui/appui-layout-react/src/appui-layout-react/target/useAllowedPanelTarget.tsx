@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Widget
  */
-import React = require("react");
+import * as React from "react";
 import { DraggedWidgetIdContext } from "../base/DragManager";
 import { DraggedTabStateContext, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { PanelSide, PanelSideContext } from "../widget-panels/Panel";
