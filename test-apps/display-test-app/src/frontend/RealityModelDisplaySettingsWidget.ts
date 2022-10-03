@@ -72,7 +72,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   const element = document.createElement("div");
   element.className = "debugPanel";
-  element.style.height = "98%";
+  element.style.height = "96%";
   element.style.width = "98%";
   element.style.top = "0px";
   element.style.left = "0px";
@@ -184,7 +184,7 @@ class RealityModelSettingsWidget extends Window {
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0, width: 409, height: 409 });
+    super(Surface.instance, { top: 0, left: 0, width: 408, height: 204 });
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
