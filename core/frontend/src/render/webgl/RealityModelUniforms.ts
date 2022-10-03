@@ -23,10 +23,10 @@ export class PointCloudUniforms {
   private _settings = PointCloudDisplaySettings.defaults;
 
   // vec3 u_pointSize
-  // x = fixed point size in pixels if > 0, else scale applied to voxel size.
+  // x = fixed point size in pixels if > 0, else scale applied to voxel size (negated).
   // y = minimum size in pixels if using voxel size.
   // z = maximum size in pixels if using voxel size
-  // w = 1.0 if drawing square points instead of round.
+  // w = 1.0 if drawing square points, 0.0 if round.
   private readonly _vec4 = new Float32Array(4);
 
   public constructor() {
@@ -55,6 +55,13 @@ export class PointCloudUniforms {
   }
 }
 
+/** Uniforms affecting how reality models are drawn.
+ * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing
+ * a reality model will also specify the settings for drawing that reality model.
+ * This permits the same reality model graphics to be rendered differently in different viewports.
+ * In future these uniforms may include additional settings for reality meshes - currently only the override color ratio applies to them.
+ * @internal
+ */
 export class RealityModelUniforms {
   // ###TODO when we need it: public readonly mesh = new RealityMeshUniforms();
   public readonly pointCloud = new PointCloudUniforms();

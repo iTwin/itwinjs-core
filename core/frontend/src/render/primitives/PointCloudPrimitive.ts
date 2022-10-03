@@ -7,7 +7,6 @@
  */
 
 import { FeatureIndex, QParams3d } from "@itwin/core-common";
-import { Mesh } from "./mesh/MeshPrimitives";
 
 export interface PointCloudArgs {
   positions: Uint8Array | Uint16Array;

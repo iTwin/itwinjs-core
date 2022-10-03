@@ -18,12 +18,14 @@ import { addViewportTransformation } from "./Viewport";
 import { addThematicDisplay } from "./Thematic";
 import { addTexture } from "./Surface";
 
+// Revert components if color format is BGR instead of RGB.
 const computeColor = `
   return u_pointCloud.y == 1.0 ? vec4(a_color.b, a_color.g, a_color.r, 1.0) : vec4(a_color, 1.0);
 `;
 
 const computeBaseColor = "return v_color;";
 
+// Round the point unless drawing square points.
 const roundPointDiscard = `
   if (u_pointCloudSettings.w == 1.0)
     return false;
@@ -49,7 +51,7 @@ const computePosition = `
     return pos;
   }
 
-  // Convert voxel size in meters into pixel size, taking perspective into account.
+  // Convert voxel size in meters into pixel size, then compute pixel size, taking perspective into account.
   mat4 toView = u_viewportTransformation * MAT_MVP;
   float scale = length(toView[0].xyz);
   gl_PointSize = -u_pointCloudSettings.x * clamp(u_pointCloud.x * scale / pos.w, u_pointCloudSettings.y, u_pointCloudSettings.z);
@@ -91,12 +93,14 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
     addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
   }
 
+  // Uniforms based on the PointCloudDisplaySettings.
   builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_pointCloudSettings", (uniform, params) => {
       params.target.uniforms.realityModel.pointCloud.bind(uniform);
     });
   });
 
+  // Uniforms based on the PointCloudGeometry.
   builder.vert.addUniform("u_pointCloud", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_pointCloud", (uniform, params) => {
       assert(params.geometry.asPointCloud !== undefined);

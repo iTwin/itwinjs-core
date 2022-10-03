@@ -37,7 +37,7 @@ import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCl
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import {
-  addColorOverrideMix, createRealityMeshBuilder, createClassifierRealityMeshHiliter, createRealityMeshHiliter,
+  addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
 } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
@@ -45,7 +45,7 @@ import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder, VariableType, VertexShaderComponent } from "./ShaderBuilder";
+import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";

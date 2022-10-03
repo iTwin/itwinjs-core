@@ -12,7 +12,7 @@ import { Matrix4d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
 import { Matrix4 } from "../Matrix";
 import { TextureUnit } from "../RenderFlags";
-import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
 import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
@@ -230,6 +230,7 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   });
 }
 
+/** @internal */
 export function addColorOverrideMix(frag: ShaderBuilder) {
   frag.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {

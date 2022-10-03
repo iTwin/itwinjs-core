@@ -578,7 +578,7 @@ export namespace RealityModelTileTree {
 
       this._iModel = props.iModel;
       this._source = props.source;
-      this._getDisplaySettings = props.getDisplaySettings;
+      this._getDisplaySettings = () => props.getDisplaySettings();
 
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
