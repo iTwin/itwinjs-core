@@ -9,7 +9,7 @@ import {
   ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput,
+  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -109,13 +109,11 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     parent: colorDiv, id: "rms_ratio", name: " Ratio:",
     value: model.settings.overrideColorRatio,
     parseAsFloat: true,
-    display: "inline",
+    display: "inline", divDisplay: "inline",
     min: 0, max: 1, step: 0.05,
     handler: (value) => updateSettings({ overrideColorRatio: value }),
     disabled: !colorCb.checked,
   });
-
-  colorRatio.div.style.display = "inline";
 
   // Point shape
   const updatePointCloud = (props: PointCloudDisplayProps) => updateSettings(model.settings.clone({ pointCloud: props }));
@@ -125,6 +123,66 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     isChecked: model.settings.pointCloud.shape === "square",
     handler: (cb) => updatePointCloud({ shape: cb.checked ? "square" : "round" }),
   }).checkbox;
+
+  // Point size mode
+  const setSizeMode = (mode: string) => {
+    const isPixel = mode === "pixel";
+    updatePointCloud({ sizeMode: isPixel ? "pixel" : "voxel" });
+    pixelSizeDiv.style.display = isPixel ? "" : "none";
+    voxelSizeDiv.style.display = isPixel ? "none" : "";
+  };
+
+  const sizeMode = createRadioBox({
+    id: "rms_sizeMode",
+    defaultValue: model.settings.pointCloud.sizeMode,
+    entries: [
+      { value: "voxel", label: "Voxel" },
+      { value: "pixel", label: "Pixel" },
+    ],
+    parent: element,
+    handler: (value) => setSizeMode(value),
+  });
+
+  // Pixel size
+  const pixelSizeDiv = document.createElement("div");
+  element.appendChild(pixelSizeDiv);
+  const pixelSizeInput = createLabeledNumericInput({
+    parent: pixelSizeDiv, id: "rms_pixelSize", name: "Pixel size:",
+    value: model.settings.pointCloud.pixelSize,
+    display: "inline",
+    min: 1, max: 64, step: 1,
+    handler: (pixelSize) => updatePointCloud({ pixelSize }),
+  }).input;
+
+  // Voxel size
+  const voxelSizeDiv = document.createElement("div");
+  element.appendChild(voxelSizeDiv);
+  createLabeledNumericInput({
+    parent: voxelSizeDiv, id: "rms_voxelScale", name: "Scale:",
+    value: model.settings.pointCloud.voxelScale,
+    display: "inline", divDisplay: "inline",
+    min: 0.1, max: 20, step: 0.25,
+    parseAsFloat: true,
+    handler: (voxelScale) => updatePointCloud({ voxelScale }),
+  });
+
+  createLabeledNumericInput({
+    parent: voxelSizeDiv, id: "rms_voxelMin", name: " Min:",
+    value: model.settings.pointCloud.minPixelsPerVoxel,
+    display: "inline", divDisplay: "inline",
+    min: 1, max: 100, step: 1,
+    handler: (minPixelsPerVoxel) => updatePointCloud({ minPixelsPerVoxel }),
+  });
+
+  createLabeledNumericInput({
+    parent: voxelSizeDiv, id: "rms_voxelMax", name: " Max:",
+    value: model.settings.pointCloud.maxPixelsPerVoxel,
+    display: "inline", divDisplay: "inline",
+    min: 1, max: 100, step: 1,
+    handler: (maxPixelsPerVoxel) => updatePointCloud({ maxPixelsPerVoxel }),
+  });
+
+  setSizeMode(model.settings.pointCloud.sizeMode);
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
@@ -140,7 +198,7 @@ class RealityModelSettingsWidget extends Window {
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
     this.isPinned = true;
-    this.title = `${model.name} display settings`;
+    this.title = model.name;
 
     createRealityModelSettingsPanel(model, this.contentDiv);
     this.container.style.display = "flex";
