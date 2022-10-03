@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-react",
+      "comment": "Unpin classnames package, fix invalid use of classnames",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-react"
+}
