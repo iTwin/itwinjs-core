@@ -5,13 +5,14 @@
 import * as React from "react";
 import classnames from "classnames";
 import Component, {
-  components, ControlProps, IndicatorProps, MenuProps, MultiValueProps, OptionProps, Props, ValueContainerProps,
+  components, ControlProps, IndicatorProps, MenuProps, MultiValueProps, OptionProps, OptionTypeBase, Props, ValueContainerProps,
 } from "react-select";
 import { SvgCaretDown, SvgCheckmarkSmall, SvgCloseSmall } from "@itwin/itwinui-icons-react";
 
 /** @internal */
-export function MultiTagSelect<Option>(props: Props<Option>) {
-  return <Component
+export function MultiTagSelect<Option extends OptionTypeBase>(props: Props<Option>) {
+  const ActualComponent = Component<Option>;
+  return <ActualComponent
     {...props}
     styles={{
       control: () => ({display: "grid", gridTemplateColumns: "auto auto", height: "41px", padding: "0 12px"}),
@@ -35,19 +36,19 @@ export function MultiTagSelect<Option>(props: Props<Option>) {
   />;
 }
 
-function TagSelectControl<Option>({children, ...props}: ControlProps<Option>) {
+function TagSelectControl<Option extends OptionTypeBase>({children, ...props}: ControlProps<Option>) {
   return <components.Control {...props} className="iui-select-button">
     {children}
   </components.Control>;
 }
 
-function TagSelectMenu<Option>({children, ...props}: MenuProps<Option>) {
+function TagSelectMenu<Option extends OptionTypeBase>({children, ...props}: MenuProps<Option>) {
   return <components.Menu {...props} className="iui-menu">
     {children}
   </components.Menu>;
 }
 
-function TagSelectOption<Option>({children: _, ...props}: OptionProps<Option>) {
+function TagSelectOption<Option extends OptionTypeBase>({children: _, ...props}: OptionProps<Option>) {
   const className = classnames("iui-menu-item", {
     "iui-focused": props.isFocused,
     "iui-active": props.isSelected,
@@ -59,13 +60,13 @@ function TagSelectOption<Option>({children: _, ...props}: OptionProps<Option>) {
   </components.Option>;
 }
 
-function TagSelectValueContainer<Option>({children, ...props}: ValueContainerProps<Option>) {
+function TagSelectValueContainer<Option extends OptionTypeBase>({children, ...props}: ValueContainerProps<Option>) {
   return <components.ValueContainer {...props} className="iui-tag-container">
     {children}
   </components.ValueContainer>;
 }
 
-function TagMultiValue<Option>({children, ...props}: MultiValueProps<Option>) {
+function TagMultiValue<Option extends OptionTypeBase>({children, ...props}: MultiValueProps<Option>) {
   return <components.MultiValue
     {...props}
     components={{
@@ -96,7 +97,7 @@ function TagRemove(props: any) {
   </components.MultiValueRemove>;
 }
 
-function TagSelectDropdownIndicator<Option>({children: _, ...props}: IndicatorProps<Option>) {
+function TagSelectDropdownIndicator<Option extends OptionTypeBase>({children: _, ...props}: IndicatorProps<Option>) {
   return <components.DropdownIndicator {...props} >
     <span data-testid="multi-tag-select-dropdownIndicator" className="iui-end-icon iui-actionable" style={{padding: 0}}>
       <SvgCaretDown />
@@ -104,7 +105,7 @@ function TagSelectDropdownIndicator<Option>({children: _, ...props}: IndicatorPr
   </components.DropdownIndicator>;
 }
 
-function TagSelectClearIndicator<Option>({children: _, ...props}: IndicatorProps<Option>) {
+function TagSelectClearIndicator<Option extends OptionTypeBase>({children: _, ...props}: IndicatorProps<Option>) {
   return <components.ClearIndicator {...props} >
     <span data-testid="multi-tag-select-clearIndicator" className="iui-end-icon iui-actionable" style={{padding: 0}}>
       <SvgCloseSmall aria-hidden/>

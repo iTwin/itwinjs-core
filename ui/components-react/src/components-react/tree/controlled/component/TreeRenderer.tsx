@@ -419,7 +419,7 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
       scrollToActive.current = false;
       const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
       // istanbul ignore else
-      if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
+      if (scrollTo.length > 0 && (scrollTo[0].scrollIntoView !== undefined))
         scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
     }, [highlightableTreeProps, treeRef]);
 

@@ -622,7 +622,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public areFeatureOverridesActive(vp: Viewport): boolean {
     // Check all the emphasize possibilities
     const emphasizeElementsProvider = vp.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
-    if (undefined !== emphasizeElementsProvider && emphasizeElementsProvider.isActive)
+    if (undefined !== emphasizeElementsProvider && emphasizeElementsProvider.isActive(vp))
       return true;
 
     const modelOverrideProvider = vp.findFeatureOverrideProviderOfType<ModelOverrideProvider>(ModelOverrideProvider);

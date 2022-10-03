@@ -10,6 +10,7 @@ import "./ToolsArea.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@itwin/core-react";
+import { ToolbarButtonProps } from "./tools/button/Button";
 
 /** Properties of [[ToolsArea]] component.
  * @internal
@@ -36,7 +37,7 @@ export interface ToolsAreaProps extends CommonProps, NoChildrenProps {
  */
 export class ToolsArea extends React.PureComponent<ToolsAreaProps> {
   public override render() {
-    const button = React.isValidElement(this.props.button) ? React.cloneElement(this.props.button, { small: true }) : null;  // ensure button is small
+    const button = React.isValidElement<ToolbarButtonProps>(this.props.button) ? React.cloneElement(this.props.button, { small: true }) : null;  // ensure button is small
     const className = classnames(
       "nz-tools-widget",
       this.props.className);

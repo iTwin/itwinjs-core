@@ -10,7 +10,7 @@ import "./NavigationArea.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, NoChildrenProps } from "@itwin/core-react";
-import { ToolbarPanelAlignment } from "../toolbar/Toolbar";
+import { ToolbarPanelAlignment, ToolbarProps } from "../toolbar/Toolbar";
 
 /** Properties of [[NavigationArea]] component.
  * @internal
@@ -40,8 +40,8 @@ export const NavigationArea = React.memo<NavigationAreaProps>(function Navigatio
     "nz-widget-navigationArea",
     props.className);
 
-  const horizontalToolbar = React.isValidElement(props.horizontalToolbar) ? React.cloneElement(props.horizontalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
-  const verticalToolbar = React.isValidElement(props.verticalToolbar) ? React.cloneElement(props.verticalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
+  const horizontalToolbar = React.isValidElement<ToolbarProps>(props.horizontalToolbar) ? React.cloneElement(props.horizontalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
+  const verticalToolbar = React.isValidElement<ToolbarProps>(props.verticalToolbar) ? React.cloneElement(props.verticalToolbar, { panelAlignment: ToolbarPanelAlignment.End }) : null;  // ensure proper panel alignment
   const navigationAidArea = props.navigationAid ? (
     <div className="nz-navigation-aid-container"
       onMouseEnter={props.onMouseEnter}
