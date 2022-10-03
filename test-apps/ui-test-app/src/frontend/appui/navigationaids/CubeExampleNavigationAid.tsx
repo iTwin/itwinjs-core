@@ -77,7 +77,7 @@ class CubeExampleNavigationAid extends React.Component {
   // Colour adjustment function
   // Nicked from http://stackoverflow.com/questions/5560248
   private shadeColor(color: string, percent: number) {
-    color = color.substr(1);
+    color = color.substring(1);
     const num = parseInt(color, 16),
       amt = Math.round(2.55 * percent),
       R = (num >> 16) + amt,

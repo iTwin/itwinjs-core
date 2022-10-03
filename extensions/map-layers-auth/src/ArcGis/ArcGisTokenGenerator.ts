@@ -82,7 +82,7 @@ export class ArcGisTokenGenerator {
     const restApiIdx = lowerUrl.indexOf(ArcGisTokenGenerator.restApiPath);
     if (restApiIdx === -1)
       return undefined;
-    const infoUrl = lowerUrl.substr(0, restApiIdx + ArcGisTokenGenerator.restApiPath.length) + ArcGisTokenGenerator.restApiInfoPath;
+    const infoUrl = lowerUrl.substring(0, restApiIdx + ArcGisTokenGenerator.restApiPath.length) + ArcGisTokenGenerator.restApiInfoPath;
 
     let tokenServicesUrl: string | undefined;
     try {

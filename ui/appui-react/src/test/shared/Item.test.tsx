@@ -26,7 +26,7 @@ describe("Item", () => {
     const commandItem = new CommandItemDef({
       iconSpec: "icon-placeholder",
     });
-    expect(commandItem.id.substr(0, CommandItemDef.commandIdPrefix.length)).to.eq(CommandItemDef.commandIdPrefix);
+    expect(commandItem.id.substring(0, CommandItemDef.commandIdPrefix.length)).to.eq(CommandItemDef.commandIdPrefix);
     commandItem.execute();  // Just for 'else' coverage
   });
 

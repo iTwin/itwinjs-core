@@ -35,7 +35,7 @@ export class BooleanTypeConverter extends TypeConverter {
     BooleanTypeConverter.getLocalizedTrueFalse();
 
     if (value === BooleanTypeConverter.sl10nTrue || value === BooleanTypeConverter.sl10nFalse)
-      return value as string;
+      return value;
 
     return value ? BooleanTypeConverter.sl10nTrue : BooleanTypeConverter.sl10nFalse;
   }

@@ -648,7 +648,7 @@ describe("Matrix3d.ViewConstructions", () => {
       const columnY = matrix.columnY();
       const columnZ = matrix.columnZ();
       const origin = Point3d.create(4, 3, 0.1231);
-      const w = 0.9213123678687689769;
+      const w = 0.921312367868769;
       for (const v of vectors) {
         const resultBW = Matrix3d.xyzPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z, w);
         const resultAW = Point3d.createScale(origin, w).plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);

@@ -1361,7 +1361,7 @@ abstract class AnimatedHandle extends ViewingToolHandle {
   protected getElapsedTime(): number {
     const prev = this._lastMotionTime;
     this._lastMotionTime = Date.now();
-    return Geometry.clamp(this._lastMotionTime - prev, 0, 1000) / 1000.;
+    return Geometry.clamp(this._lastMotionTime - prev, 0, 1000) / 1000;
   }
   // called on mouse motion
   public doManipulation(ev: BeButtonEvent): boolean {

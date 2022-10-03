@@ -20,7 +20,7 @@ export interface BackstageItemsChangedArgs {
 
 type InstanceOrArray<T> = T | ReadonlyArray<T>;
 
-const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {
+const isInstance = <T>(args: InstanceOrArray<T>): args is T => {
   return !Array.isArray(args);
 };
 

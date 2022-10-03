@@ -355,7 +355,7 @@ describe("ECSqlStatement", () => {
         const part = [0, 4, 6, 8, 10, 16];
         for (let z = 0; z < part.length - 1; z++) {
           guidArray.subarray(part[z], part[z + 1]).forEach((c) => {
-            guidStr += (`00${c.toString(16)}`).substr(-2);
+            guidStr += (`00${c.toString(16)}`).slice(-2);
           });
           if (z < part.length - 2)
             guidStr += "-";
@@ -370,7 +370,7 @@ describe("ECSqlStatement", () => {
         const t = v.split("-").join("");
         let i = 0;
         for (let z = 0; z < 32; z += 2) {
-          ar[i++] = parseInt(t.substr(z, 2), 16);
+          ar[i++] = parseInt(t.substring(z, z + 2), 16);
         }
         return ar;
       };
@@ -859,6 +859,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, "3");
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeUnsafeNumber: number = 12312312312312323654; // too large for int64, but fits into uint64
       assert.isFalse(Number.isSafeInteger(largeUnsafeNumber));
       const largeUnsafeNumberStr: string = "12312312312312323654";
@@ -973,6 +974,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeUnsafeNumberHexStr);
       }), 1);
 
+      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeNegUnsafeNumber: number = -123123123123123236;
       assert.isFalse(Number.isSafeInteger(largeNegUnsafeNumber));
       const largeNegUnsafeNumberStr: string = "-123123123123123236";

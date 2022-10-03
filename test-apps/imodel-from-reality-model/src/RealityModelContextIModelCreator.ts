@@ -124,7 +124,7 @@ export class RealityModelContextIModelCreator {
 
     if (this.url.endsWith("_AppData.json")) {
       const nameIndex = this.url.lastIndexOf("TileSets");
-      const prefix = this.url.substr(0, nameIndex);
+      const prefix = this.url.substring(0, nameIndex);
       let worldToEcef: Transform | undefined;
       for (const modelValue of Object.values(json.models)) {
         const model = modelValue as any;

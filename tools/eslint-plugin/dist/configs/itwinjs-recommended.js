@@ -129,6 +129,20 @@ module.exports = {
         "selector": "enumMember",
         "format": null,
         "leadingUnderscore": "allow"
+      },
+      {
+        "selector": [
+          "classProperty",
+          "objectLiteralProperty",
+          "typeProperty",
+          "classMethod",
+          "objectLiteralMethod",
+          "typeMethod",
+          "accessor",
+          "enumMember"
+        ],
+        "format": null,
+        "modifiers": ["requiresQuotes"]
       }
     ],
     "@typescript-eslint/no-empty-function": "off",

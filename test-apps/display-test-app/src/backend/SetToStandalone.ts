@@ -16,7 +16,7 @@ function indent() {
 }
 
 function outdent() {
-  prefix = prefix.substr(2);
+  prefix = prefix.substring(2);
 }
 
 function log(msg: string) {

@@ -21,7 +21,7 @@ export interface AliCloudStorageServiceCredentials {
 }
 
 declare class OSS {
-  constructor(params: AliCloudStorageServiceCredentials)
+  constructor(params: AliCloudStorageServiceCredentials);
   public useBucket(name: string): void;
   public signatureUrl(name: string, policy: OSS.SignatureUrlOptions): string;
   public list(params: { marker: string, "max-keys": number }, arg2: {}): Promise<{ objects?: Array<{ name: string }> }>;

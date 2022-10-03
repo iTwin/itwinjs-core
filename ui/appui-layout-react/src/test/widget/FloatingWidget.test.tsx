@@ -18,7 +18,7 @@ describe("FloatingWidget", () => {
         state={state}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -35,7 +35,7 @@ describe("FloatingWidget", () => {
         state={state}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -52,7 +52,7 @@ describe("FloatingWidget", () => {
         state={state}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -69,7 +69,7 @@ describe("FloatingWidget", () => {
         state={state}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -86,7 +86,7 @@ describe("FloatingWidget", () => {
         state={state}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -111,7 +111,7 @@ describe("FloatingWidget", () => {
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.w1!}
+          floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
       </TestNineZoneProvider>,
@@ -138,7 +138,7 @@ describe("FloatingWidget", () => {
         dispatch={dispatch}
       >
         <FloatingWidget
-          floatingWidget={state.floatingWidgets.byId.toolSettings!}
+          floatingWidget={state.floatingWidgets.byId.toolSettings}
           widget={state.widgets.toolSettings}
         />
       </TestNineZoneProvider>,

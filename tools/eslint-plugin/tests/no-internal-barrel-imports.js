@@ -19,7 +19,7 @@ function dedent(strings) {
   const leftPadding = codeLines[1].match(/[\t ]+/)[0];
   return codeLines
     .slice(1, -1)
-    .map((l) => l.substr(leftPadding.length))
+    .map((l) => l.substring(leftPadding.length))
     .join("\n");
 }
 

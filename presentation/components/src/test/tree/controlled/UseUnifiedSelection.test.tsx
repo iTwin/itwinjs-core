@@ -28,7 +28,7 @@ import { UnifiedSelectionTreeEventHandlerParams } from "../../../presentation-co
 import { PRESENTATION_TREE_NODE_KEY } from "../../../presentation-components/tree/Utils";
 import { createRandomTreeNodeItem } from "../../_helpers/UiComponents";
 
-const awaitableObservable = <T extends unknown>(input: ObservableInput<T>) => {
+const awaitableObservable = <T,>(input: ObservableInput<T>) => {
   const promise = new ResolvablePromise<void>();
   const observable = from(input).pipe(finalize(async () => promise.resolve()));
   return { observable, waitForCompletion: async () => promise };

@@ -385,7 +385,7 @@ export class ShaderProgram implements WebGLDisposable {
         if (line.indexOf("Varyings") >= 0) { // save off varyings in either case
           while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
             ++ndx;
-            line = lines[ndx].substring(6).trimLeft();
+            line = lines[ndx].substring(6).trimStart();
             varyings.push(line.substring(0, line.indexOf("=")));
           }
         }
@@ -394,7 +394,7 @@ export class ShaderProgram implements WebGLDisposable {
           if (line.indexOf("Attributes") >= 0) { // save off attributes
             while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
               ++ndx;
-              line = lines[ndx].substring(6).trimLeft();
+              line = lines[ndx].substring(6).trimStart();
               attrs.push(line.substring(0, line.indexOf("=")));
             }
           } else if (line.indexOf("static float4 gl_Position") >= 0) {
@@ -493,7 +493,7 @@ export class ShaderProgram implements WebGLDisposable {
           } else if (line.indexOf("gl_FragCoord") >= 0) {
             haveGLFragCoord = true;
           } else if ((tNdx = line.indexOf("out_FragColor")) >= 0) {
-            const c = line.substr(tNdx + 13, 1);
+            const c = line.substring(tNdx + 13, tNdx + 13 + 1);
             if (c === " " || c === "=")
               haveGLFragColorOnly = true;
             else {

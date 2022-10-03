@@ -155,7 +155,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       const indexSeparator = value.search(keyinSeparator);
       // istanbul ignore else
       if (indexSeparator)
-        return value.substr(0, indexSeparator);
+        return value.substring(0, indexSeparator);
     }
     // istanbul ignore next
     return undefined;

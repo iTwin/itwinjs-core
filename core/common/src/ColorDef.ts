@@ -175,10 +175,10 @@ export class ColorDef {
       const hasPercent = (str: string) => str[str.length - 1] === "%";
       const floatOrPercent = (str: string) => {
         const v = parseFloat(str);
-        return 255 * Geometry.clamp(hasPercent(str) ? v / 100. : v, 0, 1);
+        return 255 * Geometry.clamp(hasPercent(str) ? v / 100 : v, 0, 1);
       };
       const intOrPercent = (str: string) => {
-        const v = hasPercent(str) ? (parseFloat(str) / 100.) * 255 : parseInt(str, 10);
+        const v = hasPercent(str) ? (parseFloat(str) / 100) * 255 : parseInt(str, 10);
         return Geometry.clamp(v, 0, 255);
       };
 

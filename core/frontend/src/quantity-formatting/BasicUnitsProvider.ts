@@ -150,14 +150,14 @@ const UNIT_DATA: UnitDefinition[] = [
   // Angles ( base unit radian )
   { name: "Units.RAD", phenomenon: "Units.ANGLE", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "rad" },
   // 1 rad = 180.0/PI °
-  { name: "Units.ARC_DEG", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "°" },
-  { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.14159265358979323846264338327950, offset: 0.0 }, displayLabel: "'" },
-  { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: '"' },
-  { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.1415926535897932384626433832795, offset: 0.0 }, displayLabel: "grad" },
+  { name: "Units.ARC_DEG", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 180.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "°" },
+  { name: "Units.ARC_MINUTE", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 10800.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "'" },
+  { name: "Units.ARC_SECOND", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 648000.0, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: '"' },
+  { name: "Units.GRAD", phenomenon: "Units.ANGLE", system: "Units.METRIC", conversion: { numerator: 200, denominator: 3.141592653589793, offset: 0.0 }, displayLabel: "grad" },
   // Time ( base unit second )
   { name: "Units.S", phenomenon: "Units.TIME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "s" },
   { name: "Units.MIN", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 60.0, offset: 0.0 }, displayLabel: "min" },
-  { name: "Units.HR", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 3600.0, offset: 0.0 }, displayLabel: "h"},
+  { name: "Units.HR", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 3600.0, offset: 0.0 }, displayLabel: "h" },
   { name: "Units.DAY", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 86400.0, offset: 0.0 }, displayLabel: "days" },
   { name: "Units.WEEK", phenomenon: "Units.TIME", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 604800.0, offset: 0.0 }, displayLabel: "weeks" },
   // 1 sec = 1/31536000.0 yr

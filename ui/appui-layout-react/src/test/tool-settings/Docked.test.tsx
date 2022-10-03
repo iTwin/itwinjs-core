@@ -169,7 +169,7 @@ describe("DockedToolSettings", () => {
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element.classList.contains("nz-toolSettings-docked")) {
-        resizeObserver = this;
+        resizeObserver = this; // eslint-disable-line @typescript-eslint/no-this-alias
         target = element;
       }
     });
@@ -217,7 +217,7 @@ describe("DockedToolSettings", () => {
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
       if (element instanceof HTMLElement && element.classList.contains("nz-toolSettings-setting") && queryByText(element, "Entry 1")) {
-        resizeObserver = this;
+        resizeObserver = this; // eslint-disable-line @typescript-eslint/no-this-alias
         target = element;
       }
     });

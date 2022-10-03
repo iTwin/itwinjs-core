@@ -16,19 +16,19 @@ import { AngleProps, BeJSONFunctions, Geometry, TrigValues } from "../Geometry";
  */
 export class Angle implements BeJSONFunctions {
   /** maximal accuracy value of pi/4 ( 45 degrees), in radians */
-  public static readonly piOver4Radians = 7.85398163397448280000e-001;
+  public static readonly piOver4Radians = 7.853981633974483e-001;
   /** maximal accuracy value of pi/2 ( 90 degrees), in radians */
-  public static readonly piOver2Radians = 1.57079632679489660000e+000;
+  public static readonly piOver2Radians = 1.5707963267948966e+000;
   /** maximal accuracy value of pi ( 180 degrees), in radians */
-  public static readonly piRadians = 3.14159265358979310000e+000;
+  public static readonly piRadians = 3.141592653589793e+000;
   /** maximal accuracy value of 2*pi (360 degrees), in radians */
-  public static readonly pi2Radians = 6.28318530717958620000e+000;
+  public static readonly pi2Radians = 6.283185307179586e+000;
   /** scale factor for converting radians to degrees */
   public static readonly degreesPerRadian = (45.0 / Angle.piOver4Radians);
   /** scale factor for converting degrees to radians */
   public static readonly radiansPerDegree = (Angle.piOver4Radians / 45.0);
   /** maximal accuracy value of pi/12 ( 15 degrees), in radians */
-  public static readonly piOver12Radians = 0.26179938779914943653855361527329;
+  public static readonly piOver12Radians = 0.26179938779914946;
   private _radians: number;
   private _degrees?: number;
   private constructor(radians = 0, degrees?: number) { this._radians = radians; this._degrees = degrees; }

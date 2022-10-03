@@ -115,7 +115,7 @@ export class ElectronHost {
    */
   private static parseElectronUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
-    let assetPath = requestedUrl.substr(this._electronFrontend.length);
+    let assetPath = requestedUrl.substring(this._electronFrontend.length);
     if (assetPath.length === 0)
       assetPath = "index.html";
     assetPath = path.normalize(`${this.webResourcesPath}/${assetPath}`);

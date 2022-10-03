@@ -55,7 +55,7 @@ describe("<NineZone />", () => {
     let measurer: Element | undefined;
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
-      resizeObserver = this;
+      resizeObserver = this; // eslint-disable-line @typescript-eslint/no-this-alias
       measurer = element;
     });
 
@@ -87,7 +87,7 @@ describe("<NineZone />", () => {
     let measurer: Element | undefined;
     sinon.stub(ResizeObserverModule, "ResizeObserver").callsFake((callback) => new ResizeObserverMock(callback));
     sinon.stub(ResizeObserverMock.prototype, "observe").callsFake(function (this: ResizeObserverMock, element: Element) {
-      resizeObserver = this;
+      resizeObserver = this; // eslint-disable-line @typescript-eslint/no-this-alias
       measurer = element;
     });
 

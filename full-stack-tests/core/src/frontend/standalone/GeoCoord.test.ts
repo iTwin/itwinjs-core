@@ -185,7 +185,7 @@ describe("GeoCoord", () => {
         id : "GEOID"}});
 
     const testPoint: XYZProps[] = [];
-    testPoint.push({x: 170370.71800000000000, y: 11572.40500000000000, z: 0.0});
+    testPoint.push({x: 170370.718, y: 11572.405, z: 0.0});
 
     expect(japanConverter !== undefined).to.be.true;
     const response = await japanConverter!.getGeoCoordinatesFromIModelCoordinates(testPoint);

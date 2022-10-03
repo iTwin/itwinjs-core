@@ -16,7 +16,7 @@ import { isPromiseLike, useEffectSkipFirst } from "@itwin/core-react";
  * Custom hook for working with possibly async values.
  * @public
  */
-export const useAsyncValue = <T extends any>(value: T | PromiseLike<T>): T | undefined => {
+export const useAsyncValue = <T,>(value: T | PromiseLike<T>): T | undefined => {
   const cancelled = React.useMemo(() => new Subject<void>(), []);
   // cancel any pending promises on unmount
   React.useEffect(() => () => cancelled.next(), [cancelled]);

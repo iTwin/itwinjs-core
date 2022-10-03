@@ -51,9 +51,9 @@ export type TilePatch = PlanarTilePatch | EllipsoidPatch;
  */
 export abstract class MapTileProjection {
   /** The extents of the volume of space associated with the projected [[MapTile]]. */
-  abstract get localRange(): Range3d;
+  public abstract get localRange(): Range3d;
   /** @alpha */
-  abstract get transformFromLocal(): Transform;
+  public abstract get transformFromLocal(): Transform;
 
   /** Given parametric coordinates in [0, 1] within the tile's rectangular region, and an elevation above the Earth,
    * compute the 3d position in space.
@@ -572,7 +572,7 @@ export class MapTile extends RealityTile {
       this._heightRange.high = Math.min(this.heightRange!.high, maxHeight);
     }
 
-    if (this.rangeCorners &&  this._patch instanceof PlanarTilePatch)
+    if (this.rangeCorners && this._patch instanceof PlanarTilePatch)
       this._patch.getRangeCorners(this.heightRange!, this.rangeCorners);
   }
 
@@ -719,7 +719,7 @@ export class MapTile extends RealityTile {
     this._mesh = content.terrain?.mesh;
     if (this.mapTree.produceGeometry) {
       const iModelTransform = this.mapTree.iModelTransform;
-      const geometryTransform =  content.terrain?.renderGeometry?.transform;
+      const geometryTransform = content.terrain?.renderGeometry?.transform;
       const transform = geometryTransform ? iModelTransform.multiplyTransformTransform(geometryTransform) : iModelTransform;
       const polyface = content.terrain?.mesh ? RealityMeshParams.toPolyface(content.terrain.mesh, { transform }) : undefined;
       this._geometry = polyface ? { polyfaces: [polyface] } : undefined;

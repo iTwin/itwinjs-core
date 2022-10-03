@@ -4019,8 +4019,8 @@ export namespace EGFBAccessors {
      * @param flatbuffers.Encoding= optionalEncoding
      * @returns string|Uint8Array|null
      */
-    text(): string | null
-    text(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null
+    text(): string | null;
+    text(optionalEncoding: flatbuffers.Encoding): string | Uint8Array | null;
     text(optionalEncoding?: any): string | Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;

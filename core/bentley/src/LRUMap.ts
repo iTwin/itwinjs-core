@@ -317,7 +317,7 @@ export class LRUCache<K, V> {
   /**  Call `fun` for each entry, starting with the oldest entry. */
   public forEach(fun: (value: V, key: K, m: LRUCache<K, V>) => void, thisObj?: any): void {
     if (typeof thisObj !== "object") {
-      thisObj = this;
+      thisObj = this; // eslint-disable-line @typescript-eslint/no-this-alias
     }
     let entry = this.oldest;
     while (entry) {

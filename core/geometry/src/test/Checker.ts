@@ -466,7 +466,7 @@ export class Checker {
     return this.announceError("Expect exact number", dataA, dataB, params);
   }
 
-  public testPointer<T extends any>(value: T | undefined, ...params: any[]): value is T {
+  public testPointer<T>(value: T | undefined, ...params: any[]): value is T {
     if (value)
       return this.announceOK();
     return this.announceError("Expect pointer", value, params);
@@ -554,8 +554,8 @@ export class Checker {
     Checker._transform.multiplyTransformTransform(Transform.createTranslationXYZ(dx, dy, dz), Checker._transform);
   }
   public static moveTo(dx: number, dy: number, dz: number = 0) {
-      Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
-    }
+    Checker._transform = Transform.createTranslationXYZ(dx, dy, dz), Checker._transform;
+  }
 
   // ===================================================================================
   // Output

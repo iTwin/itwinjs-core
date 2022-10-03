@@ -25,7 +25,7 @@ export class HexadecimalTypeConverter extends TypeConverter {
   }
 
   public override convertFromString(value: string) {
-    if (value.substr(0, 2) !== "0x")
+    if (value.substring(0, 2) !== "0x")
       value = `0x${value}`;
 
     value = Id64.fromString(value);

@@ -862,7 +862,7 @@ describe("GrowableArray", () => {
 
     const initialCapacity = undefined;
     const growthFactors: (number | undefined)[] = [undefined, -0.5, 0, .6, 1, 1.3, 1.5, 2, 2.7, 3];
-    const values: number[] = [-18, 3.14159265358979323, 2.718281828459045, 4.669201609102990];
+    const values: number[] = [-18, 3.141592653589793, 2.718281828459045, 4.669201609102990];
     for (const growthFactor of growthFactors) {
       const a0 = new MyGrowableBlockedArray(5, initialCapacity, growthFactor);
       a0.addBlock(values);

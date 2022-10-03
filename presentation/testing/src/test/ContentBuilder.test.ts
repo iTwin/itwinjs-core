@@ -264,7 +264,7 @@ describe("ContentBuilder", () => {
       expect((content[3].value as PrimitiveValue).value).to.eq(1.23);
       expect((content[4].value as PrimitiveValue).value).to.eq(4.57);
       expect((content[5].value as ArrayValue).items.map((item) => (item.value as PrimitiveValue).value)).to.deep.eq([1.23, 4.57, 7.89]);
-      expect(((content[6].value as StructValue).members.a!.value as PrimitiveValue).value).to.deep.eq(1.23);
+      expect(((content[6].value as StructValue).members.a.value as PrimitiveValue).value).to.deep.eq(1.23);
       expect((content[7].value as PrimitiveValue).value).to.deep.eq([1.46, 4.79]);
       expect((content[8].value as PrimitiveValue).value).to.deep.eq({ x: 1.23, y: 4.57, z: 7.89 });
     });

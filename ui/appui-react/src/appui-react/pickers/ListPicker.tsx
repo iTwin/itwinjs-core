@@ -392,7 +392,7 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
         if (lastOpenedPicker && lastOpenedPicker !== this && lastOpenedPicker.isExpanded())
           lastOpenedPicker.minimize();
 
-        lastOpenedPicker = this;
+        lastOpenedPicker = this; // eslint-disable-line @typescript-eslint/no-this-alias
 
         this._closeOnPanelOpened = false;
         expanded && FrontstageManager.onToolPanelOpenedEvent.emit();

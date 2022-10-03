@@ -325,7 +325,7 @@ describe("NineZoneStateReducer", () => {
         dragBy: new Point(10, 20).toProps(),
         floatingWidgetId: "fw1",
       });
-      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+      newState.floatingWidgets.byId.fw1.bounds.should.eql({
         left: 10,
         top: 120,
         right: 210,
@@ -708,7 +708,7 @@ describe("NineZoneStateReducer", () => {
         id: "fw1",
         resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
       });
-      newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+      newState.floatingWidgets.byId.fw1.bounds.should.eql({
         left: 0,
         top: 90,
         right: 220,
@@ -1612,18 +1612,18 @@ describe("floatWidget", () => {
       id: "fw1",
       resizeBy: new Rectangle(0, 10, 20, 40).toProps(),
     });
-    newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+    newState.floatingWidgets.byId.fw1.bounds.should.eql({
       left: 0,
       top: 90,
       right: 220,
       bottom: 440,
     });
-    newState.floatingWidgets.byId.fw1!.userSized?.should.eql(true);
+    newState.floatingWidgets.byId.fw1.userSized?.should.eql(true);
     const newState2 = NineZoneStateReducer(newState, {
       type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
       id: "fw1",
     });
-    newState2.floatingWidgets.byId.fw1!.userSized?.should.eql(false);
+    newState2.floatingWidgets.byId.fw1.userSized?.should.eql(false);
   });
 
   it("should set floating widget bounds", () => {
@@ -1633,8 +1633,8 @@ describe("floatWidget", () => {
       bounds: new Rectangle(0, 100, 200, 400).toProps(),
     });
     const newState = setFloatingWidgetContainerBounds(state, "fw1", { top: 50, left: 30, bottom: 250, right: 350 });
-    newState.floatingWidgets.byId.fw1!.userSized?.should.eql(true);
-    newState.floatingWidgets.byId.fw1!.bounds.should.eql({
+    newState.floatingWidgets.byId.fw1.userSized?.should.eql(true);
+    newState.floatingWidgets.byId.fw1.bounds.should.eql({
       left: 30,
       top: 50,
       right: 350,

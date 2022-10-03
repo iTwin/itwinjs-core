@@ -17,7 +17,7 @@ type Mutable<T> = {
   -readonly [P in keyof T]: T[P]
 };
 
-const isInstance = <T extends any>(args: InstanceOrArray<T>): args is T => {
+const isInstance = <T>(args: InstanceOrArray<T>): args is T => {
   return !Array.isArray(args);
 };
 

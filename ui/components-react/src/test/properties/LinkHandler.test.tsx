@@ -39,7 +39,7 @@ describe("LinkHandler", () => {
       const testString = "Example text";
       let matchedPartHighlighted = false;
       const highlighter = (text: string) => {
-        if (text === testString.substr(0, 7))
+        if (text === testString.substring(0, 7))
           matchedPartHighlighted = true;
         return text;
       };

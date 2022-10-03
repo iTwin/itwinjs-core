@@ -44,7 +44,7 @@ export interface ContentGroupProps {
  * @public
  */
 export abstract class ContentGroupProvider {
-  abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
+  public abstract provideContentGroup(props: FrontstageProps): Promise<ContentGroup>;
 
   /** Allow provider to update any data stored in ContentGroupProps. Typically this may
    * be to remove applicationData entries.
