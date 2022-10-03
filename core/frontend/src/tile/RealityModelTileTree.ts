@@ -544,6 +544,7 @@ export namespace RealityModelTileTree {
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
+    protected _getDisplaySettings: () => RealityModelDisplaySettings;
 
     public get modelId() { return this._modelId; }
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
@@ -577,6 +578,8 @@ export namespace RealityModelTileTree {
 
       this._iModel = props.iModel;
       this._source = props.source;
+      this._getDisplaySettings = props.getDisplaySettings;
+
       if (props.planarClipMask)
         this._planarClipMask = PlanarClipMaskState.create(props.planarClipMask);
 
@@ -642,6 +645,14 @@ export namespace RealityModelTileTree {
       const tree = undefined !== this._classifier ? this._classifier.treeOwner.tileTree : undefined;
       if (undefined !== tree)
         tree.collectStatistics(stats);
+    }
+
+    public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+      const args = super.createDrawArgs(context);
+      if (args)
+        args.graphics.realityModelDisplaySettings = this._getDisplaySettings();
+
+      return args;
     }
   }
 
