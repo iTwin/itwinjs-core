@@ -72,10 +72,14 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   const element = document.createElement("div");
   element.className = "debugPanel";
+  element.style.height = "auto";
+  element.style.top = "0px";
+  element.style.left = "0px";
+  element.style.zIndex = "inherit";
   parent.appendChild(element);
 
   createLabeledNumericInput({
-    parent, id: "rms_ratio", name: "Color ratio:",
+    parent: element, id: "rms_ratio", name: "Color ratio:",
     value: model.settings.overrideColorRatio,
     parseAsFloat: true,
     min: 0, max: 1, step: 0.05,
@@ -86,19 +90,20 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 const viewportIdsWithOpenWidgets = new Set<number>();
 
 class RealityModelSettingsWidget extends Window {
-  public readonly windowId: string;
+  private readonly _windowId: string;
   private readonly _viewport: Viewport;
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 50 });
+    super(Surface.instance, { top: 0, left: 0 });
     this._viewport = viewport;
 
-    this.windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
+    this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
     this.isPinned = true;
     this.title = `${model.name} display settings`;
 
     createRealityModelSettingsPanel(model, this.contentDiv);
+    this.container.style.display = "flex";
 
     const removals = [
       viewport.onChangeView.addOnce(() => this.close()),
@@ -116,6 +121,9 @@ class RealityModelSettingsWidget extends Window {
     this._dispose();
     viewportIdsWithOpenWidgets.delete(this._viewport.viewportId);
   }
+
+  public get windowId() { return this._windowId; }
+  // public override get isResizable() { return false; }
 }
 
 export class OpenRealityModelSettingsTool extends Tool {
