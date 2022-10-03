@@ -100,7 +100,7 @@
     "null-loader": "^4.0.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.8.2",
-    "typescript": "~4.4.0",
+    "typescript": "4.9.1-beta",
     "webpack": "^5.64.4",
     "semver": "^7.3.5",
     "express-ws": "^5.0.2",
