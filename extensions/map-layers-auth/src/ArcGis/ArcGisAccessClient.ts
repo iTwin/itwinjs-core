@@ -57,6 +57,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   private _expiration: number | undefined;
   private _clientIds: ArcGisOAuthClientIds | undefined;
 
+  // Should be kept to 'false'. Debugging purposes only.
+  private _forceLegacyToken = false;
+
   public constructor() {
   }
 
@@ -116,9 +119,12 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   public async getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined> {
     // First lookup Oauth2 tokens, otherwise check try "legacy tokens" if credentials were provided
     try {
-      const oauth2Token = await this.getOAuthTokenForMapLayerUrl(params.mapLayerUrl.toString());
-      if (oauth2Token)
-        return oauth2Token;
+
+      if (!this._forceLegacyToken) {
+        const oauth2Token = await this.getOAuthTokenForMapLayerUrl(params.mapLayerUrl.toString());
+        if (oauth2Token)
+          return oauth2Token;
+      }
 
       if (params.userName && params.password) {
         return await ArcGisTokenManager.getToken(params.mapLayerUrl.toString(), params.userName, params.password, { client: ArcGisTokenClientType.referer });
@@ -131,13 +137,14 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
   public async getTokenServiceEndPoint(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined> {
     let tokenEndpoint: ArcGisOAuth2Endpoint | undefined;
+    if (!this._forceLegacyToken) {
+      try {
+        tokenEndpoint = await this.getOAuth2Endpoint(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
+        if (tokenEndpoint) {
 
-    try {
-      tokenEndpoint = await this.getOAuth2Endpoint(mapLayerUrl, ArcGisOAuth2EndpointType.Authorize);
-      if (tokenEndpoint) {
-
-      }
-    } catch { }
+        }
+      } catch { }
+    }
 
     return tokenEndpoint;
   }
