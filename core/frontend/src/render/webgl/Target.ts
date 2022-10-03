@@ -385,7 +385,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   }
 
   public get wantAtmosphericScattering(): boolean {
-    return this.currentViewFlags.atmosphericScattering && this.is3d && undefined !== this.uniforms.atmosphericScattering.atmosphericScattering;
+    return undefined !== this.plan.atmosphericScattering;
   }
 
   public get wantThematicSensors(): boolean {

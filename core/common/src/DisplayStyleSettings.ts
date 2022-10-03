@@ -1243,8 +1243,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public toggleAtmosphericSky(display?: boolean): void {
     display = display ?? this.environment.displayAtmosphericSky;
     if (display !== this.environment.displayAtmosphericSky) {
-      // eslint-disable-next-line no-console
-      console.log(display ? "true" : "false");
       this.environment = this.environment.withDisplay({ atmosphericSky: display });
     }
   }

@@ -35,6 +35,7 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
   private _outScatteringIntensity = 1.0;
   private _scatteringCoefficients = new Float32Array(3);
   private readonly _ellipsoidRotationMatrix = new Matrix3d();
+  private _isEnabled = false;
 
   // utility
   public syncKey = 0;
@@ -52,6 +53,8 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
     if (!(this.atmosphericScattering && plan.atmosphericScattering && this.atmosphericScattering.equals(plan.atmosphericScattering))) {
       this._atmosphericScattering = plan.atmosphericScattering;
     }
+
+    this._updateIsEnabled(target.wantAtmosphericScattering);
 
     if (!this.atmosphericScattering) {
       return;
@@ -74,6 +77,10 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
     this._updateNumOpticalDepthPoints(this.atmosphericScattering.numOpticalDepthPoints);
     this._updateOutScatteringIntensity(this.atmosphericScattering.outScatteringIntensity);
     this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelengths);
+  }
+
+  private _updateIsEnabled(wantAtmosphericScattering: boolean) {
+    this._isEnabled = wantAtmosphericScattering;
   }
 
   private _updateIsCameraEnabled(frustumType: FrustumUniformType) {
@@ -155,6 +162,12 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
 
   private _updateBrightnessAdaptationStrength(brightnessAdaptationStrength: number) {
     this._brightnessAdaptationStrength = brightnessAdaptationStrength;
+  }
+
+  public bindIsEnabled(uniform: UniformHandle): void {
+    if (!sync(this, uniform)) {
+      uniform.setUniform1i(this._isEnabled ? 1 : 0);
+    }
   }
 
   public bindIsCameraEnabled(uniform: UniformHandle): void {

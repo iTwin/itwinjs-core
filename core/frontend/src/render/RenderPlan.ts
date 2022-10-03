@@ -104,11 +104,11 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
-  const atmosphericScattering = (style.is3d() && isGlobeMode3D && view.displayStyle.viewFlags.atmosphericScattering) ? style.settings.atmosphericScattering : undefined;
+  const isGlobeModeEllipsoid = (GlobeMode.Ellipsoid === view.globeMode);
+  const atmosphericScattering = (style.is3d() && isGlobeModeEllipsoid && vp.iModel.isGeoLocated && view.displayStyle.viewFlags.atmosphericScattering && view.displayStyle.viewFlags.backgroundMap) ? style.settings.atmosphericScattering : undefined;
 
   let upVector;
-  if (isGlobeMode3D) {
+  if (isGlobeModeEllipsoid) {
     const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
     const cntr = lb.interpolate(0.5, rt, scratchPoint3c);
@@ -124,7 +124,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   let ellipsoidCenter;
   let ellipsoidRotation;
   let ellipsoidRadii;
-  if (isGlobeMode3D) {
+  if (isGlobeModeEllipsoid) {
     ellipsoidCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
     ellipsoidRotation = view.iModel.getMapEcefToDb(0).matrix;
     ellipsoidRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
@@ -151,7 +151,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     frustum,
     fraction,
     globalViewTransition,
-    isGlobeMode3D,
+    isGlobeMode3D: isGlobeModeEllipsoid,
     backgroundMapOn,
     upVector,
     lights,

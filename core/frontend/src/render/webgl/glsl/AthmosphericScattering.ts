@@ -275,14 +275,6 @@ const applyAtmosphericScattering = `
   return computeAtmosphericScattering(baseColor);
 `;
 
-// const applyAtmosphericScatteringDebug = `
-//   // return baseColor if atmospheric scattering is disabled
-//   if (!u_isEnabled)
-//     return baseColor;
-//   vec4 _nothing = computeAtmosphericScattering(baseColor);
-//   return vec4(1.0, 0.0, 0.0, 1.0);
-// `;
-
 /** @internal */
 export function addAtmosphericScatteringEffect(
   builder: ProgramBuilder,
@@ -500,9 +492,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Boolean,
       (prog) => {
         prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-          uniform.setUniform1i(
-            params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
-          );
+          params.target.uniforms.atmosphericScattering.bindIsEnabled(uniform);
         });
       },
     );
@@ -523,9 +513,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Boolean,
       (prog) => {
         prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-          uniform.setUniform1i(
-            params.target.plan.viewFlags.atmosphericScattering ? 1 : 0
-          );
+          params.target.uniforms.atmosphericScattering.bindIsEnabled(uniform);
         });
       },
       ShaderType.Both
@@ -541,12 +529,6 @@ export function addAtmosphericScatteringEffect(
     FragmentShaderComponent.ApplyAtmosphericScattering,
     applyAtmosphericScattering
   );
-  // if (isSky) {
-  //   frag.set(
-  //     FragmentShaderComponent.ApplyAtmosphericScattering,
-  //     applyAtmosphericScatteringDebug
-  //   );
-  // }
 }
 
 // #endregion MAIN
