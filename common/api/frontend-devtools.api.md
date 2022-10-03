@@ -701,7 +701,7 @@ export class DiagnosticsPanel {
     get element(): HTMLElement;
     // (undocumented)
     readonly keyinField?: KeyinField;
-    }
+}
 
 // @beta
 export interface DiagnosticsPanelProps {
@@ -813,7 +813,7 @@ export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
@@ -886,7 +886,7 @@ export class FpsTracker {
     constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @beta
 export class FreezeSceneTool extends ViewportToggleTool {
@@ -899,7 +899,7 @@ export class FreezeSceneTool extends ViewportToggleTool {
 // @beta
 export class FrontendDevTools {
     static initialize(): Promise<void>;
-    }
+}
 
 // @beta
 export class FrustumDecorator implements Decorator {
@@ -927,7 +927,7 @@ export class GpuProfiler {
     constructor(parent: HTMLElement);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @beta
 export class InspectElementTool extends PrimitiveTool {
@@ -958,7 +958,7 @@ export class InspectElementTool extends PrimitiveTool {
     requireWriteableTarget(): boolean;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
@@ -1014,6 +1014,8 @@ export interface LabeledNumericInput {
 
 // @alpha (undocumented)
 export interface LabeledNumericInputProps extends NumericInputProps {
+    // (undocumented)
+    divDisplay?: "block" | "none" | "inline";
     // (undocumented)
     id: string;
     // (undocumented)
@@ -1308,7 +1310,7 @@ export class MemoryTracker {
     constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @alpha (undocumented)
 export interface NestedMenu {
@@ -1499,6 +1501,8 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
 export interface RadioBox {
     // (undocumented)
     div: HTMLDivElement;
+    // (undocumented)
+    form: HTMLFormElement;
     // (undocumented)
     label?: HTMLLabelElement;
     // (undocumented)
@@ -2063,7 +2067,11 @@ export interface SliderProps {
     // (undocumented)
     step: string;
     // (undocumented)
+    textAlign?: "right" | false;
+    // (undocumented)
     value: string;
+    // (undocumented)
+    verticalAlign?: "middle" | false;
 }
 
 // @beta
@@ -2142,7 +2150,7 @@ export class TestClipStyleTool extends DisplayStyleTool {
     protected get require3d(): boolean;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export interface TextBox {
@@ -2184,14 +2192,14 @@ export class TileMemoryBreakdown {
     constructor(parent: HTMLElement);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @beta
 export class TileStatisticsTracker {
     constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @beta
 export class Toggle3dManipulationsTool extends ViewportToggleTool {
@@ -2271,7 +2279,7 @@ export class TogglePrimitiveVisibilityTool extends RenderTargetDebugControlTool 
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean): boolean;
@@ -2442,7 +2450,7 @@ export class ToggleTileTreeReferencesTool extends Tool {
     run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ToggleToolTipsTool extends Tool {
@@ -2517,7 +2525,7 @@ export class ToolSettingsTracker {
     constructor(parent: HTMLElement, _vp: Viewport);
     // (undocumented)
     dispose(): void;
-    }
+}
 
 // @beta
 export class UnmaskMapTool extends Tool {
@@ -2642,7 +2650,6 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
     // (undocumented)
     static toolId: string;
 }
-
 
 // (No @packageDocumentation comment for this package)
 
