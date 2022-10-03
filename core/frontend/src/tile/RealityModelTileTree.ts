@@ -517,7 +517,6 @@ export class RealityModelTileTree extends RealityTileTree {
 /** @internal */
 // eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
-
   export interface ReferenceBaseProps {
     iModel: IModelConnection;
     source: RealityModelSource;
@@ -529,6 +528,7 @@ export namespace RealityModelTileTree {
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
   }
+
   export interface ReferenceProps extends ReferenceBaseProps {
     url?: string;
     requestAuthorization?: string;
@@ -537,7 +537,6 @@ export namespace RealityModelTileTree {
 
   export abstract class Reference extends TileTreeReference {
     protected readonly _name: string;
-
     protected _transform?: Transform;
     protected _iModel: IModelConnection;
     private _modelId: Id64String;
@@ -546,10 +545,13 @@ export namespace RealityModelTileTree {
     protected _planarClipMask?: PlanarClipMaskState;
     protected _classifier?: SpatialClassifierTileTreeReference;
     protected _mapDrapeTree?: TileTreeReference;
+
     public get modelId() { return this._modelId; }
     // public get classifiers(): SpatialClassifiers | undefined { return undefined !== this._classifier ? this._classifier.classifiers : undefined; }
+
     public get planarClipMask(): PlanarClipMaskState | undefined { return this._planarClipMask; }
     public set planarClipMask(planarClipMask: PlanarClipMaskState | undefined) { this._planarClipMask = planarClipMask; }
+
     public get planarClipMaskPriority(): number {
       if (this._planarClipMask?.settings.priority !== undefined)
         return this._planarClipMask.settings.priority;
@@ -590,6 +592,7 @@ export namespace RealityModelTileTree {
       if (!contentRange.isNull && contentRange.diagonal().magnitude() < Constant.earthRadiusWGS84.equator)
         union.extendRange(contentRange);
     }
+
     public override get isGlobal() {
       if (undefined === this._isGlobal) {
         const range = this.computeWorldContentRange();
@@ -607,6 +610,7 @@ export namespace RealityModelTileTree {
       this.addPlanarClassifierOrMaskToScene(context);
       super.addToScene(context);
     }
+
     protected addPlanarClassifierOrMaskToScene(context: SceneContext) {
       // A planarClassifier is required if there is a classification tree OR planar masking is required.
       const classifierTree = this.planarClassifierTreeRef;
@@ -632,6 +636,7 @@ export namespace RealityModelTileTree {
       if (undefined !== this._planarClipMask)
         this._planarClipMask.discloseTileTrees(trees);
     }
+
     public override collectStatistics(stats: RenderMemory.Statistics): void {
       super.collectStatistics(stats);
 
@@ -641,7 +646,13 @@ export namespace RealityModelTileTree {
     }
   }
 
-  export async function createRealityModelTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined, opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }): Promise<TileTree | undefined> {
+  export async function createRealityModelTileTree(
+    rdSourceKey: RealityDataSourceKey,
+    iModel: IModelConnection,
+    modelId: Id64String,
+    tilesetToDb: Transform | undefined,
+    opts?: { deduplicateVertices?: boolean, produceGeometry?: boolean }
+  ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     // If we can get a valid connection from sourceKey, returns the tile tree
     if (rdSource) {
