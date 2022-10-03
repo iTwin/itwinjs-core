@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, RealityModelDisplayProps, RealityModelDisplaySettings,
+  DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, PointCloudDisplayProps, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
   ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createColorInput, createLabeledNumericInput,
+  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -116,6 +116,15 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   });
 
   colorRatio.div.style.display = "inline";
+
+  // Point shape
+  const updatePointCloud = (props: PointCloudDisplayProps) => updateSettings(model.settings.clone({ pointCloud: props }));
+  const squareCb = createCheckBox({
+    name: "Square points:", id: "rms_square",
+    parent: element,
+    isChecked: model.settings.pointCloud.shape === "square",
+    handler: (cb) => updatePointCloud({ shape: cb.checked ? "square" : "round" }),
+  }).checkbox;
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
