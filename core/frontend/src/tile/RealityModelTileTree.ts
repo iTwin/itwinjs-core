@@ -11,9 +11,7 @@ import {
 } from "@itwin/core-bentley";
 import {
   Cartographic, DefaultSupportedTypes, GeoCoordStatus, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  RealityDataProvider,
-  RealityDataSourceKey,
-  SpatialClassifiers, ViewFlagOverrides,
+  RealityDataProvider, RealityDataSourceKey, RealityModelDisplaySettings, SpatialClassifiers, ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@itwin/core-geometry";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
@@ -527,6 +525,7 @@ export namespace RealityModelTileTree {
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
+    getDisplaySettings(): RealityModelDisplaySettings;
   }
 
   export interface ReferenceProps extends ReferenceBaseProps {
@@ -764,6 +763,7 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
       rdSourceKey: this._rdSourceKey,
       name: this._name,
       produceGeometry: true,
+      getDisplaySettings: () => RealityModelDisplaySettings.defaults,
     });
 
     assert(undefined !== ref.collectTileGeometry);
