@@ -89,7 +89,6 @@ export interface NativePlatformDefinition extends IDisposable {
 /** @internal */
 export interface DefaultNativePlatformProps {
   id: string;
-  localeDirectories: string[];
   taskAllocationsMap: { [priority: number]: number };
   mode: PresentationManagerMode;
   isChangeTrackingEnabled: boolean;
@@ -182,7 +181,7 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     }
     public async handleRequest(db: any, options: string, cancelEvent?: BeEvent<() => void>) {
       const response = this._nativeAddon.handleRequest(db, options);
-      cancelEvent?.addOnce(() => { response.cancel(); });
+      cancelEvent?.addOnce(() => response.cancel());
       const result = await response.result;
       return this.handleResult(result);
     }

@@ -111,7 +111,8 @@ export class DevTools {
 
     // spin the CPU for 500 milliseconds
     const now = Date.now();
-    while (Date.now() - now < 500);
+    while (Date.now() - now < 500)
+      ;
 
     const elapTime = process.hrtime(startTime);
     const elapUsage = process.cpuUsage(startUsage);

@@ -1,14 +1,14 @@
 {
   "name": "@itwin/core-common",
-  "version": "3.3.0-dev.79",
+  "version": "3.5.0-dev.3",
   "description": "iTwin.js components common to frontend and backend",
   "main": "lib/cjs/core-common.js",
   "module": "lib/esm/core-common.js",
   "typings": "lib/cjs/core-common",
   "license": "MIT",
   "scripts": {
-    "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build": "npm run -s build:cjs && npm run -s build:esm",
+    "build:ci": "npm run -s build",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -35,6 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
+    "@itwin/object-storage-core": "~1.4.0",
     "buffer": "^6.0.3",
     "flatbuffers": "~1.12.0",
     "semver": "^7.3.5",
@@ -42,8 +43,8 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.3.0-dev.79",
-    "@itwin/core-geometry": "workspace:^3.3.0-dev.79"
+    "@itwin/core-bentley": "workspace:^3.5.0-dev.3",
+    "@itwin/core-geometry": "workspace:^3.5.0-dev.3"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -53,8 +54,8 @@
     "@types/chai": "4.3.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "16.11.7",
-    "@types/semver": "^7.3.9",
+    "@types/node": "16.11.59",
+    "@types/semver": "7.3.10",
     "chai": "^4.1.2",
     "eslint": "^7.11.0",
     "mocha": "^10.0.0",

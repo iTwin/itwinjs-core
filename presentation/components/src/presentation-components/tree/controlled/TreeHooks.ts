@@ -10,7 +10,7 @@ import * as React from "react";
 import { Subscription } from "rxjs/internal/Subscription";
 import {
   computeVisibleNodes, DelayLoadedTreeNodeItem, isTreeModelNode, isTreeModelNodePlaceholder, MutableTreeModel, MutableTreeModelNode,
-  PagedTreeNodeLoader, RenderedItemsRange, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
+  PagedTreeNodeLoader, RenderedItemsRange, TreeModel, TreeModelNode, TreeModelNodeInput, TreeModelSource, TreeNodeItem, usePagedTreeNodeLoader, VisibleTreeNodes,
 } from "@itwin/components-react";
 import { HierarchyUpdateRecord, PageOptions, UPDATE_FULL } from "@itwin/presentation-common";
 import { IModelHierarchyChangeEventArgs, Presentation } from "@itwin/presentation-frontend";
@@ -37,10 +37,17 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
   pagingSize: number;
 
   /**
-   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes.
+   * Auto-update the hierarchy when ruleset, ruleset variables or data in the iModel changes. Cannot be used together
+   * with `seedTreeModel`.
    * @alpha
    */
   enableHierarchyAutoUpdate?: boolean;
+
+  /**
+   * Initialize tree data with the provided tree model.
+   * @beta
+   */
+  seedTreeModel?: TreeModel;
 }
 
 /**
@@ -90,12 +97,13 @@ export function usePresentationTreeNodeLoader(
     ],
   );
 
+  const firstRenderRef = React.useRef(true);
   const [
     { modelSource, rulesetRegistration, dataProvider },
     setTreeNodeLoaderState,
   ] = useResettableState<TreeNodeLoaderState>(
     () => ({
-      modelSource: new TreeModelSource(),
+      modelSource: new TreeModelSource(new MutableTreeModel(firstRenderRef.current ? props.seedTreeModel : undefined)),
       rulesetRegistration: new RulesetRegistrationHelper(dataProviderProps.ruleset),
       dataProvider: new PresentationTreeDataProvider({
         ...dataProviderProps,
@@ -126,6 +134,7 @@ export function usePresentationTreeNodeLoader(
   useModelSourceUpdateOnRulesetModification(params);
   useModelSourceUpdateOnRulesetVariablesChange({ ...params, rulesetId: dataProvider.rulesetId });
 
+  firstRenderRef.current = false;
   return { nodeLoader, onItemsRendered };
 }
 

@@ -98,7 +98,10 @@ export class SingularTechnique implements Technique {
   }
 }
 
-function numFeatureVariants(numBaseShaders: number) { return numBaseShaders * 3; }
+function numFeatureVariants(numBaseShaders: number) {
+  return numBaseShaders * 3;
+}
+
 const numHiliteVariants = 2; // instanced and non-instanced.
 const featureModes = [FeatureMode.None, FeatureMode.Pick, FeatureMode.Overrides];
 const scratchTechniqueFlags = new TechniqueFlags();

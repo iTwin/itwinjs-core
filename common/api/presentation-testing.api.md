@@ -4,11 +4,15 @@
 
 ```ts
 
+import { Code } from '@itwin/core-common';
 import { Content } from '@itwin/presentation-common';
+import { ElementProps } from '@itwin/core-common';
+import { GuidString } from '@itwin/core-bentley';
 import { HierarchyCacheMode } from '@itwin/presentation-backend';
 import { IModelApp } from '@itwin/core-frontend';
 import { IModelAppOptions } from '@itwin/core-frontend';
 import { IModelConnection } from '@itwin/core-frontend';
+import { IModelHostOptions } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { Omit as Omit_2 } from '@itwin/presentation-common';
@@ -70,6 +74,36 @@ export interface IContentBuilderDataProvider {
     keys: Readonly<KeySet>;
 }
 
+// @internal
+export class IModelTestUtility {
+    // (undocumented)
+    addDrawingCategory(elementProps: ElementProps): string;
+    // (undocumented)
+    addDrawingGraphic(categoryId: string): void;
+    // (undocumented)
+    addDrawingModel(): string;
+    // (undocumented)
+    addPhysicalModel(): string;
+    // (undocumented)
+    addPhysicalObject(categoryId: string): void;
+    // (undocumented)
+    addSpatialCategory(elementProps: ElementProps): string;
+    // (undocumented)
+    closeIModel(): void;
+    // (undocumented)
+    createIModel(): void;
+    // (undocumented)
+    getDrawingCategoryCode(codeValue: string): Code;
+    // (undocumented)
+    getSpatialCategoryCode(codeValue: string): Code;
+    // (undocumented)
+    iModelId: string;
+    // (undocumented)
+    iTwinId: GuidString;
+    // (undocumented)
+    outputFile: string;
+}
+
 // @public
 export const initialize: (props?: PresentationTestingInitProps | undefined) => Promise<void>;
 
@@ -88,6 +122,7 @@ export { PresentationManagerMode }
 
 // @public (undocumented)
 export interface PresentationTestingInitProps {
+    backendHostProps?: IModelHostOptions;
     backendProps?: PresentationBackendProps;
     frontendApp?: {
         startup: (opts?: IModelAppOptions) => Promise<void>;

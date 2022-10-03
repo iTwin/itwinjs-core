@@ -74,12 +74,26 @@ export class ByteStream {
 
   /** The current read position as an index into the stream of bytes. */
   public get curPos(): number { return this._curPos; }
-  public set curPos(pos: number) { this._curPos = pos; assert(!this.isPastTheEnd); }
+  public set curPos(pos: number) {
+    this._curPos = pos;
+    assert(!this.isPastTheEnd);
+  }
 
   /** Adds the specified number of bytes to the current read position */
-  public advance(numBytes: number): boolean { this.curPos = (this.curPos + numBytes); return !this.isPastTheEnd; }
+  public advance(numBytes: number): boolean {
+    this.curPos = (this.curPos + numBytes);
+    return !this.isPastTheEnd;
+  }
+
   /** Subtracts the specified number of bytes from the current read position */
-  public rewind(numBytes: number): boolean { if (this.curPos - numBytes < 0) return false; this.curPos = this.curPos - numBytes; return true; }
+  public rewind(numBytes: number): boolean {
+    if (this.curPos - numBytes < 0)
+      return false;
+
+    this.curPos = this.curPos - numBytes;
+    return true;
+  }
+
   /** Resets the current read position to the beginning of the stream */
   public reset(): void { this.curPos = 0; }
 

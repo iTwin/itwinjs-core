@@ -73,10 +73,18 @@ describe("TxnManager", () => {
     return { id, classId };
   }
 
-  function physicalModelEntity(id: string) { return makeEntity(id, "BisCore:PhysicalModel"); }
-  function physicalObjectEntity(id: string) { return makeEntity(id, "TestBim:TestPhysicalObject"); }
-  function spatialCategoryEntity(id: string) { return makeEntity(id, "BisCore:SpatialCategory"); }
-  function subCategoryEntity(categoryId: string) { return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory"); }
+  function physicalModelEntity(id: string) {
+    return makeEntity(id, "BisCore:PhysicalModel");
+  }
+  function physicalObjectEntity(id: string) {
+    return makeEntity(id, "TestBim:TestPhysicalObject");
+  }
+  function spatialCategoryEntity(id: string) {
+    return makeEntity(id, "BisCore:SpatialCategory");
+  }
+  function subCategoryEntity(categoryId: string) {
+    return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory");
+  }
 
   it("TxnManager", async () => {
     const models = imodel.models;
@@ -99,7 +107,10 @@ describe("TxnManager", () => {
     let undoAction = TxnAction.None;
 
     cleanup.push(txns.onBeforeUndoRedo.addListener(() => beforeUndo++));
-    cleanup.push(txns.onAfterUndoRedo.addListener((isUndo) => { afterUndo++; undoAction = isUndo ? TxnAction.Reverse : TxnAction.Reinstate; }));
+    cleanup.push(txns.onAfterUndoRedo.addListener((isUndo) => {
+      afterUndo++;
+      undoAction = isUndo ? TxnAction.Reverse : TxnAction.Reinstate;
+    }));
 
     let elementId = elements.insertElement(props);
     assert.isFalse(txns.isRedoPossible);

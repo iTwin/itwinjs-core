@@ -25,7 +25,8 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
-import { openIModel } from "./openIModel";
+import { openIModel, OpenIModelProps } from "./openIModel";
+import { HubPicker } from "./HubPicker";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -200,6 +201,24 @@ export class Viewer extends Window {
         await this.selectIModel();
       },
     }));
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue9e0", // cloud-download
+      tooltip: "Open iModel from hub",
+      createDropDown: async (container: HTMLElement) => {
+        const picker = new HubPicker(container, async (iModelId, iTwinId) => {
+          alert(`About to download and open hub iModel. Note that this could take quite some time without any feedback.`);
+          await this.openIModel({
+            iModelId,
+            iTwinId,
+            writable: this.surface.openReadWrite,
+          });
+          picker.close();
+        });
+        await picker.populate();
+        return picker;
+      },
+    });
 
     this._viewPicker = new ViewPicker(this.toolBar.element, this.views);
     this._viewPicker.onSelectedViewChanged.addListener(async (id) => this.changeView(id));
@@ -420,12 +439,13 @@ export class Viewer extends Window {
     this._viewPicker.populate(this.views);
   }
 
-  private async resetIModel(filename: string): Promise<void> {
+  private async resetIModel(props: OpenIModelProps): Promise<void> {
+    const { fileName, iModelId } = props;
     let newIModel: IModelConnection;
-    const sameFile = filename === this._imodel.key;
+    const sameFile = (fileName !== undefined && fileName === this._imodel.key) || (iModelId !== undefined && iModelId === this._imodel.iModelId);
     if (!sameFile) {
       try {
-        newIModel = await openIModel(filename, this.surface.openReadWrite);
+        newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
       } catch (err: any) {
         alert(err.toString());
         return;
@@ -438,7 +458,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await openIModel(filename, this.surface.openReadWrite);
+      newIModel = await openIModel({ ...props, writable: this.surface.openReadWrite });
 
     this._imodel = newIModel!;
     await this.buildViewList();
@@ -446,18 +466,18 @@ export class Viewer extends Window {
     await this.openView(view);
   }
 
-  public async openFile(filename?: string): Promise<void> {
-    return undefined !== filename ? this.openIModel(filename) : this.selectIModel();
+  public async openFile(fileName?: string): Promise<void> {
+    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : this.selectIModel();
   }
 
   private async selectIModel(): Promise<void> {
-    const filename = await this.surface.selectFileName();
-    return undefined !== filename ? this.openIModel(filename) : Promise.resolve();
+    const fileName = await this.surface.selectFileName();
+    return undefined !== fileName ? this.openIModel({ fileName, writable: this.surface.openReadWrite }) : Promise.resolve();
   }
 
-  private async openIModel(filename: string): Promise<void> {
+  private async openIModel(props: OpenIModelProps): Promise<void> {
     try {
-      await this.resetIModel(filename);
+      await this.resetIModel(props);
       setTitle(this._imodel);
     } catch {
       alert("Error - could not open file.");

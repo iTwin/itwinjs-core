@@ -26,11 +26,13 @@ public;ClassId = Id64String
 public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
-alpha;ClientDiagnostics 
+beta;ClientDiagnostics 
 public;ClientDiagnosticsAttribute
-alpha;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
-alpha;ClientDiagnosticsOptions 
+beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
+beta;ClientDiagnosticsOptions 
+internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
 internal;CommonIpcParams
+internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 alpha;ComputeSelectionRequestOptions
@@ -70,13 +72,13 @@ public;Descriptor
 public;DescriptorJSON
 public;DescriptorOverrides
 public;DescriptorSource
-alpha;Diagnostics
-alpha;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
-alpha;DiagnosticsLogEntry
-alpha;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
-alpha;DiagnosticsLogMessage
-alpha;DiagnosticsOptions
-alpha;DiagnosticsScopeLogs
+beta;Diagnostics
+beta;DiagnosticsLogEntry = DiagnosticsLogMessage | DiagnosticsScopeLogs
+beta;DiagnosticsLogEntry
+beta;DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" | "trace"
+beta;DiagnosticsLogMessage
+beta;DiagnosticsOptions
+beta;DiagnosticsScopeLogs
 public;DisabledSortingRule 
 public;DisplayLabelRequestOptions
 public;DisplayLabelRpcRequestOptions = PresentationRpcRequestOptions
@@ -209,6 +211,8 @@ public;LabelOverride
 deprecated;LabelOverride 
 public;LabelRawValue = string | number | boolean | LabelCompositeValue
 public;LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON
+internal;LocalizationHelper
+internal;LocalizationHelperProps
 beta;MultiElementPropertiesRequestOptions
 public;MultiSchemaClassesSpecification
 public;NamedFieldDescriptor 
@@ -327,7 +331,7 @@ public;RequestOptionsWithRuleset
 beta;RequiredSchemaSpecification
 public;RootCategoryIdentifier
 public;RootNodeRule 
-alpha;RpcDiagnosticsOptions = Omit_2
+beta;RpcDiagnosticsOptions = Omit_2
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
 public;Rule = CustomizationRule | NavigationRule | ContentRule | ContentModifier | DefaultPropertyCategoryOverride

@@ -1,6 +1,61 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Wed, 13 Jul 2022 15:45:52 GMT and should not be manually modified.
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+
+## 3.3.2
+Thu, 01 Sep 2022 14:37:22 GMT
+
+### Updates
+
+- await new promise in CustomViewState3dCreator getModelExtents
+
+## 3.3.1
+Fri, 26 Aug 2022 15:40:02 GMT
+
+_Version update only_
+
+## 3.3.0
+Thu, 18 Aug 2022 19:08:02 GMT
+
+### Updates
+
+- upgrade mocha to version 10.0.0
+- Update links to BIS documentation.
+- vacuum is now an instance method
+- enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/
+- Progress API for downloading changesets.
+- IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance
+- added computeSchemaChecksum function to IModelHost
+- Transport RPC requests over IPC when available.
+- make prefetch opt-in instead of opt-out
+- move HubMock to core-backend
+- retry v2checkpoint downloads when they fail with "Failure when receiving data from the peer"
+- set cloud cache size to 50G
+- move LocalHub to @internal in core-backend
+- deprecate collectPredecessorIds and getPredecessorIds in favor of collectReferenceIds and getReferenceIds
+- added SQLiteDb.withOpenDb
+
+## 3.2.9
+Fri, 26 Aug 2022 14:21:40 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@3.2.15
+
+## 3.2.8
+Tue, 09 Aug 2022 15:52:41 GMT
+
+_Version update only_
+
+## 3.2.7
+Mon, 01 Aug 2022 13:36:56 GMT
+
+_Version update only_
+
+## 3.2.6
+Fri, 15 Jul 2022 19:04:43 GMT
+
+_Version update only_
 
 ## 3.2.5
 Wed, 13 Jul 2022 15:45:52 GMT

@@ -99,9 +99,13 @@ export namespace IModelHubUtils {
         accessToken: await IModelTransformerTestAppHost.acquireAccessToken(),
         onProgress(loadedBytes, totalBytes) {
           if (totalBytes !== 0 && Date.now() > nextProgressUpdate || loadedBytes === totalBytes) {
-            if (loadedBytes === totalBytes) Logger.logInfo(loggerCategory, "Briefcase download completed");
+            if (loadedBytes === totalBytes)
+              Logger.logInfo(loggerCategory, "Briefcase download completed");
+
             const asMb = (n: number) => (n / (1024 * 1024)).toFixed(2);
-            if (loadedBytes < totalBytes) Logger.logInfo(loggerCategory, `Downloaded ${asMb(loadedBytes)} of ${asMb(totalBytes)}`);
+            if (loadedBytes < totalBytes)
+              Logger.logInfo(loggerCategory, `Downloaded ${asMb(loadedBytes)} of ${asMb(totalBytes)}`);
+
             nextProgressUpdate = Date.now() + PROGRESS_FREQ_MS;
           }
           return 0;

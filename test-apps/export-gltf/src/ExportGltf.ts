@@ -62,7 +62,8 @@ class GltfGlobals {
 
 function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
   let result = GltfGlobals.textureToMaterialMap.get(textureId);
-  if (result !== undefined) return result;
+  if (result !== undefined)
+    return result;
 
   // glTF-Validator complains if textures/images are defined but empty - wait for texture to define.
   if (GltfGlobals.gltf.textures === undefined) {
@@ -96,7 +97,8 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
 
 function findOrAddMaterialIndexForColor(color: number): number {
   let result = GltfGlobals.colorToMaterialMap.get(color);
-  if (result !== undefined) return result;
+  if (result !== undefined)
+    return result;
 
   const rgb = ColorDef.getColors(color);
   const pbrMetallicRoughness: GltfMaterialPbrMetallicRoughness = {
@@ -105,7 +107,8 @@ function findOrAddMaterialIndexForColor(color: number): number {
     roughnessFactor: 1,
   };
   const material: GltfMaterial = ({ pbrMetallicRoughness, doubleSided: true });
-  if (rgb.t > 10) material.alphaMode = "BLEND";
+  if (rgb.t > 10)
+    material.alphaMode = "BLEND";
 
   result = GltfGlobals.gltf.materials.length;
   GltfGlobals.gltf.materials.push(material);
@@ -325,7 +328,8 @@ function getInstancesByPart(instances: ExportPartInstanceInfo[]): Map<Id64String
 
 function almostEqual(testValue: number, ...arrayValues: number[]): boolean {
   for (const val of arrayValues) {
-    if (!Geometry.isAlmostEqualNumber(testValue, val)) return false;
+    if (!Geometry.isAlmostEqualNumber(testValue, val))
+      return false;
   }
   return true;
 }

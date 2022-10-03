@@ -315,9 +315,7 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
     const view = context.viewport.view;
     const style = view.getDisplayStyle3d();
-    let sunDirection = style.sunDirection;
-    if (undefined === sunDirection)
-      sunDirection = defaultSunDirection;
+    const sunDirection = style.sunDirection ?? defaultSunDirection;
 
     const minimumHorizonDirection = -.01;
     if (sunDirection.z > minimumHorizonDirection) {
@@ -345,8 +343,20 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     // Limit the map to only displayed models.
     const viewTileRange = Range3d.createNull();
     view.forEachTileTreeRef((ref) => {
-      if (ref.castsShadows)
-        ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+      if (ref.castsShadows) {
+        if (ref.isGlobal) {
+          // A shadow-casting tile tree that spans the globe. Limit its range to the viewed extents.
+          for (const p3 of viewFrustum.points) {
+            const p4 = worldToMap.multiplyPoint3d(p3, 1);
+            if (p4.w > 0.0001)
+              viewTileRange.extendXYZW(p4.x, p4.y, p4.z, p4.w);
+            else
+              viewTileRange.high.z = Math.max(1.0, viewTileRange.high.z); // behind eye plane.
+          }
+        } else {
+          ref.accumulateTransformedRange(viewTileRange, worldToMap, undefined);
+        }
+      }
     });
 
     if (!viewTileRange.isNull)

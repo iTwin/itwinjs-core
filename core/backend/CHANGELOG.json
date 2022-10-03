@@ -2,6 +2,108 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.3.2",
+      "tag": "@itwin/core-backend_v3.3.2",
+      "date": "Thu, 01 Sep 2022 14:37:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "await new promise in CustomViewState3dCreator getModelExtents"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.1",
+      "tag": "@itwin/core-backend_v3.3.1",
+      "date": "Fri, 26 Aug 2022 15:40:02 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.0",
+      "tag": "@itwin/core-backend_v3.3.0",
+      "date": "Thu, 18 Aug 2022 19:08:02 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade mocha to version 10.0.0"
+          },
+          {
+            "comment": "Update links to BIS documentation."
+          },
+          {
+            "comment": "vacuum is now an instance method"
+          },
+          {
+            "comment": "enable loading gcs data from workspace at https://geocoord-workspace.itwinjs.org/"
+          },
+          {
+            "comment": "Progress API for downloading changesets."
+          },
+          {
+            "comment": "IModelHost.startup now accepts IModelHostOptions interface rather than IModelHostConfiguration instance"
+          },
+          {
+            "comment": "added computeSchemaChecksum function to IModelHost"
+          },
+          {
+            "comment": "Transport RPC requests over IPC when available."
+          },
+          {
+            "comment": "make prefetch opt-in instead of opt-out"
+          },
+          {
+            "comment": "move HubMock to core-backend"
+          },
+          {
+            "comment": "retry v2checkpoint downloads when they fail with \"Failure when receiving data from the peer\""
+          },
+          {
+            "comment": "set cloud cache size to 50G"
+          },
+          {
+            "comment": "move LocalHub to @internal in core-backend"
+          },
+          {
+            "comment": "deprecate collectPredecessorIds and getPredecessorIds in favor of collectReferenceIds and getReferenceIds"
+          },
+          {
+            "comment": "added SQLiteDb.withOpenDb"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.9",
+      "tag": "@itwin/core-backend_v3.2.9",
+      "date": "Fri, 26 Aug 2022 14:21:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to @bentley/imodeljs-native@3.2.15"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.2.8",
+      "tag": "@itwin/core-backend_v3.2.8",
+      "date": "Tue, 09 Aug 2022 15:52:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.7",
+      "tag": "@itwin/core-backend_v3.2.7",
+      "date": "Mon, 01 Aug 2022 13:36:56 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.2.6",
+      "tag": "@itwin/core-backend_v3.2.6",
+      "date": "Fri, 15 Jul 2022 19:04:43 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.2.5",
       "tag": "@itwin/core-backend_v3.2.5",
       "date": "Wed, 13 Jul 2022 15:45:52 GMT",

@@ -26,6 +26,7 @@ export * from "./DisplayStyleSettings";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./ECSqlTypes";
+export * from "./ECSchemaProps";
 export * from "./ElementProps";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityProps";

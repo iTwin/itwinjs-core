@@ -2033,6 +2033,7 @@ export interface MutableTreeDataProvider extends ITreeDataProvider {
 export class MutableTreeModel implements TreeModel {
     // (undocumented)
     [immerable]: boolean;
+    constructor(seed?: TreeModel);
     changeNodeId(currentId: string, newId: string): boolean;
     clearChildren(parentId: string | undefined): void;
     getChildOffset(parentId: string | undefined, childId: string): number | undefined;
@@ -2569,6 +2570,8 @@ export interface PropertyFilterBuilderProps {
     // (undocumented)
     properties: PropertyDescription[];
     // (undocumented)
+    propertyRenderer?: (name: string) => React_2.ReactNode;
+    // (undocumented)
     ruleGroupDepthLimit?: number;
     // (undocumented)
     ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React_2.ReactNode;
@@ -2650,6 +2653,8 @@ export interface PropertyFilterBuilderRulePropertyProps {
     // (undocumented)
     properties: PropertyDescription[];
     // (undocumented)
+    propertyRenderer?: (name: string) => React_2.ReactNode;
+    // (undocumented)
     selectedProperty?: PropertyDescription;
 }
 
@@ -2669,6 +2674,8 @@ export const PropertyFilterBuilderRuleRenderingContext: React_2.Context<Property
 
 // @alpha (undocumented)
 export interface PropertyFilterBuilderRuleRenderingContextProps {
+    // (undocumented)
+    propertyRenderer?: (name: string) => React_2.ReactNode;
     // (undocumented)
     ruleOperatorRenderer?: (props: PropertyFilterBuilderRuleOperatorProps) => React_2.ReactNode;
     // (undocumented)

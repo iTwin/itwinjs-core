@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
+import { Buffer } from "buffer";
 import { assert } from "chai";
 import * as semver from "semver";
 import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
@@ -169,11 +169,21 @@ describe("RpcInterface", () => {
       return;
     }
 
-    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    try {
+      await RpcManager.getClientForInterface(LocalInterface).op();
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();
-    try { await RpcManager.getClientForInterface(LocalInterface).op(); assert(false); } catch (err) { assert(true); }
+    try {
+      await RpcManager.getClientForInterface(LocalInterface).op();
+      assert(false);
+    } catch (err) {
+      assert(true);
+    }
     initializeLocalInterface();
     await RpcManager.getClientForInterface(LocalInterface).op();
     terminateLocalInterface();

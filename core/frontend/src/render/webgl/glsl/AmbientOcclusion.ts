@@ -72,7 +72,7 @@ const computeAmbientOcclusion = `
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
   float intensity = u_hbaoSettings.z; // Raise the final occlusion to the power of this value.  Larger values make the ambient shadows darker.
-  float texelStepSize = u_hbaoSettings.w; // Indicates the distance to step toward the next texel sample in the current direction.
+  float texelStepSize = clamp(u_hbaoSettings.w * linearDepth, 1.0, u_hbaoSettings.w); // Indicates the distance to step toward the next texel sample in the current direction.
 
   float tOcclusion = 0.0;
 
@@ -116,6 +116,9 @@ const computeAmbientOcclusion = `
     }
     tOcclusion += curOcclusion;
   }
+
+  float distanceFadeFactor = kFrustumType_Perspective == u_frustum.z ? 1.0 - pow(clamp(nonLinearDepth / u_maxDistance, 0.0, 1.0), 4.0) : 1.0;
+  tOcclusion *= distanceFadeFactor;
 
   tOcclusion /= 4.0;
   tOcclusion = 1.0 - clamp(tOcclusion, 0.0, 1.0);
@@ -196,7 +199,9 @@ const unfinalizeLinearDepthDB = `
   }
 `;
 
-function _shouldUseDB() { return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat; }
+function _shouldUseDB() {
+  return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat;
+}
 
 /** @internal */
 export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {

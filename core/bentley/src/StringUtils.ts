@@ -11,7 +11,9 @@
 // which is itself inspired by https://github.com/inexorabletash/text-encoding
 /** @internal */
 namespace Utf8ToString {
-  function inRange(a: number, min: number, max: number): boolean { return min <= a && a <= max; }
+  function inRange(a: number, min: number, max: number): boolean {
+    return min <= a && a <= max;
+  }
 
   function utf8Handler(bytes: Uint8Array): number[] | undefined {
     let codePoint = 0;

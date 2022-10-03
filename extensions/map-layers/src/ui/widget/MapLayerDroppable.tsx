@@ -33,6 +33,7 @@ interface MapLayerDroppableProps {
   onMenuItemSelected: (action: string, mapLayerSettings: StyleMapLayerSettings) => void;
   onItemVisibilityToggleClicked: (mapLayerSettings: StyleMapLayerSettings) => void;
   onItemEdited: () => void;
+  disabled?: boolean;
 }
 
 /** @internal */
@@ -54,10 +55,10 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
       <div className="map-manager-source-item" data-id={rubric.source.index} key={activeLayer.name}
         {...dragProvided.draggableProps}
         ref={dragProvided.innerRef} >
-        <Button size="small" styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
+        <Button disabled={props.disabled} size="small" styleType="borderless" className="map-manager-item-visibility" title={toggleVisibility} onClick={() => { props.onItemVisibilityToggleClicked(activeLayer); }}>
           <Icon iconSpec={activeLayer.visible ? "icon-visibility" : "icon-visibility-hide-2"} />
         </Button>
-        <span className="map-manager-item-label" {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
+        <span className={props.disabled ? "map-manager-item-label-disabled" : "map-manager-item-label"} {...dragProvided.dragHandleProps}>{activeLayer.name}</span>
         <div className="map-manager-item-sub-layer-container">
           {activeLayer.subLayers && activeLayer.subLayers.length > 1 &&
             <SubLayersPopupButton mapLayerSettings={activeLayer} activeViewport={props.activeViewport} />
@@ -65,6 +66,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
         </div>
         {activeLayer.provider?.status === MapLayerImageryProviderStatus.RequireAuth &&
           <Button
+            disabled={props.disabled}
             size="small"
             styleType="borderless"
             onClick={() => {
@@ -86,7 +88,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             <Icon iconSpec="icon-status-warning" />
           </Button>
         }
-        <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} />
+        <MapLayerSettingsMenu activeViewport={props.activeViewport} mapLayerSettings={activeLayer} onMenuItemSelection={props.onMenuItemSelected} disabled={props.disabled} />
       </div>
     );
   };
@@ -96,7 +98,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
     if (containsLayer) {
       // Render a <Draggable>
       node = (props.layersList?.map((mapLayerSettings, i) =>
-        <Draggable key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
+        <Draggable isDragDisabled={props.disabled} key={mapLayerSettings.name} draggableId={mapLayerSettings.name} index={i}>
           {renderItem}
         </Draggable>));
     } else {
@@ -109,7 +111,7 @@ export function MapLayerDroppable(props: MapLayerDroppableProps) {
             :
             <>
               <span className="map-manager-no-layers-label">{label}</span>
-              <AttachLayerPopupButton buttonType={AttachLayerButtonType.Blue} isOverlay={props.isOverlay} />
+              <AttachLayerPopupButton disabled={props.disabled} buttonType={AttachLayerButtonType.Blue} isOverlay={props.isOverlay} />
             </>
           }
         </div>;

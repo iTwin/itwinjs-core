@@ -177,18 +177,49 @@ describe("DisplayStyleSettings", () => {
       test("+1", (settings) => settings.addExcludedElements("0x1"));
       test("+1", (settings) => settings.addExcludedElements(["0x1"]));
 
-      test("+2", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElement("0x1"); });
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements(["0x2", "0x1"]); });
+      test("+2", (settings) => {
+        settings.addExcludedElements(["0x1", "0x2"]);
+        settings.dropExcludedElement("0x1");
+      });
+      test(undefined, (settings) => {
+        settings.addExcludedElements(["0x1", "0x2"]);
+        settings.dropExcludedElements(["0x2", "0x1"]);
+      });
 
       test("+3", (settings) => settings.addExcludedElements("0x3"));
-      test(undefined, (settings) => { settings.addExcludedElements("0x2"); settings.dropExcludedElement("0x2"); });
-      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements("0x2"); settings.dropExcludedElements("0x1"); });
-      test("+1", (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.dropExcludedElements("0x2"); });
-      test("+2", (settings) => { settings.addExcludedElements("0x1"); settings.addExcludedElements(["0x2", "0x3"]); settings.dropExcludedElement("0x3"); settings.dropExcludedElements("0x1"); });
+      test(undefined, (settings) => {
+        settings.addExcludedElements("0x2");
+        settings.dropExcludedElement("0x2");
+      });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.clearExcludedElements(); });
+      test("+2", (settings) => {
+        settings.addExcludedElements("0x1");
+        settings.addExcludedElements("0x2");
+        settings.dropExcludedElements("0x1");
+      });
 
-      test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.addExcludedElements("0x3"); settings.clearExcludedElements(); });
+      test("+1", (settings) => {
+        settings.addExcludedElements(["0x1", "0x2"]);
+        settings.dropExcludedElements("0x2");
+      });
+
+      test("+2", (settings) => {
+        settings.addExcludedElements("0x1");
+        settings.addExcludedElements(["0x2", "0x3"]);
+        settings.dropExcludedElement("0x3");
+        settings.dropExcludedElements("0x1");
+      });
+
+      test(undefined, (settings) => {
+        settings.addExcludedElements(["0x1", "0x2"]);
+        settings.clearExcludedElements();
+      });
+
+      test(undefined, (settings) => {
+        settings.addExcludedElements(["0x1", "0x2"]);
+        settings.addExcludedElements("0x3");
+        settings.clearExcludedElements();
+      });
     });
   });
 
@@ -341,8 +372,8 @@ describe("DisplayStyleSettings overrides", () => {
       bias: 0.5,
       zLengthCap: 0.25,
       intensity: 1.5,
-      blurDelta: 1,
-      blurSigma: 2,
+      blurDelta: 1.1,
+      blurSigma: 2.1,
       blurTexelStepSize: 3,
       maxDistance: 4,
       texelStepSize: 5,

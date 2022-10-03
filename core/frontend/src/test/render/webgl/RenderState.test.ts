@@ -257,7 +257,6 @@ describe("RenderState", () => {
       [GL.Capability.FrontFace, rs.frontFace],
       [GL.Capability.CullFaceMode, rs.cullFace],
       [GL.Capability.DepthFunc, rs.depthFunc],
-      [GL.Capability.StencilWriteMask, rs.stencilMask],
       [GL.Capability.CullFace, rs.flags.cull],
       [GL.Capability.DepthTest, rs.flags.depthTest],
       [GL.Capability.Blend, rs.flags.blend],
@@ -273,17 +272,24 @@ describe("RenderState", () => {
 
       [GL.Capability.StencilFrontFunc, rs.stencil.frontFunction.function],
       [GL.Capability.StencilFrontRef, rs.stencil.frontFunction.ref],
-      [GL.Capability.StencilFrontWriteMask, rs.stencil.frontFunction.mask],
       [GL.Capability.StencilFrontOpFail, rs.stencil.frontOperation.fail],
       [GL.Capability.StencilFrontOpZFail, rs.stencil.frontOperation.zFail],
       [GL.Capability.StencilFrontOpZPass, rs.stencil.frontOperation.zPass],
 
       [GL.Capability.StencilBackFunc, rs.stencil.backFunction.function],
       [GL.Capability.StencilBackRef, rs.stencil.backFunction.ref],
-      [GL.Capability.StencilBackWriteMask, rs.stencil.backFunction.mask],
       [GL.Capability.StencilBackOpFail, rs.stencil.backOperation.fail],
       [GL.Capability.StencilBackOpZFail, rs.stencil.backOperation.zFail],
       [GL.Capability.StencilBackOpZPass, rs.stencil.backOperation.zPass],
+
+      // The WebGL spec states these are 32-bit unsigned integers and initially all bits are set.
+      // Chrome or ANGLE appears to have a bug that always leaves the high bit unset, even if you explicitly
+      // call e.g., stencilMask(0xffffffff).
+      // Firefox does not exhibit this bug.
+      // Ignore for now.
+      // [GL.Capability.StencilWriteMask, rs.stencilMask],
+      // [GL.Capability.StencilFrontWriteMask, rs.stencil.frontFunction.mask],
+      // [GL.Capability.StencilBackWriteMask, rs.stencil.backFunction.mask],
     ];
 
     for (const testCase of testCases) {

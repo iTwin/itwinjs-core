@@ -27,7 +27,10 @@ export class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
   public isPixelMode: boolean = false;
 
-  protected constructor(cachedGeom: CachedGeometry) { super(); this.cachedGeometry = cachedGeom; }
+  protected constructor(cachedGeom: CachedGeometry) {
+    super();
+    this.cachedGeometry = cachedGeom;
+  }
 
   public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
     if (!geom)

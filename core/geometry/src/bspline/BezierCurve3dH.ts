@@ -220,7 +220,9 @@ export class BezierCurve3dH extends BezierCurveBase {
    * @param detail pre-allocated detail to record (evolving) closest point.
    * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
    */
-  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail): boolean {
+  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail,
+    testAt0: boolean = false,
+    testAt1: boolean = false): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
     if (this.isUnitWeight()) {
@@ -269,8 +271,17 @@ export class BezierCurve3dH extends BezierCurveBase {
         numUpdates += detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a) ? 1 : 0;
       }
     }
+    if (testAt0)
+      numUpdates += this.updateDetailAtFraction (detail, 0.0, spacePoint) ? 1 : 0;
+    if (testAt1)
+      numUpdates += this.updateDetailAtFraction (detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean{
+    const xyz = this.fractionToPoint(fraction);
+    const a = xyz.distance(spacePoint);
+    return detail.updateIfCloserCurveFractionPointDistance (this, fraction, xyz, a);
+      }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
    * * any internal extrema in x,y,z

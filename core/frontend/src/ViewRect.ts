@@ -54,7 +54,12 @@ export class ViewRect {
   /** The area (width*height) of this ViewRect. */
   public get area() { return this.isNull ? 0 : this.width * this.height; }
   /** Initialize this ViewRect from its left/top/right/bottom parameters. */
-  public init(left: number, top: number, right: number, bottom: number) { this.left = left; this.bottom = bottom, this.right = right; this.top = top; }
+  public init(left: number, top: number, right: number, bottom: number) {
+    this.left = left;
+    this.bottom = bottom, this.right = right;
+    this.top = top;
+  }
+
   /** Initialize this ViewRect from two points.
    * @param topLeft The top-left corner.
    * @param bottomRight The bottom-right corner.
@@ -81,10 +86,14 @@ export class ViewRect {
     return new ViewRect(this.left, this.top, this.right, this.bottom);
   }
   public extend(other: ViewRect) {
-    if (this.left > other.left) this.left = other.left;
-    if (this.top > other.top) this.top = other.top;
-    if (this.right < other.right) this.right = other.right;
-    if (this.bottom < other.bottom) this.bottom = other.bottom;
+    if (this.left > other.left)
+      this.left = other.left;
+    if (this.top > other.top)
+      this.top = other.top;
+    if (this.right < other.right)
+      this.right = other.right;
+    if (this.bottom < other.bottom)
+      this.bottom = other.bottom;
   }
 
   /** Inset this ViewRect by values in the x and y directions. Positive values make the ViewRect smaller, and negative values will make it larger.

@@ -3,21 +3,25 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1F3CA70228BEB7320096B6D6 /* DtaAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */; };
+		1F3CA70428BEB8370096B6D6 /* PrintLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */; };
+		1F3CA70628BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */; };
+		1F3CA70928BEB9F50096B6D6 /* AppAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 1F3CA70828BEB9F50096B6D6 /* AppAuth */; };
+		1F3CA70B28BEB9F50096B6D6 /* AppAuthCore in Frameworks */ = {isa = PBXBuildFile; productRef = 1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */; };
+		1F3CA70F28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */; };
 		415D588423E37F5200907B7B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588323E37F5200907B7B /* AppDelegate.swift */; };
 		415D588623E37F5200907B7B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588523E37F5200907B7B /* SceneDelegate.swift */; };
 		415D588823E37F5200907B7B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D588723E37F5200907B7B /* ViewController.swift */; };
 		415D588B23E37F5200907B7B /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588923E37F5200907B7B /* Main.storyboard */; };
 		415D588D23E37F5300907B7B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 415D588C23E37F5300907B7B /* Assets.xcassets */; };
 		415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 415D588E23E37F5300907B7B /* LaunchScreen.storyboard */; };
-		415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = 415D589B23E38D0C00907B7B /* Config.xcconfig */; };
 		415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 415D589923E38CCF00907B7B /* WebKit.framework */; };
 		415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 415D58B623E4ACAA00907B7B /* AssetHandler.swift */; };
-		4180D5312472EEBB00EF5E14 /* IModelJsNative.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */; };
-		4180D5322472EEBB00EF5E14 /* IModelJsNative.framework in Embed Libraries */ = {isa = PBXBuildFile; fileRef = 4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */ = {isa = PBXBuildFile; productRef = F4A4D85F28A599050015ED63 /* IModelJsNative */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -27,7 +31,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				4180D5322472EEBB00EF5E14 /* IModelJsNative.framework in Embed Libraries */,
 			);
 			name = "Embed Libraries";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -35,6 +38,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaAuthorizationClient.swift; sourceTree = "<group>"; };
+		1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrintLogger.swift; sourceTree = "<group>"; };
+		1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaOidcAuthorizationClient.swift; sourceTree = "<group>"; };
+		1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DtaServiceAuthorizationClient.swift; sourceTree = "<group>"; };
 		415D588023E37F5200907B7B /* imodeljs-test-app.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "imodeljs-test-app.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		415D588323E37F5200907B7B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		415D588523E37F5200907B7B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -47,7 +54,6 @@
 		415D589B23E38D0C00907B7B /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "imodeljs-test-app-Bridging-Header.h"; sourceTree = "<group>"; };
 		415D58B623E4ACAA00907B7B /* AssetHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AssetHandler.swift; sourceTree = "<group>"; };
-		4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IModelJsNative.framework; path = "../../node_modules/@itwin/core-backend/node_modules/@bentley/imodeljs-native/imodeljs-ios-arm64//IModelJsNative.framework"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -55,8 +61,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4180D5312472EEBB00EF5E14 /* IModelJsNative.framework in Frameworks */,
+				1F3CA70928BEB9F50096B6D6 /* AppAuth in Frameworks */,
+				F4A4D86028A599050015ED63 /* IModelJsNative in Frameworks */,
 				415D58A123E38DD100907B7B /* WebKit.framework in Frameworks */,
+				1F3CA70B28BEB9F50096B6D6 /* AppAuthCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,14 +93,18 @@
 			isa = PBXGroup;
 			children = (
 				415D588323E37F5200907B7B /* AppDelegate.swift */,
+				1F3CA70128BEB7320096B6D6 /* DtaAuthorizationClient.swift */,
+				1F3CA70528BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift */,
+				1F3CA70E28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift */,
+				1F3CA70328BEB8370096B6D6 /* PrintLogger.swift */,
 				415D588523E37F5200907B7B /* SceneDelegate.swift */,
 				415D588723E37F5200907B7B /* ViewController.swift */,
+				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 				415D588923E37F5200907B7B /* Main.storyboard */,
 				415D588C23E37F5300907B7B /* Assets.xcassets */,
 				415D588E23E37F5300907B7B /* LaunchScreen.storyboard */,
 				415D589123E37F5300907B7B /* Info.plist */,
 				415D58A423E3907C00907B7B /* imodeljs-test-app-Bridging-Header.h */,
-				415D58B623E4ACAA00907B7B /* AssetHandler.swift */,
 			);
 			path = "imodeljs-test-app";
 			sourceTree = "<group>";
@@ -100,7 +112,6 @@
 		415D589823E38CCF00907B7B /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				4180D5302472EEBB00EF5E14 /* IModelJsNative.framework */,
 				415D589923E38CCF00907B7B /* WebKit.framework */,
 			);
 			name = Frameworks;
@@ -117,13 +128,18 @@
 				415D587D23E37F5200907B7B /* Frameworks */,
 				415D587E23E37F5200907B7B /* Resources */,
 				415D58A023E38DCB00907B7B /* Embed Libraries */,
-				415D58A323E38E1900907B7B /* ShellScript */,
+				5F367F8C28B724C400DED71B /* ShellScript */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = "imodeljs-test-app";
+			packageProductDependencies = (
+				F4A4D85F28A599050015ED63 /* IModelJsNative */,
+				1F3CA70828BEB9F50096B6D6 /* AppAuth */,
+				1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */,
+			);
 			productName = "imodeljs-test-app";
 			productReference = 415D588023E37F5200907B7B /* imodeljs-test-app.app */;
 			productType = "com.apple.product-type.application";
@@ -135,7 +151,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1130;
-				LastUpgradeCheck = 1130;
+				LastUpgradeCheck = 1330;
 				ORGANIZATIONNAME = "Affan Khan";
 				TargetAttributes = {
 					415D587F23E37F5200907B7B = {
@@ -153,6 +169,10 @@
 				Base,
 			);
 			mainGroup = 415D587723E37F5200907B7B;
+			packageReferences = (
+				F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */,
+				1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */,
+			);
 			productRefGroup = 415D588123E37F5200907B7B /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -167,7 +187,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				415D589C23E38D0C00907B7B /* Config.xcconfig in Resources */,
 				415D589023E37F5300907B7B /* LaunchScreen.storyboard in Resources */,
 				415D588D23E37F5300907B7B /* Assets.xcassets in Resources */,
 				415D588B23E37F5200907B7B /* Main.storyboard in Resources */,
@@ -177,7 +196,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		415D58A323E38E1900907B7B /* ShellScript */ = {
+		5F367F8C28B724C400DED71B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -192,7 +211,8 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\nProjectDir=\"$PROJECT_DIR\";\n\n# iModelJsNative Assets folder\nrm -rf $AppBundleRoot/iModelJsNative\nmkdir $AppBundleRoot/iModelJsNative\ncp -L -R $OutRoot$BuildArchitecture/Product/iModelJsHost/Assets $AppBundleRoot/iModelJsNative\n# cp $AssetRoot/backend/assets/test.bim $AppBundleRoot/iModelJsNative/Assets/\n\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n\n";
+			shellScript = "AppBundleRoot=\"$BUILT_PRODUCTS_DIR/$FULL_PRODUCT_NAME\"\n\n# Copy FrontEnd and BackEnd assets\nrm -rf $AppBundleRoot/Assets\nmkdir $AppBundleRoot/Assets\ncp -L -R $AssetRoot/ $AppBundleRoot/Assets/\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -201,9 +221,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1F3CA70F28BFFEFD0096B6D6 /* DtaServiceAuthorizationClient.swift in Sources */,
 				415D588823E37F5200907B7B /* ViewController.swift in Sources */,
 				415D588423E37F5200907B7B /* AppDelegate.swift in Sources */,
 				415D58B723E4ACAA00907B7B /* AssetHandler.swift in Sources */,
+				1F3CA70428BEB8370096B6D6 /* PrintLogger.swift in Sources */,
+				1F3CA70228BEB7320096B6D6 /* DtaAuthorizationClient.swift in Sources */,
+				1F3CA70628BEB8940096B6D6 /* DtaOidcAuthorizationClient.swift in Sources */,
 				415D588623E37F5200907B7B /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -256,6 +280,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -316,6 +341,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -353,18 +379,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
@@ -383,18 +402,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = WLDT6Q3PUY;
 				ENABLE_BITCODE = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(inherited)",
-					"$(PROJECT_DIR)/imodeljs-test-app/thirdparty",
-					"$(FRAMEWORK_SEARCH_PATHS)",
-				);
-				HEADER_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/includes/**";
 				INFOPLIST_FILE = "imodeljs-test-app/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				LIBRARY_SEARCH_PATHS = "$(OutRoot)$(BuildArchitecture)/Product/iModelJsHost/libs";
 				PRODUCT_BUNDLE_IDENTIFIER = "bentley.imodeljs-test-app";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = "imodeljs-test-app/imodeljs-test-app-Bridging-Header.h";
@@ -425,6 +437,43 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/openid/AppAuth-iOS.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
+		F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
+			requirement = {
+				kind = exactVersion;
+				version = 3.4.17;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		1F3CA70828BEB9F50096B6D6 /* AppAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */;
+			productName = AppAuth;
+		};
+		1F3CA70A28BEB9F50096B6D6 /* AppAuthCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 1F3CA70728BEB9F50096B6D6 /* XCRemoteSwiftPackageReference "AppAuth-iOS" */;
+			productName = AppAuthCore;
+		};
+		F4A4D85F28A599050015ED63 /* IModelJsNative */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F4A4D85E28A599050015ED63 /* XCRemoteSwiftPackageReference "mobile-native-ios" */;
+			productName = IModelJsNative;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 415D587823E37F5200907B7B /* Project object */;
 }

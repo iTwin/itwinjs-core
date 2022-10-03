@@ -218,7 +218,7 @@ export class CutLoopMergeContext {
 export class PolygonOps {
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
-   * * Sum the areas(absolute, without regard to orientation) all these triangles.
+   * * Sum the absolute areas (without regard to orientation) all these triangles.
    * @returns sum of absolute triangle areas.
    */
   public static sumTriangleAreas(points: Point3d[] | GrowableXYZArray): number {
@@ -245,10 +245,47 @@ export class PolygonOps {
     }
     return s * 0.5;
   }
+  /** Sum areas of triangles from points[0] to each far edge, as viewed with upVector pointing up.
+   * * Consider triangles from points[0] to each edge.
+   * * Sum the areas perpendicular to the upVector.
+   * * If the upVector is near-zero length, a simple z vector is used.
+   * @returns sum of triangle areas.
+   */
+   public static sumTriangleAreasPerpendicularToUpVector(points: Point3d[] | GrowableXYZArray, upVector: Vector3d): number {
+    let scale = upVector.magnitude ();
+    if (scale < Geometry.smallMetricDistance) {
+      upVector = Vector3d.create (0,0,1);
+      scale = 1.0;
+      }
+
+    let s = 0;
+    const n = points.length;
+    if (Array.isArray(points)) {
+      if (n >= 3) {
+        const origin = points[0];
+        const vector0 = origin.vectorTo(points[1]);
+        let vector1 = Vector3d.create();
+        // This will work with or without closure edge.  If closure is given, the last vector is 000.
+        for (let i = 2; i < n; i++) {
+          vector1 = origin.vectorTo(points[i], vector1);
+          s += vector0.tripleProduct(vector1, upVector);
+          vector0.setFrom(vector1);
+        }
+      }
+      return s * 0.5 / scale;
+    }
+    const crossVector = Vector3d.create();
+    for (let i = 2; i < n; i++) {
+      points.crossProductIndexIndexIndex(0, i - 1, i, crossVector);
+      s += crossVector.dotProduct(upVector);
+    }
+    return s * 0.5 / scale;
+  }
+
   /** Sum areas of triangles from points[0] to each far edge.
    * * Consider triangles from points[0] to each edge.
-   * * Sum the areas(absolute, without regard to orientation) all these triangles.
-   * @returns sum of absolute triangle areas.
+   * * Sum the signed areas of all these triangles. (An area can be negative at a concave corner.)
+   * @returns sum of signed triangle areas.
    */
   public static sumTriangleAreasXY(points: Point3d[]): number {
     let s = 0.0;
@@ -295,11 +332,12 @@ export class PolygonOps {
   public static areaNormalGo(points: IndexedXYZCollection, result?: Vector3d): Vector3d | undefined {
     if (!result)
       result = new Vector3d();
+    else
+      result.setZero();
     const n = points.length;
     if (n === 3) {
       points.crossProductIndexIndexIndex(0, 1, 2, result);
-    } else if (n >= 3) {
-      result.setZero();
+    } else if (n > 3) {
       // This will work with or without closure edge.  If closure is given, the last vector is 000.
       for (let i = 2; i < n; i++) {
         points.accumulateCrossProductIndexIndexIndex(0, i - 1, i, result);
@@ -307,7 +345,7 @@ export class PolygonOps {
     }
     // ALL BRANCHES SUM FULL CROSS PRODUCTS AND EXPECT SCALE HERE
     result.scaleInPlace(0.5);
-    return result;
+    return result.isZero ? undefined : result;
   }
   /** return a vector which is perpendicular to the polygon and has magnitude equal to the polygon area. */
   public static areaNormal(points: Point3d[], result?: Vector3d): Vector3d {
@@ -448,8 +486,10 @@ export class PolygonOps {
    * Return a unit normal to the plane of the polygon.
    * @param points array of points around the polygon.
    * @param result caller-allocated result vector.
+   * @return true if and only if result has unit length
    */
   public static unitNormal(points: IndexedXYZCollection, result: Vector3d): boolean {
+    result.setZero();
     let n = points.length;
     if (n > 1 && points.getPoint3dAtUncheckedPointIndex(0).isExactEqual(points.getPoint3dAtUncheckedPointIndex(n - 1)))
       --n;  // ignore closure point

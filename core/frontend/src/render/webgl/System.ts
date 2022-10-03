@@ -19,8 +19,7 @@ import { GraphicBranch, GraphicBranchOptions } from "../GraphicBranch";
 import { BatchOptions, CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../GraphicBuilder";
 import { InstancedGraphicParams, PatternGraphicParams } from "../InstancedGraphicParams";
 import { PrimitiveBuilder } from "../primitives/geometry/GeometryListBuilder";
-import { RealityMeshGraphicParams, RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
-import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";
+import { RealityMeshGraphicParams } from "../RealityMeshGraphicParams";
 import { PointCloudArgs } from "../primitives/PointCloudPrimitive";
 import { PointStringParams } from "../primitives/PointStringParams";
 import { PolylineParams } from "../primitives/PolylineParams";
@@ -29,6 +28,7 @@ import { RenderClipVolume } from "../RenderClipVolume";
 import { RenderGraphic, RenderGraphicOwner } from "../RenderGraphic";
 import { CreateRenderMaterialArgs } from "../RenderMaterial";
 import { RenderMemory } from "../RenderMemory";
+import { RealityMeshParams } from "../RealityMeshParams";
 import {
   DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderAtmosphericSkyParams, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
@@ -399,6 +399,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public override get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
   public override get supportsInstancing(): boolean { return this.capabilities.supportsInstancing; }
+  public override get supportsCreateImageBitmap(): boolean { return this.capabilities.supportsCreateImageBitmap; }
   public override get supportsNonuniformScaledInstancing(): boolean { return this.capabilities.isWebGL2; }
 
   /** Requires gl_VertexID (WebGL 2 only) and > 8 texture units (WebGL 1 only guarantees 8). */
@@ -423,6 +424,11 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
       });
     });
     return promise;
+  }
+
+  public override get hasExternalTextureRequests(): boolean {
+    const loader = ExternalTextureLoader.instance;
+    return loader.numActiveRequests > 0 || loader.numPendingRequests > 0;
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */
@@ -531,14 +537,14 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return PlanarGridGeometry.create(frustum, grid, this);
   }
 
-  public override createRealityMeshFromTerrain(terrainMesh: TerrainMeshPrimitive, transform?: Transform, disableTextureDisposal = false, isMapTile = false): RealityMeshGeometry | undefined {
-    return RealityMeshGeometry.createFromTerrainMesh(terrainMesh, transform, disableTextureDisposal, isMapTile);
+  public override createTerrainMesh(params: RealityMeshParams, transform?: Transform, disableTextureDisposal = false, isMapTile = false): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createForTerrain(params, transform, disableTextureDisposal, isMapTile);
   }
 
   public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false, isMapTile = false): RenderGraphic | undefined {
     return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal, isMapTile);
   }
-  public override createRealityMesh(realityMesh: RealityMeshPrimitive, disableTextureDisposal = false, isMapTile = false): RenderGraphic | undefined {
+  public override createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false, isMapTile = false): RenderGraphic | undefined {
     const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal, isMapTile);
     return geom ? Primitive.create(geom) : undefined;
   }
@@ -746,8 +752,12 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     let handle;
     if (source instanceof ImageBuffer)
       handle = TextureHandle.createForImageBuffer(source, type);
-    else
+    else if (source instanceof ImageBitmap)
+      handle = TextureHandle.createForImageBitmap(source, type);
+    else if (source instanceof HTMLImageElement)
       handle = TextureHandle.createForImage(source, type);
+    else
+      assert(false);
 
     if (!handle)
       return undefined;
@@ -778,7 +788,16 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   /** Attempt to create a texture using gradient symbology. */
   public override getGradientTexture(symb: Gradient.Symb, iModel?: IModelConnection): RenderTexture | undefined {
-    const source = symb.getImage(0x100, 0x100);
+    let width = 0x100;
+    let height = 0x100;
+    if (symb.mode === Gradient.Mode.Thematic) {
+      // Pixels in each row are identical, no point in having width > 1.
+      width = 1;
+      // We want maximum height to minimize bleeding of margin color.
+      height = this.maxTextureSize;
+    }
+
+    const source = symb.produceImage({ width, height, includeThematicMargin: true });
     return this.createTexture({
       image: {
         source,
