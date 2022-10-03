@@ -76,4 +76,8 @@ export class RgbColor {
   public compareTo(other: RgbColor): number {
     return compareNumbers(this.r, other.r) || compareNumbers(this.g, other.g) || compareNumbers(this.b, other.b);
   }
+
+  public toHexString(): string {
+    return this.toColorDef().toHexString();
+  }
 }
