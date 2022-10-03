@@ -160,7 +160,9 @@ export interface ContextRealityModelProps {
   planarClipMask?: PlanarClipMaskProps;
   /** See [[ContextRealityModel.appearanceOverrides]]. */
   appearanceOverrides?: FeatureAppearanceProps;
-  /** See [[ContextRealityModel.displaySettings]]. */
+  /** See [[ContextRealityModel.displaySettings]].
+   * @beta
+   */
   displaySettings?: RealityModelDisplayProps;
 }
 
@@ -237,13 +239,16 @@ export class ContextRealityModel {
   /** @alpha */
   public readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
   protected _appearanceOverrides?: FeatureAppearance;
+  /** @beta */
   protected _displaySettings: RealityModelDisplaySettings;
   protected _planarClipMask?: PlanarClipMaskSettings;
   /** Event dispatched just before assignment to [[planarClipMaskSettings]]. */
   public readonly onPlanarClipMaskChanged = new BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>();
   /** Event dispatched just before assignment to [[appearanceOverrides]]. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>();
-  /** Event dispatched just before assignment to [[displaySettings]]. */
+  /** Event dispatched just before assignment to [[displaySettings]].
+   * @beta
+   */
   public readonly onDisplaySettingsChanged = new BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>();
 
   /** Construct a new context reality model.
@@ -295,6 +300,9 @@ export class ContextRealityModel {
     this._appearanceOverrides = overrides;
   }
 
+  /** Settings controlling how this reality model is displayed in a [Viewport]($frontend).
+   * @beta
+   */
   public get displaySettings(): RealityModelDisplaySettings {
     return this._displaySettings;
   }
@@ -340,6 +348,9 @@ export class ContextRealityModels {
   public readonly onPlanarClipMaskChanged = new BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>();
   /** Event dispatched just before [[ContextRealityModel.appearanceOverrides]] is modified for one of the reality models. */
   public readonly onAppearanceOverridesChanged = new BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>();
+  /** Event dispatched just before [[ContextRealityModel.displaySettings]] is modified for one of the reality models.
+   * @beta
+   */
   public readonly onDisplaySettingsChanged = new BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>();
   /** Event dispatched when a model is [[add]]ed, [[delete]]d, [[replace]]d, or [[update]]d. */
   public readonly onChanged = new BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>();
@@ -471,6 +482,7 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.addListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.addListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onDisplaySettingsChanged.addListener(this.handleDisplaySettingsChanged, this);
     return model;
   }
@@ -480,6 +492,7 @@ export class ContextRealityModels {
     model.onPlanarClipMaskChanged.removeListener(this.handlePlanarClipMaskChanged, this);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onAppearanceOverridesChanged.removeListener(this.handleAppearanceOverridesChanged, this);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     model.onDisplaySettingsChanged.removeListener(this.handleDisplaySettingsChanged, this);
   }
 

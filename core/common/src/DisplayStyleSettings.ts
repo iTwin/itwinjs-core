@@ -58,7 +58,12 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   modelId: Id64String;
 }
 
+/** [[RealityModelSettings]] applied to a reality [Model]($backend) to change how it is rendered within the context of a [DisplayStyle]($backend).
+ * @see [[DisplayStyleSettingsProps.realityModelDisplay]].
+ * @beta
+ */
 export interface DisplayStyleRealityModelDisplayProps extends RealityModelDisplayProps {
+  /** The Id of the reality [Model]($backend) to which the settings apply. */
   modelId?: Id64String;
 }
 
@@ -133,6 +138,10 @@ export interface DisplayStyleSettingsProps {
    * See [[DisplayStyleSettings.overrideModelAppearance]].
    */
   modelOvr?: DisplayStyleModelAppearanceProps[];
+  /** Display settings applied to specific reality models in the view.
+   * @see [[DisplayStyleSettings.setRealityModelDisplaySettings]].
+   * @beta
+   */
   realityModelDisplay?: DisplayStyleRealityModelDisplayProps[];
   /** See [[DisplayStyleSettings.clipStyle]]. */
   clipStyle?: ClipStyleProps;
@@ -483,6 +492,9 @@ export class DisplayStyleSettings {
   public readonly onSubCategoryOverridesChanged = new BeEvent<(subCategoryId: Id64String, newOverrides: SubCategoryOverride | undefined) => void>();
   /** Event raised just before changing the appearance override for a model. */
   public readonly onModelAppearanceOverrideChanged = new BeEvent<(modelId: Id64String, newAppearance: FeatureAppearance | undefined) => void>();
+  /** Event raised just before [[setRealityModelDisplaySettings]] changes the display settings for a reality model.
+   * @beta
+   */
   public readonly onRealityModelDisplaySettingsChanged = new BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
@@ -808,10 +820,21 @@ export class DisplayStyleSettings {
     return this.modelAppearanceOverrides.size > 0;
   }
 
+  /** Get any settings that override how the reality model with the specified Id is displayed.
+   * @param modelId The Id of the [Model]($backend).
+   * @returns the display settings, or `undefined` if no settings have been associated with `modelId`.
+   * @see [[setRealityModelDisplaySettings]] to change the settings.
+   * @beta
+   */
   public getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined {
     return this._realityModelDisplaySettings.get(modelId);
   }
 
+  /** Change the settings that control how the reality model with the specified Id is displayed.
+   * @param modelId The Id of the [Model]($backend) to which the settings apply.
+   * @param settings The settings to apply to the model, or `undefined` to clear any previous settings for that model.
+   * @beta
+   */
   public setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void {
     if (settings)
       this._realityModelDisplaySettings.set(modelId, settings);
