@@ -30,8 +30,8 @@ jobs:
       nodeVersion: 16.13.0
       buildIos: true
       pool:
-        name: $(name)
+        name: iModelTechMacArm
         demands:
           - Agent.OS -equals $(platform)
-          - Agent.Name -equals BuildMacMinion04-A
+          - Agent.Name -equals BuildMacM1Minion52-A
 
