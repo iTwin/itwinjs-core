@@ -11,7 +11,7 @@ Array [
             "children": Array [
               Object {
                 "extendedData": Object {
-                  "categoryId": "0x12",
+                  "categoryId": "0x13",
                   "modelId": "0x11",
                 },
                 "icon": "icon-item",
@@ -22,8 +22,8 @@ Array [
                     "typename": "string",
                   },
                   "value": Object {
-                    "displayValue": "Physical Object [0-K]",
-                    "value": "Physical Object [0-K]",
+                    "displayValue": "Physical Object [0-L]",
+                    "value": "Physical Object [0-L]",
                     "valueFormat": 0,
                   },
                 },
@@ -102,7 +102,7 @@ Array [
                 "children": Array [
                   Object {
                     "extendedData": Object {
-                      "categoryId": "0x12",
+                      "categoryId": "0x13",
                       "modelId": "0x11",
                     },
                     "icon": "icon-item",
@@ -113,8 +113,8 @@ Array [
                         "typename": "string",
                       },
                       "value": Object {
-                        "displayValue": "Physical Object [0-K]",
-                        "value": "Physical Object [0-K]",
+                        "displayValue": "Physical Object [0-L]",
+                        "value": "Physical Object [0-L]",
                         "valueFormat": 0,
                       },
                     },

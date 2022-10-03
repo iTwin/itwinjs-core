@@ -38,7 +38,13 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 }
 
 let isInitialized = false;
-export let TEST_OUTPUT_DIR = join(__dirname, "output");
+
+const defaultTestOutputDir = join(__dirname, "output");
+let customOutputDir: string | undefined;
+
+export const getTestOutputDir = (): string =>  {
+  return customOutputDir ?? defaultTestOutputDir;
+};
 
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
 
@@ -54,8 +60,8 @@ export interface PresentationTestingInitProps {
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
   /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
-  /** Test output directory  */
-  testOutputDir?: string;
+  /** Custom test output directory  */
+  customOutputDir?: string;
 }
 
 /**
@@ -94,7 +100,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
-  TEST_OUTPUT_DIR = props.testOutputDir ?? TEST_OUTPUT_DIR;
+  customOutputDir = props.customOutputDir;
 
   isInitialized = true;
 };

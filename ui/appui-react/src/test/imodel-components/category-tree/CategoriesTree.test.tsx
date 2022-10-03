@@ -23,7 +23,7 @@ import { CategoryTree, RULESET_CATEGORIES, toggleAllCategories } from "../../../
 import { CategoryVisibilityHandler } from "../../../appui-react/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
-import { CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { BisCodeSpec, CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
 import { join } from "path";
 
 describe("CategoryTree", () => {
@@ -474,7 +474,7 @@ describe("CategoryTree", () => {
             },
           },
         },
-        testOutputDir: join(__dirname, "output"),
+        customOutputDir: join(__dirname, "output"),
       });
     });
 
@@ -484,14 +484,16 @@ describe("CategoryTree", () => {
 
     it("does not show private 3d categories with RULESET_CATEGORIES", async () => {
       const iModel: IModelConnection = await buildTestIModel("CategoriesTree3d", (builder) => {
-        const partitionId = addPhysicalPartition(builder);
-        const modelId = addPhysicalModel(builder, partitionId);
+        const physicalPartitionId = addPartition("BisCore:PhysicalPartition", builder, "TestDrawingModel");
+        const definitionPartitionId = addPartition("BisCore:DefinitionPartition", builder, "TestDefinitionModel");
+        const physicalModelId = addModel("BisCore:PhysicalModel", builder, physicalPartitionId);
+        const definitionModelId = addModel("BisCore:DefinitionModel", builder, definitionPartitionId);
 
-        const categoryId = addSpatialCategory(builder, modelId, "Test Spatial Category");
-        addPhysicalObject(builder, modelId, categoryId);
+        const categoryId = addSpatialCategory(builder, definitionModelId, "Test Spatial Category");
+        addPhysicalObject(builder, physicalModelId, categoryId);
 
-        const privateCategoryId = addSpatialCategory(builder, modelId, "Private Test Spatial Category", true);
-        addPhysicalObject(builder, modelId, privateCategoryId);
+        const privateCategoryId = addSpatialCategory(builder, definitionModelId, "Private Test Spatial Category", true);
+        addPhysicalObject(builder, physicalModelId, privateCategoryId);
       });
 
       await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "3d");
@@ -504,14 +506,16 @@ describe("CategoryTree", () => {
 
     it("does not show private 2d categories with RULESET_CATEGORIES", async () => {
       const iModel: IModelConnection = await buildTestIModel("CategoriesTree2d", (builder) => {
-        const partitionId = addDrawingPartition(builder);
-        const modelId = addDrawingModel(builder, partitionId);
+        const drawingPartitionId = addPartition("BisCore:Drawing", builder, "TestDrawingModel");
+        const definitionPartitionId = addPartition("BisCore:DefinitionPartition", builder, "TestDefinitionModel");
+        const drawingModelId = addModel("BisCore:DrawingModel", builder, drawingPartitionId);
+        const definitionModelId = addModel("BisCore:DefinitionModel", builder, definitionPartitionId);
 
-        const categoryId = addDrawingCategory(builder, modelId, "Test Drawing Category");
-        addDrawingGraphic(builder, modelId, categoryId);
+        const categoryId = addDrawingCategory(builder, definitionModelId, "Test Drawing Category");
+        addDrawingGraphic(builder, drawingModelId, categoryId);
 
-        const privateCategoryId = addDrawingCategory(builder, modelId, "Private Test Drawing Category", true);
-        addDrawingGraphic(builder, modelId, privateCategoryId);
+        const privateCategoryId = addDrawingCategory(builder, definitionModelId, "Private Test Drawing Category", true);
+        addDrawingGraphic(builder, drawingModelId, privateCategoryId);
       });
 
       await Presentation.presentation.vars(RULESET_CATEGORIES.id).setString("ViewType", "2d");
@@ -522,25 +526,25 @@ describe("CategoryTree", () => {
       expect(hierarchy).to.matchSnapshot();
     });
 
-    const addPhysicalPartition = (builder: TestIModelBuilder, parentId = IModel.rootSubjectId) => {
+    const addPartition = (classFullName: string, builder: TestIModelBuilder, name: string, parentId = IModel.rootSubjectId) => {
       const parentProps: RelatedElementProps = {
         relClassName: "BisCore:SubjectOwnsPartitionElements",
         id: parentId,
       };
 
       const partitionProps: ElementProps = {
-        classFullName: "BisCore:PhysicalPartition",
+        classFullName,
         model: IModel.repositoryModelId,
         parent: parentProps,
-        code: builder.getUniqueModelCode("TestPhysicalModel"),
+        code: builder.createCode(parentId, BisCodeSpec.informationPartitionElement, name),
       };
       return builder.insertElement(partitionProps);
     };
 
-    const addPhysicalModel = (builder: TestIModelBuilder, partitionId: string) => {
+    const addModel = (classFullName: string, builder: TestIModelBuilder, partitionId: string) => {
       const modelProps: ModelProps = {
         modeledElement: new RelatedElement({ id: partitionId }),
-        classFullName: "BisCore:PhysicalModel",
+        classFullName,
         isPrivate: false,
       };
       return builder.insertModel(modelProps);
@@ -550,7 +554,7 @@ describe("CategoryTree", () => {
       const spatialCategoryProps: CategoryProps = {
         classFullName: "BisCore:SpatialCategory",
         model: IModel.dictionaryId,
-        code: builder.createCode(modelId, "bis:SpatialCategory", name),
+        code: builder.createCode(modelId, BisCodeSpec.spatialCategory, name),
         isPrivate,
       };
       return builder.insertElement(spatialCategoryProps);
@@ -566,7 +570,7 @@ describe("CategoryTree", () => {
       builder.insertElement(physicalObjectProps);
     };
 
-    const addDrawingPartition = (builder: TestIModelBuilder, parentId = IModel.rootSubjectId) => {
+    const addDrawingPartition = (builder: TestIModelBuilder, name: string, parentId = IModel.rootSubjectId) => {
       const parentProps: RelatedElementProps = {
         relClassName: "BisCore:SubjectOwnsPartitionElements",
         id: parentId,
@@ -576,7 +580,7 @@ describe("CategoryTree", () => {
         classFullName: "BisCore:Drawing",
         model: IModel.repositoryModelId,
         parent: parentProps,
-        code: builder.getUniqueModelCode("TestDrawingModel"),
+        code: builder.createCode(parentId, BisCodeSpec.informationPartitionElement, name),
       };
       return builder.insertElement(partitionProps);
     };
@@ -594,7 +598,7 @@ describe("CategoryTree", () => {
       const spatialCategoryProps: CategoryProps = {
         classFullName: "BisCore:DrawingCategory",
         model: IModel.dictionaryId,
-        code: builder.createCode(modelId, "bis:DrawingCategory", name),
+        code: builder.createCode(modelId, BisCodeSpec.drawingCategory, name),
         isPrivate,
       };
       return builder.insertElement(spatialCategoryProps);
