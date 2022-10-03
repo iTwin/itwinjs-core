@@ -434,16 +434,28 @@ Constructor
 
 The ConnectorRunner has a constructor which takes JobArgs and HubArgs as parameters.
 
+```ts
+  public static fromJSON(json: AllArgsProps): ConnectorRunner {
+    const supportedVersion = "0.0.1";
+    if (!json.version || json.version !== supportedVersion)
+      throw new Error(`Arg file has invalid version ${json.version}. Supported version is ${supportedVersion}.`);
+    if (!(json.jobArgs))
+      throw new Error("jobArgs is not defined");
+    const jobArgs = new JobArgs(json.jobArgs);
+
+    let hubArgs: HubArgs | undefined;
+    if (json.hubArgs)
+      hubArgs = new HubArgs(json.hubArgs);
+
+    const runner = new ConnectorRunner(jobArgs, hubArgs);
+    return runner;
+```
+
 Methods
 
 The ConnectorRunner has a Run method that runs your connector module.
 
 ```ts
-    const jobArgs = new JobArgs({"c:\tmp\mynativefile.txt" : source, "c:\tmp\out\" : stagingDir, "snapshot" : dbType});
-
-    const hubArgs = new HubArgs();
-
-    const runner = new ConnectorRunner(jobArgs, hubArgs);
 
     const status = await runner.run("./HelloWorldConnector.js");
 
@@ -509,11 +521,7 @@ Your source data may have non-graphical data best represented as definitions. Ty
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
     }
-    if (this.synchronizer.imodel.codeSpecs.hasName(CodeSpecs.Group)) {
-      return;
-    }
-    const spec = CodeSpec.create(this.synchronizer.imodel, CodeSpecs.Group, CodeScopeSpec.Type.Model);
-    this.synchronizer.imodel.codeSpecs.insert(spec);
+    this.insertCodeSpecs();
   }
 
 ```
@@ -523,6 +531,7 @@ Your source data may have non-graphical data best represented as definitions. Ty
 Use this method to import any domain schema that is required to publish your data.
 
 ```ts
+
   public async importDomainSchema(_requestContext: AccessToken): Promise<any> {
 
     if (this._sourceDataState === ItemState.Unchanged) {
