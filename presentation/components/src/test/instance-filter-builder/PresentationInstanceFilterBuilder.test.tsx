@@ -415,7 +415,7 @@ describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
     expect(info).to.be.deep.eq(navigationPropertyInfo);
   });
 
-  it("returns undefined if for non properties field", async () => {
+  it("returns `undefined` for non properties field", async () => {
     const fieldName = "field_name";
     const testDescriptor = createTestContentDescriptor({
       fields: [createTestSimpleContentField({ name: fieldName })],
