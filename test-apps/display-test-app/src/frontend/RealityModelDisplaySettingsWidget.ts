@@ -101,19 +101,21 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   colorCb.addEventListener("click", () => {
     colorInput.disabled = !colorCb.checked;
-    colorRatioInput.disabled = !colorCb.checked;
+    colorRatio.input.disabled = !colorCb.checked;
     updateColor();
   });
 
-  const colorRatioInput = createLabeledNumericInput({
-    parent: colorDiv, id: "rms_ratio", name: "Ratio:",
+  const colorRatio = createLabeledNumericInput({
+    parent: colorDiv, id: "rms_ratio", name: " Ratio:",
     value: model.settings.overrideColorRatio,
     parseAsFloat: true,
     display: "inline",
     min: 0, max: 1, step: 0.05,
     handler: (value) => updateSettings({ overrideColorRatio: value }),
     disabled: !colorCb.checked,
-  }).input;
+  });
+
+  colorRatio.div.style.display = "inline";
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
