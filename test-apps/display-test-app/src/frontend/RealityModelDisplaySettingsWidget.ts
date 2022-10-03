@@ -3,11 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  DisplayStyleSettings, FeatureAppearance, RealityModelDisplaySettings,
+  DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
   ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
+import {
+  createLabeledNumericInput,
+} from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
 
@@ -56,24 +59,46 @@ class PersistentModel implements RealityModel {
   }
 }
 
+function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElement) {
+  const updateSettings = (props: RealityModelDisplayProps) => model.settings = model.settings.clone(props);
+  const updateAppearance = (props: FeatureAppearanceProps | undefined) => {
+    if (!props)
+      model.appearance = undefined;
+    else if (!model.appearance)
+      model.appearance = FeatureAppearance.fromJSON(props);
+    else
+      model.appearance = model.appearance.clone(props);
+  };
+
+  const element = document.createElement("div");
+  element.className = "debugPanel";
+  parent.appendChild(element);
+
+  createLabeledNumericInput({
+    parent, id: "rms_ratio", name: "Color ratio:",
+    value: model.settings.overrideColorRatio,
+    parseAsFloat: true,
+    min: 0, max: 1, step: 0.05,
+    handler: (value) => updateSettings({ overrideColorRatio: value }),
+  });
+}
+
 const viewportIdsWithOpenWidgets = new Set<number>();
 
-class RealityModelSettings extends Window {
+class RealityModelSettingsWidget extends Window {
   public readonly windowId: string;
   private readonly _viewport: Viewport;
-  private readonly _model: RealityModel;
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
     super(Surface.instance, { top: 0, left: 50 });
     this._viewport = viewport;
-    this._model = model;
 
     this.windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
     this.isPinned = true;
     this.title = `${model.name} display settings`;
 
-    this.contentDiv.innerText = "hello there can anyone hear me???";
+    createRealityModelSettingsPanel(model, this.contentDiv);
 
     const removals = [
       viewport.onChangeView.addOnce(() => this.close()),
@@ -102,7 +127,7 @@ export class OpenRealityModelSettingsTool extends Tool {
     if (!vp || !model)
       return false;
 
-    const win = new RealityModelSettings(vp, model);
+    const win = new RealityModelSettingsWidget(vp, model);
     win.surface.addWindow(win);
     win.surface.element.appendChild(win.container);
 
