@@ -6,10 +6,10 @@ import {
   DisplayStyleSettings, FeatureAppearance, FeatureAppearanceProps, PointCloudDisplayProps, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "@itwin/core-common";
 import {
-  ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
+  ContextRealityModelState, IModelApp, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox, createSlider,
+  convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -121,12 +121,12 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   // Point shape
   const updatePointCloud = (props: PointCloudDisplayProps) => updateSettings(model.settings.clone({ pointCloud: props }));
-  const squareCb = createCheckBox({
+  createCheckBox({
     name: "Square points:", id: "rms_square",
     parent: element,
     isChecked: model.settings.pointCloud.shape === "square",
     handler: (cb) => updatePointCloud({ shape: cb.checked ? "square" : "round" }),
-  }).checkbox;
+  });
 
   // Point size mode
   const setSizeMode = (mode: string) => {
@@ -167,7 +167,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     value: model.settings.pointCloud.pixelSize.toString(),
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
-      const pixelSize = Number.parseInt(slider.value);
+      const pixelSize = Number.parseInt(slider.value, 10);
       if (!Number.isNaN(pixelSize))
         updatePointCloud({ pixelSize });
     },
