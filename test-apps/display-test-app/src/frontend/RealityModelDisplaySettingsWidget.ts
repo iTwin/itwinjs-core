@@ -9,7 +9,7 @@ import {
   ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox,
+  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -128,8 +128,8 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   const setSizeMode = (mode: string) => {
     const isPixel = mode === "pixel";
     updatePointCloud({ sizeMode: isPixel ? "pixel" : "voxel" });
-    pixelSizeDiv.style.display = isPixel ? "" : "none";
-    voxelSizeDiv.style.display = isPixel ? "none" : "";
+    pixelSizeSlider.style.display = isPixel ? "inline" : "none";
+    voxelSizeSlider.style.display = isPixel ? "none" : "inline";
   };
 
   const sizeMode = createRadioBox({
@@ -142,45 +142,32 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     parent: element,
     handler: (value) => setSizeMode(value),
   });
+  sizeMode.form.style.display = "inline";
 
   // Pixel size
-  const pixelSizeDiv = document.createElement("div");
-  element.appendChild(pixelSizeDiv);
-  const pixelSizeInput = createLabeledNumericInput({
-    parent: pixelSizeDiv, id: "rms_pixelSize", name: "Pixel size:",
-    value: model.settings.pointCloud.pixelSize,
-    display: "inline",
-    min: 1, max: 64, step: 1,
-    handler: (pixelSize) => updatePointCloud({ pixelSize }),
-  }).input;
+  const voxelSizeSlider = createSlider({
+    name: " Size ", id: "rms_scale", parent: sizeMode.div,
+    min: "0.25", max: "10", step: "0.25",
+    value: model.settings.pointCloud.voxelScale.toString(),
+    verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ voxelScale: scale });
+    },
+  }).div;
 
-  // Voxel size
-  const voxelSizeDiv = document.createElement("div");
-  element.appendChild(voxelSizeDiv);
-  createLabeledNumericInput({
-    parent: voxelSizeDiv, id: "rms_voxelScale", name: "Scale:",
-    value: model.settings.pointCloud.voxelScale,
-    display: "inline", divDisplay: "inline",
-    min: 0.1, max: 20, step: 0.25,
-    parseAsFloat: true,
-    handler: (voxelScale) => updatePointCloud({ voxelScale }),
-  });
-
-  createLabeledNumericInput({
-    parent: voxelSizeDiv, id: "rms_voxelMin", name: " Min:",
-    value: model.settings.pointCloud.minPixelsPerVoxel,
-    display: "inline", divDisplay: "inline",
-    min: 1, max: 100, step: 1,
-    handler: (minPixelsPerVoxel) => updatePointCloud({ minPixelsPerVoxel }),
-  });
-
-  createLabeledNumericInput({
-    parent: voxelSizeDiv, id: "rms_voxelMax", name: " Max:",
-    value: model.settings.pointCloud.maxPixelsPerVoxel,
-    display: "inline", divDisplay: "inline",
-    min: 1, max: 100, step: 1,
-    handler: (maxPixelsPerVoxel) => updatePointCloud({ maxPixelsPerVoxel }),
-  });
+  const pixelSizeSlider = createSlider({
+    name: " Size ", id: "rms_size", parent: sizeMode.div,
+    min: "1", max: "64", step: "1",
+    value: model.settings.pointCloud.pixelSize.toString(),
+    verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const pixelSize = Number.parseInt(slider.value);
+      if (!Number.isNaN(pixelSize))
+        updatePointCloud({ pixelSize });
+    },
+  }).div;
 
   setSizeMode(model.settings.pointCloud.sizeMode);
 }
