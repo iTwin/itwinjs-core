@@ -9,7 +9,7 @@ import {
   ContextRealityModelState, SpatialModelState, IModelApp, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  createLabeledNumericInput,
+  convertHexToRgb, createColorInput, createLabeledNumericInput,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -72,19 +72,48 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
 
   const element = document.createElement("div");
   element.className = "debugPanel";
-  element.style.height = "auto";
+  element.style.height = "98%";
+  element.style.width = "98%";
   element.style.top = "0px";
   element.style.left = "0px";
   element.style.zIndex = "inherit";
   parent.appendChild(element);
 
-  createLabeledNumericInput({
-    parent: element, id: "rms_ratio", name: "Color ratio:",
+  // Color
+  const colorDiv = document.createElement("div");
+  element.appendChild(colorDiv);
+
+  const colorCb = document.createElement("input");
+  colorCb.type = "checkbox";
+  colorCb.id = "rms_cbColor";
+  colorDiv.appendChild(colorCb);
+
+  const updateColor = () => updateAppearance(colorCb.checked ? { rgb: convertHexToRgb(colorInput.value) } : undefined);
+  const colorInput = createColorInput({
+    parent: colorDiv,
+    id: "rms_color",
+    label: "Color",
+    value: model.appearance?.rgb?.toHexString() ?? "#ffffff",
+    display: "inline",
+    disabled: !colorCb.checked,
+    handler: updateColor,
+  }).input;
+
+  colorCb.addEventListener("click", () => {
+    colorInput.disabled = !colorCb.checked;
+    colorRatioInput.disabled = !colorCb.checked;
+    updateColor();
+  });
+
+  const colorRatioInput = createLabeledNumericInput({
+    parent: colorDiv, id: "rms_ratio", name: "Ratio:",
     value: model.settings.overrideColorRatio,
     parseAsFloat: true,
+    display: "inline",
     min: 0, max: 1, step: 0.05,
     handler: (value) => updateSettings({ overrideColorRatio: value }),
-  });
+    disabled: !colorCb.checked,
+  }).input;
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
@@ -95,7 +124,7 @@ class RealityModelSettingsWidget extends Window {
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0 });
+    super(Surface.instance, { top: 0, left: 0, width: 409, height: 409 });
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;
@@ -123,7 +152,7 @@ class RealityModelSettingsWidget extends Window {
   }
 
   public get windowId() { return this._windowId; }
-  // public override get isResizable() { return false; }
+  public override get isResizable() { return false; }
 }
 
 export class OpenRealityModelSettingsTool extends Tool {
