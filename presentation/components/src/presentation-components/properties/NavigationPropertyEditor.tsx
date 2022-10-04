@@ -8,12 +8,14 @@
  */
 
 import * as React from "react";
-import { PropertyRecord, StandardTypeNames } from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { PropertyEditorBase, PropertyEditorManager, PropertyEditorProps, TypeEditor } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { NavigationPropertyInfo } from "@itwin/presentation-common";
 import { IContentDataProvider } from "../common/ContentDataProvider";
-import { NavigationPropertyTargetSelector, NavigationPropertyTargetSelectorAttributes } from "./NavigationPropertyTargetSelector";
+import {
+  NavigationPropertyTargetSelector, NavigationPropertyTargetSelectorAttributes, ReadonlyNavigationPropertyTarget,
+} from "./NavigationPropertyTargetSelector";
 
 /**
  * @alpha
@@ -37,7 +39,7 @@ PropertyEditorManager.registerEditor(StandardTypeNames.Navigation, NavigationPro
 /** @alpha */
 export interface NavigationPropertyEditorContextProps {
   imodel: IModelConnection;
-  getNavigationPropertyInfo: (record: PropertyRecord) => Promise<NavigationPropertyInfo | undefined>;
+  getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
 }
 
 /** @alpha */
@@ -47,8 +49,8 @@ export const NavigationPropertyEditorContext = React.createContext<NavigationPro
 export function useNavigationPropertyEditingContextProps(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps {
   return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
     imodel,
-    getNavigationPropertyInfo: async (record) => {
-      const field = await dataProvider.getFieldByPropertyRecord(record);
+    getNavigationPropertyInfo: async (property) => {
+      const field = await dataProvider.getFieldByPropertyRecord(new PropertyRecord({ valueFormat: PropertyValueFormat.Primitive }, property));
       if (!field || !field.isPropertiesField())
         return undefined;
       return field.properties[0].property.navigationPropertyInfo;
@@ -85,14 +87,18 @@ export class NavigationPropertyTargetEditor extends React.PureComponent<Property
 
 const NavigationPropertyTargetEditorInner = React.forwardRef<NavigationPropertyTargetSelectorAttributes, PropertyEditorProps>((props, ref) => {
   const navigationPropertyEditorContext = React.useContext(NavigationPropertyEditorContext);
-  if (!navigationPropertyEditorContext)
+  if (!props.propertyRecord)
     return null;
+
+  if (!navigationPropertyEditorContext)
+    return <ReadonlyNavigationPropertyTarget record={props.propertyRecord} />;
 
   return <NavigationPropertyTargetSelector
     {...props}
     ref={ref}
     imodel={navigationPropertyEditorContext.imodel}
     getNavigationPropertyInfo={navigationPropertyEditorContext.getNavigationPropertyInfo}
+    propertyRecord={props.propertyRecord}
   />;
 });
 NavigationPropertyTargetEditorInner.displayName = "NavigationPropertyTargetEditorInner";

@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import sinon from "sinon";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyDescription } from "@itwin/appui-abstract";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Content, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
@@ -15,7 +15,6 @@ import { renderHook } from "@testing-library/react-hooks";
 import {
   NAVIGATION_PROPERTY_TARGETS_BATCH_SIZE, NavigationPropertyTarget, useNavigationPropertyTargetsLoader, useNavigationPropertyTargetsRuleset,
 } from "../../presentation-components/properties/UseNavigationPropertyTargetsLoader";
-import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 
 describe("UseNavigationPropertyTargetsLoader", () => {
   const testImodel = {} as IModelConnection;
@@ -120,8 +119,8 @@ describe("UseNavigationPropertyTargetsLoader", () => {
 
 describe("useNavigationPropertyTargetsRuleset", () => {
   interface Props {
-    getNavigationPropertyInfo: (record: PropertyRecord) => Promise<NavigationPropertyInfo | undefined>;
-    record?: PropertyRecord;
+    getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
+    property: PropertyDescription;
   }
 
   it("creates ruleset for target class", async () => {
@@ -131,10 +130,10 @@ describe("useNavigationPropertyTargetsRuleset", () => {
       isTargetPolymorphic: true,
       targetClassInfo: { id: "2", label: "Target Class", name: "TestSchema:TargetClass" },
     };
-    const testRecord = createRandomPropertyRecord();
+    const propertyDescription: PropertyDescription = { displayLabel: "TestProp", name: "test_prop", typename: "navigation" };
     const { result, waitForNextUpdate } = renderHook(
-      ({ getNavigationPropertyInfo, record }: Props) => useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, record),
-      { initialProps: { getNavigationPropertyInfo: async () => testInfo, record: testRecord } });
+      ({ getNavigationPropertyInfo, property }: Props) => useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, property),
+      { initialProps: { getNavigationPropertyInfo: async () => testInfo, property: propertyDescription } });
 
     await waitForNextUpdate();
     const ruleset = result.current;
@@ -147,26 +146,11 @@ describe("useNavigationPropertyTargetsRuleset", () => {
     });
   });
 
-  it("returns undefined if record is undefined", () => {
-    const testInfo: NavigationPropertyInfo = {
-      classInfo: { id: "1", label: "Relationship Class", name: "TestSchema:RelationshipClass" },
-      isForwardRelationship: true,
-      isTargetPolymorphic: true,
-      targetClassInfo: { id: "2", label: "Target Class", name: "TestSchema:TargetClass" },
-    };
-    const { result } = renderHook(
-      ({ getNavigationPropertyInfo, record }: Props) => useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, record),
-      { initialProps: { getNavigationPropertyInfo: async () => testInfo } });
-
-    const ruleset = result.current;
-    expect(ruleset).to.be.undefined;
-  });
-
   it("returns undefined if navigation property info is undefined", () => {
-    const testRecord = createRandomPropertyRecord();
+    const propertyDescription: PropertyDescription = { displayLabel: "TestProp", name: "test_prop", typename: "navigation" };
     const { result } = renderHook(
-      ({ getNavigationPropertyInfo, record }: Props) => useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, record),
-      { initialProps: { getNavigationPropertyInfo: async () => undefined, record: testRecord } });
+      ({ getNavigationPropertyInfo, property }: Props) => useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, property),
+      { initialProps: { getNavigationPropertyInfo: async () => undefined, property: propertyDescription } });
 
     const ruleset = result.current;
     expect(ruleset).to.be.undefined;

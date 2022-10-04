@@ -9,59 +9,71 @@ import {
   components, ControlProps, IndicatorContainerProps, IndicatorProps, MenuProps, OptionProps, OptionTypeBase, ValueContainerProps,
 } from "react-select";
 import { AsyncPaginate } from "react-select-async-paginate";
-import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
-import { PropertyEditorProps } from "@itwin/components-react";
+import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyEditorProps, PropertyValueRendererManager } from "@itwin/components-react";
 import { IModelConnection } from "@itwin/core-frontend";
 import { SvgCaretDownSmall } from "@itwin/itwinui-icons-react";
-import { NavigationPropertyInfo } from "@itwin/presentation-common";
+import { InstanceKey, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
 import {
   NavigationPropertyTarget, useNavigationPropertyTargetsLoader, useNavigationPropertyTargetsRuleset,
 } from "./UseNavigationPropertyTargetsLoader";
 
+/** @internal */
 export interface NavigationPropertyTargetSelectorAttributes {
   getValue: () => PropertyValue | undefined;
   divElement: HTMLDivElement | null;
 }
 
+/** @internal */
 export interface NavigationPropertyTargetSelectorProps extends PropertyEditorProps {
   imodel: IModelConnection;
-  getNavigationPropertyInfo: (record: PropertyRecord) => Promise<NavigationPropertyInfo | undefined>;
+  getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
+  propertyRecord: PropertyRecord;
 }
 
+/** @internal */
 export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPropertyTargetSelectorAttributes, NavigationPropertyTargetSelectorProps>((props, ref) => {
   const { imodel, getNavigationPropertyInfo, propertyRecord, onCommit, setFocus } = props;
   const divRef = React.useRef<HTMLDivElement>(null);
-  const targetsRuleset = useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, propertyRecord);
+  const targetsRuleset = useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, propertyRecord.property);
   const loadTargets = useNavigationPropertyTargetsLoader({ imodel, ruleset: targetsRuleset });
 
-  const [selectedTarget, setSelectedTarget] = React.useState<NavigationPropertyTarget | undefined>();
+  const selectedTargetRef = React.useRef<NavigationPropertyTarget>();
 
   const onChange = React.useCallback((target?: NavigationPropertyTarget) => {
-    setSelectedTarget(target);
-    target && propertyRecord && onCommit && onCommit({ propertyRecord, newValue: getPropertyValue(target) });
+    selectedTargetRef.current = target;
+    target && onCommit && onCommit({ propertyRecord, newValue: getPropertyValue(target) });
   }, [propertyRecord, onCommit]);
 
   React.useImperativeHandle(ref,
     () => ({
-      getValue: () => getPropertyValue(selectedTarget),
+      getValue: () => getPropertyValue(selectedTargetRef.current),
       divElement: divRef.current,
     }),
-    [selectedTarget]
+    []
   );
+
+  React.useEffect(() => {
+    selectedTargetRef.current = getNavigationTargetFromPropertyRecord(propertyRecord);
+  }, [propertyRecord]);
+
+  if (!targetsRuleset)
+    return <ReadonlyNavigationPropertyTarget record={props.propertyRecord} />;
 
   return <div ref={divRef}>
     <AsyncPaginate
       isMulti={false}
       onChange={onChange}
-      loadOptions={loadTargets}
+      value={selectedTargetRef.current ?? null}
       getOptionLabel={(option: NavigationPropertyTarget) => option.label.displayValue}
       getOptionValue={(option: NavigationPropertyTarget) => option.key.id}
       hideSelectedOptions={false}
+      debounceTimeout={500}
+      loadOptions={loadTargets}
+      cacheUniqs={[loadTargets]}
       // eslint-disable-next-line jsx-a11y/no-autofocus
       autoFocus={setFocus}
-      value={selectedTarget}
-      debounceTimeout={500}
       placeholder={<>{translate("navigation-property-editor.select-target-instance")}</>}
       loadingMessage={() => translate("navigation-property-editor.loading-target-instances")}
       styles={{
@@ -83,8 +95,27 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
 });
 NavigationPropertyTargetSelector.displayName = "NavigationPropertyTargetSelector";
 
+/** @internal */
+export interface ReadonlyNavigationPropertyTargetProps {
+  record: PropertyRecord;
+}
+
+/** @internal */
+export function ReadonlyNavigationPropertyTarget(props: ReadonlyNavigationPropertyTargetProps) {
+  const { record } = props;
+  return <>{PropertyValueRendererManager.defaultManager.render(record)}</>;
+}
+
 function getPropertyValue(target?: NavigationPropertyTarget): PropertyValue {
-  return { valueFormat: PropertyValueFormat.Primitive, value: target?.key };
+  return { valueFormat: PropertyValueFormat.Primitive, value: target?.key, displayValue: target?.label.displayValue };
+}
+
+function getNavigationTargetFromPropertyRecord(record: PropertyRecord): NavigationPropertyTarget | undefined {
+  const value = record.value;
+  if (value.valueFormat !== PropertyValueFormat.Primitive || !value.value || !value.displayValue)
+    return undefined;
+
+  return { key: value.value as InstanceKey, label: LabelDefinition.fromLabelString(value.displayValue) };
 }
 
 function TargetSelectControl<TOption extends OptionTypeBase>({ children, ...props }: ControlProps<TOption>) {

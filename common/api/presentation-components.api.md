@@ -465,7 +465,7 @@ export const NavigationPropertyEditorContext: React_2.Context<NavigationProperty
 // @alpha (undocumented)
 export interface NavigationPropertyEditorContextProps {
     // (undocumented)
-    getNavigationPropertyInfo: (record: PropertyRecord) => Promise<NavigationPropertyInfo | undefined>;
+    getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
     // (undocumented)
     imodel: IModelConnection;
 }

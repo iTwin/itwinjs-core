@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { PropertyRecord } from "@itwin/appui-abstract";
+import { PropertyDescription } from "@itwin/appui-abstract";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
   ContentFlags, ContentSpecificationTypes, InstanceKey, KeySet, LabelDefinition, NavigationPropertyInfo, Ruleset, RuleTypes,
@@ -26,6 +26,7 @@ export interface NavigationPropertyTargetsResult {
   hasMore: boolean;
 }
 
+/** @internal */
 export interface UseNavigationPropertyTargetsLoaderProps {
   imodel: IModelConnection;
   ruleset?: Ruleset;
@@ -64,25 +65,20 @@ export function useNavigationPropertyTargetsLoader(props: UseNavigationPropertyT
 
 /** @internal */
 export function useNavigationPropertyTargetsRuleset(
-  getNavigationPropertyInfo: (record: PropertyRecord) => Promise<NavigationPropertyInfo | undefined>,
-  record?: PropertyRecord,
+  getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>,
+  property: PropertyDescription,
 ) {
   const [ruleset, setRuleset] = React.useState<Ruleset>();
 
   React.useEffect(() => {
-    if (!record) {
-      setRuleset(undefined);
-      return;
-    }
-
     let disposed = false;
     void (async () => {
-      const propertyInfo = await getNavigationPropertyInfo(record);
+      const propertyInfo = await getNavigationPropertyInfo(property);
       if (!disposed && propertyInfo)
         setRuleset(createNavigationPropertyTargetsRuleset(propertyInfo));
     })();
     return () => { disposed = true; };
-  }, [record, getNavigationPropertyInfo]);
+  }, [property, getNavigationPropertyInfo]);
 
   return ruleset;
 }

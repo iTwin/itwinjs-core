@@ -11,14 +11,14 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter } from "@itwin/components-react";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
+import { translate } from "../common/Utils";
 import { NavigationPropertyEditorContext, NavigationPropertyEditorContextProps } from "../properties/NavigationPropertyEditor";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
 import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
-import { translate } from "../common/Utils";
-import { Badge, Tooltip } from "@itwin/itwinui-react";
 import "./PresentationInstanceFilterBuilder.scss";
 
 /** @alpha */
@@ -116,8 +116,8 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
 export function useFilterBuilderNavigationPropertyEditorContextProps(imodel: IModelConnection, descriptor: Descriptor) {
   return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
     imodel,
-    getNavigationPropertyInfo: async (record) => {
-      const field = descriptor.getFieldByName(getInstanceFilterFieldName(record.property));
+    getNavigationPropertyInfo: async (property) => {
+      const field = descriptor.getFieldByName(getInstanceFilterFieldName(property));
       if (!field || !field.isPropertiesField())
         return undefined;
 

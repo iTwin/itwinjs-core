@@ -6,24 +6,26 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { PropertyDescription } from "@itwin/appui-abstract";
 import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Descriptor, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
-  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo, createTestSimpleContentField,
+  createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
+  createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
-  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContextProps, usePresentationInstanceFilteringProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContextProps,
+  usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
-import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
-import { createRandomPropertyRecord } from "../_helpers/UiComponents";
-import { stubRaf } from "./Common";
 import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
+import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
+import { stubRaf } from "./Common";
 
 export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
   sourceClassIds: ["0x1"],
@@ -403,15 +405,18 @@ describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
         }),
       ],
     });
-    const record = createRandomPropertyRecord();
-    record.property.name = `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
 
     const { result } = renderHook(
       ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor),
       { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
     );
 
-    const info = await result.current.getNavigationPropertyInfo(record);
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
     expect(info).to.be.deep.eq(navigationPropertyInfo);
   });
 
@@ -420,15 +425,18 @@ describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
     const testDescriptor = createTestContentDescriptor({
       fields: [createTestSimpleContentField({ name: fieldName })],
     });
-    const record = createRandomPropertyRecord();
-    record.property.name = `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
 
     const { result } = renderHook(
       ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor),
       { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
     );
 
-    const info = await result.current.getNavigationPropertyInfo(record);
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
     expect(info).to.be.undefined;
   });
 });

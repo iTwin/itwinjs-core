@@ -6,7 +6,8 @@
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
-import { EditorContainer } from "@itwin/components-react";
+import { PropertyDescription } from "@itwin/appui-abstract";
+import { EditorContainer, PropertyValueRendererManager } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
 import { Content, KeySet, LabelDefinition, NavigationPropertyInfo } from "@itwin/presentation-common";
@@ -22,9 +23,18 @@ import {
 } from "../../presentation-components/properties/NavigationPropertyEditor";
 import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 
+function createNavigationPropertyInfo(): NavigationPropertyInfo {
+  return {
+    classInfo: { name: "TestSchema:PropClass", label: "Prop Class", id: "1" },
+    targetClassInfo: { name: "TestSchema:TargetClass", label: "Target Class", id: "2" },
+    isForwardRelationship: true,
+    isTargetPolymorphic: true,
+  };
+}
+
 function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContextProps>) {
   const contextValue: NavigationPropertyEditorContextProps = {
-    getNavigationPropertyInfo: context?.getNavigationPropertyInfo ?? sinon.spy(),
+    getNavigationPropertyInfo: context?.getNavigationPropertyInfo ?? (async () => createNavigationPropertyInfo()),
     imodel: context?.imodel ?? {} as IModelConnection,
   };
 
@@ -55,10 +65,10 @@ describe("<NavigationPropertyEditor />", () => {
     await IModelApp.shutdown();
   });
 
-  it("renders editor for 'navigation' type", () => {
+  it("renders editor for 'navigation' type", async () => {
     const record = createRecord();
     const { container } = render(<EditorContainer propertyRecord={record} onCancel={() => { }} onCommit={() => { }} />);
-    expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.not.be.null;
+    await waitFor(() => expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.not.be.null);
   });
 
   it("invokes 'onCommit' when new target is selected changes", async () => {
@@ -84,22 +94,25 @@ describe("<NavigationPropertyEditor />", () => {
     );
 
     // open dropdown
-    const select = await waitFor(() => container.querySelector<HTMLDivElement>(".iui-select-button"));
-    expect(select).to.not.be.null;
+    const select = await waitFor(() => {
+      const element = container.querySelector<HTMLDivElement>(".iui-select-button");
+      expect(element).to.not.be.null;
+      return element;
+    });
     fireEvent.mouseDown(select!);
 
     // select option from dropdown
     const target = await waitFor(() => getByText(contentItem.label.displayValue));
     fireEvent.click(target);
 
-    const selectedTarget = await waitFor(() => queryByText(contentItem.label.displayValue));
-    expect(selectedTarget).to.not.be.null;
-
+    await waitFor(() => expect(queryByText(contentItem.label.displayValue)).to.not.be.null);
     expect(spy).to.be.calledOnce;
   });
 });
 
 describe("<NavigationPropertyTargetEditor />", () => {
+  const testRecord = createRandomPropertyRecord();
+
   beforeEach(async () => {
     await NoRenderApp.startup({
       localization: new EmptyLocalization(),
@@ -114,13 +127,19 @@ describe("<NavigationPropertyTargetEditor />", () => {
   });
 
   it("renders selector when rendered inside context", async () => {
-    const { container } = render(<NavigationPropertyTargetEditor />, {});
-    expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.not.be.null;
+    const { container } = render(<NavigationPropertyTargetEditor propertyRecord={testRecord} />, {});
+    await waitFor(() => expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.not.be.null);
   });
 
-  it("does not render selector when rendered without context", async () => {
-    const { container } = renderRTL(<NavigationPropertyTargetEditor />);
-    expect(container.querySelector<HTMLDivElement>(".iui-select-button")).to.be.null;
+  it("uses default property renderer when rendered not in the context", () => {
+    const rendererStub = sinon.stub(PropertyValueRendererManager.defaultManager, "render");
+    renderRTL(<NavigationPropertyTargetEditor propertyRecord={testRecord} />);
+    expect(rendererStub).to.be.calledOnceWith(testRecord);
+  });
+
+  it("renders nothing when property record is 'undefined'", async () => {
+    const { container } = render(<NavigationPropertyTargetEditor />, {});
+    expect(container.firstChild).to.be.null;
   });
 });
 
@@ -148,7 +167,7 @@ describe("useNavigationPropertyEditingContextProps", () => {
   });
 
   it("returns navigation property info", async () => {
-    const record = createRandomPropertyRecord();
+    const propertyDescription: PropertyDescription = { displayLabel: "TestProp", name: "test_prop", typename: "navigation" };
     const navigationPropertyInfo: NavigationPropertyInfo = {
       classInfo: { id: "1", label: "Class Label", name: "TestSchema:TestClass" },
       targetClassInfo: { id: "2", label: "Target Label", name: "TestSchema:TargetClass" },
@@ -172,12 +191,12 @@ describe("useNavigationPropertyEditingContextProps", () => {
       { initialProps: { imodel: testImodel, dataProvider: testDataProvider } }
     );
 
-    const info = await result.current.getNavigationPropertyInfo(record);
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
     expect(info).to.be.eq(navigationPropertyInfo);
   });
 
   it("returns undefined if non properties field is returned", async () => {
-    const record = createRandomPropertyRecord();
+    const propertyDescription: PropertyDescription = { displayLabel: "TestProp", name: "test_prop", typename: "navigation" };
     testDataProvider.getFieldByPropertyRecord = async () => createTestSimpleContentField();
 
     const { result } = renderHook(
@@ -185,7 +204,7 @@ describe("useNavigationPropertyEditingContextProps", () => {
       { initialProps: { imodel: testImodel, dataProvider: testDataProvider } }
     );
 
-    const info = await result.current.getNavigationPropertyInfo(record);
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
     expect(info).to.be.undefined;
   });
 });
