@@ -14,8 +14,9 @@ import {
   CoreTools, FloatingContentControl, FloatingViewportContentControl, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,
   ViewportContentControl, Widget, Zone,
 } from "../../appui-react";
-import TestUtils, { mount, storageMock } from "../TestUtils";
+import TestUtils, { storageMock } from "../TestUtils";
 import { StandardContentLayouts } from "@itwin/appui-abstract";
+import { render } from "@testing-library/react";
 
 const mySessionStorage = storageMock();
 
@@ -162,7 +163,7 @@ describe("ViewportContentControl", () => {
   });
 
   it("onViewClassFullNameChangedEvent should cause a NavigationAid change", async () => {
-    mount(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
+    render(<FrontstageComposer />); // eslint-disable-line deprecation/deprecation
     const spyMethod = sinon.spy();
     const remove = FrontstageManager.onNavigationAidActivatedEvent.addListener(spyMethod);
 

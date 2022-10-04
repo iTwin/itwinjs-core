@@ -407,7 +407,8 @@ export namespace Mesh { // eslint-disable-line no-redeclare
         this.indices = indices;
     }
 
-    public toFeatureIndex(index: FeatureIndex): void {
+    public toFeatureIndex(output?: FeatureIndex): FeatureIndex {
+      const index = output ?? new  FeatureIndex();
       if (!this.initialized) {
         index.type = FeatureIndexType.Empty;
       } else if (this.indices.length === 0) {
@@ -417,6 +418,8 @@ export namespace Mesh { // eslint-disable-line no-redeclare
         index.type = FeatureIndexType.NonUniform;
         index.featureIDs = new Uint32Array(this.indices);
       }
+
+      return index;
     }
   }
 
