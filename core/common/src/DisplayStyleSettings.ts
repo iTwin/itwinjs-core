@@ -58,7 +58,7 @@ export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps
   modelId: Id64String;
 }
 
-/** [[RealityModelSettings]] applied to a reality [Model]($backend) to change how it is rendered within the context of a [DisplayStyle]($backend).
+/** [[RealityModelDisplaySettings]] applied to a reality [Model]($backend) to change how it is rendered within the context of a [DisplayStyle]($backend).
  * @see [[DisplayStyleSettingsProps.realityModelDisplay]].
  * @beta
  */
