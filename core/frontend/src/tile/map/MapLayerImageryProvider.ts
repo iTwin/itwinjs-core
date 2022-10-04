@@ -7,11 +7,10 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Base64EncodedString, Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { ScreenViewport } from "../../Viewport";
 import { GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
 
@@ -108,33 +107,32 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  protected getRequestAuthorization(): RequestBasicCredentials | undefined {
-    return (this._settings.userName && this._settings.password) ? { user: this._settings.userName, password: this._settings.password } : undefined;
-  }
-
-  /** @internal */
-  protected getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
-    const byteArray: Uint8Array = new Uint8Array(tileResponse.body);
+  protected async getImageFromTileResponse(tileResponse: Response, zoomLevel: number) {
+    const arrayBuffer = await tileResponse.arrayBuffer();
+    const byteArray: Uint8Array = new Uint8Array(arrayBuffer);
     if (!byteArray || (byteArray.length === 0))
       return undefined;
     if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
       return undefined;
 
-    let imageFormat: ImageSourceFormat;
-
     // Note: 'includes' is used here instead of exact comparison because we encountered
     // some servers that would give content type such as 'image/png;charset=UTF-8'.
-    const contentType: string = tileResponse.header["content-type"].toLowerCase();
-    if (contentType.includes("image/jpeg")){
-      imageFormat = ImageSourceFormat.Jpeg;
-    } else if (contentType.includes("image/png")){
-      imageFormat = ImageSourceFormat.Png;
+    const contentType = tileResponse.headers.get("content-type");
+    let imageFormat: ImageSourceFormat | undefined;
+    if (contentType) {
+      if (contentType.toLowerCase().includes("image/jpeg")) {
+        imageFormat = ImageSourceFormat.Jpeg;
+      } else if (contentType.toLowerCase().includes("image/png")){
+        imageFormat = ImageSourceFormat.Png;
+      }
+    }
+
+    if (imageFormat !== undefined) {
+      return new ImageSource(byteArray, imageFormat);
     } else {
       assert(false, "Invalid tile content type");
       return undefined;
     }
-
-    return new ImageSource(byteArray, imageFormat);
   }
 
   /** @internal */
@@ -146,10 +144,19 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
+  protected setRequestAuthorization(headers: Headers){
+    if  (this._settings.userName && this._settings.password) {
+      headers.set("Authorization", `Basic ${  Base64EncodedString.encode(`${this._settings.userName  }:${  this._settings.password}`)}`);
+    }
+  }
+  /** @internal */
   public async makeTileRequest(url: string) {
-    const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    tileRequestOptions.auth = this.getRequestAuthorization();
-    return request(url, tileRequestOptions);
+    let headers: Headers|undefined;
+    if  (this._settings.userName && this._settings.password) {
+      headers = new Headers();
+      this.setRequestAuthorization(headers);
+    }
+    return fetch(url, { method: "GET", headers });
   }
 
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -165,7 +172,7 @@ export abstract class MapLayerImageryProvider {
         this._hasSuccessfullyFetchedTile = true;
       }
 
-      return this.getImageFromTileResponse(tileResponse, zoomLevel);
+      return await this.getImageFromTileResponse(tileResponse, zoomLevel);
     } catch (error: any) {
       if (error?.status === 401) {
         this.setStatus(MapLayerImageryProviderStatus.RequireAuth);
@@ -185,30 +192,17 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   protected async toolTipFromUrl(strings: string[], url: string): Promise<void> {
-
-    const requestOptions: RequestOptions = {
-      method: "GET",
-      responseType: "text",
-      auth: this.getRequestAuthorization(),
-    }; // spell-checker: disable-line
+    const headers = new Headers();
+    this.setRequestAuthorization(headers);
 
     try {
-      const response: Response = await request(url, requestOptions);
-      if (undefined !== response.text) {
-        strings.push(response.text);
+      const response = await fetch(url, { method: "GET", headers });
+      const text = await response.text();
+      if (undefined !== text) {
+        strings.push(text);
       }
     } catch {
     }
-  }
-
-  /** @internal */
-  protected async toolTipFromJsonUrl(_strings: string[], url: string): Promise<void> {
-    try {
-      const json = await getJson(url);
-      if (undefined !== json) {
-
-      }
-    } catch { }
   }
 
   /** @internal */

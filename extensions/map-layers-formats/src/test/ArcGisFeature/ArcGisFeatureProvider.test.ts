@@ -22,7 +22,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should initialize", async () => {
 
-    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
+    sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_url: string, _formatId: string, _userName?: string, _password?: string, _ignoreCache?: boolean) {
       return NewYorkDataset.serviceCapabilities;
     });
 

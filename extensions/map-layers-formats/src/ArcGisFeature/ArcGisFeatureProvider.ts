@@ -8,7 +8,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGisUtilities, ImageryMapTileTree, IModelApp, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, IModelApp, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -38,7 +38,7 @@ interface ArcGisFeatureUrl {
 /**  Provide tiles from a ESRI ArcGIS Feature service
 * @internal
 */
-export class ArcGisFeatureProvider extends MapLayerImageryProvider {
+export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   private _supportsCoordinatesQuantization = false;
   private _drawDebugInfo = false;
@@ -51,9 +51,6 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
   private static readonly _nbSubTiles = 2;
   private _outSR = 102100;
 
-  private _accessClient: MapLayerAccessClient|undefined;
-  private _lastAccessToken: MapLayerAccessToken|undefined;
-
   private _maxDepthFromLod = 0;
   private _minDepthFromLod = 0;
   // We should not be making any request if layer is currently out of range,
@@ -63,15 +60,13 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
-    if (IModelApp.mapLayerFormatRegistry)
-      this._accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(settings.formatId);
   }
 
   public override async initialize(): Promise<void> {
 
     let json;
     try {
-      json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.userName, this._settings.password);
+      json = await ArcGisUtilities.getServiceJson(this._settings.url, this._settings.formatId, this._settings.userName, this._settings.password);
 
     } catch (_e) {
 
@@ -82,19 +77,21 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
       throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
+    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
+      // Check again layer status, it might have change during await.
+      if (this.status === MapLayerImageryProviderStatus.Valid) {
+        this.status = MapLayerImageryProviderStatus.RequireAuth;
+        this.onStatusChanged.raiseEvent(this);
+        return;
+      }
+    }
+
     if (json.capabilities) {
       this._querySupported = json.capabilities.indexOf("Query") >= 0;
       if (!this._querySupported)
         throw new ServerError(IModelStatus.ValidationFailed, "");
     }
 
-    if (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken) {
-      // Check again layer status, it might have change during await.
-      if (this.status === MapLayerImageryProviderStatus.Valid) {
-        this.status = MapLayerImageryProviderStatus.RequireAuth;
-        this.onStatusChanged.raiseEvent(this);
-      }
-    }
     this.serviceJson = json;
 
     let  foundVisibleSubLayer = false;
@@ -191,7 +188,7 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     try {
       const url = new URL(this._settings.url);
       url.pathname = `${url.pathname}/${layerId}`;
-      json = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.userName, this._settings.password);
+      json = await ArcGisUtilities.getServiceJson(url.toString(), this._settings.formatId, this._settings.userName, this._settings.password);
     } catch {
 
     }
@@ -204,10 +201,6 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
   }
 
-  protected async getJson(url: URL) {
-    const response = await fetch(url.toString(), { method: "GET" });
-    return response.json();
-  }
   // We dont use this method inside this provider (see constructFeatureUrl), but since this is an anstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
     return "";
@@ -286,7 +279,8 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     try {
-      const response = fetch(infoUrl.url, { method: "GET" });
+      const response = this.fetch(new URL(infoUrl.url), { method: "GET" });
+
       const featureResponse = new ArcGisFeatureResponse(this.format, response);
       const responseData = await featureResponse.getResponseData();
       if (!responseData) {
@@ -325,7 +319,10 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
     }
 
     // return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
-    const response = fetch(tileUrl.url, { method: "GET" });
+    const response = this.fetch(new URL(tileUrl.url), { method: "GET" });
+    if ((await response).status !== 200){
+      return undefined;
+    }
     return new ArcGisFeatureResponse(this.format, response, tileUrl.envelope);
   }
 
@@ -339,6 +336,9 @@ export class ArcGisFeatureProvider extends MapLayerImageryProvider {
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
 
+    if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
+      return undefined;
+    }
     const canvas = document.createElement("canvas");
     canvas.width = this.tileSize;
     canvas.height = this.tileSize;

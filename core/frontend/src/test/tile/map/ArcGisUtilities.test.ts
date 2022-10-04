@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { ArcGisUtilities } from "../../../tile/map/ArcGisUtilities";
 import { wsg84Lods256px, wsg84Lods512px } from "./Wgs84Lods";
 
-describe.only("ArcGisUtilities", () => {
+describe("ArcGisUtilities", () => {
   const tolerance = 0.1;
 
   it("should compute resolution and scale for LOD range", async () => {

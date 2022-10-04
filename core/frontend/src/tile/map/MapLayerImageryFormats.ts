@@ -168,7 +168,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGIS";
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(url, ["map"], userName, password, ignoreCache);
+    return ArcGisUtilities.validateSource(url, this.formatId, ["map"], userName, password, ignoreCache);
   }
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new ArcGISMapLayerImageryProvider(settings);

@@ -62,4 +62,14 @@ export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint
 
     return value;
   };
+
+  /* Encode an string a Base64EncodedString */
+  export const encode = (src: string, urlSafe?: boolean) => {
+    return Base64.encode(src, urlSafe);
+  };
+
+  /* Decode Base64EncodedString into a string*/
+  export const decode = (src: string) => {
+    return Base64.decode(src);
+  };
 }

@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { Angle, Constant } from "@itwin/core-geometry";
 import { MapSubLayerProps } from "@itwin/core-common";
-import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "../../request/Request";
 import { MapCartoRectangle, MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation} from "../internal";
 import { IModelApp } from "../../IModelApp";
+import _ from "lodash";
 
 /** @packageDocumentation
  * @module Tiles
@@ -23,36 +23,17 @@ export enum ArcGisErrorCode {
 /** @internal */
 export class ArcGisUtilities {
 
-  public static hasTokenError(response: Response): boolean {
-    if (response.header && (response.header["content-type"] as string)?.toLowerCase().includes("json")) {
-      try {
-        // Tile response returns byte array, so we need to check the response data type and convert accordingly.
-        const json = ((response.body instanceof ArrayBuffer) ? JSON.parse(Buffer.from(response.body).toString()) : response.body);
-        return (json?.error?.code === ArcGisErrorCode.TokenRequired || json?.error?.code === ArcGisErrorCode.InvalidToken);
-      } catch (_err) {
-        return false;  // that probably means we failed to convert byte array to JSON
-      }
-    }
-    return false;
-  }
-
   private static getBBoxString(range?: MapCartoRectangle) {
     if (!range)
       range = MapCartoRectangle.createMaximum();
 
     return `${range.low.x * Angle.degreesPerRadian},${range.low.y * Angle.degreesPerRadian},${range.high.x * Angle.degreesPerRadian},${range.high.y * Angle.degreesPerRadian}`;
   }
-  public static async getEndpoint(url: string): Promise<any | undefined> {
-    const capabilities = await request(`${url}?f=pjson`, {
-      method: "GET",
-      responseType: "json",
-    });
-    return capabilities.body;
-  }
 
   public static async getNationalMapSources(): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
-    const services = await getJson("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList");
+    const response = await fetch("https://viewer.nationalmap.gov/tnmaccess/api/getMapServiceList", { method: "GET" });
+    const services = await response.json();
 
     if (!Array.isArray(services))
       return sources;
@@ -80,7 +61,8 @@ export class ArcGisUtilities {
     if (undefined === baseUrl)
       baseUrl = url;
     let sources = new Array<MapLayerSource>();
-    const json = await getJson(`${url}?f=json`);
+    const response = await fetch(`${url}?f=json`, { method: "GET" });
+    const json = await response.json();
     if (json !== undefined) {
       if (Array.isArray(json.folders)) {
         for (const folder of json.folders) {
@@ -105,7 +87,8 @@ export class ArcGisUtilities {
   public static async getSourcesFromQuery(range?: MapCartoRectangle, url = "https://usgs.maps.arcgis.com/sharing/rest/search"): Promise<MapLayerSource[]> {
     const sources = new Array<MapLayerSource>();
     for (let start = 1; start > 0;) {
-      const json = await getJson(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`);
+      const response = await fetch(`${url}?f=json&q=(group:9d1199a521334e77a7d15abbc29f8144) AND (type:"Map Service")&bbox=${ArcGisUtilities.getBBoxString(range)}&sortOrder=desc&start=${start}&num=100`, { method: "GET" });
+      const json = await response.json();
       if (!json)
         break;
 
@@ -122,8 +105,19 @@ export class ArcGisUtilities {
     return sources;
   }
 
-  public static async validateSource(url: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const json = await this.getServiceJson(url, userName, password, ignoreCache);
+  /**
+   * Attempt to access an ArcGIS service, and validate its service metadata.
+   * @param url URL of the source to validate.
+   * @param formatId Format Id of the source.
+   * @param capabilitiesFilter List of capabilities 'keyword' that needs to be advertised in the service's metadata
+   * in order to be valid.  For example: 'Map', 'Query', etc
+   * @param userName Username to use for legacy token based security.
+   * @param password Username to use for legacy token based security.
+   * @param ignoreCache Flag to skip cache lookup (i.e. force a new server request)
+   * @return Validation Status. If successful, a list of available sub-layers will also be returned.
+  */
+  public static async validateSource(url: string, formatId: string, capabilitiesFilter: string[], userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+    const json = await this.getServiceJson(url, formatId, userName, password, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
@@ -167,7 +161,13 @@ export class ArcGisUtilities {
 
   private static _serviceCache = new Map<string, any>();
 
-  public static async getServiceJson(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any> {
+  /**
+   * Fetch an ArcGIS service metadata, and returns its JSON representation.
+   * If an access client has been configured for the specified formatId,
+   * it will be used to apply required security token.
+   * By default, response for each URL are cached.
+  */
+  public static async getServiceJson(url: string, formatId: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
       if (cached !== undefined)
@@ -175,30 +175,47 @@ export class ArcGisUtilities {
     }
 
     try {
-      const options: RequestOptions = {
-        method: "GET",
-        responseType: "json",
-      };
-
       const tmpUrl = new URL(url);
       tmpUrl.searchParams.append("f", "json");
-      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient("ArcGIS");
+      const accessClient = IModelApp.mapLayerFormatRegistry.getAccessClient(formatId);
       if (accessClient) {
         await ArcGisUtilities.appendSecurityToken(tmpUrl, accessClient, {mapLayerUrl: new URL(url), userName, password});
       }
-      const data = await request(tmpUrl.toString(), options);
-      const json = data.body ?? undefined;
 
-      // Cache the response only if it doesn't contain a token error.
-      if (!ArcGisUtilities.hasTokenError(data)) {
-        ArcGisUtilities._serviceCache.set(url, json);
+      const response = await fetch(tmpUrl.toString(), { method: "GET" });
+
+      const errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
+      const json = await response.json();
+      if (errorCode === undefined) {
+        ArcGisUtilities._serviceCache.set(url, json);  // Cache the response only if it doesn't contain a token error.
+      } else {
+        ArcGisUtilities._serviceCache.set(url, undefined);
       }
+      return json;  // Always return json, even though it contains an error code.
 
-      return json;
     } catch (_error) {
       ArcGisUtilities._serviceCache.set(url, undefined);
       return undefined;
     }
+  }
+
+  /** Read a response from ArcGIS server and check for error code in the response.
+  */
+  public static async checkForResponseErrorCode(response: Response) {
+    if (response.headers && response.headers.get("content-type")?.toLowerCase().includes("json")) {
+      try {
+        // Note:
+        // Since response stream can only be read once (i.e. calls to .json() method)
+        // we have to clone the response object in order to check for potential error code,
+        // but still keep the response stream as unread.
+        const clonedResponse = response.clone();
+        const json = await clonedResponse.json();
+        if (json?.error?.code !== undefined)
+          return json?.error?.code as number;
+      } catch {
+      }
+    }
+    return undefined;
   }
 
   // return the appended access token if available.
@@ -268,14 +285,16 @@ export class ArcGisUtilities {
       if (minScale) {
         minLod = 0;
         // We are looking for the largest scale value with a scale value smaller than minScale
-        for (; minLod < zoomScales.length && zoomScales[minLod].scale > minScale; minLod++);
+        for (; minLod < zoomScales.length && zoomScales[minLod].scale > minScale; minLod++)
+          ;
 
       }
 
       if (maxScale) {
         maxLod = defaultMaxLod;
         // We are looking for the smallest scale value with a value greater than maxScale
-        for (; maxLod >= 0 && zoomScales[maxLod].scale < maxScale; maxLod--);
+        for (; maxLod >= 0 && zoomScales[maxLod].scale < maxScale; maxLod--)
+          ;
       }
     }
     return {minLod, maxLod};

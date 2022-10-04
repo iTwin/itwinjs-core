@@ -19,6 +19,6 @@ export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGISFeature";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new ArcGisFeatureProvider(settings); }
   public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return ArcGisUtilities.validateSource(url, ["query"], userName, password, ignoreCache);
+    return ArcGisUtilities.validateSource(url, this.formatId, ["query"], userName, password, ignoreCache);
   }
 }

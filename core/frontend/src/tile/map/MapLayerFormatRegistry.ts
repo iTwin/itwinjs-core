@@ -6,11 +6,12 @@
  * @module MapLayers
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+const loggerCategory = "ArcGISFeatureProvider";
 
 /** @beta */
 /** Class representing a map-layer format.
@@ -122,7 +123,11 @@ export class MapLayerFormatRegistry {
   public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
-    return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
+    if (format === undefined) {
+      Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
+      return undefined;
+    }
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
