@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-common",
-      "comment": "Reject an EcefLocation with an origin at the center of the Earth.",
+      "comment": "Reject an iModel's EcefLocation with an origin at the center of the Earth.",
       "type": "none"
     }
   ],
