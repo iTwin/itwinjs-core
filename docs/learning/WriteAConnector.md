@@ -285,39 +285,24 @@ select ecinstanceid from bis.ExternalSource where repository=?
 
 If an ExternalSource is not found, insert one using
 
-```ts
- function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
-    const externalSourceProps: ExternalSourceProps = {
-      classFullName: ExternalSource.classFullName,
-      model: IModel.repositoryModelId,
-      code: Code.createEmpty(),
-      userLabel,
-      repository: new ExternalSourceIsInRepository(repository),
-      connectorName: <connectorName>,
-      connectorVersion: <connectorVersion>,
-    };
-    return iModelDb.elements.insertElement(externalSourceProps);
-  }
+_Example:_
+
+``` ts
+[[include:Sychronizer-getOrCreateExternalSource.example-code]]
 ```
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
-```ts
-const ids = ExternalSourceAspect.findBySource(imodel, scope, kind, item.id);
-const aspect = imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
-if (aspect.source === <externalsource.id>)
-    return;
-aspect.source = {id: <externalsource.id>};
-imodel.elements.updateAspect(aspect)
+``` ts
+[[include:Synchronizer-updateIModel.example-code]]
 ```
 
 At the start of the Connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
 
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
-```ts
-  public recordDocument(scope: Id64String, sourceItem: SourceItem, kind: string = "DocumentWithBeGuid", knownUrn: string = ""): SynchronizationResults {
-    const key = scope + sourceItem.id.toLowerCase();
+``` ts
+[[include:Synchronizer-recordDocument.example-code]]
 ```
 
 Also refer to [Provenence in iModels](./Provenence-in-iModels) for more information about ExternalSource and related classes.
@@ -342,54 +327,28 @@ For each item found in the external source.
 
 Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
-```ts
-    const sourceItem: SourceItem = {
-      id: <<identifies the item in the external source>>,
-      version: <<the item’s version number, if available>>,
-      checksum: <<the checksum of the item’s content>>,
-    };
+``` ts
+[[include:Synchronizer-recordDocument.example-code]]
 ```
 
 Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
-```ts
-const results = this.synchronizer.detectChanges(scopeId, kind, sourceItem);
+``` ts
+[[include:Synchronizer-detectChanges.example-code]]
 ```
 
 If so, check to see if the item’s state is unchanged since the previous conversion. In that case, register the fact that the element in the iModel is still required and move on to the next item.
 
-```ts
-if (results.state === ItemState.Unchanged) {
-  assert(results.id !== undefined);
-  this.synchronizer.onElementSeen(results.id);
-  return results.id;
-}
-```
-
 Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
 
-```ts
-    const element = convert the item to BIS element …
-
-    if (results.id !== undefined) // in case this is an update
-      element.id = results.id;
+``` ts
+[[include:Synchronizer-onElementsSeen.example-code]]
 ```
 
 Then ask Synchronizer to write the BIS element to the briefcase. Synchronizer will update the existing element if it exists or insert a new one if not.
 
 ```ts
-    const sync: SynchronizationResults = {
-      element,
-      itemState: results.state,
-    };
-    const status = this.synchronizer.updateIModel(sync, scopeId, sourceItem, kind);
-
-    if (status !== IModelStatus.Success)
-      throw new Error(`Failed to write ${sourceItem.id}. Status=${status}`);
-
-    return sync.element.id;
-
-}
+[[include:Synchronizer-updateIModel.example-code]]
 ```
 
 Note that Synchronizer.updateIModel automatically adds an [[ExternalSourceAspect]] to the element, to keep track of the mapping between it and the external item.
@@ -400,28 +359,12 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=12.22.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
+You'll need Node.js version ">=14.17.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
 The node packages you'll need can be installed using
 
 ```Shell
-$npm install  @itwin/core-bentley
-$npm install  @itwin/ecschema-metadata
-$npm install  @itwin/core-geometry
-$npm install  @itwin/core-backend
-$npm install  @itwin/core-common
-
-$npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @itwin/eslint-plugin
-$npm install  --save-dev @itwin/oidc-signin-tool
-
-$npm install  --save-dev chai
-$npm install  --save-dev cpx2
-$npm install  --save-dev eslint
-$npm install  --save-dev mocha
-$npm install  --save-dev nyc
-$npm install  --save-dev rimraf
-$npm install  --save-dev typescript
+[[include:ConnectorFramework-dependencies.example-code]]
 ```
 
 Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
@@ -435,20 +378,7 @@ Constructor
 The ConnectorRunner has a constructor which takes JobArgs and HubArgs as parameters.
 
 ```ts
-  public static fromJSON(json: AllArgsProps): ConnectorRunner {
-    const supportedVersion = "0.0.1";
-    if (!json.version || json.version !== supportedVersion)
-      throw new Error(`Arg file has invalid version ${json.version}. Supported version is ${supportedVersion}.`);
-    if (!(json.jobArgs))
-      throw new Error("jobArgs is not defined");
-    const jobArgs = new JobArgs(json.jobArgs);
-
-    let hubArgs: HubArgs | undefined;
-    if (json.hubArgs)
-      hubArgs = new HubArgs(json.hubArgs);
-
-    const runner = new ConnectorRunner(jobArgs, hubArgs);
-    return runner;
+[[include:ConnectorRunner-constructor.example-code]]
 ```
 
 Methods
@@ -456,9 +386,7 @@ Methods
 The ConnectorRunner has a Run method that runs your connector module.
 
 ```ts
-
-    const status = await runner.run("./HelloWorldConnector.js");
-
+[[include:ConnectorRunnerTest.run.example-code]]
 ```
 
 ### Synchronizer
@@ -469,24 +397,16 @@ An iTwin Connector has a private Synchronizer member which can be gotten or set 
 
 The connectorModule assigned to the JobArgs above must extend the BaseConnector class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
-```ts
-class HelloWorldConnector extends BaseConnector {
-
+``` ts
+[[include:TestConnector-extendsBaseConnector.example-code]]
 ```
 
 #### InitializeJob
 
 Use this method to add any models (e.g., physical, definition, or group) required by your Connector upfront to ensure that the models exist when it is time to populate them with their respective elements.
 
-```ts
-  public async initializeJob(): Promise<void> {
-    if (ItemState.New === this._sourceDataState) {
-      this.createGroupModel();
-      this.createPhysicalModel();
-      this.createDefinitionModel();
-    }
-  }
-
+``` ts
+[[include:TestConnector-initializeJob.example-code]]
 ```
 
 See also:
@@ -498,17 +418,8 @@ See also:
 
 Use this method to read your native source data and assign it to a member property of your Connector to be accessed later on when it is time to convert your native object to their counterparts in the iModel.
 
-```ts
-  public async openSourceData(sourcePath: string): Promise<void> {
-    const json = fs.readFileSync(sourcePath, "utf8");
-    this._data = JSON.parse(json);
-    this._sourceData = sourcePath;
-
-    const documentStatus = this.getDocumentStatus(); // make sure the repository link is created now, while we are in the repository channel
-    this._sourceDataState = documentStatus.itemState;
-    this._repositoryLink = documentStatus.element;
-  }
-
+``` ts
+[[include:TestConnector-openSourceData.example-code]]
 ```
 
 #### ImportDefinitions
@@ -516,14 +427,7 @@ Use this method to read your native source data and assign it to a member proper
 Your source data may have non-graphical data best represented as definitions. Typically, this data requires a single instance for each definition, and the same instance is referenced multiple times. Therefore, it is best to import the definitions upfront all at once. Override the ImportDefinitions method for this purpose.
 
 ```ts
-  // importDefinitions is for definitions that are written to shared models such as DictionaryModel
-  public async importDefinitions(): Promise<any> {
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-    this.insertCodeSpecs();
-  }
-
+[[include:TestConnector-importDefinitions.example-code]]
 ```
 
 #### ImportDomainSchema
@@ -531,19 +435,7 @@ Your source data may have non-graphical data best represented as definitions. Ty
 Use this method to import any domain schema that is required to publish your data.
 
 ```ts
-
-  public async importDomainSchema(_requestContext: AccessToken): Promise<any> {
-
-    if (this._sourceDataState === ItemState.Unchanged) {
-      return;
-    }
-    TestConnectorSchema.registerSchema();
-
-    const fileName = path.join(__dirname, "..", "..", "..", "test", "assets", "TestConnector.ecschema.xml");
-
-    await this.synchronizer.imodel.importSchemas([fileName]);
-  }
-
+[[include:TestConnector-importDomainSchema.example-code]]
 ```
 
 #### ImportDynamicSchema
@@ -557,38 +449,7 @@ For background on when to use a dynamic schema, please checkout [Dynamic Schemas
 This method is the main workhorse of your Connector. When UpdateExistingData is called, models and definitions should be created and available for insertion of elements (if that is the desired workflow). Note: In the example below, definition elements are being inserted into the definition model at this point as well. Physical elements and Group elements can now be converted.
 
 ```ts
-  public async updateExistingData() {
-    const groupModelId = this.queryGroupModel();
-    const physicalModelId = this.queryPhysicalModel();
-    const definitionModelId = this.queryDefinitionModel();
-    if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
-      const error = `Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
-      throw new IModelError(IModelStatus.BadArg, error);
-    }
-
-    this.issueReporter?.reportIssue(physicalModelId, "source", "Warning", "Test", "Test Message", "Type");
-
-    if (this._sourceDataState === ItemState.New) {
-      this.insertCategories();
-      this.insertMaterials();
-      this.insertGeometryParts();
-
-      // Create this (unused) Subject here just to generate the following code path for the tests:
-      // While running in its own private channel ...
-      // ... a connector inserts an element that is a child of its channel parent ...
-      // ... and that element is inserted into the repository model.
-      // That is perfectly legal ... as long as the correct locks are held. The HubMock and integration
-      // tests should fail if the correct locks are not held.
-      Subject.insert(this.synchronizer.imodel, this.jobSubject.id, "Child Subject");
-    }
-
-    this.convertGroupElements(groupModelId);
-    this.convertPhysicalElements(physicalModelId, definitionModelId, groupModelId);
-    this.synchronizer.imodel.views.setDefaultViewId(this.createView(definitionModelId, physicalModelId, "TestConnectorView"));
-
-    this.synchronizer.detectDeletedElements();
-  }
-
+[[include:TestConnector-updateExistingData.example-code]]
 ```
 
 ### Execution Sequence
