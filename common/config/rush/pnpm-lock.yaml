@@ -12700,7 +12700,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 3.2.8
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 6.0.23
@@ -12712,7 +12712,7 @@ packages:
     hasBin: true
     dependencies:
       browserslist: 4.14.2
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       picocolors: 0.2.1
@@ -13528,7 +13528,7 @@ packages:
     resolution: {integrity: sha512-WHVocJYavUwVgVViC0ORikPHQquXwVh939TaelZ4WDqpWgTX/FsGhl/+P4qBUAGcRvtOgDgC+xftNWWp2RUTAQ==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       electron-to-chromium: 1.4.92
     dev: true
 
@@ -13536,7 +13536,7 @@ packages:
     resolution: {integrity: sha512-DCTr3kDrKEYNw6Jb9HFxVLQNaue8z+0ZfRBRjmCunKDEXEBajKDj2Y+Uelg+Pi29OnvaSGwjOsnRyNEkXzHg5g==}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       electron-to-chromium: 1.4.92
       node-releases: 1.1.77
       pkg-up: 2.0.0
@@ -13546,7 +13546,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       electron-to-chromium: 1.4.92
       escalade: 3.1.1
       node-releases: 1.1.77
@@ -13556,7 +13556,7 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
     dependencies:
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       electron-to-chromium: 1.4.92
       escalade: 3.1.1
       node-releases: 2.0.2
@@ -13814,13 +13814,13 @@ packages:
     resolution: {integrity: sha512-bsTwuIg/BZZK/vreVTYYbSWoe2F+71P7K5QGEX+pT250DZbfU1MQ5prOKpPR+LL6uWKK3KMwMCAS74QB3Um1uw==}
     dependencies:
       browserslist: 4.11.1
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
     dev: true
 
-  /caniuse-lite/1.0.30001320:
-    resolution: {integrity: sha512-MWPzG54AGdo3nWx7zHZTefseM5Y1ccM7hlQKHRqJkPozUaw3hNbBTMmLn16GG2FUzjR13Cr3NPfhIieX5PzXDA==}
+  /caniuse-lite/1.0.30001415:
+    resolution: {integrity: sha512-ER+PfgCJUe8BqunLGWd/1EY4g8AzQcsDAVzdtMGKVtQEmKAwaFfU6vb7EAVIqTMYsqxBorYZi2+22Iouj/y7GQ==}
 
   /capture-exit/2.0.0:
     resolution: {integrity: sha512-PiT/hQmTonHhl/HFGN+Lx3JJUznrVYJ3+AQsnthneZbvW7x+f08Tk7yLJTLEOUvBTbduLeeBkxEaYXUOUrRq6g==}
@@ -21646,7 +21646,7 @@ packages:
     dependencies:
       autoprefixer: 9.8.8
       browserslist: 4.11.1
-      caniuse-lite: 1.0.30001320
+      caniuse-lite: 1.0.30001415
       css-blank-pseudo: 0.1.4
       css-has-pseudo: 0.10.0
       css-prefers-color-scheme: 3.1.1
