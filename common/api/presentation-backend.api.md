@@ -80,6 +80,7 @@ export interface ContentCacheConfig {
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
+    memoryCacheSize?: number;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
 }
@@ -247,6 +248,7 @@ export interface PresentationManagerProps {
     caching?: {
         hierarchies?: HierarchyCacheConfig;
         content?: ContentCacheConfig;
+        workerConnectionCacheSize?: number;
     };
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
