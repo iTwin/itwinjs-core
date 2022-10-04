@@ -39,23 +39,23 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
   const targetsRuleset = useNavigationPropertyTargetsRuleset(getNavigationPropertyInfo, propertyRecord.property);
   const loadTargets = useNavigationPropertyTargetsLoader({ imodel, ruleset: targetsRuleset });
 
-  const selectedTargetRef = React.useRef<NavigationPropertyTarget>();
+  const [selectedTarget, setSelectedTarget] = React.useState(() => getNavigationTargetFromPropertyRecord(propertyRecord));
 
   const onChange = React.useCallback((target?: NavigationPropertyTarget) => {
-    selectedTargetRef.current = target;
+    setSelectedTarget(target);
     target && onCommit && onCommit({ propertyRecord, newValue: getPropertyValue(target) });
   }, [propertyRecord, onCommit]);
 
   React.useImperativeHandle(ref,
     () => ({
-      getValue: () => getPropertyValue(selectedTargetRef.current),
+      getValue: () => getPropertyValue(selectedTarget),
       divElement: divRef.current,
     }),
-    []
+    [selectedTarget]
   );
 
   React.useEffect(() => {
-    selectedTargetRef.current = getNavigationTargetFromPropertyRecord(propertyRecord);
+    setSelectedTarget(getNavigationTargetFromPropertyRecord(propertyRecord));
   }, [propertyRecord]);
 
   if (!targetsRuleset)
@@ -65,7 +65,7 @@ export const NavigationPropertyTargetSelector = React.forwardRef<NavigationPrope
     <AsyncPaginate
       isMulti={false}
       onChange={onChange}
-      value={selectedTargetRef.current ?? null}
+      value={selectedTarget ?? null}
       getOptionLabel={(option: NavigationPropertyTarget) => option.label.displayValue}
       getOptionValue={(option: NavigationPropertyTarget) => option.key.id}
       hideSelectedOptions={false}

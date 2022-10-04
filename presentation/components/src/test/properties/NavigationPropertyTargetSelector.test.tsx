@@ -99,7 +99,14 @@ describe("NavigationPropertyTargetSelector", () => {
 
     const target = await waitFor(() => getByText(contentItem.label.displayValue));
     fireEvent.click(target);
-    expect(spy).to.be.calledOnce;
+    expect(spy).to.be.calledOnceWith({
+      propertyRecord: testRecord,
+      newValue: {
+        valueFormat: PropertyValueFormat.Primitive,
+        value: contentItem.primaryKeys[0],
+        displayValue: contentItem.label.displayValue,
+      },
+    });
   });
 
   it("get value from target selector reference", async () => {
