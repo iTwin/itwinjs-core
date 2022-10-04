@@ -105,5 +105,4 @@ export interface CreateRenderMaterialArgs {
 
   /** Maps a [RenderTexture]($common) image to the surfaces to which the material is applied. */
   textureMapping?: MaterialTextureMappingProps;
-  };
 }
