@@ -79,5 +79,5 @@ export interface AbstractWidgetProps extends ProvidedItem {
   hideWithUiWhenFloating?: boolean;
   /** Optional prop specifying which Panel sides can be docking targets for this widget. If this prop is not specified, all sides are allowed.
    *  An empty array is treated the same as an undefined prop, allowing all targets. */
-  allowedPanelTargets?:  ReadonlyArray<"left"|"right"|"bottom"|"top">;
+  readonly allowedPanelTargets?:  ReadonlyArray<"left"|"right"|"bottom"|"top">;
 }
