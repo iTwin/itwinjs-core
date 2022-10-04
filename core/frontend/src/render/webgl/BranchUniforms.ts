@@ -107,6 +107,9 @@ export class BranchUniforms {
     this._stack.pushBranch(branch);
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
+
+    if (branch.branch.realityModelDisplaySettings)
+      this._target.uniforms.realityModel.update(branch.branch.realityModelDisplaySettings);
   }
 
   public pushState(state: BranchState): void {
@@ -114,6 +117,9 @@ export class BranchUniforms {
     this._stack.pushState(state);
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
+
+    if (state.realityModelDisplaySettings)
+      this._target.uniforms.realityModel.update(state.realityModelDisplaySettings);
   }
 
   public pop(): void {

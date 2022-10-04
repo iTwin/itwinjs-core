@@ -27,14 +27,19 @@ export interface SliderProps {
   max: string;
   step: string;
   value: string;
+  verticalAlign?: "middle" | false;
+  textAlign?: "right" | false;
 }
 
 /** @alpha */
 export function createSlider(props: SliderProps): Slider {
   const div = document.createElement("div");
   div.style.display = "block";
-  div.style.verticalAlign = "middle";
-  div.style.textAlign = "right";
+  if (props.verticalAlign)
+    div.style.verticalAlign = props.verticalAlign;
+
+  if (props.textAlign)
+    div.style.textAlign = props.textAlign;
 
   const label = document.createElement("label");
   label.htmlFor = props.id;

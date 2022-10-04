@@ -11,12 +11,12 @@ import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, Property
 import { CategoryDescription, ClassId, Descriptor, Field, FIELD_NAMES_SEPARATOR } from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
-import { PresentationInstanceFilter, PresentationInstanceFilterCondition, PropertyInfo } from "./Types";
+import { InstanceFilterPropertyInfo, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
 
 /** @alpha */
-export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[] {
+export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[] {
   const rootCategoryName = findRootCategoryName(descriptor.categories);
-  return createPropertyInfos(descriptor, {categoryName: rootCategoryName});
+  return createPropertyInfos(descriptor, { categoryName: rootCategoryName });
 }
 
 /** @internal */
@@ -74,8 +74,8 @@ interface ParentInfo {
   label?: string;
 }
 
-function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): PropertyInfo[] {
-  const fields = new Array<PropertyInfo>();
+function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): InstanceFilterPropertyInfo[] {
+  const fields = new Array<InstanceFilterPropertyInfo>();
 
   for (const category of descriptor.categories) {
     if (category.parent?.name !== parentInfo.categoryName)
@@ -83,8 +83,8 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): Pr
 
     fields.push(...createPropertyInfos(descriptor, {
       categoryName: category.name,
-      name: getPrefixedString(`${category.name}/`, parentInfo.name),
-      label: getPrefixedLabel(`[${category.label}]`, parentInfo.label),
+      name: parentInfo.name ? `${parentInfo.name}/${category.name}` : category.name,
+      label: parentInfo.label ? `${parentInfo.label} | ${category.label}` : category.label,
     }));
   }
 
@@ -96,7 +96,7 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): Pr
   return fields;
 }
 
-function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInfo, sourceClassIds?: ClassId[], fieldNamePrefix?: string): PropertyInfo[] {
+function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInfo, sourceClassIds?: ClassId[], fieldNamePrefix?: string): InstanceFilterPropertyInfo[] {
   if (field.isNestedContentField()) {
     const childPrefix = getPrefixedFieldName(field.name, fieldNamePrefix);
     return field.nestedFields.flatMap((nestedField) => createPropertyInfosFromContentField(nestedField, parentInfo, sourceClassIds, childPrefix));
@@ -111,7 +111,7 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
   const fieldName = getPrefixedFieldName(field.name, fieldNamePrefix);
   const propertyDescription = createPropertyDescriptionFromFieldInfo({
     name: getCategorizedFieldName(fieldName, parentInfo.name),
-    label: getPrefixedLabel(field.label, parentInfo.label),
+    label: field.label,
     type: field.type,
     editor: field.editor,
     enum: field.properties[0].property.enumerationInfo,
@@ -123,6 +123,8 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
     field,
     sourceClassIds: sourceClassIds ?? [field.properties[0].property.classInfo.id],
     propertyDescription,
+    categoryLabel: parentInfo.label,
+    className: field.properties[0].property.classInfo.name,
   }];
 }
 
@@ -133,16 +135,8 @@ function getSourceClassIds(field: Field) {
   return undefined;
 }
 
-function getPrefixedLabel(label: string, prefix?: string) {
-  return prefix !== undefined ? `${prefix} ${label}` : label;
-}
-
-function getPrefixedString(value: string, prefix?: string) {
-  return `${prefix ?? ""}${value}`;
-}
-
 /** @alpha */
-export const INSTANCE_FILTER_FIELD_SEPARATOR="#";
+export const INSTANCE_FILTER_FIELD_SEPARATOR = "#";
 function getCategorizedFieldName(fieldName: string, categoryName?: string) {
   return `${categoryName ?? ""}${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`;
 }

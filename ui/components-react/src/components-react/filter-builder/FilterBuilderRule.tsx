@@ -22,9 +22,9 @@ export interface PropertyFilterBuilderRuleRendererProps {
 
 /** @alpha */
 export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRuleRendererProps) {
-  const { path, rule} = props;
+  const { path, rule } = props;
   const { properties, actions, onRulePropertySelected } = React.useContext(PropertyFilterBuilderContext);
-  const { ruleOperatorRenderer, ruleValueRenderer } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
+  const { ruleOperatorRenderer, ruleValueRenderer, propertyRenderer } = React.useContext(PropertyFilterBuilderRuleRenderingContext);
   const { property, operator, value } = rule;
 
   const onSelectedPropertyChanged = React.useCallback((newProperty?: PropertyDescription) => {
@@ -47,13 +47,13 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
 
   const operatorRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleOperatorRenderer)
-      return ruleOperatorRenderer({property: prop, operator, onChange: onRuleOperatorChange});
+      return ruleOperatorRenderer({ property: prop, operator, onChange: onRuleOperatorChange });
     return <PropertyFilterBuilderRuleOperator property={prop} onChange={onRuleOperatorChange} operator={operator} />;
-  }, [ operator,ruleOperatorRenderer, onRuleOperatorChange]);
+  }, [operator, ruleOperatorRenderer, onRuleOperatorChange]);
 
   const valueRenderer = React.useCallback((prop: PropertyDescription) => {
     if (ruleValueRenderer)
-      return ruleValueRenderer({property: prop, value, onChange: onRuleValueChange});
+      return ruleValueRenderer({ property: prop, value, onChange: onRuleValueChange });
     return <PropertyFilterBuilderRuleValue property={prop} onChange={onRuleValueChange} value={value} />;
   }, [value, ruleValueRenderer, onRuleValueChange]);
 
@@ -68,6 +68,7 @@ export function PropertyFilterBuilderRuleRenderer(props: PropertyFilterBuilderRu
         properties={properties}
         selectedProperty={rule.property}
         onSelectedPropertyChanged={onSelectedPropertyChanged}
+        propertyRenderer={propertyRenderer}
       />
       {property && operatorRenderer(property)}
       {property && operator && !isUnaryPropertyFilterOperator(operator) && valueRenderer(property)}

@@ -38,22 +38,22 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
 
   describe("rule operator", () => {
     it("does not render operator if rule property is undefined", () => {
-      const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />);
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
       expect(operatorContainer).to.be.null;
     });
 
     it("renders operator if rule property is defined", () => {
-      const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}} />);
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{ ...defaultProps.rule, property: defaultProperty }} />);
 
       const operatorContainer = container.querySelector<HTMLDivElement>(".rule-operator");
       expect(operatorContainer).to.not.be.null;
     });
 
-    it ("renders operator using provided renderer", () => {
+    it("renders operator using provided renderer", () => {
       const spy = sinon.spy();
-      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>, {}, {ruleOperatorRenderer: spy});
+      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{ ...defaultProps.rule, property: defaultProperty }} />, {}, { ruleOperatorRenderer: spy });
 
       expect(spy).to.be.calledOnce;
     });
@@ -61,23 +61,23 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
 
   describe("rule value", () => {
     it("does not render value if rule property is undefined", () => {
-      const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />);
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
       expect(valueContainer).to.be.null;
     });
 
     it("does not render value if rule operator is undefined", () => {
-      const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{...defaultProps.rule, property: defaultProperty}}/>);
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} rule={{ ...defaultProps.rule, property: defaultProperty }} />);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
       expect(valueContainer).to.be.null;
     });
 
     it("renders value when value and operator defined", () => {
-      const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer
         {...defaultProps}
-        rule={{...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual}}
+        rule={{ ...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual }}
       />);
 
       const valueContainer = container.querySelector<HTMLDivElement>(".rule-value");
@@ -85,20 +85,31 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
       expect(valueContainer!.hasChildNodes()).to.be.true;
     });
 
-    it ("renders operator using provided renderer", () => {
+    it("renders operator using provided renderer", () => {
       const spy = sinon.spy();
       renderWithContext(<PropertyFilterBuilderRuleRenderer
         {...defaultProps}
-        rule={{...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual}}
-      />, {}, {ruleValueRenderer: spy});
+        rule={{ ...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual }}
+      />, {}, { ruleValueRenderer: spy });
 
       expect(spy).to.be.calledOnce;
     });
   });
 
+  describe("rule property", () => {
+    it("renders with property renderer", () => {
+      const actions = new PropertyFilterBuilderActions(sinon.spy());
+      const propertyRendererSpy = sinon.spy();
+      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+        { actions, properties: [defaultProperty] }, { propertyRenderer: propertyRendererSpy });
+
+      expect(propertyRendererSpy).to.be.calledWith(defaultProperty.name);
+    });
+  });
+
   it("dispatches property change when property is selected", () => {
     const actions = new PropertyFilterBuilderActions(sinon.spy());
-    const {container, getByText} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, {actions, properties: [defaultProperty]});
+    const { container, getByText } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, { actions, properties: [defaultProperty] });
     const setRulePropertySpy = sinon.stub(actions, "setRuleProperty");
 
     const selector = container.querySelector<HTMLInputElement>(".rule-property input");
@@ -114,15 +125,15 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     const setRulePropertySpy = sinon.stub(actions, "setRuleProperty");
     renderWithContext(<PropertyFilterBuilderRuleRenderer
       {...defaultProps}
-      rule={{...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual}}
-    />, {actions, properties: []});
+      rule={{ ...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual }}
+    />, { actions, properties: [] });
 
     expect(setRulePropertySpy).to.be.calledOnceWith(defaultProps.path, undefined);
   });
 
   it("invokes onRulePropertySelected callback when property is selected", () => {
     const spy = sinon.spy();
-    const {container, getByText} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, {properties: [defaultProperty], onRulePropertySelected: spy});
+    const { container, getByText } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, { properties: [defaultProperty], onRulePropertySelected: spy });
 
     const selector = container.querySelector<HTMLInputElement>(".rule-property input");
     expect(selector).to.not.be.null;
@@ -134,7 +145,7 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
 
   it("dispatches remove rule action", () => {
     const actions = new PropertyFilterBuilderActions(sinon.spy());
-    const {container} = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, {actions});
+    const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />, { actions });
     const removeItemSpy = sinon.stub(actions, "removeItem");
 
     const button = container.querySelector(".rule-remove-action")?.firstElementChild;
@@ -148,8 +159,8 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     const operatorRendererSpy = sinon.spy();
     renderWithContext(<PropertyFilterBuilderRuleRenderer
       {...defaultProps}
-      rule={{...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual}}
-    />, {actions}, {ruleOperatorRenderer: operatorRendererSpy});
+      rule={{ ...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual }}
+    />, { actions }, { ruleOperatorRenderer: operatorRendererSpy });
     const setRuleOperatorSpy = sinon.stub(actions, "setRuleOperator");
 
     expect(operatorRendererSpy).to.be.calledOnce;
@@ -165,13 +176,13 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     const valueRendererSpy = sinon.spy();
     renderWithContext(<PropertyFilterBuilderRuleRenderer
       {...defaultProps}
-      rule={{...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual}}
-    />, {actions}, {ruleValueRenderer: valueRendererSpy});
+      rule={{ ...defaultProps.rule, property: defaultProperty, operator: PropertyFilterRuleOperator.IsEqual }}
+    />, { actions }, { ruleValueRenderer: valueRendererSpy });
     const setRuleValueSpy = sinon.stub(actions, "setRuleValue");
 
     expect(valueRendererSpy).to.be.calledOnce;
     const valueRendererProps = valueRendererSpy.firstCall.args[0] as PropertyFilterBuilderRuleValueProps;
-    const newValue: PropertyValue = {valueFormat: PropertyValueFormat.Primitive};
+    const newValue: PropertyValue = { valueFormat: PropertyValueFormat.Primitive };
     valueRendererProps.onChange(newValue);
 
     expect(setRuleValueSpy).to.be.calledOnceWith(defaultProps.path, newValue);

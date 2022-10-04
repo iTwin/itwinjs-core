@@ -558,7 +558,7 @@ function runCommand<T extends EditorProps>(cmd: (args: T) => Promise<void>) {
       if (true === args.logging) {
         Logger.initializeToConsole();
         Logger.setLevel("CloudSqlite", LogLevel.Trace);
-        IModelHost.appWorkspace.cloudCache?.setLogMask(0xff);
+        IModelHost.appWorkspace.cloudCache?.setLogMask(CloudSqlite.LoggingMask.All);
         logTimer = setInterval(() => flushLog(), 250); // logging from other threads is buffered. This causes it to appear every 1/4 second.
       }
 
