@@ -38,4 +38,24 @@ describe("PointCloudDisplaySettings", () => {
     roundTrip({ sizeMode: "pixel" }, "input");
     roundTrip({ sizeMode: "not a size mode" } as any, "input");
   });
+
+  it("clones", () => {
+    const test = (baseProps: PointCloudDisplayProps | undefined, changedProps: PointCloudDisplayProps, expected: PointCloudDisplayProps | undefined | "input") => {
+      if (expected === "input")
+        expected = baseProps;
+
+      const baseSettings = PointCloudDisplaySettings.fromJSON(baseProps);
+      const clone = baseSettings.clone(changedProps);
+      const actual = clone.toJSON();
+      expect(actual).to.deep.equal(expected);
+    };
+
+    test(undefined, { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" }, "input");
+    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 10, pixelSize: 1 }, { voxelScale: 0.5, maxPixelsPerVoxel: 12 }, { voxelScale: 0.5, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 12 });
+    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 4, pixelSize: 5, sizeMode: "voxel", shape: "square" },
+      { voxelScale: undefined, minPixelsPerVoxel: undefined, maxPixelsPerVoxel: undefined, pixelSize: undefined, sizeMode: undefined, shape: undefined },
+      undefined
+    );
+    test({ voxelScale: 2, pixelSize: 3, minPixelsPerVoxel: 4 }, { pixelSize: undefined, minPixelsPerVoxel: 5 }, { voxelScale: 2, minPixelsPerVoxel: 5 });
+  });
 });
