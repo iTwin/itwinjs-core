@@ -569,9 +569,9 @@ export abstract class IModel implements IModelProps {
     this.rootSubject = props.rootSubject;
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
+
     const ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;
-    if (ecefLocation?.isValid)
-      this.ecefLocation = ecefLocation;
+    this.ecefLocation = ecefLocation?.isValid ? ecefLocation : undefined;
 
     this.geographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
   }
