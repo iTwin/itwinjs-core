@@ -73,7 +73,7 @@ export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOp
 
 // @public
 export interface ContentCacheConfig {
-    // @alpha
+    // @beta
     size?: number;
 }
 

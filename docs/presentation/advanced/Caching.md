@@ -57,3 +57,9 @@ Hybrid cache is an experimental feature that uses a combination of disk and memo
 When creating hierarchies, there are multiple reads and writes going on in the cache, which requires a write transaction and blocks other readers until the hierarchy level is complete and transaction is committed. To make the lock as short as possible, this approach does all the processing using a memory cache and only at the end of the process all memory cache content is transferred to the disk cache, thus minimizing the time the disk cache is blocked and improving parallelism.
 
 The hybrid cache still uses a disk cache to persist the data and provides ability to configure it as necessary through the [HybridCacheConfig.disk]($presentation-backend) configuration option.
+
+## Content cache
+
+Presentation manager builds content in 2 stages: descriptor (meta-data) and content items (data). Creating the descriptor may be even more expensive than creating the content itself, because it requires analyzing meta-data as well as data in the iModel to determine what classes and relationships to use for querying the requested data. To avoid having to re-create the descriptor when requesting data in pages, the descriptor is cached a LRU in-memory cache.
+
+The number of descriptors cached defaults to `100` and may be controlled through [ContentCacheConfig.size]($presentation-backend) configuration option.

@@ -132,6 +132,8 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 
 /**
  * Configuration for content cache.
+ *
+ * @see [Content cache documentation page]($docs/presentation/advanced/Caching.md#content-cache)
  * @public
  */
 export interface ContentCacheConfig {
@@ -140,7 +142,7 @@ export interface ContentCacheConfig {
    *
    * Defaults to `100`.
    *
-   * @alpha
+   * @beta
    */
   size?: number;
 }
