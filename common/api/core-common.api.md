@@ -2276,6 +2276,8 @@ export class EcefLocation implements EcefLocationProps {
     get earthCenter(): Point3d;
     getTransform(): Transform;
     isAlmostEqual(other: EcefLocation): boolean;
+    // @alpha
+    get isValid(): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
     // (undocumented)
