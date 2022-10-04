@@ -59,3 +59,54 @@ describe("PointCloudDisplaySettings", () => {
     test({ voxelScale: 2, pixelSize: 3, minPixelsPerVoxel: 4 }, { pixelSize: undefined, minPixelsPerVoxel: 5 }, { voxelScale: 2, minPixelsPerVoxel: 5 });
   });
 });
+
+describe("RealityModelDisplaySettings", () => {
+  it("round-trips through JSON", () => {
+    const roundTrip = (props: RealityModelDisplayProps | undefined, expected: RealityModelDisplayProps | undefined | "input") => {
+      if ("input" === expected)
+        expected = props;
+
+      const settings = RealityModelDisplaySettings.fromJSON(props);
+      const actual = settings.toJSON();
+      expect(actual).to.deep.equal(expected);
+
+      const actualSettings = RealityModelDisplaySettings.fromJSON(actual);
+      expect(actualSettings.equals(settings)).to.be.true;
+      expect(actualSettings === RealityModelDisplaySettings.defaults).to.equal(settings.equals(RealityModelDisplaySettings.defaults));
+      expect(actualSettings === RealityModelDisplaySettings.defaults).to.equal(undefined === actual);
+    };
+
+    roundTrip(undefined, undefined);
+    roundTrip({ overrideColorRatio: 0.5 }, undefined);
+    roundTrip({ overrideColorRatio: 0.5, pointCloud: undefined }, undefined);
+    roundTrip({ overrideColorRatio: 0.5, pointCloud: { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" } }, undefined);
+
+    roundTrip({ overrideColorRatio: 0.1 }, "input");
+    roundTrip({ overrideColorRatio: 0 }, "input");
+    roundTrip({ overrideColorRatio: 1 }, "input");
+    roundTrip({ overrideColorRatio: -12.5 }, "input");
+
+    roundTrip({ pointCloud: { sizeMode: "pixel", pixelSize: 1, shape: "square" } }, { pointCloud: { sizeMode: "pixel", shape: "square" } });
+    roundTrip({ overrideColorRatio: 12.5, pointCloud: { voxelScale: 2 } }, "input");
+  });
+
+  it("clones", () => {
+    const test = (baseProps: RealityModelDisplayProps | undefined, changedProps: RealityModelDisplayProps, expected: RealityModelDisplayProps | undefined | "input") => {
+      if (expected === "input")
+        expected = baseProps;
+
+      const baseSettings = RealityModelDisplaySettings.fromJSON(baseProps);
+      const clone = baseSettings.clone(changedProps);
+      const actual = clone.toJSON();
+      expect(actual).to.deep.equal(expected);
+    };
+
+    test(undefined, { overrideColorRatio: 0.5 }, undefined);
+    test({ overrideColorRatio: 2 }, { overrideColorRatio: undefined }, undefined);
+    test({ overrideColorRatio: 2 }, { overrideColorRatio: 3 }, { overrideColorRatio: 3 });
+    test({ pointCloud: { sizeMode: "pixel" } }, { overrideColorRatio: 2 }, { pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 });
+    test({ pointCloud: { sizeMode: "pixel" } }, { pointCloud: { pixelSize: 2 } }, { pointCloud: { sizeMode: "pixel", pixelSize: 2 } });
+    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { sizeMode: undefined} }, { overrideColorRatio: 2 });
+    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { } }, { overrideColorRatio: 2, pointCloud: { sizeMode: "pixel" } });
+  });
+});

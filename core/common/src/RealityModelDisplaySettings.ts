@@ -214,7 +214,7 @@ export class RealityModelDisplaySettings {
   /** Create a copy of these settings, identical except for any properties explicitly specified by `changedProps`. */
   public clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings {
     const pointCloud = changedProps.pointCloud ? this.pointCloud.clone(changedProps.pointCloud) : this.pointCloud;
-    const colorRatio = changedProps.overrideColorRatio ?? this.overrideColorRatio;
+    const colorRatio = changedProps.hasOwnProperty("overrideColorRatio") ? changedProps.overrideColorRatio : this.overrideColorRatio;
     return new RealityModelDisplaySettings(colorRatio, pointCloud);
   }
 }
