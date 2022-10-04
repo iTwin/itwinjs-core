@@ -621,11 +621,6 @@ class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGLContext) {
     super(PointCloudTechnique._kHilite + 2);
 
-    this._earlyZFlags = [
-      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
-      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
-    ];
-
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) => createPointCloudHiliter(classified));
       const flags = scratchTechniqueFlags;
