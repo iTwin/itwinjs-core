@@ -2086,24 +2086,11 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 // @public
 export interface CreateRenderMaterialArgs {
     alpha?: number;
-    diffuse?: {
-        color?: ColorDef | RgbColorProps;
-        weight?: number;
-    };
+    diffuse?: MaterialDiffuseProps;
     // @internal
     source?: RenderMaterialSource;
-    specular?: {
-        color?: ColorDef | RgbColorProps;
-        weight?: number;
-        exponent?: number;
-    };
-    textureMapping?: {
-        texture: RenderTexture;
-        mode?: TextureMapping.Mode;
-        transform?: TextureMapping.Trans2x3;
-        weight?: number;
-        worldMapping?: boolean;
-    };
+    specular?: MaterialSpecularProps;
+    textureMapping?: MaterialTextureMappingProps;
 }
 
 // @internal (undocumented)
@@ -6438,6 +6425,29 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 
 // @public (undocumented)
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
+
+// @public
+export interface MaterialDiffuseProps {
+    color?: ColorDef | RgbColorProps;
+    weight?: number;
+}
+
+// @public
+export interface MaterialSpecularProps {
+    color?: ColorDef | RgbColorProps;
+    exponent?: number;
+    weight?: number;
+}
+
+// @public
+export interface MaterialTextureMappingProps {
+    mode?: TextureMapping.Mode;
+    texture: RenderTexture;
+    transform?: TextureMapping.Trans2x3;
+    weight?: number;
+    // @internal (undocumented)
+    worldMapping?: boolean;
+}
 
 // @public
 export class MeasureAreaByPointsTool extends PrimitiveTool {
