@@ -28,6 +28,11 @@ export interface StringParam {
  */
 export type BindParameter = number | string;
 
+function checkBind(stat: DbResult) {
+  if (stat !== DbResult.BE_SQLITE_OK)
+    throw new IModelError(stat, "SQLite Bind error");
+}
+
 /** Executes SQLite SQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
@@ -158,16 +163,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       throw new IModelError(stat, "Error in bindValue");
   }
 
-  private checkBind(stat: DbResult) {
-    if (stat !== DbResult.BE_SQLITE_OK)
-      throw new IModelError(stat, "SQLite Bind error");
-  }
   /** Bind an integer parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val integer to bind.
    */
   public bindInteger(parameter: BindParameter, val: number) {
-    this.checkBind(this.stmt.bindInteger(parameter, val));
+    checkBind(this.stmt.bindInteger(parameter, val));
   }
 
   public bindBoolean(parameter: BindParameter, val: boolean) {
@@ -193,47 +194,53 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     if (val)
       this.bindBlob(parameter, val);
   }
-
+  public bindProps<T>(colIndex: number, val: T) {
+    this.bindString(colIndex, JSON.stringify(val));
+  }
+  public maybeBindProps<T>(colIndex: number, val?: T) {
+    if (val)
+      this.bindProps(colIndex, val);
+  }
   /** Bind a double parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val double to bind.
    */
   public bindDouble(parameter: BindParameter, val: number) {
-    this.checkBind(this.stmt.bindDouble(parameter, val));
+    checkBind(this.stmt.bindDouble(parameter, val));
   }
   /** Bind a string parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val string to bind.
    */
   public bindString(parameter: BindParameter, val: string) {
-    this.checkBind(this.stmt.bindString(parameter, val));
+    checkBind(this.stmt.bindString(parameter, val));
   }
   /** Bind an Id64String parameter as a 64-bit integer
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Id to bind.
    */
   public bindId(parameter: BindParameter, id: Id64String) {
-    this.checkBind(this.stmt.bindId(parameter, id));
+    checkBind(this.stmt.bindId(parameter, id));
   }
   /** Bind a Guid parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val Guid to bind.
    */
   public bindGuid(parameter: BindParameter, guid: GuidString) {
-    this.checkBind(this.stmt.bindGuid(parameter, guid));
+    checkBind(this.stmt.bindGuid(parameter, guid));
   }
   /** Bind a blob parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val blob to bind.
    */
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
-    this.checkBind(this.stmt.bindBlob(parameter, blob));
+    checkBind(this.stmt.bindBlob(parameter, blob));
   }
   /** Bind null to a parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    */
   public bindNull(parameter: BindParameter) {
-    this.checkBind(this.stmt.bindNull(parameter));
+    checkBind(this.stmt.bindNull(parameter));
   }
 
   /** Bind values to all parameters in the statement.
@@ -347,6 +354,12 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
   public getValueBoolean(colIndex: number) {
     return this.isValueNull(colIndex) ? false : 0 !== this.getValueInteger(colIndex);
+  }
+  public getProps<T>(colIndex: number): T {
+    return JSON.parse(this.getValueString(colIndex));
+  }
+  public getPropsMaybe<T>(colIndex: number): T | undefined {
+    return this.isValueNull(colIndex) ? undefined : this.getProps(colIndex);
   }
 
   /** Get the current row.
