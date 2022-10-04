@@ -30,7 +30,7 @@ export interface FloatingViewportContentProps {
   /** The initial view state used to create the viewport, or a function that returns it (will refresh when the function changes) */
   initialViewState: ViewStateProp;
   /** Function to get a reference to the ScreenViewport */
-  viewportRef?: (v: ScreenViewport) => void;
+  viewportRef?: React.ForwardedRef<ScreenViewport>;
 }
 
 /**
@@ -48,8 +48,13 @@ export function FloatingViewportContent(props: FloatingViewportContentProps) { /
   const viewState = React.useMemo(() => typeof initialViewState === "function" ? initialViewState() : initialViewState, [initialViewState]);
   const onViewportRef = React.useCallback((v: ScreenViewport) => {
     setViewport(v);
-    if (viewportRef)
+    if (!viewportRef)
+      return;
+
+    if (typeof viewportRef === "function")
       viewportRef(v);
+    else
+      viewportRef.current = v;
 
   }, [viewportRef]);
 
