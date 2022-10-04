@@ -65,33 +65,7 @@ function createBuilder(): ProgramBuilder {
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  return builder;
-}
-
-const scratchPointCloud = new Float32Array([0, 0]);
-
-/** @internal */
-export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
-  const builder = createBuilder();
-
-  builder.addVarying("v_color", VariableType.Vec4);
-  builder.vert.set(VertexShaderComponent.ComputeBaseColor, computeColor);
-
-  const frag = builder.frag;
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
-  frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
-  if (classified) {
-    addColorPlanarClassifier(builder, false, thematic);
-    builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
-
-    if (FeatureMode.None !== featureMode)
-      addFeaturePlanarClassifier(builder);
-  }
-
-  if (IsThematic.Yes === thematic) {
-    addThematicDisplay(builder, true);
-    addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
-  }
+  builder.frag.set(FragmentShaderComponent.CheckForEarlyDiscard, roundPointDiscard);
 
   // Uniforms based on the PointCloudDisplaySettings.
   builder.addUniform("u_pointCloudSettings", VariableType.Vec4, (prog) => {
@@ -109,6 +83,32 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
       uniform.setUniform2fv(scratchPointCloud);
     });
   });
+
+  return builder;
+}
+
+const scratchPointCloud = new Float32Array([0, 0]);
+
+/** @internal */
+export function createPointCloudBuilder(classified: IsClassified, featureMode: FeatureMode, thematic: IsThematic): ProgramBuilder {
+  const builder = createBuilder();
+
+  builder.addVarying("v_color", VariableType.Vec4);
+  builder.vert.set(VertexShaderComponent.ComputeBaseColor, computeColor);
+
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
+  if (classified) {
+    addColorPlanarClassifier(builder, false, thematic);
+    builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
+
+    if (FeatureMode.None !== featureMode)
+      addFeaturePlanarClassifier(builder);
+  }
+
+  if (IsThematic.Yes === thematic) {
+    addThematicDisplay(builder, true);
+    addTexture(builder, IsAnimated.No, IsThematic.Yes, true);
+  }
 
   return builder;
 }
