@@ -256,6 +256,13 @@ export class EcefLocation implements EcefLocationProps {
     this._transform.freeze();
   }
 
+  /** Returns true if this EcefLocation is not located at the center of the Earth.
+   * @alpha are locations very close to the center considered valid? What are the specific criteria?
+   */
+  public get isValid(): boolean {
+    return !this.origin.isZero;
+  }
+
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
   public static createFromCartographicOrigin(origin: Cartographic, point?: Point3d, angle?: Angle) {
     const ecefOrigin = origin.toEcef();
@@ -562,7 +569,10 @@ export abstract class IModel implements IModelProps {
     this.rootSubject = props.rootSubject;
     this.projectExtents = Range3d.fromJSON(props.projectExtents);
     this.globalOrigin = Point3d.fromJSON(props.globalOrigin);
-    this.ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;
+    const ecefLocation = props.ecefLocation ? new EcefLocation(props.ecefLocation) : undefined;
+    if (ecefLocation?.isValid)
+      this.ecefLocation = ecefLocation;
+
     this.geographicCoordinateSystem = props.geographicCoordinateSystem ? new GeographicCRS(props.geographicCoordinateSystem) : undefined;
   }
 
