@@ -70,7 +70,7 @@ export interface AbstractToolbarProps {
 
 // @public
 export interface AbstractWidgetProps extends ProvidedItem {
-    allowedPanelTargets?: ReadonlyArray<"left" | "right" | "bottom" | "top">;
+    readonly allowedPanelTargets?: ReadonlyArray<"left" | "right" | "bottom" | "top">;
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly canPopout?: boolean;

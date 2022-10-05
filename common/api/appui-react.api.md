@@ -6836,8 +6836,8 @@ export class WidgetDef {
     // (undocumented)
     get activeState(): WidgetState;
     // (undocumented)
-    get allowedPanelTargets(): PanelSide[] | undefined;
-    set allowedPanelTargets(targets: PanelSide[] | undefined);
+    get allowedPanelTargets(): ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined;
+    set allowedPanelTargets(targets: ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined);
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
