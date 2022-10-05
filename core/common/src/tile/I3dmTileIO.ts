@@ -37,7 +37,8 @@ export class I3dmHeader extends TileHeader {
     if (0 !== this.batchTableJsonLength) {
       const batchStrData = stream.nextBytes(this.batchTableJsonLength);
       const batchStr = utf8ToString(batchStrData);
-      if (batchStr) this.batchTableJson = JSON.parse(batchStr);
+      if (batchStr)
+        this.batchTableJson = JSON.parse(batchStr);
     }
     stream.advance(this.batchTableBinaryLength);
 

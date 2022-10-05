@@ -131,7 +131,7 @@ export function addShaderFlags(builder: ProgramBuilder) {
   addShaderFlagsLookup(builder.frag);
 
   builder.addUniformArray("u_shaderFlags", VariableType.Boolean, 5, (prog) => {
-    prog.addGraphicUniform("u_shaderFlags", (uniform, params) => { setShaderFlags(uniform, params); });
+    prog.addGraphicUniform("u_shaderFlags", (uniform, params) => setShaderFlags(uniform, params));
   });
 }
 

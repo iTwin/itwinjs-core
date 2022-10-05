@@ -53,7 +53,11 @@ export class Code implements CodeProps {
   }
 
   /** Create an empty, non-unique code with no special meaning. */
-  public static createEmpty(): Code { const id = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
+  public static createEmpty(): Code {
+    const id = Id64.fromLocalAndBriefcaseIds(1, 0);
+    return new Code({ spec: id, scope: id });
+  }
+
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
@@ -265,8 +269,11 @@ export class CodeSpec {
       this.properties = { scopeSpec: {} };
       this.scopeType = CodeScopeSpec.Type.Repository;
     }
-    if (undefined !== scopeType) this.scopeType = scopeType;
-    if (undefined !== scopeReq) this.scopeReq = scopeReq;
+    if (undefined !== scopeType)
+      this.scopeType = scopeType;
+
+    if (undefined !== scopeReq)
+      this.scopeReq = scopeReq;
   }
 
   /** Create a new CodeSpec from the specified parameters
@@ -312,7 +319,9 @@ export class CodeSpec {
     return true;
   }
   public set isManagedWithIModel(value: boolean) {
-    if (!this.properties.spec) this.properties.spec = {};
+    if (!this.properties.spec)
+      this.properties.spec = {};
+
     this.properties.spec.isManagedWithDgnDb = value;
   }
 }

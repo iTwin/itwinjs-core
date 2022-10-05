@@ -114,7 +114,7 @@ rush install -c
 
 ## Environment Variables
 
-You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you will need to edit display-test-app's entry in apps.config.json. In the "env" section, add an entry corresponding to the desired property from the SVTConfiguration interface. The "env" section contains a JSON version of an SVTConfiguration object.
+You can use these environment variables to alter the default behavior of various aspects of the system. If you are running display-test-app on mobile, you can create a file named `.env.local.mobile` to hold mobile versions of the OIDC environment variables, while having Electron versions of the same variables in a file named `.env.local`.
 
 * IMJS_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
@@ -154,9 +154,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, the number of seconds after a Tile has been most recently used before pruning it.
 * IMJS_DISABLE_LOG_Z
   * If defined, the logarithmic depth buffer will not be used.
-* IMJS_FAKE_CLOUD_STORAGE
-  * If defined, cloud storage tile caching will be simulated. Cached tiles will be stored in ./lib/backend/tiles/. They will be removed by a `rush clean` or `npm run clean`.
-    * NOTE: This currently only works when running display-test-app in a browser.
 * IMJS_ENABLE_MAP_TEXTURE_FILTER
   * If defined, the anisotropic filtering will be used for (planar) map tiles.
 * IMJS_DISABLE_MAP_DRAPE_TEXTURE_FILTER
@@ -281,6 +278,7 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
+* `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 
 ## Editing
 

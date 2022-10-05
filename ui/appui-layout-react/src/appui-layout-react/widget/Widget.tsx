@@ -40,6 +40,8 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
 /** @internal */
 export interface WidgetProps extends CommonProps {
   children?: React.ReactNode;
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
   onTransitionEnd?(): void;
   widgetId?: string;
 }
@@ -136,6 +138,8 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
         <WidgetContext.Provider value={widgetContextValue}>
           <div
             className={className}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             onTransitionEnd={props.onTransitionEnd}
             ref={elementRef}
             style={props.style}

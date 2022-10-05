@@ -31,7 +31,10 @@ describe("Unexpected error handling", () => {
     });
     const myEvent = new BeEvent<() => void>();
     myEvent.addListener(() => evListener1++); // before bad listener
-    myEvent.addListener(() => { throw error; }); // bang
+    myEvent.addListener(() => {
+      throw error;
+    }); // bang
+
     myEvent.addListener(() => evListener2++); // after bad listener
 
     myEvent.raiseEvent();
@@ -59,7 +62,10 @@ describe("Unexpected error handling", () => {
     expect(unexpectedCalled).equals(4);
     expect(telemetry1).equals(2); // now it should not be called either
 
-    const dropBad = UnexpectedErrors.addTelemetry(() => { throw new Error("from telemetry"); });
+    const dropBad = UnexpectedErrors.addTelemetry(() => {
+      throw new Error("from telemetry");
+    });
+
     myEvent.raiseEvent(); // bad telemetry should not cause errors
     dropBad();
 

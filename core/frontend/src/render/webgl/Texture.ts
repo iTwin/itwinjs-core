@@ -91,7 +91,9 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 }
 
-function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void { loadTexture2DImageData(handle, params, bytes); }
+function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Texture2DData): void {
+  loadTexture2DImageData(handle, params, bytes);
+}
 
 /** Associate cube texture data with a WebGLTexture from an image. */
 function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: TexImageSource[]): void {
@@ -786,7 +788,11 @@ export class Texture2DDataUpdater {
     this.setByteAtIndex(index + 1, (value & 0xff00) >> 8);
   }
 
-  public getByteAtIndex(index: number): number { assert(index < this.data.length); return this.data[index]; }
+  public getByteAtIndex(index: number): number {
+    assert(index < this.data.length);
+    return this.data[index];
+  }
+
   public getOvrFlagsAtIndex(index: number): OvrFlags {
     const lo = this.getByteAtIndex(index);
     const hi = this.getByteAtIndex(index + 1);
