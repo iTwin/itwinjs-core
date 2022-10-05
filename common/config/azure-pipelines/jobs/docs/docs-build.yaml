@@ -88,7 +88,7 @@ jobs:
           IF %ERRORLEVEL%==0 (
             ECHO %currentVersion% already exists
           ) ELSE (
-            ECHO "Releasing %currentVersion%"
+            ECHO Releasing %currentVersion%
             ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
             ECHO ##vso[build.updatebuildnumber]%currentVersion%
           )
