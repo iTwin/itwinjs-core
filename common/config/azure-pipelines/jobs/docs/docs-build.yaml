@@ -81,15 +81,17 @@ jobs:
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - script: |
-          CurrentVersion=`node -p "require('./core/backend/package.json').version"`
-          npm view @itwin/core-backend@$CurrentVersion &> /dev/null
-          if [ $? -ne 0 ]; then
-            echo "Releasing $CurrentVersion"
-            echo ##vso[build.addbuildtag]iTwinJsDocsRelease
-            echo ##vso[build.updatebuildnumber]$CurrentVersion
-          else
-            echo "$CurrentVersion already exists"
-          fi
+          CALL node -p "require('./core/backend/package.json').version" > tmp.txt
+          SET /p currentVersion= < tmp.txt
+          DEL tmp.txt
+          CALL npm view @itwin/core-backend@%currentVersion% >nul 2>&1
+          IF %ERRORLEVEL%==0 (
+            ECHO %currentVersion% already exists
+          ) ELSE (
+            ECHO "Releasing %currentVersion%"
+            ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
+            ECHO ##vso[build.updatebuildnumber]%currentVersion%
+          )
         displayName: Tag if new release
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
