@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render } from "@testing-library/react";
-import { addPanelWidget, addTab, createNineZoneState, NineZoneState, PanelSideContext, PanelStateContext } from "../../appui-layout-react";
+import { addPanelWidget, addTab, createNineZoneState, DraggedTabStateContext, DraggedWidgetIdContext, NineZoneState, PanelSideContext, PanelStateContext } from "../../appui-layout-react";
 import { renderHook } from "@testing-library/react-hooks";
 import { useTargetDirection } from "../../appui-layout-react/target/SectionTarget";
 import { TestNineZoneProvider } from "../Providers";
 import { SectionTargets } from "../../appui-layout-react/target/SectionTargets";
 import { TargetOptionsContext } from "../../appui-layout-react/target/TargetOptions";
+import { createDraggedTabState } from "../../appui-layout-react/state/internal/TabStateHelpers";
 
 describe("useTargetDirection", () => {
   it("should return `horizontal`", () => {
@@ -39,15 +40,33 @@ interface WrapperProps {
   state: NineZoneState;
 }
 
-function Wrapper({ children, state }: React.PropsWithChildren<WrapperProps>) {
+function DragWidgetWrapper({ children, state }: React.PropsWithChildren<WrapperProps>) {
   return (
     <TargetOptionsContext.Provider value={{
       version: "2",
     }}>
       <TestNineZoneProvider state={state}>
-        <PanelStateContext.Provider value={state.panels.left}>
-          {children}
-        </PanelStateContext.Provider>
+        <PanelSideContext.Provider value="left">
+          <DraggedWidgetIdContext.Provider value="w1">
+            {children}
+          </DraggedWidgetIdContext.Provider>
+        </PanelSideContext.Provider>
+      </TestNineZoneProvider>
+    </TargetOptionsContext.Provider>
+  );
+}
+
+function DragTabWrapper({ children, state }: React.PropsWithChildren<WrapperProps>) {
+  return (
+    <TargetOptionsContext.Provider value={{
+      version: "2",
+    }}>
+      <TestNineZoneProvider state={state}>
+        <PanelSideContext.Provider value="left">
+          <DraggedTabStateContext.Provider value={createDraggedTabState("t1")}>
+            {children}
+          </DraggedTabStateContext.Provider>
+        </PanelSideContext.Provider>
       </TestNineZoneProvider>
     </TargetOptionsContext.Provider>
   );
@@ -64,7 +83,22 @@ describe("useAllowedPanelTarget", () => {
     const { container} = render(
       <SectionTargets widgetId="wl1" />,
       {
-        wrapper: (props) => <Wrapper state={state} {...props} />, // eslint-disable-line react/display-name
+        wrapper: (props) => <DragWidgetWrapper state={state} {...props} />, // eslint-disable-line react/display-name
+      }
+    );
+    container.getElementsByClassName("nz-hidden").length.should.eq(3);
+  });
+  it("should render hidden if any tab of a dragged tab doesn't allow a panel target", () => {
+    let state = createNineZoneState();
+    state = addTab(state, "t1");
+    state = addTab(state, "t2", { allowedPanelTargets: ["right"] });
+    state = addPanelWidget(state, "right", "w1", ["t1", "t2"]);
+    state = addTab(state, "tl1");
+    state = addPanelWidget (state, "left", "wl1", ["tl1"]);
+    const { container} = render(
+      <SectionTargets widgetId="wl1" />,
+      {
+        wrapper: (props) => <DragTabWrapper state={state} {...props} />, // eslint-disable-line react/display-name
       }
     );
     container.getElementsByClassName("nz-hidden").length.should.eq(3);
