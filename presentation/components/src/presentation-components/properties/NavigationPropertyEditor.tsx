@@ -74,9 +74,9 @@ export class NavigationPropertyTargetEditor extends React.PureComponent<Property
 
   // istanbul ignore next
   public get hasFocus() {
-    if (!this._ref.current || !document.activeElement)
+    if (!this._ref.current?.divElement || !document.activeElement)
       return false;
-    return document.activeElement.contains(this._ref.current.divElement);
+    return this._ref.current.divElement.contains(document.activeElement);
   }
 
   /** @internal */
