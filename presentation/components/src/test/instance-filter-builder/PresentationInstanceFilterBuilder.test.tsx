@@ -20,7 +20,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
-  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContextProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContext,
   usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
@@ -375,7 +375,7 @@ describe("PresentationInstanceFilterProperty", () => {
   });
 });
 
-describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
+describe("useFilterBuilderNavigationPropertyEditorContext", () => {
   interface Props {
     imodel: IModelConnection;
     descriptor: Descriptor;
@@ -412,7 +412,7 @@ describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
     };
 
     const { result } = renderHook(
-      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor),
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
       { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
     );
 
@@ -432,7 +432,7 @@ describe("useFilterBuilderNavigationPropertyEditorContextProps", () => {
     };
 
     const { result } = renderHook(
-      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor),
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
       { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
     );
 

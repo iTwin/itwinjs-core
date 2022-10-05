@@ -19,7 +19,7 @@ import { fireEvent, render as renderRTL, waitFor } from "@testing-library/react"
 import { renderHook } from "@testing-library/react-hooks";
 import { IContentDataProvider } from "../../presentation-components/common/ContentDataProvider";
 import {
-  NavigationPropertyEditorContext, NavigationPropertyEditorContextProps, NavigationPropertyTargetEditor, useNavigationPropertyEditingContextProps,
+  NavigationPropertyEditorContext, navigationPropertyEditorContext, NavigationPropertyTargetEditor, useNavigationPropertyEditingContext,
 } from "../../presentation-components/properties/NavigationPropertyEditor";
 import { createRandomPropertyRecord } from "../_helpers/UiComponents";
 
@@ -32,16 +32,16 @@ function createNavigationPropertyInfo(): NavigationPropertyInfo {
   };
 }
 
-function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContextProps>) {
-  const contextValue: NavigationPropertyEditorContextProps = {
+function render(ui: React.ReactElement, context?: Partial<NavigationPropertyEditorContext>) {
+  const contextValue: NavigationPropertyEditorContext = {
     getNavigationPropertyInfo: context?.getNavigationPropertyInfo ?? (async () => createNavigationPropertyInfo()),
     imodel: context?.imodel ?? {} as IModelConnection,
   };
 
   return renderRTL(
-    <NavigationPropertyEditorContext.Provider value={contextValue}>
+    <navigationPropertyEditorContext.Provider value={contextValue}>
       {ui}
-    </NavigationPropertyEditorContext.Provider>
+    </navigationPropertyEditorContext.Provider>
   );
 }
 
@@ -143,7 +143,7 @@ describe("<NavigationPropertyTargetEditor />", () => {
   });
 });
 
-describe("useNavigationPropertyEditingContextProps", () => {
+describe("useNavigationPropertyEditingContext", () => {
   interface Props {
     imodel: IModelConnection;
     dataProvider: IContentDataProvider;
@@ -187,7 +187,7 @@ describe("useNavigationPropertyEditingContextProps", () => {
     });
 
     const { result } = renderHook(
-      ({ imodel, dataProvider }: Props) => useNavigationPropertyEditingContextProps(imodel, dataProvider),
+      ({ imodel, dataProvider }: Props) => useNavigationPropertyEditingContext(imodel, dataProvider),
       { initialProps: { imodel: testImodel, dataProvider: testDataProvider } }
     );
 
@@ -200,7 +200,7 @@ describe("useNavigationPropertyEditingContextProps", () => {
     testDataProvider.getFieldByPropertyRecord = async () => createTestSimpleContentField();
 
     const { result } = renderHook(
-      ({ imodel, dataProvider }: Props) => useNavigationPropertyEditingContextProps(imodel, dataProvider),
+      ({ imodel, dataProvider }: Props) => useNavigationPropertyEditingContext(imodel, dataProvider),
       { initialProps: { imodel: testImodel, dataProvider: testDataProvider } }
     );
 

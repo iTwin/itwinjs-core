@@ -460,15 +460,15 @@ export class NavigationPropertyEditor extends PropertyEditorBase {
 }
 
 // @alpha (undocumented)
-export const NavigationPropertyEditorContext: React_2.Context<NavigationPropertyEditorContextProps | undefined>;
-
-// @alpha (undocumented)
-export interface NavigationPropertyEditorContextProps {
+export interface NavigationPropertyEditorContext {
     // (undocumented)
     getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
     // (undocumented)
     imodel: IModelConnection;
 }
+
+// @alpha (undocumented)
+export const navigationPropertyEditorContext: React_2.Context<NavigationPropertyEditorContext | undefined>;
 
 // @alpha (undocumented)
 export class NavigationPropertyTargetEditor extends React_2.PureComponent<PropertyEditorProps> implements TypeEditor {
@@ -824,7 +824,7 @@ export function useControlledPresentationTreeFiltering(props: ControlledPresenta
 };
 
 // @internal (undocumented)
-export function useFilterBuilderNavigationPropertyEditorContextProps(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContextProps;
+export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContext;
 
 // @internal (undocumented)
 export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filter: string | undefined): {
@@ -835,7 +835,7 @@ export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProv
 };
 
 // @alpha (undocumented)
-export function useNavigationPropertyEditingContextProps(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps;
+export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext;
 
 // @internal (undocumented)
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;

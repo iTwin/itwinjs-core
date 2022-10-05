@@ -18,8 +18,8 @@ import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu,
 import { ToggleSwitch } from "@itwin/itwinui-react";
 import { Field } from "@itwin/presentation-common";
 import {
-  DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, NavigationPropertyEditorContext,
-  PresentationPropertyDataProvider, useNavigationPropertyEditingContextProps, usePropertyDataProviderWithUnifiedSelection,
+  DiagnosticsProps, FavoritePropertiesDataFilterer, IPresentationPropertyDataProvider, navigationPropertyEditorContext,
+  PresentationPropertyDataProvider, useNavigationPropertyEditingContext, usePropertyDataProviderWithUnifiedSelection,
 } from "@itwin/presentation-components";
 import { FavoritePropertiesScope, Presentation } from "@itwin/presentation-frontend";
 import { DiagnosticsSelector } from "../diagnostics-selector/DiagnosticsSelector";
@@ -167,7 +167,7 @@ function PropertyGrid(props: PropertyGridProps) {
     setContextMenuArgs(undefined);
   }, [onFindSimilarProp, dataProvider]);
 
-  const contextProps = useNavigationPropertyEditingContextProps(imodel, dataProvider);
+  const contextValue = useNavigationPropertyEditingContext(imodel, dataProvider);
 
   if (numSelectedElements === 0) {
     return <FillCentered>{IModelApp.localization.getLocalizedString("Sample:property-grid.no-elements-selected")}</FillCentered>;
@@ -178,7 +178,7 @@ function PropertyGrid(props: PropertyGridProps) {
   }
 
   return <>
-    <NavigationPropertyEditorContext.Provider value={contextProps}>
+    <navigationPropertyEditorContext.Provider value={contextValue}>
       <VirtualizedPropertyGridWithDataProvider
         width={width}
         height={height}
@@ -194,7 +194,7 @@ function PropertyGrid(props: PropertyGridProps) {
         }
         isPropertyEditingEnabled={true}
       />
-    </NavigationPropertyEditorContext.Provider>
+    </navigationPropertyEditorContext.Provider>
     {contextMenuArgs && <PropertiesWidgetContextMenu args={contextMenuArgs} dataProvider={dataProvider} onFindSimilar={onFindSimilar} onCloseContextMenu={onCloseContextMenu} />}
   </>;
 }

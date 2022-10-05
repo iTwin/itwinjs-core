@@ -37,17 +37,17 @@ export class NavigationPropertyEditor extends PropertyEditorBase {
 PropertyEditorManager.registerEditor(StandardTypeNames.Navigation, NavigationPropertyEditor);
 
 /** @alpha */
-export interface NavigationPropertyEditorContextProps {
+export interface NavigationPropertyEditorContext {
   imodel: IModelConnection;
   getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
 }
 
 /** @alpha */
-export const NavigationPropertyEditorContext = React.createContext<NavigationPropertyEditorContextProps | undefined>(undefined);
+export const navigationPropertyEditorContext = React.createContext<NavigationPropertyEditorContext | undefined>(undefined);
 
 /** @alpha */
-export function useNavigationPropertyEditingContextProps(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps {
-  return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
+export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext {
+  return React.useMemo<NavigationPropertyEditorContext>(() => ({
     imodel,
     getNavigationPropertyInfo: async (property) => {
       const field = await dataProvider.getFieldByPropertyRecord(new PropertyRecord({ valueFormat: PropertyValueFormat.Primitive }, property));
@@ -86,18 +86,18 @@ export class NavigationPropertyTargetEditor extends React.PureComponent<Property
 }
 
 const NavigationPropertyTargetEditorInner = React.forwardRef<NavigationPropertyTargetSelectorAttributes, PropertyEditorProps>((props, ref) => {
-  const navigationPropertyEditorContext = React.useContext(NavigationPropertyEditorContext);
+  const context = React.useContext(navigationPropertyEditorContext);
   if (!props.propertyRecord)
     return null;
 
-  if (!navigationPropertyEditorContext)
+  if (!context)
     return <ReadonlyNavigationPropertyTarget record={props.propertyRecord} />;
 
   return <NavigationPropertyTargetSelector
     {...props}
     ref={ref}
-    imodel={navigationPropertyEditorContext.imodel}
-    getNavigationPropertyInfo={navigationPropertyEditorContext.getNavigationPropertyInfo}
+    imodel={context.imodel}
+    getNavigationPropertyInfo={context.getNavigationPropertyInfo}
     propertyRecord={props.propertyRecord}
   />;
 });

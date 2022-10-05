@@ -14,7 +14,7 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
 import { translate } from "../common/Utils";
-import { NavigationPropertyEditorContext, NavigationPropertyEditorContextProps } from "../properties/NavigationPropertyEditor";
+import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
@@ -41,15 +41,15 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
     onInstanceFilterChanged(presentationFilter);
   }, [descriptor, onInstanceFilterChanged]);
 
-  const contextProps = useFilterBuilderNavigationPropertyEditorContextProps(imodel, descriptor);
+  const contextValue = useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor);
 
-  return <NavigationPropertyEditorContext.Provider value={contextProps}>
+  return <navigationPropertyEditorContext.Provider value={contextValue}>
     <InstanceFilterBuilder
       {...filteringProps}
       onFilterChanged={onFilterChanged}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
     />
-  </NavigationPropertyEditorContext.Provider>;
+  </navigationPropertyEditorContext.Provider>;
 }
 
 /** @alpha */
@@ -113,8 +113,8 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
 }
 
 /** @internal */
-export function useFilterBuilderNavigationPropertyEditorContextProps(imodel: IModelConnection, descriptor: Descriptor) {
-  return React.useMemo<NavigationPropertyEditorContextProps>(() => ({
+export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor) {
+  return React.useMemo<NavigationPropertyEditorContext>(() => ({
     imodel,
     getNavigationPropertyInfo: async (property) => {
       const field = descriptor.getFieldByName(getInstanceFilterFieldName(property));

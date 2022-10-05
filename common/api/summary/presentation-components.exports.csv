@@ -43,8 +43,8 @@ public;IPresentationTreeDataProvider
 internal;IPropertiesAppender
 public;IUnifiedSelectionComponent
 alpha;NavigationPropertyEditor 
-alpha;NavigationPropertyEditorContext: React_2.Context
-alpha;NavigationPropertyEditorContextProps
+alpha;NavigationPropertyEditorContext
+alpha;navigationPropertyEditorContext: React_2.Context
 alpha;NavigationPropertyTargetEditor 
 internal;PRESENTATION_TREE_NODE_KEY = "__presentation-components/key"
 public;PresentationComponentsLoggerCategory
@@ -83,9 +83,9 @@ beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
-internal;useFilterBuilderNavigationPropertyEditorContextProps(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContextProps
+internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContext
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
-alpha;useNavigationPropertyEditingContextProps(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContextProps
+alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
 alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
