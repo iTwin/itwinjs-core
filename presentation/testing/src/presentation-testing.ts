@@ -25,3 +25,11 @@ export * from "./presentation-testing/ContentBuilder";
  * Various test helpers.
  */
 export * from "./presentation-testing/Helpers";
+
+/**
+ * @module TestUtilities
+ *
+ * @docs-group-description TestUtilities
+ * Various test helpers.
+ */
+export * from "./presentation-testing/IModelTestUtility";
