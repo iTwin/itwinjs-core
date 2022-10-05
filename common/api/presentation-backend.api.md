@@ -50,6 +50,8 @@ import { VariableValueTypes } from '@bentley/presentation-common';
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
+    // @alpha
+    memoryCacheSize?: number;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
 }
@@ -269,6 +271,8 @@ export interface PresentationManagerProps {
     updatesPollInterval?: number;
     // @alpha
     useMmap?: boolean | number;
+    // @alpha
+    workerConnectionCacheSize?: number;
 }
 
 // @public

@@ -96,6 +96,7 @@ describe("PresentationManager", () => {
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            workerConnectionCacheSize: undefined,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -134,6 +135,7 @@ describe("PresentationManager", () => {
           presentationAssetsRoot: "/test",
           localeDirectories: [testLocale, testLocale],
           taskAllocationsMap: testTaskAllocations,
+          workerConnectionCacheSize: 1234,
           mode: PresentationManagerMode.ReadWrite,
           updatesPollInterval: 1,
           cacheConfig,
@@ -150,6 +152,7 @@ describe("PresentationManager", () => {
             id: props.id,
             localeDirectories: [getLocalesDirectory("/test"), testLocale],
             taskAllocationsMap: testTaskAllocations,
+            workerConnectionCacheSize: 1234,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
@@ -168,6 +171,7 @@ describe("PresentationManager", () => {
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            workerConnectionCacheSize: undefined,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
@@ -180,14 +184,16 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
           directory: faker.random.word(),
+          memoryCacheSize: 789456,
         };
-        const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
+        const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory), memoryCacheSize: 789456 };
         using(new PresentationManager({ cacheConfig }), (manager) => {
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            workerConnectionCacheSize: undefined,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
@@ -206,6 +212,7 @@ describe("PresentationManager", () => {
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            workerConnectionCacheSize: undefined,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
@@ -220,6 +227,7 @@ describe("PresentationManager", () => {
           disk: {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
+            memoryCacheSize: 456123,
           },
         };
         const expectedConfig = {
@@ -231,6 +239,7 @@ describe("PresentationManager", () => {
             id: "",
             localeDirectories: [getLocalesDirectory(PRESENTATION_COMMON_ASSETS_ROOT)],
             taskAllocationsMap: { [RequestPriority.Preload]: 1, [RequestPriority.Max]: 1 },
+            workerConnectionCacheSize: undefined,
             mode: IModelHost.platform.ECPresentationManagerMode.ReadWrite,
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
