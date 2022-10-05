@@ -18,7 +18,6 @@ resources:
   pipelines:
   - pipeline: itwinjs-docs
     source: iTwin.js Docs - YAML
-    version: 20220926.22
     trigger:
       branches:
         include:
@@ -37,22 +36,22 @@ variables:
   octopusProjectName: iModel.js Documentation
 
 stages:
-  # - stage: PackageAndPush
-  #   displayName: Package Docs and Push to Octopus
-  #   jobs:
-  #   - template: ./jobs/docs/package-docs.yaml
+  - stage: CreateRelease
+    displayName: Create release
+    jobs:
+    - template: ./jobs/docs/package-docs.yaml
 
-  # - stage: DEV
-  #   displayName: Deployment (DEV)
-  #   dependsOn: PackageAndPush
-  #   jobs:
-  #   - template: ./jobs/docs/deploy-docs.yaml
-  #     parameters:
-  #       env: Development
+  - stage: DEV
+    displayName: Deployment (DEV)
+    dependsOn: CreateRelease
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        env: Development
 
   - stage: ProductTestsDEV
     displayName: Product Tests (DEV)
-    # dependsOn: DEV
+    dependsOn: DEV
     jobs:
     - template: ./jobs/docs/product-tests.yaml
       parameters:

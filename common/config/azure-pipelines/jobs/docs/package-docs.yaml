@@ -11,19 +11,18 @@ jobs:
     variables:
       tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs\DocsBuild
     steps:
+      - script: 'echo ##vso[build.updatebuildnumber]$BUILD_TRIGGEREDBY_BUILDNUMBER'
+        displayName: Set build number
+
       - task: NodeTool@0
         displayName: Use Node 14
         inputs:
           versionSpec: 14.17.4
           checkLatest: true
 
-      # Extra stuff
       - download: itwinjs-docs
         artifact: DocsBuild
         displayName: "Download itwinjs-docs artifacts"
-
-      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
-        displayName: Debug build contents
 
       - task: DownloadPipelineArtifact@2
         displayName: "Download Pipeline Artifact - Nuget Spec"
@@ -51,9 +50,6 @@ jobs:
       - task: NuGetToolInstaller@1
         inputs:
           versionSpec: 4.9.2
-
-      - powershell: Get-ChildItem -Path '$(tempDocsLocation)' -recurse
-        displayName: Debug build contents
 
       - task: NuGetCommand@2
         displayName: "NuGet pack"

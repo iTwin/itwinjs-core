@@ -80,6 +80,16 @@ jobs:
         displayName: Publish Pipeline Artifact - DocsBuild
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
-      # Tag build if version is newer
-      - script: 'echo ##vso[build.addbuildtag]iTwinJsDocsRelease'
+      - script: |
+          CurrentVersion=`node -p "require('./core/backend/package.json').version"`
+          npm view @itwin/core-backend@$CurrentVersion &> /dev/null
+          if [ $? -ne 0 ]; then
+            echo "Releasing $CurrentVersion"
+            echo ##vso[build.addbuildtag]iTwinJsDocsRelease
+            echo ##vso[build.updatebuildnumber]$CurrentVersion
+          else
+            echo "$CurrentVersion already exists"
+          fi
+        displayName: Tag if new release
+        workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
