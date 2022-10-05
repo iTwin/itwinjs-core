@@ -17,8 +17,8 @@ import { stubRaf } from "./Common";
 describe("InstanceFilter", () => {
   stubRaf();
   const classInfos: ClassInfo[] = [
-    { id: "0x1",name: "Schema:Class1", label: "Class1" },
-    { id: "0x2",name: "Schema:Class2", label: "Class2" },
+    { id: "0x1", name: "Schema:Class1", label: "Class1" },
+    { id: "0x2", name: "Schema:Class2", label: "Class2" },
   ];
 
   before(async () => {
@@ -37,14 +37,14 @@ describe("InstanceFilter", () => {
 
   it("invokes 'onClassSelected' when non selected class is clicked", () => {
     const spy = sinon.spy();
-    const {container, getByTestId} = render(<InstanceFilterBuilder
+    const { container, getByTestId } = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[]}
       properties={[]}
-      onClassDeselected={() => {}}
+      onClassDeselected={() => { }}
       onClassSelected={spy}
-      onClearClasses={() => {}}
-      onFilterChanged={() => {}}
+      onClearClasses={() => { }}
+      onFilterChanged={() => { }}
     />);
 
     fireEvent.mouseDown(getByTestId("multi-tag-select-dropdownIndicator"));
@@ -58,14 +58,14 @@ describe("InstanceFilter", () => {
 
   it("invokes 'onClassDeselected' when selected class is clicked", () => {
     const spy = sinon.spy();
-    const {container, getByTestId} = render(<InstanceFilterBuilder
+    const { container, getByTestId } = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
       onClassDeselected={spy}
-      onClassSelected={() => {}}
-      onClearClasses={() => {}}
-      onFilterChanged={() => {}}
+      onClassSelected={() => { }}
+      onClearClasses={() => { }}
+      onFilterChanged={() => { }}
     />);
 
     fireEvent.mouseDown(getByTestId("multi-tag-select-dropdownIndicator"));
@@ -79,14 +79,14 @@ describe("InstanceFilter", () => {
 
   it("invokes 'onClassDeselected' when remove tag button is clicked", () => {
     const spy = sinon.spy();
-    const {container} = render(<InstanceFilterBuilder
+    const { container } = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
       onClassDeselected={spy}
-      onClassSelected={() => {}}
-      onClearClasses={() => {}}
-      onFilterChanged={() => {}}
+      onClassSelected={() => { }}
+      onClearClasses={() => { }}
+      onFilterChanged={() => { }}
     />);
 
     const removeTagButton = container.querySelector(".iui-tag .iui-button");
@@ -98,14 +98,14 @@ describe("InstanceFilter", () => {
 
   it("invokes 'onClearClasses' when clear indicator is clicked", () => {
     const spy = sinon.spy();
-    const {getByTestId} = render(<InstanceFilterBuilder
+    const { getByTestId } = render(<InstanceFilterBuilder
       classes={classInfos}
       selectedClasses={[classInfos[0]]}
       properties={[]}
-      onClassDeselected={() => {}}
-      onClassSelected={() => {}}
+      onClassDeselected={() => { }}
+      onClassSelected={() => { }}
       onClearClasses={spy}
-      onFilterChanged={() => {}}
+      onFilterChanged={() => { }}
     />);
 
     fireEvent.mouseDown(getByTestId("multi-tag-select-clearIndicator"));
