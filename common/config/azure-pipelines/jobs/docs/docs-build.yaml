@@ -85,13 +85,13 @@ jobs:
           SET /p currentVersion= < tmp.txt
           DEL tmp.txt
           CALL npm view @itwin/core-backend@%currentVersion% >nul 2>&1
-          IF %ERRORLEVEL%==0 (
-            ECHO %currentVersion% already exists
-          ) ELSE (
-            ECHO Releasing %currentVersion%
-            ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
-            ECHO ##vso[build.updatebuildnumber]%currentVersion%
-          )
+          @REM IF %ERRORLEVEL%==0 (
+          @REM   ECHO %currentVersion% already exists
+          @REM ) ELSE (
+          ECHO Releasing %currentVersion%
+          ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
+          ECHO ##vso[build.updatebuildnumber]%currentVersion%
+          @REM )
         displayName: Tag if new release
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
