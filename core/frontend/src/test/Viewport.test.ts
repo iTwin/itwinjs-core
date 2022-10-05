@@ -6,12 +6,14 @@
 import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import { AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat } from "@itwin/core-common";
+import {
+  AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
+} from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
-import { openBlankViewport, testBlankViewport } from "./openBlankViewport";
+import { openBlankViewport, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 import { DecorateContext } from "../ViewContext";
 import { GraphicType } from "../render/GraphicBuilder";
 import { Pixel } from "../render/Pixel";
@@ -515,6 +517,23 @@ describe("Viewport", () => {
         vp.readPixels(vp.viewRect, Pixel.Selector.All, (pixels) => expect(pixels).to.be.undefined);
 
         vp.dispose = dispose;
+      });
+    });
+  });
+
+  describe("Map layers", () => {
+    it("ignores map layer with invalid format Id", async () => {
+      await testBlankViewportAsync(async (vp) => {
+        const settings = ImageMapLayerSettings.fromJSON({
+          formatId: "BadFormat",
+          url: "https://sampleUrl",
+          name: "test",
+          subLayers: [{id: 0, name: "test", visible: true }],
+        });
+
+        vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
+        expect(vp.displayStyle.attachMapLayer({settings})).not.to.throw;
+        await vp.waitForSceneCompletion();
       });
     });
   });
