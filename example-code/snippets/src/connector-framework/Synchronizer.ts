@@ -6,16 +6,25 @@
  * @module Framework
  */
 
-import { ElementUniqueAspect } from "@itwin/core-backend";
-import type { ECSqlStatement, IModelDb } from "@itwin/core-backend";
-import type { Element } from "@itwin/core-backend";
-import { DefinitionElement, ElementOwnsChildElements, ExternalSource, ExternalSourceAspect, RepositoryLink } from "@itwin/core-backend";
-import type { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
+import { DefinitionElement , ECSqlStatement, Element, ElementOwnsChildElements, ElementUniqueAspect, ExternalSource, ExternalSourceAspect, IModelDb, RepositoryLink } from "@itwin/core-backend";
 import { assert, DbResult, Guid, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
-import type { ElementProps, ExternalSourceAspectProps, ExternalSourceProps, RepositoryLinkProps } from "@itwin/core-common";
+// eslint-disable-next-line no-duplicate-imports
+import type { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
 import { Code, IModel, IModelError, RelatedElement } from "@itwin/core-common";
-import { LoggerCategories } from "./LoggerCategory";
-import { deleteElementSubTrees } from "./ElementTreeWalker";
+// eslint-disable-next-line no-duplicate-imports
+import type { ElementProps, ExternalSourceAspectProps, ExternalSourceProps, RepositoryLinkProps } from "@itwin/core-common";
+
+class LoggerCategories {
+  public constructor() {
+
+  }
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  public static Framework: any;
+}
+
+function deleteElementSubTrees(_imodel: IModelDb, _id: string, _args: any): void {
+
+}
 
 /** The state of the given SourceItem against the iModelDb
  * @beta
@@ -570,7 +579,7 @@ export class Synchronizer {
     if (this._unchangedSources.length !== 0)
       return;
 
-    deleteElementSubTrees(this.imodel, this.jobSubjectId, (elementId) => {
+    deleteElementSubTrees(this.imodel, this.jobSubjectId, (elementId: string) => {
       if ((elementId === this.jobSubjectId) || this._seenElements.has(elementId))
         return false;
 

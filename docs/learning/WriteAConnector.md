@@ -4,8 +4,7 @@
 
 - [Write A Connector](#write-a-connector)
   - [Table of Contents](#table-of-contents)
-  - [New Connector Framework](#new-connectorframework)
-    - [Porting a connector to iTwin.js 3.x](#porting-a-connector)
+  - [Porting a connector to iTwin.js 3.x](#porting-a-connector)
   - [Introduction](#introduction)
     - [Preface](#preface)
       - [What is a Connector](#what-is-a-connector)
@@ -66,7 +65,7 @@
 
 To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
 
-1. Change the dependencies to the [New Connector Framework](#new-connectorframework)
+1. Change the dependencies to the latest version.
 2. Search and replace "iModelBridge" with "BaseConnector", "BridgeJobDefArgs" with "JobArgs" and "BridgeRunner" with "ConnectorRunner" and so on.
 
 ## Introduction
