@@ -45,6 +45,7 @@ import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 import { IModelApp } from "@itwin/core-frontend";
+import { FloatingWidget } from "./FloatingWidget";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
@@ -214,6 +215,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
 
 const defaultNineZone = createNineZoneState();
 const tabElement = <WidgetPanelsTab />;
+const floatingWidgetElement = <FloatingWidget />;
 
 /** @internal */
 export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: FrontstageDef }) {
@@ -256,6 +258,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         labels={labels}
         state={nineZone}
         tab={tabElement}
+        floatingWidget={floatingWidgetElement}
         showWidgetIcon={showWidgetIcon}
         autoCollapseUnpinnedPanels={autoCollapseUnpinnedPanels}
         toolSettingsContent={toolSettingsContent}
