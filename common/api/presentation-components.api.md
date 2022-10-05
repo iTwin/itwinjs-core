@@ -174,7 +174,7 @@ export function createFieldInfo(field: Field, namePrefix?: string): {
 };
 
 // @alpha (undocumented)
-export function createInstanceFilterPropertyInfos(descriptor: Descriptor): PropertyInfo[];
+export function createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[];
 
 // @internal (undocumented)
 export function createPresentationInstanceFilter(descriptor: Descriptor, filter: PropertyFilter): PresentationInstanceFilter | undefined;
@@ -372,9 +372,25 @@ export interface InstanceFilterBuilderProps {
     // (undocumented)
     properties: PropertyDescription[];
     // (undocumented)
+    propertyRenderer?: (name: string) => React_2.ReactNode;
+    // (undocumented)
     ruleGroupDepthLimit?: number;
     // (undocumented)
     selectedClasses: ClassInfo[];
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterPropertyInfo {
+    // (undocumented)
+    categoryLabel?: string;
+    // (undocumented)
+    className: string;
+    // (undocumented)
+    field: PropertiesField;
+    // (undocumented)
+    propertyDescription: PropertyDescription;
+    // (undocumented)
+    sourceClassIds: ClassId[];
 }
 
 // @beta
@@ -474,6 +490,9 @@ export interface PresentationInstanceFilterConditionGroup {
     // (undocumented)
     operator: PropertyFilterRuleGroupOperator;
 }
+
+// @alpha (undocumented)
+export function PresentationInstanceFilterProperty(props: PresentationInstanceFilterPropertyProps): JSX.Element;
 
 // @public
 export class PresentationLabelsProvider implements IPresentationLabelsProvider {
@@ -632,16 +651,6 @@ export interface PropertyDataProviderWithUnifiedSelectionProps {
     selectionHandler?: SelectionHandler;
 }
 
-// @alpha (undocumented)
-export interface PropertyInfo {
-    // (undocumented)
-    field: PropertiesField;
-    // (undocumented)
-    propertyDescription: PropertyDescription;
-    // (undocumented)
-    sourceClassIds: ClassId[];
-}
-
 // @internal (undocumented)
 export abstract class PropertyRecordsBuilder implements IContentVisitor {
     // (undocumented)
@@ -791,6 +800,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     onClearClasses: () => void;
     onClassDeselected: (classInfo: ClassInfo) => void;
     onClassSelected: (classInfo: ClassInfo) => void;
+    propertyRenderer: (name: string) => JSX.Element;
     properties: PropertyDescription[];
     classes: ClassInfo[];
     selectedClasses: ClassInfo[];

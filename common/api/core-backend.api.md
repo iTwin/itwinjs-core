@@ -748,7 +748,6 @@ export namespace CloudSqlite {
         get isDaemon(): boolean;
         get name(): string;
         get rootDir(): LocalDirName;
-        // (undocumented)
         setLogMask(mask: number): void;
     }
     export interface CloudContainer {
@@ -824,6 +823,14 @@ export namespace CloudSqlite {
         container: CloudContainer;
         dbName: string;
         user: string;
+    }
+    export enum LoggingMask {
+        AddToDelete = 4,
+        All = 255,
+        DirtyBlocks = 2,
+        HTTP = 1,
+        LifecycleEvents = 8,
+        None = 0
     }
     // @internal
     export interface ObtainLockParams {
@@ -911,11 +918,12 @@ export interface CodeService {
     // @internal (undocumented)
     addAllCodeSpecs(iModel: IModelDb): Promise<void>;
     addCodeSpec(val: CodeService.NameAndJson): Promise<void>;
-    readonly appParams: CloudSqlite.ObtainLockParams & CodeService.AuthorAndOrigin;
+    readonly appParams: CodeService.AuthorAndOrigin;
     // @internal (undocumented)
     close: () => void;
     readonly codeIndex: CodeIndex;
     deleteCodes(guid: CodeService.CodeGuid[]): Promise<void>;
+    readonly lockParams: CloudSqlite.ObtainLockParams;
     reserveCode(code: CodeService.ProposedCode): Promise<void>;
     reserveCodes(arg: CodeService.ReserveCodesArgs): Promise<number>;
     reserveNextAvailableCode(arg: CodeService.ReserveNextArgs): Promise<void>;
@@ -1358,7 +1366,6 @@ export interface DownloadRequest {
     readonly checkpoint: CheckpointProps;
     localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
-    readonly retries?: number;
 }
 
 // @internal (undocumented)
@@ -3253,7 +3260,7 @@ export class ITwinWorkspace implements Workspace {
     // (undocumented)
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
     // (undocumented)
-    getWorkspaceDb(dbAlias: string): WorkspaceDb;
+    getWorkspaceDb(dbAlias: string, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     // (undocumented)
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     // (undocumented)
@@ -3333,7 +3340,7 @@ export class ITwinWorkspaceDb implements WorkspaceDb {
     // (undocumented)
     open(): void;
     // (undocumented)
-    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch | undefined;
+    prefetch(opts?: CloudSqlite.PrefetchProps): CloudSqlite.CloudPrefetch;
     // (undocumented)
     queryFileResource(rscName: WorkspaceResource.Name): {
         localFileName: string;
@@ -4094,9 +4101,9 @@ export enum ProgressStatus {
 
 // @alpha
 export interface PropertyStore {
-    readonly appParams: CloudSqlite.ObtainLockParams;
     deleteProperties(propNames: PropertyStore.PropertyName[]): Promise<void>;
     deleteProperty(propName: PropertyStore.PropertyName): Promise<void>;
+    readonly lockParams: CloudSqlite.ObtainLockParams;
     sasToken: AccessToken;
     saveProperties(props: PropertyStore.PropertyArray): Promise<void>;
     saveProperty(name: PropertyStore.PropertyName, value: PropertyStore.PropertyType): Promise<void>;
@@ -5276,7 +5283,7 @@ export interface Workspace {
     readonly containerDir: LocalDirName;
     findContainer(containerId: WorkspaceContainer.Id): WorkspaceContainer | undefined;
     getContainer(props: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceContainer;
-    getWorkspaceDb(databaseName: WorkspaceDb.Name): WorkspaceDb;
+    getWorkspaceDb(dbAlias: WorkspaceDb.Name, tokenFunc?: WorkspaceContainer.TokenFunc): Promise<WorkspaceDb>;
     getWorkspaceDbFromProps(dbProps: WorkspaceDb.Props, containerProps: WorkspaceContainer.Props, account?: WorkspaceAccount.Props): WorkspaceDb;
     loadSettingsDictionary(settingRsc: WorkspaceResource.Name, db: WorkspaceDb, priority: SettingsPriority): void;
     resolveAccount(accountName: WorkspaceAccount.Name): WorkspaceAccount.Props;
@@ -5312,6 +5319,7 @@ export namespace WorkspaceContainer {
         isPublic?: boolean;
         syncOnConnect?: boolean;
     }
+    export type TokenFunc = (props: Props, account: WorkspaceAccount.Props) => Promise<AccessToken>;
 }
 
 // @beta
@@ -5355,7 +5363,7 @@ export interface WorkspaceDb {
     getFile(rscName: WorkspaceResource.Name, targetFileName?: LocalFileName): LocalFileName | undefined;
     getString(rscName: WorkspaceResource.Name): string | undefined;
     readonly onClose: BeEvent<() => void>;
-    prefetch(): void;
+    prefetch(): CloudSqlite.CloudPrefetch;
 }
 
 // @beta
