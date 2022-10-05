@@ -89,7 +89,7 @@ beta;ExpandableItemProps
 deprecated;ExpandableItemProps 
 internal;FloatingTab(): JSX.Element
 internal;FloatingTabLocation
-internal;FloatingWidget: React_2.NamedExoticComponent
+internal;FloatingWidget(props: FloatingWidgetProps): JSX.Element
 internal;floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetClearUserSizedAction
@@ -98,7 +98,10 @@ internal;FloatingWidgetDropTargetState
 internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React_2.Context
 internal;FloatingWidgetLocation
+internal;FloatingWidgetNodeContext: React_2.Context
 internal;FloatingWidgetProps
+internal;FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element
+internal;FloatingWidgetProviderProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle
 internal;FloatingWidgets: React_2.NamedExoticComponent
