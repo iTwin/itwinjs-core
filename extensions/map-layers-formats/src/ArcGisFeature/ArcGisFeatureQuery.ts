@@ -4,7 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 
 export type ArcGisFeatureResultType = "none" | "standard" | "tile";
-export type ArcGisFeatureGeometryType = "esriGeometryPoint" | "esriGeometryMultipoint" | "esriGeometryPolyline" | "esriGeometryPolygon" | "esriGeometryEnvelope";
+export type ArcGisFeatureGeometryType =
+ "esriGeometryNull"
+ | "esriGeometryPoint"
+ | "esriGeometryMultipoint"
+ | "esriGeometryLine"
+ | "esriGeometryCircularArc"
+ | "esriGeometryEllipticArc"
+ | "esriGeometryBezier3Curve"
+ | "esriGeometryPath"
+ | "esriGeometryPolyline"
+ | "esriGeometryRing"
+ | "esriGeometryPolygon"
+ | "esriGeometryEnvelope"
+ | "esriGeometryAny"
+ | "esriGeometryBag"
+ | "esriGeometryMultiPatch"
+ | "esriGeometryTriangleStrip"
+ | "esriGeometryTriangeFan"
+ | "esriGeometryRay"
+ | "esriGeometrySphere"
+ | "esriGeometryTriangles";
 export type ArcGisFeatureSpatialRel =  "esriSpatialRelIntersects" | "esriSpatialRelContains" | "esriSpatialRelCrosses" | "esriSpatialRelEnvelopeIntersects" | "esriSpatialRelIndexIntersects" | "esriSpatialRelOverlaps" | "esriSpatialRelTouches" | "esriSpatialRelWithin";
 
 export interface ArcGisGeometry {
