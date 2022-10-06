@@ -9,6 +9,7 @@ Table of contents:
   - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 
 ## Display system
 
