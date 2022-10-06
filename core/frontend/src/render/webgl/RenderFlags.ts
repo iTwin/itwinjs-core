@@ -22,6 +22,7 @@ export const enum RenderPass {
   Classification,     // Stencil volumes for normal processing of reality data classification.
   TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
   Translucent,
+  PointClouds,
   HiddenEdge,
   Hilite,
   OverlayLayers,      // Like Layers, but drawn atop all other geometry
@@ -51,6 +52,7 @@ export type Pass =
   "opaque-linear" | // OpaqueLinear
   "opaque-planar" | // OpaquePlanar
   "translucent" | // Translucent
+  "point-clouds" | // PointClouds
   "view-overlay" | // ViewOverlay
   "classification" | // Classification
   "none" | // None
@@ -88,6 +90,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque-linear": return RenderPass.OpaqueLinear;
       case "opaque-planar": return RenderPass.OpaquePlanar;
       case "translucent": return RenderPass.Translucent;
+      case "point-clouds": return RenderPass.PointClouds;
       case "view-overlay": return RenderPass.ViewOverlay;
       case "classification": return RenderPass.Classification;
       case "none": return RenderPass.None;
