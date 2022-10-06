@@ -383,6 +383,7 @@ export class SampleAppIModelApp {
       });
 
       IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+      IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGISFeature", accessClient);
       assert(initStatus === true);
     }
 
