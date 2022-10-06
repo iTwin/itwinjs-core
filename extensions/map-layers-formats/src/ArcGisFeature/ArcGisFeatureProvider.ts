@@ -8,7 +8,7 @@
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError } from "@itwin/core-common";
 import { assert, base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
 import { Matrix4d, Point3d, Transform } from "@itwin/core-geometry";
-import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, IModelApp, MapLayerAccessClient, MapLayerAccessToken, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation, QuadId } from "@itwin/core-frontend";
+import { ArcGisErrorCode, ArcGISImageryProvider, ArcGisUtilities, ImageryMapTileTree, MapLayerFeatureInfo, MapLayerImageryProviderStatus, MapLayerSourceStatus, MapLayerSourceValidation, QuadId } from "@itwin/core-frontend";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 import { ArcGisExtent, ArcGisFeatureFormat, ArcGisFeatureQuery, ArcGisGeometry, FeatureQueryQuantizationParams } from "./ArcGisFeatureQuery";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
@@ -86,101 +86,104 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
     }
 
-    if (json.capabilities) {
-      this._querySupported = json.capabilities.indexOf("Query") >= 0;
-      if (!this._querySupported)
-        throw new ServerError(IModelStatus.ValidationFailed, "");
-    }
+    try {
+      if (json.capabilities) {
+        this._querySupported = json.capabilities.indexOf("Query") >= 0;
+        if (!this._querySupported)
+          throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
 
-    this.serviceJson = json;
+      this.serviceJson = json;
 
-    let  foundVisibleSubLayer = false;
-    if (this._settings.subLayers.length >= 0) {
+      let  foundVisibleSubLayer = false;
+      if (this._settings.subLayers.length >= 0) {
       // There is more than sub-layer for this layer, pick the first visible one.
-      for (const layer of this._settings.subLayers) {
-        if (layer.visible && typeof layer.id === "number") {
-          this._layerId = layer.id;
-          foundVisibleSubLayer = true;
-          break;
+        for (const layer of this._settings.subLayers) {
+          if (layer.visible && typeof layer.id === "number") {
+            this._layerId = layer.id;
+            foundVisibleSubLayer = true;
+            break;
+          }
         }
       }
-    }
 
-    if (!foundVisibleSubLayer && json !== undefined) {
+      if (!foundVisibleSubLayer && json !== undefined) {
       // No suitable sublayer was specified on the layerSettings object, lets find a default one in the capabilities
 
-      // Check layer metadata
-      if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
+        // Check layer metadata
+        if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
 
-        const hasDefaultVisibility = Object.keys(this.serviceJson.layers[0]).includes("defaultVisibility");
-        if (hasDefaultVisibility) {
-          for (const layer of this.serviceJson.layers) {
-            if (layer.defaultVisibility) {
-              this._layerId = layer.id;
+          const hasDefaultVisibility = Object.keys(this.serviceJson.layers[0]).includes("defaultVisibility");
+          if (hasDefaultVisibility) {
+            for (const layer of this.serviceJson.layers) {
+              if (layer.defaultVisibility) {
+                this._layerId = layer.id;
+              }
             }
-          }
-        } else {
+          } else {
           // On some older servers, the default visiblity is on the layer capabilities (i.e. not the service capabilities)
-          for (const layer of this.serviceJson.layers) {
-            const layerJson = await this.getLayerMetadata(layer.id);
-            if (!layerJson) {
-              continue;
-            }
+            for (const layer of this.serviceJson.layers) {
+              const layerJson = await this.getLayerMetadata(layer.id);
+              if (!layerJson) {
+                continue;
+              }
 
-            if (layerJson.defaultVisibility) {
-              this._layerId = layer.id;
-              this._layerMetadata = layerJson;
-              break;
+              if (layerJson.defaultVisibility) {
+                this._layerId = layer.id;
+                this._layerMetadata = layerJson;
+                break;
+              }
             }
           }
-        }
 
-      } else {
+        } else {
         // There is no layer to publish? Something is off with this server..
-        throw new ServerError(IModelStatus.ValidationFailed, "");
+          throw new ServerError(IModelStatus.ValidationFailed, "");
+        }
       }
-    }
 
-    // Make sure we cache layer info (i.e. rendering info)
-    if (!this._layerMetadata) {
-      try {
-        this._layerMetadata = await this.getLayerMetadata(this._layerId);
-      } catch {
-        throw new ServerError(IModelStatus.ValidationFailed, "");
+      // Make sure we cache layer info (i.e. rendering info)
+      if (!this._layerMetadata) {
+        try {
+          this._layerMetadata = await this.getLayerMetadata(this._layerId);
+        } catch {
+          throw new ServerError(IModelStatus.ValidationFailed, "");
+        }
       }
-    }
 
-    // Check supported query formats: JSON and PBF are currently implemented by this provider
-    // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
-    if (this._layerMetadata.supportedQueryFormats) {
-      const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
-      if (formats.includes("PBF")) {
-        this._format = "PBF";
-      } else if (formats.includes ("JSON"))  {
-        this._format = "JSON";
-      } else {
-        Logger.logError(loggerCategory, "Could not get service JSON");
-        throw new ServerError(IModelStatus.ValidationFailed, "");
+      // Check supported query formats: JSON and PBF are currently implemented by this provider
+      // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
+      if (this._layerMetadata.supportedQueryFormats) {
+        const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
+        if (formats.includes("PBF")) {
+          this._format = "PBF";
+        } else if (formats.includes ("JSON"))  {
+          this._format = "JSON";
+        } else {
+          Logger.logError(loggerCategory, "Could not get service JSON");
+          throw new ServerError(IModelStatus.ValidationFailed, "");
+        }
       }
+
+      // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
+      // If not supported, transformation will be applied client side.
+      if (this._layerMetadata.supportsCoordinatesQuantization) {
+        this._supportsCoordinatesQuantization = true;
+      }
+
+      // Check for minScale / max scale
+      const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
+      const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
+      const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
+      if (scales.minLod)
+        this._minDepthFromLod = scales.minLod;
+      if (scales.maxLod)
+        this._maxDepthFromLod = scales.maxLod;
+
+      this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
+    } catch (e) {
+      Logger.logError(loggerCategory, `Error occured while reading Feature Service metadata: '${e}'`);
     }
-
-    // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
-    // If not supported, transformation will be applied client side.
-    if (this._layerMetadata.supportsCoordinatesQuantization) {
-      this._supportsCoordinatesQuantization = true;
-    }
-
-    // Check for minScale / max scale
-    const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
-    const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
-    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
-    if (scales.minLod)
-      this._minDepthFromLod = scales.minLod;
-    if (scales.maxLod)
-      this._maxDepthFromLod = scales.maxLod;
-
-    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.drawingInfo?.renderer);
-
   }
 
   protected async getLayerMetadata(layerId: number) {
