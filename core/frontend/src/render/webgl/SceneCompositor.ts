@@ -1850,6 +1850,8 @@ abstract class Compositor extends SceneCompositor {
 }
 
 class MRTFrameBuffers extends FrameBuffers {
+  public edlDrawPoints?: FrameBuffer;
+  public edlScreenEffect?: FrameBuffer;
   public opaqueAll?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
   public opaqueAndCompositeAllHidden?: FrameBuffer;
@@ -1909,6 +1911,16 @@ class MRTFrameBuffers extends FrameBuffers {
 
     return undefined !== this.opaqueAll
       && undefined !== this.opaqueAndCompositeAll;
+  }
+
+  public enableEDL() {
+    // ###TODO
+    // create FBOs for EDL
+  }
+
+  public disableEDL() {
+    // ###TODO
+    // delete FBOs for EDL
   }
 
   public override enableOcclusion(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
