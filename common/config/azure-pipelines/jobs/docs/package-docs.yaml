@@ -11,10 +11,8 @@ jobs:
     variables:
       tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs\DocsBuild
     steps:
-      - script: 'ECHO ##vso[build.updatebuildnumber]%BUILDNUMBER%'
+      - script: 'ECHO ##vso[build.updatebuildnumber]$(resources.pipeline.itwinjs-docs.runID)'
         displayName: Set build number
-        env:
-          BuildNumber: $(Build.TriggeredBy.BuildNumber)
 
       - task: NodeTool@0
         displayName: Use Node 14
