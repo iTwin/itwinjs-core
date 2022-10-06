@@ -10,7 +10,7 @@
 trigger: none
 pr: none
 
-name: $(Date:yyyyMMdd).$(Rev:r).$(Build.BuildId)
+name: $(Date:yyyyMMdd)_$(Rev:r)
 
 # Pull in artifacts
 
