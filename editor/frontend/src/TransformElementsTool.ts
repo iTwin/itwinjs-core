@@ -56,10 +56,14 @@ export class TransformGraphicsProvider {
     if (!placement.isValid)
       return; // Ignore assembly parents w/o geometry, etc...
 
+    // Avoid distorted graphics for elements located far from the origin (band-aid - should be fixed properly in 3.x)
+    const location = Transform.createTranslation(placement.calculateRange().center);
+
     const requestProps: PersistentGraphicsRequestProps = {
       id: this.getRequestId(id),
       elementId: id,
       toleranceLog10: this.getToleranceLog10(),
+      location: location.toJSON(),
     };
 
     this.pending.set(id, requestProps.id); // keep track of requests so they can be cancelled...
@@ -68,9 +72,13 @@ export class TransformGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d, { noFlash: true, noHilite: true });
+    let graphic = await readElementGraphics(graphicData, this.iModel, elementProps[0].model, placement.is3d, { noFlash: true, noHilite: true });
     if (undefined === graphic)
       return;
+
+    const branch = new GraphicBranch(true);
+    branch.entries.push(graphic);
+    graphic = IModelApp.renderSystem.createGraphicBranch(branch, location);
 
     return { id, placement, graphic: IModelApp.renderSystem.createGraphicOwner(graphic) };
   }
