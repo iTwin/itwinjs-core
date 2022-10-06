@@ -18,7 +18,7 @@
     "lint": "",
     "test": "",
     "extract-api": "npm run -s generate",
-    "generate": "node ./codeGen/generate-exports.js '[\"@itwin/core-frontend\",\"core/frontend\"] [\"@itwin/core-common\",\"core/common\"]'"
+    "generate": "node ./codeGen/generate-exports.js"
   },
   "keywords": [
     "Bentley",
