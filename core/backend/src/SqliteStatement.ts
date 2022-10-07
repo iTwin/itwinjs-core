@@ -338,7 +338,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   */
   public getValueGuid(colIndex: number): GuidString { return this.stmt.getValueGuid(colIndex); }
 
-  public getValueTimeStamp(colIndex: number) { return new Date(this.stmt.getValueInteger(colIndex) * 1000); }
+  public getValueTimeStamp(colIndex: number) {
+    return new Date((this.stmt.getValueDouble(colIndex) - 2440587.5) * 86400000); // conversion from julian day ms to unix epoch ms
+  }
 
   public getValueStringMaybe(colIndex: number) {
     return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
