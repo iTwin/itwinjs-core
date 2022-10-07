@@ -46,9 +46,9 @@ let testOutputDir: string | undefined;
 /**
  * If custom test output directory not provided, default directory will be local temp folder
  *
- * @internal
+ * @beta
 */
-export const getTestOutputDir = (): string =>  {
+export const getTestOutputDir = (): string => {
   return testOutputDir ?? defaultTestOutputDir;
 };
 
