@@ -747,9 +747,17 @@ describe("IModelTransformerHub", () => {
       const modelToDeleteWithElem = {
         entity: branchDb.models.getModel<PhysicalModel>(modelToDeleteWithElemId, PhysicalModel),
         submodelingElem: branchDb.elements.getElement<PhysicalPartition>(modelToDeleteWithElemId, PhysicalPartition),
+        aspects: branchDb.elements.getAspects(modelToDeleteWithElemId),
       };
       const elemToDeleteWithChildren = {
         entity: branchDb.elements.getElement<PhysicalObject>(elemToDeleteWithChildrenId, PhysicalObject),
+        aspects: branchDb.elements.getAspects(elemToDeleteWithChildrenId),
+      };
+      const childElemOfDeleted = {
+        aspects: branchDb.elements.getAspects(childElemOfDeletedId),
+      };
+      const elemInModelToDelete = {
+        aspects: branchDb.elements.getAspects(elemInModelToDeleteId),
       };
 
       elemToDeleteWithChildren.entity.delete();
@@ -766,7 +774,6 @@ describe("IModelTransformerHub", () => {
       expect(branchDb.elements.tryGetElement(elemToDeleteWithChildrenId)).to.be.undefined;
       expect(branchDb.elements.tryGetElement(childElemOfDeletedId)).to.be.undefined;
 
-      const aspectIdsOf = (id: Id64String) => branchDb.elements.getAspects(id).map((a) => a.id);
       // expected extracted changed ids
       const branchDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: branchIModelId, targetDir: BriefcaseManager.getChangeSetsPath(branchIModelId) });
       expect(branchDbChangesets).to.have.length(2);
@@ -775,15 +782,17 @@ describe("IModelTransformerHub", () => {
       const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
         aspect: {
           delete: [
-            childElemOfDeletedId,
-            elemInModelToDeleteId,
-            modelToDeleteWithElemId,
-          ].map(aspectIdsOf).flat(),
+            ...modelToDeleteWithElem.aspects,
+            ...elemInModelToDelete.aspects,
+            ...elemToDeleteWithChildren.aspects,
+            ...childElemOfDeleted.aspects,
+          ].map((a) => a.id),
         },
         element: {
           delete: [
             modelToDeleteWithElemId,
             elemInModelToDeleteId,
+            elemToDeleteWithChildrenId,
             childElemOfDeletedId,
           ],
         },
