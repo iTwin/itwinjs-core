@@ -9,6 +9,7 @@ Table of contents:
   - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 
 ## Display system
 
@@ -19,6 +20,7 @@ You can now customize various aspects of how a reality model is displayed within
 For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
 
 Point clouds provide the following additional customizations:
+
 - [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
 - When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
 - [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
@@ -46,3 +48,37 @@ Presentation.initialize({
 ```
 
 See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
+
+### Changes to infinite hierarchy prevention
+
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
+
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
+
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
+
+#### Example
+
+Say, we have two instances A and B and they point to each other through a relationship:
+
+```
+A -> refers to -> B
+B -> refers to -> A
+```
+
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
+
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
+
+```
++ A
++--+ B
+```
+
+With the new approach we "break" at the duplicate A node:
+
+```
++ A
++--+ B
+   +--+ A
+```
