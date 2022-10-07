@@ -1,0 +1,137 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+footer {
+  width: 100%;
+  height: 57px;
+  background-image: var(--itwin-gradient);
+  color: #fff;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+}
+
+footer div.spacer {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+footer nav {
+  margin-right: 36px;
+}
+
+footer nav#footer-social-media {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+footer nav#footer-social-media a {
+  width: 30px;
+  height: 28px;
+  text-indent: -9999px;
+  display: inline-block;
+  background-repeat: no-repeat;
+}
+
+footer nav#footer-social-media a.twitter {
+  background-image: url("../assets/twitter.svg");
+}
+
+footer nav#footer-social-media a.stack {
+  background-image: url("../assets/stack.svg");
+}
+
+footer nav#footer-social-media a.github {
+  background-image: url("../assets/github.svg");
+}
+
+footer div#tag-line p {
+  margin: 0;
+  color: #fff;
+}
+
+footer a,
+footer a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+
+@media screen and (max-width: 768px) {
+  :root {
+    --left-margin: 20px;
+    --space-unit: 10px;
+  }
+
+  /* footer */
+  footer {
+    width: 100%;
+    height: auto;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  footer.cooked {
+    z-index: var(--zzz-top);
+    position: absolute;
+    bottom: 0;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    background: none;
+  }
+
+  footer .spacer {
+    margin-top: 5px;
+    margin-bottom: 15px;
+  }
+
+  footer .spacer:last-of-type {
+    -webkit-box-pack: justify;
+    -ms-flex-pack: justify;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  footer nav a {
+    margin-left: var(--space-unit);
+    margin-right: 0px;
+  }
+
+  footer nav#footer-social-media {
+    margin: 0;
+    -webkit-box-align: end;
+    -ms-flex-align: end;
+    align-items: flex-end;
+  }
+}

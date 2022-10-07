@@ -1,0 +1,308 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+
+:root {
+  --flex-column: 7%;
+  --center-column: calc(100% - var(--flex-column) * 2);
+  --space-unit: 20px;
+  --left-margin: 150px;
+  --section-heading-size: 36px;
+
+  --header-nav-height: 54px;
+
+  --itwin-gradient: linear-gradient(90deg,
+      #32b1d1 4.349046015712743%,
+      #30f1cf 92.31200897867573%);
+  --itwin-shadow: 0px 1px 10px 0px rgba(0, 0, 0, 0.2);
+
+  /* colors */
+
+  --orange: #e28413;
+  --bright-orange: #ff9900;
+  --grey: #f2f2f2;
+  --black: #000;
+
+  --white: #fff;
+
+  /* stack */
+  --zzz-top: 900;
+}
+
+/* utilities and resets */
+.gradient-text {
+  background: var(--itwin-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-size: var(--section-heading-size);
+  height: calc(var(--section-heading-size) + 4px);
+  line-height: var(--section-heading-size);
+}
+
+/* Branding for both header and footer */
+#itwin-branding {
+  height: 36px;
+  margin: 0 var(--space-unit);
+}
+
+#itwin-branding a {
+  text-decoration: none;
+  color: var(--white);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+#itwin-branding a .itwin-logo {
+  font-size: 18px;
+  line-height: 23px;
+  font-weight: 600;
+  margin: 0 4px;
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+}
+
+#itwin-branding a::after {
+  content: "";
+  display: block;
+  background: var(--white);
+  width: 1px;
+  height: 36px;
+  margin-left: var(--space-unit);
+}
+
+#itwin-branding span {
+  color: #fff;
+}
+
+/* Main Header */
+
+header#main-header {
+  height: var(--header-nav-height);
+  width: 100%;
+  padding: 2px 2px 2px 0;
+  border-bottom: none;
+  background-image: var(--itwin-gradient);
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-box-pack: justify;
+  -ms-flex-pack: justify;
+  justify-content: space-between;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+  position: sticky;
+  top: 0px;
+  z-index: var(--zzz-top);
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+header #header-left {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+}
+
+header nav {
+  -webkit-box-orient: horizontal;
+  -webkit-box-direction: normal;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+}
+
+
+#main-nav a {
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  color: var(--white);
+  text-decoration: none;
+  margin-right: var(--space-unit);
+}
+
+#main-nav a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+header #search-component {
+  justify-self: flex-end;
+  width: 250px;
+  margin-right: var(--space-unit);
+}
+
+header #search-component input[type="search"] {
+  width: 100%;
+  height: 40px;
+  margin-top: 2px;
+  border: 0px;
+  border-radius: 2px;
+  outline: none;
+  background: var(--white);
+  color: var(--black);
+  font-size: 16px;
+}
+
+.icon-search {
+  color: rgb(190, 190, 190);
+}
+
+header #search-component input[type="search"]::-webkit-input-placeholder {
+  color: rgb(190, 190, 190);
+}
+
+header #search-component input[type="search"]::-moz-placeholder {
+  color: rgb(190, 190, 190);
+}
+
+header #search-component input[type="search"]:-ms-input-placeholder {
+  color: rgb(190, 190, 190);
+}
+
+header #search-component input[type="search"]::-ms-input-placeholder {
+  color: rgb(190, 190, 190);
+}
+
+header #search-component input[type="search"]::placeholder {
+  color: rgb(190, 190, 190);
+}
+
+.search-trigger {
+  width: 15px;
+  right: 12px;
+  top: 15px;
+}
+
+
+
+.search-container-active .search-trigger {
+  display: none;
+}
+
+.search-container-inactive {
+  right: 10px;
+}
+
+#burger-nav {
+  display: none;
+}
+
+@media screen and (max-width: 768px) {
+  :root {
+    --left-margin: 20px;
+    --space-unit: 10px;
+  }
+
+  .center-column {
+    width: 100%;
+  }
+
+  body.cooked {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  html.cooked {
+    position: static;
+    overflow: hidden;
+  }
+
+  main>section {
+    padding: 20px 0 5px 0;
+  }
+
+  /* header */
+
+  #main-nav {
+    display: none;
+  }
+
+  #main-nav.cooked {
+    background: var(--itwin-gradient);
+
+
+    width: 100%;
+    height: 100%;
+
+    padding-left: 20px;
+    padding-top: 10px;
+
+    display: -webkit-box;
+
+    display: -ms-flexbox;
+
+    display: flex;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    -ms-flex-direction: column;
+    flex-direction: column;
+    justify-items: flex-start;
+    -webkit-box-align: start;
+    -ms-flex-align: start;
+    align-items: flex-start;
+
+    position: fixed;
+    top: var(--header-nav-height);
+    left: 0;
+    z-index: var(--zzz-top);
+  }
+
+  #main-nav.cooked a {
+    font-size: 16px;
+  }
+
+  #burger-nav {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    -ms-flex-item-align: center;
+    -ms-grid-row-align: center;
+    align-self: center;
+    -ms-grid-column-align: center;
+    justify-self: center;
+    font-size: 25px;
+  }
+
+  #burger-nav .icon-svg {
+    background-color: #fff;
+    height: 23px;
+    width: 23px;
+    cursor: pointer;
+  }
+
+
+  #itwin-branding a .itwin-logo {
+    text-indent: -9999px;
+    margin: 0;
+  }
+
+  /* header #search-form input[type="search"] {
+    display: none;
+  }
+
+  header #search-form input[type="search"]::placeholder {
+    color: transparent;
+  } */
+}
