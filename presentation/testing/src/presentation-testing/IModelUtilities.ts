@@ -16,7 +16,6 @@ import { getTestOutputDir } from "./Helpers";
 /**
  * Interface for IModel builder pattern. Used for building IModels to test rulesets.
  *
- * @internal
  * @beta
  */
 export interface TestIModelBuilder {
@@ -26,21 +25,24 @@ export interface TestIModelBuilder {
   insertElement<TProps extends ElementProps>(props: TProps): Id64String;
   /** Insert an element aspect into the specified element */
   insertAspect<TProps extends ElementAspectProps>(props: TProps): void;
-  /** Create code for specified element */
+  /**
+   * Create code for specified element
+   * Code value has to be unique within its scope (see [Codes documentation page]($docs/bis/guide/fundamentals/codes.md)).
+   */
   createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code;
 }
 
 /**
- * Function that takes builder actions and returns a connection to the build database.
+ * Function that creates an iModel and returns a connection to it.
  * @param name Name of test IModel
- * @param cb Callback function that executes all given builder actions
+ * @param cb receives an [[TestIModelBuilder]] to fill the iModel with data
  *
- * @internal
+ * @beta
  */
 export async function buildTestIModel(name: string, cb: (builder: TestIModelBuilder) => void): Promise<IModelConnection> {
   const outputFile = setupOutputFileLocation(name);
   const db = SnapshotDb.createEmpty(outputFile, { rootSubject: { name } });
-  const builder: TestIModelBuilder = new IModelBuilder(db);
+  const builder = new IModelBuilder(db);
   try {
     cb(builder);
   } finally {
@@ -53,9 +55,9 @@ export async function buildTestIModel(name: string, cb: (builder: TestIModelBuil
 /**
  * Default implementation of IModel builder pattern. Used for building IModels to test rulesets.
  *
- * @internal
+ * @beta
  */
-export class IModelBuilder implements TestIModelBuilder{
+export class IModelBuilder implements TestIModelBuilder {
   private _iModel: IModelDb;
 
   constructor(iModel: IModelDb) {
@@ -80,12 +82,13 @@ export class IModelBuilder implements TestIModelBuilder{
   }
 }
 
-/** Prepare for an output file by:
-  * - Resolving the output file name under the known test output directory
-  * - Making directories as necessary
-  * - Removing a previous copy of the output file
-  * @param fileName Name of output file
-  */
+/**
+ * Prepare for an output file by:
+ * - Resolving the output file name under the known test output directory
+ * - Making directories as necessary
+ * - Removing a previous copy of the output file
+ * @param fileName Name of output file
+ */
 function setupOutputFileLocation(fileName: string): LocalFileName {
   const testOutputDir = getTestOutputDir();
   !IModelJsFs.existsSync(testOutputDir) && IModelJsFs.mkdirSync(testOutputDir);

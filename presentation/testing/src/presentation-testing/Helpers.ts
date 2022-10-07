@@ -43,7 +43,11 @@ let isInitialized = false;
 const defaultTestOutputDir = tmpdir();
 let testOutputDir: string | undefined;
 
-/** If custom test output directory not provided, default directory will be local temp folder */
+/**
+ * If custom test output directory not provided, default directory will be local temp folder
+ *
+ * @internal
+*/
 export const getTestOutputDir = (): string =>  {
   return testOutputDir ?? defaultTestOutputDir;
 };
@@ -63,7 +67,7 @@ export interface PresentationTestingInitProps {
   /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
   /** Custom test output directory  */
-  customOutputDir?: string;
+  testOutputDir?: string;
 }
 
 /**
@@ -102,7 +106,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
-  testOutputDir = props.customOutputDir;
+  testOutputDir = props.testOutputDir;
 
   isInitialized = true;
 };

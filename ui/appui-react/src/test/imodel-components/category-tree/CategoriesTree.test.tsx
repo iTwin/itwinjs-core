@@ -474,7 +474,7 @@ describe("CategoryTree", () => {
             },
           },
         },
-        customOutputDir: join(__dirname, "output"),
+        testOutputDir: join(__dirname, "output"),
       });
     });
 

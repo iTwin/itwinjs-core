@@ -363,7 +363,7 @@ describe("ModelsTree", () => {
             },
           },
         },
-        customOutputDir: join(__dirname, "output"),
+        testOutputDir: join(__dirname, "output"),
       });
       imodel = await SnapshotConnection.openFile(testIModelPath);
     });
