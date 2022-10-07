@@ -725,22 +725,8 @@ describe("IModelTransformerHub", () => {
           origin: Point3d.create(3, 3, 3),
           angles: YawPitchRollAngles.createDegrees(3, 3, 3),
         },
-        parent: new ElementOwnsChildElements(elemInModelToDeleteId),
+        parent: new ElementOwnsChildElements(elemToDeleteWithChildrenId),
       }, masterDb).insert();
-      const modelWithSubmodelId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-with-submodel-id");
-      const submodelPartitionProps = {
-        classFullName: PhysicalPartition.classFullName,
-        model: IModel.repositoryModelId,
-        parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-        code: PhysicalPartition.createCode(masterDb, IModel.rootSubjectId, "submodel-partition"),
-      };
-      const submodelPartitionId = masterDb.elements.insertElement(submodelPartitionProps);
-      const submodelProps: GeometricModel3dProps = {
-        classFullName: PhysicalModel.classFullName,
-        modeledElement: { id: submodelPartitionId },
-        parentModel: modelWithSubmodelId,
-      };
-      const submodelId = masterDb.models.insertModel(submodelProps);
       masterDb.saveChanges();
       await masterDb.pushChanges({ accessToken, description: "setup master" });
 
@@ -759,24 +745,17 @@ describe("IModelTransformerHub", () => {
       await branchDb.pushChanges({ accessToken, description: "setup branch" });
 
       const modelToDeleteWithElem = {
-        entity: branchDb.elements.getElement<PhysicalObject>(modelToDeleteWithElemId, PhysicalObject),
+        entity: branchDb.models.getModel<PhysicalModel>(modelToDeleteWithElemId, PhysicalModel),
         submodelingElem: branchDb.elements.getElement<PhysicalPartition>(modelToDeleteWithElemId, PhysicalPartition),
       };
       const elemToDeleteWithChildren = {
         entity: branchDb.elements.getElement<PhysicalObject>(elemToDeleteWithChildrenId, PhysicalObject),
-      };
-      const modelWithSubmodel = {
-        entity: branchDb.elements.getElement<PhysicalObject>(modelWithSubmodelId, PhysicalObject),
-        submodelingElem: branchDb.elements.getElement<PhysicalPartition>(modelWithSubmodelId, PhysicalPartition),
       };
 
       elemToDeleteWithChildren.entity.delete();
       modelToDeleteWithElem.entity.delete();
       // deleting the model will dangle its partition, delete that too
       modelToDeleteWithElem.submodelingElem.delete();
-      modelWithSubmodel.entity.delete();
-      // deleting the model will dangle its partition, delete that too
-      modelWithSubmodel.submodelingElem.delete();
       branchDb.saveChanges();
       await branchDb.pushChanges({ accessToken, description: "branch deletes" });
 
@@ -786,8 +765,6 @@ describe("IModelTransformerHub", () => {
       expect(branchDb.models.tryGetModel(notDeletedModelId)).not.to.be.undefined;
       expect(branchDb.elements.tryGetElement(elemToDeleteWithChildrenId)).to.be.undefined;
       expect(branchDb.elements.tryGetElement(childElemOfDeletedId)).to.be.undefined;
-      expect(branchDb.models.tryGetModel(modelWithSubmodelId)).to.be.undefined;
-      expect(branchDb.models.tryGetModel(submodelId)).to.be.undefined;
 
       const aspectIdsOf = (id: Id64String) => branchDb.elements.getAspects(id).map((a) => a.id);
       // expected extracted changed ids
@@ -798,25 +775,21 @@ describe("IModelTransformerHub", () => {
       const expectedChangedIds: IModelJsNative.ChangedInstanceIdsProps = {
         aspect: {
           delete: [
-            submodelId, // technically gets the aspects on the submodeling partition
-            modelWithSubmodelId,
             childElemOfDeletedId,
-            modelWithSubmodelId,
+            elemInModelToDeleteId,
             modelToDeleteWithElemId,
           ].map(aspectIdsOf).flat(),
         },
         element: {
           delete: [
             modelToDeleteWithElemId,
-            modelWithSubmodelId,
+            elemInModelToDeleteId,
             childElemOfDeletedId,
-            modelWithSubmodelId,
-            submodelId,
           ],
         },
         model: {
           update: [IModelDb.rootSubjectId, notDeletedModelId], // containing model will also get last modification time updated
-          delete: [modelToDeleteWithElemId, modelWithSubmodelId],
+          delete: [modelToDeleteWithElemId],
         },
       };
       expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
@@ -840,7 +813,7 @@ describe("IModelTransformerHub", () => {
       const getFromTarget = (sourceModelId: Id64String, type: "elem" | "model") => {
         const codeVal = masterDb.elements.tryGetElement(sourceModelId)?.code.value;
         assert(codeVal !== undefined, "all tested elements must have a code value");
-        const targetId = IModelTransformerTestUtils.queryByCodeValue(codeVal);
+        const targetId = IModelTransformerTestUtils.queryByCodeValue(masterDb, codeVal);
         if (Id64.isInvalid(targetId))
           return undefined;
         return type === "model"
@@ -853,19 +826,15 @@ describe("IModelTransformerHub", () => {
       expect(getFromTarget(notDeletedModelId, "model")).not.to.be.undefined;
       expect(getFromTarget(elemToDeleteWithChildrenId, "elem")).to.be.undefined;
       expect(getFromTarget(childElemOfDeletedId, "elem")).to.be.undefined;
-      expect(getFromTarget(modelWithSubmodelId, "model")).to.be.undefined;
-      expect(getFromTarget(submodelId, "model")).to.be.undefined;
 
       // close iModel briefcases
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, masterDb);
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, branchDb);
     } finally {
-      try {
-        // delete iModel briefcases
-        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: masterIModelId });
+      // delete iModel briefcases
+      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: masterIModelId });
+      if (branchIModelId) {
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId });
-      } catch (err) {
-        assert.fail(err, undefined, "failed to clean up");
       }
     }
   });
