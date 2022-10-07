@@ -35,12 +35,12 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
 
         if (feature?.geometry?.rings) {
           for (const ring of feature?.geometry?.rings) {
-            offset = this.deflateCoordinates(ring, coords, 2, offset);
+            offset = ArcGisFeatureJSON.deflateCoordinates(ring, coords, 2, offset);
             lengths.push(ring.length);
           }
         } else if (feature?.geometry?.paths) {
           for (const path of feature?.geometry?.paths) {
-            offset = this.deflateCoordinates(path, coords, 2, offset);
+            offset = ArcGisFeatureJSON.deflateCoordinates(path, coords, 2, offset);
             lengths.push(path.length);
           }
         }
@@ -66,7 +66,7 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
   // Converts an [[x1,y1], [x2,y2], ...] to [x1,y1,x2,y2, ...]
   // stride is the number of dimensions
   // https://github.com/openlayers/openlayers/blob/7a2f87caca9ddc1912d910f56eb5637445fc11f6/src/ol/geom/flat/deflate.js#L26
-  protected deflateCoordinates(
+  protected static deflateCoordinates(
     coordinates: number[][],
     flatCoordinates: number[],
     stride: number,

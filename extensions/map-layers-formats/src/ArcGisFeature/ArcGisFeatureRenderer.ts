@@ -18,32 +18,49 @@ export class ArcGisFeatureRenderer  {
 
   }
 
-  public renderPathFeature(geometryLenths: number[], geometryCoords: number[], fill: boolean, stride: number) {
-    // Keep track of our position in the in the 'coords' array:
-    // Everytime we loop on the 'lengths' array, the position
-    // to start reading vertices in the 'coords' must be the sum of all previously read vertices.
-    let coordsOffet = 0;
+  // Utility functions to make ease testing.
+  private closePath() {
+    this._context.closePath();
+  }
 
-    // const geometryLenths = feature.geometry.lengths;
-    // const geometryCoords = feature.geometry.coords;
+  private lineTo(x: number, y: number) {
+    this._context.lineTo(x,y);
+  }
+
+  private moveTo(x: number, y: number) {
+    this._context.moveTo(x,y);
+  }
+
+  private fill() {
+    this._context.fill();
+  }
+
+  private stroke() {
+    this._context.stroke();
+  }
+
+  public renderPathFeature(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number) {
+    // Keep track of our position in the in the 'coords' array:
+    // Every time we loop on the 'lengths' array, the position
+    // to start reading vertices in the 'coords' must be the sum of all previously read vertices.
+    let coordsOffset = 0;
+
     // Begin the path here.
-    // Note: Even though path is closed inside the 'geometryLenths' loop,
+    // Note: Even though path is closed inside the 'geometryLengths' loop,
     //       it's import to begin the path only once.
     this._context.beginPath();
-    // console.log ("this._context.beginPath();");
-    for (const vertexCount of geometryLenths) {
+    for (const vertexCount of geometryLengths) {
       let lastPtX = 0, lastPtY = 0;
       for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-        const pX = geometryCoords[coordsOffet+(vertexIdx*stride)];
-        const pY = geometryCoords[coordsOffet+(vertexIdx*stride)+1];
+        const pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
+        const pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
         if (vertexIdx === 0) {
           // first vertex is always "absolute" and must be drawn as 'moveTo' (i.e. not lineTo)
-          // console.log (`this._context.moveTo(${pX}, ${pY});`);
           if (this._transform) {
             const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
-            this._context.moveTo(transformedPoint.x, transformedPoint.y);
+            this.moveTo(transformedPoint.x, transformedPoint.y);
           } else {
-            this._context.moveTo(pX, pY);
+            this.moveTo(pX, pY);
             lastPtX = pX;
             lastPtY = pY;
           }
@@ -52,38 +69,36 @@ export class ArcGisFeatureRenderer  {
           // console.log (`this._context.moveTo(${lastPtX}, ${lastPtY});`);
           if (this._transform) {
             const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
-            this._context.lineTo(transformedPoint.x, transformedPoint.y);
+            this.lineTo(transformedPoint.x, transformedPoint.y);
           } else {
             // Following vertices are relative to the previous one (sadly not really well documented by ESRI)
             // typically this happens when 'coordinates quantization' is active (i.e. no client side transformation is needed)
             lastPtX = lastPtX+pX;
             lastPtY = lastPtY+pY;
-            this._context.lineTo(lastPtX, lastPtY);
+            this.lineTo(lastPtX, lastPtY);
           }
         }
 
       }
-      coordsOffet+=stride*vertexCount;
+      coordsOffset+=stride*vertexCount;
       if (fill) {
-        // console.log (`this._context.closePath();`);
-
         // ClosePath but do not 'fill' here, only at the very end (otherwise it will mess up holes)
-        this._context.closePath();
+        this.closePath();
       }
     }
 
     if (fill) {
       this._symbol.applyFillStyle(this._context);
-      this._context.fill();
+      this.fill();
     }
 
     this._symbol.applyStrokeStyle(this._context);
-    this._context.stroke();  // draw line path or polygon outline
+    this.stroke();  // draw line path or polygon outline
   }
 
-  public renderPointFeature(geometryLenths: number[], geometryCoords: number[], stride: number)  {
-    let coordsOffet = 0;
-    if (geometryLenths.length === 0) {
+  public renderPointFeature(geometryLengths: number[], geometryCoords: number[], stride: number)  {
+    let coordsOffset = 0;
+    if (geometryLengths.length === 0) {
       // Strangely, for points, 'lengths' array is empty, so we assume there is a single vertex in 'coords' array.
       if (geometryCoords.length >= stride) {
 
@@ -93,22 +108,15 @@ export class ArcGisFeatureRenderer  {
         } else {
           this._symbol.drawPoint(this._context, geometryCoords[0], geometryCoords[1]);
         }
-        /*
-        if (this._transform) {
-          const transformedPoint = this._transform.multiplyPoint2d({x: geometryCoords[0], y:geometryCoords[1]});
-          this._context.drawImage(sampleIconImg, transformedPoint.x-iconSizeHalf, transformedPoint.y-iconSizeHalf, iconSize, iconSize);
-        } else {
-          this._context.drawImage(sampleIconImg, geometryCoords[0]-iconSizeHalf, geometryCoords[1]-iconSizeHalf, iconSize, iconSize);
-        } */
       }
     } else {
       // MULTI-POINTS: Needs testing
-      // I assume 'lenghts' array will get populated and 'coords' array will look similar to line/polygons.
-      for (const vertexCount of geometryLenths) {
+      // I assume 'lengths' array will get populated and 'coords' array will look similar to line/polygons.
+      for (const vertexCount of geometryLengths) {
         let lastPtX = 0, lastPtY = 0;
         for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-          const pX = geometryCoords[coordsOffet+(vertexIdx*2)];
-          const pY = geometryCoords[coordsOffet+(vertexIdx*2)+1];
+          const pX = geometryCoords[coordsOffset+(vertexIdx*2)];
+          const pY = geometryCoords[coordsOffset+(vertexIdx*2)+1];
           lastPtX = (vertexIdx === 0) ? pX : lastPtX+pX;
           lastPtY = (vertexIdx === 0) ? pY : lastPtY+pY;
 
@@ -120,7 +128,7 @@ export class ArcGisFeatureRenderer  {
           }
 
         }
-        coordsOffet+=stride*vertexCount;
+        coordsOffset+=stride*vertexCount;
       }
     }
 

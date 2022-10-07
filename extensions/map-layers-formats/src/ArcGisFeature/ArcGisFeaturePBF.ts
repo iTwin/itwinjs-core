@@ -11,10 +11,10 @@ import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { assert, Logger } from "@itwin/core-bentley";
+import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
-
-const loggerCategory = "ArcGISFeatureProvider";
+const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
 export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
@@ -22,6 +22,22 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     super(settings, layerMetadata);
   }
 
+  public static getArcGisFeatureGeometryType(geomType: esriPBuffer.FeatureCollectionPBuffer.GeometryType): ArcGisFeatureGeometryType  {
+    switch (geomType) {
+      case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch:
+        return "esriGeometryMultiPatch";
+      case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint:
+        return "esriGeometryMultipoint";
+      case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint:
+        return "esriGeometryPoint";
+      case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon:
+        return "esriGeometryPolygon";
+      case esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline:
+        return "esriGeometryPolyline";
+      default:
+        return "esriGeometryNull";
+    }
+  }
   public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
@@ -33,11 +49,11 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       return;
 
     const geomType = collection.queryResult.featureResult.geometryType;
-    const stride = (collection.queryResult.featureResult.hasM  ||  collection.queryResult.featureResult.hasZ) ? 3 : 2;
+    const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
 
     // console.log(`Nb Feature: ${collection.queryResult.featureResult.features.length}`);
-    if ( geomType === esriGeometryType.esriGeometryTypePoint ||
-         geomType === esriGeometryType.esriGeometryTypeMultipoint) {
+    if (geomType === esriGeometryType.esriGeometryTypePoint ||
+      geomType === esriGeometryType.esriGeometryTypeMultipoint) {
       for (const feature of collection.queryResult.featureResult.features) {
 
         renderer.renderPointFeature(feature.geometry.lengths, feature.geometry.coords, stride);
@@ -65,7 +81,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 
-    const layerInfo: MapLayerFeatureInfo = {layerName: this._settings.name, info: []};
+    const layerInfo: MapLayerFeatureInfo = { layerName: this._settings.name, info: [] };
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: string[] = [];
@@ -74,7 +90,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
 
     const getRecordInfo = (fieldName: string, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
-      const propertyValue: PrimitiveValue = {valueFormat: PropertyValueFormat.Primitive};
+      const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
       let strValue;
       let typename = StandardTypeNames.String;
@@ -123,7 +139,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
       propertyValue.displayValue = strValue;
 
-      return new MapFeatureInfoRecord (propertyValue, {name: fieldName, displayLabel: fieldName, typename});
+      return new MapFeatureInfoRecord(propertyValue, { name: fieldName, displayLabel: fieldName, typename });
     };
 
     // Read feature values
@@ -131,7 +147,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       const subLayerInfo: MapSubLayerFeatureInfo = {
         subLayerName: this._layerMetadata.name,
         displayFieldName: this._layerMetadata.name,
-        records : [],
+        records: [],
       };
       let i = 0;
 
