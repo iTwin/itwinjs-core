@@ -16,13 +16,17 @@ import { getTestOutputDir } from "./Helpers";
 /**
  * Interface for IModel builder pattern. Used for building IModels to test rulesets.
  *
- * @public
+ * @internal
+ * @beta
  */
 export interface TestIModelBuilder {
+  /** Insert a model into the builder's iModel */
   insertModel<TProps extends ModelProps>(props: TProps): Id64String;
+  /** Insert an element into the builder's iModel */
   insertElement<TProps extends ElementProps>(props: TProps): Id64String;
+  /** Insert an element aspect into the specified element */
   insertAspect<TProps extends ElementAspectProps>(props: TProps): void;
-  /** codeValue has to be unique */
+  /** Create code for specified element */
   createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code;
 }
 
@@ -31,7 +35,7 @@ export interface TestIModelBuilder {
  * @param name Name of test IModel
  * @param cb Callback function that executes all given builder actions
  *
- * @public
+ * @internal
  */
 export async function buildTestIModel(name: string, cb: (builder: TestIModelBuilder) => void): Promise<IModelConnection> {
   const outputFile = setupOutputFileLocation(name);
@@ -49,7 +53,7 @@ export async function buildTestIModel(name: string, cb: (builder: TestIModelBuil
 /**
  * Default implementation of IModel builder pattern. Used for building IModels to test rulesets.
  *
- * @public
+ * @internal
  */
 export class IModelBuilder implements TestIModelBuilder{
   private _iModel: IModelDb;
@@ -59,13 +63,11 @@ export class IModelBuilder implements TestIModelBuilder{
   }
 
   public insertModel<TProps extends ModelProps>(props: TProps): Id64String {
-    const newModelId = this._iModel.models.insertModel(props);
-    return newModelId;
+    return this._iModel.models.insertModel(props);
   }
 
   public insertElement<TProps extends ElementProps>(props: TProps): Id64String {
-    const elementId = this._iModel.elements.insertElement(props);
-    return elementId;
+    return this._iModel.elements.insertElement(props);
   }
 
   public insertAspect<TProps extends ElementAspectProps>(props: TProps): void {

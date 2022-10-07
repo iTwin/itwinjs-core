@@ -18,6 +18,7 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import { tmpdir } from "os";
 
 function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
   const config = class extends RpcDefaultConfiguration {
@@ -39,11 +40,12 @@ function initializeRpcInterfaces(interfaces: RpcInterfaceDefinition[]) {
 
 let isInitialized = false;
 
-const defaultTestOutputDir = join(__dirname, "output");
-let customOutputDir: string | undefined;
+const defaultTestOutputDir = tmpdir();
+let testOutputDir: string | undefined;
 
+/** If custom test output directory not provided, default directory will be local temp folder */
 export const getTestOutputDir = (): string =>  {
-  return customOutputDir ?? defaultTestOutputDir;
+  return testOutputDir ?? defaultTestOutputDir;
 };
 
 export { HierarchyCacheMode, PresentationManagerMode, PresentationBackendProps };
@@ -100,7 +102,7 @@ export const initialize = async (props?: PresentationTestingInitProps) => {
     },
   };
   await PresentationFrontend.initialize({ ...defaultFrontendProps, ...props.frontendProps });
-  customOutputDir = props.customOutputDir;
+  testOutputDir = props.customOutputDir;
 
   isInitialized = true;
 };

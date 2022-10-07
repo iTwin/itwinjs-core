@@ -570,30 +570,6 @@ describe("CategoryTree", () => {
       builder.insertElement(physicalObjectProps);
     };
 
-    const addDrawingPartition = (builder: TestIModelBuilder, name: string, parentId = IModel.rootSubjectId) => {
-      const parentProps: RelatedElementProps = {
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-        id: parentId,
-      };
-
-      const partitionProps: ElementProps = {
-        classFullName: "BisCore:Drawing",
-        model: IModel.repositoryModelId,
-        parent: parentProps,
-        code: builder.createCode(parentId, BisCodeSpec.informationPartitionElement, name),
-      };
-      return builder.insertElement(partitionProps);
-    };
-
-    const addDrawingModel = (builder: TestIModelBuilder, partitionId: string) => {
-      const modelProps: ModelProps = {
-        modeledElement: new RelatedElement({ id: partitionId }),
-        classFullName: "BisCore:DrawingModel",
-        isPrivate: false,
-      };
-      return builder.insertModel(modelProps);
-    };
-
     const addDrawingCategory = (builder: TestIModelBuilder, modelId: string, name: string, isPrivate?: boolean) => {
       const spatialCategoryProps: CategoryProps = {
         classFullName: "BisCore:DrawingCategory",
