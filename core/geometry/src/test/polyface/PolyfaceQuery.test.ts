@@ -12,7 +12,7 @@ import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { TorusImplicit } from "../../numerics/Polynomials";
-import { IndexedPolyface } from "../../polyface/Polyface";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -26,6 +26,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { Range3d } from "../../geometry3d/Range";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Arc3d } from "../../curve/Arc3d";
+import { PolyfaceData } from "../../polyface/PolyfaceData";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -204,6 +205,73 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
     expect(ck.getNumErrors()).equals(0);
+});
+
+// implement a do-nothing visitor NOT backed by a Polyface
+class MyVisitor extends PolyfaceData implements PolyfaceVisitor {
+  private _index: number;
+  private _numIndices: number;
+  public constructor(numIndices: number) {
+    super();
+    this._numIndices = numIndices;
+    this._index = -1;
+  }
+  public moveToReadIndex(index: number): boolean {
+    if (index < 0 || index >= this._numIndices)
+      return false;
+    this._index = index;
+    return true;
+  }
+  public currentReadIndex(): number {
+    return this._index;
+  }
+  public moveToNextFacet(): boolean {
+    return this.moveToReadIndex(this._index + 1);
+  }
+  public reset(): void {
+    this._index = -1;
+  }
+  public clientPolyface(): Polyface | undefined {
+    return undefined; // highly unusual
+  }
+  public clientPointIndex(_i: number): number {
+    return 0;
+  }
+  public clientParamIndex(_i: number): number {
+    return 0;
+  }
+  public clientNormalIndex(_i: number): number {
+    return 0;
+  }
+  public clientColorIndex(_i: number): number {
+    return 0;
+  }
+  public clientAuxIndex(_i: number): number {
+    return 0;
+  }
+  public setNumWrap(_numWrap: number): void {
+  }
+  public clearArrays(): void {
+  }
+  public pushDataFrom(_other: PolyfaceVisitor, _index: number): void {
+  }
+  public pushInterpolatedDataFrom(_other: PolyfaceVisitor, _index0: number, _fraction: number, _index1: number): void {
+  }
+}
+
+it("CountVisitableFacets", () => {
+  const ck = new Checker();
+  const mesh = Sample.createPolyhedron62();
+  if (ck.testDefined(mesh) && undefined !== mesh) {
+    const visitor = mesh.createVisitor(0);
+    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
+    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
+  }
+  // test a visitor without polyface backing
+  const visitor0 = new MyVisitor(5);
+  ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
+  ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
+  expect(ck.getNumErrors()).equals(0);
 });
 
 it("FillHoles", () => {

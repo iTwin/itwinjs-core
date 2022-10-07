@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module Serialization
  */
-
+import * as fs from "fs";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
@@ -62,6 +62,7 @@ import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
+import { IModelJson } from "./IModelJsonSchema";
 
 /* eslint-disable no-console */
 /**
@@ -2516,36 +2517,46 @@ export class Sample {
     return point0;
   }
 
-/**
- * Create a mesh with
- *   * xy facets are 1x1 quads starting at origin
- *   * acceptFunction is called to accept or reject each quad's lower left xy coordinates
- * @param xzPoints array of points in the xz plane.  Expected to have increasing x and all integer coordinates.
- * @param ySweep distance to sweep in y direction
- * @param acceptFunction (x0: number, y0: number)=> boolean
- */
-public static sweepXZLineStringToMeshWithHoles(xzPoints: number [][], ySweep: number,
-  acceptFunction: (x0: number, y0: number) => boolean){
-  const builder = PolyfaceBuilder.create();
-for (let i0 = 0; i0 + 1 < xzPoints.length; i0++){
-  const x0 = xzPoints[i0][0];
-  const z0 = xzPoints[i0][1];
-  const i1 = i0 + 1;
-  const x1 = xzPoints[i1][0];
-  const z1 = xzPoints[i1][1];
-  for (let xA = x0; xA + 1 <= x1; xA++){
-    const xB = xA + 1;
-    const sA = (xA-x0)/(x1 - x0);
-    const sB = (xB -x0)/ (x1-x0);
-    const zA = Geometry.interpolate (z0, sA, z1);
-    const zB = Geometry.interpolate (z0, sB, z1);
-    for (let yC = 0; yC +1 <= ySweep; yC++){
-      const yD = yC + 1;
-      if (acceptFunction (xA, yC))
-        builder.addPolygon ([Point3d.create (xA, yC, zA), Point3d.create (xB, yC, zB), Point3d.create (xB, yD, zB), Point3d.create (xA, yD, zA)]);
+  /**
+   * Create a mesh with
+   *   * xy facets are 1x1 quads starting at origin
+   *   * acceptFunction is called to accept or reject each quad's lower left xy coordinates
+   * @param xzPoints array of points in the xz plane.  Expected to have increasing x and all integer coordinates.
+   * @param ySweep distance to sweep in y direction
+   * @param acceptFunction (x0: number, y0: number)=> boolean
+   */
+  public static sweepXZLineStringToMeshWithHoles(xzPoints: number [][], ySweep: number, acceptFunction: (x0: number, y0: number) => boolean) {
+    const builder = PolyfaceBuilder.create();
+    for (let i0 = 0; i0 + 1 < xzPoints.length; i0++) {
+      const x0 = xzPoints[i0][0];
+      const z0 = xzPoints[i0][1];
+      const i1 = i0 + 1;
+      const x1 = xzPoints[i1][0];
+      const z1 = xzPoints[i1][1];
+      for (let xA = x0; xA + 1 <= x1; xA++) {
+        const xB = xA + 1;
+        const sA = (xA-x0)/(x1 - x0);
+        const sB = (xB -x0)/ (x1-x0);
+        const zA = Geometry.interpolate (z0, sA, z1);
+        const zB = Geometry.interpolate (z0, sB, z1);
+        for (let yC = 0; yC +1 <= ySweep; yC++) {
+          const yD = yC + 1;
+          if (acceptFunction (xA, yC))
+            builder.addPolygon ([Point3d.create (xA, yC, zA), Point3d.create (xB, yC, zB), Point3d.create (xB, yD, zB), Point3d.create (xA, yD, zA)]);
+        }
       }
     }
+    return builder.claimPolyface (true);
   }
-  return builder.claimPolyface (true);
+  // cspell:word rhombicosidodecahedron
+  /** Create a 62-sided regular polyhedron mesh with 3-, 4-, and 5-sided faces and vertex color data. */
+  public static createPolyhedron62(): IndexedPolyface | undefined {
+    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
+    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
+    for (const mesh of inputs) {
+      if (undefined !== mesh && mesh instanceof IndexedPolyface)
+        return mesh;
+    }
+    return undefined;
   }
 }

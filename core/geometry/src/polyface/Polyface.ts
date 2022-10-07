@@ -53,7 +53,8 @@ export abstract class Polyface extends GeometryQuery {
      * @param indices array of indices.
      * @param indexPositionA first index to test
      * @param indexPositionB one past final index to test
-     * @param data data array.  Only its length is referenced.
+     * @param data data array
+     * @param dataLength length of data array
      */
   public static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
     if (indices === undefined && data === undefined)
@@ -73,6 +74,10 @@ export abstract class Polyface extends GeometryQuery {
    * Returns true if this polyface has no facets.
    */
   public abstract get isEmpty(): boolean;
+  /**
+   * Returns the number of facets.
+   */
+  public abstract get facetCount(): number;
 }
 /**
  * An `IndexedPolyface` is a set of facets which can have normal, param, and color arrays with independent point, normal, param, and color indices.
@@ -564,8 +569,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   clientPolyface(): Polyface | undefined;
   /** Set the number of vertices to replicate in visitor arrays. */
   setNumWrap(numWrap: number): void;
-
-  /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
+  /** clear the contents of all arrays.  Use this along with `pushDataFrom` to build up new facets. */
   clearArrays(): void;
   /** transfer data from a specified index of the other visitor as new data in this visitor. */
   pushDataFrom(other: PolyfaceVisitor, index: number): void;
@@ -573,6 +577,5 @@ export interface PolyfaceVisitor extends PolyfaceData {
    * * all data values are interpolated at `fraction` between `other` values at index0 and index1.
    */
   pushInterpolatedDataFrom(other: PolyfaceVisitor, index0: number, fraction: number, index1: number): void;
-
 }
 

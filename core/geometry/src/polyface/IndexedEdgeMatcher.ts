@@ -99,7 +99,7 @@ export class IndexedEdgeMatcher {
   public edges: SortableEdge[];
 
   constructor() {
-    this.edges = [];
+      this.edges = [];
   }
   /**
    * push a new edge.
@@ -154,10 +154,10 @@ export class IndexedEdgeMatcher {
    * `sortAndCollectClusters (undefined, allOther, allOther);`
    * @param manifoldPairs optional array to receive pairs of properly mated SortableEdgePairs, i.e. simple interior edges adjacent to two facets in opposing directions.
    * @param singletons optional array to receive edges that are simple boundary edges.
-   * @param nullEdges clusters with null edges (same start and end vertex)
+   * @param nullEdges optional array to receive arrays of null edges (same start and end vertex)
    * @param allOtherClusters optional array to receive arrays in which all the edges are partners in an undirected sense but not a simple directed pair.
    */
-  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons: SortableEdgeCluster[] | undefined, nullEdges: SortableEdgeCluster[] | undefined, allOtherClusters: SortableEdgeCluster[] | undefined) {
+  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons?: SortableEdgeCluster[], nullEdges?: SortableEdgeCluster[], allOtherClusters?: SortableEdgeCluster[]) {
     this.sort();
     if (manifoldPairs) manifoldPairs.length = 0;
     if (singletons) singletons.length = 0;
