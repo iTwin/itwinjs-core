@@ -115,9 +115,9 @@ describe("CurveCurveIntersectionXYZ", () => {
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, x0);
         const intersections = CurveCurve.intersectionXYZ(seg, false, arc, false);
         if (ck.testLE(1, intersections.dataA.length) && ck.testLE(1, intersections.dataB.length) && ck.testExactNumber(intersections.dataA.length, intersections.dataB.length)) {
-          for (let i = 0; i < intersections.dataA.length; ++i) {
-            ck.testPoint3d(pt, intersections.dataA[i].point);
-            ck.testPoint3d(pt, intersections.dataB[i].point);
+          for (let j = 0; j < intersections.dataA.length; ++j) {
+            ck.testPoint3d(pt, intersections.dataA[j].point);
+            ck.testPoint3d(pt, intersections.dataB[j].point);
           }
         }
       }
