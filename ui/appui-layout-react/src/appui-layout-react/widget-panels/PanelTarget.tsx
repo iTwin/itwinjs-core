@@ -64,9 +64,18 @@ export function useAllowedPanelTarget() {
     allowedPanelTargets = tab.allowedPanelTargets;
   } else if (draggedWidget && draggedWidget in widgetsState) { // handle a case where DraggedWidgetIdContext exists, but dragged widget is not in WidgetsStateContet
     const widget = widgetsState[draggedWidget];
-    const tabId = widget.activeTabId;
-    const tab = tabsState[tabId];
-    allowedPanelTargets = tab.allowedPanelTargets;
+    const activeTabId = widget.activeTabId;
+    const activeTab = tabsState[activeTabId];
+    allowedPanelTargets = activeTab.allowedPanelTargets;
+    widget.tabs.forEach((tabId) => {
+      const tab = tabsState[tabId];
+      if (!allowedPanelTargets)
+        allowedPanelTargets = tab.allowedPanelTargets;
+      else /* istanbul ignore else */ if (tab.allowedPanelTargets !== undefined) {
+        const tabPanelTargets = tab.allowedPanelTargets;
+        allowedPanelTargets = allowedPanelTargets.filter((x) => tabPanelTargets.includes(x));
+      }
+    });
   }
   if (allowedPanelTargets) {
     return allowedPanelTargets.includes(panel.side);

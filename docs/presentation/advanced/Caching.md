@@ -16,7 +16,7 @@ Presentation manager uses worker threads to fulfil requests to avoid blocking th
 
 The cache is released when the worker connection is closed, which happens when either the iModel is closed or the presentation manager is disposed.
 
-Size of the cache can be controlled when initializing [Presentation]($presentation-backend) or creating [PresentationManager]($presentation-backend) by passing a custom value for [PresentationManagerProps.caching.workerConnectionCacheSize]($presentation-backend).
+Size of the cache can be controlled when initializing [Presentation]($presentation-backend) or creating [PresentationManager]($presentation-backend) by passing a custom value for `PresentationManagerProps.caching.workerConnectionCacheSize`.
 
 ## Hierarchies cache
 
@@ -26,7 +26,7 @@ The cache is per-iModel and per-worker thread, so the the total amount consists 
 
 `{number of iModels used for requests} * {number of worker threads} * {hierarchy cache size}`
 
-The place where the cache is stored and the amount of space it allocates depends on [PresentationManagerProps.caching.hierarchies]($presentation-backend) configuration. Available options are:
+The place where the cache is stored and the amount of space it allocates depends on `PresentationManagerProps.caching.hierarchies` configuration. Available options are:
 
 - [HierarchyCacheMode.Memory]($presentation-backend)
 - [HierarchyCacheMode.Disk]($presentation-backend)

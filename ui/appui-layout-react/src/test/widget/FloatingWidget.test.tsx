@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
-import { addFloatingWidget, addTab, createNineZoneState, FloatingWidget, getResizeBy, NineZoneDispatch } from "../../appui-layout-react";
+import { addFloatingWidget, addTab, createNineZoneState, FloatingWidgetProvider, getResizeBy, NineZoneDispatch } from "../../appui-layout-react";
 import { TestNineZoneProvider } from "../Providers";
 
 describe("FloatingWidget", () => {
@@ -17,7 +17,7 @@ describe("FloatingWidget", () => {
       <TestNineZoneProvider
         state={state}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -34,7 +34,7 @@ describe("FloatingWidget", () => {
       <TestNineZoneProvider
         state={state}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -51,7 +51,7 @@ describe("FloatingWidget", () => {
       <TestNineZoneProvider
         state={state}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -68,7 +68,7 @@ describe("FloatingWidget", () => {
       <TestNineZoneProvider
         state={state}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -85,7 +85,7 @@ describe("FloatingWidget", () => {
       <TestNineZoneProvider
         state={state}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -110,7 +110,7 @@ describe("FloatingWidget", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.w1!}
           widget={state.widgets.w1}
         />
@@ -137,7 +137,7 @@ describe("FloatingWidget", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidget
+        <FloatingWidgetProvider
           floatingWidget={state.floatingWidgets.byId.toolSettings!}
           widget={state.widgets.toolSettings}
         />
