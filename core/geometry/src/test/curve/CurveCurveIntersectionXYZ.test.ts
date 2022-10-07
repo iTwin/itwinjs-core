@@ -6,10 +6,16 @@ import { expect } from "chai";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveCurve } from "../../curve/CurveCurve";
 import { CurveLocationDetailArrayPair } from "../../curve/CurveCurveIntersectXY";
+import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 /* eslint-disable no-console */
 function testIntersectionsXYZ(
@@ -75,6 +81,49 @@ describe("CurveCurveIntersectionXYZ", () => {
     const intersectionsBA = CurveCurve.intersectionXYZ(arc1, true, segment0, true);
     testIntersectionsXYZ(ck, intersectionsBA, 2, 2);
 
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("LineArcNotCoplanar", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origPt = Point3d.create(0,5);
+    const origSeg = LineSegment3d.create(Point3d.create(origPt.x, origPt.y, 1), Point3d.create(origPt.x, origPt.y, -1));
+    const origArc = Arc3d.create(Point3d.createZero(), Vector3d.create(3,4), Vector3d.create(-4,3), AngleSweep.createStartSweepDegrees(0, 90));
+    let x0 = 0;
+    const delta = 10;
+    for (const trans of
+          [Transform.identity,
+           Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(0)),
+           Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(1)),
+           Transform.createRefs(Point3d.create(3,-2,-4), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,2), Angle.createDegrees(-27))!)
+          ]) {
+      const arc = origArc.clone();
+      const pt = trans.multiplyPoint3d(origPt);
+      arc.tryTransformInPlace(trans);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0);
+      const eps = 0.1;
+      for (let i = 0; i < 10; ++i) {
+        // Initially the segment is parallel to the arc normal, so the arc's vec0 is used to form
+        // the intersection plane in `CurveCurveIntersectXYZ.createPlaneWithPreferredPerpendicular`.
+        // Successive loop iterations slant the segment away from perpendicular, so that eventually
+        // the arc normal can be used instead.
+        const seg = origSeg.clone();
+        seg.point0Ref.x += i * eps;
+        seg.point1Ref.x -= i * eps;
+        seg.tryTransformInPlace(trans);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, seg, x0);
+        const intersections = CurveCurve.intersectionXYZ(seg, false, arc, false);
+        if (ck.testLE(1, intersections.dataA.length) && ck.testLE(1, intersections.dataB.length) && ck.testExactNumber(intersections.dataA.length, intersections.dataB.length)) {
+          for (let i = 0; i < intersections.dataA.length; ++i) {
+            ck.testPoint3d(pt, intersections.dataA[i].point);
+            ck.testPoint3d(pt, intersections.dataB[i].point);
+          }
+        }
+      }
+      x0 += delta;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectionXYZ", "LineArcNotCoplanar");
     expect(ck.getNumErrors()).equals(0);
   });
 
