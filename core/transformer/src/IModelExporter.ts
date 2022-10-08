@@ -289,7 +289,7 @@ export class IModelExporter {
       }
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
         // We don't know how the handler wants to handle deletions, and we don't have enough information
-        // to know if a deleted entities were related, so when processing changes, ignore errors from deletion.
+        // to know if deleted entities were related, so when processing changes, ignore errors from deletion.
         // Technically, to keep the ignored error scope small, we ignore only the error of deleting an element
         // that doesn't exist.
         try {
