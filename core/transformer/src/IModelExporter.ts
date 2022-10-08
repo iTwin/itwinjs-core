@@ -290,12 +290,13 @@ export class IModelExporter {
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
         // We don't know how the handler wants to handle deletions, and we don't have enough information
         // to know if deleted entities were related, so when processing changes, ignore errors from deletion.
-        // Technically, to keep the ignored error scope small, we ignore only the error of deleting an element
-        // that doesn't exist.
+        // Technically, to keep the ignored error scope small, we ignore only the error of looking up a missing element
+        // That approach works at least for the IModelTransformer
         try {
           this.handler.onDeleteElement(elementId);
-        } catch (err: any) {
-          if (err?.message !== "error deleting element: missing id")
+        } catch (err: unknown) {
+          const isMissingErr = err instanceof IModelError && err.errorNumber === IModelStatus.NotFound;
+          if (!isMissingErr)
             throw err;
         }
       }
