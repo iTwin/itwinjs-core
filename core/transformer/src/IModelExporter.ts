@@ -268,18 +268,19 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
-    // handle delete
+    // handle deletes
     if (this.visitElements) {
       // must delete models first since they have a constraint on the submodeling element which may also be deleted
-      // TODO: change the API to use ElementTreeDeleter or something that makes will work for everything
       for (const modelId of this._sourceDbChanges.model.deleteIds) {
         this.handler.onDeleteModel(modelId);
       }
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
         // We don't know how the handler wants to handle deletions, and we don't have enough information
         // to know if deleted entities were related, so when processing changes, ignore errors from deletion.
-        // Technically, to keep the ignored error scope small, we ignore only the error of looking up a missing element
-        // That approach works at least for the IModelTransformer
+        // Technically, to keep the ignored error scope small, we ignore only the error of looking up a missing element,
+        // that approach works at least for the IModelTransformer.
+        // In the future, the handler may be responsible for doing the work of finding out which elements were cascade deleted,
+        // and returning them for the exporter to use to avoid double-deleting with error ignoring
         try {
           this.handler.onDeleteElement(elementId);
         } catch (err: unknown) {
