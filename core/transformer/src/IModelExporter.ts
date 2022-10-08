@@ -245,18 +245,6 @@ export class IModelExporter {
     await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
-  private collapseChildren(db: IModelDb, elementIds: Set<Id64String>) {
-    const result: Id64String[] = [];
-    db.withStatement(`SELECT Parent.Id FROM bis.Element WHERE ECInstanceId IN (${elementIds})`, (stmt) => {
-      while (stmt.step() === DbResult.BE_SQLITE_ROW)  {
-        const parentId = stmt.getValue(0).getId();
-        if (elementIds.has(parentId))
-          result.push(parentId);
-      }
-    });
-    return result;
-  }
-
   /** Export changes from the source iModel.
    * @param user The user
    * @param startChangesetId Include changes from this changeset up through and including the current changeset.
