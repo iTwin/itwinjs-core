@@ -283,11 +283,21 @@ export class IModelExporter {
     // handle delete
     if (this.visitElements) {
       // must delete models first since they have a constraint on the submodeling element which may also be deleted
+      // TODO: change the API to use ElementTreeDeleter or something that makes will work for everything
       for (const modelId of this._sourceDbChanges.model.deleteIds) {
         this.handler.onDeleteModel(modelId);
       }
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        this.handler.onDeleteElement(elementId);
+        // We don't know how the handler wants to handle deletions, and we don't have enough information
+        // to know if a deleted entities were related, so when processing changes, ignore errors from deletion.
+        // Technically, to keep the ignored error scope small, we ignore only the error of deleting an element
+        // that doesn't exist.
+        try {
+          this.handler.onDeleteElement(elementId);
+        } catch (err: any) {
+          if (err?.message !== "error deleting element: missing id")
+            throw err;
+        }
       }
     }
     if (this.visitRelationships) {

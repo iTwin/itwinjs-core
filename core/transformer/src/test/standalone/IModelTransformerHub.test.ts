@@ -7,9 +7,9 @@ import { assert, expect } from "chai";
 import { join } from "path";
 import * as semver from "semver";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementOwnsChildElements, ElementRefersToElements, ExternalSourceAspect, GenericSchema, HubMock, IModelDb,
-  IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb,
-  SpatialCategory, Subject,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, deleteElementTree, ECSqlStatement, Element, ElementOwnsChildElements, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, HubMock, IModelDb, IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel,
+  PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory, Subject,
 } from "@itwin/core-backend";
 
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
@@ -38,7 +38,7 @@ describe("IModelTransformerHub", () => {
     accessToken = await HubWrappers.getAccessToken(BackendTestUtils.TestUserType.Regular);
 
     // initialize logging
-    if (false) {
+    if (process.env.TRANSFORMER_TESTS_USE_LOG) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
       Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
@@ -719,9 +719,9 @@ describe("IModelTransformerHub", () => {
         parent: new ElementOwnsChildElements(elemToDeleteWithChildrenId),
       }, masterDb).insert();
       const childSubjectId = Subject.insert(masterDb, IModel.rootSubjectId, "child-subject");
-      const modelInChildSubjectId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-in-child-subject");
+      const modelInChildSubjectId = PhysicalModel.insert(masterDb, childSubjectId, "model-in-child-subject");
       const childSubjectChildId = Subject.insert(masterDb, childSubjectId, "child-subject-child");
-      const modelInChildSubjectChildId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-in-child-subject-child");
+      const modelInChildSubjectChildId = PhysicalModel.insert(masterDb, childSubjectChildId, "model-in-child-subject-child");
       masterDb.saveChanges();
       await masterDb.pushChanges({ accessToken, description: "setup master" });
 
@@ -741,7 +741,6 @@ describe("IModelTransformerHub", () => {
 
       const modelToDeleteWithElem = {
         entity: branchDb.models.getModel(modelToDeleteWithElemId),
-        submodelingElem: branchDb.elements.getElement(modelToDeleteWithElemId),
         aspects: branchDb.elements.getAspects(modelToDeleteWithElemId),
       };
       const elemToDeleteWithChildren = {
@@ -760,7 +759,6 @@ describe("IModelTransformerHub", () => {
       };
       const modelInChildSubject = {
         entity: branchDb.models.getModel(modelInChildSubjectId),
-        submodelingElem: branchDb.elements.getElement(modelInChildSubjectId),
         aspects: branchDb.elements.getAspects(modelInChildSubjectId),
       };
       const childSubjectChild = {
@@ -769,15 +767,13 @@ describe("IModelTransformerHub", () => {
       };
       const modelInChildSubjectChild = {
         entity: branchDb.models.getModel(modelInChildSubjectChildId),
-        submodelingElem: branchDb.elements.getElement(modelInChildSubjectChildId),
         aspects: branchDb.elements.getAspects(modelInChildSubjectChildId),
       };
 
       elemToDeleteWithChildren.entity.delete();
       modelToDeleteWithElem.entity.delete();
-      // deleting the model will dangle its partition, delete that too
-      modelToDeleteWithElem.submodelingElem.delete();
-      childSubject.entity.delete();
+      deleteElementTree(branchDb, modelToDeleteWithElemId);
+      deleteElementTree(branchDb, childSubjectId);
       branchDb.saveChanges();
       await branchDb.pushChanges({ accessToken, description: "branch deletes" });
 
@@ -801,13 +797,13 @@ describe("IModelTransformerHub", () => {
         aspect: {
           delete: [
             ...modelToDeleteWithElem.aspects,
-            ...elemInModelToDelete.aspects,
-            ...elemToDeleteWithChildren.aspects,
-            ...childElemOfDeleted.aspects,
             ...childSubject.aspects,
             ...modelInChildSubject.aspects,
             ...childSubjectChild.aspects,
             ...modelInChildSubjectChild.aspects,
+            ...elemInModelToDelete.aspects,
+            ...elemToDeleteWithChildren.aspects,
+            ...childElemOfDeleted.aspects,
           ].map((a) => a.id),
         },
         element: {
@@ -816,15 +812,15 @@ describe("IModelTransformerHub", () => {
             elemInModelToDeleteId,
             elemToDeleteWithChildrenId,
             childElemOfDeletedId,
-            childSubject,
-            modelInChildSubject,
-            childSubjectChild,
-            modelInChildSubjectChild,
+            childSubjectId,
+            modelInChildSubjectId,
+            childSubjectChildId,
+            modelInChildSubjectChildId,
           ],
         },
         model: {
           update: [IModelDb.rootSubjectId, notDeletedModelId], // containing model will also get last modification time updated
-          delete: [modelToDeleteWithElemId, modelInChildSubject, modelInChildSubjectChild],
+          delete: [modelToDeleteWithElemId, modelInChildSubjectId, modelInChildSubjectChildId],
         },
       };
       expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
@@ -838,8 +834,11 @@ describe("IModelTransformerHub", () => {
       await branchDb.pushChanges({ accessToken, description: "synchronize" });
       synchronizer.dispose();
 
-      const getFromTarget = (sourceModelId: Id64String, type: "elem" | "model") => {
-        const codeVal = masterDb.elements.tryGetElement(sourceModelId)?.code.value;
+      const getFromTarget = (sourceEntityId: Id64String, type: "elem" | "model") => {
+        const sourceEntity = masterDb.elements.tryGetElement(sourceEntityId);
+        if (sourceEntity === undefined)
+          return undefined;
+        const codeVal = sourceEntity.code.value;
         assert(codeVal !== undefined, "all tested elements must have a code value");
         const targetId = IModelTransformerTestUtils.queryByCodeValue(masterDb, codeVal);
         if (Id64.isInvalid(targetId))
