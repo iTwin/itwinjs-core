@@ -245,6 +245,18 @@ export class IModelExporter {
     await this.exportRelationships(ElementRefersToElements.classFullName);
   }
 
+  private collapseChildren(db: IModelDb, elementIds: Set<Id64String>) {
+    const result: Id64String[] = [];
+    db.withStatement(`SELECT Parent.Id FROM bis.Element WHERE ECInstanceId IN (${elementIds})`, (stmt) => {
+      while (stmt.step() === DbResult.BE_SQLITE_ROW)  {
+        const parentId = stmt.getValue(0).getId();
+        if (elementIds.has(parentId))
+          result.push(parentId);
+      }
+    });
+    return result;
+  }
+
   /** Export changes from the source iModel.
    * @param user The user
    * @param startChangesetId Include changes from this changeset up through and including the current changeset.
@@ -268,26 +280,15 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
-    const deletedSubModels = new Set<Id64String>();
-    // handle deletes
+    // handle delete
     if (this.visitElements) {
+      // must delete models first since they have a constraint on the submodeling element which may also be deleted
+      for (const modelId of this._sourceDbChanges.model.deleteIds) {
+        this.handler.onDeleteModel(modelId);
+      }
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
-        // must delete submodels first since they have a constraint on the element
-        if (subModelAlsoDeleted) {
-          this.handler.onDeleteModel(elementId);
-          deletedSubModels.add(elementId);
-        }
         this.handler.onDeleteElement(elementId);
       }
-    }
-    // WIP: handle ElementAspects?
-    for (const modelId of this._sourceDbChanges.model.deleteIds) {
-      const alreadyDeletedSubModel = deletedSubModels.has(modelId);
-      if (alreadyDeletedSubModel)
-        continue;
-
-      this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {

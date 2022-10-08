@@ -9,12 +9,12 @@ import * as semver from "semver";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementOwnsChildElements, ElementRefersToElements, ExternalSourceAspect, GenericSchema, HubMock, IModelDb,
   IModelHost, IModelJsFs, IModelJsNative, ModelSelector, NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb,
-  SpatialCategory, SubjectOwnsPartitionElements,
+  SpatialCategory, Subject,
 } from "@itwin/core-backend";
 
 import * as BackendTestUtils from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, GuidString, Id64, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Code, ColorDef, ElementProps, GeometricModel3dProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, ElementProps, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelExporter, IModelImporter, IModelTransformer, TransformerLoggerCategory } from "../../core-transformer";
 import {
@@ -689,44 +689,39 @@ describe("IModelTransformerHub", () => {
       // populate master
       const categId = SpatialCategory.insert(masterDb, IModel.dictionaryId, "category", new SubCategoryAppearance());
       const modelToDeleteWithElemId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-to-delete-with-elem");
-      const elemInModelToDeleteId = new PhysicalObject({
+      const makePhysObjCommonProps = (num: number) => ({
         classFullName: PhysicalObject.classFullName,
-        model: modelToDeleteWithElemId,
         category: categId,
+        geom: IModelTransformerTestUtils.createBox(Point3d.create(num, num, num)),
+        placement: {
+          origin: Point3d.create(num, num, num),
+          angles: YawPitchRollAngles.createDegrees(num, num, num),
+        },
+      } as const);
+      const elemInModelToDeleteId = new PhysicalObject({
+        ...makePhysObjCommonProps(1),
+        model: modelToDeleteWithElemId,
         code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: "elem-in-model-to-delete" }),
         userLabel: "elem-in-model-to-delete",
-        geom: IModelTransformerTestUtils.createBox(Point3d.create(1, 1, 1)),
-        placement: {
-          origin: Point3d.create(1, 1, 1),
-          angles: YawPitchRollAngles.createDegrees(1, 1, 1),
-        },
       }, masterDb).insert();
       const notDeletedModelId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "not-deleted-model");
       const elemToDeleteWithChildrenId = new PhysicalObject({
-        classFullName: PhysicalObject.classFullName,
+        ...makePhysObjCommonProps(2),
         model: notDeletedModelId,
-        category: categId,
         code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: "deleted-elem-with-children" }),
         userLabel: "deleted-elem-with-children",
-        geom: IModelTransformerTestUtils.createBox(Point3d.create(2, 2, 2)),
-        placement: {
-          origin: Point3d.create(2, 2, 2),
-          angles: YawPitchRollAngles.createDegrees(2, 2, 2),
-        },
       }, masterDb).insert();
       const childElemOfDeletedId = new PhysicalObject({
-        classFullName: PhysicalObject.classFullName,
+        ...makePhysObjCommonProps(3),
         model: notDeletedModelId,
-        category: categId,
         code: new Code({ spec: IModelDb.rootSubjectId, scope: IModelDb.rootSubjectId, value: "child-elem-of-deleted" }),
         userLabel: "child-elem-of-deleted",
-        geom: IModelTransformerTestUtils.createBox(Point3d.create(3, 3, 3)),
-        placement: {
-          origin: Point3d.create(3, 3, 3),
-          angles: YawPitchRollAngles.createDegrees(3, 3, 3),
-        },
         parent: new ElementOwnsChildElements(elemToDeleteWithChildrenId),
       }, masterDb).insert();
+      const childSubjectId = Subject.insert(masterDb, IModel.rootSubjectId, "child-subject");
+      const modelInChildSubjectId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-in-child-subject");
+      const childSubjectChildId = Subject.insert(masterDb, childSubjectId, "child-subject-child");
+      const modelInChildSubjectChildId = PhysicalModel.insert(masterDb, IModel.rootSubjectId, "model-in-child-subject-child");
       masterDb.saveChanges();
       await masterDb.pushChanges({ accessToken, description: "setup master" });
 
@@ -745,12 +740,12 @@ describe("IModelTransformerHub", () => {
       await branchDb.pushChanges({ accessToken, description: "setup branch" });
 
       const modelToDeleteWithElem = {
-        entity: branchDb.models.getModel<PhysicalModel>(modelToDeleteWithElemId, PhysicalModel),
-        submodelingElem: branchDb.elements.getElement<PhysicalPartition>(modelToDeleteWithElemId, PhysicalPartition),
+        entity: branchDb.models.getModel(modelToDeleteWithElemId),
+        submodelingElem: branchDb.elements.getElement(modelToDeleteWithElemId),
         aspects: branchDb.elements.getAspects(modelToDeleteWithElemId),
       };
       const elemToDeleteWithChildren = {
-        entity: branchDb.elements.getElement<PhysicalObject>(elemToDeleteWithChildrenId, PhysicalObject),
+        entity: branchDb.elements.getElement(elemToDeleteWithChildrenId),
         aspects: branchDb.elements.getAspects(elemToDeleteWithChildrenId),
       };
       const childElemOfDeleted = {
@@ -759,11 +754,30 @@ describe("IModelTransformerHub", () => {
       const elemInModelToDelete = {
         aspects: branchDb.elements.getAspects(elemInModelToDeleteId),
       };
+      const childSubject = {
+        entity: branchDb.elements.getElement(childSubjectId),
+        aspects: branchDb.elements.getAspects(childSubjectId),
+      };
+      const modelInChildSubject = {
+        entity: branchDb.models.getModel(modelInChildSubjectId),
+        submodelingElem: branchDb.elements.getElement(modelInChildSubjectId),
+        aspects: branchDb.elements.getAspects(modelInChildSubjectId),
+      };
+      const childSubjectChild = {
+        entity: branchDb.elements.getElement(childSubjectChildId),
+        aspects: branchDb.elements.getAspects(childSubjectChildId),
+      };
+      const modelInChildSubjectChild = {
+        entity: branchDb.models.getModel(modelInChildSubjectChildId),
+        submodelingElem: branchDb.elements.getElement(modelInChildSubjectChildId),
+        aspects: branchDb.elements.getAspects(modelInChildSubjectChildId),
+      };
 
       elemToDeleteWithChildren.entity.delete();
       modelToDeleteWithElem.entity.delete();
       // deleting the model will dangle its partition, delete that too
       modelToDeleteWithElem.submodelingElem.delete();
+      childSubject.entity.delete();
       branchDb.saveChanges();
       await branchDb.pushChanges({ accessToken, description: "branch deletes" });
 
@@ -773,6 +787,10 @@ describe("IModelTransformerHub", () => {
       expect(branchDb.models.tryGetModel(notDeletedModelId)).not.to.be.undefined;
       expect(branchDb.elements.tryGetElement(elemToDeleteWithChildrenId)).to.be.undefined;
       expect(branchDb.elements.tryGetElement(childElemOfDeletedId)).to.be.undefined;
+      expect(branchDb.elements.tryGetElement(childSubjectId)).to.be.undefined;
+      expect(branchDb.elements.tryGetElement(modelInChildSubjectId)).to.be.undefined;
+      expect(branchDb.elements.tryGetElement(childSubjectChildId)).to.be.undefined;
+      expect(branchDb.elements.tryGetElement(modelInChildSubjectChildId)).to.be.undefined;
 
       // expected extracted changed ids
       const branchDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: branchIModelId, targetDir: BriefcaseManager.getChangeSetsPath(branchIModelId) });
@@ -786,6 +804,10 @@ describe("IModelTransformerHub", () => {
             ...elemInModelToDelete.aspects,
             ...elemToDeleteWithChildren.aspects,
             ...childElemOfDeleted.aspects,
+            ...childSubject.aspects,
+            ...modelInChildSubject.aspects,
+            ...childSubjectChild.aspects,
+            ...modelInChildSubjectChild.aspects,
           ].map((a) => a.id),
         },
         element: {
@@ -794,11 +816,15 @@ describe("IModelTransformerHub", () => {
             elemInModelToDeleteId,
             elemToDeleteWithChildrenId,
             childElemOfDeletedId,
+            childSubject,
+            modelInChildSubject,
+            childSubjectChild,
+            modelInChildSubjectChild,
           ],
         },
         model: {
           update: [IModelDb.rootSubjectId, notDeletedModelId], // containing model will also get last modification time updated
-          delete: [modelToDeleteWithElemId],
+          delete: [modelToDeleteWithElemId, modelInChildSubject, modelInChildSubjectChild],
         },
       };
       expect(extractedChangedIds.result).to.deep.equal(expectedChangedIds);
@@ -812,13 +838,6 @@ describe("IModelTransformerHub", () => {
       await branchDb.pushChanges({ accessToken, description: "synchronize" });
       synchronizer.dispose();
 
-      // check that the element was deleted in the master
-      const physModel2InBranchId = masterDb.elements.queryElementIdByCode(
-        PhysicalPartition.createCode(masterDb, IModelDb.rootSubjectId, "phys-model-2"),
-      );
-      expect(physModel2InBranchId).to.be.undefined;
-
-      // verify the master state
       const getFromTarget = (sourceModelId: Id64String, type: "elem" | "model") => {
         const codeVal = masterDb.elements.tryGetElement(sourceModelId)?.code.value;
         assert(codeVal !== undefined, "all tested elements must have a code value");
@@ -830,11 +849,16 @@ describe("IModelTransformerHub", () => {
           : masterDb.elements.tryGetElement(targetId);
       };
 
+      // verify the master state
       expect(getFromTarget(modelToDeleteWithElemId, "model")).to.be.undefined;
       expect(getFromTarget(elemInModelToDeleteId, "elem")).to.be.undefined;
       expect(getFromTarget(notDeletedModelId, "model")).not.to.be.undefined;
       expect(getFromTarget(elemToDeleteWithChildrenId, "elem")).to.be.undefined;
       expect(getFromTarget(childElemOfDeletedId, "elem")).to.be.undefined;
+      expect(getFromTarget(childSubjectId, "elem")).to.be.undefined;
+      expect(getFromTarget(modelInChildSubjectId, "model")).to.be.undefined;
+      expect(getFromTarget(childSubjectChildId, "elem")).to.be.undefined;
+      expect(getFromTarget(modelInChildSubjectChildId, "model")).to.be.undefined;
 
       // close iModel briefcases
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, masterDb);
