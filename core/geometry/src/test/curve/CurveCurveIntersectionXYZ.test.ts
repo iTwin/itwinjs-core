@@ -96,7 +96,7 @@ describe("CurveCurveIntersectionXYZ", () => {
           [Transform.identity,
            Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(0)),
            Transform.createRefs(undefined, Matrix3d.create90DegreeRotationAroundAxis(1)),
-           Transform.createRefs(Point3d.create(3,-2,-4), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,2), Angle.createDegrees(-27))!)
+           Transform.createRefs(Point3d.create(3,-2,-4), Matrix3d.createRotationAroundVector(Vector3d.create(-1,1,2), Angle.createDegrees(-27))!),
           ]) {
       const arc = origArc.clone();
       const pt = trans.multiplyPoint3d(origPt);
