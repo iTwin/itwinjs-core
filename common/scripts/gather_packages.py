@@ -82,7 +82,7 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer, verbose=Fal
 
   return distTag
 
-# ## Validate arguments
+## Validate arguments
 if len(sys.argv) != 4:
   sys.exit("Invalid number of arguments to script provided.\nExpected: 3\nReceived: {0}".format(len(sys.argv) - 1))
 artifactStagingDir = os.path.realpath(sys.argv[1])
