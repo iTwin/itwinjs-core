@@ -1,19 +1,17 @@
 import sys, os, glob, re, subprocess
 import shutil
 
-def determineDistTag(branchName, currentVer, latestVer, previousVer, verbose=False):
+def determineDistTag(branchName, currentVer, latestVer, previousVer):
   # The master branch is the only one that should get the 'nightly' release tag
   mainBranch = "master"
-  if verbose:
-    print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
+  print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
 
   distTag = None
   if mainBranch in branchName:
     # The most common case is the tag will be a nightly tag
     distTag = "nightly"
   elif "release/" in branchName:
-    if verbose:
-      print ("On a release branch")
+    print ("On a release branch")
 
     # Parse current version
     currentDevVer = -1
@@ -146,7 +144,7 @@ for artifact in artifactPaths:
     print("No version found for dist-tag 'previous'")
 
 if packagesToPublish:
-  distTag = determineDistTag(branchName, localVer, latestVer, previousVer, verbose=True)
+  distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
   if distTag is not None:
     print ("Setting dist tag " + distTag)
     print ("##vso[build.addbuildtag]dist-tag " + distTag)
