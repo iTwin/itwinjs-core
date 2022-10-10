@@ -148,6 +148,12 @@ export class Presentation {
 }
 
 // @public
+export interface PresentationAssetsRootConfig {
+    backend: string;
+    common: string;
+}
+
+// @public
 export enum PresentationBackendLoggerCategory {
     Ipc = "presentation-backend.Ipc",
     // (undocumented)
@@ -236,6 +242,15 @@ export class PresentationManager {
 }
 
 // @public
+export interface PresentationManagerCachingConfig {
+    content?: ContentCacheConfig;
+    // @beta
+    hierarchies?: HierarchyCacheConfig;
+    // @beta
+    workerConnectionCacheSize?: number;
+}
+
+// @public
 export enum PresentationManagerMode {
     ReadOnly = 0,
     ReadWrite = 1
@@ -245,11 +260,7 @@ export enum PresentationManagerMode {
 export interface PresentationManagerProps {
     // @internal (undocumented)
     addon?: NativePlatformDefinition;
-    caching?: {
-        hierarchies?: HierarchyCacheConfig;
-        content?: ContentCacheConfig;
-        workerConnectionCacheSize?: number;
-    };
+    caching?: PresentationManagerCachingConfig;
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
     };
@@ -267,10 +278,7 @@ export interface PresentationManagerProps {
     // @deprecated
     localeDirectories?: string[];
     mode?: PresentationManagerMode;
-    presentationAssetsRoot?: string | {
-        backend: string;
-        common: string;
-    };
+    presentationAssetsRoot?: string | PresentationAssetsRootConfig;
     rulesetDirectories?: string[];
     supplementalRulesetDirectories?: string[];
     // @alpha
