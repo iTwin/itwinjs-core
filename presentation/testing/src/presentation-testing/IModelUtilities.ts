@@ -26,7 +26,7 @@ export interface TestIModelBuilder {
   /** Insert an element aspect into the specified element */
   insertAspect<TProps extends ElementAspectProps>(props: TProps): void;
   /**
-   * Create code for specified element
+   * Create code for specified element.
    * Code value has to be unique within its scope (see [Codes documentation page]($docs/bis/guide/fundamentals/codes.md)).
    */
   createCode(scopeModelId: CodeScopeProps, codeSpecName: BisCodeSpec, codeValue: string): Code;
@@ -35,7 +35,7 @@ export interface TestIModelBuilder {
 /**
  * Function that creates an iModel and returns a connection to it.
  * @param name Name of test IModel
- * @param cb receives an [[TestIModelBuilder]] to fill the iModel with data
+ * @param cb Callback function that receives an [[TestIModelBuilder]] to fill the iModel with data
  *
  * @beta
  */
@@ -55,7 +55,7 @@ export async function buildTestIModel(name: string, cb: (builder: TestIModelBuil
 /**
  * Default implementation of IModel builder pattern. Used for building IModels to test rulesets.
  *
- * @beta
+ * @internal
  */
 export class IModelBuilder implements TestIModelBuilder {
   private _iModel: IModelDb;

@@ -5,12 +5,19 @@
 import { buildTestIModel, getTestOutputDir, IModelBuilder } from "../presentation-testing";
 import * as moq from "typemoq";
 import { CodeSpecs, IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
-import { BisCodeSpec, CodeScopeProps, CodeSpec, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
+import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, CreateEmptySnapshotIModelProps, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
 import { SnapshotConnection } from "@itwin/core-frontend";
-import sinon from "sinon";
+import sinon, { SinonStub } from "sinon";
 import { expect } from "chai";
 import { join } from "path";
+
+interface SetupSnapshotResult {
+  dbMock: moq.IMock<SnapshotDb>;
+  connectionMock: moq.IMock<SnapshotConnection>;
+  createSnapshotDb: SinonStub<[filePath: string, options: CreateEmptySnapshotIModelProps], SnapshotDb>;
+  openSnapshotConnection: SinonStub<[filePath: string], Promise<SnapshotConnection>>;
+}
 
 describe("IModelUtilities", () => {
   describe("IModelBuilder", () => {
@@ -55,8 +62,10 @@ describe("IModelUtilities", () => {
       imodelMock.setup((x) => x.codeSpecs).returns(() => codeSpecsMock.object);
 
       const builder = new IModelBuilder(imodelMock.object);
-      builder.createCode({} as CodeScopeProps, BisCodeSpec.drawing, "codeValue");
+      const result = builder.createCode({} as CodeScopeProps, BisCodeSpec.drawing, "codeValue");
 
+      const expected = new Code({ spec: codeSpecMock.object.id, scope: {} as CodeScopeProps, value: "codeValue" });
+      expect(result).to.deep.equal(expected);
       codeSpecsMock.verifyAll();
     });
   });
@@ -66,11 +75,12 @@ describe("IModelUtilities", () => {
       sinon.restore();
     });
 
-    const setupSnapshot = (): moq.IMock<SnapshotDb> => {
-      const snapshotDbMock = moq.Mock.ofType<SnapshotDb>();
-      sinon.stub(SnapshotDb, "createEmpty").returns(snapshotDbMock.object);
-      sinon.stub(SnapshotConnection, "openFile");
-      return snapshotDbMock;
+    const setupSnapshot = (): SetupSnapshotResult => {
+      const dbMock = moq.Mock.ofType<SnapshotDb>();
+      const connectionMock = moq.Mock.ofType<SnapshotConnection>();
+      const createSnapshotDb = sinon.stub(SnapshotDb, "createEmpty").returns(dbMock.object);
+      const openSnapshotConnection = sinon.stub(SnapshotConnection, "openFile");
+      return { dbMock, connectionMock, createSnapshotDb, openSnapshotConnection };
     };
 
     it("calls IModelJsFs.mkdirSync if directory does not exist", async () => {
@@ -126,15 +136,12 @@ describe("IModelUtilities", () => {
 
     it("calls SnapshotDb.createEmpty with correct parameters", async () => {
       const fileName = "fileName";
-      const snapshotDbMock = moq.Mock.ofType<SnapshotDb>();
-      const fake = sinon.fake.returns(snapshotDbMock.object);
-      sinon.replace(SnapshotDb, "createEmpty", fake);
-      sinon.stub(SnapshotConnection, "openFile");
+      const { createSnapshotDb } = setupSnapshot();
 
       await buildTestIModel(fileName, () => { });
 
-      expect(fake.firstCall.firstArg).to.include(`${fileName}.bim`);
-      expect(fake.firstCall.lastArg).to.deep.equal({ rootSubject: { name: fileName } });
+      expect(createSnapshotDb.firstCall.firstArg).to.include(`${fileName}.bim`);
+      expect(createSnapshotDb.firstCall.lastArg).to.deep.equal({ rootSubject: { name: fileName } });
     });
 
     it("builder calls provided callback function", async () => {
@@ -147,39 +154,36 @@ describe("IModelUtilities", () => {
     });
 
     it("builder saves database changes and closes it when callback succeeds", async () => {
-      const snapshotDbMock = setupSnapshot();
+      const { dbMock } = setupSnapshot();
 
       await buildTestIModel("name", () => { });
 
-      expect(snapshotDbMock.verify((x) => x.saveChanges("Created test IModel"), moq.Times.once()));
-      expect(snapshotDbMock.verify((x) => x.close(), moq.Times.once()));
+      dbMock.verify((x) => x.saveChanges("Created test IModel"), moq.Times.once());
+      dbMock.verify((x) => x.close(), moq.Times.once());
     });
 
     it("builder saves database changes and closes it when callback throws", async () => {
-      const snapshotDbMock = setupSnapshot();
+      const { dbMock } = setupSnapshot();
       const cb = () => {
         throw new Error("TestError");
       };
 
-      try {
-        await buildTestIModel("name", cb);
-      } catch { }
+      const promise = buildTestIModel("name", cb);
 
-      expect(snapshotDbMock.verify((x) => x.saveChanges("Created test IModel"), moq.Times.once()));
-      expect(snapshotDbMock.verify((x) => x.close(), moq.Times.once()));
+      await expect(promise).to.be.rejectedWith(Error);
+      dbMock.verify((x) => x.saveChanges("Created test IModel"), moq.Times.once());
+      dbMock.verify((x) => x.close(), moq.Times.once());
     });
 
     it("returns result of SnapshotConnection.openFile", async () => {
-      const snapshotDbMock = moq.Mock.ofType<SnapshotDb>();
-      const snapshotConnectionMock = moq.Mock.ofType<SnapshotConnection>();
-      sinon.stub(SnapshotDb, "createEmpty").returns(snapshotDbMock.object);
-      sinon.stub(SnapshotConnection, "openFile").resolves(snapshotConnectionMock.object);
-      configureForPromiseResult(snapshotConnectionMock);
+      const { connectionMock, openSnapshotConnection } = setupSnapshot();
+      openSnapshotConnection.resolves(connectionMock.object);
+      configureForPromiseResult(connectionMock);
 
       const promise = buildTestIModel("name", () => { });
       const result = await promise;
 
-      expect(result).to.equal(snapshotConnectionMock.object);
+      expect(result).to.equal(connectionMock.object);
     });
   });
 });

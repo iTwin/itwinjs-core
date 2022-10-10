@@ -43,11 +43,7 @@ let isInitialized = false;
 const defaultTestOutputDir = tmpdir();
 let testOutputDir: string | undefined;
 
-/**
- * If custom test output directory not provided, default directory will be local temp folder
- *
- * @beta
-*/
+/** @beta */
 export const getTestOutputDir = (): string => {
   return testOutputDir ?? defaultTestOutputDir;
 };
@@ -66,7 +62,7 @@ export interface PresentationTestingInitProps {
   frontendApp?: { startup: (opts?: IModelAppOptions) => Promise<void> };
   /** `IModelApp` options */
   frontendAppOptions?: IModelAppOptions;
-  /** Custom test output directory  */
+  /** Custom test output directory. Defaults to temporary directory provided by the OS. */
   testOutputDir?: string;
 }
 
