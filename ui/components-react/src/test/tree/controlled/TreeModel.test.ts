@@ -12,7 +12,7 @@ import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
   TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
 } from "../../../components-react/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode } from "./TreeHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
   return {
