@@ -706,7 +706,7 @@ public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | u
         const lambda = - constCoff / delta2;
         const a2 = constCoff2 / delta2;
         const D2 = 1.0 - a2;
-        if (-Geometry.smallMetricDistanceSquared < D2 && D2 <= 0.0) {
+        if (-Geometry.smallMetricDistanceSquared < D2 && D2 <= 0.0) { // observed D2 = -2.22e-16 in rotated system
           // nSolution = 1
           const c0 = lambda * cosCoff;
           const s0 = lambda * sinCoff;

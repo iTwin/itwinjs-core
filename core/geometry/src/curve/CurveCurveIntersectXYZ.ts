@@ -203,8 +203,8 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
    *   * otherwise use vectorC
    * @param origin plane origin
    * @param vectorA vector which must be in the plane.
-   * @param cosineValue largest cosine squared of the angle theta between vectorA and vectorB when preferring their cross product,
-   *                    e.g. passing 0.9 ~ cos^2(20deg) will switch to using vectorC in the cross product if theta < ~20deg or theta > ~160deg.
+   * @param cosineValue largest cosine of the angle theta between vectorA and vectorB to prefer their cross product,
+   *                    e.g. passing 0.94 ~ cos(20deg) will switch to using vectorC in the cross product if theta < ~20deg or theta > ~160deg.
    * @param vectorB first candidate for additional in-plane vector
    * @param vectorC second candidate for additional in-plane vector
    */
@@ -213,7 +213,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     const dotAA = vectorA.magnitudeSquared();
     const dotBB = vectorB.magnitudeSquared();
     const dotAB = Math.abs(vectorA.dotProduct(vectorB));
-    const cross = vectorA.unitCrossProduct(dotAB * dotAB <= cosineValue * dotAA * dotBB ? vectorB : vectorC);
+    const cross = vectorA.unitCrossProduct(dotAB * dotAB <= cosineValue * cosineValue * dotAA * dotBB ? vectorB : vectorC);
     if (cross)
       return Plane3dByOriginAndUnitNormal.create(origin, cross);
     return undefined;
@@ -235,7 +235,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     reversed: boolean,
   ) {
     const lineVector = Vector3d.createStartEnd(pointA0, pointA1);
-    const plane = this.createPlaneWithPreferredPerpendicular(pointA0, lineVector, 0.9, arc.perpendicularVector, arc.vector0);
+    const plane = this.createPlaneWithPreferredPerpendicular(pointA0, lineVector, 0.94, arc.perpendicularVector, arc.vector0);
     if (plane !== undefined) {
       const candidates: CurveLocationDetail[] = [];
       arc.appendPlaneIntersectionPoints(plane, candidates);
