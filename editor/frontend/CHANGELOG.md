@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-editor-frontend
 
-This log was last generated on Wed, 05 Oct 2022 12:20:03 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Oct 2022 15:18:18 GMT and should not be manually modified.
+
+## 2.19.46
+Mon, 10 Oct 2022 15:18:18 GMT
+
+### Updates
+
+- Fix distorted graphics when transforming elements located far from the origin.
 
 ## 2.19.45
 Wed, 05 Oct 2022 12:20:03 GMT
