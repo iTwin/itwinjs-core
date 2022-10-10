@@ -80,6 +80,8 @@ describe("IModelUtilities", () => {
       const connectionMock = moq.Mock.ofType<SnapshotConnection>();
       const createSnapshotDb = sinon.stub(SnapshotDb, "createEmpty").returns(dbMock.object);
       const openSnapshotConnection = sinon.stub(SnapshotConnection, "openFile");
+      openSnapshotConnection.resolves(connectionMock.object);
+      configureForPromiseResult(connectionMock);
       return { dbMock, connectionMock, createSnapshotDb, openSnapshotConnection };
     };
 
@@ -176,9 +178,7 @@ describe("IModelUtilities", () => {
     });
 
     it("returns result of SnapshotConnection.openFile", async () => {
-      const { connectionMock, openSnapshotConnection } = setupSnapshot();
-      openSnapshotConnection.resolves(connectionMock.object);
-      configureForPromiseResult(connectionMock);
+      const { connectionMock } = setupSnapshot();
 
       const promise = buildTestIModel("name", () => { });
       const result = await promise;

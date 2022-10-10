@@ -43,7 +43,7 @@ let isInitialized = false;
 const defaultTestOutputDir = tmpdir();
 let testOutputDir: string | undefined;
 
-/** @beta */
+/** @internal */
 export const getTestOutputDir = (): string => {
   return testOutputDir ?? defaultTestOutputDir;
 };
