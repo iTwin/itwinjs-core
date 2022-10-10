@@ -1,20 +1,19 @@
 import sys, os, glob, re, subprocess
 import shutil
 
-def determineDistTag(branchName, currentVer, latestVer, previousVer):
+def determineDistTag(branchName, currentVer, latestVer, previousVer, verbose=False):
   # The master branch is the only one that should get the 'nightly' release tag
   mainBranch = "master"
-  print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
+  if verbose:
+    print ("Branch name: " + branchName + "\nCurrent version: " + currentVer + "\nLatest version: " + latestVer + "\nPrevious version: " + previousVer)
 
   distTag = None
   if mainBranch in branchName:
     # The most common case is the tag will be a nightly tag
     distTag = "nightly"
-  elif "release/2.19.x" in branchName:
-    # Hardcode 'previous' tag for 2.x releases due to mismatch of package names between the 2.x and 3.x major versions
-    distTag = "previous"
   elif "release/" in branchName:
-    print ("On a release branch")
+    if verbose:
+      print ("On a release branch")
 
     # Parse current version
     currentDevVer = -1
@@ -83,7 +82,7 @@ def determineDistTag(branchName, currentVer, latestVer, previousVer):
 
   return distTag
 
-## Validate arguments
+# ## Validate arguments
 if len(sys.argv) != 4:
   sys.exit("Invalid number of arguments to script provided.\nExpected: 3\nReceived: {0}".format(len(sys.argv) - 1))
 artifactStagingDir = os.path.realpath(sys.argv[1])
@@ -131,7 +130,7 @@ for artifact in artifactPaths:
     continue
 
   packagesToPublish = True
-  print ("Local version is newer than on the server.  Copying package " + packageName + " to staging area.")
+  print ("Local version is newer than on the server. Copying package " + packageName + " to staging area.")
   shutil.copy(artifact, stagingDir)
 
   command = "npm view " + packageName + " dist-tags.latest"
@@ -147,7 +146,7 @@ for artifact in artifactPaths:
     print("No version found for dist-tag 'previous'")
 
 if packagesToPublish:
-  distTag = determineDistTag(branchName, localVer, latestVer, previousVer)
+  distTag = determineDistTag(branchName, localVer, latestVer, previousVer, verbose=True)
   if distTag is not None:
     print ("Setting dist tag " + distTag)
     print ("##vso[build.addbuildtag]dist-tag " + distTag)
@@ -164,21 +163,27 @@ else:
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "3.0.0", ""))
 # print("nightly" == determineDistTag("master", "3.1.0-dev.0", "", ""))
 # print("nightly" == determineDistTag("master", "", "", ""))
+
+# print(None == determineDistTag("release/2.18.x", "2.18.4", "3.1.0", "2.19.24"))
+
 # print("previous" == determineDistTag("release/2.19.x", "2.19.27", "3.0.0", "2.19.26"))
 # print("previous" == determineDistTag("release/2.19.x", "2.19.27", "3.0.0", ""))
-# print("previous" == determineDistTag("release/2.19.x", "2.19.27", "", ""))
-# print("previous" == determineDistTag("release/2.19.x", "", "", ""))
-# print(None == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
-# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", "3.0.0"))
-# print("latest" == determineDistTag("release/3.2.x", "3.2.1", "3.1.0", "2.19.24"))
-# print("latest" == determineDistTag("release/3.1.x", "3.1.1", "3.1.0", "2.19.24"))
-# print("rc" == determineDistTag("release/3.1.x", "3.1.1-dev.0", "3.1.0", "2.19.24"))
-# print(None == determineDistTag("release/2.18.x", "2.18.4", "3.1.0", "2.19.24"))
+# print("latest" == determineDistTag("release/2.19.x", "2.19.27", "", ""))
+# print("latest" == determineDistTag("release/2.19.x", "2.19.27", "2.19.26", ""))
+# print("latest" == determineDistTag("release/2.19.x", "2.19.28", "2.19.26", "2.19.27"))
+
 # print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", "2.19.24"))
-# print("latest" == determineDistTag("release/3.0.x", "3.0.1", "3.0.0", ""))
-# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", ""))
 # print(None == determineDistTag("release/3.0.x", "3.0.1", "3.1.0", ""))
-# print("latest" == determineDistTag("release/3.0.x", "3.0.0", "", ""))
 # print("rc" == determineDistTag("release/3.0.x", "3.0.0-dev.0", "", ""))
+# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", "3.0.0"))
+# print("previous" == determineDistTag("release/3.0.x", "3.0.1", "4.0.0", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.0", "", ""))
+# print("latest" == determineDistTag("release/3.0.x", "3.0.1", "3.0.0", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", ""))
 # print("latest" == determineDistTag("release/3.0.x", "3.0.0", "3.0.0-dev.0", "2.19.26"))
+
+# print(None == determineDistTag("release/3.1.x", "3.1.0", "3.2.1", "2.19.24"))
+# print("rc" == determineDistTag("release/3.1.x", "3.1.1-dev.0", "3.1.0", "2.19.24"))
+# print("latest" == determineDistTag("release/3.1.x", "3.1.1", "3.1.0", "2.19.24"))
+
+# print("latest" == determineDistTag("release/3.2.x", "3.2.1", "3.1.0", "2.19.24"))
