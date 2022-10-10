@@ -377,7 +377,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueGuid(colIndex: number): GuidString { return this.stmt.getValueGuid(colIndex); }
-  /** Get the value as a boolean. Returns `false` if the column is null
+  /** Get the value as a boolean. Returns `false` if the column is null.
    * @param colIndex Index of SQL column in query result (0-based)
    */
   public getValueBoolean(colIndex: number) {
@@ -385,8 +385,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
   /** Get the value of a [julianday](https://www.sqlite.org/lang_datefunc.html) column as a JavaScript `Date`.
    * @param colIndex Index of SQL column in query result (0-based)
+   * @beta
    */
-  public getValueTimeStamp(colIndex: number) {
+  public getValueDate(colIndex: number) {
     return new Date((this.stmt.getValueDouble(colIndex) - 2440587.5) * 86400000); // conversion from julian day ms to unix epoch ms
   }
   /** Get the value as a string, or undefined if it is null.
