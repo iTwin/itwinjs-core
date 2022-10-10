@@ -148,6 +148,38 @@ export interface ContentCacheConfig {
 }
 
 /**
+ * Caching configuration options for [[PresentationManager]].
+ * @public
+ */
+export interface PresentationManagerCachingConfig {
+  /**
+   * Hierarchies-related caching options.
+   *
+   * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
+   * @beta
+   */
+  hierarchies?: HierarchyCacheConfig;
+
+  /**
+   * Content-related caching options.
+   *
+   * @see [Content cache documentation page]($docs/presentation/advanced/Caching.md#content-cache)
+   */
+  content?: ContentCacheConfig;
+
+  /**
+   * Each worker thread (see [[workerThreadsCount]]) opens a connection to an iModel used for a request. This
+   * means there could be  `{workerThreadsCount} * {iModels count}` number of connections. Each connection
+   * uses a memory cache to increase iModel read performance. This parameter allows controlling the size of that
+   * cache. Defaults to `32768000` bytes (32 MB).
+   *
+   * @see [Worker connections cache documentation page]($docs/presentation/advanced/Caching.md#worker-connections-cache)
+   * @beta
+   */
+  workerConnectionCacheSize?: number;
+}
+
+/**
  * A data structure that associates unit systems with a format. The associations are used for
  * assigning default unit formats for specific phenomenons (see [[PresentationManagerProps.defaultFormats]]).
  *
@@ -165,6 +197,17 @@ export interface UnitSystemFormat {
 export interface MultiElementPropertiesResponse {
   total: number;
   iterator: () => AsyncGenerator<ElementProperties[]>;
+}
+
+/**
+ * Configuration options for supplying asset directly paths to [[PresentationManager]].
+ * @public
+ */
+export interface PresentationAssetsRootConfig {
+  /** Path to `presentation-backend` assets */
+  backend: string;
+  /** Path to `presentation-common` assets */
+  common: string;
 }
 
 /**
@@ -201,12 +244,7 @@ export interface PresentationManagerProps {
    *
    * The overrides can be specified as a single path (when assets of both `presentation-backend` and `presentation-common` packages are merged into a single directory) or as an object with two separate paths for each package.
    */
-  presentationAssetsRoot?: string | {
-    /** Path to `presentation-backend` assets */
-    backend: string;
-    /** Path to `presentation-common` assets */
-    common: string;
-  };
+  presentationAssetsRoot?: string | PresentationAssetsRootConfig;
 
   /**
    * A list of directories containing application's presentation rulesets.
@@ -280,30 +318,7 @@ export interface PresentationManagerProps {
   updatesPollInterval?: number;
 
   /** Options for caching. */
-  caching?: {
-    /**
-     * Hierarchies-related caching options.
-     *
-     * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
-     * @beta
-     */
-    hierarchies?: HierarchyCacheConfig;
-
-    /** Content-related caching options. */
-    content?: ContentCacheConfig;
-
-    /**
-     * Each worker thread (see [[workerThreadsCount]]) opens a connection to an iModel used for a request. This
-     * means there could be  `{workerThreadsCount} * {iModels count}` number of connections. Each connection
-     * uses a memory cache to increase iModel read performance. This parameter allows controlling the size of that
-     * cache. Defaults to `32768000` bytes (32 MB).
-     *
-     *
-     * @see [Worker connections cache documentation page]($docs/presentation/advanced/Caching.md#worker-connections-cache)
-     * @beta
-     */
-    workerConnectionCacheSize?: number;
-  };
+  caching?: PresentationManagerCachingConfig;
 
   /**
    * Use [SQLite's Memory-Mapped I/O](https://sqlite.org/mmap.html) for worker connections. This mode improves performance of handling
