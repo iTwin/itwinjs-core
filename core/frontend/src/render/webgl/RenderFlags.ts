@@ -18,11 +18,11 @@ export const enum RenderPass {
   OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
   OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
   OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+  PointClouds,
   OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
   Classification,     // Stencil volumes for normal processing of reality data classification.
   TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
   Translucent,
-  PointClouds,
   HiddenEdge,
   Hilite,
   OverlayLayers,      // Like Layers, but drawn atop all other geometry
@@ -121,6 +121,7 @@ export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
       case "opaque":
       case "opaque-planar":
       case "opaque-linear":
+      case "point-clouds":
         return true;
       default:
         return false;

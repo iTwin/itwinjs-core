@@ -740,7 +740,7 @@ abstract class Compositor extends SceneCompositor {
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
   protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
-  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void; // ###TODO probably needs _renderForReadPixels? compositeFlags?
+  protected abstract renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags): void; // ###TODO probably needs _renderForReadPixels? compositeFlags?
   protected abstract renderForVolumeClassification(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, state: RenderState, renderForIntersectingVolumes: boolean, _needComposite: boolean): void;
   protected abstract clearTranslucent(): void;
@@ -1002,6 +1002,16 @@ abstract class Compositor extends SceneCompositor {
     this.renderLayers(commands, needComposite, RenderPass.OpaqueLayers);
     this.target.endPerfMetricRecord();
 
+    // Render point cloud geometry with possible EDL (WebGL2 only)
+    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)
+    // ###TODO do we need separate frameStats for this?
+    // ###TODO is this the correct location in sequence?
+    if (System.instance.capabilities.isWebGL2) {
+      this.target.beginPerfMetricRecord("Render PointClouds");
+      this.renderPointClouds(commands, compositeFlags);
+      this.target.endPerfMetricRecord();
+    }
+
     // Render opaque geometry
     this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
@@ -1019,14 +1029,6 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     this.target.frameStatsCollector.endTime("opaqueTime");
-
-    // Render point cloud geometry (WebGL2 only)
-    // ###TODO might be cleaner to add a new explicit capability to the Capabilities class (`edlCapable`)
-    if (System.instance.capabilities.isWebGL2) {
-      this.target.beginPerfMetricRecord("Render PointClouds");
-      this.renderPointClouds(commands, compositeFlags, false);
-      this.target.endPerfMetricRecord();
-    }
 
     this.target.frameStatsCollector.beginTime("translucentTime");
 
@@ -2127,32 +2129,27 @@ class MRTCompositor extends Compositor {
     });
   }
 
-  protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
+  protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
+    // renderForReadPixels case is handled by renderOpaque
     // ###TODO We need to call this pass once per point-cloud.
     // const cmds = commands.getCommands(RenderPass.PointClouds);
-    // Is it one command per point cloud?
 
     const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
-    let fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
-    let useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const fbStack = System.instance.frameBufferStack;
 
-    if (renderForReadPixels) {
-      // Most likely do not need to render full EDL effect.
-      // ###TODO cleanup and test
-      this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
-      fbStack.execute(fbo, true, useMsBuffers, () => {
-        this.drawPass(commands, RenderPass.PointClouds, true);
-      });
-      if (useMsBuffers)
-        fbo.blitMsBuffersToTextures(true);
-      this._readPickDataFromPingPong = false;
-      return;
-    }
+    // WIP
+    // fbo.replaceColAttachment (0, this._textures.hilite);
+    // const system = System.instance;
+    // // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
+    // // Clear the hilite buffer.
+    // system.context.clearColor(0, 0, 0, 0);
+    // system.context.clear(GL.BufferBit.Color);
+    // // }
+    // fbo.restoreColAttachment (0);
 
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
-    fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
-    useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     fbStack.execute(fbo, true, useMsBuffers, () => {
       // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
@@ -2189,6 +2186,7 @@ class MRTCompositor extends Compositor {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
       if (renderForReadPixels) {
+        this.drawPass(commands, RenderPass.PointClouds, true); // don't need EDL for this
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
         if (useMsBuffers)
           fbo.blitMsBuffersToTextures(true);
@@ -2481,7 +2479,7 @@ class MPCompositor extends Compositor {
   protected clearHiddenPick(): void {
   }
 
-  protected renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean) { }
+  protected renderPointClouds(_commands: RenderCommands, _compositeFlags: CompositeFlags) { }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
     if (CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion) && !renderForReadPixels) {
