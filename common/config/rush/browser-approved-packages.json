@@ -927,6 +927,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-select-async-paginate",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-select-event",
       "allowedCategories": [ "frontend" ]
     },

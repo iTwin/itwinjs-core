@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fix an exception when adding an invalid map layer to a viewport.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -21,6 +21,7 @@ import { desync, sync, SyncObserver, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ThematicUniforms } from "./ThematicUniforms";
 import { ViewRectUniforms } from "./ViewRectUniforms";
+import { RealityModelUniforms } from "./RealityModelUniforms";
 import { AtmosphericScatteringUniforms } from "./AtmosphericScatteringUniforms";
 
 class PixelWidthFactor {
@@ -132,6 +133,7 @@ export class TargetUniforms {
   public readonly branch: BranchUniforms;
   public readonly batch: BatchUniforms;
   public readonly shadow: ShadowUniforms;
+  public readonly realityModel = new RealityModelUniforms();
   public readonly atmosphericScattering = new AtmosphericScatteringUniforms();
   private readonly _pixelWidthFactor = new PixelWidthFactor();
   private readonly _sunDirection = new SunDirection();
