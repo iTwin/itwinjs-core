@@ -65,8 +65,8 @@
 
 To port an existing Connector originally written on iModel.js 2.x, it will be necessary to:
 
-1. Change the dependencies to the latest version.
-2. Search and replace "iModelBridge" with "BaseConnector", "BridgeJobDefArgs" with "JobArgs" and "BridgeRunner" with "ConnectorRunner" and so on.
+1. Change the dependencies to the latest version of [connector-framework](https://www.npmjs.com/package/@itwin/connector-framework) (version 1.0.1 or greater).  A complete list of dependencies needed for connector development is available below under [Node Packages](#node-packages)
+2. The older term "bridge" has been replaced with "connector".  Therefore, the class "BridgeRunner" for example, is now called "ConnectorRunner".  In other instances, the term "bridge" was removed altogether, so, "BridgeJobDefArgs" is now simply "JobArgs". Lastly, the term "iModel" has been similarly replaced by "iTwin" or omitted.  Instead of "iModelBridge" your connector will extend "BaseConnector".
 
 ## Introduction
 
@@ -360,50 +360,22 @@ The framework will automatically detect and delete elements and models if the co
 
 You'll need Node.js version ">=14.17.0 <17.0”. Please refer to [Getting Started](../getting-started/index#getting-started) for more details.
 
+#### Node Packages
+
 The node packages you'll need can be installed using
 
 ```Shell
+$npm install  @itwin/ecschema-metadata
+$npm install  @itwin/core-geometry
+$npm install  @itwin/connector-framework
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
-$npm install  @itwin/core-bentley
-$npm install  @itwin/node-cli-authorization
 
 $npm install  --save-dev @itwin/build-tools
-$npm install  --save-dev @itwin/core-backend
+$npm install  --save-dev @itwin/oidc-signin-tool
 $npm install  --save-dev @itwin/core-bentley
-$npm install  --save-dev @itwin/core-common
-$npm install  --save-dev @itwin/core-geometry
-$npm install  --save-dev @itwin/core-quantity
-$npm install  --save-dev @itwin/ecschema-metadata
-$npm install  --save-dev @itwin/eslint-plugin
 $npm install  --save-dev @itwin/imodels-access-backend
 $npm install  --save-dev @itwin/imodels-client-authoring
-$npm install  --save-dev @itwin/node-cli-authorization
-$npm install  --save-dev @itwin/oidc-signin-tool
-
-$npm install  --save-dev @istanbuljs/nyc-config-typescript
-$npm install  --save-dev @types/chai
-$npm install  --save-dev @types/chai-as-promised
-$npm install  --save-dev @types/mocha
-$npm install  --save-dev @types/node
-$npm install  --save-dev @types/object-hash
-$npm install  --save-dev @types/ws
-$npm install  --save-dev chai
-$npm install  --save-dev chai-as-promised
-$npm install  --save-dev cpx2
-$npm install  --save-dev dotenv
-$npm install  --save-dev eslint
-$npm install  --save-dev eslint-plugin-deprecation
-$npm install  --save-dev husky
-$npm install  --save-dev lint-staged
-$npm install  --save-dev mocha
-$npm install  --save-dev mocha-suppress-logs
-$npm install  --save-dev nyc
-$npm install  --save-dev object-hash
-$npm install  --save-dev rimraf
-$npm install  --save-dev source-map-support
-$npm install  --save-dev ts-node
-$npm install  --save-dev typescript
 ```
 
 Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
