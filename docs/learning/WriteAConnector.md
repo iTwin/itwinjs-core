@@ -141,7 +141,7 @@ An iTwin Connector provides a workflow to easily synchronize information from va
 
 #### Briefcases
 
-[Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the ConnectorRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
+A [Briefcase](./glossary#briefcase) is a local copy of an iModel hosted on the [iModelHub](./glossary#imodelhub). A Connector will download a briefcase using the ConnectorRunner and will write changes to the briefcase. Once all the work is done, the results are then pushed back into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
 
 #### Element
 
@@ -465,12 +465,12 @@ This method is the main workhorse of your Connector. When UpdateExistingData is 
 
 ### Execution Sequence
 
-The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the ConnectorRunner class. A ConnectorRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
+The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with the [iModelHub](./glossary#imodelhub), converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the ConnectorRunner class. A ConnectorRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
 
 - ConnectorRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
   - Connector: Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
-  - ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
+  - ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelHub.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -478,8 +478,8 @@ The ultimate purpose of a Connector is to synchronize an iModel with the data in
     - [Transform](#data-alignment) the new or changed source data into the target BIS schema.
     - Write the resulting BIS data to the local briefcase.
     - Remove BIS data corresponding to deleted source data.
-  - ConnectorRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and code server.
-- ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
+  - ConnectorRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModelHub and code server.
+- ConnectorRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModelHub.
 
 ### Analyzing the Connector output
 
