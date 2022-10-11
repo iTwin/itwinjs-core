@@ -99,7 +99,9 @@ export interface ViewFlagProps {
   ambientOcclusion?: boolean;
   /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
-  /** If true, apply [[AtmosphericScattering]]. */
+  /** If true, apply [[AtmosphericScattering]].
+   * @beta
+   */
   atmosphericScattering?: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation.
    * @beta
@@ -208,7 +210,9 @@ export class ViewFlags {
   public readonly ambientOcclusion: boolean;
   /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
-  /** Whether to apply [[AtmosphericScattering]]. Default: false. */
+  /** Whether to apply [[AtmosphericScattering]]. Default: false.
+   * @beta
+   */
   public readonly atmosphericScattering: boolean;
   /** If true, overlay surfaces with wiremesh to reveal their triangulation.
    * @beta

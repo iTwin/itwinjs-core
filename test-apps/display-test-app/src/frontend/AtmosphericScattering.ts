@@ -58,8 +58,6 @@ export class AtmosphericScatteringEditor {
       this._vp.viewFlags = this._vp.viewFlags.with("atmosphericScattering", enabled);
       showHideControls(enabled);
       this.sync();
-      // eslint-disable-next-line no-console
-      console.log("enable");
     };
 
     const resetButton = createButton({
@@ -161,22 +159,6 @@ export class AtmosphericScatteringEditor {
       parseAsFloat: true,
       name: "Min Density Height Below Earth ",
     });
-
-    // this._earthRadius = createLabeledNumericInput({
-    //   id: "atmosphericScattering_earthRadius",
-    //   parent: spanRadius,
-    //   value: 0.0,
-    //   handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-    //     const props = this.getAtmosphericScatteringSettingsProps(view);
-    //     props.earthRadius = value;
-    //     return props;
-    //   }),
-    //   min: 0.0,
-    //   max: 10000000.0,
-    //   step: 1,
-    //   parseAsFloat: true,
-    //   name: "Earth Radius: ",
-    // });
 
     const spanScattering = document.createElement("span");
     spanScattering.style.display = "flex";

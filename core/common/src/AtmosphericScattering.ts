@@ -6,25 +6,20 @@
  * @module DisplayStyles
  */
 import { JsonUtils } from "@itwin/core-bentley";
-import { ColorDef, ColorDefProps } from "./ColorDef";
 
-/**
+/** Namespace containing types controlling how the atmospheric scattering effect should be drawn.
  * @public
  */
 export namespace AtmosphericScattering {
 
-  /** JSON representation of a [[Wavelengths]] object, with each wavelength value a positive number.
-  * @public
-  */
+  /** JSON representation of a [[Wavelengths]] object, with each wavelength value a positive number. */
   export interface WavelengthsProps {
     r: number;
     g: number;
     b: number;
   }
 
-  /** An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers.
-  * @public
-  */
+  /** An immutable container of wavelength values for the red, green and blue pixel components. Values are in nanometers. */
   export class Wavelengths implements WavelengthsProps {
     /** Constructs from red, green, and blue wavelength values.
      * @param r Wavelength value for red
@@ -61,29 +56,31 @@ export namespace AtmosphericScattering {
     }
   }
 
+  /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
   export interface Props {
-    /** If defined,  */
+    /** If defined, corresponds to the height in meters above the earth's pole at which the atmosphere terminates. Physically, this is the point at which there are no more air molecules to interfere with light transmission. Defaults to 100_000.0. */
     atmosphereHeightAboveEarth?: number;
-    /** If defined,  */
+    /** If defined, this value can be used to modulate the overall brightness of the effect to compensate for very low and very high inScatteringIntensity values. Defaults to 0.1. */
     brightnessAdaptationStrength?: number;
-    /** If defined,  */
+    /** If defined, controls the rate at which the air density decreases between the point it is the highest and the point is is the lowest. A higher value means a faster decrease in air density. Defaults to 1.0. */
     densityFalloff?: number;
-    /** If defined,  */
+    /** If defined, multiplies the amount of light redirected by the atmosphere toward the viewing eye by this value. A higher value increases perceived overall brightness and thickness of the atmosphere. Defaults to 6.0. */
     inScatteringIntensity?: number;
-    /** If defined,  */
+    /** If defined, corresponds to the height in meters below the earth's pole at which the atmosphere is at its densest. Physically, this is the point at which there is the most air molecules to interfere with light transmission. Defaults to 0.0. */
     minDensityHeightBelowEarth?: number;
-    /** If defined,  */
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light reflected toward the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 20. Defaults to 10. */
     numInScatteringPoints?: number;
-    /** If defined,  */
+    /** If defined, corresponds to the number of atmospheric density samples uses to compute the amount of light scattered away from the viewing eye. A higher value increases fidelity but greatly decreases performance. The range is 1 to 20. Defaults to 10. */
     numOpticalDepthPoints?: number;
-    /** If defined,  */
+    /** If defined, multiplies the amount of light scattered away from the viewing eye by this value. A higher value decreases perceived overall brightness of the elements in the atmosphere and thickness of the atmosphere. Defaults to 1.0. */
     outScatteringIntensity?: number;
-    /** If defined,  */
+    /** If defined, controls how strongly the atmosphere's air diverts light. Defaults to 5.0.  */
     scatteringStrength?: number;
-    /** If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red component scatter as if it were a cyan light ray. Default value is [., ., .]. */
+    /** If defined, corresponds the wavelengths of the red, green and blue color components in nanometers used to simulate how the atmosphere's air molecules affects light transmission. (See Rayleigh Scattering) Thus, a value of 470 for the red wavelength will make the red light component scatter as if it physically were a cyan light ray. The default value is {r:700.0, g:530.0, b:440.0}. */
     wavelengths?: WavelengthsProps;
   }
 
+  /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
   export class Settings implements Props {
     public static readonly defaults: Required<Props> = {
       atmosphereHeightAboveEarth: 100000.0,
@@ -98,11 +95,11 @@ export namespace AtmosphericScattering {
       wavelengths: {r:700.0, g:530.0, b:440.0},
     };
 
-    public readonly atmosphereHeightAboveEarth: number; // At the poles
+    public readonly atmosphereHeightAboveEarth: number;
     public readonly brightnessAdaptationStrength: number;
     public readonly densityFalloff: number;
     public readonly inScatteringIntensity: number;
-    public readonly minDensityHeightBelowEarth: number; // At the poles
+    public readonly minDensityHeightBelowEarth: number;
     public readonly numInScatteringPoints: number;
     public readonly numOpticalDepthPoints: number;
     public readonly outScatteringIntensity: number;
@@ -168,32 +165,5 @@ export namespace AtmosphericScattering {
       };
       return json;
     }
-  }
-}
-
-/**
- * @public
- * Describes the properties with which ambient occlusion should be drawn.
- * These properties correspond to a horizon-based ambient occlusion approach.
- */
-
-export interface AtmosphericSkyProps {
-  display?: boolean;
-  color?: ColorDefProps;
-}
-export class AtmosphericSky {
-  public readonly color: ColorDef;
-  protected constructor(color: ColorDef) {
-    this.color = color;
-  }
-  public static readonly defaults = new AtmosphericSky(ColorDef.black);
-  public toJSON(display?: boolean): AtmosphericSkyProps {
-    const props = { color: this.color.toJSON(), display };
-    return props;
-  }
-  public static fromJSON(props?: AtmosphericSkyProps): AtmosphericSky {
-    if (!props)
-      return this.defaults;
-    return new AtmosphericSky(ColorDef.fromJSON(props?.color));
   }
 }

@@ -5,12 +5,16 @@ publish: false
 
 Table of contents:
 
-- [Display system](#display-system)
-  - [Reality model display customization](#reality-model-display-customization)
-- [Presentation](#presentation)
-  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
-  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
-- [AppUi](#appui)
+- [NextVersion](#nextversion)
+  - [Display system](#display-system)
+    - [Reality model display customization](#reality-model-display-customization)
+    - [Atmospheric Scattering](#atmospheric-scattering)
+  - [Presentation](#presentation)
+    - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+    - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+      - [Example](#example)
+  - [AppUi](#appui)
+    - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
 
 ## Display system
 
@@ -25,6 +29,18 @@ Point clouds provide the following additional customizations:
 - [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
 - When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
 - [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+
+### Atmospheric Scattering
+
+You can now display an atmospheric scattering effect by enabling [ViewFlags.atmosphericScattering]($common).
+
+![Globe View of Atmospheric Scattering](.\assets\atmospheric_scattering_globe.jpg)
+
+The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettings.backgroundMap]($common) set to a backgroundMap with [BackgroundMapSettings.globeMode]($common) equal to [GlobeMode.Ellipsoid]($common). It wouldn't make sense to display it otherwise.
+
+The effect can be controlled using [AtmosphericScattering.Settings]($common). It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
+
+![Sky View of Atmospheric Scattering](.\assets\atmospheric_scattering_sky.jpg)
 
 ## Presentation
 
@@ -89,4 +105,3 @@ With the new approach we "break" at the duplicate A node:
 ### Setting allowed panel zones for widgets
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
-

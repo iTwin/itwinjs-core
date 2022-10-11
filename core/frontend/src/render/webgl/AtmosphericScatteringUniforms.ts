@@ -11,8 +11,7 @@ import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
 import { FrustumUniformType } from "./FrustumUniforms";
 
-export const MAX_SAMPLE_POINTS = 20;
-export const MESH_PROJECTION_CUTOFF_HEIGHT = 500_000;
+export const MAX_SAMPLE_POINTS = 20; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
 
 export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarget {
   private _atmosphericScattering?: AtmosphericScattering.Settings;

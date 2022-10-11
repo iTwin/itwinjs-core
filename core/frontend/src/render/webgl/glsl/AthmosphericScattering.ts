@@ -9,7 +9,24 @@ import {
   VariablePrecision,
   VariableType,
 } from "../ShaderBuilder";
-import { MAX_SAMPLE_POINTS, MESH_PROJECTION_CUTOFF_HEIGHT } from "../AtmosphericScatteringUniforms";
+import { MAX_SAMPLE_POINTS } from "../AtmosphericScatteringUniforms";
+
+/** A physics-based atmospheric scattering technique that simulates how an atmosphere diverts light.
+ * @internal
+ * This shader adds an atmospheric scattering effect that mimics some aspects of the physical phenomenons of Rayleigh Scattering and Mie Scattering.
+ *
+ * This implementation is highly inspired by Sebastian Lague's Solar System project: https://github.com/SebLague/Solar-System/ and video: https://www.youtube.com/watch?v=DxfEbulyFcY
+ * along with this ShaderToy replica: https://www.shadertoy.com/view/fltXD2.
+ * Both of which are inspired by this Nvidia article on atmospheric scattering: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering.
+ *
+ * The effect traces rays from the vertices or fragments toward the eye/camera and samples air density at multiple points to compute how much light is scattered away by the air molecules.
+ * It also traces rays from the aforementioned sample points toward the sun and samples air density at multiple points to compute how much light is scattered in toward the eye/camera.
+ *
+ * The effect can be computed on vertices (the default for the background map) and fragments (the default for the skybox, which is a ViewportQuad).
+ * The effect is much more accurate when computed on fragments, as the atmosphere is an ellipsoid. Air density between 2 vertices cannot be linearly interpolated.
+ *
+ * All coordinates are in view space.
+ */
 
 // #region GENERAL
 
@@ -263,6 +280,7 @@ void computeAtmosphericScatteringVaryings() {
 // #endregion ELLIPSOID
 
 // #region MAIN
+
 const applyAtmosphericScattering = `
   // return baseColor if atmospheric scattering is disabled
   if (!u_isEnabled)
@@ -270,7 +288,12 @@ const applyAtmosphericScattering = `
   return computeAtmosphericScattering(baseColor);
 `;
 
-/** @internal */
+/** Adds the atmospheric effect to a technique
+ * @internal
+ *
+ * @param isSky If true, the effect is automatically computed per fragment and fragments are understood to be infinitely (MAX_FLOAT) far away from the eye/camera.
+ * @param perFragmentCompute If true, the effect is computed per fragment as opposed to per vertex.
+ */
 export function addAtmosphericScatteringEffect(
   builder: ProgramBuilder,
   isSky = false,
@@ -286,7 +309,6 @@ export function addAtmosphericScatteringEffect(
   mainShader.addConstant("EPSILONx2", VariableType.Float, "EPSILON * 2.0");
   mainShader.addConstant("MAX_FLOAT", VariableType.Float, "3.402823466e+38");
   mainShader.addConstant("MAX_SAMPLE_POINTS", VariableType.Int, `${MAX_SAMPLE_POINTS}`);
-  mainShader.addConstant("MESH_PROJECTION_CUTOFF_HEIGHT", VariableType.Float, `${MESH_PROJECTION_CUTOFF_HEIGHT}.0`);
 
   mainShader.addUniform(
     "u_densityFalloff",
@@ -527,70 +549,3 @@ export function addAtmosphericScatteringEffect(
 }
 
 // #endregion MAIN
-
-// #region QUAD
-// const computeBaseColorVS = `return vec4(u_skyColor.xyz, 1.0);`;
-// const computeBaseColorFS = `return v_color;`;
-// const assignFragData = `FragColor = baseColor;`;
-// const computePosition = `return rawPos;`;
-// const computeEyeSpace = `
-// vec3 computeEyeSpace(vec4 rawPos) {
-//   vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
-
-//   float top = u_frustumPlanes.x;
-//   float bottom = u_frustumPlanes.y;
-//   float left = u_frustumPlanes.z;
-//   float right = u_frustumPlanes.w;
-
-//   return vec3(
-//     mix(left, right, pos01.x),
-//     mix(bottom, top, pos01.y),
-//     -u_frustum.x
-//   );
-// }`;
-
-/** @internal
-* Simple shader program intended for the
-*/
-// export function createAtmosphericSkyProgram(
-//   context: WebGLContext
-// ): ShaderProgram {
-//   const prog = new ProgramBuilder(
-//     AttributeMap.findAttributeMap(undefined, false)
-//   );
-
-//   prog.vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
-//     prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
-//       uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
-//     });
-//   });
-//   prog.vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
-//     prg.addGraphicUniform("u_frustum", (uniform, params) => {
-//       uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
-//     });
-//   });
-//   prog.vert.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
-//     shader.addGraphicUniform("u_skyColor", (uniform, params) => {
-//       const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
-//       uniform.setUniform3fv(geom.atmosphericSkyColor);
-//     });
-//   });
-//   prog.vert.addFunction(computeEyeSpace);
-
-//   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
-//   prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
-
-//   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-//   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
-
-//   prog.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
-//   prog.addVarying("v_color", VariableType.Vec4);
-
-//   addAtmosphericScatteringEffect(prog, true);
-
-//   prog.vert.headerComment = "//!V! AtmosphericSky";
-//   prog.frag.headerComment = "//!F! AtmosphericSky";
-
-//   return prog.buildProgram(context);
-// }
-// #endregion QUAD
