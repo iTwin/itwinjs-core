@@ -8,7 +8,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.4.17
+      '@bentley/imodeljs-native': 3.4.18
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -54,7 +54,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.11.0
-      '@bentley/imodeljs-native': 3.4.17
+      '@bentley/imodeljs-native': 3.4.18
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -1572,7 +1572,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': ^1.0.3
       '@bentley/cif-subsurface-schema': ^1.0.3
       '@bentley/cif-units-schema': ^1.0.1
-      '@bentley/imodeljs-native': 3.4.17
+      '@bentley/imodeljs-native': 3.4.18
       '@bentley/plant-custom-attributes-schema': ^1.0.1
       '@bentley/process-functional-schema': ^1.0.1
       '@bentley/process-physical-schema': ^1.0.2
@@ -1625,7 +1625,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': 1.0.3
       '@bentley/cif-subsurface-schema': 1.0.3
       '@bentley/cif-units-schema': 1.0.1
-      '@bentley/imodeljs-native': 3.4.17
+      '@bentley/imodeljs-native': 3.4.18
       '@bentley/plant-custom-attributes-schema': 1.0.1
       '@bentley/process-functional-schema': 1.0.1
       '@bentley/process-physical-schema': 1.0.2
@@ -6680,8 +6680,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.4.17:
-    resolution: {integrity: sha512-11UhT9UbwsYQGOeb16/JWkdL/sUpDJ6LsZeOPXqJmwNScvrBLn7D63HtpiFoMbT9REkKvAK3XgDgnSaBNvlkXw==}
+  /@bentley/imodeljs-native/3.4.18:
+    resolution: {integrity: sha512-qieu2IkJpdnzOWKc9Wmigv019rQlxgHeTdzMGD6HpXeoJIdfqykvkC0q+ufG1lh13hBj14ui9EIJwV2vGZTV1w==}
     requiresBuild: true
     dev: false
 
