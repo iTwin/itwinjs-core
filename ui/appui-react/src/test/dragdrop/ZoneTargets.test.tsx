@@ -3,21 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackTarget, MergeTarget, WidgetZoneId, ZoneTargetType } from "@itwin/appui-layout-react";
+import { WidgetZoneId, ZoneTargetType } from "@itwin/appui-layout-react";
 import { ZoneTargets } from "../../appui-react/dragdrop/ZoneTargets";
-import TestUtils, { mount } from "../TestUtils";
-
+import TestUtils, { userEvent } from "../TestUtils";
+import { render } from "@testing-library/react";
+/* eslint-disable deprecation/deprecation */
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();
   const handler = {
-    // eslint-disable-next-line deprecation/deprecation
     handleTargetChanged: (_zoneId: WidgetZoneId, _type: ZoneTargetType, _isTargeted: boolean): void => {
       spyMethod();
     },
   };
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -28,47 +31,26 @@ describe("ZoneTargets", () => {
   });
 
   describe("DropTarget.Merge", () => {
-    it("should render", () => {
-      // eslint-disable-next-line deprecation/deprecation
-      mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
-    });
+    it("should call onTargetChanged", async () => {
+      const {container} = render(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
 
-    it("renders correctly", () => {
-      // eslint-disable-next-line deprecation/deprecation
-      shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />).should.matchSnapshot();
-    });
-
-    it("should call onTargetChanged", () => {
-      spyMethod.resetHistory();
-      // eslint-disable-next-line deprecation/deprecation
-      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Merge} targetChangeHandler={handler} />);
-      const target = wrapper.find(MergeTarget);
-      target.prop("onTargetChanged")!(true);
+      await theUserTo.hover(container.querySelector(".nz-zone-6")!);
       expect(spyMethod.calledOnce).to.be.true;
-      target.prop("onTargetChanged")!(false);
+
+      await theUserTo.unhover(container.querySelector(".nz-zone-6")!);
       expect(spyMethod.calledTwice).to.be.true;
     });
   });
 
   describe("DropTarget.Back", () => {
-    it("should render", () => {
-      // eslint-disable-next-line deprecation/deprecation
-      mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
-    });
-
-    it("renders correctly", () => {
-      // eslint-disable-next-line deprecation/deprecation
-      shallow(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />).should.matchSnapshot();
-    });
-
-    it("should call onTargetChanged", () => {
+    it("should call onTargetChanged", async () => {
       spyMethod.resetHistory();
-      // eslint-disable-next-line deprecation/deprecation
-      const wrapper = mount(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
-      const target = wrapper.find(BackTarget);
-      target.prop("onTargetChanged")!(true);
+      const {container} = render(<ZoneTargets zoneId={1} dropTarget={ZoneTargetType.Back} targetChangeHandler={handler} />);
+
+      await theUserTo.hover(container.querySelector(".nz-zone-1")!);
       expect(spyMethod.calledOnce).to.be.true;
-      target.prop("onTargetChanged")!(false);
+
+      await theUserTo.unhover(container.querySelector(".nz-zone-1")!);
       expect(spyMethod.calledTwice).to.be.true;
     });
   });
