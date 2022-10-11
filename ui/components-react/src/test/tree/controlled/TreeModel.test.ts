@@ -27,6 +27,7 @@ const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, inpu
     isExpanded: input.isExpanded,
     label: input.label,
     isSelected: input.isSelected,
+    isSelectionDisabled: input.item.isSelectionDisabled,
 
     checkbox: {
       state: input.item.checkBoxState || CheckBoxState.Off,
