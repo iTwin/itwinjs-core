@@ -516,6 +516,7 @@ internal;RealityTreeReference
 alpha;RemoteExtensionProvider 
 alpha;RemoteExtensionProviderProps
 internal;RenderAreaPattern = IDisposable & RenderMemory.Consumer
+internal;RenderAtmosphericSkyParams
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics

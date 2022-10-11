@@ -331,6 +331,75 @@ export namespace AreaPattern {
     }
 }
 
+// @public
+export namespace AtmosphericScattering {
+    export interface Props {
+        atmosphereHeightAboveEarth?: number;
+        brightnessAdaptationStrength?: number;
+        densityFalloff?: number;
+        inScatteringIntensity?: number;
+        minDensityHeightBelowEarth?: number;
+        numInScatteringPoints?: number;
+        numOpticalDepthPoints?: number;
+        outScatteringIntensity?: number;
+        scatteringStrength?: number;
+        wavelengths?: WavelengthsProps;
+    }
+    export class Settings implements Props {
+        // (undocumented)
+        readonly atmosphereHeightAboveEarth: number;
+        // (undocumented)
+        readonly brightnessAdaptationStrength: number;
+        // (undocumented)
+        static readonly defaults: Required<Props>;
+        // (undocumented)
+        readonly densityFalloff: number;
+        // (undocumented)
+        equals(other: Settings): boolean;
+        // (undocumented)
+        static fromJSON(json?: Props): Settings;
+        // (undocumented)
+        readonly inScatteringIntensity: number;
+        // (undocumented)
+        readonly minDensityHeightBelowEarth: number;
+        // (undocumented)
+        readonly numInScatteringPoints: number;
+        // (undocumented)
+        readonly numOpticalDepthPoints: number;
+        // (undocumented)
+        readonly outScatteringIntensity: number;
+        // (undocumented)
+        readonly scatteringStrength: number;
+        // (undocumented)
+        toJSON(): Props;
+        // (undocumented)
+        readonly wavelengths: Wavelengths;
+    }
+    export class Wavelengths implements WavelengthsProps {
+        constructor(r: number, g: number, b: number);
+        // (undocumented)
+        readonly b: number;
+        // (undocumented)
+        equals(other: Wavelengths): boolean;
+        // (undocumented)
+        static fromJSON(json: WavelengthsProps | undefined): Wavelengths;
+        // (undocumented)
+        readonly g: number;
+        // (undocumented)
+        readonly r: number;
+        // (undocumented)
+        toJSON(): WavelengthsProps;
+    }
+    export interface WavelengthsProps {
+        // (undocumented)
+        b: number;
+        // (undocumented)
+        g: number;
+        // (undocumented)
+        r: number;
+    }
+}
+
 // @beta
 export interface AuthorizationClient {
     getAccessToken(): Promise<AccessToken>;
@@ -1991,6 +2060,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @internal
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
+    get atmosphericScattering(): AtmosphericScattering.Settings;
+    set atmosphericScattering(atmosphericScattering: AtmosphericScattering.Settings);
     clearSunTime(): void;
     get environment(): Environment;
     set environment(environment: Environment);
@@ -2021,6 +2092,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
+    // (undocumented)
+    atmosphericScattering?: AtmosphericScattering.Props;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2121,6 +2194,7 @@ export class DisplayStyleSettings {
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
     readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
+    readonly onAtmosphericScatteringChanged: BeEvent<(newSettings: AtmosphericScattering.Settings) => void>;
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
@@ -2834,6 +2908,7 @@ export class Environment {
     withDisplay(display: {
         sky?: boolean;
         ground?: boolean;
+        atmosphericSky?: boolean;
     }): Environment;
 }
 
@@ -9731,6 +9806,8 @@ export type ViewFlagOverrides = Partial<ViewFlagsProperties>;
 export interface ViewFlagProps {
     acs?: boolean;
     ambientOcclusion?: boolean;
+    // @beta
+    atmosphericScattering?: boolean;
     backgroundMap?: boolean;
     clipVol?: boolean;
     forceSurfaceDiscard?: boolean;
@@ -9763,6 +9840,8 @@ export class ViewFlags {
     constructor(flags?: Partial<ViewFlagsProperties>);
     readonly acsTriad: boolean;
     readonly ambientOcclusion: boolean;
+    // @beta
+    readonly atmosphericScattering: boolean;
     readonly backgroundMap: boolean;
     readonly clipVolume: boolean;
     readonly constructions: boolean;

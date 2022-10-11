@@ -17,6 +17,7 @@ public;AnalysisStyleThematicProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
+public;AtmosphericScattering
 beta;AuthorizationClient
 public;AuxCoordSystem2dProps 
 public;AuxCoordSystem3dProps 
