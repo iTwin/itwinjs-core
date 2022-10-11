@@ -1559,7 +1559,6 @@ export class SmallSystem {
    * @param spacePoint homogeneous point in space
    */
   public static lineSegment3dClosestPointUnbounded(pointA0: Point3d, pointA1: Point3d, spacePoint: Point3d): number | undefined {
-    // Considering only x,y parts....
     const ux = pointA1.x - pointA0.x;
     const uy = pointA1.y - pointA0.y;
     const uz = pointA1.z - pointA0.z;
