@@ -2139,19 +2139,20 @@ class MRTCompositor extends Compositor {
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const fbStack = System.instance.frameBufferStack;
 
-    // WIP
-    // fbo.replaceColAttachment (0, this._textures.hilite);
-    // const system = System.instance;
-    // // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
-    // // Clear the hilite buffer.
-    // system.context.clearColor(0, 0, 0, 0);
-    // system.context.clear(GL.BufferBit.Color);
-    // // }
-    // fbo.restoreColAttachment (0);
-
-    // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     fbStack.execute(fbo, true, useMsBuffers, () => {
+    // WIP
+      fbo.replaceColAttachment (0, this._textures.hilite);
+      const system = System.instance;
+      // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
+      // Clear the hilite buffer.
+      system.context.clearColor(0, 0, 0, 0);
+      system.context.clear(GL.BufferBit.Color);
+      // }
+      // draw here instead, then process after restore
+      fbo.restoreColAttachment (0);
+
+      // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
       // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
       this.drawPass(commands, RenderPass.PointClouds);
     });
