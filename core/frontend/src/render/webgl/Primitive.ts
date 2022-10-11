@@ -11,7 +11,7 @@ import { InstancedGraphicParams } from "../InstancedGraphicParams";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
 import { RenderAreaPattern } from "../RenderSystem";
-import { AtmosphericScatteringViewportQuadGeometry, CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
+import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { DrawParams, PrimitiveCommand } from "./DrawCommand";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, InstancedGeometry, isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
@@ -164,17 +164,5 @@ export class SkySpherePrimitive extends Primitive {
   public override draw(shader: ShaderProgramExecutor): void {
     (this.cachedGeometry as SkySphereViewportQuadGeometry).initWorldPos(shader.target);
     super.draw(shader); // Draw the skybox sphere
-  }
-}
-
-/** @internal */
-export class AtmosphericSkyPrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) {
-    super(cachedGeom);
-    assert(cachedGeom instanceof AtmosphericScatteringViewportQuadGeometry);
-  }
-
-  public override draw(shader: ShaderProgramExecutor): void {
-    super.draw(shader);
   }
 }

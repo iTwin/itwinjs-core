@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@itwin/core-geometry";
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@itwin/core-common";
-import { RenderAtmosphericSkyParams, RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
+import { RenderSkyGradientParams, RenderSkySphereParams } from "../RenderSystem";
 import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../primitives/PolylineParams";
 import { RenderMemory } from "../RenderMemory";
@@ -541,33 +541,6 @@ export class TexturedViewportQuadGeometry extends ViewportQuadGeometry {
       return undefined;
 
     return new this(params, techniqueId, textures);
-  }
-}
-
-export class AtmosphericScatteringViewportQuadGeometry extends TexturedViewportQuadGeometry {
-  public readonly atmosphericSkyColor: Float32Array;
-
-  protected constructor(params: IndexedGeometryParams, atmosphericSky: RenderAtmosphericSkyParams, techniqueId: TechniqueId, textures: WebGLTexture[]) {
-    super(params, techniqueId, textures);
-    this.atmosphericSkyColor = new Float32Array(3);
-    this.atmosphericSkyColor[0] = atmosphericSky.color.colors.r / 255.0;
-    this.atmosphericSkyColor[1] = atmosphericSky.color.colors.g / 255.0;
-    this.atmosphericSkyColor[2] = atmosphericSky.color.colors.b / 255.0;
-  }
-
-  public static createGeometry(atmosphericSky: RenderAtmosphericSkyParams) {
-    const params = ViewportQuad.getInstance().createParams();
-    if (undefined === params)
-      return undefined;
-
-    return new AtmosphericScatteringViewportQuadGeometry(params, atmosphericSky, TechniqueId.AtmosphericSky, []);
-  }
-
-  public override get isDisposed(): boolean { return super.isDisposed; }
-
-  public override dispose() {
-    super.dispose();
-    // dispose(this.);
   }
 }
 

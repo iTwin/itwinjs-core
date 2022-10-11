@@ -12,7 +12,10 @@ import {
   BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
   DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
   MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
-  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  SkyBox,
+  SkyGradient,
+  SkySphere,
+  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, TextureTransparency, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, TileHeader, ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -25,6 +28,8 @@ import { getCesiumOSMBuildingsUrl, MapCartoRectangle, TileTreeReference } from "
 import { viewGlobalLocation, ViewGlobalLocationConstants } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
 import { GeometricModelState } from "./ModelState";
+import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
+import { RenderSystem } from "./render/RenderSystem";
 
 /** @internal */
 export class TerrainDisplayOverrides {

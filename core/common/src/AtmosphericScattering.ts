@@ -110,16 +110,26 @@ export namespace AtmosphericScattering {
     public readonly wavelengths: Wavelengths;
 
     public equals(other: Settings): boolean {
-      if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth) return false;
-      if (this.brightnessAdaptationStrength !== other.brightnessAdaptationStrength) return false;
-      if (this.densityFalloff !== other.densityFalloff) return false;
-      if (this.inScatteringIntensity !== other.inScatteringIntensity) return false;
-      if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth) return false;
-      if (this.numInScatteringPoints !== other.numInScatteringPoints) return false;
-      if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints) return false;
-      if (this.outScatteringIntensity !== other.outScatteringIntensity) return false;
-      if (this.scatteringStrength !== other.scatteringStrength) return false;
-      if (!this.wavelengths.equals(other.wavelengths)) return false;
+      if (this.atmosphereHeightAboveEarth !== other.atmosphereHeightAboveEarth)
+        return false;
+      if (this.brightnessAdaptationStrength !== other.brightnessAdaptationStrength)
+        return false;
+      if (this.densityFalloff !== other.densityFalloff)
+        return false;
+      if (this.inScatteringIntensity !== other.inScatteringIntensity)
+        return false;
+      if (this.minDensityHeightBelowEarth !== other.minDensityHeightBelowEarth)
+        return false;
+      if (this.numInScatteringPoints !== other.numInScatteringPoints)
+        return false;
+      if (this.numOpticalDepthPoints !== other.numOpticalDepthPoints)
+        return false;
+      if (this.outScatteringIntensity !== other.outScatteringIntensity)
+        return false;
+      if (this.scatteringStrength !== other.scatteringStrength)
+        return false;
+      if (!this.wavelengths.equals(other.wavelengths))
+        return false;
       return true;
     }
 
@@ -182,7 +192,8 @@ export class AtmosphericSky {
     return props;
   }
   public static fromJSON(props?: AtmosphericSkyProps): AtmosphericSky {
-    if (!props) return this.defaults;
+    if (!props)
+      return this.defaults;
     return new AtmosphericSky(ColorDef.fromJSON(props?.color));
   }
 }

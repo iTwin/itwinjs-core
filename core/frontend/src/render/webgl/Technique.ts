@@ -13,7 +13,6 @@ import { ClippingProgram, createClippingProgram } from "./ClippingProgram";
 import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
-import { createAtmosphericSkyProgram } from "./glsl/AthmosphericScattering";
 import { createBlurProgram } from "./glsl/Blur";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
@@ -800,7 +799,6 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
   { techniqueId: TechniqueId.PlanarGrid },
-  { techniqueId: TechniqueId.AtmosphericSky },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -956,7 +954,6 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
     this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
     this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
-    this._list[TechniqueId.AtmosphericSky] = new SingularTechnique(createAtmosphericSkyProgram(gl));
     this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
     this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl, BlurType.NoTest));
     this._list[TechniqueId.BlurTestOrder] = new SingularTechnique(createBlurProgram(gl, BlurType.TestOrder));

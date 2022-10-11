@@ -37,6 +37,7 @@ import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
 import { AtmosphericScattering } from "./AtmosphericScattering";
+import { SkySphere } from "./SkyBox";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -1046,10 +1047,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     }
 
     this.populatePlanProjectionsFromJSON();
-    this.toggleAtmosphericSky(this.viewFlags.atmosphericScattering);
-    this.onViewFlagsChanged.addListener((viewFlags) => {
-      this.toggleAtmosphericSky(viewFlags.atmosphericScattering);
-    });
   }
 
   private populatePlanProjectionsFromJSON(): void {
@@ -1238,13 +1235,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     display = display ?? this.environment.displaySky;
     if (display !== this.environment.displaySky)
       this.environment = this.environment.withDisplay({ sky: display });
-  }
-
-  public toggleAtmosphericSky(display?: boolean): void {
-    display = display ?? this.environment.displayAtmosphericSky;
-    if (display !== this.environment.displayAtmosphericSky) {
-      this.environment = this.environment.withDisplay({ atmosphericSky: display });
-    }
   }
 
   /** Toggle display of the [[environment]]'s [[GroundPlane]].

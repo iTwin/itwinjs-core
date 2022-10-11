@@ -53,7 +53,6 @@ export const enum TechniqueId {
   VolClassCopyZ,
   VolClassSetBlend,
   VolClassBlend,
-  AtmosphericSky,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

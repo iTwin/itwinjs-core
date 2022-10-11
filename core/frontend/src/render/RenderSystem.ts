@@ -501,8 +501,6 @@ export abstract class RenderSystem implements IDisposable {
    */
   public createSkyBox(_params: RenderSkyBoxParams): RenderGraphic | undefined { return undefined; }
 
-  public createAtmosphericSky(_params: RenderAtmosphericSkyParams): RenderGraphic | undefined { return undefined; }
-
   /** Create a RenderGraphic consisting of a list of Graphics to be drawn together. */
   public abstract createGraphicList(primitives: RenderGraphic[]): RenderGraphic;
 

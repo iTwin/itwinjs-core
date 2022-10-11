@@ -105,7 +105,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
   const isGlobeModeEllipsoid = (GlobeMode.Ellipsoid === view.globeMode);
-  const atmosphericScattering = (style.is3d() && isGlobeModeEllipsoid && vp.iModel.isGeoLocated && view.displayStyle.viewFlags.atmosphericScattering && view.displayStyle.viewFlags.backgroundMap) ? style.settings.atmosphericScattering : undefined;
+  const atmosphericScattering = (style.is3d() && isGlobeModeEllipsoid && vp.iModel.isGeoLocated && style.viewFlags.atmosphericScattering && style.viewFlags.backgroundMap) ? style.settings.atmosphericScattering : undefined;
 
   let upVector;
   if (isGlobeModeEllipsoid) {

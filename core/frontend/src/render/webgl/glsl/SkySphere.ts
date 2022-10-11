@@ -20,6 +20,7 @@ import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
+import { addAtmosphericScatteringEffect } from "./AthmosphericScattering";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.
@@ -62,6 +63,22 @@ const computeSkySphereColorTexture = `
   return TEXTURE(s_skyTxtr, vec2(u, v));
 `;
 
+const computeEyeSpace = `
+vec3 computeEyeSpace(vec4 rawPos) {
+  vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
+
+  float top = u_frustumPlanes.x;
+  float bottom = u_frustumPlanes.y;
+  float left = u_frustumPlanes.z;
+  float right = u_frustumPlanes.w;
+
+  return vec3(
+    mix(left, right, pos01.x),
+    mix(bottom, top, pos01.y),
+    -u_frustum.x
+  );
+}`;
+
 const scratch3Floats = new Float32Array(3);
 const scratchVec3 = new Vector3d();
 const scratchPoint3 = new Point3d();
@@ -83,6 +100,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
     builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
   } else
     builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
+  builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
 
   const vert = builder.vert;
   vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
@@ -115,6 +133,16 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
       }
     });
   });
+  vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
+    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
+      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
+    });
+  });
+  vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+    prg.addGraphicUniform("u_frustum", (uniform, params) => {
+      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+    });
+  });
   if (isGradient) {
     vert.addUniform("u_skyParams", VariableType.Vec3, (shader) => {
       shader.addGraphicUniform("u_skyParams", (uniform, params) => {
@@ -129,6 +157,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
       });
     });
   }
+  vert.addFunction(computeEyeSpace);
 
   const frag = builder.frag;
   if (isGradient) {
@@ -222,6 +251,8 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
     frag.set(FragmentShaderComponent.ComputeBaseColor, computeSkySphereColorTexture);
   }
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  addAtmosphericScatteringEffect(builder, true);
 
   builder.vert.headerComment = `//!V! SkySphere-${isGradient ? "Gradient" : "Texture"}`;
   builder.frag.headerComment = `//!F! SkySphere-${isGradient ? "Gradient" : "Texture"}`;

@@ -8,12 +8,7 @@ import {
   ShaderType,
   VariablePrecision,
   VariableType,
-  VertexShaderComponent,
 } from "../ShaderBuilder";
-import { WebGLContext } from "@itwin/webgl-compatibility";
-import { ShaderProgram } from "../ShaderProgram";
-import { AttributeMap } from "../AttributeMap";
-import { AtmosphericScatteringViewportQuadGeometry } from "../CachedGeometry";
 import { MAX_SAMPLE_POINTS, MESH_PROJECTION_CUTOFF_HEIGHT } from "../AtmosphericScatteringUniforms";
 
 // #region GENERAL
@@ -534,66 +529,68 @@ export function addAtmosphericScatteringEffect(
 // #endregion MAIN
 
 // #region QUAD
-const computeBaseColorVS = `return vec4(u_skyColor.xyz, 1.0);`;
-const computeBaseColorFS = `return v_color;`;
-const assignFragData = `FragColor = baseColor;`;
-const computePosition = `return rawPos;`;
-const computeEyeSpace = `
-vec3 computeEyeSpace(vec4 rawPos) {
-  vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
+// const computeBaseColorVS = `return vec4(u_skyColor.xyz, 1.0);`;
+// const computeBaseColorFS = `return v_color;`;
+// const assignFragData = `FragColor = baseColor;`;
+// const computePosition = `return rawPos;`;
+// const computeEyeSpace = `
+// vec3 computeEyeSpace(vec4 rawPos) {
+//   vec3 pos01 = rawPos.xyz * 0.5 + 0.5;
 
-  float top = u_frustumPlanes.x;
-  float bottom = u_frustumPlanes.y;
-  float left = u_frustumPlanes.z;
-  float right = u_frustumPlanes.w;
+//   float top = u_frustumPlanes.x;
+//   float bottom = u_frustumPlanes.y;
+//   float left = u_frustumPlanes.z;
+//   float right = u_frustumPlanes.w;
 
-  return vec3(
-    mix(left, right, pos01.x),
-    mix(bottom, top, pos01.y),
-    -u_frustum.x
-  );
-}`;
+//   return vec3(
+//     mix(left, right, pos01.x),
+//     mix(bottom, top, pos01.y),
+//     -u_frustum.x
+//   );
+// }`;
 
-/** @internal */
-export function createAtmosphericSkyProgram(
-  context: WebGLContext
-): ShaderProgram {
-  const prog = new ProgramBuilder(
-    AttributeMap.findAttributeMap(undefined, false)
-  );
+/** @internal
+* Simple shader program intended for the
+*/
+// export function createAtmosphericSkyProgram(
+//   context: WebGLContext
+// ): ShaderProgram {
+//   const prog = new ProgramBuilder(
+//     AttributeMap.findAttributeMap(undefined, false)
+//   );
 
-  prog.vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
-    prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
-      uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
-    });
-  });
-  prog.vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
-    prg.addGraphicUniform("u_frustum", (uniform, params) => {
-      uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
-    });
-  });
-  prog.vert.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
-    shader.addGraphicUniform("u_skyColor", (uniform, params) => {
-      const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
-      uniform.setUniform3fv(geom.atmosphericSkyColor);
-    });
-  });
-  prog.vert.addFunction(computeEyeSpace);
+//   prog.vert.addUniform("u_frustumPlanes", VariableType.Vec4, (prg) => {
+//     prg.addGraphicUniform("u_frustumPlanes", (uniform, params) => {
+//       uniform.setUniform4fv(params.target.uniforms.frustum.planes); // { top, bottom, left, right }
+//     });
+//   });
+//   prog.vert.addUniform("u_frustum", VariableType.Vec3, (prg) => {
+//     prg.addGraphicUniform("u_frustum", (uniform, params) => {
+//       uniform.setUniform3fv(params.target.uniforms.frustum.frustum); // { near, far, type }
+//     });
+//   });
+//   prog.vert.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
+//     shader.addGraphicUniform("u_skyColor", (uniform, params) => {
+//       const geom = params.geometry as AtmosphericScatteringViewportQuadGeometry;
+//       uniform.setUniform3fv(geom.atmosphericSkyColor);
+//     });
+//   });
+//   prog.vert.addFunction(computeEyeSpace);
 
-  prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
-  prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
+//   prog.vert.set(VertexShaderComponent.ComputePosition, computePosition);
+//   prog.vert.set(VertexShaderComponent.ComputeBaseColor, computeBaseColorVS);
 
-  prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
-  prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
+//   prog.frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
+//   prog.frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColorFS);
 
-  prog.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
-  prog.addVarying("v_color", VariableType.Vec4);
+//   prog.addInlineComputedVarying("v_eyeSpace", VariableType.Vec3, "v_eyeSpace = computeEyeSpace(rawPosition);");
+//   prog.addVarying("v_color", VariableType.Vec4);
 
-  addAtmosphericScatteringEffect(prog, true);
+//   addAtmosphericScatteringEffect(prog, true);
 
-  prog.vert.headerComment = "//!V! AtmosphericSky";
-  prog.frag.headerComment = "//!F! AtmosphericSky";
+//   prog.vert.headerComment = "//!V! AtmosphericSky";
+//   prog.frag.headerComment = "//!F! AtmosphericSky";
 
-  return prog.buildProgram(context);
-}
+//   return prog.buildProgram(context);
+// }
 // #endregion QUAD
