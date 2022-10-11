@@ -7,7 +7,8 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { MessageBoxIconType, MessageBoxType } from "@itwin/core-frontend";
 import { DialogChangedEventArgs, ModalDialogManager, ModalDialogRenderer, StandardMessageBox } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils from "../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("ModalDialogManager", () => {
 
@@ -63,18 +64,16 @@ describe("ModalDialogManager", () => {
       messageBoxType={MessageBoxType.YesNoCancel}
     />;
 
-    const wrapper = mount(<ModalDialogRenderer />);
+    render(<ModalDialogRenderer />);
 
     expect(ModalDialogManager.dialogCount).to.eq(0);
     ModalDialogManager.openDialog(reactNode);
     expect(ModalDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(1);
+    expect(screen.getByTestId("core-dialog-root")).to.exist;
 
     ModalDialogManager.closeDialog();
     expect(ModalDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(0);
+    expect(screen.queryByTestId("core-dialog-root")).to.be.null;
   });
 
   it("ModalDialogRenderer component with two dialogs", () => {
@@ -91,29 +90,25 @@ describe("ModalDialogManager", () => {
       messageBoxType={MessageBoxType.YesNoCancel}
     />;
 
-    const wrapper = mount(<ModalDialogRenderer />);
+    render(<ModalDialogRenderer />);
 
     expect(ModalDialogManager.dialogCount).to.eq(0);
 
     ModalDialogManager.openDialog(reactNode);
     expect(ModalDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(1);
+    expect(screen.getAllByTestId("core-dialog-root")).to.have.lengthOf(1);
 
     ModalDialogManager.openDialog(reactNode2);
     expect(ModalDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(2);
+    expect(screen.getAllByTestId("core-dialog-root")).to.have.lengthOf(2);
 
     ModalDialogManager.closeDialog();
     expect(ModalDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(1);
+    expect(screen.getAllByTestId("core-dialog-root")).to.have.lengthOf(1);
 
     ModalDialogManager.closeDialog();
     expect(ModalDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(StandardMessageBox).length).to.eq(0);
+    expect(screen.queryAllByTestId("core-dialog-root")).to.have.lengthOf(0);
   });
 
 });

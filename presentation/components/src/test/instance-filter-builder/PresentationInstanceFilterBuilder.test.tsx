@@ -6,22 +6,26 @@ import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
 import * as moq from "typemoq";
+import { PropertyDescription } from "@itwin/appui-abstract";
 import { getPropertyFilterOperatorLabel, PropertyFilterRuleOperator, UiComponents } from "@itwin/components-react";
 import { EmptyLocalization } from "@itwin/core-common";
 import { IModelApp, IModelConnection, NoRenderApp } from "@itwin/core-frontend";
-import { Descriptor } from "@itwin/presentation-common";
+import { Descriptor, NavigationPropertyInfo } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestPropertiesContentField, createTestPropertyInfo,
+  createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation } from "@itwin/presentation-frontend";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import { ECClassHierarchyProvider } from "../../presentation-components/instance-filter-builder/ECClassesHierarchy";
 import {
-  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, usePresentationInstanceFilteringProps,
+  PresentationInstanceFilterBuilder, PresentationInstanceFilterProperty, useFilterBuilderNavigationPropertyEditorContext,
+  usePresentationInstanceFilteringProps,
 } from "../../presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
-import { stubRaf } from "./Common";
 import { InstanceFilterPropertyInfo } from "../../presentation-components/instance-filter-builder/Types";
+import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/instance-filter-builder/Utils";
+import { stubRaf } from "./Common";
 
 export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
   sourceClassIds: ["0x1"],
@@ -368,5 +372,71 @@ describe("PresentationInstanceFilterProperty", () => {
 
     expect(queryByText(TestPropertyInfoWithoutBadge.propertyDescription.displayLabel)).to.not.be.null;
     expect(container.querySelector<HTMLInputElement>(".badge")).to.be.null;
+  });
+});
+
+describe("useFilterBuilderNavigationPropertyEditorContext", () => {
+  interface Props {
+    imodel: IModelConnection;
+    descriptor: Descriptor;
+  }
+  const testImodel = {} as IModelConnection;
+
+  it("returns navigation property info", async () => {
+    const navigationPropertyInfo: NavigationPropertyInfo = {
+      classInfo: { id: "2", label: "Prop Class", name: "TestSchema:PropClass" },
+      targetClassInfo: { id: "3", label: "Target Class", name: "TestSchema:TargetClass" },
+      isForwardRelationship: true,
+      isTargetPolymorphic: true,
+    };
+    const fieldName = "field_name";
+    const testDescriptor = createTestContentDescriptor({
+      fields: [
+        createTestPropertiesContentField({
+          name: fieldName,
+          properties: [{
+            property: {
+              classInfo: { id: "1", label: "Field Class", name: "TestSchema:FieldClass" },
+              name: "nav_prop",
+              type: "navigation",
+              navigationPropertyInfo,
+            },
+          }],
+        }),
+      ],
+    });
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
+
+    const { result } = renderHook(
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
+      { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
+    );
+
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
+    expect(info).to.be.deep.eq(navigationPropertyInfo);
+  });
+
+  it("returns `undefined` for non properties field", async () => {
+    const fieldName = "field_name";
+    const testDescriptor = createTestContentDescriptor({
+      fields: [createTestSimpleContentField({ name: fieldName })],
+    });
+    const propertyDescription: PropertyDescription = {
+      displayLabel: "TestProp",
+      name: `test_category${INSTANCE_FILTER_FIELD_SEPARATOR}${fieldName}`,
+      typename: "navigation",
+    };
+
+    const { result } = renderHook(
+      ({ imodel, descriptor }: Props) => useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor),
+      { initialProps: { imodel: testImodel, descriptor: testDescriptor } }
+    );
+
+    const info = await result.current.getNavigationPropertyInfo(propertyDescription);
+    expect(info).to.be.undefined;
   });
 });

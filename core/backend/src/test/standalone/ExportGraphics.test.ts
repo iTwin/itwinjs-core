@@ -1010,4 +1010,36 @@ describe("exportGraphics", () => {
     assert.isTrue(Math.abs(knownArea - areaSum) < 1.0e-13);
     assert.isTrue(numFacetsA === numFacets, "facet count");
   });
+
+  it("creates output for mesh without zero blocking", () => {
+    const meshWithoutBlocking: GeometryStreamProps = JSON.parse(`[{
+      "indexedMesh": {
+        "numPerFace": 3,
+        "expectedClosure": 0,
+        "point": [
+          [0, 0, 0],
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 1, 0]
+        ],
+        "pointIndex": [1, 2, 3, 1, 3, 4],
+        "normal": [[0, 0, 1]],
+        "normalIndex": [1, 1, 1, 1, 1, 1]
+      }
+    }]`);
+    const newId = insertPhysicalElement(meshWithoutBlocking);
+
+    const infos: ExportGraphicsInfo[] = [];
+    const exportGraphicsOptions: ExportGraphicsOptions = {
+      elementIdArray: [newId],
+      onGraphics: (info: ExportGraphicsInfo) => infos.push(info),
+    };
+
+    const exportStatus = iModel.exportGraphics(exportGraphicsOptions);
+    assert.strictEqual(exportStatus, DbResult.BE_SQLITE_OK);
+    assert.strictEqual(infos.length, 1);
+    assert.strictEqual(infos[0].elementId, newId);
+    assert.strictEqual(infos[0].mesh.indices.length, 6);
+  });
+
 });

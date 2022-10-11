@@ -43,6 +43,7 @@ import { Keys } from '@itwin/presentation-common';
 import { KeySet } from '@itwin/presentation-common';
 import { MicroMemoize } from 'micro-memoize';
 import { MutableTreeModel } from '@itwin/components-react';
+import { NavigationPropertyInfo } from '@itwin/presentation-common';
 import { Node as Node_2 } from '@itwin/presentation-common';
 import { NodeKey } from '@itwin/presentation-common';
 import { NodePathElement } from '@itwin/presentation-common';
@@ -60,6 +61,8 @@ import { PropertyDataChangeEvent } from '@itwin/components-react';
 import { PropertyDataFiltererBase } from '@itwin/components-react';
 import { PropertyDataFilterResult } from '@itwin/components-react';
 import { PropertyDescription } from '@itwin/appui-abstract';
+import { PropertyEditorBase } from '@itwin/components-react';
+import { PropertyEditorProps } from '@itwin/components-react';
 import { PropertyFilter } from '@itwin/components-react';
 import { PropertyFilterRuleGroupOperator } from '@itwin/components-react';
 import { PropertyFilterRuleOperator } from '@itwin/components-react';
@@ -97,6 +100,7 @@ import { TreeRendererProps } from '@itwin/components-react';
 import { TreeSelectionModificationEventArgs } from '@itwin/components-react';
 import { TreeSelectionReplacementEventArgs } from '@itwin/components-react';
 import { TypeDescription } from '@itwin/presentation-common';
+import { TypeEditor } from '@itwin/components-react';
 import { ViewportProps } from '@itwin/imodel-components-react';
 import { VisibleTreeNodes } from '@itwin/components-react';
 
@@ -325,6 +329,9 @@ export interface FilteredPresentationTreeDataProviderProps {
 // @internal (undocumented)
 export const getFavoritesCategory: () => CategoryDescription;
 
+// @internal (undocumented)
+export function getInstanceFilterFieldName(property: PropertyDescription): string;
+
 // @public
 export interface IContentDataProvider extends IPresentationDataProvider {
     readonly displayType: string;
@@ -440,6 +447,39 @@ export interface IPropertiesAppender {
 export interface IUnifiedSelectionComponent {
     readonly imodel: IModelConnection;
     readonly selectionHandler?: SelectionHandler;
+}
+
+// @alpha (undocumented)
+export class NavigationPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesEnter(): boolean;
+    // (undocumented)
+    get containerStopsKeydownPropagation(): boolean;
+    // (undocumented)
+    get reactNode(): React_2.ReactNode;
+}
+
+// @alpha (undocumented)
+export interface NavigationPropertyEditorContext {
+    // (undocumented)
+    getNavigationPropertyInfo: (property: PropertyDescription) => Promise<NavigationPropertyInfo | undefined>;
+    // (undocumented)
+    imodel: IModelConnection;
+}
+
+// @alpha (undocumented)
+export const navigationPropertyEditorContext: React_2.Context<NavigationPropertyEditorContext | undefined>;
+
+// @alpha (undocumented)
+export class NavigationPropertyTargetEditor extends React_2.PureComponent<PropertyEditorProps> implements TypeEditor {
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLDivElement | null;
+    // @internal (undocumented)
+    render(): JSX.Element;
 }
 
 // @internal (undocumented)
@@ -784,12 +824,18 @@ export function useControlledPresentationTreeFiltering(props: ControlledPresenta
 };
 
 // @internal (undocumented)
+export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor): NavigationPropertyEditorContext;
+
+// @internal (undocumented)
 export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>, filter: string | undefined): {
     filteredNodeLoader: PagedTreeNodeLoader<IFilteredPresentationTreeDataProvider> | undefined;
     isFiltering: boolean;
     filterApplied: string | undefined;
     matchesCount: number | undefined;
 };
+
+// @alpha (undocumented)
+export function useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext;
 
 // @internal (undocumented)
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
