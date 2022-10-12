@@ -150,12 +150,12 @@ export function getSplitSingleViewportCommandDef() {
   const commandId = "splitSingleViewportCommandDef";
   return new CommandItemDef({
     commandId,
-    iconSpec: new ConditionalStringValue(() => IconSpecUtilities.createWebComponentIconSpec(1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? splitVerticalIconSvg :singlePaneIconSvg), [SyncUiEventId.ActiveContentChanged]),
-    label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentControls?.length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
+    iconSpec: new ConditionalStringValue(() => IconSpecUtilities.createWebComponentIconSpec(1 === FrontstageManager.activeFrontstageDef?.contentGroup?.getContentControls().length ? splitVerticalIconSvg :singlePaneIconSvg), [SyncUiEventId.ActiveContentChanged]),
+    label: new ConditionalStringValue(() => 1 === FrontstageManager.activeFrontstageDef?.contentGroup?.getContentControls().length ? "Split Content View" : "Single Content View", [SyncUiEventId.ActiveContentChanged]),
     execute: async () => {
       // if the active frontstage is only showing an single viewport then split it and have two copies of it
       const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-      if (activeFrontstageDef && 1 === activeFrontstageDef.contentControls?.length &&
+      if (activeFrontstageDef && 1 === activeFrontstageDef.contentGroup?.getContentControls().length &&
          activeFrontstageDef.contentControls[0].viewport) {
         const vp = activeFrontstageDef.contentControls[0].viewport;
         if (vp) {
@@ -207,7 +207,7 @@ export function getSplitSingleViewportCommandDef() {
           const contentGroup = new ContentGroup(contentGroupProps);
           await FrontstageManager.setActiveContentGroup(contentGroup);
         }
-      } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentControls?.length &&
+      } else if (activeFrontstageDef && 2 === activeFrontstageDef.contentGroup?.getContentControls().length &&
          activeFrontstageDef.contentControls[0].viewport) {
         const vp = activeFrontstageDef.contentControls[0].viewport;
         if (vp) {
