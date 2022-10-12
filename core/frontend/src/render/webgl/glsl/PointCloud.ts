@@ -116,9 +116,10 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
 /** @internal */
 export function createPointCloudHiliter(classified: IsClassified): ProgramBuilder {
   const builder = createBuilder();
-  addUniformHiliter(builder);
   if (classified)
     addHilitePlanarClassifier(builder, false);
+  else
+    addUniformHiliter(builder);
 
   return builder;
 }

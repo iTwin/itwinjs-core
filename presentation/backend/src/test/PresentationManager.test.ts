@@ -16,10 +16,10 @@ import {
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelDefinitionJSON,
-  MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
-  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -95,6 +95,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -131,6 +132,7 @@ describe("PresentationManager", () => {
             content: {
               size: 999,
             },
+            workerConnectionCacheSize: 123,
           },
           useMmap: 666,
           defaultFormats: {
@@ -149,6 +151,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            workerConnectionCacheSize: 123,
             defaultFormats: {
               length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
             },
@@ -168,6 +171,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -176,6 +180,7 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
           directory: faker.random.word(),
+          memoryCacheSize: 123,
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
         using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
@@ -187,6 +192,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -204,6 +210,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -214,6 +221,7 @@ describe("PresentationManager", () => {
           disk: {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
+            memoryCacheSize: 456,
           },
         };
         const expectedConfig = {
@@ -228,6 +236,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
