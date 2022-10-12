@@ -25,7 +25,8 @@ jobs:
     # pool:
     #   name: iModelTechCI
     #   demands: Agent.OS -equals Windows_NT
-    pool: windows-latest
+    pool:
+      vmImage: windows-latest
     steps:
       - checkout: self
         path: itwinjs-core
