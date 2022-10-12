@@ -6,15 +6,17 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
+import { SpecialKey } from "@itwin/appui-abstract";
 import { SelectionHandler } from "../../../../components-react/common/selection/SelectionHandler";
 import { SelectionMode } from "../../../../components-react/common/selection/SelectionModes";
 import {
   IndividualSelection, isRangeSelection, RangeSelection, TreeSelectionManager,
 } from "../../../../components-react/tree/controlled/internal/TreeSelectionManager";
-import { isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes } from "../../../../components-react/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
-import { SpecialKey } from "@itwin/appui-abstract";
 import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
+import {
+  isTreeModelNode, TreeModel, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
+} from "../../../../components-react/tree/controlled/TreeModel";
+import { createRandomMutableTreeModelNode } from "../TreeHelpers";
 
 type Selection = string | RangeSelection;
 

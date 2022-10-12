@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
-import { Field, PropertyValueFormat } from "@itwin/presentation-common";
+import { Field } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
@@ -21,11 +21,13 @@ describe("createInstanceFilterPropertyInfos", () => {
       categories: [rootCategory],
       fields: [
         createTestPropertiesContentField({
-          properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "string"}}],
-          category: rootCategory }),
+          properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
+          category: rootCategory,
+        }),
         createTestPropertiesContentField({
-          properties:[{property: {classInfo: createTestECClassInfo(), name: "prop2", type: "number"}}],
-          category: rootCategory }),
+          properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop2", type: "number" } }],
+          category: rootCategory,
+        }),
       ],
     });
 
@@ -42,11 +44,13 @@ describe("createInstanceFilterPropertyInfos", () => {
       categories: [rootCategory, nestedCategory1, nestedCategory2, nestedCategory21],
       fields: [
         createTestPropertiesContentField({
-          properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "string"}}],
-          category: nestedCategory1 }),
+          properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
+          category: nestedCategory1,
+        }),
         createTestPropertiesContentField({
-          properties:[{property: {classInfo: createTestECClassInfo(), name: "prop2", type: "number"}}],
-          category: nestedCategory21 }),
+          properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop2", type: "number" } }],
+          category: nestedCategory21,
+        }),
       ],
     });
 
@@ -57,51 +61,36 @@ describe("createInstanceFilterPropertyInfos", () => {
   it("creates property infos when property fields are in nested fields", () => {
     const rootCategory = createTestCategoryDescription({ name: "root", label: "Root Category" });
     const propertyField1 = createTestPropertiesContentField({
-      properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "string"}}],
-      category: rootCategory });
+      properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
+      category: rootCategory,
+    });
     const propertyField2 = createTestPropertiesContentField({
-      properties:[{property: {classInfo: createTestECClassInfo(), name: "prop2", type: "number"}}],
-      category: rootCategory });
+      properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop2", type: "number" } }],
+      category: rootCategory,
+    });
 
     const descriptor = createTestContentDescriptor({
       categories: [rootCategory],
       fields: [
-        createTestNestedContentField({nestedFields: [propertyField1], category: rootCategory}),
-        createTestNestedContentField({nestedFields: [propertyField2], category: rootCategory}),
+        createTestNestedContentField({ nestedFields: [propertyField1], category: rootCategory }),
+        createTestNestedContentField({ nestedFields: [propertyField2], category: rootCategory }),
       ],
     });
 
     const input = createInstanceFilterPropertyInfos(descriptor);
     expect(input).to.matchSnapshot();
   });
-
-  it("ignores navigation properties", () => {
-    const rootCategory = createTestCategoryDescription({ name: "root", label: "Root Category" });
-    const descriptor = createTestContentDescriptor({
-      categories: [rootCategory],
-      fields: [
-        createTestPropertiesContentField({
-          properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "navigation"}}],
-          category: rootCategory,
-          type: {valueFormat: PropertyValueFormat.Primitive, typeName: "navigation"} }),
-      ],
-    });
-
-    const input = createInstanceFilterPropertyInfos(descriptor);
-    expect(input).to.have.lengthOf(0);
-  });
-
 });
 
 describe("createPresentationInstanceFilter", () => {
-  const category = createTestCategoryDescription({ name: "root", label: "Root"});
+  const category = createTestCategoryDescription({ name: "root", label: "Root" });
   const propertyField1 = createTestPropertiesContentField({
-    properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "string"}}],
+    properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
     category,
     name: "propField1",
   });
   const propertyField2 = createTestPropertiesContentField({
-    properties:[{property: {classInfo: createTestECClassInfo(), name: "prop1", type: "string"}}],
+    properties: [{ property: { classInfo: createTestECClassInfo(), name: "prop1", type: "string" } }],
     category,
     name: "propField1",
   });
@@ -118,10 +107,10 @@ describe("createPresentationInstanceFilter", () => {
     const filter: PropertyFilterRuleGroup = {
       operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
-        property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
+        property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }, {
-        property: {name: getPropertyDescriptionName(propertyField2), displayLabel: "Prop2", typename: "string"},
+        property: { name: getPropertyDescriptionName(propertyField2), displayLabel: "Prop2", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
@@ -132,7 +121,7 @@ describe("createPresentationInstanceFilter", () => {
     const filter: PropertyFilterRuleGroup = {
       operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
-        property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
+        property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
@@ -143,22 +132,22 @@ describe("createPresentationInstanceFilter", () => {
   });
 
   it("returns undefined if filter group is empty", () => {
-    expect(createPresentationInstanceFilter(descriptor, {operator: PropertyFilterRuleGroupOperator.And, rules: []})).to.be.undefined;
+    expect(createPresentationInstanceFilter(descriptor, { operator: PropertyFilterRuleGroupOperator.And, rules: [] })).to.be.undefined;
   });
 
   it("returns undefined when rule properties field cannot be found", () => {
-    const property: PropertyDescription = {name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop", typename: "string"};
-    expect(createPresentationInstanceFilter(descriptor, {property, operator: PropertyFilterRuleOperator.IsNull})).to.be.undefined;
+    const property: PropertyDescription = { name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop", typename: "string" };
+    expect(createPresentationInstanceFilter(descriptor, { property, operator: PropertyFilterRuleOperator.IsNull })).to.be.undefined;
   });
 
   it("returns undefined when group has rule with invalid property field", () => {
     const filter: PropertyFilterRuleGroup = {
       operator: PropertyFilterRuleGroupOperator.And,
       rules: [{
-        property: {name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string"},
+        property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }, {
-        property: {name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop2", typename: "string"},
+        property: { name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop2", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }],
     };
