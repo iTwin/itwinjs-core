@@ -55,8 +55,20 @@ export interface GraphicsRequestProps {
   readonly sectionCut?: string;
   /** If true, vertex positions will be quantized to [[QPoint3d]]s to conserve space at the expense of accuracy. Quantization may produce
    * perceptible inaccuracies when producing graphics for large and/or highly-detailed elements.
+   * If false, vertex positions will not be quantized; instead, each coordinate will be represented using 32-bit floating point numbers.
+   * Note that for coordinates very far from the origin, 32-bit precision can still produce inaccuracies. Those inaccuracies can be mitigated using [[useAbsolutePositions]].
    */
   quantizePositions?: boolean;
+  /** Determines whether unquantized positions are specified in relative or absolute coordinates.
+   * This property has no effect if [[quantizePositions]] is `true`.
+   * When [[quantizePositions]] is `false`, each vertex's position is represented by three 32-bit floating point numbers. If the vertices are located very far from the origin,
+   * 32-bit precision can produce perceptible inaccuracies when displaying the graphics.
+   * ###TODO rewrite this.
+   * This property has no effect if [[quantizePositions]] is `true`. Otherwise, if this property is `true` then vertex positions will be represented exactly as
+   * specified in the element's geometry stream, after applying the [[location]] transform. If this property is `false` then a translation will be applied to each vertex position
+   * to move it closer to the origin; and the resultant [RenderGraphic]($frontend) will have the inverse, 64-bit translation applied, reducing inaccuracies introduced when
+   */
+  useAbsolutePositions?: boolean;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.
