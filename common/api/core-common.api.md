@@ -5555,7 +5555,6 @@ export interface ModelProps extends EntityProps {
     modeledElement: RelatedElementProps;
     // (undocumented)
     name?: string;
-    // (undocumented)
     parentModel?: Id64String;
 }
 
