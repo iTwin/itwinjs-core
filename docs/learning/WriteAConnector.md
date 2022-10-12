@@ -370,12 +370,12 @@ $npm install  @itwin/core-geometry
 $npm install  @itwin/connector-framework
 $npm install  @itwin/core-backend
 $npm install  @itwin/core-common
+$npm install  @itwin/core-bentley
+$npm install  @itwin/imodels-access-backend
+$npm install  @itwin/imodels-client-authoring
 
 $npm install  --save-dev @itwin/build-tools
 $npm install  --save-dev @itwin/oidc-signin-tool
-$npm install  --save-dev @itwin/core-bentley
-$npm install  --save-dev @itwin/imodels-access-backend
-$npm install  --save-dev @itwin/imodels-client-authoring
 ```
 
 Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
