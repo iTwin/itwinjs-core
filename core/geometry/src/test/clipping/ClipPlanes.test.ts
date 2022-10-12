@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as fs from "fs";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -39,7 +38,6 @@ import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceCl
 import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { IndexedPolyface } from "../../polyface/Polyface";
 
 /* eslint-disable no-console, no-trailing-spaces */
