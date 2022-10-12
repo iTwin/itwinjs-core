@@ -28,6 +28,7 @@ import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Arc3d } from "../../curve/Arc3d";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
 import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -314,7 +315,7 @@ class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
 
 it("CountVisitableFacets", () => {
   const ck = new Checker();
-  const mesh = Sample.createPolyhedron62();
+  const mesh = ImportedSample.createPolyhedron62();
   if (ck.testDefined(mesh) && undefined !== mesh) {
     const visitor = mesh.createVisitor(0);
     ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));

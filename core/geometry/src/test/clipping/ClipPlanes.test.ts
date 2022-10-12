@@ -39,6 +39,7 @@ import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
 import { IndexedPolyface } from "../../polyface/Polyface";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 /* eslint-disable no-console, no-trailing-spaces */
 
@@ -343,7 +344,7 @@ describe("ConvexClipPlaneSet", () => {
   }
 
   it("CreateFromConvexPolyface", () => {
-    const mesh = Sample.createPolyhedron62();
+    const mesh = ImportedSample.createPolyhedron62();
     if (ck.testDefined(mesh) && undefined !== mesh) {
       testConvertMeshToClipper(mesh);
       // verify that the reversed closed mesh produces same clipper with inward plane normals

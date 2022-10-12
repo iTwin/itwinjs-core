@@ -6,7 +6,6 @@
 /** @packageDocumentation
  * @module Serialization
  */
-import * as fs from "fs";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
@@ -62,7 +61,6 @@ import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
-import { IModelJson } from "./IModelJsonSchema";
 
 /* eslint-disable no-console */
 /**
@@ -2547,16 +2545,5 @@ export class Sample {
       }
     }
     return builder.claimPolyface (true);
-  }
-  // cspell:word rhombicosidodecahedron
-  /** Create a 62-sided regular polyhedron mesh with 3-, 4-, and 5-sided faces and vertex color data. */
-  public static createPolyhedron62(): IndexedPolyface | undefined {
-    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
-    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-    for (const mesh of inputs) {
-      if (undefined !== mesh && mesh instanceof IndexedPolyface)
-        return mesh;
-    }
-    return undefined;
   }
 }
