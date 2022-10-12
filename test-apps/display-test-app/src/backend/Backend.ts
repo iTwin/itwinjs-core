@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { LogFunction, Logger, LoggingMetaData, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
+import { IModelHost, IModelHostOptions, IpcHost, LocalhostIpcHost } from "@itwin/core-backend";
 import {
   AuthorizationClient,
   IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
@@ -247,7 +247,10 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   }
 
   // Set up logging (by default, no logging is enabled)
-  Logger.initializeToConsole();
+  if (ProcessDetector.isMobileAppBackend)
+    redirectLoggingToFrontend();
+  else
+    Logger.initializeToConsole();
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
 };
@@ -278,4 +281,27 @@ function checkEnvVars(...keys: Array<string>): boolean {
     console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
   }
   return false;
+}
+
+function redirectLoggingToFrontend() {
+  const getLogFunction = (level: LogLevel): LogFunction => {
+    return (category: string, message: string, getMetaData?: LoggingMetaData): void => {
+      let metaData = {};
+      if (getMetaData) {
+        // Sometimes getMetaData sent to this function is an Object instead of a GetMetaDataFunction.
+        // The following code is a defensive workaround to stop getMetaData() raising an exception in above case.
+        if (typeof getMetaData === "function") {
+          try {
+            metaData = getMetaData();
+          } catch (_ex) {
+            // NEEDS_WORK: Need to improve handling of exception and return data correctly.
+          }
+        } else {
+          metaData = getMetaData;
+        }
+      }
+      IpcHost.send("backend-log", { level, category, message, metaData });
+    };
+  };
+  Logger.initialize(getLogFunction(LogLevel.Error), getLogFunction(LogLevel.Warning), getLogFunction(LogLevel.Info), getLogFunction(LogLevel.Trace));
 }
