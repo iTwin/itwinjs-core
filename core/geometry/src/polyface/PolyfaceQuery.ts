@@ -717,7 +717,7 @@ export class PolyfaceQuery {
    */
    public static visitorClientFacetCount(visitor: PolyfaceVisitor): number {
     const polyface = visitor.clientPolyface();
-    if (polyface !== undefined)
+    if (polyface !== undefined && polyface.facetCount !== undefined)
       return polyface.facetCount;
     let facetCount = 0;
     visitor.reset();

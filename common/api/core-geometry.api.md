@@ -4326,7 +4326,7 @@ export abstract class Polyface extends GeometryQuery {
     data: PolyfaceData;
     get expectedClosure(): number;
     set expectedClosure(value: number);
-    abstract get facetCount(): number;
+    get facetCount(): number | undefined;
     readonly geometryCategory = "polyface";
     abstract get isEmpty(): boolean;
     get twoSided(): boolean;

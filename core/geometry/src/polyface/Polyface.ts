@@ -75,9 +75,11 @@ export abstract class Polyface extends GeometryQuery {
    */
   public abstract get isEmpty(): boolean;
   /**
-   * Returns the number of facets.
+   * Returns the number of facets of this polyface. Subclasses should override.
    */
-  public abstract get facetCount(): number;
+  public get facetCount(): number | undefined {
+    return undefined;
+  }
 }
 /**
  * An `IndexedPolyface` is a set of facets which can have normal, param, and color arrays with independent point, normal, param, and color indices.
@@ -459,7 +461,7 @@ export class IndexedPolyface extends Polyface {
    * will be grouped into a new face with their own 2D range.
    */
   /** (read-only property) number of facets */
-  public get facetCount(): number { return this._facetStart.length - 1; }
+  public override get facetCount(): number { return this._facetStart.length - 1; }
   /** (read-only property) number of faces */
   public get faceCount(): number { return this.data.faceCount; }
   /** (read-only property) number of points */
