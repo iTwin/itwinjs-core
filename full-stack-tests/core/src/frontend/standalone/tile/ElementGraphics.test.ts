@@ -9,7 +9,7 @@ import { PersistentGraphicsRequestProps } from "@itwin/core-common";
 import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
 
-describe.only("requestElementGraphics", () => {
+describe("requestElementGraphics", () => {
   let imodel: SnapshotConnection;
 
   before(async () => {
