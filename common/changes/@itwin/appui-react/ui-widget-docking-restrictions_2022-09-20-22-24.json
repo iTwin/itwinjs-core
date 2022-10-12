@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Update WidgetDef to pass the optional prop allowedPanelTargets to createTab wh",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}
