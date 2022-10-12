@@ -135,6 +135,7 @@ describe.only("requestElementGraphics", () => {
     });
 
     it("is adjusted based on location transform", async () => {
+      await expectRtc({ location: Transform.createTranslationXYZ(100, -200, 500) }, [elemRtc[0] - 100, elemRtc[1] + 200, elemRtc[2] - 500]);
     });
   });
 });
