@@ -65,6 +65,7 @@ export function createNumericInput(props: NumericInputProps, useFloat: boolean =
 export interface LabeledNumericInputProps extends NumericInputProps {
   name: string;
   id: string;
+  divDisplay?: "block" | "none" | "inline";
 }
 
 /** @alpha */
@@ -77,6 +78,8 @@ export interface LabeledNumericInput {
 /** @alpha */
 export function createLabeledNumericInput(props: LabeledNumericInputProps): LabeledNumericInput {
   const div = document.createElement("div");
+  if (props.divDisplay)
+    div.style.display = props.divDisplay;
 
   const label = document.createElement("label");
   label.htmlFor = props.id;

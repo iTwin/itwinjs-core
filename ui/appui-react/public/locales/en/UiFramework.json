@@ -171,7 +171,7 @@
       "animateToolSettingsDescription": "Animate tool settings when they appear in the docked bar.",
       "useToolAsToolSettingsLabelTitle": "Use tool as tool settings label",
       "useToolAsToolSettingsLabelDescription": "Use active tool name as the Tool Settings tab label, if false, will always be titled 'Tool Settings'."
-   }
+    }
   },
   "tools": {
     "clearSelection": "Clear Selection",
@@ -185,7 +185,7 @@
     "isolateModels": "Isolate Models",
     "emphasizeSelected": "Emphasize Selected",
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
-    "noToolSettings": "No settings for this tool." ,
+    "noToolSettings": "No settings for this tool.",
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
     "sectionPanelLabel": "Section",
@@ -205,7 +205,7 @@
         "description": "Turn on/off use of camera in active view",
         "flyover": "Toggle Camera",
         "turnOnFlyover": "Turn Camera On",
-        "turnOffFlyover":"Turn Camera Off"
+        "turnOffFlyover": "Turn Camera Off"
       }
     },
     "OpenSettings": {
@@ -216,6 +216,11 @@
       "description": "Restore Frontstage to Default Layout",
       "flyover": "Restore Stage to Default Layout",
       "noStageFound": "Specified stage not found."
+    },
+    "RestoreFrontstagesLayout": {
+      "keyin": "restore frontstages layout",
+      "description": "Restore all Frontstages to Default Layout",
+      "flyover": "Restore all Stages to Default Layout"
     },
     "ClearKeyinPaletteHistory": {
       "keyin": "clear keyin history",
