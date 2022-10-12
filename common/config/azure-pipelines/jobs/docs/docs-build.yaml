@@ -123,8 +123,8 @@ jobs:
             f = open($(parameters.outputDir) + "/version.txt", "w")
             f.write(package_version)
             f.close()
+          workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
-        workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
 
       - powershell: Get-ChildItem -Path ${{ parameters.outputDir }} -recurse
