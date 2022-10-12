@@ -63,7 +63,17 @@ describe.only("requestElementGraphics", () => {
     });
   });
 
-  describe("relative-to-center transform", () => {
+  describe("relative-to-center transform", async () => {
+    let elemRtc: number[];
+
+    before(async () => {
+      const placement = (await imodel.elements.getPlacements("0x29", {type: "3d"}))[0];
+      expect(placement).not.to.be.undefined;
+      const range = placement.calculateRange();
+      const rangeCenter = range.center;
+      elemRtc = [rangeCenter.x, rangeCenter.y, rangeCenter.z];
+    });
+
     async function expectRtc(options: {
       quantize?: boolean;
       absolute?: boolean;
@@ -84,7 +94,7 @@ describe.only("requestElementGraphics", () => {
 
       let createdMesh = false;
       IModelApp.renderSystem.createMeshGeometry = (params) => {
-        expect(params.vertices.usesUnquantizedPositions).to.equal(true === options.quantize);
+        expect(params.vertices.usesUnquantizedPositions).to.equal(true !== options.quantize);
         // ###TODO inspect mesh geometry
         createdMesh = true;
         return new MockRender.Geometry();
@@ -99,20 +109,29 @@ describe.only("requestElementGraphics", () => {
       const gfx = await readElementGraphics(bytes, imodel, "0", true);
       expect(gfx).not.to.be.undefined;
       expect(createdMesh).to.be.true;
-      expect(actualRtc).to.deep.equal(expectedRtc);
+      expect(undefined === actualRtc).to.equal(undefined === expectedRtc);
+      if (actualRtc && expectedRtc) {
+        const expectAlmostEqual = (actual: number, expected: number) => expect(Math.abs(actual - expected)).most(0.00001);
+        expectAlmostEqual(actualRtc[0], expectedRtc[0]);
+        expectAlmostEqual(actualRtc[1], expectedRtc[1]);
+        expectAlmostEqual(actualRtc[2], expectedRtc[2]);
+      }
     }
 
     it("is applied by default", async () => {
-      expectRtc({}, [12, 34, 56]);
+      await expectRtc({}, elemRtc);
     });
 
     it("is not applied to quantized positions", async () => {
+      await expectRtc({ quantize: true }, undefined);
     });
 
     it("is not applied if `useAbsolutePositions` is true", async () => {
+      await expectRtc({ absolute: true }, undefined);
     });
 
     it("is applied if `useAbsolutePositions` is false", async () => {
+      await expectRtc({ absolute: false }, elemRtc);
     });
 
     it("is adjusted based on location transform", async () => {
