@@ -261,7 +261,7 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
 });
 
 // implement a do-nothing visitor NOT backed by a Polyface
-class MyVisitor extends PolyfaceData implements PolyfaceVisitor {
+class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
   private _index: number;
   private _numIndices: number;
   public constructor(numIndices: number) {
@@ -321,7 +321,7 @@ it("CountVisitableFacets", () => {
     ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
   }
   // test a visitor without polyface backing
-  const visitor0 = new MyVisitor(5);
+  const visitor0 = new VisitorSansMesh(5);
   ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
   ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
   expect(ck.getNumErrors()).equals(0);

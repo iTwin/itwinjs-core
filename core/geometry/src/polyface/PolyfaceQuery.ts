@@ -573,7 +573,7 @@ export class PolyfaceQuery {
           edgeStrings.push([pointA.clone (), pointB.clone()]);
         });
       const chains = OffsetHelpers.collectChains (edges, gapTolerance, planarityTolerance);
-      if (chains){
+      if (chains) {
         const frameBuilder = new FrameBuilder ();
         frameBuilder.announce (chains);
         const frame = frameBuilder.getValidatedFrame (false);
@@ -582,7 +582,7 @@ export class PolyfaceQuery {
           if (inverseFrame !== undefined){
             inverseFrame.multiplyPoint3dArrayArrayInPlace (edgeStrings);
             const graph = HalfEdgeGraphMerge.formGraphFromChains (edgeStrings, true, HalfEdgeMask.BOUNDARY_EDGE);
-            if (graph){
+            if (graph) {
               HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
                 new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
               // this.purgeNullFaces(HalfEdgeMask.EXTERIOR);
@@ -1117,7 +1117,7 @@ export class PolyfaceQuery {
     const index1 = polyface.facetIndex1(facetIndex);
     for (let i = index0; i < index1; i++)
       if (data.pointIndex[i] === vertexIndex)
-        return data.edgeVisible[i];
+        return data.edgeVisible[i]; // return visibility of first edge in the face that starts at this vertex
     return undefined;
   }
   /** Load all half edges from a mesh to an IndexedEdgeMatcher.

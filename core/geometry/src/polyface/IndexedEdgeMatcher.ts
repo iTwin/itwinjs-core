@@ -99,7 +99,7 @@ export class IndexedEdgeMatcher {
   public edges: SortableEdge[];
 
   constructor() {
-      this.edges = [];
+    this.edges = [];
   }
   /**
    * push a new edge.
