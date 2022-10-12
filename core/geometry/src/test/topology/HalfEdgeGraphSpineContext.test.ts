@@ -13,7 +13,7 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Angle } from "../../geometry3d/Angle";

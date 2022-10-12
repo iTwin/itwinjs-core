@@ -29,7 +29,7 @@ import { NormalizedBiQuadraticTransition, NormalizedBlossTransition, NormalizedC
 import { LineString3d } from "../../curve/LineString3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { CurveFactory } from "../../curve/CurveFactory";
 import { Quadrature } from "../../numerics/Quadrature";

@@ -62,7 +62,7 @@ import { PolyfaceData } from "../polyface/PolyfaceData";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, PolyfaceAuxData } from "../polyface/AuxData";
 import { PolyfaceBuilder } from "../polyface/PolyfaceBuilder";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
-import { IModelJson } from "./IModelJsonSchema";
+import { IModelJson } from "../serialization/IModelJsonSchema";
 
 /* eslint-disable no-console */
 /**

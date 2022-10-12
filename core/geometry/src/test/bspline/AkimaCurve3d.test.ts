@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";

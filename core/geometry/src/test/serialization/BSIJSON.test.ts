@@ -37,7 +37,7 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Complex } from "../../numerics/Complex";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 

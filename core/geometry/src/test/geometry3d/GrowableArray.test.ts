@@ -17,7 +17,7 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Transform } from "../../geometry3d/Transform";
 import { ClusterableArray } from "../../numerics/ClusterableArray";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { prettyPrint } from "../testFunctions";
 

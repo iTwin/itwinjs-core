@@ -9,7 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

@@ -12,7 +12,7 @@ import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { DeepCompare } from "../../serialization/DeepCompare";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";

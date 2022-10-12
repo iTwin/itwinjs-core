@@ -250,5 +250,5 @@ export * from "./topology/Triangulation";
 export * from "./topology/SpaceTriangulation";
 export * from "./serialization/IModelJsonSchema";
 export * from "./serialization/DeepCompare";
-export * from "./serialization/GeometrySamples";
+export * from "./test/GeometrySamples";
 export { BentleyGeometryFlatBuffer } from "./serialization/BentleyGeometryFlatBuffer";

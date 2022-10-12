@@ -29,7 +29,7 @@ import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext"
 import { CurveFactory } from "../../curve/CurveFactory";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { SweepContour } from "../../solid/SweepContour";
 import { Transform } from "../../geometry3d/Transform";
 import { Matrix3d } from "../../geometry3d/Matrix3d";

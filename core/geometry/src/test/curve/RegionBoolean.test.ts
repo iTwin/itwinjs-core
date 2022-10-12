@@ -28,7 +28,7 @@ import { HalfEdgeGraph } from "../../topology/Graph";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GraphChecker } from "../topology/Graph.test";
-import { Sample } from "../../serialization/GeometrySamples";
+import { Sample } from "../GeometrySamples";
 import { Range3d } from "../../geometry3d/Range";
 import { PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
