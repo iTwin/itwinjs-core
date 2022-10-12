@@ -75,23 +75,84 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      - publish: ${{ parameters.outputDir }}
-        artifact: DocsBuild
-        displayName: Publish Pipeline Artifact - DocsBuild
-        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+      # - task: PythonScript@0
+      #   inputs:
+      #     scriptSource: inline
+      #     script: |
+      #       import subprocess
 
-      - script: |
-          CALL node -p "require('./core/backend/package.json').version" > tmp.txt
-          SET /p currentVersion= < tmp.txt
-          DEL tmp.txt
-          CALL npm view @itwin/core-backend@%currentVersion% >nul 2>&1
-          @REM IF %ERRORLEVEL%==0 (
-          @REM   ECHO %currentVersion% already exists
-          @REM ) ELSE (
-          ECHO Releasing %currentVersion%
-          ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
-          ECHO ##vso[build.updatebuildnumber]%currentVersion%
-          @REM )
+      #       # Get local version from @itwin/core-backend
+      #       cmd = ["node", "-p", "require('./core/backend/package.json').version"]
+      #       process = subprocess.run(cmd, shell=True, capture_output=True)
+      #       package_version = process.stdout.decode().strip()
+
+      #       # Check npm to see if local version of @itwin/core-backend has been published
+      #       cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
+      #       process = subprocess.run(cmd, shell=True, capture_output=True)
+
+      #       if process.returncode == 0:
+      #         print("Version " + package_version + " already exists")
+      #       else:
+      #         err = process.stderr.decode()
+      #         if err.find("code E404"):
+      #           print("Releasing version " + package_version)
+
+      #           f = open($(parameters.outputDir) + "/version.txt", "w")
+      #           f.write(package_version)
+      #           f.close()
+
+      #           print("##vso[build.addbuildtag]iTwinJsDocsRelease")
+      #         else:
+      #           print(err)
+      #   displayName: Tag if new release
+      #   workingDirectory: ${{ parameters.workingDir }}
+      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      - task: PythonScript@0
+        inputs:
+          scriptSource: inline
+          script: |
+            import subprocess
+
+            # Get local version from @itwin/core-backend
+            cmd = ["node", "-p", "require('./core/backend/package.json').version"]
+            process = subprocess.run(cmd, shell=True, capture_output=True)
+            package_version = process.stdout.decode().strip()
+            print("Releasing version " + package_version)
+
+            f = open($(parameters.outputDir) + "/version.txt", "w")
+            f.write(package_version)
+            f.close()
         displayName: Tag if new release
         workingDirectory: ${{ parameters.workingDir }}
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      - powershell: Get-ChildItem -Path ${{ parameters.outputDir }} -recurse
+        displayName: Debug outputDir
+        workingDirectory: ${{ parameters.workingDir }}
+        condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      - script: TYPE $(parameters.outputDir)\version.txt
+        displayName: Debug version file
+
+      # - script: |
+      #     CALL node -p "require('./core/backend/package.json').version" > tmp.txt
+      #     SET /p currentVersion= < tmp.txt
+      #     DEL tmp.txt
+      #     CALL npm view @itwin/core-backend@%currentVersion% >tmp.txt 2>&1
+      #     @REM IF %ERRORLEVEL%==0 (
+      #     @REM   ECHO %currentVersion% already exists
+      #     @REM ) ELSE (
+      #     ECHO Releasing %currentVersion%
+      #     ECHO ##vso[build.addbuildtag]iTwinJsDocsRelease
+      #     ECHO ##vso[build.updatebuildnumber]%currentVersion%
+      #     @REM )
+      #   displayName: Tag if new release
+      #   workingDirectory: ${{ parameters.workingDir }}
+      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
+      # - publish: ${{ parameters.outputDir }}
+      #   artifact: DocsBuild
+      #   displayName: Publish Pipeline Artifact - DocsBuild
+      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
+
