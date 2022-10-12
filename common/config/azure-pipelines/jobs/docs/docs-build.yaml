@@ -107,9 +107,9 @@ jobs:
       #   displayName: Tag if new release
       #   workingDirectory: ${{ parameters.workingDir }}
       #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
-      - task: UsePythonVersion@0
-        inputs:
-          versionSpec: '3.x' # string. Required. Version spec. Default: 3.x.
+      # - task: UsePythonVersion@0
+      #   inputs:
+      #     versionSpec: '3.x' # string. Required. Version spec. Default: 3.x.
 
       - task: PythonScript@0
         inputs:
@@ -162,4 +162,3 @@ jobs:
       #   artifact: DocsBuild
       #   displayName: Publish Pipeline Artifact - DocsBuild
       #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
-
