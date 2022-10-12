@@ -22,10 +22,10 @@ jobs:
   - job:
     workspace:
       clean: all
-      # pool:
-      #   name: iModelTechCI
-      #   demands: Agent.OS -equals Windows_NT
-      pool: windows-latest
+    # pool:
+    #   name: iModelTechCI
+    #   demands: Agent.OS -equals Windows_NT
+    pool: windows-latest
     steps:
       - checkout: self
         path: itwinjs-core
