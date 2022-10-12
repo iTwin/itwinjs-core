@@ -120,9 +120,10 @@ jobs:
             package_version = process.stdout.decode().strip()
             print("Releasing version " + package_version)
 
-            f = open($(parameters.outputDir) + "/version.txt", "w")
+            f = open(sys.argv[0] + "/version.txt", "w")
             f.write(package_version)
             f.close()
+          arguments: ${{ parameters.outputDir }}
           workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
         condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
