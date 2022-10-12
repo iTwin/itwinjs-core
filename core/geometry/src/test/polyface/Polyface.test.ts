@@ -29,7 +29,7 @@ import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { IndexedPolyfaceVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";

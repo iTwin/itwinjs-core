@@ -14,7 +14,7 @@ import { IModelJson } from "../../serialization/IModelJsonSchema";
 import * as fs from "fs";
 import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector";
 import { Range3d } from "../../geometry3d/Range";
-import { Sample, SteppedIndexFunctionFactory } from "../GeometrySamples";
+import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { LineString3d } from "../../curve/LineString3d";

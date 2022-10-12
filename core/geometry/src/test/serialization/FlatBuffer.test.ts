@@ -10,7 +10,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Arc3d } from "../../curve/Arc3d";
 import { LineString3d } from "../../curve/LineString3d";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { prettyPrint } from "../testFunctions";
 import { Transform } from "../../geometry3d/Transform";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";

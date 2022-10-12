@@ -9,7 +9,7 @@ import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { UnionRegion } from "../../curve/UnionRegion";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
 describe("Regions", () => {

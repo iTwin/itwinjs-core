@@ -21,7 +21,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphOps } from "../../topology/Merging";

@@ -11,7 +11,7 @@ import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
 /* eslint-disable no-console */

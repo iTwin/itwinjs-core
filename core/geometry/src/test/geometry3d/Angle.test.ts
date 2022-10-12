@@ -16,7 +16,7 @@ import { Range1d, Range2d, Range3d } from "../../geometry3d/Range";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { Complex } from "../../numerics/Complex";
 import { SineCosinePolynomial } from "../../numerics/Polynomials";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 // allow _radians and _degrees as property names

@@ -16,7 +16,7 @@ import { Transform } from "../../geometry3d/Transform";
 import { YawPitchRollAngles } from "../../geometry3d/YawPitchRollAngles";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

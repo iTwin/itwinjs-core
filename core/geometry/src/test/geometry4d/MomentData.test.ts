@@ -19,7 +19,7 @@ import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { MomentData } from "../../geometry4d/MomentData";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

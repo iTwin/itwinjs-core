@@ -15,7 +15,7 @@ import { Transform } from "../../geometry3d/Transform";
 // import { Sample } from "../serialization/GeometrySamples";
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { PascalCoefficients } from "../../numerics/PascalCoefficients";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";

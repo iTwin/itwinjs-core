@@ -9,7 +9,7 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 
 function exercisePointString3d(ck: Checker, lsA: PointString3d) {

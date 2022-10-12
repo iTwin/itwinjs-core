@@ -33,7 +33,7 @@ import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { HalfEdgeGraph } from "../../topology/Graph";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";

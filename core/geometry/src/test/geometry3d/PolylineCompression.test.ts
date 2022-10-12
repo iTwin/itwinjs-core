@@ -11,7 +11,7 @@ import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

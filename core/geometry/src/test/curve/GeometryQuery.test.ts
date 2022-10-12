@@ -24,7 +24,7 @@ import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } 
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
 import { LinearSweep } from "../../solid/LinearSweep";

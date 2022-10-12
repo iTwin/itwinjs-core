@@ -11,7 +11,7 @@ import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceCl
 import { Range3d } from "../../geometry3d/Range";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";

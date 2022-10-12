@@ -15,7 +15,7 @@ import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d } from "../../geometry3d/Range";
 import { SortablePolygon } from "../../geometry3d/SortablePolygon";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 

@@ -15,7 +15,7 @@ import { TorusImplicit } from "../../numerics/Polynomials";
 import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { ChainMergeContext } from "../../topology/ChainMerge";
 import { Checker } from "../Checker";

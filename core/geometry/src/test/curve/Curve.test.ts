@@ -36,7 +36,7 @@ import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../../numerics/Newton";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";

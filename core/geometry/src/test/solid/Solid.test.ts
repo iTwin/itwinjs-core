@@ -23,7 +23,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Cone } from "../../solid/Cone";
 import { RotationalSweep } from "../../solid/RotationalSweep";

@@ -8,7 +8,7 @@ import { Angle } from "../../geometry3d/Angle";
 import { Point2dArrayCarrier } from "../../geometry3d/Point2dArrayCarrier";
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import * as bsiChecker from "../Checker";
 
 /* eslint-disable no-console */

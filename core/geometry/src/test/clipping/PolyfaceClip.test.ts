@@ -27,7 +27,7 @@ import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { Sample } from "../GeometrySamples";
+import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { LinearSweep } from "../../solid/LinearSweep";
