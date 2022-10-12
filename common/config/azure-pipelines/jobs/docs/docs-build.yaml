@@ -22,11 +22,10 @@ jobs:
   - job:
     workspace:
       clean: all
-    # pool:
-    #   name: iModelTechCI
-    #   demands: Agent.OS -equals Windows_NT
     pool:
-      vmImage: windows-latest
+      name: iModelTechCI
+      demands: Agent.OS -equals Windows_NT
+
     steps:
       - checkout: self
         path: itwinjs-core
@@ -113,6 +112,7 @@ jobs:
       #   inputs:
       #     versionSpec: '3.x' # string. Required. Version spec. Default: 3.x.
 
+      # TODO: Replace subprocess.run with subprocess.Popen
       - task: PythonScript@0
         inputs:
           scriptSource: inline
