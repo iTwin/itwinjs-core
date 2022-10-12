@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Helpers
  */
+/* istanbul ignore file */  // TODO: Remove istanbul ignore file when https://github.com/iTwin/itwinjs-backlog/issues/463 is fixed.
 import { join } from "path";
 import * as rimraf from "rimraf";
 import { IModelHost, IModelHostOptions } from "@itwin/core-backend";

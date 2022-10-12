@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { buildTestIModel, getTestOutputDir, IModelBuilder } from "../presentation-testing";
 import * as moq from "typemoq";
 import { CodeSpecs, IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, CreateEmptySnapshotIModelProps, ElementAspectProps, ElementProps, ModelProps } from "@itwin/core-common";
@@ -11,6 +10,8 @@ import { SnapshotConnection } from "@itwin/core-frontend";
 import sinon, { SinonStub } from "sinon";
 import { expect } from "chai";
 import { join } from "path";
+import { buildTestIModel, IModelBuilder } from "../presentation-testing/IModelUtilities";
+import { getTestOutputDir } from "../presentation-testing/Helpers";
 
 interface SetupSnapshotResult {
   dbMock: moq.IMock<SnapshotDb>;

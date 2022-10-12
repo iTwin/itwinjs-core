@@ -29,8 +29,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "Test Spatial Category",
-        "value": "Test Spatial Category",
+        "displayValue": "Test SpatialCategory",
+        "value": "Test SpatialCategory",
         "valueFormat": 0,
       },
     },
