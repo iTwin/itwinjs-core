@@ -101,9 +101,9 @@ describe("requestElementGraphics", () => {
       };
 
       let actualRtc: number[] | undefined;
-      IModelApp.renderSystem.createGraphicBranch = (branch, transform, options) => {
+      IModelApp.renderSystem.createGraphicBranch = (branch, transform, branchOptions) => {
         actualRtc = transform.origin.toArray();
-        return new MockRender.Branch(branch, transform, options);
+        return new MockRender.Branch(branch, transform, branchOptions);
       };
 
       const gfx = await readElementGraphics(bytes, imodel, "0", true);
