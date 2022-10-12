@@ -110,19 +110,8 @@ jobs:
 
       - task: PythonScript@0
         inputs:
-          scriptSource: inline
-          script: |
-            import subprocess
-
-            # Get local version from @itwin/core-backend
-            cmd = ["node", "-p", "require('./core/backend/package.json').version"]
-            process = subprocess.run(cmd, shell=True, capture_output=True)
-            package_version = process.stdout.decode().strip()
-            print("Releasing version " + package_version)
-
-            f = open(sys.argv[0] + "/version.txt", "w")
-            f.write(package_version)
-            f.close()
+          scriptSource: filePath
+          scriptPath: common/scripts/tag_docs_build.py
           arguments: ${{ parameters.outputDir }}
           workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
