@@ -4525,6 +4525,7 @@ export class PolyfaceQuery {
     static computePrincipalVolumeMoments(source: Polyface): MomentData | undefined;
     static createIndexedEdges(polyface: Polyface | PolyfaceVisitor): IndexedEdgeMatcher;
     static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined;
+    static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined;
     static indexedPolyfaceToLoops(polyface: Polyface): BagOfCurves;
     static isPolyfaceClosedByEdgePairing(source: Polyface): boolean;
     static isPolyfaceManifold(source: Polyface, allowSimpleBoundaries?: boolean): boolean;
