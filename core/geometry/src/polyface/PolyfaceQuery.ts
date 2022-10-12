@@ -1094,7 +1094,7 @@ export class PolyfaceQuery {
    * Set the visibility of a particular edge of a particular facet.
    * @param polyface containing polyface
    * @param facetIndex facet index
-   * @param vertexIndex vertex index (in vertex array)
+   * @param vertexIndex vertex index (in vertex array) at which the edge starts
    * @param value visibility value.
    */
   public static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean) {
@@ -1103,7 +1103,22 @@ export class PolyfaceQuery {
     const index1 = polyface.facetIndex1(facetIndex);
     for (let i = index0; i < index1; i++)
       if (data.pointIndex[i] === vertexIndex)
-        data.edgeVisible[i] = value;
+        data.edgeVisible[i] = value;  // actually sets visibility on all edges in the face that start at this vertex
+  }
+  /**
+   * Get the visibility of a particular edge of a particular facet.
+   * @param polyface containing polyface
+   * @param facetIndex facet index
+   * @param vertexIndex vertex index (in vertex array) at which the edge starts
+   */
+  public static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined {
+    const data = polyface.data;
+    const index0 = polyface.facetIndex0(facetIndex);
+    const index1 = polyface.facetIndex1(facetIndex);
+    for (let i = index0; i < index1; i++)
+      if (data.pointIndex[i] === vertexIndex)
+        return data.edgeVisible[i];
+    return undefined;
   }
   /** Load all half edges from a mesh to an IndexedEdgeMatcher.
    * @param polyface a mesh, or a visitor assumed to have numWrap === 1
@@ -1123,14 +1138,15 @@ export class PolyfaceQuery {
   }
   /**
    * Return manifold edge pairs whose dihedral angle is bounded by the given angle.
-   * The dihedral angle of a manifold edge is measured between the normals of its two adjacent faces.
+   * * The dihedral angle of a manifold edge is measured between the normals of its two adjacent faces.
+   * * Boundary edges are not returned as they are not manifold.
    * @param mesh existing polyface or visitor
    * @param maxSmoothEdgeAngle maximum dihedral angle of a smooth edge. If undefined, uses `Geometry.smallAngleRadians`.
    * @param sharpEdges true to reverse the angle threshold test and return sharp edges; otherwise return smooth edges (default)
    */
   public static collectEdgesByDihedralAngle(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle, sharpEdges: boolean = false): SortableEdgeCluster[] {
     if (mesh instanceof Polyface)
-      return this.collectEdgesByDihedralAngle(mesh.createVisitor(1), maxSmoothEdgeAngle);
+      return this.collectEdgesByDihedralAngle(mesh.createVisitor(1), maxSmoothEdgeAngle, sharpEdges);
     mesh.setNumWrap(1);
     const allEdges = this.createIndexedEdges(mesh);
     const manifoldEdges: SortableEdgeCluster[] = [];

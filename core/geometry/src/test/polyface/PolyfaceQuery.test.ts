@@ -27,6 +27,7 @@ import { Range3d } from "../../geometry3d/Range";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Arc3d } from "../../curve/Arc3d";
 import { PolyfaceData } from "../../polyface/PolyfaceData";
+import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -179,6 +180,56 @@ it("ExpandToMaximalPlanarFacetsA", () => {
     expect(ck.getNumErrors()).equals(0);
 });
 
+/** Return whether all edges in the clusters are visible.
+ * @param allHidden whether to return whether all edges in the clusters are hidden instead
+ */
+function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster[], allHidden?: boolean): boolean {
+  if (undefined === allHidden)
+    allHidden = false;
+  for (const cluster of clusters) {
+    if (cluster instanceof SortableEdge) {
+      if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.vertexIndexA))
+        return false;
+    } else {
+      for (const edge of cluster) {
+        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.vertexIndexA))
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
+/** Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
+ * @param expectedSmoothCount expected count of smooth manifold edge pairs
+ * @param expectedSharpCount expected count of sharp manifold edge pairs
+ * @param expectedOtherCount expected count of non-manifold edge clusters
+ * @param expectAllSmoothEdgesHidden whether to verify all smooth edges are hidden (default, false: verify all are visible)
+ * @param expectAllSharpEdgesHidden whether to verify all sharp edges are hidden (default, false: verify all are visible)
+ * @param expectAllOtherEdgesHidden whether to verify all other edges are hidden (default, false: verify all are visible)
+ */
+function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dihedralAngle: Angle | undefined,
+    expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
+    expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
+  const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle);
+  const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle, true);
+  const otherEdges: SortableEdgeCluster[] = [];
+  PolyfaceQuery.createIndexedEdges(mesh).sortAndCollectClusters(undefined, otherEdges, otherEdges, otherEdges);
+  if (!ck.testExactNumber(expectedSmoothCount, smoothEdges.length, "Unexpected smooth edge count"))
+    return false;
+  if (!ck.testExactNumber(expectedSharpCount, sharpEdges.length, "Unexpected sharp edge count"))
+    return false;
+  if (!ck.testExactNumber(expectedOtherCount, otherEdges.length, "Unexpected other edge count"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, smoothEdges, expectAllSmoothEdgesHidden), "Unexpected smooth edge visibility"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, sharpEdges, expectAllSharpEdgesHidden), "Unexpected sharp edge visibility"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, otherEdges, expectAllOtherEdgesHidden), "Unexpected other edge visibility"))
+    return false;
+  return true;
+}
+
 it("ExpandToMaximalPlanarFacetsWithHole", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -196,15 +247,17 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   let dy = 0;
   const yStep = 10.0;
   GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+  verifyEdgeCountsAndVisibilities(ck, polyface, undefined, 42, 4, 36);
+
   const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets (polyface);
   if (maximalPolyface){
-    PolyfaceQuery.markAllEdgeVisibility(maximalPolyface, true);
+    verifyEdgeCountsAndVisibilities(ck, maximalPolyface, undefined, 4, 4, 36, true);  // smooth edges are hidden because they are bridges
     GeometryCoreTestIO.captureCloneGeometry (allGeometry, maximalPolyface, dx, dy += yStep, 0);
     dx += 20;
-    }
+  }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
-    expect(ck.getNumErrors()).equals(0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
+  expect(ck.getNumErrors()).equals(0);
 });
 
 // implement a do-nothing visitor NOT backed by a Polyface
