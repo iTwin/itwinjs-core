@@ -1307,7 +1307,7 @@ export class DisplayStyle3d extends DisplayStyle {
     constructor(props: DisplayStyle3dProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
@@ -2174,7 +2174,7 @@ export class ExternalSource extends InformationReferenceElement {
     constructor(props: ExternalSourceProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     connectorName?: string;
     connectorVersion?: string;
@@ -2192,7 +2192,7 @@ export class ExternalSourceAspect extends ElementMultiAspect {
     checksum?: string;
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static findBySource(iModelDb: IModelDb, scope: Id64String, kind: string, identifier: string): {
         elementId?: Id64String;
@@ -3808,7 +3808,7 @@ export class Model extends Entity {
     constructor(props: ModelProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     // (undocumented)
@@ -4321,7 +4321,7 @@ export class RenderTimeline extends InformationRecordElement {
     protected constructor(props: RenderTimelineProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(ids: EntityReferenceSet): void;
     description: string;
     // (undocumented)
