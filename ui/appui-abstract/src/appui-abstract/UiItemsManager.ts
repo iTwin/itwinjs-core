@@ -68,7 +68,7 @@ export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverride
  * Callbacks to interact with items created by the ui provider before being handled by the UiItemsManager
  * Can be used for telemetry / error checking / mutating items
  * Note that callbacks will only be invoked when items exist
- * @beta
+ * @public
  */
 export interface UiItemsProviderCallbacks {
   onToolbarButtonItemsCreated?: (items: CommonToolbarItem[]) => void;
