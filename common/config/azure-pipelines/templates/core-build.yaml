@@ -12,6 +12,11 @@ parameters:
     default: false
 
 steps:
+  - script: |
+      echo arch: $(arch)
+      echo node: $(which node)
+      echo node file: $(file $(which node))
+      echo rush: $(which rush)
   - script: arch -arm64 node common/scripts/set-rush-write-cache-variables.js
     displayName: 'Set Rush Write Cache Variables'
   - script: arch -arm64 node common/scripts/install-run-rush.js check
