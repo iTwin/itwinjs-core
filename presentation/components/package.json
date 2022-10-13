@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-components",
-  "version": "3.4.0-dev.63",
+  "version": "3.4.0",
   "description": "React components based on iTwin.js Presentation library",
   "main": "lib/cjs/presentation-components.js",
   "module": "lib/esm/presentation-components.js",
@@ -57,15 +57,15 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^3.4.0-dev.63",
-    "@itwin/components-react": "workspace:^3.4.0-dev.63",
-    "@itwin/core-bentley": "workspace:^3.4.0-dev.63",
-    "@itwin/core-common": "workspace:^3.4.0-dev.63",
-    "@itwin/core-frontend": "workspace:^3.4.0-dev.63",
-    "@itwin/core-react": "workspace:^3.4.0-dev.63",
-    "@itwin/imodel-components-react": "workspace:^3.4.0-dev.63",
-    "@itwin/presentation-common": "workspace:^3.4.0-dev.63",
-    "@itwin/presentation-frontend": "workspace:^3.4.0-dev.63",
+    "@itwin/appui-abstract": "workspace:^3.4.0",
+    "@itwin/components-react": "workspace:^3.4.0",
+    "@itwin/core-bentley": "workspace:^3.4.0",
+    "@itwin/core-common": "workspace:^3.4.0",
+    "@itwin/core-frontend": "workspace:^3.4.0",
+    "@itwin/core-react": "workspace:^3.4.0",
+    "@itwin/imodel-components-react": "workspace:^3.4.0",
+    "@itwin/presentation-common": "workspace:^3.4.0",
+    "@itwin/presentation-frontend": "workspace:^3.4.0",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },

@@ -2,6 +2,24 @@
   "name": "@itwin/certa",
   "entries": [
     {
+      "version": "3.4.0",
+      "tag": "@itwin/certa_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Upgrade puppeteer to 15.5.0"
+          },
+          {
+            "comment": "Add support for Electron versions 15, 16, and 17."
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.5",
       "tag": "@itwin/certa_v3.3.5",
       "date": "Tue, 27 Sep 2022 11:50:59 GMT",

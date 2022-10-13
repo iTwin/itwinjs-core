@@ -2,6 +2,24 @@
   "name": "@itwin/build-tools",
   "entries": [
     {
+      "version": "3.4.0",
+      "tag": "@itwin/build-tools_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use Rush env variable to find root monorepo path"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "Update mocha-junit-reporter to v2.0.2"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.5",
       "tag": "@itwin/build-tools_v3.3.5",
       "date": "Tue, 27 Sep 2022 11:50:59 GMT",
