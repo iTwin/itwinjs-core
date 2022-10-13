@@ -1,6 +1,15 @@
 # Change Log - @itwin/eslint-plugin
 
-This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Moved React-specific rules out of itwinjs-recommended and into the ui config
+- Updated Node types declaration to support latest v16
+- Add max-statements-per-line with max=1.
 
 ## 3.3.5
 Tue, 27 Sep 2022 11:50:59 GMT

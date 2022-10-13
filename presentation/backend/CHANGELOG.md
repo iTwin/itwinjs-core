@@ -1,6 +1,18 @@
 # Change Log - @itwin/presentation-backend
 
-This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- lock down @types/semver to 7.3.10
+- Updated Node types declaration to support latest v16
+- Fix manager diagnostics reporting being affected by individual request diagnostics options
+- Add a way to capture current context so it can be used by diagnostics handler when the request is fulfilled
+- Added `PresentationManagerProps.diagnosticsCallback` property for setting up diagnostics reporting.
+- Remove backend localization
 
 ## 3.3.5
 Tue, 27 Sep 2022 11:50:59 GMT

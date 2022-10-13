@@ -1,6 +1,18 @@
 # Change Log - @itwin/core-transformer
 
-This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Switch from the IModelSchemaLoader to the SchemaLoader
+- select * on link tables now also includes SourceECClassId and TargetECClassId
+- lock down @types/semver to 7.3.10
+- Updated Node types declaration to support latest v16
+- handle cascading deletes in IModelTransformer.processChanges
+- fix element deletions in reverse synchronization
 
 ## 3.3.5
 Tue, 27 Sep 2022 11:50:59 GMT
