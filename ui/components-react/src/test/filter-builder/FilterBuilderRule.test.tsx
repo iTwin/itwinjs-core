@@ -100,8 +100,13 @@ describe("PropertyFilterBuilderRuleRenderer", () => {
     it("renders with property renderer", () => {
       const actions = new PropertyFilterBuilderActions(sinon.spy());
       const propertyRendererSpy = sinon.spy();
-      renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
+      const { container } = renderWithContext(<PropertyFilterBuilderRuleRenderer {...defaultProps} />,
         { actions, properties: [defaultProperty] }, { propertyRenderer: propertyRendererSpy });
+
+      // open property selector menu
+      const selector = container.querySelector<HTMLInputElement>(".rule-property input");
+      expect(selector).to.not.be.null;
+      fireEvent.focus(selector!);
 
       expect(propertyRendererSpy).to.be.calledWith(defaultProperty.name);
     });
