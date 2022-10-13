@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/* eslint-disable @typescript-eslint/naming-convention */
 export class PhillyLandmarksDataset {
 
   // This is the output of a 'Query' request for a point over the philly airport, result is in PDF (64-based encoded arrayBuffer)
