@@ -594,11 +594,16 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   private static transformCallbackFor(transformer: IModelTransformer, entity: ConcreteEntity): EntityTransformHandler {
-    if (entity instanceof Element) return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof Element) return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof Relationship) return transformer.onTransformRelationship as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else if (entity instanceof ElementAspect) return transformer.onTransformElementAspect as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
-    else assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
+    if (entity instanceof Element)
+      return transformer.onTransformElement as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Element)
+      return transformer.onTransformModel as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof Relationship)
+      return transformer.onTransformRelationship as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else if (entity instanceof ElementAspect)
+      return transformer.onTransformElementAspect as EntityTransformHandler; // eslint-disable-line @typescript-eslint/unbound-method
+    else
+      assert(false, `unreachable; entity was '${entity.constructor.name}' not an Element, Relationship, or ElementAspect`);
   }
 
   /** callback to perform when a partial element says it's ready to be completed
@@ -634,7 +639,8 @@ export class IModelTransformer extends IModelExportHandler {
       // TODO: probably need to rename from 'id' to 'ref' so these names aren't so ambiguous
       const referenceIdInTarget = this.context.findTargetEntityId(referenceId);
       const alreadyImported = EntityReferences.isValid(referenceIdInTarget);
-      if (alreadyImported) continue;
+      if (alreadyImported)
+        continue;
       Logger.logTrace(loggerCategory, `Deferring resolution of reference '${referenceId}' of element '${entity.id}'`);
       const referencedExistsInSource = EntityUnifier.exists(this.sourceDb, { entityReference: referenceId });
       if (!referencedExistsInSource) {
@@ -707,7 +713,8 @@ export class IModelTransformer extends IModelExportHandler {
         // entities that refuse to be inserted without a different kind of entity (e.g. aspect or relationship) first being inserted
         assert(referenceType === ConcreteEntityTypes.Element || referenceType === ConcreteEntityTypes.Model);
         return mapId64(idContainer, (id) => {
-          if (id === Id64.invalid || id === IModel.rootSubjectId) return undefined; // not allowed to directly export the root subject
+          if (id === Id64.invalid || id === IModel.rootSubjectId)
+            return undefined; // not allowed to directly export the root subject
           if (!this.context.isBetweenIModels) {
             // Within the same iModel, can use existing DefinitionElements without remapping
             // This is relied upon by the TemplateModelCloner
@@ -720,7 +727,8 @@ export class IModelTransformer extends IModelExportHandler {
           return id;
         })
           .filter((sourceReferenceId: Id64String | undefined): sourceReferenceId is Id64String => {
-            if (sourceReferenceId === undefined) return false;
+            if (sourceReferenceId === undefined)
+              return false;
             const referenceInTargetId = this.context.findTargetElementId(sourceReferenceId);
             const isInTarget = Id64.isValid(referenceInTargetId);
             return !isInTarget;
@@ -732,8 +740,10 @@ export class IModelTransformer extends IModelExportHandler {
       for (const reference of unresolvedReferences) {
         const processState = this.getElemTransformState(reference);
         // must export element first
-        if (processState.needsElemImport) await this.exporter.exportElement(reference);
-        if (processState.needsModelImport) await this.exporter.exportModel(reference);
+        if (processState.needsElemImport)
+          await this.exporter.exportElement(reference);
+        if (processState.needsModelImport)
+          await this.exporter.exportModel(reference);
       }
     }
   }
@@ -817,7 +827,8 @@ export class IModelTransformer extends IModelExportHandler {
     for (const referencer of this._pendingReferences.getReferencers(entity)) {
       const key = PendingReference.from(referencer, entity);
       const pendingRef = this._pendingReferences.get(key);
-      if (!pendingRef) continue;
+      if (!pendingRef)
+        continue;
       pendingRef.resolveReference(EntityReferences.from(entity));
       this._pendingReferences.delete(key);
     }
@@ -1193,7 +1204,8 @@ export class IModelTransformer extends IModelExportHandler {
    * Overriders must call `super.initialize()` first
    */
   public async initialize(args?: InitFromExternalSourceAspectsArgs) {
-    if (this._initialized) return;
+    if (this._initialized)
+      return;
     await this.context.initialize();
     // eslint-disable-next-line deprecation/deprecation
     await this.initFromExternalSourceAspects(args);

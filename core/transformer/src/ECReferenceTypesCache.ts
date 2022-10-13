@@ -77,7 +77,7 @@ export class ECReferenceTypesCache {
 
   /** initialize from an imodel with metadata */
   public async initAllSchemasInIModel(imodel: IModelDb): Promise<void> {
-    const schemaLoader = new SchemaLoader((name: string) => { return imodel.getSchemaProps(name); });
+    const schemaLoader = new SchemaLoader((name: string) => imodel.getSchemaProps(name));
     await imodel.withPreparedStatement(`
       WITH RECURSIVE refs(SchemaId) AS (
         SELECT ECInstanceId FROM ECDbMeta.ECSchemaDef WHERE Name='BisCore'
@@ -98,7 +98,8 @@ export class ECReferenceTypesCache {
         const schema = schemaLoader.getSchema(schemaName);
         await this.considerInitSchema(schema);
       }
-      if (status !== DbResult.BE_SQLITE_DONE) throw new IModelError(status, "unexpected query failure");
+      if (status !== DbResult.BE_SQLITE_DONE)
+        throw new IModelError(status, "unexpected query failure");
     });
   }
 
@@ -117,17 +118,20 @@ export class ECReferenceTypesCache {
   private async initSchema(schema: Schema): Promise<void> {
     for (const ecclass of schema.getClasses()) {
       for (const prop of await ecclass.getProperties()) {
-        if (!prop.isNavigation()) continue;
+        if (!prop.isNavigation())
+          continue;
         const relClass = await prop.relationshipClass;
         const relInfo = await this.relInfoFromRelClass(relClass);
-        if (relInfo === undefined) continue;
+        if (relInfo === undefined)
+          continue;
         const navPropRefType = prop.direction === StrengthDirection.Forward ? relInfo.target : relInfo.source;
         this._propQualifierToRefType.set([schema.name.toLowerCase(), ecclass.name.toLowerCase(), prop.name.toLowerCase()], navPropRefType);
       }
 
       if (ecclass instanceof RelationshipClass) {
         const relInfo = await this.relInfoFromRelClass(ecclass);
-        if (relInfo) this._relClassNameEndToRefTypes.set([schema.name.toLowerCase(), ecclass.name.toLowerCase()], relInfo);
+        if (relInfo)
+          this._relClassNameEndToRefTypes.set([schema.name.toLowerCase(), ecclass.name.toLowerCase()], relInfo);
       }
     }
 
@@ -142,7 +146,8 @@ export class ECReferenceTypesCache {
       this.getRootBisClassForConstraint(ecclass.source),
       this.getRootBisClassForConstraint(ecclass.target),
     ]);
-    if (source.name === "CodeSpec" || target.name === "CodeSpec") return undefined;
+    if (source.name === "CodeSpec" || target.name === "CodeSpec")
+      return undefined;
     const sourceType = ECReferenceTypesCache.bisRootClassToRefType[source.name];
     const targetType = ECReferenceTypesCache.bisRootClassToRefType[target.name];
     const makeAssertMsg = (cls: ECClass) => `An unknown root class '${cls.name}' was encountered while populating the nav prop reference type cache. This is a bug.`;
@@ -152,7 +157,8 @@ export class ECReferenceTypesCache {
   }
 
   public getNavPropRefType(schemaName: string, className: string, propName: string): undefined | ConcreteEntityTypes {
-    if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
+    if (!this._initedSchemas.has(schemaName))
+      throw new SchemaNotInCacheErr();
     return this._propQualifierToRefType.get([
       schemaName.toLowerCase(),
       className.toLowerCase(),
@@ -161,7 +167,8 @@ export class ECReferenceTypesCache {
   }
 
   public getRelationshipEndType(schemaName: string, className: string): undefined | RelTypeInfo {
-    if (!this._initedSchemas.has(schemaName)) throw new SchemaNotInCacheErr();
+    if (!this._initedSchemas.has(schemaName))
+      throw new SchemaNotInCacheErr();
     return this._relClassNameEndToRefTypes.get([
       schemaName.toLowerCase(),
       className.toLowerCase(),
