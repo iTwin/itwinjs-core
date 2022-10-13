@@ -16,7 +16,7 @@ export class ClassHierarchy {
   ) {
   }
 
-  public is(classId: Id64String, {isDerived, isBase}: {isDerived?: boolean, isBase?: boolean}) {
+  public is(classId: Id64String, { isDerived, isBase }: { isDerived?: boolean, isBase?: boolean }) {
     if (classId === this._id)
       return true;
 
@@ -32,9 +32,11 @@ export class ClassHierarchy {
 
 /** @internal */
 export class ClassHierarchiesSet {
-  constructor(private _classSets: ClassHierarchy[]) {}
+  constructor(private _classSets: ClassHierarchy[]) { }
 
-  public has(classId: Id64String, options: {isDerived?: boolean, isBase?: boolean}) {
+  public has(classId: Id64String, options: { isDerived?: boolean, isBase?: boolean }, all?: boolean) {
+    if (all)
+      return this._classSets.every((idsSet) => idsSet.is(classId, options));
     return this._classSets.some((idsSet) => idsSet.is(classId, options));
   }
 }
@@ -93,7 +95,7 @@ export class ECClassHierarchyProvider {
   private getAllBaseClassIds(classId: Id64String): Id64String[] {
     const baseClassIds = this._baseClasses.get(classId) ?? [];
     return baseClassIds.reduce<Id64String[]>((arr, id) => {
-      arr.push(id,...this.getAllBaseClassIds(id));
+      arr.push(id, ...this.getAllBaseClassIds(id));
       return arr;
     }, []);
   }
