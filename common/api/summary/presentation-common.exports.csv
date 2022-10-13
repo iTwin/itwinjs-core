@@ -165,6 +165,7 @@ public;Id64sRulesetVariableJSON
 public;IdCategoryIdentifier
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
+alpha;InstanceFilterDefinition
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey

@@ -1194,6 +1194,20 @@ export interface ImageIdOverride extends RuleBase {
     ruleType: RuleTypes.ImageIdOverride;
 }
 
+// @alpha (undocumented)
+export interface InstanceFilterDefinition {
+    expression: string;
+    relatedInstances?: Array<{
+        pathFromSelectToPropertyClass: StrippedRelationshipPath;
+        isRequired?: boolean;
+    } & ({
+        alias: string;
+    } | {
+        relationshipAlias: string;
+    })>;
+    selectClassName?: string;
+}
+
 // @public
 export type InstanceId = Id64String;
 
