@@ -130,7 +130,7 @@ export class Entity {
    * This is important for cloning operations but can be useful in other situations as well.
    * @param _referenceIds The Id64Set to populate with reference Ids.
    * @note In the next breaking change, the behavior of this function will change to require a EntityReferenceSet argument,
-   *       which does not accept plain Id64s, see [EntityReferenceSet]($backend).
+   *       which does not accept plain Id64s, see EntityReferenceSet.
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
