@@ -33,7 +33,8 @@ export class ExternalSource extends InformationReferenceElement {
   /** @internal */
   public constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
-    if (props.repository) this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
+    if (props.repository)
+      this.repository = new ExternalSourceIsInRepository(RelatedElement.idFromJson(props.repository));
   }
   /** @internal */
   public override toJSON(): ExternalSourceProps { // This override only specializes the return type
@@ -88,9 +89,14 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   /** @internal */
   public constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
-    if (props.attaches) this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
-    if (props.translation) this.translation = Point3d.fromJSON(props.translation);
-    if (props.scale) this.scale = Point3d.fromJSON(props.scale);
+    if (props.attaches)
+      this.attaches = new ExternalSourceAttachmentAttachesSource(RelatedElement.idFromJson(props.attaches));
+
+    if (props.translation)
+      this.translation = Point3d.fromJSON(props.translation);
+
+    if (props.scale)
+      this.scale = Point3d.fromJSON(props.scale);
   }
   /** @internal */
   public override toJSON(): ExternalSourceAttachmentProps { // This override only specializes the return type

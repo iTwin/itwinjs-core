@@ -5,7 +5,7 @@
 
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import {
-  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
@@ -478,10 +478,18 @@ export class TestRunner {
         if (undefined !== flag) {
           if (key === "renderMode" && typeof flag === "string") {
             switch (flag.toLowerCase()) {
-              case "solidfill": vf.renderMode = RenderMode.SolidFill; break;
-              case "hiddenline": vf.renderMode = RenderMode.HiddenLine; break;
-              case "wireframe": vf.renderMode = RenderMode.Wireframe; break;
-              case "smoothshade": vf.renderMode = RenderMode.SmoothShade; break;
+              case "solidfill":
+                vf.renderMode = RenderMode.SolidFill;
+                break;
+              case "hiddenline":
+                vf.renderMode = RenderMode.HiddenLine;
+                break;
+              case "wireframe":
+                vf.renderMode = RenderMode.Wireframe;
+                break;
+              case "smoothshade":
+                vf.renderMode = RenderMode.SmoothShade;
+                break;
             }
           } else {
             vf[key] = flag;
@@ -514,44 +522,7 @@ export class TestRunner {
 
   private async waitForTilesToLoad(viewport: ScreenViewport): Promise<TestResult> {
     const timer = new StopWatch(undefined, true);
-    let haveNewTiles = true;
-    while (haveNewTiles) {
-      viewport.requestRedraw();
-      viewport.invalidateScene();
-      viewport.renderFrame();
-
-      // The scene is ready when (1) all required TileTrees have been created and (2) all required tiles have finished loading.
-      const context = viewport.createSceneContext();
-      viewport.createScene(context);
-      context.requestMissingTiles();
-
-      haveNewTiles = !viewport.areAllTileTreesLoaded || context.hasMissingTiles || 0 < context.missingTiles.size;
-      if (!haveNewTiles) {
-        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
-        for (const vp of viewport.view.secondaryViewports) {
-          if (vp.numRequestedTiles > 0) {
-            haveNewTiles = true;
-            break;
-          }
-
-          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
-          if (tiles && tiles.external.requested > 0) {
-            haveNewTiles = true;
-            break;
-          }
-        }
-      }
-
-      // NB: The viewport is NOT added to the ViewManager's render loop, therefore we must manually pump the tile request scheduler.
-      if (haveNewTiles)
-        IModelApp.tileAdmin.process();
-
-      await BeDuration.wait(100);
-    }
-
-    await IModelApp.renderSystem.waitForAllExternalTextures();
-
-    viewport.renderFrame();
+    await viewport.waitForSceneCompletion();
     timer.stop();
 
     const selectedTiles = getSelectedTileStats(viewport);
@@ -1145,14 +1116,20 @@ function getRenderOpts(opts: RenderSystem.Options): string {
         break;
       }
       case "displaySolarShadows":
-        if (!opts[key]) optString += "-solShd";
+        if (!opts[key])
+          optString += "-solShd";
+
         break;
       case "useWebGL2":
-        if (opts[key]) optString += "+webGL2";
+        if (opts[key])
+          optString += "+webGL2";
+
         break;
       case "antialiasSamples": {
         const value = opts[key];
-        if (undefined !== value && value > 1) optString += `+aa${value}`;
+        if (undefined !== value && value > 1)
+          optString += `+aa${value}`;
+
         break;
       }
     }
@@ -1168,16 +1145,24 @@ function getTileProps(props: TileAdmin.Props): string {
     const key = propName as keyof TileAdmin.Props;
     switch (key) {
       case "enableInstancing":
-        if (props[key]) tilePropsStr += "+inst";
+        if (props[key])
+          tilePropsStr += "+inst";
+
         break;
       case "disableMagnification":
-        if (props[key]) tilePropsStr += "-mag";
+        if (props[key])
+          tilePropsStr += "-mag";
+
         break;
       case "enableIndexedEdges":
-        if (!props[key]) tilePropsStr += "-idxEdg";
+        if (!props[key])
+          tilePropsStr += "-idxEdg";
+
         break;
       case "generateAllPolyfaceEdges":
-        if (!props[key]) tilePropsStr += "-pfEdg";
+        if (!props[key])
+          tilePropsStr += "-pfEdg";
+
         break;
     }
   }

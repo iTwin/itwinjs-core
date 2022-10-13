@@ -217,13 +217,20 @@ export class FeatureAppearance {
       return base;
 
     const props = base.toJSON();
-    if (undefined === props.rgb) props.rgb = this.rgb;
-    if (undefined === props.transparency) props.transparency = this.transparency;
-    if (undefined === props.linePixels) props.linePixels = this.linePixels;
-    if (undefined === props.weight) props.weight = this.weight;
-    if (undefined === props.ignoresMaterial && this.ignoresMaterial) props.ignoresMaterial = true;
-    if (undefined === props.nonLocatable && this.nonLocatable) props.nonLocatable = true;
-    if (undefined === props.emphasized && this.emphasized) props.emphasized = true;
+    if (undefined === props.rgb)
+      props.rgb = this.rgb;
+    if (undefined === props.transparency)
+      props.transparency = this.transparency;
+    if (undefined === props.linePixels)
+      props.linePixels = this.linePixels;
+    if (undefined === props.weight)
+      props.weight = this.weight;
+    if (undefined === props.ignoresMaterial && this.ignoresMaterial)
+      props.ignoresMaterial = true;
+    if (undefined === props.nonLocatable && this.nonLocatable)
+      props.nonLocatable = true;
+    if (undefined === props.emphasized && this.emphasized)
+      props.emphasized = true;
 
     if (undefined !== props.transparency && this.viewDependentTransparency)
       props.viewDependentTransparency = true;

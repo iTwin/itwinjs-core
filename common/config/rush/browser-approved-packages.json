@@ -131,6 +131,10 @@
       "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@itwin/cloud-agnostic-core",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
       "name": "@itwin/components-react",
       "allowedCategories": [ "extensions", "frontend", "internal", "tools" ]
     },
@@ -197,6 +201,10 @@
     {
       "name": "@itwin/core-webpack-tools",
       "allowedCategories": [ "backend", "internal", "tools" ]
+    },
+    {
+      "name": "@itwin/ecschema-editing",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@itwin/ecschema-locaters",
@@ -301,6 +309,14 @@
     {
       "name": "@itwin/node-cli-authorization",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/object-storage-azure",
+      "allowedCategories": [ "backend", "frontend" ]
+    },
+    {
+      "name": "@itwin/object-storage-core",
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "@itwin/oidc-signin-tool",
@@ -428,7 +444,7 @@
     },
     {
       "name": "@xmldom/xmldom",
-      "allowedCategories": [ "backend", "common", "tools" ]
+      "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
     {
       "name": "almost-equal",
@@ -703,10 +719,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "i18next-xhr-backend",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "ignore-styles",
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
@@ -725,6 +737,10 @@
     {
       "name": "internal-tools",
       "allowedCategories": [ "backend", "integration-testing", "internal" ]
+    },
+    {
+      "name": "inversify",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "istanbul-instrumenter-loader",
@@ -911,6 +927,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-select-async-paginate",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-select-event",
       "allowedCategories": [ "frontend" ]
     },
@@ -937,6 +957,10 @@
     {
       "name": "redux",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "reflect-metadata",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "require-dir",

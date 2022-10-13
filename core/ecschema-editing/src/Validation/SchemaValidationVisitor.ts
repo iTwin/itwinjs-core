@@ -574,6 +574,8 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
       }
     }
 
-    this._reporters.forEach((reporter) => { reporter.report(diagnostic); });
+    this._reporters.forEach((reporter) => {
+      reporter.report(diagnostic);
+    });
   }
 }

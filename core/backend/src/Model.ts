@@ -195,7 +195,12 @@ export class Model extends Entity {
    */
   protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
-  private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
+  private getAllUserProperties(): any {
+    if (!this.jsonProperties.UserProps)
+      this.jsonProperties.UserProps = new Object();
+
+    return this.jsonProperties.UserProps;
+  }
 
   /** Get a set of JSON user properties by namespace */
   public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
@@ -269,8 +274,12 @@ export abstract class GeometricModel3d extends GeometricModel {
   /** @internal */
   public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
-    if (this.isNotSpatiallyLocated) val.isNotSpatiallyLocated = true;
-    if (this.isPlanProjection) val.isPlanProjection = true;
+    if (this.isNotSpatiallyLocated)
+      val.isNotSpatiallyLocated = true;
+
+    if (this.isPlanProjection)
+      val.isPlanProjection = true;
+
     return val;
   }
 }
@@ -288,7 +297,9 @@ export abstract class GeometricModel2d extends GeometricModel {
   /** @internal */
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
-    if (undefined !== this.globalOrigin) val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
+    if (undefined !== this.globalOrigin)
+      val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
+
     return val;
   }
 }

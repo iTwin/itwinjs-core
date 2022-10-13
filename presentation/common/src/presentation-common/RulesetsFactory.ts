@@ -177,35 +177,48 @@ type Operator = "=" | "!=" | ">" | ">=" | "<" | "<=";
 const createComparison = (type: PrimitiveTypeDescription, name: string, operator: Operator, value: PrimitivePropertyValue): string => {
   let compareValue = "";
   switch (typeof value) {
-    case "undefined": compareValue = "NULL"; break;
-    case "string": compareValue = `"${value.replace(/"/g, `""`)}"`; break;
-    case "boolean": compareValue = value ? "TRUE" : "FALSE"; break;
-    case "number": compareValue = value.toString(); break;
+    case "undefined":
+      compareValue = "NULL";
+      break;
+    case "string":
+      compareValue = `"${value.replace(/"/g, `""`)}"`;
+      break;
+    case "boolean":
+      compareValue = value ? "TRUE" : "FALSE";
+      break;
+    case "number":
+      compareValue = value.toString();
+      break;
   }
-  if (type.typeName === "navigation" && typeof value === "object" && Id64.isId64((value as InstanceKey).id)) {
+
+  if (type.typeName === "navigation" && typeof value === "object" && Id64.isId64((value as InstanceKey).id))
     // note: this is temporary until we support hex ids in instance filters
     compareValue = hexToDec((value as InstanceKey).id);
-  }
+
   if (type.typeName === "point2d" || type.typeName === "point3d") {
     if (typeof value !== "object")
       throw new Error("Expecting point values to be supplied as objects");
+
     const dimensionType: PrimitiveTypeDescription = {
       valueFormat: PropertyValueFormat.Primitive,
       typeName: "double",
     };
+
     const pointValue = value as Point;
     let comparison = `${createComparison(dimensionType, `${name}.x`, operator, pointValue.x)}`;
     comparison += ` AND ${createComparison(dimensionType, `${name}.y`, operator, pointValue.y)}`;
     if (type.typeName === "point3d" && pointValue.z !== undefined)
       comparison += ` AND ${createComparison(dimensionType, `${name}.z`, operator, pointValue.z)}`;
+
     return comparison;
   }
-  if (type.typeName === "double") {
+
+  if (type.typeName === "double")
     return `CompareDoubles(${name}, ${compareValue}) ${operator} 0`;
-  }
-  if (type.typeName === "dateTime") {
+
+  if (type.typeName === "dateTime")
     return `CompareDateTimes(${name}, ${compareValue}) ${operator} 0`;
-  }
+
   return `${name} ${operator} ${compareValue}`;
 };
 

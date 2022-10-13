@@ -163,8 +163,7 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[1].color, color0.tbgr);
   });
 
-  // Skipping due to https://github.com/iTwin/itwinjs-core/issues/4184
-  it.skip("resolves material face symbology correctly", () => {
+  it("resolves material face symbology correctly", () => {
     const materialColor0 = ColorDef.fromString("honeydew").withTransparency(80);
     const materialId0 = insertRenderMaterial("test-material-0", materialColor0);
 

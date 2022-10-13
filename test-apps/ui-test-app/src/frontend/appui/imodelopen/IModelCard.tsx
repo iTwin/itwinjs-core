@@ -78,6 +78,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     return (
       <div className="imodel-card" >
         <div className="imodel-card-content" >
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="imodel-card-preview" onClick={this._onCardClicked}>
             {this.renderThumbnail()}
           </div>

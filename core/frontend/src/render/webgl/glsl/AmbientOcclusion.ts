@@ -199,7 +199,9 @@ const unfinalizeLinearDepthDB = `
   }
 `;
 
-function _shouldUseDB() { return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat; }
+function _shouldUseDB() {
+  return System.instance.supportsLogZBuffer && System.instance.capabilities.supportsTextureFloat;
+}
 
 /** @internal */
 export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProgram {

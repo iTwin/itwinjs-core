@@ -873,7 +873,7 @@ describe("IModelTransformer", () => {
 
     class OrderedExporter extends IModelExporter {
       public override async exportSchemas() {
-        const schemaLoader = new SchemaLoader((name: string) => { return this.sourceDb.getSchemaProps(name); });
+        const schemaLoader = new SchemaLoader((name: string) => this.sourceDb.getSchemaProps(name));
         const schema1 = schemaLoader.getSchema("TestSchema1");
         const schema2 = schemaLoader.getSchema("TestSchema2");
         // by importing schema2 (which references schema1) first, we
@@ -896,7 +896,7 @@ describe("IModelTransformer", () => {
     assert.isUndefined(error);
 
     targetDb.saveChanges();
-    const targetImportedSchemasLoader = new SchemaLoader((name: string) => { return targetDb.getSchemaProps(name); });
+    const targetImportedSchemasLoader = new SchemaLoader((name: string) =>  targetDb.getSchemaProps(name));
     const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema1");
     assert.isDefined(schema1InTarget);
     const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");

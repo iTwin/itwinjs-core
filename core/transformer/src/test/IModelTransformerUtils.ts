@@ -200,11 +200,15 @@ function getAllElemMetaDataProperties(elem: Element) {
       const base = elem.iModel.getMetaData(baseName);
       Object.assign(allProperties, getAllClassMetaDataProperties(baseName, base));
     }
+
     Object.assign(allProperties, aliasedProperties[className.toLowerCase()]);
     return allProperties;
   }
+
   const classMetaData = elem.getClassMetaData();
-  if (!classMetaData) return undefined;
+  if (!classMetaData)
+    return undefined;
+
   return getAllClassMetaDataProperties(elem.classFullName, classMetaData);
 }
 
@@ -316,25 +320,38 @@ export async function assertIdentityTransformation(
           | undefined;
         if (styles?.environment?.sky) {
           const sky = styles.environment.sky;
-          if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+          if (!sky.image)
+            sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+
           const image = sky.image;
-          if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
-          if (image?.texture) image.texture = remapElem(image.texture);
-          if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-          if ((sky as any).file === "") delete (sky as any).file;
+          if (image?.texture === Id64.invalid)
+            (image.texture as string | undefined) = undefined;
+
+          if (image?.texture)
+            image.texture = remapElem(image.texture);
+
+          if (!sky.twoColor)
+            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+
+          if ((sky as any).file === "")
+            delete (sky as any).file;
         }
+
         const excludedElements = typeof styles?.excludedElements === "string"
           ? CompressedId64Set.decompressArray(styles.excludedElements)
           : styles?.excludedElements;
+
         for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
           const id = excludedElements![i];
           excludedElements![i] = remapElem(id);
         }
+
         for (const ovr of styles?.subCategoryOvr ?? []) {
           if (ovr.subCategory)
             ovr.subCategory = remapElem(ovr.subCategory);
         }
       }
+
       if (sourceElem instanceof SpatialViewDefinition) {
         const viewProps = expectedSourceElemJsonProps.viewDetails as ViewDetails3dProps | undefined;
         if (viewProps && viewProps.acs)
@@ -479,7 +496,9 @@ export async function assertIdentityTransformation(
     const isOnlyInSource =
       onlyInSourceElements.has(relInSource.SourceECInstanceId) &&
       onlyInSourceElements.has(relInSource.TargetECInstanceId);
-    if (isOnlyInSource) continue;
+    if (isOnlyInSource)
+      continue;
+
     const relSourceInTarget = remapElem(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
     const relTargetInTarget = remapElem(relInSource.TargetECInstanceId);
@@ -491,7 +510,11 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => {
+        s.bindId(1, relInSource.ECClassId);
+        s.step();
+        return s.getValue(0).getString();
+      }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
@@ -1237,7 +1260,9 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine("--------------------------------");
   }
   private formatOperationName(isUpdate: boolean | undefined): string {
-    if (undefined === isUpdate) return "";
+    if (undefined === isUpdate)
+      return "";
+
     return isUpdate ? ", UPDATE" : ", INSERT";
   }
   private getIndentLevelForElement(element: Element): number {

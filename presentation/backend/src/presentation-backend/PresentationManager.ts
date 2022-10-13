@@ -11,14 +11,12 @@ import { Id64String } from "@itwin/core-bentley";
 import { FormatProps, UnitSystemKey } from "@itwin/core-quantity";
 import {
   ComputeSelectionRequestOptions, Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions,
-  DefaultContentDisplayTypes,
-  Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
   DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey,
-  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper, MultiElementPropertiesRequestOptions,
-  Node,
-  NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized, Ruleset, RulesetVariable, SelectClassInfo,
-  SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
+  isComputeSelectionRequestOptions, isSingleElementPropertiesRequestOptions, KeySet, LabelDefinition, LocalizationHelper,
+  MultiElementPropertiesRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PresentationError, PresentationStatus, Prioritized,
+  Ruleset, RulesetVariable, SelectClassInfo, SelectionScope, SelectionScopeRequestOptions, SingleElementPropertiesRequestOptions, WithCancelEvent,
 } from "@itwin/presentation-common";
 import { buildElementsProperties, getElementsCount, iterateElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
@@ -26,7 +24,7 @@ import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationMan
 import { RulesetManager } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
 import { SelectionScopesHelper } from "./SelectionScopesHelper";
-import { BackendDiagnosticsAttribute, DiagnosticsCallback, getLocalizedStringEN } from "./Utils";
+import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, getLocalizedStringEN } from "./Utils";
 
 /**
  * Presentation manager working mode.
@@ -83,6 +81,8 @@ export interface HierarchyCacheConfigBase {
 
 /**
  * Configuration for in-memory hierarchy cache.
+ *
+ * @see [Memory cache documentation page]($docs/presentation/advanced/Caching.md#memory-cache)
  * @beta
  */
 export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -91,6 +91,8 @@ export interface MemoryHierarchyCacheConfig extends HierarchyCacheConfigBase {
 
 /**
  * Configuration for persistent disk hierarchy cache.
+ *
+ * @see [Disk cache documentation page]($docs/presentation/advanced/Caching.md#disk-cache)
  * @beta
  */
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
@@ -102,6 +104,14 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
    * The default directory depends on the iModel and the way it's opened.
    */
   directory?: string;
+
+  /**
+   * While the cache itself is stored on a disk, there's still a required small in-memory cache.
+   * The parameter allows controlling size of that cache. Defaults to `32768000` bytes (32 MB).
+   *
+   * @beta
+   */
+  memoryCacheSize?: number;
 }
 
 /**
@@ -110,6 +120,7 @@ export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
  * Hybrid cache uses a combination of in-memory and disk caches, which should make it a better
  * alternative for cases when there are lots of simultaneous requests.
  *
+ * @see [Hybrid cache documentation page]($docs/presentation/advanced/Caching.md#hybrid-cache)
  * @beta
  */
 export interface HybridCacheConfig extends HierarchyCacheConfigBase {
@@ -121,6 +132,8 @@ export interface HybridCacheConfig extends HierarchyCacheConfigBase {
 
 /**
  * Configuration for content cache.
+ *
+ * @see [Content cache documentation page]($docs/presentation/advanced/Caching.md#content-cache)
  * @public
  */
 export interface ContentCacheConfig {
@@ -129,7 +142,7 @@ export interface ContentCacheConfig {
    *
    * Defaults to `100`.
    *
-   * @alpha
+   * @beta
    */
   size?: number;
 }
@@ -270,12 +283,26 @@ export interface PresentationManagerProps {
   caching?: {
     /**
      * Hierarchies-related caching options.
+     *
+     * @see [Hierarchies cache documentation page]($docs/presentation/advanced/Caching.md#hierarchies-cache)
      * @beta
      */
     hierarchies?: HierarchyCacheConfig;
 
     /** Content-related caching options. */
     content?: ContentCacheConfig;
+
+    /**
+     * Each worker thread (see [[workerThreadsCount]]) opens a connection to an iModel used for a request. This
+     * means there could be  `{workerThreadsCount} * {iModels count}` number of connections. Each connection
+     * uses a memory cache to increase iModel read performance. This parameter allows controlling the size of that
+     * cache. Defaults to `32768000` bytes (32 MB).
+     *
+     *
+     * @see [Worker connections cache documentation page]($docs/presentation/advanced/Caching.md#worker-connections-cache)
+     * @beta
+     */
+    workerConnectionCacheSize?: number;
   };
 
   /**
@@ -303,16 +330,18 @@ export interface PresentationManagerProps {
 
   /**
    * Localization function when only backend is used.
-   *
    * @beta
   */
   getLocalizedString?: (key: string) => string;
 
-  /*
-   * A function that will be called after receiving diagnostics.
+  /**
+   * Parameters for gathering diagnostics at the manager level. When supplied, they're used with every request
+   * made through the manager.
+   *
+   * @see [Diagnostics documentation page]($docs/presentation/advanced/Diagnostics.md)
    * @beta
    */
-  diagnosticsCallback?: DiagnosticsCallback;
+  diagnostics?: BackendDiagnosticsOptions;
 }
 
 /**

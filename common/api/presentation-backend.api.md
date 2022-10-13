@@ -60,26 +60,27 @@ export interface BackendDiagnosticsAttribute {
 }
 
 // @beta
-export type BackendDiagnosticsHandler = (logs: Diagnostics) => void;
+export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 // @beta
-export interface BackendDiagnosticsOptions extends DiagnosticsOptions {
-    // (undocumented)
-    handler: BackendDiagnosticsHandler;
+export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
+    handler: BackendDiagnosticsHandler<TContext>;
+    requestContextSupplier?: () => TContext;
 }
+
+// @internal (undocumented)
+export function combineDiagnosticsOptions(...options: Array<BackendDiagnosticsOptions | undefined>): DiagnosticsOptions | undefined;
 
 // @public
 export interface ContentCacheConfig {
-    // @alpha
+    // @beta
     size?: number;
 }
-
-// @public
-export type DiagnosticsCallback = (diagnostics: Diagnostics) => void;
 
 // @beta
 export interface DiskHierarchyCacheConfig extends HierarchyCacheConfigBase {
     directory?: string;
+    memoryCacheSize?: number;
     // (undocumented)
     mode: HierarchyCacheMode.Disk;
 }
@@ -247,6 +248,7 @@ export interface PresentationManagerProps {
     caching?: {
         hierarchies?: HierarchyCacheConfig;
         content?: ContentCacheConfig;
+        workerConnectionCacheSize?: number;
     };
     defaultFormats?: {
         [phenomenon: string]: UnitSystemFormat;
@@ -254,8 +256,8 @@ export interface PresentationManagerProps {
     // @deprecated
     defaultLocale?: string;
     defaultUnitSystem?: UnitSystemKey;
-    // (undocumented)
-    diagnosticsCallback?: DiagnosticsCallback;
+    // @beta
+    diagnostics?: BackendDiagnosticsOptions;
     // @deprecated
     enableSchemasPreload?: boolean;
     // @beta
@@ -286,6 +288,9 @@ export interface PresentationPropsBase extends PresentationManagerProps {
     enableSchemasPreload?: boolean;
     requestTimeout?: number;
 }
+
+// @internal (undocumented)
+export function reportDiagnostics<TContext>(diagnostics: Diagnostics, options: BackendDiagnosticsOptions<TContext>, context?: TContext): void;
 
 // @beta
 export class RulesetEmbedder {
