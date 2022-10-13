@@ -9,10 +9,10 @@
 import { ConcreteEntityTypes, ElementAspectProps, ElementProps, EntityReference, ModelProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import type { Entity } from "./Entity";
-import type { Model } from "./Model";
-import type { Element } from "./Element";
-import type { ElementAspect } from "./ElementAspect";
-import type { Relationship, RelationshipProps } from "./Relationship";
+import { Model } from "./Model";
+import { Element } from "./Element";
+import { ElementAspect } from "./ElementAspect";
+import { Relationship, RelationshipProps } from "./Relationship";
 import * as assert from "assert";
 
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
@@ -68,26 +68,6 @@ export namespace EntityReferences {
     return `${type}${Id64.invalid}`;
   }
 
-  // necessary to prevent cyclic dependencies, the required modules will be in the require cache already so I don't store
-  /* eslint-disable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
-  function _ElementClass() {
-    // typescript doesn't seem to understand the types of these static relative imports
-    return (require("./Element") as typeof import("./Element")).Element;
-  }
-  function _ElementAspectClass() {
-    return (require("./ElementAspect") as typeof import("./ElementAspect")).ElementAspect;
-  }
-  function _ModelClass() {
-    return (require("./Model") as typeof import("./Model")).Model;
-  }
-  function _RelationshipClass() {
-    return (require("./Relationship") as typeof import("./Relationship")).Relationship;
-  }
-  function _ClassRegistry() {
-    return (require("./ClassRegistry") as typeof import("./ClassRegistry")).ClassRegistry;
-  }
-  /* eslint-enable @typescript-eslint/naming-convention,@typescript-eslint/no-var-requires */
-
   /** create an EntityReference given an entity */
   export function from(entity: ConcreteEntity): EntityReference {
     const type = typeFromClass(entity.constructor as typeof Entity);
@@ -100,16 +80,6 @@ export namespace EntityReferences {
     return `${type}${id}`;
   }
 
-  /** Create an EntityReference given an id and a qualified EC class name
-   * @note Searches for a class by name in the [ClassRegistry]($backend)
-   */
-  export function fromClassFullName(id: Id64String, classFullName: string): EntityReference {
-    const ecclass = _ClassRegistry().findRegisteredClass(classFullName);
-    if (ecclass === undefined)
-      throw Error(`class '${classFullName}' is not registered and could not be found`);
-    return fromClass(id, ecclass);
-  }
-
   /** Create an EntityReference quickly from an exact reference type and id */
   export function fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference {
     return `${type}${id}`;
@@ -117,13 +87,13 @@ export namespace EntityReferences {
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
   export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
-    if (entityClass.is(_ElementClass()))
+    if (entityClass.is(Element))
       return ConcreteEntityTypes.Element;
-    else if (entityClass.is(_ElementAspectClass()))
+    else if (entityClass.is(ElementAspect))
       return ConcreteEntityTypes.ElementAspect;
-    else if (entityClass.is(_ModelClass()))
+    else if (entityClass.is(Model))
       return ConcreteEntityTypes.Model;
-    else if (entityClass.is(_RelationshipClass()))
+    else if (entityClass.is(Relationship))
       return ConcreteEntityTypes.Relationship;
     else
       assert(false, "unknown or abstract entity type passed to EntityReferences.from");
