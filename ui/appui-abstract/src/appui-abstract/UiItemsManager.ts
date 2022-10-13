@@ -64,12 +64,26 @@ export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverride
   MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
   MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
 
+/**
+ * Callbacks to interact with items created by the ui provider before being handled by the UiItemsManager
+ * Can be used for telemetry / error checking / mutating items
+ * Note that callbacks will only be invoked when items exist
+ * @beta
+ */
+export interface UiItemsProviderCallbacks {
+  onToolbarButtonItemsCreated?: (items: CommonToolbarItem[]) => void;
+  onStatusBarItemsCreated?: (items: CommonStatusBarItem[]) => void;
+  onBackstageItemsCreated?: (items: BackstageItem[]) => void;
+  onWidgetsCreated?: (items: ReadonlyArray<AbstractWidgetProps>) => void;
+}
+
 /** Interface that defines an instance of a UiItemsProvider and its application specified overrides.
  *  @beta
  */
 interface UiItemProviderEntry {
   provider: UiItemsProvider;
   overrides?: UiItemProviderOverrides;
+  callbacks?: UiItemsProviderCallbacks;
 }
 
 /**
@@ -114,14 +128,20 @@ export class UiItemsManager {
   /**
    * Registers a UiItemsProvider with the UiItemsManager.
    * @param uiProvider the UI items provider to register.
+   * @param overrides if defined can override providerId / stageUsages / stageIds
+   * @param callbacks the UI items provider to register.
    */
-  public static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void {
+  public static register(
+    uiProvider: UiItemsProvider,
+    overrides?: UiItemProviderOverrides,
+    callbacks?: UiItemsProviderCallbacks,
+  ): void {
     const providerId = overrides?.providerId ?? uiProvider.id;
 
     if (UiItemsManager.getUiItemsProvider(providerId)) {
       Logger.logInfo(loggerCategory(this), `UiItemsProvider (${providerId}) is already loaded`);
     } else {
-      UiItemsManager._registeredUiItemsProviders.set(providerId, { provider: uiProvider, overrides });
+      UiItemsManager._registeredUiItemsProviders.set(providerId, { provider: uiProvider, overrides, callbacks });
       Logger.logInfo(loggerCategory(this), `UiItemsProvider ${uiProvider.id} registered as ${providerId} `);
 
       UiItemsManager.sendRegisteredEvent({ providerId } as UiItemProviderRegisteredEventArgs);
@@ -172,12 +192,13 @@ export class UiItemsManager {
       const providerId = entry.overrides?.providerId ?? uiProvider.id;
       // istanbul ignore else
       if (uiProvider.provideToolbarButtonItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
-        uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData)
-          .forEach((spec: CommonToolbarItem) => {
-            // ignore duplicate ids
-            if (-1 === buttonItems.findIndex((existingItem)=> spec.id === existingItem.id ))
-              buttonItems.push({ ...spec, providerId });
-          });
+        const items = uiProvider.provideToolbarButtonItems(stageId, stageUsage, toolbarUsage, toolbarOrientation, stageAppData);
+        items.length > 0 && entry.callbacks?.onToolbarButtonItemsCreated?.(items);
+        for (const item of items) {
+          // ignore duplicate ids
+          if (-1 === buttonItems.findIndex((existingItem) => item.id === existingItem.id))
+            buttonItems.push({ ...item, providerId });
+        }
       }
     });
 
@@ -201,12 +222,13 @@ export class UiItemsManager {
 
       // istanbul ignore else
       if (uiProvider.provideStatusBarItems && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
-        uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData)
-          .forEach((item: CommonStatusBarItem) => {
-            // ignore duplicate ids
-            if (-1 === statusBarItems.findIndex((existingItem)=> item.id === existingItem.id ))
-              statusBarItems.push({ ...item, providerId });
-          });
+        const items = uiProvider.provideStatusBarItems(stageId, stageUsage, stageAppData);
+        items.length > 0 && entry.callbacks?.onStatusBarItemsCreated?.(items);
+        for (const item of items) {
+          // ignore duplicate ids
+          if (-1 === statusBarItems.findIndex((existingItem) => item.id === existingItem.id))
+            statusBarItems.push({ ...item, providerId });
+        }
       }
     });
 
@@ -227,13 +249,17 @@ export class UiItemsManager {
       const providerId = entry.overrides?.providerId ?? uiProvider.id;
 
       // istanbul ignore else
-      if (uiProvider.provideBackstageItems) { // Note: We do not call this.allowItemsFromProvider here as backstage items
-        uiProvider.provideBackstageItems()    //       should not be considered stage specific. If they need to be hidden
-          .forEach((item: BackstageItem) => { //       the isHidden property should be set to a ConditionalBooleanValue
-            // ignore duplicate ids
-            if (-1 === backstageItems.findIndex((existingItem)=> item.id === existingItem.id ))
-              backstageItems.push({ ...item, providerId });
-          });
+      if (uiProvider.provideBackstageItems) {
+        // Note: We do not call this.allowItemsFromProvider here as backstage items
+        //   should not be considered stage specific. If they need to be hidden
+        //   the isHidden property should be set to a ConditionalBooleanValue
+        const items = uiProvider.provideBackstageItems();
+        items.length > 0 && entry.callbacks?.onBackstageItemsCreated?.(items);
+        for (const item of items) {
+          // ignore duplicate ids
+          if (-1 === backstageItems.findIndex((existingItem) => item.id === existingItem.id))
+            backstageItems.push({ ...item, providerId });
+        }
       }
     });
     return backstageItems;
@@ -258,12 +284,13 @@ export class UiItemsManager {
 
       // istanbul ignore else
       if (uiProvider.provideWidgets && this.allowItemsFromProvider(entry, stageId, stageUsage)) {
-        uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData)
-          .forEach((widget: AbstractWidgetProps) => {
-            // ignore duplicate ids
-            if (-1 === widgets.findIndex((existingItem)=> widget.id === existingItem.id ))
-              widgets.push({ ...widget, providerId });
-          });
+        const items = uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation, stageAppData);
+        items.length > 0 && entry.callbacks?.onWidgetsCreated?.(items);
+        for (const widget of items) {
+          // ignore duplicate ids
+          if (-1 === widgets.findIndex((existingItem) => widget.id === existingItem.id))
+            widgets.push({ ...widget, providerId });
+        }
       }
     });
     return widgets;
