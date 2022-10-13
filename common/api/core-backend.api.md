@@ -1278,7 +1278,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     protected constructor(props: DisplayStyleProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
     // (undocumented)
