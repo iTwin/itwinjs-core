@@ -1904,6 +1904,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
+     * @returns the id of the newly inserted aspect.
+     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
+     *       use [EntityReference]($common) for that instead.
      */
     public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
