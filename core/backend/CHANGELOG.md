@@ -1,6 +1,28 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- Add some logging in CustomViewState3dCreator.
+- time getmodelextents per modelid
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+### Updates
+
+- call container.checkForChanges before attempting to open a v2 checkpoint
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+### Updates
+
+- Chunk traversal options for ChangedElementsDb
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT
