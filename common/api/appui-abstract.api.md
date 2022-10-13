@@ -2138,7 +2138,7 @@ export class UiItemsManager {
     static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
-    static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides): void;
+    static register(uiProvider: UiItemsProvider, overrides?: UiItemProviderOverrides, callbacks?: UiItemsProviderCallbacks): void;
     static get registeredProviderIds(): string[];
     static unregister(uiProviderId: string): void;
 }
@@ -2151,6 +2151,18 @@ export interface UiItemsProvider {
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
     provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
+}
+
+// @public
+export interface UiItemsProviderCallbacks {
+    // (undocumented)
+    onBackstageItemsCreated?: (items: BackstageItem[]) => void;
+    // (undocumented)
+    onStatusBarItemsCreated?: (items: CommonStatusBarItem[]) => void;
+    // (undocumented)
+    onToolbarButtonItemsCreated?: (items: CommonToolbarItem[]) => void;
+    // (undocumented)
+    onWidgetsCreated?: (items: ReadonlyArray<AbstractWidgetProps>) => void;
 }
 
 // @public (undocumented)
