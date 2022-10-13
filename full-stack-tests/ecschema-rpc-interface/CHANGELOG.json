@@ -2,6 +2,24 @@
   "name": "@itwin/ecschema-rpcinterface-tests",
   "entries": [
     {
+      "version": "3.3.5",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:05 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/ecschema-rpcinterface-tests_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.2",
       "tag": "@itwin/ecschema-rpcinterface-tests_v3.3.2",
       "date": "Thu, 01 Sep 2022 14:37:22 GMT",
