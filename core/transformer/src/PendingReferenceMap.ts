@@ -21,8 +21,10 @@ export interface PendingReference {
 
 export namespace PendingReference {
   export function from(referencer: ConcreteEntity | EntityReference, referenced: ConcreteEntity | EntityReference): PendingReference {
-    if (typeof referencer !== "string") referencer = EntityReferences.from(referencer);
-    if (typeof referenced !== "string") referenced = EntityReferences.from(referenced);
+    if (typeof referencer !== "string")
+      referencer = EntityReferences.from(referencer);
+    if (typeof referenced !== "string")
+      referenced = EntityReferences.from(referenced);
     return { referencer, referenced };
   }
 

@@ -105,7 +105,8 @@ export namespace EntityReferences {
    */
   export function fromClassFullName(id: Id64String, classFullName: string): EntityReference {
     const ecclass = _ClassRegistry().findRegisteredClass(classFullName);
-    if (ecclass === undefined) throw Error(`class '${classFullName}' is not registered and could not be found`);
+    if (ecclass === undefined)
+      throw Error(`class '${classFullName}' is not registered and could not be found`);
     return fromClass(id, ecclass);
   }
 
@@ -116,10 +117,15 @@ export namespace EntityReferences {
 
   /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
   export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
-    if (entityClass.is(_ElementClass())) return ConcreteEntityTypes.Element;
-    else if (entityClass.is(_ElementAspectClass())) return ConcreteEntityTypes.ElementAspect;
-    else if (entityClass.is(_ModelClass())) return ConcreteEntityTypes.Model;
-    else if (entityClass.is(_RelationshipClass())) return ConcreteEntityTypes.Relationship;
-    else assert(false, "unknown or abstract entity type passed to EntityReferences.from");
+    if (entityClass.is(_ElementClass()))
+      return ConcreteEntityTypes.Element;
+    else if (entityClass.is(_ElementAspectClass()))
+      return ConcreteEntityTypes.ElementAspect;
+    else if (entityClass.is(_ModelClass()))
+      return ConcreteEntityTypes.Model;
+    else if (entityClass.is(_RelationshipClass()))
+      return ConcreteEntityTypes.Relationship;
+    else
+      assert(false, "unknown or abstract entity type passed to EntityReferences.from");
   }
 }

@@ -112,6 +112,7 @@ export type ExtractLiterals<T, U extends T> = Extract<T, U>;
  */
 export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
   const clone = { ...t };
-  for (const key of keys) delete clone[key];
+  for (const key of keys)
+    delete clone[key];
   return clone;
 }

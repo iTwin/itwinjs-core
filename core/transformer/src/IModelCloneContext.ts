@@ -22,11 +22,11 @@ import { EntityUnifier } from "./EntityUnifier";
  */
 export class IModelCloneContext extends IModelElementCloneContext {
 
-  private refTypesCache = new ECReferenceTypesCache();
+  private _refTypesCache = new ECReferenceTypesCache();
 
   /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
   public override async initialize() {
-    await this.refTypesCache.initAllSchemasInIModel(this.sourceDb);
+    await this._refTypesCache.initAllSchemasInIModel(this.sourceDb);
   }
 
   private _aspectRemapTable = new Map<Id64String, Id64String>();
@@ -110,7 +110,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
               throw new IModelError(status, "unexpected query failure");
             return undefined;
           });
-        if (relInSource === undefined) break;
+        if (relInSource === undefined)
+          break;
         // just in case prevent recursion
         if (relInSource.sourceId === sourceEntityId || relInSource.targetId === sourceEntityId)
           throw Error("link table relationship end was resolved to itself. This should be impossible");
@@ -150,7 +151,7 @@ export class IModelCloneContext extends IModelElementCloneContext {
       if (propertyMetaData.isNavigation) {
         const sourceNavProp: RelatedElementProps | undefined = sourceElementAspect.asAny[propertyName];
         if (sourceNavProp?.id) {
-          const navPropRefType = this.refTypesCache.getNavPropRefType(
+          const navPropRefType = this._refTypesCache.getNavPropRefType(
             sourceElementAspect.schemaName,
             sourceElementAspect.className,
             propertyName
@@ -174,7 +175,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
     super.saveStateToDb(db);
     if (DbResult.BE_SQLITE_DONE !== db.executeSQL(
       `CREATE TABLE ${IModelCloneContext.aspectRemapTableName} (Source INTEGER, Target INTEGER)`
-    )) throw Error("Failed to create the aspect remap table in the state database");
+    ))
+      throw Error("Failed to create the aspect remap table in the state database");
     db.saveChanges();
     db.withPreparedSqliteStatement(
       `INSERT INTO ${IModelCloneContext.aspectRemapTableName} (Source, Target) VALUES (?, ?)`,
@@ -183,7 +185,8 @@ export class IModelCloneContext extends IModelElementCloneContext {
           stmt.reset();
           stmt.bindId(1, source);
           stmt.bindId(2, target);
-          if (DbResult.BE_SQLITE_DONE !== stmt.step()) throw Error("Failed to insert aspect remapping into the state database");
+          if (DbResult.BE_SQLITE_DONE !== stmt.step())
+            throw Error("Failed to insert aspect remapping into the state database");
         }
       });
   }
