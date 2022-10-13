@@ -95,7 +95,6 @@ describe("requestElementGraphics", () => {
       let createdMesh = false;
       IModelApp.renderSystem.createMeshGeometry = (params) => {
         expect(params.vertices.usesUnquantizedPositions).to.equal(true !== options.quantize);
-        // ###TODO inspect mesh geometry
         createdMesh = true;
         return new MockRender.Geometry();
       };
