@@ -1613,7 +1613,7 @@ export class RenderTimeline extends InformationRecordElement {
     }
   }
 
-  /** @alpha */
+  /** @internal */
   protected override collectReferenceConcreteIds(ids: EntityReferenceSet): void {
     super.collectReferenceConcreteIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
