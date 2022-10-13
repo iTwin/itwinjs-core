@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-geometry
 
-This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Add missing call to clone when calling Ray3d.createStartEnd.
+- ConvexClipPlaneSet from convex Polyface
+- BoxProps.origin name changed to baseOrigin to agree with json format
+- revisit skipped geomlibs tests
+- RegionOps.constructAllXYRegionLoops bug fix
+- When finding closest point on bspline, bezier endpoints were not explicitly tested
+- New method PolyfaceQuery.cloneWithMaximalPlanarFacets
+- Updated Node types declaration to support latest v16
 
 ## 3.3.5
 Tue, 27 Sep 2022 11:50:59 GMT

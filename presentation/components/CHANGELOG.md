@@ -1,6 +1,14 @@
 # Change Log - @itwin/presentation-components
 
-This log was last generated on Tue, 27 Sep 2022 11:50:59 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Improved instance filter builder property renderer to avoid duplicate entries
+- `usePresentationTreeNodeLoader`: Add ability to supply initial `TreeModel`.
 
 ## 3.3.5
 Tue, 27 Sep 2022 11:50:59 GMT

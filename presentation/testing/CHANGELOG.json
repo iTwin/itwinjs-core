@@ -2,6 +2,18 @@
   "name": "@itwin/presentation-testing",
   "entries": [
     {
+      "version": "3.4.0",
+      "tag": "@itwin/presentation-testing_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow supplying `IModelHostOptions` when initializing tests"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.3.5",
       "tag": "@itwin/presentation-testing_v3.3.5",
       "date": "Tue, 27 Sep 2022 11:50:59 GMT",
