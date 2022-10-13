@@ -24,7 +24,18 @@ describe("ArcGisFeatureJSON", () => {
     sandbox.restore();
   });
 
-  it("should read FeatureInfo in JSON", async () => {
+  it("should read FeatureInfo in JSON (phillyTansportation)", async () => {
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    // In some cases, PBF gives more floating-point precision than JSON.
+    // Since I want to use the same output reference for both formats, I force a max precision of 8.
+    featureJson.floatPrecision = 8;
+    const results: MapLayerFeatureInfo[] = [];
+    featureJson.readFeatureInfo({data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false}, results);
+    expect(JSON.stringify(results)).equals(JSON.stringify(PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef));
+  });
+
+  it("should read FeatureInfo in JSON (phillyAirport)", async () => {
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
     // In some cases, PBF gives more floating-point precision than JSON.
@@ -74,11 +85,11 @@ describe("ArcGisFeatureJSON", () => {
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
-    const renderPathFeatureSpy = sinon.spy(featureRenderer, "renderPathFeature");
+    const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
-    expect(renderPathFeatureSpy.calledOnce);
+    expect(renderPathSpy.calledOnce);
 
-    const firstCall = renderPathFeatureSpy.getCalls()[0];
+    const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
     expect(firstCall.args[2]).to.eql(true);           // fill
@@ -94,11 +105,11 @@ describe("ArcGisFeatureJSON", () => {
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
-    const renderPathFeatureSpy = sinon.spy(featureRenderer, "renderPathFeature");
+    const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
-    expect(renderPathFeatureSpy.calledOnce);
+    expect(renderPathSpy.calledOnce);
 
-    const firstCall = renderPathFeatureSpy.getCalls()[0];
+    const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
     expect(firstCall.args[2]).to.eql(true);                        // fill
@@ -113,12 +124,12 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
-    const renderPathFeatureSpy = sinon.spy(featureRenderer, "renderPathFeature");
+    const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
-    expect(renderPathFeatureSpy.calledOnce);
+    expect(renderPathSpy.calledOnce);
 
     const geometryCoords = [360,491,-2,-1,-1,0,-1,0,-1,0,-1,1,-4,1,-10,2,-15,3,-1,0,-1,0,-2,0,-1,0,-1,0,-1,-1,-1,0,-2,-1,0,-1,-1,0,-1,0,-1,0,-1,0,-1,0,-1,0];
-    const firstCall = renderPathFeatureSpy.getCalls()[0];
+    const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql([24]);          // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
     expect(firstCall.args[2]).to.eql(false);           // fill
@@ -132,12 +143,12 @@ describe("ArcGisFeatureJSON", () => {
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
-    const renderPathFeatureSpy = sinon.spy(featureRenderer, "renderPathFeature");
+    const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
-    expect(renderPathFeatureSpy.calledOnce);
+    expect(renderPathSpy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
-    const firstCall = renderPathFeatureSpy.getCalls()[0];
+    const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.lengths);
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.coords);
     expect(firstCall.args[2]).to.eql(false);           // fill
@@ -153,7 +164,7 @@ describe("ArcGisFeatureJSON", () => {
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
-    const spy = sinon.spy(featureRenderer, "renderPointFeature");
+    const spy = sinon.spy(featureRenderer, "renderPoint");
     featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(spy.calledOnce);
 

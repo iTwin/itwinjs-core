@@ -44,7 +44,7 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
             lengths.push(path.length);
           }
         }
-        renderer.renderPathFeature(lengths, coords, fill, 2);
+        renderer.renderPath(lengths, coords, fill, 2, renderer.transform === undefined);
 
       }
     } else if (responseObj?.geometryType === "esriGeometryPoint" ||
@@ -55,7 +55,7 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
         if (feature.geometry) {
           const lengths: number[] = [];
           const coords: number[] = [feature.geometry.x, feature.geometry.y];
-          renderer.renderPointFeature(lengths, coords, 2);
+          renderer.renderPoint(lengths, coords, 2, renderer.transform === undefined);
         }
 
       }
@@ -105,6 +105,8 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
           return StandardTypeNames.Integer;
         case "esriFieldTypeDouble":
           return StandardTypeNames.Double;
+        case "esriFieldTypeSingle":
+          return StandardTypeNames.Float;
         case "esriFieldTypeDate":
           return StandardTypeNames.DateTime;
         default:
@@ -115,19 +117,26 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
     const getRecordInfo = (fieldName: string, value: any) => {
       const propertyValue: PrimitiveValue = {valueFormat: PropertyValueFormat.Primitive};
 
+      if (value === null) {
+        value = undefined;
+      }
+
       const strValue = `${value}`;
       const fieldType = fieldsType[fieldName];
-      if (fieldType === "esriFieldTypeInteger" || fieldType === "esriFieldTypeDouble" || fieldType ===  "esriFieldTypeSmallInteger" || fieldType ===  "esriFieldTypeOID" ) {
+      if (fieldType === "esriFieldTypeInteger" || fieldType === "esriFieldTypeDouble" || fieldType === "esriFieldTypeSingle" || fieldType ===  "esriFieldTypeSmallInteger" || fieldType ===  "esriFieldTypeOID" ) {
 
-        if (fieldType === "esriFieldTypeDouble"  ) {
+        if (fieldType === "esriFieldTypeDouble" || fieldType === "esriFieldTypeSingle") {
           propertyValue.value  = this.toFixedWithoutPadding(value);
         } else {
           propertyValue.value = value as number;
         }
-      } else
+      } else if (fieldType === "esriFieldTypeDate" ) {
+        propertyValue.value = new Date(value);
+      } else if (value !== undefined) {
         propertyValue.value = strValue;
+      }
 
-      propertyValue.displayValue = `${propertyValue.value}`;
+      propertyValue.displayValue = propertyValue.value === undefined ? "" : `${propertyValue.value}`;
       return new MapFeatureInfoRecord (propertyValue, {name: fieldName, displayLabel: fieldName,  typename: getStandardTypeName(fieldType)});
     };
 

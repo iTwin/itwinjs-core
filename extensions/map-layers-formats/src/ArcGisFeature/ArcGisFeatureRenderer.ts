@@ -11,12 +11,12 @@ export class ArcGisFeatureRenderer  {
   private _context: CanvasRenderingContext2D;
 
   constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyRenderer, world2PixelTransform?: Transform) {
-
     this._symbol = symbol;
     this._context = context;
     this._transform = world2PixelTransform;
-
   }
+
+  public get transform() {return this._transform;}
 
   // Utility functions to make ease testing.
   private closePath() {
@@ -39,7 +39,19 @@ export class ArcGisFeatureRenderer  {
     this._context.stroke();
   }
 
-  public renderPathFeature(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number) {
+  /**
+   * Render a path on the renderer's context.
+   * Note: Inputs are designed based on the PBF format, to avoid any data transformation.
+   * @param geometryLengths  Array be used to determine the start and end of each sub-path / rings. (i.e. [5,5] =  two rings of 5 vertices)
+   * @param geometryCoords Array that linearly encodes the vertices of each sub-path of a polyline / ring of a polygon
+   * @param fill Indicates if the path should be filled or not.
+   * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
+  */
+  public renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean) {
+    if (stride < 2 || stride > 3) {
+      return;
+    }
+
     // Keep track of our position in the in the 'coords' array:
     // Every time we loop on the 'lengths' array, the position
     // to start reading vertices in the 'coords' must be the sum of all previously read vertices.
@@ -52,31 +64,37 @@ export class ArcGisFeatureRenderer  {
     for (const vertexCount of geometryLengths) {
       let lastPtX = 0, lastPtY = 0;
       for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-        const pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
-        const pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
+        let pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
+        let pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
         if (vertexIdx === 0) {
           // first vertex is always "absolute" and must be drawn as 'moveTo' (i.e. not lineTo)
-          if (this._transform) {
-            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
-            this.moveTo(transformedPoint.x, transformedPoint.y);
-          } else {
-            this.moveTo(pX, pY);
+          if (relativeCoords) {
             lastPtX = pX;
             lastPtY = pY;
           }
-        } else {
 
-          // console.log (`this._context.moveTo(${lastPtX}, ${lastPtY});`);
           if (this._transform) {
             const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
-            this.lineTo(transformedPoint.x, transformedPoint.y);
-          } else {
-            // Following vertices are relative to the previous one (sadly not really well documented by ESRI)
-            // typically this happens when 'coordinates quantization' is active (i.e. no client side transformation is needed)
-            lastPtX = lastPtX+pX;
-            lastPtY = lastPtY+pY;
-            this.lineTo(lastPtX, lastPtY);
+            pX = transformedPoint.x;
+            pY = transformedPoint.y;
           }
+
+          this.moveTo(pX, pY);
+        } else {
+
+          // Following vertices are relative to the previous one (sadly not really well documented by ESRI)
+          // typically this happens when 'coordinates quantization' is active (i.e. no client side transformation is needed)
+          if (relativeCoords) {
+            pX = lastPtX = lastPtX+pX;
+            pY = lastPtY = lastPtY+pY;
+          }
+
+          if (this._transform) {
+            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
+            pX = transformedPoint.x;
+            pY = transformedPoint.y;
+          }
+          this.lineTo(pX, pY);
         }
 
       }
@@ -96,7 +114,18 @@ export class ArcGisFeatureRenderer  {
     this.stroke();  // draw line path or polygon outline
   }
 
-  public renderPointFeature(geometryLengths: number[], geometryCoords: number[], stride: number)  {
+  /**
+   * Render a point on the renderer's context.
+   * Note: Inputs are designed based on the PBF format, to avoid any data transformation.
+   * @param geometryLengths  Array be used to determine the start and end of each multi-point array, empty for single point.
+   * @param geometryCoords Array that linearly encodes vertices.
+   * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
+  */
+  public renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean)  {
+
+    if (stride < 2 || stride > 3) {
+      return;
+    }
     let coordsOffset = 0;
     if (geometryLengths.length === 0) {
       // Strangely, for points, 'lengths' array is empty, so we assume there is a single vertex in 'coords' array.
@@ -115,17 +144,21 @@ export class ArcGisFeatureRenderer  {
       for (const vertexCount of geometryLengths) {
         let lastPtX = 0, lastPtY = 0;
         for (let vertexIdx=0 ; vertexIdx <vertexCount; vertexIdx++) {
-          const pX = geometryCoords[coordsOffset+(vertexIdx*2)];
-          const pY = geometryCoords[coordsOffset+(vertexIdx*2)+1];
-          lastPtX = (vertexIdx === 0) ? pX : lastPtX+pX;
-          lastPtY = (vertexIdx === 0) ? pY : lastPtY+pY;
+          let pX = geometryCoords[coordsOffset+(vertexIdx*stride)];
+          let pY = geometryCoords[coordsOffset+(vertexIdx*stride)+1];
+
+          if (relativeCoords) {
+            pX = lastPtX = lastPtX+pX;
+            pY = lastPtY = lastPtY+pY;
+          }
 
           if (this._transform) {
             const transformedPoint = this._transform.multiplyPoint2d({x: lastPtX, y:lastPtY});
-            this._symbol.drawPoint(this._context, transformedPoint.x, transformedPoint.y);
-          } else {
-            this._symbol.drawPoint(this._context, lastPtX, lastPtY);
+            pX = transformedPoint.x;
+            pY = transformedPoint.y;
           }
+
+          this._symbol.drawPoint(this._context, pX, pY);
 
         }
         coordsOffset+=stride*vertexCount;
