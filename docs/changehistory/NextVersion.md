@@ -5,6 +5,8 @@ publish: false
 
 Table of contents:
 
+- [@itwin/core-backend](#itwincore-backend)
+  - [Element aspect ids](#element-aspect-ids)
 - [Display system](#display-system)
   - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
@@ -14,6 +16,13 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [Transformer API](#transformer-api)
   - [IModelCloneContext split out with new base IModelElementCloneContext](#imodelclonecontext-split-out-with-new-base-imodelelementclonecontext)
+
+## @itwin/core-backend
+
+### Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
 
 ## Display system
 
