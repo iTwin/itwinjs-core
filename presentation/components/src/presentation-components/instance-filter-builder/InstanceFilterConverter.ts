@@ -24,7 +24,7 @@ export async function convertToInstanceFilterDefinition(filter: PresentationInst
     expression,
     selectClassName: baseClass.name,
     relatedInstances: context.relatedInstances.map((related) => ({
-      pathFromSelectToPropertyClass: RelationshipPath.strip(related.path),
+      pathFromSelectToPropertyClass: related.path,
       alias: related.alias,
     })),
   };

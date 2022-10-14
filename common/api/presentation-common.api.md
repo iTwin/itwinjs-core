@@ -1207,7 +1207,7 @@ export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInsta
 // @alpha (undocumented)
 export interface InstanceFilterRelatedInstancePath {
     isRequired?: boolean;
-    pathFromSelectToPropertyClass: StrippedRelationshipPath;
+    pathFromSelectToPropertyClass: RelationshipPath;
 }
 
 // @alpha (undocumented)

@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { StrippedRelationshipPath } from "./EC";
+import { RelationshipPath } from "./EC";
 
 /** @alpha */
 export interface InstanceFilterDefinition {
@@ -47,7 +47,7 @@ export interface InstanceFilterRelatedInstancePath {
    * A relationship path from select class (either specified through [[InstanceFilterDefinition.selectClassName]] or taken from context)
    * to the target related instance containing the properties used in [[InstanceFilterDefinition.expression]].
    */
-  pathFromSelectToPropertyClass: StrippedRelationshipPath;
+  pathFromSelectToPropertyClass: RelationshipPath;
   /**
    * An optional flag indicating that the target instance must exist. Setting this allows to filter out all
    * select instances that don't have a related instance by following the [[pathFromSelectToPropertyClass]] path.
