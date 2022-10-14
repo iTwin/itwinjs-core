@@ -665,7 +665,7 @@ describe("IModelTransformer", () => {
     }
   });
 
-  it("IModelElementCloneContext remap tests", async () => {
+  it("IModelCloneContext remap tests", async () => {
     const iModelDb: SnapshotDb = IModelTransformerTestUtils.createTeamIModel(outputDir, "Test", Point3d.create(0, 0, 0), ColorDef.green);
     const cloneContext = new IModelCloneContext(iModelDb);
     const sourceId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 1);
