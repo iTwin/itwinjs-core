@@ -35,7 +35,7 @@ export class IModelCloneContext {
     this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
   }
 
-  /** perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
+  /** @internal perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
   public async initialize() {
   }
 

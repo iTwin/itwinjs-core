@@ -107,7 +107,7 @@ export class Entity {
    * @note In the next breaking change, the behavior of this function will change to return a EntityReferenceSet
    *       which does not iterate plain Id64s, see [EntityReferenceSet]($backend).
    * @see collectReferenceIds
-   * @beta
+   * @internal
    */
   public getReferenceIds(): Set<Id64String> {
     const referenceIds = new Set<Id64String>();
@@ -134,7 +134,7 @@ export class Entity {
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
-   * @beta
+   * @internal
    */
   protected collectReferenceIds(referenceIds: Set<Id64String>): void {
     const concreteEntityIds = this.getReferenceConcreteIds();
