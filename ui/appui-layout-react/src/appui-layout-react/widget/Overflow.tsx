@@ -81,12 +81,12 @@ interface WidgetOverflowContextArgs {
 export const WidgetOverflowContext = React.createContext<WidgetOverflowContextArgs | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetOverflowContext.displayName = "nz:WidgetOverflowContext";
 
-function usePanelPopup(onClose?: () => void) {
+function usePanelPopup(onClose: () => void) {
   const panel = React.useContext(PanelStateContext);
   const { collapsed } = panel || {};
   React.useEffect(() => {
     if (collapsed) {
-      onClose?.();
+      onClose();
     }
-  }, [collapsed]);
+  }, [collapsed, onClose]);
 }

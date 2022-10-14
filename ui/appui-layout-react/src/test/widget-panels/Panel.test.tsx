@@ -1035,33 +1035,6 @@ describe("useAnimatePanelWidgets", () => {
     sinon.assert.notCalled(spy);
   });
 
-  it("should transition to panel collapse when collapseUnpinned is set", () => {
-    const dispatch = sinon.stub<NineZoneDispatch>();
-    let state = createNineZoneState();
-    state = addTab(state, "t1");
-    state = addPanelWidget(state, "left", "w1", ["t1"]);
-    state = produce(state, (draft) => {
-      draft.panels.left.size = 200;
-      draft.panels.left.collapsed = false;
-      draft.panels.left.pinned = false;
-    });
-    const { container } = render(
-      <WidgetPanelProvider
-        side="left"
-      />,
-      {
-        wrapper: (props) => <TestNineZoneProvider state={state} {...props} dispatch={dispatch} autoCollapseUnpinnedPanels={true} />,  // eslint-disable-line react/display-name
-      },
-    );
-
-    const panel = container.getElementsByClassName("nz-widgetPanels-panel")[0] as HTMLElement;
-
-    sinon.stub(panel, "getBoundingClientRect").returns(DOMRect.fromRect({ width: 200 }));
-    panel.style.width.should.eq("200px");
-    fireEvent(panel, new MouseEvent("mouseleave"));
-    dispatch.calledWith({ collapsed: true, side: "left", type: "PANEL_SET_COLLAPSED" }).should.be.true;
-  });
-
   it("should not transition to panel collapse when already collapsed and collapseUnpinned is set", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
 
