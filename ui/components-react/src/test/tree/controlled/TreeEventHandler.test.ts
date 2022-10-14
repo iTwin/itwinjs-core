@@ -14,7 +14,7 @@ import { CheckboxStateChange, TreeEvents, TreeSelectionChange } from "../../../c
 import { MutableTreeModelNode, TreeModel } from "../../../components-react/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
 import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
-import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode } from "./TreeHelpers";
 
 describe("TreeEventHandler", () => {
 
