@@ -41,9 +41,6 @@ function runProgram(program: string, args: string[] = [], cwd: string | undefine
 
 function log(message: string) {
   console.log(message);
-  // const now = new Date();
-  // const time = now.toLocaleString();
-  // console.log(`${time}: ${message}`);
 }
 
 async function main() {
