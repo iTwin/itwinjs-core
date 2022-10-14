@@ -131,9 +131,8 @@ internal;CompositeTileHeader
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
-alpha;ConcreteEntityTypes
-alpha;ConcreteEntityTypes
-internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
+internal;ConcreteEntityTypes
+internal;ConcreteEntityTypes
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -233,8 +232,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
-alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
-alpha;EntityReferenceSet 
+internal;EntityReference = `${ConcreteEntityTypes}${Id64String}`
+internal;EntityReferenceSet 
 public;Environment
 public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps

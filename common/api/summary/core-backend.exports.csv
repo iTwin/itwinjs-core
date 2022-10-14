@@ -59,8 +59,8 @@ alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
-alpha;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
-alpha;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
+internal;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
+internal;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -137,10 +137,7 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
-alpha;EntityReferences
-internal;isValid(id: EntityReference): boolean
-internal;makeInvalid(type: ConcreteEntityTypes): EntityReference
-internal;typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes
+internal;EntityReferences
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -211,15 +208,11 @@ public;class GroupInformationModel
 public;GroupInformationPartition 
 public;GroupModel 
 internal;HubMock
-beta;IModelCloneContext: typeof IModelElementCloneContext
-deprecated;IModelCloneContext: typeof IModelElementCloneContext
-beta;IModelCloneContext = IModelElementCloneContext
-deprecated;IModelCloneContext = IModelElementCloneContext
+beta;IModelCloneContext
 public;class IModelDb 
 public;IModelDb
 internal;TileContentState
 internal;Tiles
-beta;IModelElementCloneContext
 public;IModelHost
 public;IModelHostConfiguration 
 public;IModelHostOptions

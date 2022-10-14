@@ -1095,10 +1095,10 @@ export interface ComputeProjectExtentsOptions {
     reportOutliers?: boolean;
 }
 
-// @alpha
+// @internal
 export type ConcreteEntity = Element_2 | Model | ElementAspect | Relationship;
 
-// @alpha
+// @internal
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 // @alpha
@@ -1284,7 +1284,7 @@ export abstract class DisplayStyle extends DefinitionElement {
     // (undocumented)
     loadScheduleScript(): RenderSchedule.ScriptReference | undefined;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void;
     // (undocumented)
     abstract get settings(): DisplayStyleSettings;
 }
@@ -1312,7 +1312,7 @@ export class DisplayStyle3d extends DisplayStyle {
     static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d;
     static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void;
     // (undocumented)
     get settings(): DisplayStyle3dSettings;
 }
@@ -1504,18 +1504,6 @@ export interface ECEnumValue {
     schema: string;
     // (undocumented)
     value: number | string;
-}
-
-// @internal
-export class ECReferenceTypesCache {
-    // (undocumented)
-    clear(): void;
-    // (undocumented)
-    getNavPropRefType(schemaName: string, className: string, propName: string): undefined | ConcreteEntityTypes;
-    // (undocumented)
-    getRelationshipEndType(schemaName: string, className: string): undefined | RelTypeInfo;
-    static globalCache: ECReferenceTypesCache;
-    initAllSchemasInIModel(imodel: IModelDb): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -1731,7 +1719,7 @@ class Element_2 extends Entity {
     // @beta
     protected static onChildUpdated(_arg: OnChildElementIdArg): void;
     // @beta
-    protected static onCloned(_context: IModelElementCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
+    protected static onCloned(_context: IModelCloneContext, _sourceProps: ElementProps, _targetProps: ElementProps): void;
     // @beta
     protected static onDelete(arg: OnElementIdArg): void;
     // @beta
@@ -1758,7 +1746,7 @@ class Element_2 extends Entity {
     removeUserProperties(nameSpace: string): void;
     // @beta
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @alpha
+    // @internal
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     // (undocumented)
     setJsonProperty(nameSpace: string, value: any): void;
@@ -1801,9 +1789,9 @@ export class ElementDrivesElement extends Relationship {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     // (undocumented)
-    static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
+    static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority?: number): T;
     priority: number;
     status: number;
     // (undocumented)
@@ -1881,7 +1869,7 @@ export class ElementRefersToElements extends Relationship {
     // @internal (undocumented)
     static get className(): string;
     // @internal (undocumented)
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T;
     static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String;
 }
@@ -1989,12 +1977,12 @@ export class Entity {
     get className(): string;
     // @internal
     protected collectReferenceConcreteIds(_referenceIds: EntityReferenceSet): void;
-    // @beta
+    // @internal
     protected collectReferenceIds(referenceIds: Set<Id64String>): void;
     forEachProperty(func: PropertyCallback, includeCustom?: boolean): void;
     // @internal
     getReferenceConcreteIds(): EntityReferenceSet;
-    // @beta
+    // @internal
     getReferenceIds(): Set<Id64String>;
     id: Id64String;
     iModel: IModelDb;
@@ -2014,7 +2002,7 @@ export type EntityClassType<T> = Function & {
     prototype: T;
 };
 
-// @alpha
+// @internal
 export namespace EntityReferences {
     export function from(entity: ConcreteEntity): EntityReference;
     export function fromClass(id: Id64String, entityClass: typeof Entity): EntityReference;
@@ -2027,14 +2015,11 @@ export namespace EntityReferences {
     export function isModel(id: EntityReference): boolean;
     // (undocumented)
     export function isRelationship(id: EntityReference): boolean;
-    // @internal
     export function isValid(id: EntityReference): boolean;
-    // @internal
     export function makeInvalid(type: ConcreteEntityTypes): EntityReference;
     export function split(id: EntityReference): [ConcreteEntityTypes, Id64String];
     // (undocumented)
     export function toId64(id: EntityReference): string;
-    // @internal
     export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes;
 }
 
@@ -2460,7 +2445,7 @@ export abstract class GeometricElement extends Element_2 {
     abstract get placement(): Placement2d | Placement3d;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     toJSON(): GeometricElementProps;
 }
@@ -2722,11 +2707,38 @@ export class HubMock {
     static startup(mockName: LocalDirName, outputDir: string): void;
 }
 
-// @beta @deprecated (undocumented)
-export const IModelCloneContext: typeof IModelElementCloneContext;
-
-// @beta @deprecated (undocumented)
-export type IModelCloneContext = IModelElementCloneContext;
+// @beta
+export class IModelCloneContext {
+    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
+    // @internal
+    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
+    static create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext>;
+    dispose(): void;
+    // @internal
+    dump(outputFileName: string): void;
+    filterSubCategory(sourceSubCategoryId: Id64String): void;
+    findTargetCodeSpecId(sourceId: Id64String): Id64String;
+    findTargetElementId(sourceElementId: Id64String): Id64String;
+    get hasSubCategoryFilter(): boolean;
+    // @internal
+    importCodeSpec(sourceCodeSpecId: Id64String): void;
+    // @internal
+    importFont(sourceFontNumber: number): void;
+    // @internal
+    initialize(): Promise<void>;
+    get isBetweenIModels(): boolean;
+    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
+    // @internal
+    loadStateFromDb(db: SQLiteDb): void;
+    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
+    remapElement(sourceId: Id64String, targetId: Id64String): void;
+    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
+    removeElement(sourceId: Id64String): void;
+    // @internal
+    saveStateToDb(db: SQLiteDb): void;
+    readonly sourceDb: IModelDb;
+    readonly targetDb: IModelDb;
+}
 
 // @public
 export abstract class IModelDb extends IModel {
@@ -2959,38 +2971,6 @@ export namespace IModelDb {
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;
         setDefaultViewId(viewId: Id64String): void;
     }
-}
-
-// @beta
-export class IModelElementCloneContext {
-    constructor(sourceDb: IModelDb, targetDb?: IModelDb);
-    // @internal
-    cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
-    static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
-    dispose(): void;
-    // @internal
-    dump(outputFileName: string): void;
-    filterSubCategory(sourceSubCategoryId: Id64String): void;
-    findTargetCodeSpecId(sourceId: Id64String): Id64String;
-    findTargetElementId(sourceElementId: Id64String): Id64String;
-    get hasSubCategoryFilter(): boolean;
-    // @internal
-    importCodeSpec(sourceCodeSpecId: Id64String): void;
-    // @internal
-    importFont(sourceFontNumber: number): void;
-    initialize(): Promise<void>;
-    get isBetweenIModels(): boolean;
-    isSubCategoryFiltered(subCategoryId: Id64String): boolean;
-    // @internal
-    loadStateFromDb(db: SQLiteDb): void;
-    remapCodeSpec(sourceCodeSpecName: string, targetCodeSpecName: string): void;
-    remapElement(sourceId: Id64String, targetId: Id64String): void;
-    remapElementClass(sourceClassFullName: string, targetClassFullName: string): void;
-    removeElement(sourceId: Id64String): void;
-    // @internal
-    saveStateToDb(db: SQLiteDb): void;
-    readonly sourceDb: IModelDb;
-    readonly targetDb: IModelDb;
 }
 
 // @public
@@ -4255,7 +4235,6 @@ export class Relationship extends Entity {
     constructor(props: RelationshipProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
-    protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
     delete(): void;
     // (undocumented)
     static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T;
@@ -4285,14 +4264,6 @@ export class Relationships {
     tryGetInstance<T extends Relationship>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     tryGetInstanceProps<T extends RelationshipProps>(relClassFullName: string, criteria: Id64String | SourceAndTarget): T | undefined;
     updateInstance(props: RelationshipProps): void;
-}
-
-// @internal (undocumented)
-export interface RelTypeInfo {
-    // (undocumented)
-    source: ConcreteEntityTypes;
-    // (undocumented)
-    target: ConcreteEntityTypes;
 }
 
 // @public
@@ -4347,9 +4318,9 @@ export class RenderTimeline extends InformationRecordElement {
     // (undocumented)
     static fromJSON(props: RenderTimelineProps, iModel: IModelDb): RenderTimeline;
     // @alpha (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
+    protected static onCloned(context: IModelCloneContext, sourceProps: RenderTimelineProps, targetProps: RenderTimelineProps): void;
     // @internal
-    static remapScript(context: IModelElementCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
+    static remapScript(context: IModelCloneContext, input: RenderSchedule.ScriptProps): RenderSchedule.ScriptProps;
     scriptProps: RenderSchedule.ScriptProps;
     // (undocumented)
     toJSON(): RenderTimelineProps;
@@ -4415,11 +4386,6 @@ export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
 
 // @internal (undocumented)
 export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
-
-// @internal
-export class SchemaNotInCacheErr extends Error {
-    constructor();
-}
 
 // @public
 export class Schemas {
@@ -4757,7 +4723,7 @@ export class SpatialViewDefinition extends ViewDefinition3d {
     modelSelectorId: Id64String;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
@@ -5316,10 +5282,10 @@ export abstract class ViewDefinition extends DefinitionElement {
     loadCategorySelector(): CategorySelector;
     loadDisplayStyle(): DisplayStyle;
     // @internal (undocumented)
-    protected static onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
+    protected static onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void;
     // @beta (undocumented)
     static readonly requiredReferenceKeys: ReadonlyArray<string>;
-    // @alpha (undocumented)
+    // @internal (undocumented)
     static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes>;
     setAuxiliaryCoordinateSystemId(acsId: Id64String): void;
     // @internal (undocumented)

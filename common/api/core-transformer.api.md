@@ -21,8 +21,8 @@ import { EntityReference } from '@itwin/core-common';
 import { EntityReferenceSet } from '@itwin/core-common';
 import { FontProps } from '@itwin/core-common';
 import { Id64String } from '@itwin/core-bentley';
+import { IModelCloneContext as IModelCloneContext_2 } from '@itwin/core-backend';
 import { IModelDb } from '@itwin/core-backend';
-import { IModelElementCloneContext } from '@itwin/core-backend';
 import { Model } from '@itwin/core-backend';
 import { ModelProps } from '@itwin/core-common';
 import { Placement2d } from '@itwin/core-common';
@@ -215,7 +215,9 @@ export class IModelTransformer extends IModelExportHandler {
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
     // @deprecated
-    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): void | Promise<void>;
+    initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
+    // @deprecated (undocumented)
+    initFromExternalSourceAspects(): void;
     initialize(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @internal
     static readonly jsStateTable = "TransformerJsState";

@@ -1562,7 +1562,7 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 // @internal
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
-// @alpha
+// @internal
 export enum ConcreteEntityTypes {
     // (undocumented)
     Element = "e",
@@ -1574,9 +1574,8 @@ export enum ConcreteEntityTypes {
     Relationship = "r"
 }
 
-// @alpha
+// @internal
 export namespace ConcreteEntityTypes {
-    // @internal
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
@@ -2812,10 +2811,10 @@ export interface EntityQueryParams {
     where?: string;
 }
 
-// @alpha
+// @internal
 export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
 
-// @alpha
+// @internal
 export class EntityReferenceSet extends Set<EntityReference> {
     // (undocumented)
     addAspect(id: Id64String): void;
