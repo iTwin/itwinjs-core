@@ -2712,6 +2712,7 @@ export class IModelCloneContext {
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
     cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
+    // @internal
     static create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext>;
     dispose(): void;
     // @internal

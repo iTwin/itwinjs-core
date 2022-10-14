@@ -214,10 +214,10 @@ export class IModelTransformer extends IModelExportHandler {
     protected getAdditionalStateJson(): any;
     protected hasElementChanged(sourceElement: Element_2, targetElementId: Id64String): boolean;
     readonly importer: IModelImporter;
-    // @deprecated
     initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @deprecated (undocumented)
     initFromExternalSourceAspects(): void;
+    // @internal
     initialize(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
     // @internal
     static readonly jsStateTable = "TransformerJsState";

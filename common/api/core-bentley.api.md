@@ -1273,7 +1273,7 @@ export class ObservableSet<T> extends Set<T> {
     readonly onDeleted: BeEvent<(item: T) => void>;
 }
 
-// @public
+// @internal
 export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
 
 // @beta
@@ -1559,7 +1559,7 @@ export class TransientIdSequence {
     get next(): Id64String;
 }
 
-// @public
+// @internal
 export class TupleKeyedMap<K extends readonly any[], V> {
     // (undocumented)
     [Symbol.iterator](): IterableIterator<[K, V]>;

@@ -3941,7 +3941,6 @@ export interface GraphicsRequestProps {
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
-    useAbsolutePositions?: boolean;
 }
 
 // @public
