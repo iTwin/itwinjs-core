@@ -239,7 +239,7 @@ export const formatStringRgx: RegExp;
 // @beta
 export class Formatter {
     static formatQuantity(magnitude: number, spec: FormatterSpec): string;
-    }
+}
 
 // @beta
 export class FormatterSpec {
@@ -320,7 +320,7 @@ export enum FractionalPrecision {
 export function getItemNamesFromFormatString(formatString: string): Iterable<string>;
 
 // @beta (undocumented)
-export function getTraitString(trait: FormatTraits): "trailZeroes" | "keepSingleZero" | "zeroEmpty" | "keepDecimalPoint" | "applyRounding" | "fractionDash" | "showUnitLabel" | "prependUnitLabel" | "use1000Separator" | "exponentOnlyNegative";
+export function getTraitString(trait: FormatTraits): "keepSingleZero" | "applyRounding" | "showUnitLabel" | "trailZeroes" | "use1000Separator" | "prependUnitLabel" | "keepDecimalPoint" | "zeroEmpty" | "fractionDash" | "exponentOnlyNegative";
 
 // @beta
 export const isCustomFormatProps: (item: FormatProps) => item is CustomFormatProps;
@@ -380,7 +380,7 @@ export class Parser {
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
-    }
+}
 
 // @beta
 export class ParserSpec {
@@ -574,7 +574,6 @@ export interface UnitsProvider {
 
 // @beta
 export type UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey";
-
 
 // (No @packageDocumentation comment for this package)
 

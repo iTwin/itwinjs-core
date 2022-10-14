@@ -567,7 +567,7 @@ export enum DiagnosticType {
 }
 
 // @beta (undocumented)
-export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem";
+export function diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem";
 
 // @beta
 export const ECRuleSet: IRuleSet;
@@ -1195,13 +1195,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     PresentationUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [OverrideFormat | Format], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
-            messageArgs?: [OverrideFormat | Format] | undefined;
+            messageArgs?: [Format | OverrideFormat] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
@@ -1231,25 +1231,25 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     FormatUnitMissing: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit] | undefined;
+            messageArgs?: [InvertedUnit | Unit] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
     UnitLabelOverrideDelta: {
-        new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
+        new (ecDefinition: SchemaItem, messageArgs: [InvertedUnit | Unit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
-            messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
+            messageArgs?: [InvertedUnit | Unit, string | undefined, string | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
