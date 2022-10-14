@@ -215,6 +215,8 @@ You can use these environment variables to alter the default behavior of various
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
   * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
+* IMJS_EXIT_AFTER_MODEL_OPENED
+  * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 
 ## Key-ins
 
