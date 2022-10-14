@@ -37,7 +37,7 @@ import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
 import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
-import { AtmosphericScattering } from "./AtmosphericScattering";
+import { Atmosphere } from "./Atmosphere";
 import { SkySphere } from "./SkyBox";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -158,7 +158,7 @@ export interface DisplayStyleSettingsProps {
  * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  atmosphericScattering?: AtmosphericScattering.Props;
+  atmosphere?: Atmosphere.Props;
   /** See [[DisplayStyle3dSettings.environment. */
   environment?: EnvironmentProps;
   /** See [[DisplayStyle3dSettings.thematic. */
@@ -502,7 +502,7 @@ export class DisplayStyleSettings {
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.atmosphericScattering]] property. */
-  public readonly onAtmosphericScatteringChanged = new BeEvent<(newSettings: AtmosphericScattering.Settings) => void>();
+  public readonly onAtmosphereChanged = new BeEvent<(newSettings: Atmosphere.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
@@ -1066,7 +1066,7 @@ export class DisplayStyleSettings {
  * @public
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
-  private _atmosphericScattering: AtmosphericScattering.Settings;
+  private _atmosphere: Atmosphere.Settings;
   private _thematic: ThematicDisplay;
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
@@ -1083,7 +1083,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
     super(jsonProperties, options);
-    this._atmosphericScattering = AtmosphericScattering.Settings.fromJSON(this._json3d.atmosphericScattering);
+    this._atmosphere = Atmosphere.Settings.fromJSON(this._json3d.atmosphere);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
@@ -1221,14 +1221,14 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control atmospheric scattering. */
-  public get atmosphericScattering(): AtmosphericScattering.Settings { return this._atmosphericScattering; }
-  public set atmosphericScattering(atmosphericScattering: AtmosphericScattering.Settings) {
-    if (atmosphericScattering.equals(this.atmosphericScattering))
+  public get atmosphere(): Atmosphere.Settings { return this._atmosphere; }
+  public set atmosphere(atmosphere: Atmosphere.Settings) {
+    if (atmosphere.equals(this.atmosphere))
       return;
 
-    this.onAtmosphericScatteringChanged.raiseEvent(atmosphericScattering);
-    this._atmosphericScattering = atmosphericScattering;
-    this._json3d.atmosphericScattering = atmosphericScattering.toJSON();
+    this.onAtmosphereChanged.raiseEvent(atmosphere);
+    this._atmosphere = atmosphere;
+    this._json3d.atmosphere = atmosphere.toJSON();
   }
 
   /** The settings that control how visible and hidden edges are displayed.  */
