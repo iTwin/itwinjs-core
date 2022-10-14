@@ -10,7 +10,7 @@ import * as sinon from "sinon";
 import {
   CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element,
   ElementMultiAspect, ElementOwnsChildElements, ElementOwnsExternalSourceAspects, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
-  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelDb, IModelElementCloneContext, IModelHost, IModelJsFs,
+  ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, GeometricElement, IModelDb, IModelCloneContext, IModelHost, IModelJsFs,
   InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb, SpatialCategory, StandaloneDb,
   SubCategory, Subject,
@@ -667,7 +667,7 @@ describe("IModelTransformer", () => {
 
   it("IModelElementCloneContext remap tests", async () => {
     const iModelDb: SnapshotDb = IModelTransformerTestUtils.createTeamIModel(outputDir, "Test", Point3d.create(0, 0, 0), ColorDef.green);
-    const cloneContext = new IModelElementCloneContext(iModelDb);
+    const cloneContext = new IModelCloneContext(iModelDb);
     const sourceId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 1);
     const targetId: Id64String = Id64.fromLocalAndBriefcaseIds(1, 2);
     cloneContext.remapElement(sourceId, targetId);
