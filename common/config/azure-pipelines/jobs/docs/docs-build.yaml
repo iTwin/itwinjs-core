@@ -118,6 +118,7 @@ jobs:
           scriptSource: inline
           script: |
             import os, subprocess, sys
+            print(sys.version)
 
             # Validate arguments
             if len(sys.argv) != 2:
@@ -128,7 +129,7 @@ jobs:
             cmd = ["node", "-p", "require('./core/backend/package.json').version"]
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
-              out, err = process.communicate(timeout=15)
+              out, err = process.communicate()
             except subprocess:
               process.kill()
               out, err = process.communicate()
