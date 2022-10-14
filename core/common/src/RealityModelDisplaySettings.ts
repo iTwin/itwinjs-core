@@ -148,6 +148,12 @@ export class PointCloudDisplaySettings {
     if (this.maxPixelsPerVoxel !== defs.maxPixelsPerVoxel)
       props.maxPixelsPerVoxel = this.maxPixelsPerVoxel;
 
+    if (this.edlStrength !== defs.edlStrength)
+      props.edlStrength = this.edlStrength;
+
+    if (this.edlRadius !== defs.edlRadius)
+      props.edlRadius = this.edlRadius;
+
     return props;
   }
 

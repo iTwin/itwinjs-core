@@ -62,7 +62,7 @@ export function createEDLSimpleProgram(context: WebGLContext): ShaderProgram {
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
-    prog.addProgramUniform("u_invScreenSize", (uniform, params) => {
+    prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
       params.target.uniforms.viewRect.bindInverseDimensions(uniform);
     });
   });
@@ -82,7 +82,7 @@ export function createEDLSimpleProgram(context: WebGLContext): ShaderProgram {
   });
 
   // Uniforms based on the PointCloudDisplaySettings.
-  builder.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
+  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
       params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
     });

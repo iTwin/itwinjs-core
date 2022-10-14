@@ -2155,6 +2155,12 @@ class MRTCompositor extends Compositor {
     // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     // WIP
+    // undefined !== this.primitive.cachedGeometry.asPointCloud
+    // const cmds = commands.getCommands(RenderPass.None !== cmdPass ? cmdPass : pass);
+    // if (0 === cmds.length)
+    // const params = getDrawParams(this.target, this._geom.edlSimple!);
+    // undefined !== this.primitive.cachedGeometry.asPointCloud
+    // if (params.target.uniforms.branch.top.realityModelDisplaySettings?.pointCloud.edlStrength > 0) {
     if (false) {
       fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.PointClouds);
@@ -2170,6 +2176,7 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.PointClouds);
       });
 
+      // ###TODO recreate fbo textures (and fbos?) when window size changes?
       fbStack.execute(edlFin, true, useMsBuffers, () => {
       // this.drawPass(commands, RenderPass.PointClouds);
         if (this._geom.edlSimple === undefined)

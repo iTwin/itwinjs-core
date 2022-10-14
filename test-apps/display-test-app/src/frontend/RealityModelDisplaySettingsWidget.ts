@@ -178,7 +178,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   // EDL strength
   const edlStrengthSlider = createSlider({
     name: " Strength ", id: "rms_strength", parent: sizeMode.div,
-    min: "0.0", max: "10", step: "0.25",
+    min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlStrength.toString(),
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
@@ -192,7 +192,7 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   // EDL radius
   const edlRadiusSlider = createSlider({
     name: " Radius ", id: "rms_radius", parent: sizeMode.div,
-    min: "0.0", max: "10", step: "1.0",
+    min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlRadius.toString(),
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
