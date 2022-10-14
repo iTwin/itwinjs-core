@@ -34,8 +34,8 @@ export class ClassHierarchy {
 export class ClassHierarchiesSet {
   constructor(private _classSets: ClassHierarchy[]) { }
 
-  public has(classId: Id64String, options: { isDerived?: boolean, isBase?: boolean }, all?: boolean) {
-    if (all)
+  public has(classId: Id64String, options: { isDerived?: boolean, isBase?: boolean }, match: "all" | "any" = "any") {
+    if (match === "all")
       return this._classSets.every((idsSet) => idsSet.is(classId, options));
     return this._classSets.some((idsSet) => idsSet.is(classId, options));
   }

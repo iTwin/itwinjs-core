@@ -166,6 +166,10 @@ public;IdCategoryIdentifier
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
 alpha;InstanceFilterDefinition
+alpha;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
+alpha;InstanceFilterRelatedInstancePath
+alpha;InstanceFilterRelatedInstanceRelationshipAlias
+alpha;InstanceFilterRelatedInstanceTargetAlias
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey

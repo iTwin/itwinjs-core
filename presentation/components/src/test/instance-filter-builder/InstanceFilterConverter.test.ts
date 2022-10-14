@@ -129,7 +129,7 @@ describe("convertToInstanceFilterDefinition", () => {
           value: { valueFormat: PropertyValueFormat.Primitive, value: `someString` },
         };
         const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-        expect(expression).to.be.eq(`${propertyAccessor} LIKE "%someString%"`);
+        expect(expression).to.be.eq(`${propertyAccessor} ~ "%someString%"`);
       });
     });
 
@@ -151,7 +151,7 @@ describe("convertToInstanceFilterDefinition", () => {
         value: { ...value, value: { className: "TestSchema:TestClass", id: "0x1" } },
       };
       const { expression } = await convertToInstanceFilterDefinition(filter, testImodel);
-      expect(expression).to.be.eq(`${propertyAccessor} = 0x1`);
+      expect(expression).to.be.eq(`${propertyAccessor}.Id = 0x1`);
     });
 
     it("double value", async () => {
@@ -206,7 +206,7 @@ describe("convertToInstanceFilterDefinition", () => {
       expect(expression).to.be.eq(`(${propertyAccessor} IS NULL AND ${propertyAccessor} IS NOT NULL)`);
     });
 
-    it("'AND' operator", async () => {
+    it("'OR' operator", async () => {
       const filter: PresentationInstanceFilterConditionGroup = {
         operator: PropertyFilterRuleGroupOperator.Or,
         conditions: [{
@@ -340,7 +340,6 @@ describe("convertToInstanceFilterDefinition", () => {
     });
 
     it("in deeply nested condition field", async () => {
-      classCPropertiesField.rebuildParentship(classCNestedField);
       classCNestedField.rebuildParentship(classBNestedField);
       const filter: PresentationInstanceFilterCondition = {
         field: classCPropertiesField,

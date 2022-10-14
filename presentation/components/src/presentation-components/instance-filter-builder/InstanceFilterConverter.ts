@@ -102,22 +102,21 @@ function createComparison(property: PropertyInfo, alias: string, operator: Prope
 
   const value = propValue.value;
   if (operator === PropertyFilterRuleOperator.Like && typeof value === "string") {
-    return `${propertyAccessor} ${operatorExpression} "%${value.replace(/"/g, `""`)}%"`;
+    return `${propertyAccessor} ${operatorExpression} "%${escapeString(value)}%"`;
   }
 
   let valueExpression = "";
   switch (typeof value) {
     case "string":
-      valueExpression = `"${value.replace(/"/g, `""`)}"`;
+      valueExpression = `"${escapeString(value)}"`;
       break;
     case "number":
       valueExpression = value.toString();
       break;
   }
-  if (property.type === "navigation") {
-    valueExpression = (value as Primitives.InstanceKey).id;
-  }
 
+  if (property.type === "navigation")
+    return `${propertyAccessor}.Id ${operatorExpression} ${(value as Primitives.InstanceKey).id}`;
   if (property.type === "double")
     return `CompareDoubles(${propertyAccessor}, ${valueExpression}) ${operatorExpression} 0`;
   if (property.type === "dateTime")
@@ -160,10 +159,14 @@ function getRuleOperatorString(operator: PropertyFilterRuleOperator) {
     case PropertyFilterRuleOperator.LessOrEqual:
       return "<=";
     case PropertyFilterRuleOperator.Like:
-      return "LIKE";
+      return "~";
     default:
       throw new Error(`Invalid PropertyFilterRuleOperator encountered: ${operator}`);
   }
+}
+
+function escapeString(str: string) {
+  return str.replace(/"/g, `""`);
 }
 
 function isFilterConditionGroup(obj: PresentationInstanceFilter): obj is PresentationInstanceFilterConditionGroup {

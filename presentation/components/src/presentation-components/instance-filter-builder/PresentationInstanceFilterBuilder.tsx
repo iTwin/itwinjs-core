@@ -60,7 +60,7 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     const matchingClassesSet = getClassesSet(selectedClasses.map((selectedClass) => selectedClass.id), classHierarchyProvider);
     // filter properties that are available on all selected classes
     return propertyInfos
-      .filter((info) => !matchingClassesSet || matchingClassesSet.has(info.sourceClassId, { isBase: true, isDerived: true }, true))
+      .filter((info) => !matchingClassesSet || matchingClassesSet.has(info.sourceClassId, { isBase: true, isDerived: true }, "all"))
       .map((info) => info.propertyDescription);
   }, [propertyInfos, selectedClasses, classHierarchyProvider]);
 
