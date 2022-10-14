@@ -5,8 +5,21 @@
 import * as faker from "faker";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { CheckBoxState } from "@itwin/core-react";
-import { MutableTreeModelNode, TreeNodeItemData } from "../../../components-react";
+import { MutableTreeModelNode, TreeModelNodeInput, TreeNodeItemData } from "../../../components-react";
 import { TreeNodeItem } from "../../../components-react/tree/TreeDataProvider";
+
+/** @internal */
+export function createTreeNodeInput(id: string): TreeModelNodeInput {
+  const label = PropertyRecord.fromString(id, id);
+  return {
+    id,
+    item: { id, label },
+    label,
+    isExpanded: false,
+    isLoading: false,
+    isSelected: false,
+  };
+}
 
 /** Returns random MutableTreeModelNode. */
 export const createRandomMutableTreeModelNode = (parentNodeId?: string, selected?: boolean, label?: string): MutableTreeModelNode => {

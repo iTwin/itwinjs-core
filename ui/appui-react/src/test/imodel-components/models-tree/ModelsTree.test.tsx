@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import * as React from "react";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { SelectionMode, TreeNodeItem } from "@itwin/components-react";
-import { BeEvent, Id64, Id64String } from "@itwin/core-bentley";
+import { BeEvent } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, LabelDefinition, Node, NodeKey, NodePathElement } from "@itwin/presentation-common";
 import { createRandomId, deepEquals } from "@itwin/presentation-common/lib/cjs/test";
@@ -16,7 +16,8 @@ import { PresentationTreeDataProvider } from "@itwin/presentation-components";
 import { mockPresentationManager } from "@itwin/presentation-components/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@itwin/presentation-frontend";
 import {
-  HierarchyBuilder, HierarchyCacheMode, IModelTestUtility, initialize as initializePresentationTesting, terminate as terminatePresentationTesting,
+  buildTestIModel, HierarchyBuilder,
+  HierarchyCacheMode, initialize as initializePresentationTesting, terminate as terminatePresentationTesting, TestIModelBuilder,
 } from "@itwin/presentation-testing";
 import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../appui-react/imodel-components/models-tree/ModelsTree";
@@ -24,7 +25,8 @@ import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../appui-reac
 import { VisibilityChangeListener } from "../../../appui-react/imodel-components/VisibilityTreeEventHandler";
 import TestUtils from "../../TestUtils";
 import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "../Common";
-import { CategoryProps, IModel } from "@itwin/core-common";
+import { BisCodeSpec, CategoryProps, Code, ElementProps, IModel, ModelProps, PhysicalElementProps, RelatedElement, RelatedElementProps } from "@itwin/core-common";
+import { join } from "path";
 
 describe("ModelsTree", () => {
 
@@ -361,6 +363,7 @@ describe("ModelsTree", () => {
             },
           },
         },
+        testOutputDir: join(__dirname, "output"),
       });
       imodel = await SnapshotConnection.openFile(testIModelPath);
     });
@@ -388,76 +391,88 @@ describe("ModelsTree", () => {
       expect(result.container).to.matchSnapshot();
     });
 
-    it("does not show private categories", async () => {
-      const testUtility = new IModelTestUtility();
+    it("does not show private categories with RULESET_MODELS", async () => {
+      const iModel: IModelConnection = await buildTestIModel("ModelsTreeModels", (builder) => {
+        const partitionId = addPartition("BisCore:PhysicalPartition", builder, "TestPhysicalModel");
+        const definitionPartitionId = addPartition("BisCore:DefinitionPartition", builder, "TestDefinitionModel");
+        const modelId = addModel("BisCore:PhysicalModel", builder, partitionId);
+        const definitionModelId = addModel("BisCore:DefinitionModel", builder, definitionPartitionId);
 
-      testUtility.createIModel();
-      testUtility.addPhysicalModel();
+        const categoryId = addSpatialCategory(builder, definitionModelId, "Test Spatial Category");
+        addPhysicalObject(builder, modelId, categoryId);
 
-      // Insert a SpatialCategory
-      const spatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test SpatialCategory"),
-      };
-      const spatialCategoryId: Id64String = testUtility.addSpatialCategory(spatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(spatialCategoryId));
+        const privateCategoryId = addSpatialCategory(builder, definitionModelId, "Private Test Spatial Category", true);
+        addPhysicalObject(builder, modelId, privateCategoryId);
+      });
 
-      // Insert a private SpatialCategory
-      const privateSpatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test private SpatialCategory"),
-        isPrivate: true,
-      };
-      const privateSpatialCategoryId: Id64String = testUtility.addSpatialCategory(privateSpatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateSpatialCategoryId));
-
-      testUtility.addPhysicalObject(spatialCategoryId);
-      testUtility.addPhysicalObject(privateSpatialCategoryId);
-      testUtility.closeIModel();
-
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
+      const hierarchyBuilder = new HierarchyBuilder({ imodel: iModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_MODELS);
 
       expect(hierarchy).to.matchSnapshot();
     });
 
-    it("does not show private categories with class grouping", async () => {
-      const testUtility = new IModelTestUtility();
+    it("does not show private categories with RULESET_MODELS_GROUPED_BY_CLASS", async () => {
+      const iModel: IModelConnection = await buildTestIModel("ModelsTreeModelsGroupedByClass", (builder) => {
+        const partitionId = addPartition("BisCore:PhysicalPartition", builder, "TestPhysicalModel");
+        const definitionPartitionId = addPartition("BisCore:DefinitionPartition", builder, "TestDefinitionModel");
+        const modelId = addModel("BisCore:PhysicalModel", builder, partitionId);
+        const definitionModelId = addModel("BisCore:DefinitionModel", builder, definitionPartitionId);
 
-      testUtility.createIModel();
-      testUtility.addPhysicalModel();
+        const categoryId = addSpatialCategory(builder, definitionModelId, "Test Spatial Category");
+        addPhysicalObject(builder, modelId, categoryId);
 
-      // Insert a SpatialCategory
-      const spatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test SpatialCategory"),
-      };
-      const spatialCategoryId: Id64String = testUtility.addSpatialCategory(spatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(spatialCategoryId));
+        const privateCategoryId = addSpatialCategory(builder, definitionModelId, "Private Test Spatial Category", true);
+        addPhysicalObject(builder, modelId, privateCategoryId);
+      });
 
-      // Insert a private SpatialCategory
-      const privateSpatialCategoryProps: CategoryProps = {
-        classFullName: "BisCore:SpatialCategory",
-        model: IModel.dictionaryId,
-        code: testUtility.getSpatialCategoryCode("Test private SpatialCategory"),
-        isPrivate: true,
-      };
-      const privateSpatialCategoryId: Id64String = testUtility.addSpatialCategory(privateSpatialCategoryProps);
-      assert.isTrue(Id64.isValidId64(privateSpatialCategoryId));
-
-      testUtility.addPhysicalObject(spatialCategoryId);
-      testUtility.addPhysicalObject(privateSpatialCategoryId);
-      testUtility.closeIModel();
-
-      const openedIModel = await SnapshotConnection.openFile(testUtility.outputFile);
-      const hierarchyBuilder = new HierarchyBuilder({ imodel: openedIModel });
+      const hierarchyBuilder = new HierarchyBuilder({ imodel: iModel });
       const hierarchy = await hierarchyBuilder.createHierarchy(RULESET_MODELS_GROUPED_BY_CLASS);
 
       expect(hierarchy).to.matchSnapshot();
     });
+
+    const addPartition = (classFullName: string, builder: TestIModelBuilder, name: string, parentId = IModel.rootSubjectId) => {
+      const parentProps: RelatedElementProps = {
+        relClassName: "BisCore:SubjectOwnsPartitionElements",
+        id: parentId,
+      };
+
+      const partitionProps: ElementProps = {
+        classFullName,
+        model: IModel.repositoryModelId,
+        parent: parentProps,
+        code: builder.createCode(parentId, BisCodeSpec.informationPartitionElement, name),
+      };
+      return builder.insertElement(partitionProps);
+    };
+
+    const addModel = (classFullName: string, builder: TestIModelBuilder, partitionId: string) => {
+      const modelProps: ModelProps = {
+        modeledElement: new RelatedElement({ id: partitionId }),
+        classFullName,
+        isPrivate: false,
+      };
+      return builder.insertModel(modelProps);
+    };
+
+    const addSpatialCategory = (builder: TestIModelBuilder, modelId: string, name: string, isPrivate?: boolean) => {
+      const spatialCategoryProps: CategoryProps = {
+        classFullName: "BisCore:SpatialCategory",
+        model: IModel.dictionaryId,
+        code: builder.createCode(modelId, BisCodeSpec.spatialCategory, name),
+        isPrivate,
+      };
+      return builder.insertElement(spatialCategoryProps);
+    };
+
+    const addPhysicalObject = (builder: TestIModelBuilder, modelId: string, categoryId: string, elemCode = Code.createEmpty()) => {
+      const physicalObjectProps: PhysicalElementProps = {
+        classFullName: "Generic:PhysicalObject",
+        model: modelId,
+        category: categoryId,
+        code: elemCode,
+      };
+      builder.insertElement(physicalObjectProps);
+    };
   });
 });
