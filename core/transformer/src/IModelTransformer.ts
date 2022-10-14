@@ -740,6 +740,7 @@ export class IModelTransformer extends IModelExportHandler {
 
     if (unresolvedReferences.length > 0) {
       for (const reference of unresolvedReferences) {
+        const processState = this.getElemTransformState(reference);
         // must export element first
         if (processState.needsElemImport)
           await this.exporter.exportElement(reference);
