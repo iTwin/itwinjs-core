@@ -59,15 +59,6 @@ export interface GraphicsRequestProps {
    * Default: false.
    */
   quantizePositions?: boolean;
-  /** Determines whether unquantized positions are specified in relative or absolute coordinates.
-   * Coordinates very far from the origin can produce precision errors resulting in visual artifacts. If `useAbsolutePositions` is `false`, then
-   * these precision errors are mitigated by applying a translation to the vertex positions to move them closer to the origin, and then applying the inverse
-   * translation (using 64-bit precision) when drawing the graphics.
-   * Using absolute positions is not generally recommended.
-   * Default: false.
-   * @note This property has no effect if [[quantizePositions]] is `true`.
-   */
-  useAbsolutePositions?: boolean;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.
