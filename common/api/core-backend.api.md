@@ -2006,7 +2006,6 @@ export type EntityClassType<T> = Function & {
 export namespace EntityReferences {
     export function from(entity: ConcreteEntity): EntityReference;
     export function fromClass(id: Id64String, entityClass: typeof Entity): EntityReference;
-    export function fromClassFullName(id: Id64String, classFullName: string): EntityReference;
     export function fromEntityType(id: Id64String, type: ConcreteEntityTypes): EntityReference;
     // (undocumented)
     export function isElement(id: EntityReference): boolean;
