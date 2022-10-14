@@ -695,14 +695,8 @@ export class TileAdmin {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
       requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
-    // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
-    if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
-      requestProps = {
-        ...requestProps,
-        quantizePositions: requestProps.quantizePositions ?? false,
-        useAbsolutePositions: requestProps.useAbsolutePositions ?? false,
-      };
-    }
+    if (undefined === requestProps.quantizePositions)
+      requestProps = { ...requestProps, quantizePositions: false };
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();
