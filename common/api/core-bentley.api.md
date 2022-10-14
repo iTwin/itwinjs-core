@@ -1614,11 +1614,9 @@ export class Uint32ArrayBuilder extends TypedArrayBuilder<Uint32Array> {
 // @public
 export class Uint8ArrayBuilder extends TypedArrayBuilder<Uint8Array> {
     constructor(options?: TypedArrayBuilderOptions);
-=======
-export class TupleKeyedMap<K extends readonly any[], V> implements PartialMap<K, V> {
-=======
+}
+
 export class TupleKeyedMap<K extends readonly any[], V> {
->>>>>>> 44f3b42948 (re-extract api)
     // (undocumented)
     [Symbol.iterator](): IterableIterator<[K, V]>;
     // (undocumented)
@@ -1634,7 +1632,6 @@ export class TupleKeyedMap<K extends readonly any[], V> {
     set(key: K, value: V): this;
     // (undocumented)
     get size(): number;
->>>>>>> 8ee568db98 (rush extract-api)
 }
 
 // @public
