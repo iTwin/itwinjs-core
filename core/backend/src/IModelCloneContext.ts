@@ -39,7 +39,7 @@ export class IModelCloneContext {
   public async initialize() {
   }
 
-  /** construct and initialize an IModelCloneContext at once, for where you construct in an async context */
+  /** @internal construct and initialize an IModelCloneContext at once, for where you construct in an async context */
   public static async create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext> {
     const instance = new this(...args);
     await instance.initialize();
