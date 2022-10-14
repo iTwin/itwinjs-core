@@ -87,7 +87,8 @@
     "sinon": "^9.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~4.4.0",
-    "webpack": "^5.64.4"
+    "webpack": "^5.64.4",
+    "@itwin/ecschema-metadata": "workspace:*"
   },
   "dependencies": {
     "@azure/storage-blob": "^12.7.0",
