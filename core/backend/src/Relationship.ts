@@ -399,7 +399,7 @@ export class ElementDrivesElement extends Relationship {
     this.priority = props.priority;
   }
 
-  public static create<T extends ElementDrivesElement>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
+  public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
     return iModel.relationships.createInstance(props) as T;
   }
