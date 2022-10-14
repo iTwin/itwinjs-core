@@ -18,18 +18,18 @@ import * as assert from "assert";
 /** Concrete classes that can be created, with the notable exception of CodeSpecs since it is does not derive from Entity
  * other entity classes. In the future if there is a need
  * to manage them this way, it can be added
- * @alpha
+ * @internal
  */
 export type ConcreteEntity = Element | Model | ElementAspect | Relationship;
 
 /** Props for a [[ConcreteEntity]]
- * @alpha
+ * @internal
  */
 export type ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps;
 
 /**
  * Utilities for the [EntityReference]($common) type which is a kind of strings
- * @alpha
+ * @internal
  */
 export namespace EntityReferences {
   export function isModel(id: EntityReference) {
@@ -54,16 +54,12 @@ export namespace EntityReferences {
     return [id[0] as ConcreteEntityTypes, id.slice(1)];
   }
 
-  /** used by the transformer to figure out where to check for the existence in a db of a concrete element id
-   * @internal
-   */
+  /** used by the transformer to figure out where to check for the existence in a db of a concrete element id */
   export function isValid(id: EntityReference): boolean {
     return Id64.isValid(toId64(id));
   }
 
-  /** create the invalid id for a concrete entity type
-   * @internal
-   */
+  /** create the invalid id for a concrete entity type */
   export function makeInvalid(type: ConcreteEntityTypes): EntityReference {
     return `${type}${Id64.invalid}`;
   }
@@ -85,7 +81,7 @@ export namespace EntityReferences {
     return `${type}${id}`;
   }
 
-  /** @internal the argument entityClass be concrete (i.e. not the Entity abstract base class) */
+  /** the argument entityClass be concrete (i.e. not the Entity abstract base class) */
   export function typeFromClass(entityClass: typeof Entity): ConcreteEntityTypes {
     if (entityClass.is(Element))
       return ConcreteEntityTypes.Element;

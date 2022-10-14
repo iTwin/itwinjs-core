@@ -16,7 +16,7 @@ import { Id64String } from "@itwin/core-bentley";
  * CodeSpecs are excepted since their JavaScript representation does not derive from [Entity]($backend)
  * @note the string value of each variant is required/guaranteed to be 1 character
  * @see EntityReference
- * @alpha
+ * @internal
  */
 export enum ConcreteEntityTypes {
   Model = "m",
@@ -27,7 +27,7 @@ export enum ConcreteEntityTypes {
 
 /**
  * Adds some utilities to the [[ConcreteEntityTypes]] enum
- * @alpha
+ * @internal
  */
 export namespace ConcreteEntityTypes {
   const toBisCoreRootClassFullNameMap = {
@@ -49,12 +49,12 @@ export namespace ConcreteEntityTypes {
  * This id format can be used for storing a unique key for an entity in containers like `Map`.
  * Elements and non-element entities have different id sequences, they can collide with each other, but not within themselves.
  * @note for utilities that require runtime backend classes, see [EntityReferences]($backend)
- * @alpha
+ * @internal
  */
 export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
 
 /** A set of concrete entity ids, with additional functions to more literately add ids where you have the raw id and know what type it is
- * @alpha
+ * @internal
  */
 export class EntityReferenceSet extends Set<EntityReference> {
   public addElement(id: Id64String) { this.add(`e${id}`); }
