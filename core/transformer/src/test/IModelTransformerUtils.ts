@@ -245,10 +245,10 @@ export async function assertIdentityTransformation(
 ) {
   const [remapElem, remapCodeSpec, remapAspect]
     = remapper instanceof IModelTransformer
-    ? [remapper.context.findTargetElementId.bind(remapper.context),
-      remapper.context.findTargetCodeSpecId.bind(remapper.context),
-      remapper.context.findTargetAspectId.bind(remapper.context)]
-    : [remapper.findTargetElementId, remapper.findTargetCodeSpecId, remapper.findTargetAspectId];
+      ? [remapper.context.findTargetElementId.bind(remapper.context),
+        remapper.context.findTargetCodeSpecId.bind(remapper.context),
+        remapper.context.findTargetAspectId.bind(remapper.context)]
+      : [remapper.findTargetElementId, remapper.findTargetCodeSpecId, remapper.findTargetAspectId];
 
   expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
   expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
