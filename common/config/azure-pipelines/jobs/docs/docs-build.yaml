@@ -119,20 +119,28 @@ jobs:
           script: |
             import os, subprocess, sys
 
-            ## Validate arguments
+            # Validate arguments
             if len(sys.argv) != 2:
               sys.exit("Invalid number of arguments to script provided.\nExpected: 1\nReceived: {0}".format(len(sys.argv) - 1))
             outputDir = os.path.realpath(sys.argv[1])
 
             # Get local version from @itwin/core-backend
             cmd = ["node", "-p", "require('./core/backend/package.json').version"]
-            process = subprocess.run(cmd, shell=True, capture_output=True)
-            package_version = process.stdout.decode().strip()
-            print("Releasing version " + package_version)
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            try:
+              out, err = process.communicate(timeout=15)
+            except subprocess.TimeoutExpired:
+              process.kill()
+              out, err = process.communicate()
 
-            f = open(os.path.join(outputDir, "version.txt"), "w")
-            f.write(package_version)
-            f.close()
+            if process.returncode > 0:
+              print(err.decode())
+            else:
+              package_version = out.decode().strip()
+              print("Releasing version " + package_version)
+              f = open(os.path.join(outputDir, "version.txt"), "w")
+              f.write(package_version)
+              f.close()
           arguments: ${{ parameters.outputDir }}
           workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
