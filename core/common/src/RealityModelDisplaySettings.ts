@@ -38,6 +38,10 @@ export interface PointCloudDisplayProps {
   pixelSize?: number;
   /** See [[PointCloudDisplaySettings.shape]]. */
   shape?: PointCloudShape;
+  /** See [[PointCloudDisplaySettings.edlStrength]]. */
+  edlStrength?: number;
+  /** See [[PointCloudDisplaySettings.edlRadius]]. */
+  edlRadius?: number;
 }
 
 /** The JSON representation of [[RealityModelDisplaySettings]].
@@ -85,6 +89,18 @@ export class PointCloudDisplaySettings {
    * Default: 20.
    */
   public readonly maxPixelsPerVoxel: number;
+  /** A strength value for the Eye Dome Lighting (EDL) effect.
+   * The strength is expected to be a positive floating point number.
+   * A value of 0 disables EDL
+   * Default: 0
+   */
+  public readonly edlStrength: number;
+  /** A radius value for the Eye Dome Lighting (EDL) effect.
+   * The strength is expected to be a positive floating point number.
+   * ??? ###TODO
+   * Default: 1.0
+   */
+  public readonly edlRadius: number;
 
   /** Settings with all properties initialized to their default values. */
   public static defaults = new PointCloudDisplaySettings();
@@ -98,6 +114,8 @@ export class PointCloudDisplaySettings {
     this.voxelScale = props?.voxelScale ?? 1;
     this.minPixelsPerVoxel = props?.minPixelsPerVoxel ?? 2;
     this.maxPixelsPerVoxel = props?.maxPixelsPerVoxel ?? 20;
+    this.edlStrength = props?.edlStrength ?? 0;
+    this.edlRadius = props?.edlRadius ?? 1;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
@@ -147,7 +165,8 @@ export class PointCloudDisplaySettings {
       return true;
 
     return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
-      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel;
+      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
+      && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius;
   }
 }
 

@@ -142,28 +142,6 @@ export class FrameBuffer implements WebGLDisposable {
     }
   }
 
-  public replaceColAttachment(index: number, colTex: TextureHandle | undefined) {
-    if (undefined === this._fbo || undefined !== this._fboMs)
-      return;
-    const gl = System.instance.context;
-    const attachmentEnum: GLenum = gl.COLOR_ATTACHMENT0 + index;
-    if (colTex === undefined || this._colorAttachments[index] !== attachmentEnum || this._colorTextures[index] === undefined)
-      return;
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentEnum, gl.TEXTURE_2D, colTex.getHandle()!, 0);
-    System.instance.setDrawBuffers(this._colorAttachments);
-  }
-
-  public restoreColAttachment(index: number) {
-    if (undefined === this._fbo || undefined !== this._fboMs)
-      return;
-    const gl = System.instance.context;
-    const attachmentEnum: GLenum = gl.COLOR_ATTACHMENT0 + index;
-    if ((this._colorAttachments[index] !== attachmentEnum) || (this._colorTextures[index] === undefined))
-      return;
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, attachmentEnum, gl.TEXTURE_2D, this._colorTextures[index].getHandle()!, 0);
-    System.instance.setDrawBuffers(this._colorAttachments);
-  }
-
   public bind(bindAttachments: boolean = false, bindMS: boolean = false): boolean {
     assert(undefined !== this._fbo);
     assert(!this.isBound);

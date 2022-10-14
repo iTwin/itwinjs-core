@@ -14,6 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
+import { createEDLSimpleProgram } from "./glsl/EDL";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
@@ -792,6 +793,7 @@ const techniquesByPriority: PrioritizedTechniqueOrShader[] = [
   { techniqueId: TechniqueId.VolClassBlend },
   { techniqueId: TechniqueId.Combine3Textures },
   { techniqueId: TechniqueId.PlanarGrid },
+  { techniqueId: TechniqueId.EDLSimple },
 ];
 const numTechniquesByPriority = techniquesByPriority.length;
 
@@ -960,6 +962,7 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
+    this._list[TechniqueId.EDLSimple] = new SingularTechnique(createEDLSimpleProgram(gl));
 
     if (System.instance.supportsIndexedEdges)
       this._list[TechniqueId.IndexedEdge] = new EdgeTechnique(gl, "IndexedEdge");

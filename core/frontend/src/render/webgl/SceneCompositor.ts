@@ -21,7 +21,7 @@ import { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, ScreenPointsGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, EDLSimpleGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
@@ -388,6 +388,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public occlusion?: AmbientOcclusionGeometry;
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
+  public edlSimple?: EDLSimpleGeometry;
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     collectGeometryStatistics(this.composite, stats);
@@ -1853,6 +1854,8 @@ abstract class Compositor extends SceneCompositor {
 
 class MRTFrameBuffers extends FrameBuffers {
   public edlDrawPoints?: FrameBuffer;
+  public edlFinal?: FrameBuffer;
+  public edlFinalComp?: FrameBuffer;
   public edlScreenEffect?: FrameBuffer;
   public opaqueAll?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
@@ -1879,6 +1882,14 @@ class MRTFrameBuffers extends FrameBuffers {
     const colors = [textures.accumulation, textures.revealage];
     this.translucent = FrameBuffer.create(colors, depth);
     this.clearTranslucent = FrameBuffer.create(colors);
+
+    // ###TODO where should these happen?
+    assert(undefined !== textures.hilite);
+    this.edlDrawPoints = FrameBuffer.create([textures.hilite], depth);
+    assert(undefined !== System.instance.frameBufferStack.currentColorBuffer);
+    this.edlFinal = FrameBuffer.create([System.instance.frameBufferStack.currentColorBuffer]);
+    assert(undefined !== textures.color);
+    this.edlFinalComp = FrameBuffer.create([textures.color]);
 
     // We borrow the SceneCompositor's accum and revealage textures for the surface pass.
     // First we render edges, writing to our textures.
@@ -2136,26 +2147,38 @@ class MRTCompositor extends Compositor {
 
     const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
     const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
+    const edlFin = (needComposite ? this._fbos.edlFinalComp! : this._fbos.edlFinal!);
     const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const fbStack = System.instance.frameBufferStack;
+    // System.instance.applyRenderState(RenderState.defaults);
 
+    // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
-    fbStack.execute(fbo, true, useMsBuffers, () => {
     // WIP
-      fbo.replaceColAttachment (0, this._textures.hilite);
-      const system = System.instance;
-      // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
-      // Clear the hilite buffer.
-      system.context.clearColor(0, 0, 0, 0);
-      system.context.clear(GL.BufferBit.Color);
-      // }
-      // draw here instead, then process after restore
-      fbo.restoreColAttachment (0);
+    if (false) {
+      fbStack.execute(fbo, true, useMsBuffers, () => {
+        this.drawPass(commands, RenderPass.PointClouds);
+      });
+    } else {
+      fbStack.execute(this._fbos.edlDrawPoints!, true, useMsBuffers, () => {
+        // WIP
+        const system = System.instance;
+        // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
+        // Clear the hilite buffer.
+        system.context.clearColor(0, 0, 0, 0);
+        system.context.clear(GL.BufferBit.Color);
+        this.drawPass(commands, RenderPass.PointClouds);
+      });
 
-      // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels() or ambient occlusion).
-      // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
-      this.drawPass(commands, RenderPass.PointClouds);
-    });
+      fbStack.execute(edlFin, true, useMsBuffers, () => {
+      // this.drawPass(commands, RenderPass.PointClouds);
+        if (this._geom.edlSimple === undefined)
+          this._geom.edlSimple = EDLSimpleGeometry.createGeometry(this._textures.hilite!.getHandle()!,
+            this._depth!.getHandle()!);
+        const params = getDrawParams(this.target, this._geom.edlSimple!);
+        this.target.techniques.draw(params);
+      });
+    }
     this._readPickDataFromPingPong = false;
 
     // ###TODO

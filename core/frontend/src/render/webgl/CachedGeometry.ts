@@ -788,6 +788,25 @@ export class BlurGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
+export class EDLSimpleGeometry extends TexturedViewportQuadGeometry {
+
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLSimpleGeometry(params, [colorBuffer, depthBuffer]);
+  }
+
+  public get colorTexture() { return this._textures[0]; }
+  public get depthTexture() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.EDLSimple, textures);
+  }
+}
+
+/** @internal */
 export class EVSMGeometry extends TexturedViewportQuadGeometry {
   public readonly stepSize = new Float32Array(2);
 

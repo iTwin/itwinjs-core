@@ -29,6 +29,12 @@ export class PointCloudUniforms {
   // w = 1.0 if drawing square points, 0.0 if round.
   private readonly _vec4 = new Float32Array(4);
 
+  // x = strength - 0.0 disables EDL
+  // y = radius
+  // z =
+  // w =
+  private readonly _edl1 = new Float32Array(4);
+
   public constructor() {
     this.initialize(this._settings);
   }
@@ -47,11 +53,21 @@ export class PointCloudUniforms {
       uniform.setUniform4fv(this._vec4);
   }
 
+  public bindEDL1(uniform: UniformHandle): void {
+    if (!sync(this, uniform))
+      uniform.setUniform4fv(this._edl1);
+  }
+
   private initialize(settings: PointCloudDisplaySettings): void {
     this._vec4[0] = "pixel" === settings.sizeMode ? settings.pixelSize : -settings.voxelScale;
     this._vec4[1] = settings.minPixelsPerVoxel;
     this._vec4[2] = settings.maxPixelsPerVoxel;
     this._vec4[3] = "square" === settings.shape ? 1 : 0;
+
+    this._edl1[0] = settings.edlStrength;
+    this._edl1[1] = settings.edlRadius;
+    this._edl1[2] = 0;
+    this._edl1[3] = 0;
   }
 }
 
