@@ -8,7 +8,7 @@
 
 import { EasingFunction } from "@itwin/core-common";
 import { ViewStatus } from "./ViewStatus";
-import { MarginPercent } from "./MarginPercent";
+import { MarginPercent, PaddingPercent } from "./MarginPercent";
 import { Point3d } from "@itwin/core-geometry";
 
 /** An object to animate a transition of a [[Viewport]].
@@ -73,6 +73,7 @@ export interface OnViewExtentsError {
 export interface MarginOptions {
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
+  paddingPercent?: PaddingPercent;
 }
 
 /** Options that control how operations that change a viewport behave.

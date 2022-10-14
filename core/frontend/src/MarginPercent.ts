@@ -21,3 +21,10 @@ export class MarginPercent {
     this.bottom = limitMargin(bottom);
   }
 }
+
+export interface PaddingPercent {
+  left?: number;
+  right?: number;
+  top?: number;
+  bottom?: number;
+}
