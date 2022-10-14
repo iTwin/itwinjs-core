@@ -444,10 +444,7 @@ export class IModelTransformer extends IModelExportHandler {
     });
   }
 
-  /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel.
-   * @note This method is called from all `process*` functions and should never need to be called directly
-   * @deprecated call [[initialize]] instead, it does the same thing among other initialization
-   */
+  /** Initialize the source to target Element mapping from ExternalSourceAspects in the target iModel */
   public initFromExternalSourceAspects(args?: InitFromExternalSourceAspectsArgs): Promise<void>;
   /** @deprecated returning void is deprecated, return a promise, and handle returned promises appropriately */
   public initFromExternalSourceAspects(): void;
@@ -1204,6 +1201,7 @@ export class IModelTransformer extends IModelExportHandler {
    * are intending process changes, but prefer using [[processChanges]]
    * Called by all `process*` functions implicitly.
    * Overriders must call `super.initialize()` first
+   * @internal
    */
   public async initialize(args?: InitFromExternalSourceAspectsArgs) {
     if (this._initialized)
