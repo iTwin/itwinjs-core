@@ -6,8 +6,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
-  Tool, Viewport, ViewState,
+  IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
+  PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -31,22 +31,27 @@ import { HubPicker } from "./HubPicker";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
-async function zoomToSelectedElements(vp: Viewport, marginPercent?: MarginPercent) {
+async function zoomToSelectedElements(vp: Viewport, options?: MarginOptions) {
   const elems = vp.iModel.selectionSet.elements;
   if (0 < elems.size)
-    await vp.zoomToElements(elems, { animateFrustumChange: true, marginPercent });
+    await vp.zoomToElements(elems, { animateFrustumChange: true, ...options });
 }
 
 export class ZoomToSelectedElementsTool extends Tool {
   private _margin?: MarginPercent;
+  private _padding?: PaddingPercent;
 
   public static override toolId = "ZoomToSelectedElements";
   public static override get maxArgs() { return 4; }
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
-    if (undefined !== vp)
-      await zoomToSelectedElements(vp, this._margin);
+    if (undefined !== vp) {
+      await zoomToSelectedElements(vp, {
+        marginPercent: this._margin,
+        paddingPercent: this._padding,
+      });
+    }
 
     return true;
   }
@@ -57,8 +62,12 @@ export class ZoomToSelectedElementsTool extends Tool {
     const right = args.getFloat("r") ?? 0;
     const top = args.getFloat("t") ?? 0;
     const bottom = args.getFloat("b") ?? 0;
-    if (left || right || top || bottom)
-      this._margin = { left, right, top, bottom };
+    if (left || right || top || bottom) {
+      if (args.getBoolean("m"))
+        this._margin = { left, right, top, bottom };
+      else
+        this._padding = { left, right, top, bottom };
+    }
 
     return this.run();
   }
