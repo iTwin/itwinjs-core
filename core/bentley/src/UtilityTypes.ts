@@ -108,7 +108,7 @@ export type ExtractLiterals<T, U extends T> = Extract<T, U>;
  * ```js
  * const testvar: Omit<{x: string, y: object}, "y"> = omit({x: "hello", y: {}}, ["y"]);
  * ```
- * @public
+ * @internal
  */
 export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
   const clone = { ...t };

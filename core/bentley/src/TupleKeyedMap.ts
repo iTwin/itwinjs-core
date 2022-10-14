@@ -24,7 +24,7 @@
  *
  * It is implemented by each index of the tuple key being used as a singular key into a submap
  * @note this only implements a subset of the Map interface
- * @public
+ * @internal
  */
 export class TupleKeyedMap<K extends readonly any[], V> {
   private _map = new Map<K[0], Map<any, V> | V>();
