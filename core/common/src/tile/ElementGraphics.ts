@@ -53,10 +53,8 @@ export interface GraphicsRequestProps {
    * @see [ClipVector.toCompactString]($core-geometry) to produce the string representation.
    */
   readonly sectionCut?: string;
-  /** If true, vertex positions will be quantized to [[QPoint3d]]s to conserve space; otherwise, vertex positions will use 32-bit float precision.
-   * Quantization may produce perceptible inaccuracies when producing graphics for large and/or highly-detailed elements. It is not generally recommended.
-   * Note that 32-bit precision is also susceptible to inaccuracies, to a lesser extent; see [[useAbsolutePositions]] to mitigate them.
-   * Default: false.
+  /** If true, vertex positions will be quantized to [[QPoint3d]]s to conserve space at the expense of accuracy. Quantization may produce
+   * perceptible inaccuracies when producing graphics for large and/or highly-detailed elements.
    */
   quantizePositions?: boolean;
 }
