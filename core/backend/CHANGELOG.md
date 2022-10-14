@@ -1,6 +1,55 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Removed IModelSchemaLoader, replaced with function to return schema from iModel by and a generic SchemaLoader added to ecschema-metadata
+- Chunk traversal options for ChangedElementsDb
+- Deprecated CloudStorage in favor of TileStorage + iTwin/object-storage
+- added "onlyBaseProperties" to ElementLoadOptions to limit properties to only those in ElementProps, not subclasses
+- BoxProps.origin name changed to baseOrigin to agree with json format
+- Replace node-report crash reporting with Node.js Diagnostic Reporting
+- Clarify RenderMaterialElement documentation
+- `IModelJsFs.readdirSync` will now check if dir exists before reading
+- add tokenFunc argument to getWorkspaceDb
+- Add some logging in CustomViewState3dCreator.
+- add querySubCategories function
+- call container.checkForChanges before attempting to open a v2 checkpoint
+- remove typescript retries for v2 checkpoint downloads
+- Updated Node types declaration to support latest v16
+- add PropertyStore interface
+- delete definition models
+- IModelDb.Elements.queryParent
+-  deleteElementTree and deleteElementSubTrees
+- add doc for CloudCache.setLogMask
+- added @beta CloudSqlite
+- generate correct date format in local hub changesets
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- Add some logging in CustomViewState3dCreator.
+- time getmodelextents per modelid
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+### Updates
+
+- call container.checkForChanges before attempting to open a v2 checkpoint
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+### Updates
+
+- Chunk traversal options for ChangedElementsDb
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT
