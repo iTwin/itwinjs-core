@@ -19,6 +19,7 @@ export interface PendingReference {
   referenced: EntityReference;
 }
 
+/** @internal */
 export namespace PendingReference {
   export function from(referencer: ConcreteEntity | EntityReference, referenced: ConcreteEntity | EntityReference): PendingReference {
     if (typeof referencer !== "string")
