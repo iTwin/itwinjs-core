@@ -3071,6 +3071,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultLogTileLoadTimeThreshold: number;
     // (undocumented)
     static defaultLogTileSizeThreshold: number;
+    // @internal (undocumented)
+    static defaultMaxTileCacheDbSize: number;
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @beta (undocumented)
@@ -3110,6 +3112,8 @@ export interface IModelHostOptions {
     logTileLoadTimeThreshold?: number;
     // @internal
     logTileSizeThreshold?: number;
+    // @beta
+    maxTileCacheDbSize?: number;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
