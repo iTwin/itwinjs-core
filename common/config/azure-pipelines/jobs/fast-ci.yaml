@@ -53,13 +53,14 @@ jobs:
     demands:
       - Agent.OS -equals $(platform)
 
-  timeoutInMinutes: 120
+  timeoutInMinutes: 60
 
   workspace:
     clean: all
 
   steps:
   - checkout: self
+    clean: true
   - template: ../templates/core-build.yaml
     parameters:
       nodeVersion: 16.13.0

@@ -42,7 +42,7 @@ jobs:
         OS: macOS-latest
         platform: Darwin
         name: $(mac_pool)
-        node_version: 1.x
+        node_version: 16.x
 
       "Windows_Node_14_x":
         OS: windows-latest
