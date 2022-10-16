@@ -1680,6 +1680,8 @@ class Element_2 extends Entity {
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
+    // @alpha
+    protected collectReferenceIds(referenceIds: Set<Id64String>): void;
     delete(): void;
     federationGuid?: GuidString;
     getClassMetaData(): EntityMetaData | undefined;
@@ -1687,6 +1689,8 @@ class Element_2 extends Entity {
     getJsonProperty(nameSpace: string): any;
     // @beta @deprecated
     getPredecessorIds(): Id64Set;
+    // @beta
+    getReferenceIds(): Set<Id64String>;
     getToolTipMessage(): string[];
     getUserProperties(namespace: string): any;
     insert(): string;
