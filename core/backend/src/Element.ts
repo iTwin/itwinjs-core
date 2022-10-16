@@ -358,7 +358,7 @@ export class Element extends Entity {
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
-   * @alpha
+   * @beta
    */
   protected override collectReferenceIds(referenceIds: Set<Id64String>): void {
     return super.collectReferenceIds(referenceIds);

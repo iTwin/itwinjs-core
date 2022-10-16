@@ -1680,7 +1680,7 @@ class Element_2 extends Entity {
     protected collectPredecessorIds(predecessorIds: Id64Set): void;
     // @internal (undocumented)
     protected collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void;
-    // @alpha
+    // @beta
     protected collectReferenceIds(referenceIds: Set<Id64String>): void;
     delete(): void;
     federationGuid?: GuidString;
