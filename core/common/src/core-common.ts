@@ -89,6 +89,7 @@ export * from "./ModelGeometryChanges";
 export * from "./PlanProjectionSettings";
 export * from "./QPoint";
 export * from "./RealityDataAccessProps";
+export * from "./RealityModelDisplaySettings";
 export * from "./Render";
 export * from "./RenderMaterial";
 export * from "./RenderSchedule";
