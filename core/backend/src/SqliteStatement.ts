@@ -172,7 +172,15 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindInteger(parameter: BindParameter, val: number) {
     checkBind(this.stmt.bindInteger(parameter, val));
   }
-  /** Bind a boolean parameter
+  /** Bind an integer parameter if it is defined. Otherwise do nothing.
+   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   * @param val integer to bind.
+   */
+  public maybeBindInteger(parameter: BindParameter, val?: number) {
+    if (val)
+      this.bindInteger(parameter, val);
+  }
+  /** Bind a boolean parameter.
    * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    * @param val boolean to bind.
    */
@@ -182,47 +190,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Bind a boolean parameter if it is defined. Otherwise do nothing.
    * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    * @param val boolean to bind.
-   * @internal
    */
   public maybeBindBoolean(parameter: BindParameter, val?: boolean) {
     if (val)
       this.bindBoolean(parameter, val);
-  }
-  /** Bind a string parameter if it is defined. Otherwise do nothing.
-   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
-   * @param val string to bind.
-   * @internal
-   */
-  public maybeBindString(parameter: BindParameter, val?: string) {
-    if (val)
-      this.bindString(parameter, val);
-  }
-  /** Bind an integer parameter if it is defined. Otherwise do nothing.
-   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
-   * @param val integer to bind.
-   * @internal
-   */
-  public maybeBindInteger(parameter: BindParameter, val?: number) {
-    if (val)
-      this.bindInteger(parameter, val);
-  }
-  /** Bind a double parameter if it is defined. Otherwise do nothing.
-   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
-   * @param val double to bind.
-   * @internal
-   */
-  public maybeBindDouble(parameter: BindParameter, val?: number) {
-    if (val)
-      this.bindDouble(parameter, val);
-  }
-  /** Bind a blob parameter if it is defined. Otherwise do nothing.
-   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
-   * @param val blob to bind.
-   * @internal
-   */
-  public maybeBindBlob(parameter: BindParameter, val?: Uint8Array) {
-    if (val)
-      this.bindBlob(parameter, val);
   }
   /** JSON.stringify a property value and bind the JSON string.
    * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
@@ -248,12 +219,29 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindDouble(parameter: BindParameter, val: number) {
     checkBind(this.stmt.bindDouble(parameter, val));
   }
+  /** Bind a double parameter if it is defined. Otherwise do nothing.
+   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   * @param val double to bind.
+   */
+  public maybeBindDouble(parameter: BindParameter, val?: number) {
+    if (val)
+      this.bindDouble(parameter, val);
+  }
   /** Bind a string parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val string to bind.
    */
-  public bindString(parameter: BindParameter, val: string) {
-    checkBind(this.stmt.bindString(parameter, val));
+  public bindString(parameter: BindParameter, val?: string) {
+    if (val)
+      checkBind(this.stmt.bindString(parameter, val));
+  }
+  /** Bind a string parameter if it is defined. Otherwise do nothing.
+   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   * @param val string to bind.
+   */
+  public maybeBindString(parameter: BindParameter, val?: string) {
+    if (val)
+      this.bindString(parameter, val);
   }
   /** Bind an Id64String parameter as a 64-bit integer
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
@@ -275,6 +263,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public bindBlob(parameter: BindParameter, blob: Uint8Array) {
     checkBind(this.stmt.bindBlob(parameter, blob));
+  }
+  /** Bind a blob parameter if it is defined. Otherwise do nothing.
+   * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   * @param val blob to bind.
+   */
+  public maybeBindBlob(parameter: BindParameter, val?: Uint8Array) {
+    if (val)
+      this.bindBlob(parameter, val);
   }
   /** Bind null to a parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
@@ -333,50 +329,91 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  - [DbResult.BE_SQLITE_DONE]($core-bentley) if the statement has been executed successfully.
    *  - Error status in case of errors.
    */
-  public step(): DbResult { return this.stmt.step(); }
-
+  public step(): DbResult {
+    return this.stmt.step();
+  }
   /** Get the query result's column count (only for SQL SELECT statements). */
-  public getColumnCount(): number { return this.stmt.getColumnCount(); }
-
+  public getColumnCount(): number {
+    return this.stmt.getColumnCount();
+  }
   /** Get the value for the column at the given index in the query result.
    * @param columnIx Index of SQL column in query result (0-based)
    */
-  public getValue(columnIx: number): SqliteValue { return new SqliteValue(this.stmt, columnIx); }
-
+  public getValue(columnIx: number): SqliteValue {
+    return new SqliteValue(this.stmt, columnIx);
+  }
   /** Determine whether the value of the specified column is null
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public isValueNull(colIndex: number): boolean { return this.stmt.isValueNull(colIndex); }
-
+  public isValueNull(colIndex: number): boolean {
+    return this.stmt.isValueNull(colIndex);
+  }
   /** Get a size in bytes of a blob or text column
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public getColumnBytes(colIndex: number): number { return this.stmt.getColumnBytes(colIndex); }
-
+  public getColumnBytes(colIndex: number): number {
+    return this.stmt.getColumnBytes(colIndex);
+  }
   /** Get a value as a blob
    * @param colIndex Index of SQL column in query result (0-based)
    */
-  public getValueBlob(colIndex: number): Uint8Array { return this.stmt.getValueBlob(colIndex); }
+  public getValueBlob(colIndex: number): Uint8Array {
+    return this.stmt.getValueBlob(colIndex);
+  }
+  /** Get the value as a blob, or undefined if it is null.
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueBlobMaybe(colIndex: number): Uint8Array | undefined {
+    return this.isValueNull(colIndex) ? undefined : this.getValueBlob(colIndex);
+  }
   /** Get a value as a double
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueDouble(colIndex: number): number { return this.stmt.getValueDouble(colIndex); }
+  public getValueDouble(colIndex: number): number {
+    return this.stmt.getValueDouble(colIndex);
+  }
+  /** Get the value as an double, or undefined if it is null.
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueDoubleMaybe(colIndex: number): number | undefined {
+    return this.isValueNull(colIndex) ? undefined : this.getValueDouble(colIndex);
+  }
   /** Get a value as a integer
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueInteger(colIndex: number): number { return this.stmt.getValueInteger(colIndex); }
+  public getValueInteger(colIndex: number): number {
+    return this.stmt.getValueInteger(colIndex);
+  }
+  /** Get the value as an integer, or undefined if it is null.
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueIntegerMaybe(colIndex: number): number | undefined {
+    return this.isValueNull(colIndex) ? undefined : this.getValueInteger(colIndex);
+  }
   /** Get a value as a string
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueString(colIndex: number): string { return this.stmt.getValueString(colIndex); }
+  public getValueString(colIndex: number): string {
+    return this.stmt.getValueString(colIndex);
+  }
+  /** Get the value as a string, or undefined if it is null.
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueStringMaybe(colIndex: number): string | undefined {
+    return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
+  }
   /** Get a value as an Id
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueId(colIndex: number): Id64String { return this.stmt.getValueId(colIndex); }
+  public getValueId(colIndex: number): Id64String {
+    return this.stmt.getValueId(colIndex);
+  }
   /** Get a value as a Guid
   * @param colIndex Index of SQL column in query result (0-based)
   */
-  public getValueGuid(colIndex: number): GuidString { return this.stmt.getValueGuid(colIndex); }
+  public getValueGuid(colIndex: number): GuidString {
+    return this.stmt.getValueGuid(colIndex);
+  }
   /** Get the value as a boolean. Returns `false` if the column is null.
    * @param colIndex Index of SQL column in query result (0-based)
    */
@@ -389,34 +426,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public getValueDate(colIndex: number) {
     return new Date((this.stmt.getValueDouble(colIndex) - 2440587.5) * 86400000); // conversion from julian day ms to unix epoch ms
-  }
-  /** Get the value as a string, or undefined if it is null.
-   * @param colIndex Index of SQL column in query result (0-based)
-   * @internal
-   */
-  public getValueStringMaybe(colIndex: number): string | undefined {
-    return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
-  }
-  /** Get the value as an integer, or undefined if it is null.
-   * @param colIndex Index of SQL column in query result (0-based)
-   * @internal
-   */
-  public getValueIntegerMaybe(colIndex: number): number | undefined {
-    return this.isValueNull(colIndex) ? undefined : this.getValueInteger(colIndex);
-  }
-  /** Get the value as an double, or undefined if it is null.
-   * @param colIndex Index of SQL column in query result (0-based)
-   * @internal
-   */
-  public getValueDoubleMaybe(colIndex: number): number | undefined {
-    return this.isValueNull(colIndex) ? undefined : this.getValueDouble(colIndex);
-  }
-  /** Get the value as a blob, or undefined if it is null.
-   * @param colIndex Index of SQL column in query result (0-based)
-   * @internal
-   */
-  public getValueBlobMaybe(colIndex: number): Uint8Array | undefined {
-    return this.isValueNull(colIndex) ? undefined : this.getValueBlob(colIndex);
   }
   /** Get the value as a "props" JSON string, then parse it and return the object
    * @param colIndex Index of SQL column in query result (0-based)
