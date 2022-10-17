@@ -76,41 +76,6 @@ jobs:
         displayName: Publish Pipeline Artifact - .updated.json
         condition: and(succeeded(), eq('${{ parameters.downloadCurrentBuildArtifacts }}', false))
 
-      # - task: PythonScript@0
-      #   inputs:
-      #     scriptSource: inline
-      #     script: |
-      #       import subprocess
-
-      #       # Get local version from @itwin/core-backend
-      #       cmd = ["node", "-p", "require('./core/backend/package.json').version"]
-      #       process = subprocess.run(cmd, shell=True, capture_output=True)
-      #       package_version = process.stdout.decode().strip()
-
-      #       # Check npm to see if local version of @itwin/core-backend has been published
-      #       cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
-      #       process = subprocess.run(cmd, shell=True, capture_output=True)
-
-      #       if process.returncode == 0:
-      #         print("Version " + package_version + " already exists")
-      #       else:
-      #         err = process.stderr.decode()
-      #         if err.find("code E404"):
-      #           print("Releasing version " + package_version)
-
-      #           f = open($(parameters.outputDir) + "/version.txt", "w")
-      #           f.write(package_version)
-      #           f.close()
-
-      #           print("##vso[build.addbuildtag]iTwinJsDocsRelease")
-      #         else:
-      #           print(err)
-      #   displayName: Tag if new release
-      #   workingDirectory: ${{ parameters.workingDir }}
-      #   condition: and(succeeded(), eq('${{ parameters.shouldPublish }}', true))
-      # - task: UsePythonVersion@0
-      #   inputs:
-      #     versionSpec: '3.x' # string. Required. Version spec. Default: 3.x.
 
       # TODO: Replace subprocess.run with subprocess.Popen
       - task: PythonScript@0
@@ -118,7 +83,6 @@ jobs:
           scriptSource: inline
           script: |
             import os, subprocess, sys
-            print(sys.version)
 
             # Validate arguments
             if len(sys.argv) != 2:
@@ -130,7 +94,7 @@ jobs:
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             try:
               out, err = process.communicate()
-            except subprocess:
+            except:
               process.kill()
               out, err = process.communicate()
 
@@ -138,10 +102,29 @@ jobs:
               print(err.decode())
             else:
               package_version = out.decode().strip()
-              print("Releasing version " + package_version)
-              f = open(os.path.join(outputDir, "version.txt"), "w")
-              f.write(package_version)
-              f.close()
+
+              # Check npm to see if local version of @itwin/core-backend has been published
+              cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
+              process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+              try:
+                out, err = process.communicate()
+              except:
+                process.kill()
+                out, err = process.communicate()
+
+              if process.returncode > 0:
+                err = err.decode()
+                if err.find("code E404"):
+                  print("Releasing version " + package_version)
+                  f = open(os.path.join(outputDir, "version.txt"), "w")
+                  f.write(package_version)
+                  f.close()
+
+                  # print("##vso[build.addbuildtag]iTwinJsDocsRelease")
+                else:
+                  print(err)
+              else:
+                print("Version " + package_version + " already exists")
           arguments: ${{ parameters.outputDir }}
           workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
