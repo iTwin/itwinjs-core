@@ -101,26 +101,26 @@ jobs:
             else:
               package_version = out.decode().strip()
 
-              # Check npm to see if local version of @itwin/core-backend has been published
-              cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
-              process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-              try:
-                out, err = process.communicate()
-              except:
-                process.kill()
-                out, err = process.communicate()
+              # # Check npm to see if local version of @itwin/core-backend has been published
+              # cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
+              # process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+              # try:
+              #   out, err = process.communicate()
+              # except:
+              #   process.kill()
+              #   out, err = process.communicate()
 
-              if process.returncode > 0:
-                err = err.decode()
-                if err.find("code E404"):
-                  print("Releasing version " + package_version)
-                  f = open(os.path.join(outputDir, "version.txt"), "w")
-                  f.write(package_version)
-                  f.close()
+              # if process.returncode > 0:
+              #   err = err.decode()
+              #   if err.find("code E404"):
+              print("Releasing version " + package_version)
+              f = open(os.path.join(outputDir, "version.txt"), "w")
+              f.write(package_version)
+              f.close()
 
-                  # print("##vso[build.addbuildtag]iTwinJsDocsRelease")
-                else:
-                  print(err)
+              print("##vso[build.addbuildtag]iTwinJsDocsRelease")
+                # else:
+                #   print(err)
               else:
                 print("Version " + package_version + " already exists")
           arguments: ${{ parameters.outputDir }}
