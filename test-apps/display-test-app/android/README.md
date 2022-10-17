@@ -19,11 +19,19 @@ First, upload a .ibim file to the `/data/data/com.bentley.imodeljs_test_app/file
 
 Next, modify line 23 in `app/src/main/java/com/bentley/imodeljs_test_app/MainActivity.java` where `MobileFrontend` is being configured to specify the filename for your uploaded iModel.
 
-## Debugging
+## Using a local build of the add-on (iTwinAndroidLibrary.aar)
 
-You can use a local build of the addon to enable native debugging in this app.
-See instructions in `imodel02/iModelJsMobile/nonport/android/README.md`.
+If you have a local build of the add-on that you need to debug, you can publish it to the local Maven repo which will then get used by the display-test-app build.
 
-Note that you should `set IMODELJS_LOCAL_ADDON=1` in your shell before executing `npm run build:android`.
+For example, here are the steps for publishing version 3.5.2 locally on a Mac. Do this in a directory outside the imodeljs-core tree.
 
-Also, you must launch **studio64** (Android Studio) from your native shell so the app's `build.gradle` script can find the local addon package relative to your imodel02 `OutRoot` environment variable.
+```shell
+git clone https://github.com/iTwin/mobile-native-android.git
+cd mobile-native-android
+git checkout 3.5.2
+cp $(OutRoot)AndroidX64/BuildContexts/iModelJsMobile/Delivery/AndroidPackages/iTwinAndroidLibrary.aar .
+./gradlew --no-daemon publishToMavenLocal
+```
+You should then be able to build/sync in Android Studio and your add-on build will be used.
+
+The last step creates files in `~/.m2/repository/com/github/itwin/mobile-native-android`. You should remove these once you're done.
