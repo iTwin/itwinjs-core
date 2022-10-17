@@ -105,7 +105,7 @@ jobs:
 
               # Check npm to see if local version of @itwin/core-backend has been published
               cmd = ["npm", "view", "@itwin/core-backend@" + package_version]
-              process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+              process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
               try:
                 out, err = process.communicate()
               except:
