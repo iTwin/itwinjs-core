@@ -177,7 +177,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param val integer to bind.
    */
   public maybeBindInteger(parameter: BindParameter, val?: number) {
-    if (val)
+    if (val !== undefined)
       this.bindInteger(parameter, val);
   }
   /** Bind a boolean parameter.
@@ -192,7 +192,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param val boolean to bind.
    */
   public maybeBindBoolean(parameter: BindParameter, val?: boolean) {
-    if (val)
+    if (val !== undefined)
       this.bindBoolean(parameter, val);
   }
   /** JSON.stringify a property value and bind the JSON string.
@@ -209,7 +209,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @internal
    */
   public maybeBindProps<T>(colIndex: number, val?: T) {
-    if (val)
+    if (val !== undefined)
       this.bindProps(colIndex, val);
   }
   /** Bind a double parameter
@@ -224,7 +224,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param val double to bind.
    */
   public maybeBindDouble(parameter: BindParameter, val?: number) {
-    if (val)
+    if (val !== undefined)
       this.bindDouble(parameter, val);
   }
   /** Bind a string parameter
@@ -239,7 +239,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param val string to bind.
    */
   public maybeBindString(parameter: BindParameter, val?: string) {
-    if (val)
+    if (val !== undefined)
       this.bindString(parameter, val);
   }
   /** Bind an Id64String parameter as a 64-bit integer
@@ -268,7 +268,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @param val blob to bind.
    */
   public maybeBindBlob(parameter: BindParameter, val?: Uint8Array) {
-    if (val)
+    if (val !== undefined)
       this.bindBlob(parameter, val);
   }
   /** Bind null to a parameter
