@@ -140,13 +140,17 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
 describe("BSplineSurface", () => {
   it("BSplineSurface.Hello", () => {
     const ck = new Checker();
-    const surfaceA = Sample.createXYGridBsplineSurface(4, 3, 3, 2);
+    const surfaceA = Sample.createXYGridBsplineSurface(4, 3, 3, 2); // an open surface
     if (ck.testPointer(surfaceA)) {
       // test that bogus closure setups get rejected . .
-      surfaceA.setWrappable(UVSelect.vDirection, BSplineWrapMode.OpenByAddingControlPoints);
+      surfaceA.setWrappable(UVSelect.uDirection, BSplineWrapMode.OpenByAddingControlPoints);
+      surfaceA.setWrappable(UVSelect.vDirection, BSplineWrapMode.OpenByRemovingKnots);
       testBSplineSurface(ck, surfaceA);
-      ck.testFalse(BSplineWrapMode.OpenByAddingControlPoints === surfaceA.isClosableUV(UVSelect.vDirection));
-      ck.testTrue(BSplineWrapMode.None === surfaceA.isClosableUV(UVSelect.uDirection));
+      const mode = {value: BSplineWrapMode.None};
+      ck.testFalse(surfaceA.isClosable(UVSelect.uDirection, mode));
+      ck.testExactNumber(mode.value, BSplineWrapMode.None);
+      ck.testFalse(surfaceA.isClosable(UVSelect.vDirection, mode));
+      ck.testExactNumber(mode.value, BSplineWrapMode.None);
     }
     // A rational surface with unit weigths ... This is just a plane
     const surfaceAH1 = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2);
@@ -174,8 +178,11 @@ describe("BSplineSurface", () => {
           Math.max(12, orderU + 1), Math.max(6, orderV + 1),    // grid edges
           orderU, orderV);
         if (ck.testPointer(bsurf)) {
-          ck.testTrue(BSplineWrapMode.OpenByAddingControlPoints === bsurf.isClosableUV(UVSelect.uDirection));
-          ck.testTrue(BSplineWrapMode.OpenByAddingControlPoints === bsurf.isClosableUV(UVSelect.vDirection));
+          const mode = {value: BSplineWrapMode.None};
+          if (ck.testTrue(bsurf.isClosable(UVSelect.uDirection, mode)))
+            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints);
+          if (ck.testTrue(bsurf.isClosable(UVSelect.vDirection, mode)))
+            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints);
           bsurf.tryTranslateInPlace(dx, dy);
           allGeometry.push(bsurf);
         }

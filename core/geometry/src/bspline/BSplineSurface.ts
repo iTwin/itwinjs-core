@@ -106,10 +106,8 @@ export interface BSplineSurface3dQuery {
   extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   /** test for nearly equality with `other` */
   isAlmostEqual(other: any): boolean;
-  /** @deprecated replaced by isCloseableUV */
-  isClosable(select: UVSelect): boolean;
   /** ask if the u or v direction could be converted to periodic form */
-  isClosableUV(select: UVSelect): BSplineWrapMode;
+  isClosable(select: UVSelect, wrapMode?: {value: BSplineWrapMode}): boolean;
   /** Ask if the entire surface is within a plane. */
   isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
   /** return the total number of poles (product of u,v counts) */
@@ -513,30 +511,27 @@ export abstract class BSpline2dNd extends GeometryQuery {
   public testClosableGrid(select: UVSelect, mode?: BSplineWrapMode | undefined): boolean {
     if (mode === undefined)
       mode = this.knots[select].wrappable;
-    if (mode === BSplineWrapMode.OpenByAddingControlPoints)
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints) // the last degree poles equal the first degree poles
       return BSpline2dNd.isWrappedGrid(this.coffs, this.numPolesUV(UVSelect.vDirection), this.numPolesUV(UVSelect.uDirection), this.poleDimension, this.degreeUV(select), select);
-    if (mode === BSplineWrapMode.OpenByRemovingKnots)
-      return true;  // no pole conditions
+    if (mode === BSplineWrapMode.OpenByRemovingKnots) // the last pole equals the first pole
+      return BSpline2dNd.isWrappedGrid(this.coffs, this.numPolesUV(UVSelect.vDirection), this.numPolesUV(UVSelect.uDirection), this.poleDimension, 1, select);
     return false;
   }
-  /** @deprecated replaced by isClosableUV */
-  public isClosable(select: UVSelect): boolean {
-    return BSplineWrapMode.None !== this.isClosableUV(select);
-  }
-  /**
-   * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping in the selected parametric direction.
+  /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
    * @param select select U or V direction
-   * @returns the manner of closing. See `BSplineWrapMode` for particulars of each mode.
+   * @param wrapMode the manner of closing, as a boxed value so it can be returned. See `BSplineWrapMode` for particulars of each mode.
+   * @return whether the surface can be wrapped in the given parametric direction.
    */
-  public isClosableUV(select: UVSelect): BSplineWrapMode {
+  public isClosable(select: UVSelect, wrapMode?: {value: BSplineWrapMode}): boolean {
     const mode = this.knots[select].wrappable;
-    if (mode === BSplineWrapMode.None)
-      return BSplineWrapMode.None;
-    if (!this.knots[select].testClosable(mode))
-      return BSplineWrapMode.None;
-    if (!this.testClosableGrid(select, mode))
-      return BSplineWrapMode.None;
-    return mode;
+    let closable = BSplineWrapMode.None !== mode;
+    if (closable)
+      closable = this.knots[select].testClosable(mode);
+    if (closable)
+      closable = this.testClosableGrid(select, mode);
+    if (undefined !== wrapMode)
+      wrapMode.value = closable ? mode : BSplineWrapMode.None;
+    return closable;
   }
 }
 

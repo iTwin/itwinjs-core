@@ -2046,15 +2046,16 @@ export namespace IModelJson {
       let myClosedU = false;
       let myClosedV = false;
 
-      const wrapModeU = surface.isClosableUV(UVSelect.uDirection);
-      if (wrapModeU === BSplineWrapMode.OpenByAddingControlPoints) {
+      const wrapModeU = {value: BSplineWrapMode.None};
+      surface.isClosable(UVSelect.uDirection, wrapModeU);
+      if (wrapModeU.value === BSplineWrapMode.OpenByAddingControlPoints) {
         // re-close the true periodic case
         for (let i = 0; i < surface.numPolesUV(UVSelect.vDirection); ++i)
           for (let j = 0; j < surface.degreeUV(UVSelect.uDirection); ++j)
             myPoles[i].pop(); // remove last degreeU poles from each row
         myKnotsU = surface.copyKnots(UVSelect.uDirection, true);  // add periodic extraneous knots
         myClosedU = true;
-      } else if (wrapModeU === BSplineWrapMode.OpenByRemovingKnots) {
+      } else if (wrapModeU.value === BSplineWrapMode.OpenByRemovingKnots) {
         // re-close the legacy periodic case. Poles unchanged.
         Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.uDirection, false), myOrderU, myKnotsU = []);
         myClosedU = true;
@@ -2062,14 +2063,15 @@ export namespace IModelJson {
         myKnotsU = surface.copyKnots(UVSelect.uDirection, true);  // add clamped extraneous knots
       }
 
-      const wrapModeV = surface.isClosableUV(UVSelect.vDirection);
-      if (wrapModeV === BSplineWrapMode.OpenByAddingControlPoints) {
+      const wrapModeV = {value: BSplineWrapMode.None};
+      surface.isClosable(UVSelect.vDirection, wrapModeV);
+      if (wrapModeV.value === BSplineWrapMode.OpenByAddingControlPoints) {
         // re-close the true periodic case
         for (let i = 0; i < surface.degreeUV(UVSelect.vDirection); ++i)
           myPoles.pop();  // remove last degreeV rows
         myKnotsV = surface.copyKnots(UVSelect.vDirection, true);  // add periodic extraneous knots
         myClosedV = true;
-      } else if (wrapModeV === BSplineWrapMode.OpenByRemovingKnots) {
+      } else if (wrapModeV.value === BSplineWrapMode.OpenByRemovingKnots) {
         // re-close the legacy periodic case. Poles unchanged.
         Writer.closeLegacyPeriodicKnots(surface.copyKnots(UVSelect.vDirection, false), myOrderV, myKnotsV = []);
         myClosedV = true;
