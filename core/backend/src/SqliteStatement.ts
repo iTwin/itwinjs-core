@@ -169,31 +169,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   public bindInteger(parameter: BindParameter, val: number) {
     this.checkBind(this.stmt.bindInteger(parameter, val));
   }
-
-  public bindBoolean(parameter: BindParameter, val: boolean) {
-    this.bindInteger(parameter, val ? 1 : 0);
-  }
-  public maybeBindBoolean(parameter: BindParameter, val?: boolean) {
-    if (val)
-      this.bindBoolean(parameter, val);
-  }
-  public maybeBindString(parameter: BindParameter, val?: string) {
-    if (val)
-      this.bindString(parameter, val);
-  }
-  public maybeBindInteger(parameter: BindParameter, val?: number) {
-    if (val)
-      this.bindInteger(parameter, val);
-  }
-  public maybeBindDouble(parameter: BindParameter, val?: number) {
-    if (val)
-      this.bindDouble(parameter, val);
-  }
-  public maybeBindBlob(parameter: BindParameter, val?: Uint8Array) {
-    if (val)
-      this.bindBlob(parameter, val);
-  }
-
   /** Bind a double parameter
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val double to bind.
@@ -330,24 +305,6 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   * @param colIndex Index of SQL column in query result (0-based)
   */
   public getValueGuid(colIndex: number): GuidString { return this.stmt.getValueGuid(colIndex); }
-
-  public getValueTimeStamp(colIndex: number) { return new Date(this.stmt.getValueInteger(colIndex) * 1000); }
-
-  public getValueStringMaybe(colIndex: number) {
-    return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
-  }
-  public getValueIntegerMaybe(colIndex: number) {
-    return this.isValueNull(colIndex) ? undefined : this.getValueInteger(colIndex);
-  }
-  public getValueDoubleMaybe(colIndex: number) {
-    return this.isValueNull(colIndex) ? undefined : this.getValueDouble(colIndex);
-  }
-  public getValueBlobMaybe(colIndex: number) {
-    return this.isValueNull(colIndex) ? undefined : this.getValueBlob(colIndex);
-  }
-  public getValueBoolean(colIndex: number) {
-    return this.isValueNull(colIndex) ? false : 0 !== this.getValueInteger(colIndex);
-  }
 
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
