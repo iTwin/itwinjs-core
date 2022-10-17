@@ -15,7 +15,7 @@ import { WebGLDisposable } from "./Disposable";
 import { LineCode } from "./LineCode";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
-import { EmphasisFlags, OvrFlags, TextureUnit } from "./RenderFlags";
+import { OvrFlags, TextureUnit } from "./RenderFlags";
 import { sync, SyncObserver } from "./Sync";
 import { System } from "./System";
 import { Hilites, Target } from "./Target";
@@ -80,7 +80,7 @@ export class FeatureOverrides implements WebGLDisposable {
   private _anyOpaque = true;
   private _anyHilited = true;
   private _lutParams = new Float32Array(2);
-  private _uniformSymbologyFlags: EmphasisFlags = EmphasisFlags.None;
+  private _uniformSymbologyFlags = 0;
   private _cleanup?: FeatureOverridesCleanup;
 
   public get anyOverridden() { return this._anyOverridden; }
@@ -94,28 +94,19 @@ export class FeatureOverrides implements WebGLDisposable {
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
+  public get isUniformFlashed() {
+    if (!this.isUniform || undefined === this._lut)
+      return false;
+
+    const lut = this._lut;
+    const flags = lut.dataBytes![0];
+    return 0 !== (flags & OvrFlags.Flashed);
+  }
 
   private updateUniformSymbologyFlags(): void {
-    this._uniformSymbologyFlags = EmphasisFlags.None;
-    if (!this.isUniform || !this._lut)
-      return;
-
-    let flags = this._lut.dataBytes![0];
-    if (0 !== (flags & OvrFlags.Flashed))
-      this._uniformSymbologyFlags |= EmphasisFlags.Flashed;
-
-    if (0 !== (flags & OvrFlags.NonLocatable))
-      this._uniformSymbologyFlags |= EmphasisFlags.NonLocatable;
-
-    if (!this._anyHilited)
-      return;
-
-    flags = this._lut.dataBytes![1] << 8;
-    if (0 !== (flags & OvrFlags.Hilited))
-      this._uniformSymbologyFlags |= EmphasisFlags.Hilite;
-
-    if (0 !== (flags & OvrFlags.Emphasized))
-      this._uniformSymbologyFlags |= EmphasisFlags.Emphasized;
+    this._uniformSymbologyFlags = this.anyHilited ? 2 : 0;
+    if (this.isUniformFlashed)
+      this._uniformSymbologyFlags += 1;
   }
 
   public getUniformOverrides(): Uint8Array {

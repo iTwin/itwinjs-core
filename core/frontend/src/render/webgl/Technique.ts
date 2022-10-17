@@ -36,16 +36,14 @@ import createPlanarGridProgram from "./glsl/PlanarGrid";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
-import {
-  addColorOverrideMix, createClassifierRealityMeshHiliter, createRealityMeshBuilder, createRealityMeshHiliter,
-} from "./glsl/RealityMesh";
+import createRealityMeshBuilder, { createClassifierRealityMeshHiliter, createRealityMeshHiliter } from "./glsl/RealityMesh";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
 import { createSurfaceBuilder, createSurfaceHiliter } from "./glsl/Surface";
 import { addTranslucency } from "./glsl/Translucency";
 import { addModelViewMatrix } from "./glsl/Vertex";
 import { RenderPass } from "./RenderFlags";
-import { ProgramBuilder, VertexShaderComponent } from "./ShaderBuilder";
+import { ProgramBuilder, VariableType, VertexShaderComponent } from "./ShaderBuilder";
 import { CompileStatus, ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
@@ -621,6 +619,11 @@ class PointCloudTechnique extends VariedTechnique {
   public constructor(gl: WebGLContext) {
     super(PointCloudTechnique._kHilite + 2);
 
+    this._earlyZFlags = [
+      TechniqueFlags.fromDescription("Opaque-Hilite-Overrides"),
+      TechniqueFlags.fromDescription("Opaque-Hilite-Classified"),
+    ];
+
     for (let iClassified = IsClassified.No; iClassified <= IsClassified.Yes; iClassified++) {
       this.addHiliteShader(gl, IsInstanced.No, iClassified, "quantized", (_inst, classified) => createPointCloudHiliter(classified));
       const flags = scratchTechniqueFlags;
@@ -632,7 +635,11 @@ class PointCloudTechnique extends VariedTechnique {
           const builder = createPointCloudBuilder(flags.isClassified, featureMode, thematic);
           if (FeatureMode.Overrides === featureMode) {
             addUniformFeatureSymbology(builder, true);
-            addColorOverrideMix(builder.vert);
+            builder.vert.addUniform("u_overrideColorMix", VariableType.Float, (prog) => {
+              prog.addGraphicUniform("u_overrideColorMix", (uniform, params) => {
+                uniform.setUniform1f(params.geometry.asPointCloud!.overrideColorMix);
+              });
+            });
             builder.vert.set(VertexShaderComponent.ApplyFeatureColor, mixFeatureColor);
           }
 

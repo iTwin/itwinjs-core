@@ -418,7 +418,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
   }
   toolWidgetDef={
     ToolWidgetDef {
-      "_allowedPanelTargets": undefined,
       "_appButton": undefined,
       "_backstageLabel": "buttons.openBackstageMenu",
       "_canPopout": undefined,

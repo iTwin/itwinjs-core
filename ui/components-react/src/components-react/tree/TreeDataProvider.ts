@@ -23,7 +23,6 @@ export interface TreeNodeItem {
   description?: string;
   autoExpand?: boolean;
   icon?: string;
-  isSelectionDisabled?: boolean;
   isCheckboxVisible?: boolean;
   isCheckboxDisabled?: boolean;
   checkBoxState?: CheckBoxState;

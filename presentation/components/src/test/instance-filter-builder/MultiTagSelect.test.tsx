@@ -20,7 +20,7 @@ describe("MultiTagSelect", () => {
   }];
 
   it("renders with selected tags", () => {
-    const { container } = render(<MultiTagSelect
+    const {container} = render(<MultiTagSelect
       options={options}
       getOptionLabel={(option) => option.label}
       getOptionValue={(option) => option.value}
@@ -32,7 +32,7 @@ describe("MultiTagSelect", () => {
   });
 
   it("render dropdown menu", () => {
-    const { container, getByTestId } = render(<MultiTagSelect
+    const {container, getByTestId} = render(<MultiTagSelect
       options={options}
       getOptionLabel={(option) => option.label}
       getOptionValue={(option) => option.value}

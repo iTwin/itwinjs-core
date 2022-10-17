@@ -175,7 +175,7 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 ## ViewState Parameters
 
- The diagrams below illustrate what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean. You can also visualize these parameters interactively using the [camera visualization sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/Camera%20Visualizer).
+ This is what the parameters to the camera methods, and the values stored by [ViewDefinition3d]($backend) mean.
 
 <img src="./ViewFrustum-D1.png" width="75%">
 

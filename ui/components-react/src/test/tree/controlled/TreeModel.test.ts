@@ -12,7 +12,7 @@ import {
   computeVisibleNodes, isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel,
   TreeModelNode, TreeModelNodeInput, TreeModelNodePlaceholder, TreeModelRootNode,
 } from "../../../components-react/tree/controlled/TreeModel";
-import { createRandomMutableTreeModelNode } from "./TreeHelpers";
+import { createRandomMutableTreeModelNode } from "./RandomTreeNodesHelpers";
 
 const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, input: TreeModelNodeInput): MutableTreeModelNode => {
   return {
@@ -27,7 +27,6 @@ const createTreeModelNode = (parentNode: TreeModelNode | TreeModelRootNode, inpu
     isExpanded: input.isExpanded,
     label: input.label,
     isSelected: input.isSelected,
-    isSelectionDisabled: input.item.isSelectionDisabled,
 
     checkbox: {
       state: input.item.checkBoxState || CheckBoxState.Off,

@@ -13,7 +13,7 @@ import produce from "immer";
 import { RectangleProps, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DraggedPanelSideContext } from "../base/DragManager";
-import { NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
+import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { WidgetState } from "../state/WidgetState";
 import { PanelWidget, PanelWidgetProps } from "../widget/PanelWidget";
 import { WidgetPanelGrip } from "./Grip";
@@ -171,6 +171,7 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
   const [transition, setTransition] = React.useState<"init" | "transition" | undefined>();
   const [panelSize, setPanelSize] = React.useState<number | undefined>();
   const [initializing, setInitializing] = React.useState(false);
+  const autoCollapseUnpinnedPanels = React.useContext(AutoCollapseUnpinnedPanelsContext);
 
   const horizontal = isHorizontalPanelSide(panel.side);
   const style = React.useMemo(() => {
@@ -342,6 +343,26 @@ export const WidgetPanel = React.memo<WidgetPanelProps>(function WidgetPanelComp
     }
     return styleToApply;
   }, [horizontal, panel.splitterPercent]);
+
+  React.useLayoutEffect(() => {
+    if (!ref.current || !autoCollapseUnpinnedPanels)
+      return;
+
+    const panelRef = ref.current;
+    const listener = () => {
+      if (collapsing.current || panel.collapsed || panel.pinned)
+        return;
+      dispatch({
+        type: "PANEL_SET_COLLAPSED",
+        collapsed: true,
+        side: panel.side,
+      });
+    };
+    panelRef.addEventListener("mouseleave", listener);
+    return () => {
+      panelRef.removeEventListener("mouseleave", listener);
+    };
+  }, [dispatch, panel.collapsed, panel.pinned, panel.side, autoCollapseUnpinnedPanels]);
 
   const singleSection = panel.widgets.length === 1;
   const showSectionTargets = singleSection && !panel.collapsed;

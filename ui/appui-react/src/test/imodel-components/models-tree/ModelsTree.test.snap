@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ModelsTree #integration does not show private categories with RULESET_MODELS 1`] = `
+exports[`ModelsTree #integration does not show private categories 1`] = `
 Array [
   Object {
     "autoExpand": true,
@@ -11,7 +11,7 @@ Array [
             "children": Array [
               Object {
                 "extendedData": Object {
-                  "categoryId": "0x13",
+                  "categoryId": "0x12",
                   "modelId": "0x11",
                 },
                 "icon": "icon-item",
@@ -22,8 +22,8 @@ Array [
                     "typename": "string",
                   },
                   "value": Object {
-                    "displayValue": "Physical Object [0-L]",
-                    "value": "Physical Object [0-L]",
+                    "displayValue": "Physical Object [0-M]",
+                    "value": "Physical Object [0-M]",
                     "valueFormat": 0,
                   },
                 },
@@ -42,8 +42,8 @@ Array [
                 "typename": "string",
               },
               "value": Object {
-                "displayValue": "Test Spatial Category",
-                "value": "Test Spatial Category",
+                "displayValue": "Test SpatialCategory",
+                "value": "Test SpatialCategory",
                 "valueFormat": 0,
               },
             },
@@ -80,8 +80,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "ModelsTreeModels",
-        "value": "ModelsTreeModels",
+        "displayValue": "IModelTest",
+        "value": "IModelTest",
         "valueFormat": 0,
       },
     },
@@ -89,7 +89,7 @@ Array [
 ]
 `;
 
-exports[`ModelsTree #integration does not show private categories with RULESET_MODELS_GROUPED_BY_CLASS 1`] = `
+exports[`ModelsTree #integration does not show private categories with class grouping 1`] = `
 Array [
   Object {
     "autoExpand": true,
@@ -102,7 +102,7 @@ Array [
                 "children": Array [
                   Object {
                     "extendedData": Object {
-                      "categoryId": "0x13",
+                      "categoryId": "0x12",
                       "modelId": "0x11",
                     },
                     "icon": "icon-item",
@@ -113,8 +113,8 @@ Array [
                         "typename": "string",
                       },
                       "value": Object {
-                        "displayValue": "Physical Object [0-L]",
-                        "value": "Physical Object [0-L]",
+                        "displayValue": "Physical Object [0-M]",
+                        "value": "Physical Object [0-M]",
                         "valueFormat": 0,
                       },
                     },
@@ -150,8 +150,8 @@ Array [
                 "typename": "string",
               },
               "value": Object {
-                "displayValue": "Test Spatial Category",
-                "value": "Test Spatial Category",
+                "displayValue": "Test SpatialCategory",
+                "value": "Test SpatialCategory",
                 "valueFormat": 0,
               },
             },
@@ -188,8 +188,8 @@ Array [
         "typename": "string",
       },
       "value": Object {
-        "displayValue": "ModelsTreeModelsGroupedByClass",
-        "value": "ModelsTreeModelsGroupedByClass",
+        "displayValue": "IModelTest",
+        "value": "IModelTest",
         "valueFormat": 0,
       },
     },

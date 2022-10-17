@@ -30,7 +30,6 @@ export interface TreeModelNode {
   readonly isExpanded: boolean;
   readonly label: PropertyRecord;
   readonly isSelected: boolean;
-  readonly isSelectionDisabled?: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
   readonly editingInfo?: TreeModelNodeEditingInfo;
@@ -62,7 +61,6 @@ export interface MutableTreeModelNode extends TreeModelNode {
   isExpanded: boolean;
   label: PropertyRecord;
   isSelected: boolean;
-  isSelectionDisabled?: boolean;
 
   /** Specifies that node is in editing mode. It holds callbacks that are used by node editor. */
   editingInfo?: TreeModelNodeEditingInfo;
@@ -460,7 +458,6 @@ export class MutableTreeModel implements TreeModel {
       isExpanded: input.isExpanded,
       label: input.label,
       isSelected: input.isSelected,
-      isSelectionDisabled: input.item.isSelectionDisabled,
 
       checkbox: {
         state: input.item.checkBoxState || CheckBoxState.Off,

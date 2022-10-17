@@ -8,7 +8,7 @@
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RealityModelDisplaySettings, RelatedElement, SpatialClassifiers,
+  GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, ModelProps, RealityDataFormat, RealityDataSourceKey, RelatedElement, SpatialClassifiers,
 } from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import { EntityState } from "./EntityState";
@@ -119,7 +119,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
 
     const spatialModel = this.asSpatialModel;
     const rdSourceKey = this.jsonProperties.rdSourceKey;
-    const getDisplaySettings = () => view.displayStyle.settings.getRealityModelDisplaySettings(this.id) ?? RealityModelDisplaySettings.defaults;
 
     if (rdSourceKey) {
       const useOrbitGtTileTreeReference = rdSourceKey.format === RealityDataFormat.OPC;
@@ -131,7 +130,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // url: tilesetUrl, // If rdSourceKey is defined, url is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-          getDisplaySettings,
         }) :
         createOrbitGtTileTreeReference({
           rdSourceKey,
@@ -140,7 +138,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
           modelId: this.id,
           // orbitGtBlob: props.orbitGtBlob!, // If rdSourceKey is defined, orbitGtBlob is not used
           classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-          getDisplaySettings,
         });
       return treeRef;
     }
@@ -167,7 +164,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         orbitGtBlob,
         name: orbitGtName,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-        getDisplaySettings,
       });
     }
 
@@ -184,7 +180,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
         modelId: this.id,
         tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-        getDisplaySettings,
       });
     }
 

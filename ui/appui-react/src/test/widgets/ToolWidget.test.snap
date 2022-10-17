@@ -102,7 +102,6 @@ exports[`ToolWidget Not Extension-compatible ToolWidget should render correctly 
   }
   toolWidgetDef={
     ToolWidgetDef {
-      "_allowedPanelTargets": undefined,
       "_appButton": CommandItemDef {
         "_commandHandler": Object {
           "execute": [Function],

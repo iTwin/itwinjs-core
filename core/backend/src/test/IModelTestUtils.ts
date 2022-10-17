@@ -607,13 +607,6 @@ export class IModelTestUtils {
     });
   }
 
-  public static queryByCodeValue(iModelDb: IModelDb, codeValue: string): Id64String {
-    return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeValue=:codeValue`, (statement: ECSqlStatement): Id64String => {
-      statement.bindString("codeValue", codeValue);
-      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
-    });
-  }
-
   public static insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
     const repositoryLinkProps: RepositoryLinkProps = {
       classFullName: RepositoryLink.classFullName,

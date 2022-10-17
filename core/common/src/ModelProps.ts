@@ -19,8 +19,7 @@ import { EntityProps, EntityQueryParams } from "./EntityProps";
 export interface ModelProps extends EntityProps {
   modeledElement: RelatedElementProps;
   name?: string;
-  /** @note must always match the model of the [[ModelProps.modeledElement]] */
-  parentModel?: Id64String;
+  parentModel?: Id64String; // NB! Must always match the model of the modeledElement!
   isPrivate?: boolean;
   isTemplate?: boolean;
   jsonProperties?: any;

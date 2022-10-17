@@ -149,7 +149,6 @@ export class WidgetDef {
   private _defaultFloatingPosition: PointProps | undefined;
 
   private _hideWithUiWhenFloating?: boolean;
-  private _allowedPanelTargets?: ReadonlyArray<"left"|"right"|"bottom"|"top">;
   private _initialProps?: WidgetProps;
 
   private _tabLocation?: TabLocation;
@@ -242,8 +241,6 @@ export class WidgetDef {
     me.defaultFloatingPosition = widgetProps.defaultFloatingPosition ? widgetProps.defaultFloatingPosition as PointProps : undefined;
 
     me._hideWithUiWhenFloating = !!widgetProps.hideWithUiWhenFloating;
-
-    me.allowedPanelTargets = widgetProps.allowedPanelTargets;
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -469,15 +466,6 @@ export class WidgetDef {
 
   public get hideWithUiWhenFloating(): boolean {
     return !!this._hideWithUiWhenFloating;
-  }
-
-  public get allowedPanelTargets(): ReadonlyArray<"left"|"right"|"bottom"|"top"> | undefined {
-    return this._allowedPanelTargets;
-  }
-
-  public set allowedPanelTargets(targets: ReadonlyArray<"left"|"right"|"bottom"|"top"> | undefined) {
-
-    this._allowedPanelTargets = (targets && targets?.length > 0) ? targets : undefined;
   }
 
   public onWidgetStateChanged(): void {

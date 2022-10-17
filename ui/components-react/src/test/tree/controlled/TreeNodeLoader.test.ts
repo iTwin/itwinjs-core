@@ -12,9 +12,7 @@ import * as moq from "typemoq";
 import { PropertyRecord } from "@itwin/appui-abstract";
 import { BeEvent } from "@itwin/core-bentley";
 import { Observable, Observer } from "../../../components-react/tree/controlled/Observable";
-import {
-  MutableTreeModelNode, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData,
-} from "../../../components-react/tree/controlled/TreeModel";
+import { MutableTreeModelNode, TreeModelNode, TreeModelNodeInput, TreeModelRootNode, TreeNodeItemData } from "../../../components-react/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
 import {
   AbstractTreeNodeLoader, handleLoadedNodeHierarchy, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeDataSource, TreeNodeLoader, TreeNodeLoadResult,
@@ -24,7 +22,7 @@ import {
 } from "../../../components-react/tree/TreeDataProvider";
 import { extractSequence } from "../../common/ObservableTestHelpers";
 import { ResolvablePromise } from "../../test-helpers/misc";
-import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./TreeHelpers";
+import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 
 /* eslint-disable @typescript-eslint/promise-function-async */
 

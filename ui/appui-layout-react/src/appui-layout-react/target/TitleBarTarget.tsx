@@ -16,7 +16,6 @@ import { WidgetState } from "../state/WidgetState";
 import { WidgetIdContext } from "../widget/Widget";
 import { TabOutline } from "../outline/TabOutline";
 import { withTargetVersion } from "./TargetOptions";
-import { useAllowedWidgetTarget } from "./useAllowedWidgetTarget";
 import { WidgetDropTargetState } from "../state/DropTargetState";
 
 /** @internal */
@@ -26,10 +25,8 @@ export const TitleBarTarget = withTargetVersion("2", function TitleBarTarget() {
   const draggedWidgetId = React.useContext(DraggedWidgetIdContext);
   const widgetId = React.useContext(WidgetIdContext);
   const [ref] = useTarget<HTMLDivElement>(useTargetArgs(widgetId));
-  const allowedTarget = useAllowedWidgetTarget(widgetId);
-
   // istanbul ignore next
-  const hidden = !allowedTarget || ((!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId);
+  const hidden = (!draggedTab && !draggedWidgetId) || draggedWidgetId === widgetId;
   const className = classnames(
     "nz-target-titleBarTarget",
     hidden && "nz-hidden",

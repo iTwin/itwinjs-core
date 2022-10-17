@@ -114,7 +114,6 @@
 			<dict>
 				<key>public.filename-extension</key>
 				<array>
-					<string>ibim</string>
 					<string>bim</string>
 				</array>
 				<key>public.mime-type</key>

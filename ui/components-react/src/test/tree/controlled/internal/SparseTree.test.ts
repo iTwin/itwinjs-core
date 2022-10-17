@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import { Node, SparseArray, SparseTree } from "../../../../components-react/tree/controlled/internal/SparseTree";
-import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "../TreeHelpers";
+import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "../RandomTreeNodesHelpers";
 
 describe("SparseTree", () => {
   interface TestNode extends Node {

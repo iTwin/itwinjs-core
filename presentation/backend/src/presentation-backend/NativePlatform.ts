@@ -94,7 +94,6 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
-  workerConnectionCacheSize?: number;
   defaultFormats?: NativePresentationDefaultUnitFormats;
   useMmap?: boolean | number;
 }

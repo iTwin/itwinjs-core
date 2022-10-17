@@ -5,11 +5,25 @@
 import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
-import { DragManager, DragManagerContext, useDraggedItem, useIsDraggedType, usePanelTarget, useTabTarget, useTarget, useTargeted } from "../../appui-layout-react";
+import { DragManager, DragManagerContext, useIsDragged, useIsDraggedType, usePanelTarget, useTabTarget, useTarget, useTargeted } from "../../appui-layout-react";
 import { createDragInfo, createDragStartArgs, setRefValue } from "../Providers";
-import { expect, should } from "chai";
+import { expect } from "chai";
 
 describe("DragManager", () => {
+  describe("isDraggedType", () => {
+    it("should return true", () => {
+      const sut = new DragManager();
+      sut.handleDragStart({
+        info: createDragInfo(),
+        item: {
+          type: "tab",
+          id: "",
+        },
+      });
+      sut.isDraggedType("tab").should.true;
+    });
+  });
+
   describe("handleTargetChanged", () => {
     it("should not update target if not dragging", () => {
       const sut = new DragManager();
@@ -24,6 +38,7 @@ describe("DragManager", () => {
       sinon.assert.calledOnceWithExactly(spy, sinon.match.any, sinon.match.any, undefined);
     });
   });
+
 });
 
 describe("useTabTarget", () => {
@@ -142,7 +157,6 @@ describe("useIsDraggedType", () => {
     const { result } = renderHook(() => useIsDraggedType("tab"), {
       wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
-    result.current.should.false;
 
     dragManager.handleDragStart({
       info: createDragInfo(),
@@ -155,15 +169,19 @@ describe("useIsDraggedType", () => {
   });
 });
 
-describe("useDraggedItem", () => {
-  it("should return dragged item", () => {
+describe("useIsDragged", () => {
+  it("should invoke callback", () => {
     const dragManager = new DragManager();
-    const { result } = renderHook(() => useDraggedItem(), {
+    const stub = sinon.stub();
+    stub.returns(false);
+    const { result } = renderHook(() => useIsDragged(stub), {
       wrapper: (props) => <DragManagerContext.Provider value={dragManager} {...props} />, // eslint-disable-line react/display-name
     });
-    should().equal(result.current, undefined);
+    sinon.assert.calledOnce(stub);
+    expect(result.current).to.be.false;
 
     act(() => {
+      stub.onCall(1).returns(true);
       dragManager.handleDragStart({
         info: createDragInfo(),
         item: {
@@ -172,24 +190,21 @@ describe("useDraggedItem", () => {
         },
       });
     });
-    result.current!.should.eql({
-      type: "tab",
-      id: "",
-    });
+    sinon.assert.calledTwice(stub);
+    expect(result.current).to.be.true;
 
     act(() => {
-      dragManager.draggedItem!.item.id = "abc";
+      stub.onCall(2).returns(true);
       dragManager.handleDragUpdate();
     });
-    result.current!.should.eql({
-      type: "tab",
-      id: "abc",
-    });
+    sinon.assert.calledThrice(stub);
+    expect(result.current).to.be.true;
 
     act(() => {
       dragManager.handleDragEnd();
     });
-    should().equal(result.current, undefined);
+    expect(result.current).to.be.false;
+    sinon.assert.callCount(stub, 4);
   });
 });
 

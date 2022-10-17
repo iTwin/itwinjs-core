@@ -9,11 +9,11 @@
 import "./PanelTarget.scss";
 import classnames from "classnames";
 import * as React from "react";
+import { assert } from "@itwin/core-bentley";
 import { DraggedWidgetIdContext, usePanelTarget } from "../base/DragManager";
-import { CursorTypeContext, DraggedTabStateContext, getUniqueId } from "../base/NineZone";
+import { CursorTypeContext, DraggedTabStateContext, getUniqueId, TabsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { getCursorClassName } from "../widget-panels/CursorOverlay";
-import { isHorizontalPanelSide, PanelSide } from "../widget-panels/Panel";
-import { useAllowedPanelTarget } from "./useAllowedPanelTarget";
+import { isHorizontalPanelSide, PanelSide, PanelSideContext } from "../widget-panels/Panel";
 
 /** @internal */
 export interface PanelTargetProps {
@@ -53,3 +53,27 @@ export function PanelTarget(props: PanelTargetProps) {
   );
 }
 
+/** @internal */
+export function useAllowedPanelTarget() {
+  const side = React.useContext(PanelSideContext);
+  assert(!!side);
+  const draggedTab = React.useContext(DraggedTabStateContext);
+  const draggedWidget = React.useContext(DraggedWidgetIdContext);
+  const tabsState = React.useContext(TabsStateContext);
+  const widgetsState = React.useContext(WidgetsStateContext);
+
+  let allowedPanelTargets: ReadonlyArray<PanelSide> | undefined;
+  if (draggedTab) {
+    const tab = tabsState[draggedTab.tabId];
+    allowedPanelTargets = tab.allowedPanelTargets;
+  } else if (draggedWidget && draggedWidget in widgetsState) { // handle a case where DraggedWidgetIdContext exists, but dragged widget is not in WidgetsStateContet
+    const widget = widgetsState[draggedWidget];
+    const tabId = widget.activeTabId;
+    const tab = tabsState[tabId];
+    allowedPanelTargets = tab.allowedPanelTargets;
+  }
+  if (allowedPanelTargets) {
+    return allowedPanelTargets.includes(side);
+  }
+  return true;
+}

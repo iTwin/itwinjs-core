@@ -16,6 +16,7 @@ import { category } from "./NineZoneStateHelpers";
 /** @internal */
 export function createTabState(id: TabState["id"], args?: Partial<TabState>): TabState {
   return {
+    allowedPanelTargets: undefined,
     label: "",
     ...args,
     id,

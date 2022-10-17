@@ -146,10 +146,10 @@ rush.json       @iTwin/itwinjs-core-admins
 /test-apps/display-performance-test-app     @iTwin/itwinjs-core-display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @iTwin/itwinjs-core-display
 /test-apps/display-test-app/ios             @iTwin/mobilesdkadmins
-/test-apps/export-gltf                      @MichaelBelousov @iTwin/itwinjs-core-display
-/test-apps/export-obj                       @MichaelBelousov @iTwin/itwinjs-core-display
+/test-apps/export-gltf                      @mgooding @MichaelBelousov
+/test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @bbastings @dassaf4 @saeeedtorabi
-/test-apps/imodel-from-geojson              @iTwin/itwinjs-core-display
+/test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @iTwin/itwinjs-core-display
 /test-apps/imodel-from-reality-model        @iTwin/itwinjs-core-display
 /test-apps/imodel-transformer               @MichaelBelousov @ColinKerr

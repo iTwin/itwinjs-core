@@ -70,7 +70,6 @@ export interface AbstractToolbarProps {
 
 // @public
 export interface AbstractWidgetProps extends ProvidedItem {
-    readonly allowedPanelTargets?: ReadonlyArray<"left" | "right" | "bottom" | "top">;
     readonly applicationData?: any;
     readonly badgeType?: BadgeType;
     readonly canPopout?: boolean;
@@ -901,7 +900,7 @@ export class ConditionalBooleanValue {
     // (undocumented)
     readonly testFunc: () => boolean;
     get value(): boolean;
-}
+    }
 
 // @public
 export class ConditionalStringValue {
@@ -914,7 +913,7 @@ export class ConditionalStringValue {
     // (undocumented)
     readonly syncEventIds: string[];
     get value(): string;
-}
+    }
 
 // @public
 export interface ContentLayoutProps extends LayoutFragmentProps {
@@ -1047,7 +1046,7 @@ export class DialogProperty<T> {
     // (undocumented)
     get value(): T;
     set value(val: T);
-}
+    }
 
 // @public
 export interface DialogPropertyItem {
@@ -2101,7 +2100,7 @@ export class UiEventDispatcher {
     setTimeoutPeriod(period: number): void;
     get syncEventIds(): Set<string>;
     get timeoutPeriod(): number;
-}
+    }
 
 // @public
 export interface UiFlags {
@@ -2191,6 +2190,7 @@ export enum WidgetState {
     Open = 0,
     Unloaded = 4
 }
+
 
 // (No @packageDocumentation comment for this package)
 

@@ -215,8 +215,6 @@ You can use these environment variables to alter the default behavior of various
   * If defined, causes a locally cached copy of a a remote iModel to be deleted, forcing the iModel to always be downloaded.
 * IMJS_DEBUG_URL
   * If defined on iOS, the URL used to open the frontend. (This is used in conjunction with `npm run start:webserver` and is the URL to the debug web server running on the developer's computer.)
-* IMJS_EXIT_AFTER_MODEL_OPENED
-  * If defined on iOS, the app will exit after successfully opening an iModel. This is used for automated testing with the iOS Simulator.
 
 ## Key-ins
 
@@ -280,7 +278,6 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `dta gen graphics` - Trigger a requestElementGraphics call to generate graphics for a single element. This is chiefly useful for breaking in the debugger during that process to diagnose issues.
   * `elementId=Id` The element for which to obtain graphics
   * `tolerance=number` The log10 of the desired chord tolerance in meters. Defaults to -2 (1 centimeter).
-* `dta reality model settings` - Open a dialog in which settings controlling the display of reality models within the currently-selected viewport can be edited. Currently, it always edits the settings for the first reality model it can find. It produces an error if no reality models are found.
 
 ## Editing
 

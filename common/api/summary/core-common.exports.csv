@@ -181,7 +181,6 @@ public;DisplayStyleModelAppearanceProps
 public;DisplayStyleOverridesOptions
 public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
-beta;DisplayStyleRealityModelDisplayProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
@@ -525,10 +524,6 @@ public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
 public;Point2dProps = number[]
-beta;PointCloudDisplayProps
-beta;PointCloudDisplaySettings
-beta;PointCloudShape = "square" | "round"
-beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -585,8 +580,6 @@ beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
 beta;RealityDataSourceProps
-beta;RealityModelDisplayProps
-beta;RealityModelDisplaySettings
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps

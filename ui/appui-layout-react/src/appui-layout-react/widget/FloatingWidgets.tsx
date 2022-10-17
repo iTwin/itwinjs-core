@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { FloatingWidgetsStateContext, WidgetsStateContext } from "../base/NineZone";
-import { FloatingWidgetProvider } from "./FloatingWidget";
+import { FloatingWidget } from "./FloatingWidget";
 import { FloatingTab } from "./FloatingTab";
 
 /** This component renders all floating widgets.
@@ -22,9 +22,9 @@ export const FloatingWidgets = React.memo(function FloatingWidgets() { // eslint
       {floatingWidgets.allIds.map((floatingWidgetId) => {
         const widget = widgets[floatingWidgetId];
         const floatingWidget = floatingWidgets.byId[floatingWidgetId];
-        return <FloatingWidgetProvider
-          key={floatingWidgetId}
+        return <FloatingWidget
           floatingWidget={floatingWidget}
+          key={floatingWidgetId}
           widget={widget}
         />;
       })}

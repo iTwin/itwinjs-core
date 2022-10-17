@@ -11,7 +11,7 @@ import { TreeNodeRenderer } from "../../../../components-react/tree/controlled/c
 import { TreeActions } from "../../../../components-react/tree/controlled/TreeActions";
 import { MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
 import { ITreeImageLoader } from "../../../../components-react/tree/ImageLoader";
-import { createRandomMutableTreeModelNode } from "../TreeHelpers";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeNodeRenderer", () => {
 

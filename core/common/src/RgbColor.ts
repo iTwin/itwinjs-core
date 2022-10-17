@@ -49,14 +49,10 @@ export class RgbColor {
     return ColorDef.from(this.r, this.g, this.b, transparency);
   }
 
-  /** Convert this color to its JSON representation. */
   public toJSON(): RgbColorProps {
     return { r: this.r, g: this.g, b: this.b };
   }
 
-  /** Create an RgbColor from its JSON representation.
-   * If `json` is `undefined`, the result is pure white.
-   */
   public static fromJSON(json: RgbColorProps | undefined): RgbColor {
     let r = 0xff;
     let g = 0xff;
@@ -73,18 +69,11 @@ export class RgbColor {
     return new RgbColor(r, g, b);
   }
 
-  /** Returns true if this color's red, green, and blue components are identical to those of `other`. */
-  public equals(other: RgbColor): boolean {
-    return this.r === other.r && this.g === other.g && this.b === other.b;
+  public equals(rhs: RgbColor): boolean {
+    return this.r === rhs.r && this.g === rhs.g && this.b === rhs.b;
   }
 
-  /** Compare this color to another color using the rules of an [OrderedComparator]($bentley). */
   public compareTo(other: RgbColor): number {
     return compareNumbers(this.r, other.r) || compareNumbers(this.g, other.g) || compareNumbers(this.b, other.b);
-  }
-
-  /** Convert this color to a string in the form "#rrggbb" where the values are the hex digits of the respective color components. */
-  public toHexString(): string {
-    return this.toColorDef().toHexString();
   }
 }

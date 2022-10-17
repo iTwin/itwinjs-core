@@ -26,8 +26,7 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
   return createPresentationInstanceFilterCondition(descriptor, filter);
 }
 
-/** @internal */
-export function getInstanceFilterFieldName(property: PropertyDescription) {
+function getInstanceFilterFieldName(property: PropertyDescription) {
   const [_, fieldName] = property.name.split(INSTANCE_FILTER_FIELD_SEPARATOR);
   return fieldName;
 }
@@ -104,6 +103,9 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
   }
 
   if (field.category.name !== parentInfo.categoryName || !field.isPropertiesField())
+    return [];
+
+  if (field.type.typeName.toLowerCase() === "navigation")
     return [];
 
   const fieldName = getPrefixedFieldName(field.name, fieldNamePrefix);

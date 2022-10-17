@@ -15,13 +15,11 @@ import {
   TreeCheckboxStateChangeEventArgs, TreeEvents, TreeSelectionModificationEventArgs, TreeSelectionReplacementEventArgs,
 } from "../../../components-react/tree/controlled/TreeEvents";
 import {
-  computeVisibleNodes, isTreeModelNode, isTreeModelRootNode, MutableTreeModel, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder,
-  VisibleTreeNodes,
+  isTreeModelNode, isTreeModelRootNode, MutableTreeModelNode, TreeModel, TreeModelNodePlaceholder, VisibleTreeNodes,
 } from "../../../components-react/tree/controlled/TreeModel";
 import { ITreeNodeLoader } from "../../../components-react/tree/controlled/TreeNodeLoader";
 import { extractSequence } from "../../common/ObservableTestHelpers";
-import { SinonSpy } from "../../TestUtils";
-import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes, createTreeNodeInput } from "./TreeHelpers";
+import { createRandomMutableTreeModelNode, createRandomMutableTreeModelNodes } from "./RandomTreeNodesHelpers";
 
 describe("TreeEventDispatcher", () => {
 
@@ -446,94 +444,4 @@ describe("TreeEventDispatcher", () => {
 
   });
 
-  describe("non-selectable node", () => {
-    const treeEvents = {
-      onSelectionModified: sinon.fake() as SinonSpy<Required<TreeEvents>["onSelectionModified"]>,
-      onSelectionReplaced: sinon.fake() as SinonSpy<Required<TreeEvents>["onSelectionReplaced"]>,
-    };
-
-    beforeEach(() => {
-      treeEvents.onSelectionModified.resetHistory();
-      treeEvents.onSelectionReplaced.resetHistory();
-    });
-
-    describe("when clicked", () => {
-      it("does not select the clicked node", async () => {
-        const treeEventDispatcher = setupTreeEventDispatcher();
-        treeEventDispatcher.onNodeClicked("B", {} as any);
-
-        expect(treeEvents.onSelectionModified).not.to.have.been.called;
-        expect(treeEvents.onSelectionReplaced).to.have.been.calledOnce;
-        const changes = await extractSequence(rxjsFrom(treeEvents.onSelectionReplaced.firstCall.args[0].replacements));
-        expect(changes).to.be.deep.equal([{ selectedNodeItems: [], deselectedNodeItems: [] }]);
-      });
-
-      it("performs range selection without selecting the clicked node", async () => {
-        const treeEventDispatcher = setupTreeEventDispatcher();
-        treeEventDispatcher.onNodeClicked("D", {} as any);
-        treeEventDispatcher.onNodeClicked("B", { shiftKey: true } as any);
-
-        expect(treeEvents.onSelectionModified).not.to.have.been.called;
-        expect(treeEvents.onSelectionReplaced).to.have.been.calledTwice;
-        const changes = await extractSequence(rxjsFrom(treeEvents.onSelectionReplaced.secondCall.args[0].replacements));
-        expect(changes.length).to.be.equal(1);
-        expect(changes[0].selectedNodeItems).to.containSubset([{ id: "C" }, { id: "D" }]);
-      });
-    });
-
-    describe("when a non-selectable node is inside selection range", () => {
-      it("does not get selected when it is already loaded", async () => {
-        const treeEventDispatcher = setupTreeEventDispatcher();
-        treeEventDispatcher.onNodeClicked("A", {} as any);
-        treeEventDispatcher.onNodeClicked("C", { shiftKey: true } as any);
-
-        expect(treeEvents.onSelectionModified).not.to.have.been.called;
-        expect(treeEvents.onSelectionReplaced).to.have.been.calledTwice;
-        const changes = await extractSequence(rxjsFrom(treeEvents.onSelectionReplaced.secondCall.args[0].replacements));
-        expect(changes.length).to.be.equal(1);
-        expect(changes[0].selectedNodeItems).to.containSubset([{ id: "A" }, { id: "C" }]);
-      });
-
-      it("gets loaded but does not get selected", async () => {
-        const treeModel = new MutableTreeModel();
-        treeModel.setNumChildren(undefined, 3);
-        treeModel.insertChild(undefined, createTreeNodeInput("A"), 0);
-        treeModel.insertChild(undefined, createTreeNodeInput("C"), 2);
-
-        const nodeLoader: ITreeNodeLoader = {
-          loadNode: sinon.fake(() => {
-            const nodeItem = createTreeNodeInput("B").item;
-            nodeItem.isSelectionDisabled = true;
-            return rxjsFrom([{ loadedNodes: [nodeItem] }]);
-          }),
-        };
-        const treeEventDispatcher = new TreeEventDispatcher(treeEvents, nodeLoader,SelectionMode.Extended);
-        treeEventDispatcher.setVisibleNodes(() => computeVisibleNodes(treeModel));
-
-        treeEventDispatcher.onNodeClicked("A", {} as any);
-        treeEventDispatcher.onNodeClicked("C", { shiftKey: true } as any);
-
-        expect(treeEvents.onSelectionModified).not.to.have.been.called;
-        expect(treeEvents.onSelectionReplaced).to.have.been.calledTwice;
-        expect(nodeLoader.loadNode).to.have.been.calledOnce;
-        const changes = await extractSequence(rxjsFrom(treeEvents.onSelectionReplaced.secondCall.args[0].replacements));
-        expect(changes.length).to.be.equal(1);
-        expect(changes).to.containSubset([{ selectedNodeItems: [{ id: "A" }, { id: "C" }] }, {}]);
-      });
-    });
-
-    function setupTreeEventDispatcher(): TreeEventDispatcher {
-      const treeModel = new MutableTreeModel();
-      treeModel.setChildren(
-        undefined,
-        [createTreeNodeInput("A"), createTreeNodeInput("B"), createTreeNodeInput("C"), createTreeNodeInput("D")],
-        0,
-      );
-      treeModel.getNode("B")!.isSelectionDisabled = true;
-
-      const eventDispatcher = new TreeEventDispatcher(treeEvents, { loadNode: sinon.fake() }, SelectionMode.Extended);
-      eventDispatcher.setVisibleNodes(() => computeVisibleNodes(treeModel));
-      return eventDispatcher;
-    }
-  });
 });

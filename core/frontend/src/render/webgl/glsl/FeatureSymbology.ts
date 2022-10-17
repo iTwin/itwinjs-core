@@ -306,7 +306,6 @@ export function addMaxAlpha(builder: ShaderBuilder): void {
 
 /** @internal */
 function addEmphasisFlags(builder: ShaderBuilder): void {
-  // Must be kept in sync with EmphasisFlags enum.
   builder.addBitFlagConstant("kEmphBit_Hilite", 0);
   builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
   builder.addBitFlagConstant("kEmphBit_Flash", 2);
@@ -776,15 +775,7 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
  * @internal
  */
 export function addUniformHiliter(builder: ProgramBuilder): void {
-  builder.frag.addUniform("v_feature_hilited", VariableType.Float, (prog) => {
-    prog.addGraphicUniform("v_feature_hilited", (uniform, params) => {
-      params.target.uniforms.batch.bindUniformSymbologyFlags(uniform);
-    });
-  });
-
-  addEmphasisFlags(builder.frag);
-  addExtractNthBit(builder.frag);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeHiliteColor);
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0, 0.0, 0.0, 0.0);`);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 }
 

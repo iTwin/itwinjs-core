@@ -11,14 +11,13 @@ import { PropertyDescription } from "@itwin/appui-abstract";
 import { PropertyFilter } from "@itwin/components-react";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { Badge, Tooltip } from "@itwin/itwinui-react";
 import { ClassInfo, Descriptor } from "@itwin/presentation-common";
-import { translate } from "../common/Utils";
-import { navigationPropertyEditorContext, NavigationPropertyEditorContext } from "../properties/NavigationPropertyEditor";
 import { ClassHierarchiesSet, ECClassHierarchyProvider } from "./ECClassesHierarchy";
 import { InstanceFilterBuilder } from "./InstanceFilterBuilder";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter } from "./Types";
-import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter, getInstanceFilterFieldName } from "./Utils";
+import { createInstanceFilterPropertyInfos, createPresentationInstanceFilter} from "./Utils";
+import { translate } from "../common/Utils";
+import { Badge, Tooltip } from "@itwin/itwinui-react";
 import "./PresentationInstanceFilterBuilder.scss";
 
 /** @alpha */
@@ -41,15 +40,11 @@ export function PresentationInstanceFilterBuilder(props: PresentationInstanceFil
     onInstanceFilterChanged(presentationFilter);
   }, [descriptor, onInstanceFilterChanged]);
 
-  const contextValue = useFilterBuilderNavigationPropertyEditorContext(imodel, descriptor);
-
-  return <navigationPropertyEditorContext.Provider value={contextValue}>
-    <InstanceFilterBuilder
-      {...filteringProps}
-      onFilterChanged={onFilterChanged}
-      ruleGroupDepthLimit={ruleGroupDepthLimit}
-    />
-  </navigationPropertyEditorContext.Provider>;
+  return <InstanceFilterBuilder
+    {...filteringProps}
+    onFilterChanged={onFilterChanged}
+    ruleGroupDepthLimit={ruleGroupDepthLimit}
+  />;
 }
 
 /** @alpha */
@@ -110,20 +105,6 @@ export function usePresentationInstanceFilteringProps(descriptor: Descriptor, cl
     classes,
     selectedClasses,
   };
-}
-
-/** @internal */
-export function useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnection, descriptor: Descriptor) {
-  return React.useMemo<NavigationPropertyEditorContext>(() => ({
-    imodel,
-    getNavigationPropertyInfo: async (property) => {
-      const field = descriptor.getFieldByName(getInstanceFilterFieldName(property));
-      if (!field || !field.isPropertiesField())
-        return undefined;
-
-      return field.properties[0].property.navigationPropertyInfo;
-    },
-  }), [imodel, descriptor]);
 }
 
 interface CategoryTooltipContentProps {

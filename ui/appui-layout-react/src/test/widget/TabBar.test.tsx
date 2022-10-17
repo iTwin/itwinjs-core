@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { act, fireEvent, render } from "@testing-library/react";
 import { renderHook } from "@testing-library/react-hooks";
 import {
-  addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidgetProvider, NineZoneDispatch, PanelStateContext,
+  addFloatingWidget, addPanelWidget, addTab, createNineZoneState, FloatingWidget, NineZoneDispatch, PanelStateContext,
   PanelTarget, useDrag, WidgetIdContext, WidgetTabTarget,
 } from "../../appui-layout-react";
 import * as NineZoneModule from "../../appui-layout-react/base/NineZone";
@@ -25,7 +25,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidgetProvider
+        <FloatingWidget
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -60,7 +60,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidgetProvider
+        <FloatingWidget
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -97,7 +97,7 @@ describe("WidgetTitleBar", () => {
         <WidgetIdContext.Provider value="w2">
           <WidgetTabTarget tabIndex={0} first />
         </WidgetIdContext.Provider>
-        <FloatingWidgetProvider
+        <FloatingWidget
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -137,7 +137,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidgetProvider
+        <FloatingWidget
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />
@@ -177,7 +177,7 @@ describe("WidgetTitleBar", () => {
         state={state}
         dispatch={dispatch}
       >
-        <FloatingWidgetProvider
+        <FloatingWidget
           floatingWidget={state.floatingWidgets.byId.w1}
           widget={state.widgets.w1}
         />

@@ -39,7 +39,6 @@ export * from "./render/webgl/PlanarGrid";
 export * from "./render/webgl/PointString";
 export * from "./render/webgl/Polyline";
 export * from "./render/webgl/Primitive";
-export * from "./render/webgl/RealityModelUniforms";
 export * from "./render/webgl/RenderBuffer";
 export * from "./render/webgl/RenderCommands";
 export * from "./render/webgl/RenderFlags";

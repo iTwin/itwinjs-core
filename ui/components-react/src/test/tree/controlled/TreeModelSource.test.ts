@@ -6,11 +6,11 @@ import { expect } from "chai";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { BeEvent } from "@itwin/core-bentley";
-import { MutableTreeModel } from "../../../components-react/tree/controlled/TreeModel";
+import { PropertyRecord } from "@itwin/appui-abstract";
+import { MutableTreeModel, TreeModelNodeInput } from "../../../components-react/tree/controlled/TreeModel";
 import { TreeModelChanges, TreeModelSource } from "../../../components-react/tree/controlled/TreeModelSource";
 import { ITreeDataProvider, TreeDataChangesListener } from "../../../components-react/tree/TreeDataProvider";
 import TestUtils from "../../TestUtils";
-import { createTreeNodeInput } from "./TreeHelpers";
 
 describe("TreeModelSource", () => {
   let modelSource: TreeModelSource;
@@ -34,8 +34,20 @@ describe("TreeModelSource", () => {
   });
 
   describe("modifyModel", () => {
+    function createNodeInput(id: string): TreeModelNodeInput {
+      const label = PropertyRecord.fromString(id, id);
+      return {
+        id,
+        item: { id, label },
+        label,
+        isExpanded: false,
+        isLoading: false,
+        isSelected: false,
+      };
+    }
+
     beforeEach(() => {
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeNodeInput("root1")], 0); });
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [createNodeInput("root1")], 0); });
     });
 
     it("does not emit onModelChanged event if model did not change", () => {
@@ -46,7 +58,7 @@ describe("TreeModelSource", () => {
 
     it("emits onModelChanged event with added node id", () => {
       const spy = sinon.spy(modelSource.onModelChanged, "emit");
-      modelSource.modifyModel((model) => { model.setChildren(undefined, [createTreeNodeInput("root2")], 1); });
+      modelSource.modifyModel((model) => { model.setChildren(undefined, [createNodeInput("root2")], 1); });
       expect(spy).to.be.called;
       const changes = spy.args[0][0][1];
       expect(changes.addedNodeIds.length).to.be.eq(1);
@@ -80,7 +92,7 @@ describe("TreeModelSource", () => {
       });
       expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.eq(0);
       modelSource.modifyModel((model) => {
-        model.setChildren(undefined, [createTreeNodeInput("new_root1")], 0);
+        model.setChildren(undefined, [createNodeInput("new_root1")], 0);
       });
       expect(modelSource.getModel().getChildren(undefined)!.getLength()).to.eq(1);
     });
@@ -88,11 +100,11 @@ describe("TreeModelSource", () => {
     it("overrides existing children multiple times", () => {
       modelSource.modifyModel((model) => {
         model.setNumChildren(undefined, 1);
-        model.setChildren(undefined, [createTreeNodeInput("new_root1")], 0);
+        model.setChildren(undefined, [createNodeInput("new_root1")], 0);
       });
       modelSource.modifyModel((model) => {
         model.setNumChildren(undefined, 1);
-        model.setChildren(undefined, [createTreeNodeInput("root1")], 0);
+        model.setChildren(undefined, [createNodeInput("root1")], 0);
       });
     });
 
@@ -133,7 +145,7 @@ describe("TreeModelSource", () => {
         it("only notifies of node addition even when the added node is also modified", () => {
           const spy = sinon.spy(modelSource.onModelChanged, "emit");
           modelSource.modifyModel((model) => {
-            model.insertChild(undefined, createTreeNodeInput("root2"), 1);
+            model.insertChild(undefined, createNodeInput("root2"), 1);
             const node = model.getNode("root2")!;
             node.isSelected = true;
           });
@@ -193,8 +205,8 @@ describe("TreeModelSource", () => {
           const spy = sinon.spy(modelSource.onModelChanged, "emit");
           modelSource.modifyModel((model) => {
             // Reassign root1 node twice
-            model.insertChild(undefined, createTreeNodeInput("root1"), 0);
-            model.insertChild(undefined, createTreeNodeInput("root1"), 0);
+            model.insertChild(undefined, createNodeInput("root1"), 0);
+            model.insertChild(undefined, createNodeInput("root1"), 0);
           });
 
           const expectedChanges: TreeModelChanges = {

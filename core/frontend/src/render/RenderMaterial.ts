@@ -19,69 +19,6 @@ export interface RenderMaterialSource {
   id: Id64String;
 }
 
-/** Describes the [diffuse](https://en.wikipedia.org/wiki/Diffuse_reflection) properties of a [RenderMaterial]($common).
- * @see [[CreateRenderMaterialArgs.diffuse]].
- * @public
- */
-export interface MaterialDiffuseProps {
-  /** The diffuse color. If defined, this overrides the color of any surface to which the material is applied. */
-  color?: ColorDef | RgbColorProps;
-
-  /** A multiplier in [0..1] specifying how strongly the diffuse color reflects light.
-   * Default: 0.6
-   */
-  weight?: number;
-}
-
-/** Describes the [specular](https://en.wikipedia.org/wiki/Specular_highlight) properties of a material.
- * @see [[CreateRenderMaterialArgs.specular]].
- * @public
- */
-export interface MaterialSpecularProps {
-  /** The color of the specular reflections.
-   * Default: white.
-   */
-  color?: ColorDef | RgbColorProps;
-
-  /** A multiplier in [0..1] specifying the strength of the specular reflections.
-   * Default: 0.4
-   */
-  weight?: number;
-
-  /** An exponent in [0..infinity] describing the shininess of the surface.
-   * Default: 13.5
-   */
-  exponent?: number;
-}
-
-/** Describes how to map a [RenderTexture]($common)'s image to the surfaces to which a [RenderMaterial]($common) is applied.
- * @see [[CreateRenderMaterialArgs.textureMapping]].
- * @public
- */
-export interface MaterialTextureMappingProps {
-  /** The texture from which the image is obtained. */
-  texture: RenderTexture;
-
-  /** The mode controlling how the image is mapped onto the surface.
-   * Default: [TextureMapping.Mode.Parametric]($common).
-   */
-  mode?: TextureMapping.Mode;
-
-  /** A 2x3 matrix for computing the UV coordinates.
-   * Default: [TextureMapping.Trans2x3.identity]($common).
-   */
-  transform?: TextureMapping.Trans2x3;
-
-  /** The ratio by which the color sampled from the texture image is mixed with the surface's or material's diffuse color.
-   * A ratio of 1 selects only the texture sample; a ratio of 0 selects only the diffuse color; a ratio of 0.5 mixes them evenly.
-   * Default: 1.
-   */
-  weight?: number;
-
-  /** @internal */
-  worldMapping?: boolean;
-}
-
 /** Arguments supplied to [[RenderSystem.createRenderMaterial]].
  * @public
  */
@@ -97,12 +34,45 @@ export interface CreateRenderMaterialArgs {
    */
   alpha?: number;
 
-  /** The [diffuse](https://en.wikipedia.org/wiki/Diffuse_reflection) properties of the material. */
-  diffuse?: MaterialDiffuseProps;
+  /** The diffuse properties of the material. */
+  diffuse?: {
+    /** The diffuse color. If defined, this overrides the color of any surface to which the material is applied. */
+    color?: ColorDef | RgbColorProps;
+
+    /** A multiplier in [0..1] specifying how strongly the diffuse color reflects light. */
+    weight?: number;
+  };
 
   /** The [specular](https://en.wikipedia.org/wiki/Specular_highlight) properties of the material. */
-  specular?: MaterialSpecularProps;
+  specular?: {
+    /** The color of the specular reflections. Default: white. */
+    color?: ColorDef | RgbColorProps;
+
+    /** A multiplier in [0..1] specifying the strength of the specular reflections. */
+    weight?: number;
+
+    /** An exponent in [0..infinity] describing the shininess of the surface. */
+    exponent?: number;
+  };
 
   /** Maps a [RenderTexture]($common) image to the surfaces to which the material is applied. */
-  textureMapping?: MaterialTextureMappingProps;
+  textureMapping?: {
+    /** The texture from which the image is obtained. */
+    texture: RenderTexture;
+
+    /** Describes how the texture image is mapped to the surface. Default: [TextureMapping.Mode.Parametric]($common). */
+    mode?: TextureMapping.Mode;
+
+    /** A 2x3 matrix for computing the UV coordinates. Default: [TextureMapping.Trans2x3.identity]($common). */
+    transform?: TextureMapping.Trans2x3;
+
+    /** The ratio by which the color sampled from the texture image is mixed with the surface's or material's diffuse color.
+     * A ratio of 1 selects only the texture sample; a ratio of 0 selects only the diffuse color; a ratio of 0.5 mixes them evenly.
+     * Default: 1.
+     */
+    weight?: number;
+
+    /** @internal */
+    worldMapping?: boolean;
+  };
 }

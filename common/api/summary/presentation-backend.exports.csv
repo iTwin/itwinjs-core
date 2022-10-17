@@ -17,11 +17,9 @@ alpha;MultiElementPropertiesResponse
 public;MultiManagerPresentationProps 
 internal;normalizeVersion(version?: string): string
 public;Presentation
-public;PresentationAssetsRootConfig
 public;PresentationBackendLoggerCategory
 public;PresentationBackendNativeLoggerCategory
 public;PresentationManager
-public;PresentationManagerCachingConfig
 public;PresentationManagerMode
 public;PresentationManagerProps
 public;PresentationProps = MultiManagerPresentationProps | SingleManagerPresentationProps

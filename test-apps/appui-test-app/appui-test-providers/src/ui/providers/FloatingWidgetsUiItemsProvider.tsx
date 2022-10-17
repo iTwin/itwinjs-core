@@ -33,7 +33,6 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
           return <ViewAttributesWidgetComponent />;
         },
         canPopout: true,
-        allowedPanelTargets: ["left", "right"],
       });
 
       widgets.push({
@@ -58,7 +57,6 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
         getWidgetContent: () => { // eslint-disable-line react/display-name
           return <div>Floating widget 2</div>;
         },
-        allowedPanelTargets: [],
       });
       widgets.push({
         id: "FW-3",

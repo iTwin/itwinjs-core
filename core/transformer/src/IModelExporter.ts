@@ -268,27 +268,26 @@ export class IModelExporter {
     await this.exportModelContents(IModel.repositoryModelId);
     await this.exportSubModels(IModel.repositoryModelId);
     await this.exportRelationships(ElementRefersToElements.classFullName);
+    const deletedSubModels = new Set<Id64String>();
     // handle deletes
     if (this.visitElements) {
-      // must delete models first since they have a constraint on the submodeling element which may also be deleted
-      for (const modelId of this._sourceDbChanges.model.deleteIds) {
-        this.handler.onDeleteModel(modelId);
-      }
       for (const elementId of this._sourceDbChanges.element.deleteIds) {
-        // We don't know how the handler wants to handle deletions, and we don't have enough information
-        // to know if deleted entities were related, so when processing changes, ignore errors from deletion.
-        // Technically, to keep the ignored error scope small, we ignore only the error of looking up a missing element,
-        // that approach works at least for the IModelTransformer.
-        // In the future, the handler may be responsible for doing the work of finding out which elements were cascade deleted,
-        // and returning them for the exporter to use to avoid double-deleting with error ignoring
-        try {
-          this.handler.onDeleteElement(elementId);
-        } catch (err: unknown) {
-          const isMissingErr = err instanceof IModelError && err.errorNumber === IModelStatus.NotFound;
-          if (!isMissingErr)
-            throw err;
+        const subModelAlsoDeleted = this._sourceDbChanges.model.deleteIds.has(elementId);
+        // must delete submodels first since they have a constraint on the element
+        if (subModelAlsoDeleted) {
+          this.handler.onDeleteModel(elementId);
+          deletedSubModels.add(elementId);
         }
+        this.handler.onDeleteElement(elementId);
       }
+    }
+    // WIP: handle ElementAspects?
+    for (const modelId of this._sourceDbChanges.model.deleteIds) {
+      const alreadyDeletedSubModel = deletedSubModels.has(modelId);
+      if (alreadyDeletedSubModel)
+        continue;
+
+      this.handler.onDeleteModel(modelId);
     }
     if (this.visitRelationships) {
       for (const relInstanceId of this._sourceDbChanges.relationship.deleteIds) {

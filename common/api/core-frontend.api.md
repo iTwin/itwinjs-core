@@ -214,7 +214,6 @@ import { Plane3dByOriginAndUnitNormal } from '@itwin/core-geometry';
 import { Point2d } from '@itwin/core-geometry';
 import { Point3d } from '@itwin/core-geometry';
 import { Point4d } from '@itwin/core-geometry';
-import { PointCloudDisplaySettings } from '@itwin/core-common';
 import { PointCloudReader } from '@itwin/core-orbitgt';
 import { PointWithStatus } from '@itwin/core-common';
 import { Polyface } from '@itwin/core-geometry';
@@ -251,7 +250,6 @@ import { RealityDataFormat } from '@itwin/core-common';
 import { RealityDataProvider } from '@itwin/core-common';
 import { RealityDataSourceKey } from '@itwin/core-common';
 import { RealityDataStatus } from '@itwin/core-bentley';
-import { RealityModelDisplaySettings } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
 import { RelativePosition } from '@itwin/appui-abstract';
 import { RemoveFunction } from '@itwin/core-common';
@@ -2086,11 +2084,24 @@ export function createRealityTileTreeReference(props: RealityModelTileTree.Refer
 // @public
 export interface CreateRenderMaterialArgs {
     alpha?: number;
-    diffuse?: MaterialDiffuseProps;
+    diffuse?: {
+        color?: ColorDef | RgbColorProps;
+        weight?: number;
+    };
     // @internal
     source?: RenderMaterialSource;
-    specular?: MaterialSpecularProps;
-    textureMapping?: MaterialTextureMappingProps;
+    specular?: {
+        color?: ColorDef | RgbColorProps;
+        weight?: number;
+        exponent?: number;
+    };
+    textureMapping?: {
+        texture: RenderTexture;
+        mode?: TextureMapping.Mode;
+        transform?: TextureMapping.Trans2x3;
+        weight?: number;
+        worldMapping?: boolean;
+    };
 }
 
 // @internal (undocumented)
@@ -4018,8 +4029,6 @@ export class GraphicBranch implements IDisposable {
     getViewFlags(flags: ViewFlags): ViewFlags;
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
-    // @beta
-    realityModelDisplaySettings?: RealityModelDisplaySettings;
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
     setViewFlags(flags: ViewFlags): void;
     symbologyOverrides?: FeatureSymbology.Overrides;
@@ -6427,29 +6436,6 @@ export type MarkerTextAlign = "left" | "right" | "center" | "start" | "end";
 export type MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom";
 
 // @public
-export interface MaterialDiffuseProps {
-    color?: ColorDef | RgbColorProps;
-    weight?: number;
-}
-
-// @public
-export interface MaterialSpecularProps {
-    color?: ColorDef | RgbColorProps;
-    exponent?: number;
-    weight?: number;
-}
-
-// @public
-export interface MaterialTextureMappingProps {
-    mode?: TextureMapping.Mode;
-    texture: RenderTexture;
-    transform?: TextureMapping.Trans2x3;
-    weight?: number;
-    // @internal (undocumented)
-    worldMapping?: boolean;
-}
-
-// @public
 export class MeasureAreaByPointsTool extends PrimitiveTool {
     // @internal (undocumented)
     protected _acceptedMeasurement?: MeasureMarker;
@@ -8149,11 +8135,7 @@ export namespace RealityModelTileTree {
         // (undocumented)
         collectStatistics(stats: RenderMemory.Statistics): void;
         // (undocumented)
-        createDrawArgs(context: SceneContext): TileDrawArgs | undefined;
-        // (undocumented)
         discloseTileTrees(trees: DisclosedTileTreeSet): void;
-        // (undocumented)
-        protected _getDisplaySettings: () => RealityModelDisplaySettings;
         // (undocumented)
         protected _iModel: IModelConnection;
         // (undocumented)
@@ -8186,8 +8168,6 @@ export namespace RealityModelTileTree {
     export interface ReferenceBaseProps {
         // (undocumented)
         classifiers?: SpatialClassifiers;
-        // (undocumented)
-        getDisplaySettings(): RealityModelDisplaySettings;
         // (undocumented)
         iModel: IModelConnection;
         // (undocumented)

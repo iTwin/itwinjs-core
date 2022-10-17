@@ -12,7 +12,7 @@ import { CheckboxStateChange } from "../../../../components-react/tree/controlle
 import { MutableTreeModel, MutableTreeModelNode } from "../../../../components-react/tree/controlled/TreeModel";
 import { TreeModelSource } from "../../../../components-react/tree/controlled/TreeModelSource";
 import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
-import { createRandomMutableTreeModelNode } from "../TreeHelpers";
+import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeModelMutator", () => {
 

@@ -272,11 +272,6 @@ export class FrontstageManager {
     FrontstageManager._nineZoneSize = size;
   }
 
-  /** @internal */
-  public static get frontstageDefs(): ReadonlyMap<string, FrontstageDef> {
-    return this._frontstageDefs;
-  }
-
   /** Get Frontstage Deactivated event. */
   public static readonly onFrontstageDeactivatedEvent = new FrontstageDeactivatedEvent();
 

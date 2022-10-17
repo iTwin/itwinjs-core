@@ -1,28 +1,6 @@
 # Change Log - @itwin/ecschema-rpcinterface-tests
 
-This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
-
-## 3.4.0
-Thu, 13 Oct 2022 20:24:47 GMT
-
-### Updates
-
-- Updated Node types declaration to support latest v16
-
-## 3.3.5
-Tue, 27 Sep 2022 11:50:59 GMT
-
-_Version update only_
-
-## 3.3.4
-Thu, 08 Sep 2022 19:00:05 GMT
-
-_Version update only_
-
-## 3.3.3
-Tue, 06 Sep 2022 20:54:19 GMT
-
-_Version update only_
+This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

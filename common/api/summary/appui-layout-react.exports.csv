@@ -71,7 +71,6 @@ internal;DraggedWidgetManager
 internal;DraggedWidgetManagerProps
 internal;DragHandle 
 internal;DragHandleProps 
-internal;DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem
 internal;DragManager
 internal;DragManagerContext: React_2.Context
 internal;DragProvider: React_2.NamedExoticComponent
@@ -90,7 +89,7 @@ beta;ExpandableItemProps
 deprecated;ExpandableItemProps 
 internal;FloatingTab(): JSX.Element
 internal;FloatingTabLocation
-internal;FloatingWidget(props: FloatingWidgetProps): JSX.Element
+internal;FloatingWidget: React_2.NamedExoticComponent
 internal;floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState
 internal;FloatingWidgetBringToFrontAction
 internal;FloatingWidgetClearUserSizedAction
@@ -99,10 +98,7 @@ internal;FloatingWidgetDropTargetState
 internal;FloatingWidgetHomeState
 internal;FloatingWidgetIdContext: React_2.Context
 internal;FloatingWidgetLocation
-internal;FloatingWidgetNodeContext: React_2.Context
 internal;FloatingWidgetProps
-internal;FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element
-internal;FloatingWidgetProviderProps
 internal;FloatingWidgetResizeAction
 internal;FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle
 internal;FloatingWidgets: React_2.NamedExoticComponent
@@ -459,7 +455,6 @@ internal;useBorders(widgetId: WidgetState["id"]):
 internal;useCursor(): void
 internal;useDoubleClick(onDoubleClick?: () => void): () => void
 internal;useDrag
-internal;useDraggedItem(): DragItem | undefined
 internal;useDraggedItemId
 internal;useDragItem
 internal;UseDragItemArgs
@@ -473,6 +468,7 @@ internal;useDragToolSettings(args: UseDragToolSettingsArgs): ({ initialPointerPo
 internal;UseDragToolSettingsArgs
 internal;useDragWidget(args: UseDragWidgetArgs): ({ initialPointerPosition, pointerPosition }: DragStartArgs) => void
 internal;UseDragWidgetArgs
+internal;useIsDragged(callback: () => boolean): boolean
 internal;useIsDraggedItem(item: DragItem): boolean
 internal;useIsDraggedType(type: DragItem["type"]): boolean
 internal;useIsMainPanelWidget(): boolean
