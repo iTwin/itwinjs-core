@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add exportGraphics test for fixed-block mesh",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

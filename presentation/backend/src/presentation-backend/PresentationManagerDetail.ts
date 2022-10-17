@@ -460,6 +460,7 @@ function createNativePlatform(
     isChangeTrackingEnabled: changeTrackingEnabled,
     cacheConfig: createCacheConfig(caching?.hierarchies),
     contentCacheSize: caching?.content?.size,
+    workerConnectionCacheSize: caching?.workerConnectionCacheSize,
     defaultFormats: toNativeUnitFormatsMap(defaultFormats),
     useMmap,
   }))();

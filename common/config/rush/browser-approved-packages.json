@@ -819,6 +819,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "node-simctl",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "nodemon",
       "allowedCategories": [ "tools" ]
     },
@@ -925,6 +929,10 @@
     {
       "name": "react-select",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "react-select-async-paginate",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-select-event",

@@ -45,6 +45,7 @@ import { FrameworkRootState } from "../redux/StateManager";
 import { useSelector } from "react-redux";
 import { useUiVisibility } from "../hooks/useUiVisibility";
 import { IModelApp } from "@itwin/core-frontend";
+import { FloatingWidget } from "./FloatingWidget";
 
 const panelZoneKeys: StagePanelZoneDefKeys[] = ["start", "end"];
 
@@ -214,6 +215,7 @@ export const WidgetPanelsFrontstage = React.memo(function WidgetPanelsFrontstage
 
 const defaultNineZone = createNineZoneState();
 const tabElement = <WidgetPanelsTab />;
+const floatingWidgetElement = <FloatingWidget />;
 
 /** @internal */
 export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: FrontstageDef }) {
@@ -256,6 +258,7 @@ export function ActiveFrontstageDefProvider({ frontstageDef }: { frontstageDef: 
         labels={labels}
         state={nineZone}
         tab={tabElement}
+        floatingWidget={floatingWidgetElement}
         showWidgetIcon={showWidgetIcon}
         autoCollapseUnpinnedPanels={autoCollapseUnpinnedPanels}
         toolSettingsContent={toolSettingsContent}
@@ -301,6 +304,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       canPopout: widget.canPopout,
       isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widget.hideWithUiWhenFloating,
+      allowedPanelTargets: widget.allowedPanelTargets as PanelSide[],
     });
     tabs.push(widget.id);
   }
@@ -342,6 +346,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       userSized,
       isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
       hideWithUiWhenFloating: !!widgetDef.hideWithUiWhenFloating,
+      allowedPanelTargets: widgetDef.allowedPanelTargets as PanelSide[],
     });
 
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
@@ -759,6 +764,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
         iconSpec: widgetDef.iconSpec,
         canPopout: widgetDef.canPopout,
         isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
+        allowedPanelTargets: widgetDef.allowedPanelTargets as PanelSide[],
       };
     });
   }

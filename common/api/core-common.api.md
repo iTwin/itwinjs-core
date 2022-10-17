@@ -1610,9 +1610,16 @@ export class ContextRealityModel {
     protected _appearanceOverrides?: FeatureAppearance;
     readonly classifiers?: SpatialClassifiers;
     readonly description: string;
+    // @beta
+    get displaySettings(): RealityModelDisplaySettings;
+    set displaySettings(settings: RealityModelDisplaySettings);
+    // @beta (undocumented)
+    protected _displaySettings: RealityModelDisplaySettings;
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1634,6 +1641,8 @@ export interface ContextRealityModelProps {
     appearanceOverrides?: FeatureAppearanceProps;
     classifiers?: SpatialClassifierProps[];
     description?: string;
+    // @beta
+    displaySettings?: RealityModelDisplayProps;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1658,6 +1667,8 @@ export class ContextRealityModels {
     get models(): ReadonlyArray<ContextRealityModel>;
     readonly onAppearanceOverridesChanged: BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>;
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
+    // @beta
+    readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
     update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
@@ -2032,7 +2043,7 @@ export interface DisplayStyleLoadProps {
 
 // @public
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
-    modelId?: Id64String;
+    modelId: Id64String;
 }
 
 // @public
@@ -2054,6 +2065,11 @@ export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
         styles?: DisplayStyleSettingsProps;
     };
+}
+
+// @beta
+export interface DisplayStyleRealityModelDisplayProps extends RealityModelDisplayProps {
+    modelId?: Id64String;
 }
 
 // @public
@@ -2085,6 +2101,8 @@ export class DisplayStyleSettings {
     dropSubCategoryOverride(id: Id64String): void;
     get excludedElementIds(): OrderedId64Iterable;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
+    // @beta
+    getRealityModelDisplaySettings(modelId: Id64String): RealityModelDisplaySettings | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
@@ -2118,6 +2136,8 @@ export class DisplayStyleSettings {
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>;
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
+    // @beta
+    readonly onRealityModelDisplaySettingsChanged: BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ScriptProps> | undefined) => void>;
     readonly onSolarShadowsChanged: BeEvent<(newSettings: SolarShadowSettings) => void>;
@@ -2133,6 +2153,8 @@ export class DisplayStyleSettings {
     set renderTimeline(id: Id64String | undefined);
     get scheduleScriptProps(): RenderSchedule.ScriptProps | undefined;
     set scheduleScriptProps(props: RenderSchedule.ScriptProps | undefined);
+    // @beta
+    setRealityModelDisplaySettings(modelId: Id64String, settings: RealityModelDisplaySettings | undefined): void;
     get subCategoryOverrides(): Map<Id64String, SubCategoryOverride>;
     // @internal
     synchMapImagery(): void;
@@ -2167,6 +2189,8 @@ export interface DisplayStyleSettingsProps {
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
     planarClipOvr?: DisplayStylePlanarClipMaskProps[];
+    // @beta
+    realityModelDisplay?: DisplayStyleRealityModelDisplayProps[];
     renderTimeline?: Id64String;
     scheduleScript?: RenderSchedule.ScriptProps;
     subCategoryOvr?: DisplayStyleSubCategoryProps[];
@@ -2276,6 +2300,8 @@ export class EcefLocation implements EcefLocationProps {
     get earthCenter(): Point3d;
     getTransform(): Transform;
     isAlmostEqual(other: EcefLocation): boolean;
+    // @alpha
+    get isValid(): boolean;
     readonly orientation: YawPitchRollAngles;
     readonly origin: Point3d;
     // (undocumented)
@@ -5553,7 +5579,6 @@ export interface ModelProps extends EntityProps {
     modeledElement: RelatedElementProps;
     // (undocumented)
     name?: string;
-    // (undocumented)
     parentModel?: Id64String;
 }
 
@@ -6191,6 +6216,37 @@ export class PntsHeader extends TileHeader {
 
 // @public
 export type Point2dProps = number[];
+
+// @beta
+export interface PointCloudDisplayProps {
+    maxPixelsPerVoxel?: number;
+    minPixelsPerVoxel?: number;
+    pixelSize?: number;
+    shape?: PointCloudShape;
+    sizeMode?: PointCloudSizeMode;
+    voxelScale?: number;
+}
+
+// @beta
+export class PointCloudDisplaySettings {
+    clone(changedProps: PointCloudDisplayProps): PointCloudDisplaySettings;
+    static defaults: PointCloudDisplaySettings;
+    equals(other: PointCloudDisplaySettings): boolean;
+    static fromJSON(props?: PointCloudDisplayProps): PointCloudDisplaySettings;
+    readonly maxPixelsPerVoxel: number;
+    readonly minPixelsPerVoxel: number;
+    readonly pixelSize: number;
+    readonly shape: PointCloudShape;
+    readonly sizeMode: PointCloudSizeMode;
+    toJSON(): PointCloudDisplayProps | undefined;
+    readonly voxelScale: number;
+}
+
+// @beta
+export type PointCloudShape = "square" | "round";
+
+// @beta
+export type PointCloudSizeMode = "voxel" | "pixel";
 
 // @beta
 export interface PointWithStatus {
@@ -6895,6 +6951,23 @@ export interface RealityDataSourceProps {
     sourceKey: RealityDataSourceKey;
 }
 
+// @beta
+export interface RealityModelDisplayProps {
+    overrideColorRatio?: number;
+    pointCloud?: PointCloudDisplayProps;
+}
+
+// @beta
+export class RealityModelDisplaySettings {
+    clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings;
+    static defaults: RealityModelDisplaySettings;
+    equals(other: RealityModelDisplaySettings): boolean;
+    static fromJSON(props?: RealityModelDisplayProps): RealityModelDisplaySettings;
+    readonly overrideColorRatio: number;
+    readonly pointCloud: PointCloudDisplaySettings;
+    toJSON(): RealityModelDisplayProps | undefined;
+}
+
 // @internal (undocumented)
 export const REGISTRY: unique symbol;
 
@@ -7434,19 +7507,16 @@ export class RgbColor {
     constructor(r: number, g: number, b: number);
     // (undocumented)
     readonly b: number;
-    // (undocumented)
     compareTo(other: RgbColor): number;
-    // (undocumented)
-    equals(rhs: RgbColor): boolean;
+    equals(other: RgbColor): boolean;
     static fromColorDef(colorDef: ColorDef): RgbColor;
-    // (undocumented)
     static fromJSON(json: RgbColorProps | undefined): RgbColor;
     // (undocumented)
     readonly g: number;
     // (undocumented)
     readonly r: number;
     toColorDef(transparency?: number): ColorDef;
-    // (undocumented)
+    toHexString(): string;
     toJSON(): RgbColorProps;
 }
 
