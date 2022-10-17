@@ -763,7 +763,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     // @deprecated (undocumented)
     sumpoleBufferDerivativesForSpan(spanIndexU: number, spanIndexV: number): void;
     sumPoleBufferForSpan(spanIndexU: number, spanIndexV: number): void;
-    testClosableGrid(select: UVSelect, mode?: BSplineWrapMode | undefined): boolean;
+    testClosableGrid(select: UVSelect, mode?: BSplineWrapMode): boolean;
     static validOrderAndPoleCounts(orderU: number, numPolesU: number, orderV: number, numPolesV: number, numUV: number): boolean;
 }
 

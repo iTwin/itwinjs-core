@@ -191,22 +191,22 @@ export class BSpline1dNd {
   public testClosablePolygon(mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.knots.wrappable;
-    if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
-      // expect {degree} matched points.
-      const degree = this.degree;
-      const blockSize = this.poleLength;
-      const indexDelta = (this.numPoles - degree) * blockSize;
-      const data = this.packedData;
-      const numValuesToTest = degree * blockSize;
-      for (let i0 = 0; i0 < numValuesToTest; i0++) {
-        if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
-          return false;
-      }
-      return true;
+    let numPolesToTest = 0;
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints)
+      numPolesToTest = this.degree;
+    else if (mode === BSplineWrapMode.OpenByRemovingKnots)
+      numPolesToTest = 1;
+    else
+      return false;
+    // check for wraparound poles
+    const blockSize = this.poleLength;
+    const indexDelta = (this.numPoles - numPolesToTest) * blockSize;
+    const numValuesToTest = numPolesToTest * blockSize;
+    for (let i0 = 0; i0 < numValuesToTest; i0++) {
+      if (!Geometry.isSameCoordinate(this.packedData[i0], this.packedData[i0 + indexDelta]))
+        return false;
     }
-    if (mode === BSplineWrapMode.OpenByRemovingKnots)
-      return true;  // no pole conditions are applied.
-    return false;
+    return true;
   }
 
   /** Insert knot and resulting pole into the instance, optionally multiple times.

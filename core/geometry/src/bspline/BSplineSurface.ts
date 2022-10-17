@@ -508,7 +508,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * @param select select U or V direction
    * @returns true if coordinates matched.
    */
-  public testClosableGrid(select: UVSelect, mode?: BSplineWrapMode | undefined): boolean {
+  public testClosableGrid(select: UVSelect, mode?: BSplineWrapMode): boolean {
     if (mode === undefined)
       mode = this.knots[select].wrappable;
     if (mode === BSplineWrapMode.OpenByAddingControlPoints) // the last degree poles equal the first degree poles
@@ -519,7 +519,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
    * @param select select U or V direction
-   * @param wrapMode the manner of closing, as a boxed value so it can be returned. See `BSplineWrapMode` for particulars of each mode.
+   * @param wrapMode the manner of closing, as a boxed enum value so it can be returned. See `BSplineWrapMode` for particulars of each mode.
    * @return whether the surface can be wrapped in the given parametric direction.
    */
   public isClosable(select: UVSelect, wrapMode?: {value: BSplineWrapMode}): boolean {

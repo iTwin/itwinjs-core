@@ -153,7 +153,7 @@ The B-spline API has several name changes for consistency:
 | Deprecated                                                    | Replacement                                                   |
 | ------------------------------------------------------------- | ------------------------------------------------------------- |
 | [BSpline1dNd.testCloseablePolygon]($core-geometry)            | [BSpline1dNd.testClosablePolygon]($core-geometry)             |
-| [BSpline2dNd.isClosable]($core-geometry)                      | [BSpline2dNd.isClosableUV]($core-geometry)                    |
 | [BSpline2dNd.sumpoleBufferDerivativesForSpan]($core-geometry) | [BSpline2dNd.sumPoleBufferDerivativesForSpan]($core-geometry) |
-| [BSplineSurface3dQuery.isClosable]($core-geometry)            | [BSplineSurface3dQuery.isClosableUV]($core-geometry)          |
 | [UVSelect.VDirection]($core-geometry)                         | [UVSelect.vDirection]($core-geometry)                         |
+
+In addition, [BSplineSurface3dQuery.isClosable]($core-geometry) and [BSpline2dNd.isClosable]($core-geometry) have a new optional argument to return a [BSplineWrapMode]($core-geometry) enum value classifying the manner in which the surface can be closed (if at all) in the given parametric direction.
