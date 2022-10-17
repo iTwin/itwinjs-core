@@ -1038,6 +1038,7 @@ export class Table extends React.Component<TableProps, TableState> {
       result.rows = await Promise.all(promises);
     } catch { }
 
+    // istanbul ignore else
     // Check if another loadRows got called while this one was still going
     if (currentSelectedRowGuid === this._rowLoadGuid) {
       for (const rowProps of result.rows) {

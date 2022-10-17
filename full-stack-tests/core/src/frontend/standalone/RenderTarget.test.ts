@@ -259,7 +259,7 @@ describe("RenderTarget", () => {
     });
   });
 
-  it("should override symbology", async () => {
+  it.skip("should override symbology", async () => { // flaky test #4420
     const rect = new ViewRect(0, 0, 200, 150);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
       const elemId = "0x29";

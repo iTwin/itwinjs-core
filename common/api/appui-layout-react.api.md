@@ -414,11 +414,12 @@ export interface DragHandleProps extends CommonProps {
 }
 
 // @internal (undocumented)
+export type DragItem = TabDragItem | WidgetDragItem | PanelGripDragItem | ResizeHandleDragItem;
+
+// @internal (undocumented)
 export class DragManager {
     // (undocumented)
     get draggedItem(): Dragged | undefined;
-    // (undocumented)
-    getDraggedIdOfType<T extends DragItem>(type: T["type"]): T["id"] | undefined;
     // (undocumented)
     handleDrag(x: number, y: number): void;
     // (undocumented)
@@ -429,10 +430,6 @@ export class DragManager {
     handleDragUpdate(): void;
     // (undocumented)
     handleTargetChanged(target: DropTargetState | undefined): void;
-    // (undocumented)
-    isDragged(item: DragItem): boolean;
-    // (undocumented)
-    isDraggedType(type: DragItem["type"]): boolean;
     // (undocumented)
     isTargeted(target: DropTargetState): boolean;
     // (undocumented)
@@ -535,7 +532,7 @@ export interface FloatingTabLocation {
 }
 
 // @internal (undocumented)
-export const FloatingWidget: React_2.NamedExoticComponent<FloatingWidgetProps>;
+export function FloatingWidget(props: FloatingWidgetProps): JSX.Element;
 
 // @internal (undocumented)
 export function floatingWidgetBringToFront(state: NineZoneState, floatingWidgetId: FloatingWidgetState["id"]): NineZoneState;
@@ -589,7 +586,21 @@ export interface FloatingWidgetLocation {
 }
 
 // @internal (undocumented)
+export const FloatingWidgetNodeContext: React_2.Context<React_2.ReactNode>;
+
+// @internal (undocumented)
 export interface FloatingWidgetProps {
+    // (undocumented)
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    // (undocumented)
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+}
+
+// @internal (undocumented)
+export function FloatingWidgetProvider(props: FloatingWidgetProviderProps): JSX.Element;
+
+// @internal (undocumented)
+export interface FloatingWidgetProviderProps {
     // (undocumented)
     floatingWidget: FloatingWidgetState;
     // (undocumented)
@@ -1395,6 +1406,8 @@ export interface NineZoneProps {
     children?: React_2.ReactNode;
     // (undocumented)
     dispatch: NineZoneDispatch;
+    // (undocumented)
+    floatingWidget?: React_2.ReactNode;
     // (undocumented)
     labels?: NineZoneLabels;
     // (undocumented)
@@ -2963,6 +2976,9 @@ export function useDoubleClick(onDoubleClick?: () => void): () => void;
 export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point, pointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void, onDoubleClick?: () => void): (instance: T | null) => void;
 
 // @internal (undocumented)
+export function useDraggedItem(): DragItem | undefined;
+
+// @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
 
 // @internal (undocumented)
@@ -3044,9 +3060,6 @@ export interface UseDragWidgetArgs {
     // (undocumented)
     widgetId: WidgetState["id"];
 }
-
-// @internal (undocumented)
-export function useIsDragged(callback: () => boolean): boolean;
 
 // @internal (undocumented)
 export function useIsDraggedItem(item: DragItem): boolean;
@@ -3417,6 +3430,10 @@ export interface WidgetPanelsProps extends CommonProps {
 export interface WidgetProps extends CommonProps {
     // (undocumented)
     children?: React_2.ReactNode;
+    // (undocumented)
+    onMouseEnter?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
+    // (undocumented)
+    onMouseLeave?: (event: React_2.MouseEvent<HTMLElement, MouseEvent>) => void;
     // (undocumented)
     onTransitionEnd?(): void;
     // (undocumented)

@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { ConditionalBooleanValue } from "@itwin/appui-abstract";
+import { ConditionalBooleanValue, ConditionalStringValue } from "@itwin/appui-abstract";
 import { ContextMenuItemProps } from "./ContextMenuItem";
 import { ContextMenu, ContextMenuProps } from "./ContextMenu";
 import { CommonProps } from "../utils/Props";
@@ -103,7 +103,7 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
           aria-hidden={isHidden}
           aria-haspopup={true}
         >
-          <div className={classnames("core-context-menu-icon", "icon", icon)} />
+          <div className={classnames("core-context-menu-icon", "icon", icon instanceof ConditionalStringValue && icon.value, typeof icon === "string" && icon)} />
           <div className={"core-context-menu-content"}>{this._parsedLabel}</div>
           <div className={classnames("core-context-submenu-arrow", "icon", "icon-caret-right")} />
           {badge &&

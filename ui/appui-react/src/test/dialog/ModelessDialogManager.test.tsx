@@ -7,11 +7,18 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { ConfigurableUiManager, DialogChangedEventArgs, ModelessDialog, ModelessDialogManager, ModelessDialogRenderer } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { userEvent } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
+import { MockRender } from "@itwin/core-frontend";
 
 describe("ModelessDialogManager", () => {
-
+  let theUserTo: ReturnType<typeof userEvent.setup>;
   const spyMethod = sinon.spy();
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+    ModelessDialogManager.closeAll();
+    spyMethod.resetHistory();
+  });
 
   function handleModelessDialogChanged(_args: DialogChangedEventArgs) {
     spyMethod();
@@ -20,12 +27,14 @@ describe("ModelessDialogManager", () => {
   before(async () => {
     await TestUtils.initializeUiFramework(true);
     ConfigurableUiManager.initialize();
+    await MockRender.App.startup();
 
     ModelessDialogManager.onModelessDialogChangedEvent.addListener(handleModelessDialogChanged);
   });
 
-  after(() => {
+  after(async () => {
     ModelessDialogManager.onModelessDialogChangedEvent.removeListener(handleModelessDialogChanged);
+    await MockRender.App.shutdown();
     TestUtils.terminateUiFramework(); // clear out the framework key
   });
 
@@ -72,18 +81,16 @@ describe("ModelessDialogManager", () => {
       dialogId={dialogId}
     />;
 
-    const wrapper = mount(<ModelessDialogRenderer />);
+    render(<ModelessDialogRenderer />);
 
     expect(ModelessDialogManager.dialogCount).to.eq(0);
     ModelessDialogManager.openDialog(reactNode, dialogId);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
+    expect(screen.getByText("My Title")).to.exist;
 
     ModelessDialogManager.closeDialog(dialogId);
     expect(ModelessDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(0);
+    expect(screen.queryByText("My Title")).to.be.null;
   });
 
   it("ModelessDialogRenderer component with two dialogs", () => {
@@ -101,29 +108,28 @@ describe("ModelessDialogManager", () => {
       dialogId={dialogId2}
     />;
 
-    const wrapper = mount(<ModelessDialogRenderer />);
+    render(<ModelessDialogRenderer />);
 
     expect(ModelessDialogManager.dialogCount).to.eq(0);
 
     ModelessDialogManager.openDialog(reactNode1, dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
+    expect(screen.getByText("My Title")).to.exist;
 
     ModelessDialogManager.openDialog(reactNode2, dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(2);
+    expect(screen.getByText("My Title")).to.exist;
+    expect(screen.getByText("My Title 2")).to.exist;
 
     ModelessDialogManager.closeDialog(dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
+    expect(screen.getByText("My Title")).to.exist;
+    expect(screen.queryByText("My Title 2")).to.be.null;
 
     ModelessDialogManager.closeDialog(dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(0);
+    expect(screen.queryByText("My Title")).to.be.null;
+    expect(screen.queryByText("My Title 2")).to.be.null;
   });
 
   it("ModelessDialogRenderer component with two dialogs closed in FIFO order", () => {
@@ -141,7 +147,7 @@ describe("ModelessDialogManager", () => {
       dialogId={dialogId2}
     />;
 
-    const wrapper = mount(<ModelessDialogRenderer />);
+    render(<ModelessDialogRenderer />);
 
     expect(ModelessDialogManager.dialogCount).to.eq(0);
 
@@ -149,26 +155,23 @@ describe("ModelessDialogManager", () => {
     expect(ModelessDialogManager.dialogCount).to.eq(1);
     expect(ModelessDialogManager.getDialogInfo(dialogId1)).not.to.be.undefined;
 
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
-
     ModelessDialogManager.openDialog(reactNode2, dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(2);
+    expect(screen.getByText("My Title")).to.exist;
+    expect(screen.getByText("My Title 2")).to.exist;
 
     ModelessDialogManager.closeDialog(dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
+    expect(screen.queryByText("My Title")).to.be.null;
+    expect(screen.getByText("My Title 2")).to.exist;
 
     ModelessDialogManager.closeDialog(dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(0);
+    expect(screen.queryByText("My Title")).to.be.null;
+    expect(screen.queryByText("My Title 2")).to.be.null;
   });
 
-  it("ModelessDialogRenderer component with two dialogs and bring forward", () => {
+  it("ModelessDialogRenderer component with two dialogs and bring forward", async () => {
     const dialogId1 = "Test1";
     const reactNode1 = <ModelessDialog
       opened={true}
@@ -183,43 +186,33 @@ describe("ModelessDialogManager", () => {
       dialogId={dialogId2}
     />;
 
-    const wrapper = mount(<ModelessDialogRenderer />);
+    render(<ModelessDialogRenderer />);
 
     expect(ModelessDialogManager.dialogCount).to.eq(0);
 
     ModelessDialogManager.openDialog(reactNode1, dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
 
     ModelessDialogManager.openDialog(reactNode2, dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(2);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(2);
 
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode2);
 
     // Click the 2nd dialog - should stay forward
-    wrapper.find(ModelessDialog).at(1).find(".core-dialog-container").simulate("pointerDown");
+    await theUserTo.click(screen.getByText("My Title 2"));
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode2);
-    wrapper.update();
 
     // Click the 1st dialog to bring it forward
-    wrapper.find(ModelessDialog).at(0).find(".core-dialog-container").simulate("pointerDown");
+    await theUserTo.click(screen.getByText("My Title"));
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode1);
-    wrapper.update();
 
     ModelessDialogManager.closeDialog(dialogId1);
     expect(ModelessDialogManager.dialogCount).to.eq(1);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(1);
 
     expect(ModelessDialogManager.activeDialog).to.eq(reactNode2);
 
     ModelessDialogManager.closeDialog(dialogId2);
     expect(ModelessDialogManager.dialogCount).to.eq(0);
-    wrapper.update();
-    expect(wrapper.find(ModelessDialog).length).to.eq(0);
   });
 
 });

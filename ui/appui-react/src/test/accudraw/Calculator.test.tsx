@@ -3,305 +3,230 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Icon } from "@itwin/core-react";
 import { Calculator } from "../../appui-react/accudraw/Calculator";
-import { CalculatorEngine, CalculatorOperator } from "../../appui-react/accudraw/CalculatorEngine";
-import { mount } from "../TestUtils";
+import { CalculatorEngine } from "../../appui-react/accudraw/CalculatorEngine";
+import { selectorMatches, userEvent } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("Calculator", () => {
-
-  const simulateButtonClick = (w: ReactWrapper) => {
-    expect(w.length).to.eq(1);
-    const button = w.find("button");
-    button.simulate("click");
-  };
-
-  it("should render", () => {
-    mount(<Calculator />);
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
   });
 
   it("should render with icon", () => {
-    mount(<Calculator resultIcon={<Icon iconSpec="icon-placeholder" />} />);
+    render(<Calculator resultIcon={<div>TestIcon</div>} />);
+
+    expect(screen.getByText("TestIcon")).to.satisfy(selectorMatches(".core-iconInput-icon div"));
   });
 
   it("renders correctly", () => {
-    shallow(<Calculator />).should.matchSnapshot();
+    render(<Calculator />);
+
+    // Sorting only for cleaner error output.
+    expect(screen.getAllByRole("button").map((e) => e.textContent).filter((e) => e !== "").sort())
+      .to.include.members([
+        "AC", "C", "÷", "×", "−", "+", "±", ".", "=", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+      ].sort());
   });
 
   it("should support initialValue", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} initialValue={100} />);
+    render(<Calculator engine={new CalculatorEngine()} initialValue={100} />);
 
-    expect(wrapper.state("displayValue")).to.eq("100");
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("100");
   });
 
-  it("clicking on 1 button should put it in display", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const keyChar = "1";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(calculatorButton);
+  it("clicking on 1 button should put it in display", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    expect(wrapper.state("displayValue")).to.eq(keyChar);
+    await theUserTo.click(screen.getByRole("button", {name: "1"}));
+
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("1");
   });
 
-  it("clicking on buttons, operator and equals should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
+  it("clicking on buttons, operator and equals should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    let keyChar = "1";
-    const oneButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(oneButton);
-    expect(wrapper.state("displayValue")).to.eq("1");
+    await theUserTo.click(screen.getByRole("button", {name: "1"}));
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("1");
 
-    keyChar = "0";
-    const zeroButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(zeroButton);
-    expect(wrapper.state("displayValue")).to.eq("10");
+    await theUserTo.click(screen.getByRole("button", {name: "0"}));
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("10");
 
-    const multiplyButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Multiply);
-    simulateButtonClick(multiplyButton);
-    expect(wrapper.state("displayValue")).to.eq("10");
+    await theUserTo.click(screen.getByRole("button", {name: "×"}));
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("10");
 
-    keyChar = "2";
-    const twoButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(twoButton);
-    expect(wrapper.state("displayValue")).to.eq("2");
+    await theUserTo.click(screen.getByRole("button", {name: "2"}));
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("2");
 
-    const equalsButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "OperatorButton" && n.prop("operator") === CalculatorOperator.Equals);
-    simulateButtonClick(equalsButton);
-    expect(wrapper.state("displayValue")).to.eq("20");
+    await theUserTo.click(screen.getByRole("button", {name: "="}));
+    expect(screen.getByRole<HTMLInputElement>("textbox").value).to.eq("20");
   });
 
-  it("clicking on OK button should fire onOk", () => {
+  it("clicking on OK button should fire onOk", async () => {
     const spyMethod = sinon.spy();
-    let value = 0;
-    const handleOk = (v: number) => { spyMethod(); value = v; };
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} onOk={handleOk} />);
-    const keyChar = "5";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(calculatorButton);
+    render(<Calculator engine={new CalculatorEngine()} onOk={spyMethod} />);
 
-    expect(wrapper.state("displayValue")).to.eq(keyChar);
+    await theUserTo.click(screen.getByRole("button", {name: "5"}));
+    const okButton = screen.getAllByRole("button").find((e)=> e.matches(".uifw-calculator-ok-button"));
+    expect(okButton).to.exist;
+    await theUserTo.click(okButton!);
 
-    const okButton = wrapper.find("button.uifw-calculator-ok-button");
-    expect(okButton.length).to.eq(1);
-    okButton.simulate("click");
-    spyMethod.called.should.true;
-    expect(value).to.eq(5);
+    expect(spyMethod).to.have.been.calledWith(5);
   });
 
-  it("clicking on Cancel button should fire onCancel", () => {
+  it("clicking on Cancel button should fire onCancel",async () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} onCancel={spyMethod} />);
-    const keyChar = "5";
-    const calculatorButton = wrapper.findWhere((n: ReactWrapper) => n.name() === "ValueButton" && n.prop("keyChar") === keyChar);
-    simulateButtonClick(calculatorButton);
+    render(<Calculator engine={new CalculatorEngine()} onCancel={spyMethod} />);
+    await theUserTo.click(screen.getByRole("button", {name: "5"}));
 
-    expect(wrapper.state("displayValue")).to.eq(keyChar);
+    const cancelButton = screen.getAllByRole("button").find((e)=> e.matches(".uifw-calculator-cancel-button"));
+    expect(cancelButton).to.exist;
+    await theUserTo.click(cancelButton!);
 
-    const cancelButton = wrapper.find("button.uifw-calculator-cancel-button");
-    expect(cancelButton.length).to.eq(1);
-    cancelButton.simulate("click");
-    spyMethod.called.should.true;
+    expect(spyMethod).to.have.been.called;
   });
 
-  it("Pressing Esc should fire onCancel", () => {
+  it("Pressing Esc should fire onCancel",async () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} onCancel={spyMethod} />);
+    render(<Calculator engine={new CalculatorEngine()} onCancel={spyMethod} />);
 
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
-    mainDiv.simulate("keydown", { key: "Escape" });
+    await theUserTo.type(screen.getByRole("textbox"), "[Escape]");
 
     spyMethod.called.should.true;
   });
 
-  it("pressing keys and multiply should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and multiply should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "1" });
-    expect(wrapper.state("displayValue")).to.eq("1");
+    await theUserTo.type(screen.getByRole("textbox"), "10*");
+    expect(screen.getByDisplayValue("10")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "0" });
-    expect(wrapper.state("displayValue")).to.eq("10");
+    await theUserTo.type(screen.getByRole("textbox"), "2");
+    expect(screen.getByDisplayValue("2")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "*" });
-    expect(wrapper.state("displayValue")).to.eq("10");
+    await theUserTo.type(screen.getByRole("textbox"), "=");
+    expect(screen.getByDisplayValue("20")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "2" });
-    expect(wrapper.state("displayValue")).to.eq("2");
-
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("20");
-
-    mainDiv.simulate("keydown", { key: "a" });
-    expect(wrapper.state("displayValue")).to.eq("0");
+    await theUserTo.type(screen.getByRole("textbox"), "a");
+    expect(screen.getByDisplayValue("0")).to.exist;
   });
 
-  it("pressing keys and subtract should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and subtract should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "4" });
-    expect(wrapper.state("displayValue")).to.eq("4");
+    await theUserTo.type(screen.getByRole("textbox"), "4-");
+    expect(screen.getByDisplayValue("4")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "-" });
-    expect(wrapper.state("displayValue")).to.eq("4");
+    await theUserTo.type(screen.getByRole("textbox"), "3");
+    expect(screen.getByDisplayValue("3")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "3" });
-    expect(wrapper.state("displayValue")).to.eq("3");
-
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("1");
+    await theUserTo.type(screen.getByRole("textbox"), "=");
+    expect(screen.getByDisplayValue("1")).to.exist;
   });
 
-  it("pressing keys and divide should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and divide should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "9" });
-    expect(wrapper.state("displayValue")).to.eq("9");
+    await theUserTo.type(screen.getByRole("textbox"), "9/");
+    expect(screen.getByDisplayValue("9")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "/" });
-    expect(wrapper.state("displayValue")).to.eq("9");
+    await theUserTo.type(screen.getByRole("textbox"), "3");
+    expect(screen.getByDisplayValue("3")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "3" });
-    expect(wrapper.state("displayValue")).to.eq("3");
-
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("3");
+    await theUserTo.type(screen.getByRole("textbox"), "=");
+    expect(screen.getByDisplayValue("3")).to.exist;
   });
 
-  it("pressing keys and add should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and add should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "8" });
-    expect(wrapper.state("displayValue")).to.eq("8");
+    await theUserTo.type(screen.getByRole("textbox"), "876.5+");
+    expect(screen.getByDisplayValue("876.5")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "7" });
-    expect(wrapper.state("displayValue")).to.eq("87");
+    await theUserTo.type(screen.getByRole("textbox"), "4");
+    expect(screen.getByDisplayValue("4")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "6" });
-    expect(wrapper.state("displayValue")).to.eq("876");
-
-    mainDiv.simulate("keydown", { key: "." });
-    expect(wrapper.state("displayValue")).to.eq("876.");
-
-    mainDiv.simulate("keydown", { key: "5" });
-    expect(wrapper.state("displayValue")).to.eq("876.5");
-
-    mainDiv.simulate("keydown", { key: "+" });
-    expect(wrapper.state("displayValue")).to.eq("876.5");
-
-    mainDiv.simulate("keydown", { key: "4" });
-    expect(wrapper.state("displayValue")).to.eq("4");
-
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("880.5");
+    await theUserTo.type(screen.getByRole("textbox"), "=");
+    expect(screen.getByDisplayValue("880.5")).to.exist;
   });
 
-  it("pressing keys and Enter should give correct result", () => {
+  it("pressing keys and Enter should give correct result",async  () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} onOk={spyMethod} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+    render(<Calculator engine={new CalculatorEngine()} onOk={spyMethod} />);
 
-    mainDiv.simulate("keydown", { key: "8" });
-    expect(wrapper.state("displayValue")).to.eq("8");
+    await theUserTo.type(screen.getByRole("textbox"), "8/");
+    expect(screen.getByDisplayValue("8")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "/" });
-    expect(wrapper.state("displayValue")).to.eq("8");
+    await theUserTo.type(screen.getByRole("textbox"), "4");
+    expect(screen.getByDisplayValue("4")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "4" });
-    expect(wrapper.state("displayValue")).to.eq("4");
-
-    mainDiv.simulate("keydown", { key: "Enter" });
-    expect(wrapper.state("displayValue")).to.eq("2");
+    await theUserTo.type(screen.getByRole("textbox"), "[Enter]");
+    expect(screen.getByDisplayValue("2")).to.exist;
     spyMethod.called.should.true;
   });
 
-  it("pressing keys and Clear should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and Clear should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "8" });
-    expect(wrapper.state("displayValue")).to.eq("8");
+    await theUserTo.type(screen.getByRole("textbox"), "8");
+    expect(screen.getByDisplayValue("8")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "c" });
-    expect(wrapper.state("displayValue")).to.eq("0");
+    await theUserTo.type(screen.getByRole("textbox"), "c");
+    expect(screen.getByDisplayValue("0")).to.exist;
   });
 
-  it("pressing keys and Backspace should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and Backspace should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "7" });
-    expect(wrapper.state("displayValue")).to.eq("7");
+    await theUserTo.type(screen.getByRole("textbox"), "76");
+    expect(screen.getByDisplayValue("76")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "6" });
-    expect(wrapper.state("displayValue")).to.eq("76");
-
-    mainDiv.simulate("keydown", { key: "Backspace" });
-    expect(wrapper.state("displayValue")).to.eq("7");
-
-    mainDiv.simulate("keydown", { key: "Backspace" });
-    expect(wrapper.state("displayValue")).to.eq("0");
+    await theUserTo.type(screen.getByRole("textbox"), "[Backspace>2/]");
+    expect(screen.getByDisplayValue("0")).to.exist;
   });
 
-  it("pressing keys and Equal and Enter should give correct result", () => {
+  it("pressing keys and Equal and Enter should give correct result", async () => {
     const spyMethod = sinon.spy();
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} onOk={spyMethod} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+    render(<Calculator engine={new CalculatorEngine()} onOk={spyMethod} />);
 
-    mainDiv.simulate("keydown", { key: "6" });
-    expect(wrapper.state("displayValue")).to.eq("6");
+    await theUserTo.type(screen.getByRole("textbox"), "65-");
+    expect(screen.getByDisplayValue("65")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "5" });
-    expect(wrapper.state("displayValue")).to.eq("65");
+    await theUserTo.type(screen.getByRole("textbox"), "4");
+    expect(screen.getByDisplayValue("4")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "-" });
-    expect(wrapper.state("displayValue")).to.eq("65");
+    await theUserTo.type(screen.getByRole("textbox"), "=");
+    expect(screen.getByDisplayValue("61")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "4" });
-    expect(wrapper.state("displayValue")).to.eq("4");
-
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("61");
-
-    mainDiv.simulate("keydown", { key: "Enter" });
-    expect(wrapper.state("displayValue")).to.eq("61");
+    await theUserTo.type(screen.getByRole("textbox"), "[Enter]");
+    expect(screen.getByDisplayValue("61")).to.exist;
     spyMethod.called.should.true;
   });
 
-  it("pressing keys and Equal and Clear should give correct result", () => {
-    const wrapper = mount(<Calculator engine={new CalculatorEngine()} />);
-    const mainDiv = wrapper.find("div.uifw-calculator");
-    expect(mainDiv.length).to.eq(1);
+  it("pressing keys and Equal and Clear should give correct result", async () => {
+    render(<Calculator engine={new CalculatorEngine()} />);
 
-    mainDiv.simulate("keydown", { key: "4" });
-    expect(wrapper.state("displayValue")).to.eq("4");
+    await theUserTo.type(screen.getByRole("textbox"), "4*");
+    expect(screen.getByDisplayValue("4")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "*" });
-    expect(wrapper.state("displayValue")).to.eq("4");
+    await theUserTo.type(screen.getByRole("textbox"), "3=");
+    expect(screen.getByDisplayValue("12")).to.exist;
 
-    mainDiv.simulate("keydown", { key: "3" });
-    expect(wrapper.state("displayValue")).to.eq("3");
+    await theUserTo.type(screen.getByRole("textbox"), "c");
+    expect(screen.getByDisplayValue("0")).to.exist;
+  });
 
-    mainDiv.simulate("keydown", { key: "=" });
-    expect(wrapper.state("displayValue")).to.eq("12");
+  it("(Coverage only) - Supports empty internal ref", () => {
+    const ref = React.createRef<Calculator>();
 
-    mainDiv.simulate("keydown", { key: "c" });
-    expect(wrapper.state("displayValue")).to.eq("0");
+    const {unmount} = render(<Calculator ref={ref} />);
+    const refCopy = ref.current;
+    unmount();
+
+    expect(refCopy?.componentDidMount()).to.not.throw;
   });
 
 });

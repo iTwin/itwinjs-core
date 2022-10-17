@@ -197,21 +197,23 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
       reversed);
   }
   /**
-   * Create a plane whose normal is a "better" cross product as a choice of `vectorA cross vectorB` or `vectorA cross vectorC`
+   * Create a plane whose normal is the "better" cross product: `vectorA.crossProduct(vectorB)` or `vectorA.crossProduct(vectorC)`
    * * The heuristic for "better" is:
-   *   * first choice is cross product with `vectorB`.  Use it if the cosine of the angel from vectorA to vectorB is less than cosineValue.
+   *   * first choice is cross product with `vectorB`, if `vectorA` and `vectorB` are sufficiently far from parallel (or anti-parallel).
    *   * otherwise use vectorC
    * @param origin plane origin
    * @param vectorA vector which must be in the plane.
-   * @param cosineValue typically cosine of something near 90 degrees.
+   * @param cosineValue largest cosine of the angle theta between vectorA and vectorB to prefer their cross product,
+   *                    e.g. passing 0.94 ~ cos(20deg) will switch to using vectorC in the cross product if theta < ~20deg or theta > ~160deg.
    * @param vectorB first candidate for additional in-plane vector
    * @param vectorC second candidate for additional in-plane vector
    */
   public createPlaneWithPreferredPerpendicular(origin: Point3d, vectorA: Vector3d, cosineValue: number, vectorB: Vector3d, vectorC: Vector3d): Plane3dByOriginAndUnitNormal | undefined {
+    cosineValue = Geometry.restrictToInterval(Math.abs(cosineValue), 0.0, 1.0 - Geometry.smallFraction);
     const dotAA = vectorA.magnitudeSquared();
     const dotBB = vectorB.magnitudeSquared();
     const dotAB = Math.abs(vectorA.dotProduct(vectorB));
-    const cross = vectorA.unitCrossProduct(dotAB < cosineValue * dotAA * dotBB ? vectorB : vectorC);
+    const cross = vectorA.unitCrossProduct(dotAB * dotAB <= cosineValue * cosineValue * dotAA * dotBB ? vectorB : vectorC);
     if (cross)
       return Plane3dByOriginAndUnitNormal.create(origin, cross);
     return undefined;
@@ -233,7 +235,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
     reversed: boolean,
   ) {
     const lineVector = Vector3d.createStartEnd(pointA0, pointA1);
-    const plane = this.createPlaneWithPreferredPerpendicular(pointA0, lineVector, 0.9, arc.perpendicularVector, arc.vector0);
+    const plane = this.createPlaneWithPreferredPerpendicular(pointA0, lineVector, 0.94, arc.perpendicularVector, arc.vector0);
     if (plane !== undefined) {
       const candidates: CurveLocationDetail[] = [];
       arc.appendPlaneIntersectionPoints(plane, candidates);
@@ -241,7 +243,7 @@ export class CurveCurveIntersectXYZ extends NullGeometryHandler {
       let linePoint: Point3d | undefined;
       for (const c of candidates) {
         if (this.acceptFraction(extendB0, c.fraction, extendB1)) {
-          lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0, pointA1, c.point);
+          lineFraction = SmallSystem.lineSegment3dClosestPointUnbounded(pointA0, pointA1, c.point);
           if (lineFraction !== undefined) {
             linePoint = pointA0.interpolate(lineFraction, pointA1, linePoint);
             if (linePoint.isAlmostEqualMetric(c.point)
