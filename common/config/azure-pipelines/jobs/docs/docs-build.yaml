@@ -121,8 +121,8 @@ jobs:
               print("##vso[build.addbuildtag]iTwinJsDocsRelease")
                 # else:
                 #   print(err)
-              else:
-                print("Version " + package_version + " already exists")
+              # else:
+              #   print("Version " + package_version + " already exists")
           arguments: ${{ parameters.outputDir }}
           workingDirectory: ${{ parameters.workingDir }}
         displayName: Tag if new release
