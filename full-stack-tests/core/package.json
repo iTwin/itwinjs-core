@@ -79,13 +79,11 @@
     "nock": "^12.0.3",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
-    "os-browserify": "0.3.0",
     "path-browserify": "^1.0.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
-    "timers-browserify": "2.0.12",
     "typescript": "~4.4.0",
     "webpack": "^5.64.4",
     "webpack-cli": "^4.10.0"

@@ -855,10 +855,6 @@
       "allowedCategories": [ "integration-testing" ]
     },
     {
-      "name": "os-browserify",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
@@ -1044,10 +1040,6 @@
     },
     {
       "name": "symlink-dir",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "timers-browserify",
       "allowedCategories": [ "internal" ]
     },
     {

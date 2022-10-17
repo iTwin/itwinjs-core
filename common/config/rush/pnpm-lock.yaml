@@ -1720,7 +1720,6 @@ importers:
       nock: ^12.0.3
       null-loader: ^4.0.1
       nyc: ^15.1.0
-      os-browserify: 0.3.0
       path-browserify: ^1.0.1
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -1728,7 +1727,6 @@ importers:
       source-map-loader: ^4.0.0
       stream-browserify: ^3.0.0
       stream-http: ^3.2.0
-      timers-browserify: 2.0.12
       typescript: ~4.4.0
       webpack: ^5.64.4
       webpack-cli: ^4.10.0
@@ -1788,13 +1786,11 @@ importers:
       nock: 12.0.3
       null-loader: 4.0.1_webpack@5.74.0
       nyc: 15.1.0
-      os-browserify: 0.3.0
       path-browserify: 1.0.1
       rimraf: 3.0.2
       source-map-loader: 4.0.0_webpack@5.74.0
       stream-browserify: 3.0.0
       stream-http: 3.2.0
-      timers-browserify: 2.0.12
       typescript: 4.4.4
       webpack: 5.74.0_webpack-cli@4.10.0
       webpack-cli: 4.10.0_webpack@5.74.0
@@ -17802,10 +17798,6 @@ packages:
       type-check: 0.4.0
       word-wrap: 1.2.3
 
-  /os-browserify/0.3.0:
-    resolution: {integrity: sha512-gjcpUc3clBf9+210TRaDWbf+rZZZEshZ+DlXMRCeAjp0xhTrnQsKHypIy1J3d5hKdUzj69t708EHtU8P6bUn0A==}
-    dev: true
-
   /p-cancelable/1.1.0:
     resolution: {integrity: sha512-s73XxOZ4zpt1edZYZzvhqFa6uvQc1vwUa0K0BdtIZgQMAJj9IbebH+JkgKZc9h+B05PKHLOTl4ajG1BmNrVZlw==}
     engines: {node: '>=6'}
@@ -20446,10 +20438,6 @@ packages:
       split-string: 3.1.0
     dev: true
 
-  /setimmediate/1.0.5:
-    resolution: {integrity: sha512-MATJdZp8sLqDl/68LfQmbP8zKPLQNV6BIZoIgrscFDQ+RsvK/BxeDQOgyxKKoh0y/8h3BqVFnCqQ/gd+reiIXA==}
-    dev: true
-
   /setprototypeof/1.1.0:
     resolution: {integrity: sha512-BvE/TwpZX4FXExxOxZyRGQQv651MSwmWKZGqvmPcRIjDqWub67kTKuIMx43cZZrS/cBBzwBcNDWoFxt2XEFIpQ==}
     dev: true
@@ -21410,13 +21398,6 @@ packages:
 
   /thunky/1.1.0:
     resolution: {integrity: sha512-eHY7nBftgThBqOyHGVN+l8gF0BucP09fMo0oO/Lb0w1OF80dJv+lDVpXG60WMQvkcxAkNybKsrEIE3ZtKGmPrA==}
-    dev: true
-
-  /timers-browserify/2.0.12:
-    resolution: {integrity: sha512-9phl76Cqm6FhSX9Xe1ZUAMLtm1BLkKj2Qd5ApyWkXzsMRaA7dgr81kf4wJmQf/hAvg8EEyJxDo3du/0KlhPiKQ==}
-    engines: {node: '>=0.6.0'}
-    dependencies:
-      setimmediate: 1.0.5
     dev: true
 
   /timsort/0.3.0:
