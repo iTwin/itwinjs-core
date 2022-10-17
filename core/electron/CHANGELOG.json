@@ -2,6 +2,51 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "3.4.0",
+      "tag": "@itwin/core-electron_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Electron versions 15, 16, and 17."
+          },
+          {
+            "comment": "Fix ElectronApp.shutdown not terminating RPC interfaces."
+          },
+          {
+            "comment": "Fix window setting not being set after opening new main window."
+          },
+          {
+            "comment": "Set supportFetchAPI to true for iTwin.js's custom Electron scheme"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          },
+          {
+            "comment": "Setup electron backend code tests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-electron_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-electron_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-electron_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.2",
       "tag": "@itwin/core-electron_v3.3.2",
       "date": "Thu, 01 Sep 2022 14:37:22 GMT",
