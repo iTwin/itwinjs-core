@@ -8,8 +8,8 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
-  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
+  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, ConcreteEntityTypes, DefinitionElementProps, ElementAlignedBox3d, ElementGeometryBuilderParams,
+  ElementGeometryBuilderParamsForPart, ElementProps, EntityMetaData, EntityReferenceSet, GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps,
   GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps, GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps,
   ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d, Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps,
   RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps,
@@ -17,8 +17,8 @@ import {
 } from "@itwin/core-common";
 import { ClipVector, Range3d, Transform } from "@itwin/core-geometry";
 import { Entity } from "./Entity";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
+import { IModelCloneContext } from "./IModelCloneContext";
 import { DefinitionModel, DrawingModel, PhysicalModel } from "./Model";
 import { SubjectOwnsSubjects } from "./NavigationRelationship";
 
@@ -352,18 +352,26 @@ export class Element extends Entity {
   /** Collect the Ids of this entity's *references* at this level of the class hierarchy.
    * A *reference* is any entity referenced by this entity's EC Data
    * This is important for cloning operations but can be useful in other situations as well.
-   * @param referenceIds The Id64Set to populate with reference Ids.
+   * @param _referenceIds The Id64Set to populate with reference Ids.
+   * @note In the next breaking change, the behavior of this function will change to require a EntityReferenceSet argument,
+   *       which does not accept plain Id64s, see EntityReferenceSet.
    * @note In order to clone/transform an entity, all referenced elements must have been previously cloned and remapped within the [IModelCloneContext]($backend).
    * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces references.
    * @see getReferenceIds
    * @beta
    */
-  protected collectReferenceIds(referenceIds: Id64Set): void {
-    referenceIds.add(this.model); // The modeledElement is a reference
+  protected override collectReferenceIds(referenceIds: Set<Id64String>): void {
+    return super.collectReferenceIds(referenceIds);
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addModel(this.model); // The modeledElement is a reference
     if (this.code.scope && Id64.isValidId64(this.code.scope))
-      referenceIds.add(this.code.scope); // The element that scopes the code is a reference
+      referenceIds.addElement(this.code.scope); // The element that scopes the code is a reference
     if (this.parent)
-      referenceIds.add(this.parent.id); // A parent element is a reference
+      referenceIds.addElement(this.parent.id); // A parent element is a reference
   }
 
   /** Get the Ids of this element's *references*. A *reference* is any element whose id is stored in the EC data of this element
@@ -380,19 +388,26 @@ export class Element extends Entity {
    * @see collectReferenceIds
    * @beta
    */
-  public getReferenceIds(): Id64Set {
-    const referenceIds = new Set<Id64String>();
-    this.collectReferenceIds(referenceIds);
-    return referenceIds;
+  public override getReferenceIds(): Set<Id64String> {
+    return super.getReferenceIds();
   }
 
   /** A *required reference* is an element that had to be inserted before this element could have been inserted.
    * This is the list of property keys on this element that store references to those elements
-   * @note This should be overridden (with `super` called) at each level the class hierarchy that introduces required references.
+   * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
    * @note any property listed here must be added to the reference ids in [[collectReferenceIds]]
    * @beta
    */
   public static readonly requiredReferenceKeys: ReadonlyArray<string> = ["parent", "model"];
+
+  /** A map of every [[requiredReferenceKeys]] on this class to their entity type.
+   * @note This should be overridden (with `super` called) at each level of the class hierarchy that introduces required references.
+   * @internal
+   */
+  public static readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    parent: ConcreteEntityTypes.Element,
+    model: ConcreteEntityTypes.Model,
+  };
 
   /** Get the class metadata for this element. */
   public getClassMetaData(): EntityMetaData | undefined { return this.iModel.classMetaDataRegistry.find(this.classFullName); }
@@ -486,14 +501,19 @@ export abstract class GeometricElement extends Element {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.category);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.category);
     // TODO: GeometryPartIds?
   }
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "category"];
+  /** @internal */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    category: ConcreteEntityTypes.Element,
+  };
 }
 
 /** An abstract base class to model real world entities that intrinsically have 3d geometry.
@@ -525,10 +545,10 @@ export abstract class GeometricElement3d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.typeDefinition)
-      referenceIds.add(this.typeDefinition.id);
+      referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -570,10 +590,10 @@ export abstract class GeometricElement2d extends GeometricElement {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.typeDefinition)
-      referenceIds.add(this.typeDefinition.id);
+      referenceIds.addElement(this.typeDefinition.id);
   }
 }
 
@@ -937,10 +957,10 @@ export class SheetTemplate extends Document {
   /** @internal */
   constructor(props: SheetTemplateProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.border)
-      referenceIds.add(this.border);
+      referenceIds.addElement(this.border);
   }
 }
 
@@ -965,10 +985,10 @@ export class Sheet extends Document {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.sheetTemplate)
-      referenceIds.add(this.sheetTemplate);
+      referenceIds.addElement(this.sheetTemplate);
   }
 
   /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
@@ -1111,10 +1131,10 @@ export abstract class TypeDefinitionElement extends DefinitionElement {
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     if (undefined !== this.recipe)
-      referenceIds.add(this.recipe.id);
+      referenceIds.addElement(this.recipe.id);
   }
 }
 
@@ -1617,11 +1637,11 @@ export class RenderTimeline extends InformationRecordElement {
     }
   }
 
-  /** @alpha */
-  protected override collectReferenceIds(ids: Id64Set): void {
-    super.collectReferenceIds(ids);
+  /** @internal */
+  protected override collectReferenceConcreteIds(ids: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(ids);
     const script = RenderSchedule.Script.fromJSON(this.scriptProps);
-    script?.discloseIds(ids);
+    script?.discloseIds(ids); // eslint-disable-line deprecation/deprecation
   }
 
   /** @alpha */

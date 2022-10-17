@@ -10,6 +10,7 @@ export * from "./ClassRegistry";
 export * from "./CodeService";
 export * from "./CodeSpecs";
 export * from "./CloudSqlite";
+export * from "./EntityReferences";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";

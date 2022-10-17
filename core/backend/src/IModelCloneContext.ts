@@ -25,7 +25,7 @@ export class IModelCloneContext {
   /** The native import context */
   private _nativeContext: IModelJsNative.ImportContext;
 
-  /** Construct a new IModelCloneContext.
+  /** Construct a new IModelCloneContext. It must be initialized with `initialize`, consider using [[IModelCloneContext.create]] instead
    * @param sourceDb The source IModelDb.
    * @param targetDb If provided the target IModelDb. If not provided, the source and target are the same IModelDb.
    */
@@ -33,6 +33,17 @@ export class IModelCloneContext {
     this.sourceDb = sourceDb;
     this.targetDb = (undefined !== targetDb) ? targetDb : sourceDb;
     this._nativeContext = new IModelHost.platform.ImportContext(this.sourceDb.nativeDb, this.targetDb.nativeDb);
+  }
+
+  /** @internal perform necessary initialization to use a clone context, namely caching the reference types in the source's schemas */
+  public async initialize() {
+  }
+
+  /** @internal construct and initialize an IModelCloneContext at once, for where you construct in an async context */
+  public static async create(...args: ConstructorParameters<typeof IModelCloneContext>): Promise<IModelCloneContext> {
+    const instance = new this(...args);
+    await instance.initialize();
+    return instance;
   }
 
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */

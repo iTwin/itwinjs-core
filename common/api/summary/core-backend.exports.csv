@@ -59,6 +59,8 @@ alpha;CodeService
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
+internal;ConcreteEntity = Element_2 | Model | ElementAspect | Relationship
+internal;ConcreteEntityProps = ElementProps | ModelProps | ElementAspectProps | RelationshipProps
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs 
@@ -135,6 +137,7 @@ public;ElevationCallout
 public;EmbeddedFileLink 
 public;Entity
 public;EntityClassType
+internal;EntityReferences
 public;ExportGraphics
 public;ExportGraphicsFunction = (info: ExportGraphicsInfo) => void
 public;ExportGraphicsInfo
@@ -253,6 +256,7 @@ internal;LockStatusShared
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 
+internal;ModelSelectorRefersToModels 
 public;NativeAppStorage
 public;NativeHost
 public;NativeHostOpts 

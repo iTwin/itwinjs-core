@@ -6,14 +6,14 @@
  * @module ViewDefinitions
  */
 
-import { CompressedId64Set, Id64, Id64Array, Id64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  DisplayStyleProps, DisplayStyleSettings, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
+import { IModelCloneContext } from "./IModelCloneContext";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a view.
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
@@ -40,22 +40,22 @@ export abstract class DisplayStyle extends DefinitionElement {
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
 
-  /** @alpha */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     for (const [id] of this.settings.subCategoryOverrides) {
-      referenceIds.add(id);
+      referenceIds.addElement(id);
     }
 
     for (const excludedElementId of this.settings.excludedElementIds)
-      referenceIds.add(excludedElementId);
+      referenceIds.addElement(excludedElementId);
 
     if (this.settings.renderTimeline) {
-      referenceIds.add(this.settings.renderTimeline);
+      referenceIds.addElement(this.settings.renderTimeline);
     } else {
       const script = this.loadScheduleScript();
       if (script)
-        script.script.discloseIds(referenceIds);
+        script.script.discloseIds(referenceIds); // eslint-disable-line deprecation/deprecation
     }
   }
 
@@ -211,15 +211,15 @@ export class DisplayStyle3d extends DisplayStyle {
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
 
-  /** @alpha */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
     for (const textureId of this.settings.environment.sky.textureIds)
-      referenceIds.add(textureId);
+      referenceIds.addElement(textureId);
 
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
-        referenceIds.add(planProjectionSetting[0]);
+        referenceIds.addElement(planProjectionSetting[0]);
   }
 
   /** @alpha */
