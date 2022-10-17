@@ -52,7 +52,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     this._pendingRequests = new TemporaryStorage({
       // remove the pending request after request timeout + 10 seconds - this gives
       // frontend 10 seconds to re-send the request until it's removed from requests' cache
-      unusedValueLifetime: this._requestTimeout + 10 * 1000,
+      unusedValueLifetime: (this._requestTimeout > 0) ? (this._requestTimeout + 10 * 1000) : undefined,
 
       // attempt to clean up every second
       cleanupInterval: 1000,
@@ -74,6 +74,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   public get requestTimeout() { return this._requestTimeout; }
+
+  public get pendingRequests() { return this._pendingRequests; }
 
   /** Returns an ok response with result inside */
   private successResponse<TResult>(result: TResult, diagnostics?: ClientDiagnostics) {
