@@ -1,6 +1,41 @@
 # Change Log - @itwin/appui-layout-react
 
-This log was last generated on Thu, 01 Sep 2022 14:37:22 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Oct 2022 20:24:47 GMT and should not be manually modified.
+
+## 3.4.0
+Thu, 13 Oct 2022 20:24:47 GMT
+
+### Updates
+
+- Updated Message Center dialog to have static width between tabs.
+- Fix a floating widget resize issue.
+- Correctly remove floating widgets from NineZoneState.
+- Determine bounds when adding a new floating widget.
+- Updated Node types declaration to support latest v16
+- Fix panel splitters being interactive when the panels are not.
+- New icons from Visual Design team for pin/unpin panel.
+- Fix auto-sized floating widget position when dragging.
+- Fix styling to correctly overflow widget content.
+- Add pulse animation to widget targets.
+- Increase visibility of widget targets.
+
+## 3.3.5
+Tue, 27 Sep 2022 11:50:59 GMT
+
+### Updates
+
+- New icons from Visual Design team for pin/unpin panel.
+- Fix styling to correctly overflow widget content.
+
+## 3.3.4
+Thu, 08 Sep 2022 19:00:04 GMT
+
+_Version update only_
+
+## 3.3.3
+Tue, 06 Sep 2022 20:54:19 GMT
+
+_Version update only_
 
 ## 3.3.2
 Thu, 01 Sep 2022 14:37:22 GMT

@@ -11,7 +11,7 @@ import { AutoCollapseUnpinnedPanelsContext, NineZoneDispatchContext, PanelsState
 import { WidgetPanelsContent } from "./Content";
 import { ContentNodeContext } from "./Panels";
 import { panelSides } from "./Panel";
-import { useRefEffect } from "@itwin/core-react";
+import { useRefEffect, useRefs } from "@itwin/core-react";
 
 /** Main app content (i.e. viewport) that will change bounds based on panel pinned settings.
  * @internal
@@ -40,26 +40,34 @@ export function usePanelsAutoCollapse<T extends Element>(): React.Ref<T> {
   const dispatch = React.useContext(NineZoneDispatchContext);
   const autoCollapseUnpinnedPanels = React.useContext(AutoCollapseUnpinnedPanelsContext);
 
-  const setRef = useRefEffect<T>((instance) => {
-    // only enable if element is defined and autoCollapseUnpinnedPanels is false
-    if (!instance || autoCollapseUnpinnedPanels)
+  const collapsePanels = React.useCallback(() => {
+    for (const side of panelSides) {
+      const panel = panels[side];
+      if (panel.collapsed || panel.pinned)
+        continue;
+      dispatch({
+        type: "PANEL_SET_COLLAPSED",
+        collapsed: true,
+        side: panel.side,
+      });
+    }
+  }, [dispatch, panels]);
+  const mouseDownRef = useRefEffect<T>((instance) => {
+    if (!instance)
       return;
-    const listener = () => {
-      for (const side of panelSides) {
-        const panel = panels[side];
-        if (panel.collapsed || panel.pinned)
-          continue;
-        dispatch({
-          type: "PANEL_SET_COLLAPSED",
-          collapsed: true,
-          side: panel.side,
-        });
-      }
-    };
-    instance.addEventListener("mousedown", listener, true);
+    instance.addEventListener("mousedown", collapsePanels, true);
     return () => {
-      instance.removeEventListener("mousedown", listener, true);
+      instance.removeEventListener("mousedown", collapsePanels, true);
     };
-  }, [panels]);
-  return setRef;
+  }, [collapsePanels]);
+  const mouseEnterRef = useRefEffect<T>((instance) => {
+    if (!instance || !autoCollapseUnpinnedPanels)
+      return;
+    instance.addEventListener("mouseenter", collapsePanels, true);
+    return () => {
+      instance.removeEventListener("mouseenter", collapsePanels, true);
+    };
+  }, [collapsePanels, autoCollapseUnpinnedPanels]);
+  const ref = useRefs(mouseDownRef, mouseEnterRef);
+  return ref;
 }
