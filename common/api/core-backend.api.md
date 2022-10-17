@@ -4767,7 +4767,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindNull(parameter: BindParameter): void;
     // @internal
     bindProps<T>(colIndex: number, val: T): void;
-    bindString(parameter: BindParameter, val?: string): void;
+    bindString(parameter: BindParameter, val: string): void;
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;

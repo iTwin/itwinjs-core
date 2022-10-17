@@ -231,9 +231,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param val string to bind.
    */
-  public bindString(parameter: BindParameter, val?: string) {
-    if (val)
-      checkBind(this.stmt.bindString(parameter, val));
+  public bindString(parameter: BindParameter, val: string) {
+    checkBind(this.stmt.bindString(parameter, val));
   }
   /** Bind a string parameter if it is defined. Otherwise do nothing.
    * @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
