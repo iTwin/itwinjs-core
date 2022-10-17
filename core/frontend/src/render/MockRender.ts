@@ -39,37 +39,61 @@ import { Scene } from "./Scene";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
-    protected constructor(private readonly _system: RenderSystem) { super(); }
+    protected constructor(private readonly _system: RenderSystem) {
+      super();
+    }
 
-    public get renderSystem(): RenderSystem { return this._system; }
-    public get wantInvertBlackBackground() { return false; }
-    public get analysisFraction() { return 0; }
-    public set analysisFraction(_fraction: number) { }
-    public changeScene(_scene: Scene) { }
-    public changeDynamics(_dynamics?: GraphicList) { }
-    public changeDecorations(_decs: Decorations) { }
-    public changeRenderPlan(_plan: RenderPlan) { }
-    public drawFrame(_sceneTime?: number) { }
-    public updateViewRect() { return false; }
-    public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver, _excludeNonLocatable: boolean) { receiver(undefined); }
-    public get screenSpaceEffects(): Iterable<string> { return []; }
-    public set screenSpaceEffects(_effects: Iterable<string>) { }
+    public get renderSystem(): RenderSystem {
+      return this._system;
+    }
+    public get wantInvertBlackBackground() {
+      return false;
+    }
+    public get analysisFraction() {
+      return 0;
+    }
+    public set analysisFraction(_fraction: number) {}
+    public changeScene(_scene: Scene) {}
+    public changeDynamics(_dynamics?: GraphicList) {}
+    public changeDecorations(_decs: Decorations) {}
+    public changeRenderPlan(_plan: RenderPlan) {}
+    public drawFrame(_sceneTime?: number) {}
+    public updateViewRect() {
+      return false;
+    }
+    public readPixels(_rect: ViewRect, _selector: Pixel.Selector, receiver: Pixel.Receiver, _excludeNonLocatable: boolean) {
+      receiver(undefined);
+    }
+    public get screenSpaceEffects(): Iterable<string> {
+      return [];
+    }
+    public set screenSpaceEffects(_effects: Iterable<string>) {}
   }
 
   /** @internal */
   export class OnScreenTarget extends Target {
-    public constructor(system: RenderSystem, private readonly _canvas: HTMLCanvasElement) { super(system); }
+    public constructor(system: RenderSystem, private readonly _canvas: HTMLCanvasElement) {
+      super(system);
+    }
 
-    public get viewRect() { return new ViewRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight); }
-    public setViewRect(_rect: ViewRect, _temp: boolean) { }
+    public get viewRect() {
+      return new ViewRect(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    }
+    public setViewRect(_rect: ViewRect, _temp: boolean) {}
   }
 
   /** @internal */
   export class OffScreenTarget extends Target {
-    public constructor(system: RenderSystem, private readonly _viewRect: ViewRect) { super(system); }
+    public constructor(system: RenderSystem, private readonly _viewRect: ViewRect) {
+      super(system);
+    }
 
-    public get viewRect() { return this._viewRect; }
-    public setViewRect(rect: ViewRect, _temp: boolean) { this._viewRect.setFrom(rect); }
+    public get viewRect() {
+      return this._viewRect;
+    }
+    public setViewRect(rect: ViewRect, _temp: boolean) {
+      this._viewRect.setFrom(rect);
+    }
   }
 
   /** @internal */
@@ -81,19 +105,22 @@ export namespace MockRender {
 
   /** @internal */
   export class Graphic extends RenderGraphic {
-    public constructor() { super(); }
+    public constructor() {
+      super();
+    }
 
-    public dispose() { }
-    public collectStatistics(_stats: RenderMemory.Statistics): void { }
+    public dispose() {}
+    public collectStatistics(_stats: RenderMemory.Statistics): void {}
   }
 
   /** @internal */
   export class List extends Graphic {
-    public constructor(public readonly graphics: RenderGraphic[]) { super(); }
+    public constructor(public readonly graphics: RenderGraphic[]) {
+      super();
+    }
 
     public override dispose() {
-      for (const graphic of this.graphics)
-        dispose(graphic);
+      for (const graphic of this.graphics) dispose(graphic);
 
       this.graphics.length = 0;
     }
@@ -101,14 +128,24 @@ export namespace MockRender {
 
   /** @internal */
   export class Branch extends Graphic {
-    public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly options?: GraphicBranchOptions) { super(); }
+    public constructor(public readonly branch: GraphicBranch, public readonly transform: Transform, public readonly options?: GraphicBranchOptions) {
+      super();
+    }
 
-    public override dispose() { this.branch.dispose(); }
+    public override dispose() {
+      this.branch.dispose();
+    }
   }
 
   /** @internal */
   export class Batch extends Graphic {
-    public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
+    public constructor(
+      public readonly graphic: RenderGraphic,
+      public readonly featureTable: PackedFeatureTable,
+      public readonly range: ElementAlignedBox3d
+    ) {
+      super();
+    }
 
     public override dispose() {
       dispose(this.graphic);
@@ -117,47 +154,83 @@ export namespace MockRender {
 
   /** @internal */
   export class Geometry implements RenderGeometry {
-    public dispose(): void { }
-    public collectStatistics(): void { }
+    public dispose(): void {}
+    public collectStatistics(): void {}
   }
 
   /** @internal */
   export class AreaPattern implements RenderAreaPattern {
-    public dispose(): void { }
-    public collectStatistics(): void { }
+    public dispose(): void {}
+    public collectStatistics(): void {}
   }
 
   /** @internal */
   export class System extends RenderSystem {
-    public get isValid() { return true; }
-    public dispose(): void { }
-    public override get maxTextureSize() { return 4096; }
+    public get isValid() {
+      return true;
+    }
+    public dispose(): void {}
+    public override get maxTextureSize() {
+      return 4096;
+    }
 
-    public constructor() { super(); }
+    public constructor() {
+      super();
+    }
 
-    public doIdleWork(): boolean { return false; }
+    public doIdleWork(): boolean {
+      return false;
+    }
 
-    public createTarget(canvas: HTMLCanvasElement): OnScreenTarget { return new OnScreenTarget(this, canvas); }
-    public createOffscreenTarget(rect: ViewRect): RenderTarget { return new OffScreenTarget(this, rect); }
+    public createTarget(canvas: HTMLCanvasElement): OnScreenTarget {
+      return new OnScreenTarget(this, canvas);
+    }
+    public createOffscreenTarget(rect: ViewRect): RenderTarget {
+      return new OffScreenTarget(this, rect);
+    }
 
     public createGraphic(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
       return new Builder(this, options);
     }
 
-    public createGraphicList(primitives: RenderGraphic[]) { return new List(primitives); }
-    public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) { return new Branch(branch, transform, options); }
-    public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) { return new Batch(graphic, features, range); }
+    public createGraphicList(primitives: RenderGraphic[]) {
+      return new List(primitives);
+    }
+    public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) {
+      return new Branch(branch, transform, options);
+    }
+    public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
+      return new Batch(graphic, features, range);
+    }
 
-    public override createMesh(_params: MeshParams) { return new Graphic(); }
-    public override createPolyline(_params: PolylineParams) { return new Graphic(); }
-    public override createPointString(_params: PointStringParams) { return new Graphic(); }
-    public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) { return new Graphic(); }
-    public override createRenderGraphic() { return new Graphic(); }
+    public override createMesh(_params: MeshParams) {
+      return new Graphic();
+    }
+    public override createPolyline(_params: PolylineParams) {
+      return new Graphic();
+    }
+    public override createPointString(_params: PointStringParams) {
+      return new Graphic();
+    }
+    public override createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection) {
+      return new Graphic();
+    }
+    public override createRenderGraphic() {
+      return new Graphic();
+    }
 
-    public override createMeshGeometry() { return new Geometry(); }
-    public override createPolylineGeometry() { return new Geometry(); }
-    public override createPointStringGeometry() { return new Geometry(); }
-    public override createAreaPattern() { return new AreaPattern(); }
+    public override createMeshGeometry() {
+      return new Geometry();
+    }
+    public override createPolylineGeometry() {
+      return new Geometry();
+    }
+    public override createPointStringGeometry() {
+      return new Geometry();
+    }
+    public override createAreaPattern() {
+      return new AreaPattern();
+    }
   }
 
   /** @internal */
@@ -179,6 +252,8 @@ export namespace MockRender {
       await IModelApp.shutdown();
     }
 
-    protected static createDefaultRenderSystem() { return new System(); }
+    protected static createDefaultRenderSystem() {
+      return new System();
+    }
   }
 }

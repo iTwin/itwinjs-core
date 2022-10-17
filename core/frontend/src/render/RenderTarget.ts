@@ -63,7 +63,7 @@ export interface RenderTargetDebugControl {
   /** Obtain a summary of the render commands required to draw the scene currently displayed.
    * Each entry specifies  the type of command and the number of such commands required by the current scene.
    */
-  getRenderCommands(): Array<{ name: string, count: number }>;
+  getRenderCommands(): Array<{ name: string; count: number }>;
 }
 
 /** A RenderTarget connects a [[Viewport]] to a WebGLRenderingContext to enable the viewport's contents to be displayed on the screen.
@@ -72,14 +72,18 @@ export interface RenderTargetDebugControl {
  * @internal
  */
 export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
-  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
+  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined {
+    return undefined;
+  }
 
   public abstract get renderSystem(): RenderSystem;
 
   /** NB: *Device pixels*, not CSS pixels! */
   public abstract get viewRect(): ViewRect;
 
-  public get devicePixelRatio(): number { return 1; }
+  public get devicePixelRatio(): number {
+    return 1;
+  }
   public cssPixelsToDevicePixels(cssPixels: number, floor = true): number {
     const pix = cssPixels * this.devicePixelRatio;
     return floor ? Math.floor(pix) : pix;
@@ -97,53 +101,73 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract get analysisFraction(): number;
   public abstract set analysisFraction(fraction: number);
 
-  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
-  public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
+  public get animationBranches(): AnimationBranchStates | undefined {
+    return undefined;
+  }
+  public set animationBranches(_transforms: AnimationBranchStates | undefined) {}
 
-  public get antialiasSamples(): number { return 1; }
-  public set antialiasSamples(_numSamples: number) { }
+  public get antialiasSamples(): number {
+    return 1;
+  }
+  public set antialiasSamples(_numSamples: number) {}
 
-  public assignFrameStatsCollector(_collector: FrameStatsCollector) { }
+  public assignFrameStatsCollector(_collector: FrameStatsCollector) {}
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
-  public updateSolarShadows(_context: SceneContext | undefined): void { }
-  public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined { return undefined; }
-  public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
-  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
+  public updateSolarShadows(_context: SceneContext | undefined): void {}
+  public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined {
+    return undefined;
+  }
+  public createPlanarClassifier(_properties?: SpatialClassifier): RenderPlanarClassifier | undefined {
+    return undefined;
+  }
+  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined {
+    return undefined;
+  }
 
   public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
     return this.renderSystem.createGraphic(options);
   }
 
-  public dispose(): void { }
-  public reset(): void { }
+  public dispose(): void {}
+  public reset(): void {}
   public abstract changeScene(scene: Scene): void;
   public abstract changeDynamics(dynamics?: GraphicList): void;
   public abstract changeDecorations(decorations: Decorations): void;
   public abstract changeRenderPlan(plan: RenderPlan): void;
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
-  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
-  public setHiliteSet(_hilited: HiliteSet): void { }
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
-  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
+  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void {}
+  public setHiliteSet(_hilited: HiliteSet): void {}
+  public setFlashed(_elementId: Id64String, _intensity: number): void {}
+  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void {}
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
-  public onResized(): void { }
+  public onResized(): void {}
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
   /** @deprecated use readImageBuffer */
-  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
-  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
-  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
+  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined {
+    return undefined;
+  }
+  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    return undefined;
+  }
+  public readImageToCanvas(): HTMLCanvasElement {
+    return document.createElement("canvas");
+  }
+  public collectStatistics(_stats: RenderMemory.Statistics): void {}
 
   /** Specify whether webgl content should be rendered directly to the screen.
    * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
    * Returns undefined if rendering to screen becomes disabled, or is not supported by this RenderTarget.
    */
-  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined { return undefined; }
+  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined {
+    return undefined;
+  }
 
-  public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
+  public get debugControl(): RenderTargetDebugControl | undefined {
+    return undefined;
+  }
 
   /** An ordered list of names of screen-space post-processing effects to be applied to the image produced by this target.
    * The effects are applied in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.

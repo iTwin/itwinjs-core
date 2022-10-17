@@ -9,8 +9,18 @@
 import { BeEvent } from "@itwin/core-bentley";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import {
-  ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
-  RemoveFunction, RootSubjectProps, TxnNotifications,
+  ChangedEntities,
+  ChangesetIndexAndId,
+  EcefLocation,
+  EcefLocationProps,
+  GeographicCRS,
+  GeographicCRSProps,
+  IModelStatus,
+  IpcAppChannel,
+  ModelIdAndGeometryGuid,
+  RemoveFunction,
+  RootSubjectProps,
+  TxnNotifications,
 } from "@itwin/core-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
 import { IpcApp, NotificationHandler } from "./IpcApp";
@@ -21,9 +31,13 @@ import { IpcApp, NotificationHandler } from "./IpcApp";
  * @public
  */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
-  constructor(private _key: string) { super(); }
+  constructor(private _key: string) {
+    super();
+  }
   public abstract get briefcaseChannelName(): string;
-  public get channelName() { return `${this.briefcaseChannelName}:${this._key}`; }
+  public get channelName() {
+    return `${this.briefcaseChannelName}:${this._key}`;
+  }
 }
 
 /** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).
@@ -123,21 +137,24 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** Query if the briefcase has any pending Txns waiting to be pushed. */
-  public async hasPendingTxns(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async hasPendingTxns(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("hasPendingTxns", this._iModel.key);
   }
 
   /** Determine if any reversible (undoable) changes exist.
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
-  public async isUndoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async isUndoPossible(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("isUndoPossible", this._iModel.key);
   }
 
   /** Determine if any reinstatable (redoable) changes exist.
    * @see [[reinstateTxn]] to redo changes.
    */
-  public async isRedoPossible(): Promise<boolean> { // eslint-disable-line @itwin/prefer-get
+  public async isRedoPossible(): Promise<boolean> {
+    // eslint-disable-line @itwin/prefer-get
     return IpcApp.callIpcHost("isRedoPossible", this._iModel.key);
   }
 

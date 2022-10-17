@@ -35,7 +35,7 @@ export enum SnapMode {
  */
 export enum SnapHeat {
   None = 0,
-  NotInRange = 1,   // "of interest", but out of range
+  NotInRange = 1, // "of interest", but out of range
   InRange = 2,
 }
 
@@ -134,9 +134,22 @@ export class HitDetail {
    * @param tileId Optionally the Id of the Tile from which the hit originated.
    * @param isClassifier Optionally whether the hit originated from a reality model classification.
    */
-  public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
-    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
-    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass, public readonly modelId?: string, iModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
+  public constructor(
+    public readonly testPoint: Point3d,
+    public readonly viewport: ScreenViewport,
+    public readonly hitSource: HitSource,
+    public readonly hitPoint: Point3d,
+    public readonly sourceId: string,
+    public readonly priority: HitPriority,
+    public readonly distXY: number,
+    public readonly distFraction: number,
+    public readonly subCategoryId?: string,
+    public readonly geometryClass?: GeometryClass,
+    public readonly modelId?: string,
+    iModel?: IModelConnection,
+    tileId?: string,
+    isClassifier?: boolean
+  ) {
     this._iModel = iModel;
     this.tileId = tileId;
     this.isClassifier = undefined !== isClassifier ? isClassifier : false;
@@ -145,27 +158,52 @@ export class HitDetail {
   /** Get the type of HitDetail.
    * @returns HitDetailType.Hit if this is a HitDetail, HitDetailType.Snap if it is a SnapDetail
    */
-  public getHitType(): HitDetailType { return HitDetailType.Hit; }
+  public getHitType(): HitDetailType {
+    return HitDetailType.Hit;
+  }
 
   /** Get the *hit point* for this HitDetail. Returns the approximate point on the element that caused the hit when not a SnapDetail or IntersectDetail.
    * For a snap that is *hot*, the *exact* point on the Element for the snap mode is returned, otherwise the close point on the hit geometry is returned.
    */
-  public getPoint(): Point3d { return this.hitPoint; }
+  public getPoint(): Point3d {
+    return this.hitPoint;
+  }
 
   /** Determine if this HitPoint is from the same source as another HitDetail. */
-  public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId && this.iModel === otherHit.iModel); }
+  public isSameHit(otherHit?: HitDetail): boolean {
+    return undefined !== otherHit && this.sourceId === otherHit.sourceId && this.iModel === otherHit.iModel;
+  }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
+  public get isElementHit(): boolean {
+    return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId);
+  }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return undefined !== this.viewport.mapLayerFromHit(this); }
+  public get isMapHit(): boolean {
+    return undefined !== this.viewport.mapLayerFromHit(this);
+  }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
-    const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass, this.modelId, this._iModel, this.tileId, this.isClassifier);
+    const val = new HitDetail(
+      this.testPoint,
+      this.viewport,
+      this.hitSource,
+      this.hitPoint,
+      this.sourceId,
+      this.priority,
+      this.distXY,
+      this.distFraction,
+      this.subCategoryId,
+      this.geometryClass,
+      this.modelId,
+      this._iModel,
+      this.tileId,
+      this.isClassifier
+    );
     return val;
   }
 
@@ -177,8 +215,7 @@ export class HitDetail {
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {
     let toolTipPromise = this.isElementHit ? IModelApp.viewManager.overrideElementToolTip(this) : IModelApp.viewManager.getDecorationToolTip(this);
-    for (const toolTipProvider of IModelApp.viewManager.toolTipProviders)
-      toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
+    for (const toolTipProvider of IModelApp.viewManager.toolTipProviders) toolTipPromise = toolTipProvider.augmentToolTip(this, toolTipPromise);
     return toolTipPromise;
   }
 
@@ -186,12 +223,16 @@ export class HitDetail {
    * for example, if a [[TiledGraphicsProvider]] is used to display graphics from a different iModel in the viewport.
    * This HitDetail's element, subcategory, and model Ids are defined in the context of this IModelConnection.
    */
-  public get iModel(): IModelConnection { return undefined !== this._iModel ? this._iModel : this.viewport.iModel; }
+  public get iModel(): IModelConnection {
+    return undefined !== this._iModel ? this._iModel : this.viewport.iModel;
+  }
 
   /** Returns true if this hit originated from an [[IModelConnection]] other than the one associated with the [[Viewport]].
    * @see [[iModel]].
    */
-  public get isExternalIModelHit(): boolean { return this.iModel !== this.viewport.iModel; }
+  public get isExternalIModelHit(): boolean {
+    return this.iModel !== this.viewport.iModel;
+  }
 }
 
 /** A SnapDetail is generated from the result of a snap request. In addition to the HitDetail about the reason the element was *picked*,
@@ -222,20 +263,43 @@ export class SnapDetail extends HitDetail {
    * @param snapPoint The snapped point in the element
    */
   public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
-    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass, from.modelId, from.iModel, from.tileId, from.isClassifier);
+    super(
+      from.testPoint,
+      from.viewport,
+      from.hitSource,
+      from.hitPoint,
+      from.sourceId,
+      from.priority,
+      from.distXY,
+      from.distFraction,
+      from.subCategoryId,
+      from.geometryClass,
+      from.modelId,
+      from.iModel,
+      from.tileId,
+      from.isClassifier
+    );
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
     this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Returns `HitDetailType.Snap` */
-  public override getHitType(): HitDetailType { return HitDetailType.Snap; }
+  public override getHitType(): HitDetailType {
+    return HitDetailType.Snap;
+  }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public override getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
+  public override getPoint(): Point3d {
+    return this.isHot ? this.snapPoint : super.getPoint();
+  }
   /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
-  public get isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public get isHot(): boolean {
+    return this.heat !== SnapHeat.None;
+  }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
-  public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  public get isPointAdjusted(): boolean {
+    return !this.adjustedPoint.isExactEqual(this.snapPoint);
+  }
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) {
     this.snapPoint.setFrom(point);
@@ -250,28 +314,21 @@ export class SnapDetail extends HitDetail {
 
     // Only HitGeomType.Point and HitGeomType.Surface are valid without a curve primitive.
     if (undefined === this.primitive) {
-      if (HitGeomType.Point === geomType || HitGeomType.Surface === geomType)
-        this.geomType = geomType;
+      if (HitGeomType.Point === geomType || HitGeomType.Surface === geomType) this.geomType = geomType;
       return;
     }
 
-    if (undefined !== localToWorld)
-      this.primitive.tryTransformInPlace(localToWorld);
+    if (undefined !== localToWorld) this.primitive.tryTransformInPlace(localToWorld);
 
-    if (this.primitive instanceof Arc3d)
-      this.geomType = HitGeomType.Arc;
-    else if (this.primitive instanceof LineSegment3d)
-      this.geomType = HitGeomType.Segment;
-    else if (this.primitive instanceof LineString3d)
-      this.geomType = HitGeomType.Segment;
-    else
-      this.geomType = HitGeomType.Curve;
+    if (this.primitive instanceof Arc3d) this.geomType = HitGeomType.Arc;
+    else if (this.primitive instanceof LineSegment3d) this.geomType = HitGeomType.Segment;
+    else if (this.primitive instanceof LineString3d) this.geomType = HitGeomType.Segment;
+    else this.geomType = HitGeomType.Curve;
 
     // Set curve primitive geometry type override...
     //  - HitGeomType.Point with arc/ellipse denotes center.
     //  - HitGeomType.Surface with any curve primitive denotes an interior hit.
-    if (undefined !== geomType && HitGeomType.None !== geomType)
-      this.geomType = geomType;
+    if (undefined !== geomType && HitGeomType.None !== geomType) this.geomType = geomType;
   }
 
   /** Make a copy of this SnapDetail. */
@@ -281,26 +338,22 @@ export class SnapDetail extends HitDetail {
     val.geomType = this.geomType;
     val.parentGeomType = this.parentGeomType;
     val.adjustedPoint.setFrom(this.adjustedPoint);
-    if (undefined !== this.primitive)
-      val.primitive = this.primitive.clone();
-    if (undefined !== this.normal)
-      val.normal = this.normal.clone();
+    if (undefined !== this.primitive) val.primitive = this.primitive.clone();
+    if (undefined !== this.normal) val.normal = this.normal.clone();
     return val;
   }
 
   public getCurvePrimitive(singleSegment: boolean = true): CurvePrimitive | undefined {
-    if (!singleSegment || undefined === this.primitive)
-      return this.primitive;
+    if (!singleSegment || undefined === this.primitive) return this.primitive;
 
     if (this.primitive instanceof LineString3d) {
       const ls = this.primitive;
       if (ls.points.length > 2) {
         const loc = ls.closestPoint(this.snapPoint, false);
         const nSegments = ls.points.length - 1;
-        const uSegRange = (1.0 / nSegments);
+        const uSegRange = 1.0 / nSegments;
         let segmentNo = Math.floor(loc.fraction / uSegRange);
-        if (segmentNo >= nSegments)
-          segmentNo = nSegments - 1;
+        if (segmentNo >= nSegments) segmentNo = nSegments - 1;
         return LineSegment3d.create(ls.points[segmentNo], ls.points[segmentNo + 1]);
       }
     }
@@ -342,13 +395,20 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
-      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
-      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
-      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
-      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
-      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
-      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
+      case SnapMode.Nearest:
+        return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint:
+        return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint:
+        return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center:
+        return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin:
+        return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector:
+        return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection:
+        return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }
@@ -359,7 +419,13 @@ export class SnapDetail extends HitDetail {
  * @extensions
  */
 export class IntersectDetail extends SnapDetail {
-  public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
+  public constructor(
+    from: SnapDetail,
+    heat: SnapHeat = SnapHeat.None,
+    snapPoint: XYZProps,
+    public readonly otherPrimitive: CurvePrimitive,
+    public readonly otherId: string
+  ) {
     super(from, SnapMode.Intersection, heat, snapPoint);
     this.primitive = from.primitive;
     this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
@@ -397,36 +463,37 @@ export class IntersectDetail extends SnapDetail {
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
   public currHit = -1;
-  public get length(): number { return this.hits.length; }
+  public get length(): number {
+    return this.hits.length;
+  }
   public empty(): void {
     this.hits.length = 0;
     this.currHit = -1;
   }
 
-  public resetCurrentHit(): void { this.currHit = -1; }
+  public resetCurrentHit(): void {
+    this.currHit = -1;
+  }
 
   /** Get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
    */
   public getHit(hitNum: number): T | undefined {
-    if (hitNum < 0)
-      hitNum = this.length - 1;
+    if (hitNum < 0) hitNum = this.length - 1;
 
-    return (hitNum >= this.length) ? undefined : this.hits[hitNum];
+    return hitNum >= this.length ? undefined : this.hits[hitNum];
   }
 
   /** When setting one or more indices to undefined you must call dropNulls afterwards */
   public setHit(i: number, p: T | undefined): void {
-    if (i < 0 || i >= this.length)
-      return;
+    if (i < 0 || i >= this.length) return;
     this.hits[i] = p!;
   }
 
   public dropNulls(): void {
     const hits = this.hits;
     this.hits = [];
-    for (const hit of hits)
-      this.hits.push(hit);
+    for (const hit of hits) this.hits.push(hit);
   }
 
   public getNextHit(): T | undefined {
@@ -434,29 +501,33 @@ export class HitList<T extends HitDetail> {
     return this.getCurrentHit();
   }
 
-  public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+  public getCurrentHit(): T | undefined {
+    return -1 === this.currHit ? undefined : this.getHit(this.currHit);
+  }
 
   public setCurrentHit(hit: T): void {
     this.resetCurrentHit();
-    for (let thisHit; undefined !== (thisHit = this.getNextHit());) {
-      if (thisHit === hit)
-        return;
+    for (let thisHit; undefined !== (thisHit = this.getNextHit()); ) {
+      if (thisHit === hit) return;
     }
   }
 
   /** remove the current hit from the list. */
-  public removeCurrentHit() { this.removeHit(this.currHit); }
+  public removeCurrentHit() {
+    this.removeHit(this.currHit);
+  }
 
   /** remove a hit in the list. */
   public removeHit(hitNum: number) {
-    if (hitNum < 0)                   // Support -1 == END
+    if (hitNum < 0)
+      // Support -1 == END
       hitNum = this.length - 1;
 
-    if (hitNum <= this.currHit)
-      this.currHit = -1;
+    if (hitNum <= this.currHit) this.currHit = -1;
 
-    if (hitNum >= this.length)        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
-      return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
+    if (hitNum >= this.length)
+      // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
+      return; // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
 
     this.hits.splice(hitNum, 1);
   }
@@ -494,35 +565,26 @@ export class HitList<T extends HitDetail> {
 
   /** compare two hits for insertion into list. */
   public compare(hit1: HitDetail | undefined, hit2: HitDetail | undefined): -1 | 1 | 0 {
-    if (!hit1 || !hit2)
-      return 0;
+    if (!hit1 || !hit2) return 0;
 
     const zOverride1 = this.getPriorityZOverride(hit1.priority);
     const zOverride2 = this.getPriorityZOverride(hit2.priority);
 
     // Prefer edges over surfaces, this is more important than z because we know the edge isn't obscured...
-    if (zOverride1 < zOverride2)
-      return -1;
-    if (zOverride1 > zOverride2)
-      return 1;
+    if (zOverride1 < zOverride2) return -1;
+    if (zOverride1 > zOverride2) return 1;
 
     // Compare xy distance from pick point, prefer hits closer to center...
-    if (hit1.distXY < hit2.distXY)
-      return -1;
-    if (hit1.distXY > hit2.distXY)
-      return 1;
+    if (hit1.distXY < hit2.distXY) return -1;
+    if (hit1.distXY > hit2.distXY) return 1;
 
     // Compare distance fraction, prefer hits closer to eye...
-    if (hit1.distFraction > hit2.distFraction)
-      return -1;
-    if (hit1.distFraction < hit2.distFraction)
-      return 1;
+    if (hit1.distFraction > hit2.distFraction) return -1;
+    if (hit1.distFraction < hit2.distFraction) return 1;
 
     // Compare geometry class, prefer path/region hits over surface hits when all else is equal...
-    if (hit1.priority < hit2.priority)
-      return -1;
-    if (hit1.priority > hit2.priority)
-      return 1;
+    if (hit1.priority < hit2.priority) return -1;
+    if (hit1.priority > hit2.priority) return 1;
 
     return 0;
   }
@@ -537,8 +599,7 @@ export class HitList<T extends HitDetail> {
     for (; index < this.hits.length; ++index) {
       const oldHit = this.hits[index];
       const comparison = this.compare(newHit, oldHit);
-      if (comparison < 0)
-        break;
+      if (comparison < 0) break;
     }
 
     this.hits.splice(index, 0, newHit);
@@ -547,9 +608,7 @@ export class HitList<T extends HitDetail> {
 
   /** Insert a new hit into the list at the supplied index. */
   public insertHit(i: number, hit: T): void {
-    if (i < 0 || i >= this.length)
-      this.hits.push(hit);
-    else
-      this.hits.splice(i, 0, hit);
+    if (i < 0 || i >= this.length) this.hits.push(hit);
+    else this.hits.splice(i, 0, hit);
   }
 }

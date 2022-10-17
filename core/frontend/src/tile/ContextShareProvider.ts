@@ -22,8 +22,7 @@ export class ContextShareProvider {
       return false;
     }
     // If api.bentley.com/realitydata is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata"))
-      return true;
+    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata")) return true;
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
     if (formattedUrl1) {
@@ -36,13 +35,21 @@ export class ContextShareProvider {
         }
         return false;
       });
-      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+      const isRDSUrl =
+        urlParts1[partOffset1] === "Repositories" &&
+        urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null &&
+        urlParts1[partOffset1 + 2] === "S3MX";
       return isRDSUrl;
     }
     return false;
   }
   /** Return true if this is a supported url to this service provider */
-  public static getInfoFromUrl(tilesetUrl: string): {provider: RealityDataProvider, format: RealityDataFormat, id: string, iTwinId: string | undefined} {
+  public static getInfoFromUrl(tilesetUrl: string): {
+    provider: RealityDataProvider;
+    format: RealityDataFormat;
+    id: string;
+    iTwinId: string | undefined;
+  } {
     const invalidUrlInfo = { provider: RealityDataProvider.TilesetUrl, format: RealityDataFormat.ThreeDTile, id: tilesetUrl, iTwinId: undefined };
     let attUrl: URL;
     try {
@@ -62,8 +69,7 @@ export class ContextShareProvider {
       const id = lcTilesetUrl.substr(indexId, Guid.empty.length);
       const indexProjectId = lcTilesetUrl.indexOf("projectid=") + 10; // lenght of "projectid=" = 10;
       let projectId: string | undefined;
-      if (indexProjectId && indexProjectId > 0)
-        projectId = lcTilesetUrl.substr(indexProjectId, Guid.empty.length);
+      if (indexProjectId && indexProjectId > 0) projectId = lcTilesetUrl.substr(indexProjectId, Guid.empty.length);
       const apimContextShareKey = { provider: RealityDataProvider.ContextShare, format, id, iTwinId: projectId };
       return apimContextShareKey;
     }
@@ -80,11 +86,13 @@ export class ContextShareProvider {
         return false;
       });
       const isOPC = attUrl.pathname.match(".opc*") !== null;
-      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+      const isRDSUrl =
+        urlParts1[partOffset1] === "Repositories" &&
+        urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null &&
+        urlParts1[partOffset1 + 2] === "S3MX";
       let projectId: string | undefined;
       const projectIdSection = urlParts1.find((val: string) => val.includes("--"));
-      if (projectIdSection)
-        projectId = projectIdSection.split("--")[1];
+      if (projectIdSection) projectId = projectIdSection.split("--")[1];
       // Make sure the url to compare are REALITYMESH3DTILES url, otherwise, compare the url directly
       if (isRDSUrl || isOPC) {
         // Make sure the reality data id are the same
@@ -100,17 +108,16 @@ export class ContextShareProvider {
     // Not a valid URL and not equal, probably $cesiumAsset
     return invalidUrlInfo;
   }
-  public static getInfoFromBlobUrl(blobUrl: string): {provider: RealityDataProvider, format: RealityDataFormat, id: string } {
+  public static getInfoFromBlobUrl(blobUrl: string): { provider: RealityDataProvider; format: RealityDataFormat; id: string } {
     let format = RealityDataFormat.ThreeDTile;
     let provider = RealityDataProvider.TilesetUrl;
     const url = new URL(blobUrl);
 
     // If we cannot interpret that url pass in parameter we just fallback to old implementation
-    if(!url.pathname)
-      return { provider, format, id: blobUrl };
+    if (!url.pathname) return { provider, format, id: blobUrl };
 
     // const accountName   = url.hostname.split(".")[0];
-    let containerName= "";
+    let containerName = "";
     if (url.pathname) {
       const pathSplit = url.pathname.split("/");
       containerName = pathSplit[1];

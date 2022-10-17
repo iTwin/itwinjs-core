@@ -2,10 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type {
-  ExtensionManifest,
-  ExtensionProvider,
-} from "../Extension";
+import type { ExtensionManifest, ExtensionProvider } from "../Extension";
 import { request, RequestOptions } from "../../request/Request";
 import { loadScript } from "./ExtensionLoadScript";
 
@@ -49,12 +46,12 @@ export class RemoteExtensionProvider implements ExtensionProvider {
   public async getManifest(): Promise<ExtensionManifest> {
     const options: RequestOptions = { method: "GET" };
     const response = await request(this._props.manifestUrl, options);
-    const data = response.body || (() => {
-      if (!response.text)
-        throw new Error("Manifest file was empty.");
-      return JSON.parse(response.text);
-    })();
+    const data =
+      response.body ||
+      (() => {
+        if (!response.text) throw new Error("Manifest file was empty.");
+        return JSON.parse(response.text);
+      })();
     return data;
   }
-
 }

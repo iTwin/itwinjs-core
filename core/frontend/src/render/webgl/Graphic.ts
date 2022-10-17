@@ -32,8 +32,12 @@ export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public abstract get isPickable(): boolean;
-  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
-  public toPrimitive(): Primitive | undefined { return undefined; }
+  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void {
+    assert(false);
+  }
+  public toPrimitive(): Primitive | undefined {
+    return undefined;
+  }
 }
 
 export class GraphicOwner extends Graphic {
@@ -44,11 +48,17 @@ export class GraphicOwner extends Graphic {
     this._graphic = graphic;
   }
 
-  public get graphic(): RenderGraphic { return this._graphic; }
+  public get graphic(): RenderGraphic {
+    return this._graphic;
+  }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
-  public dispose(): void { this._isDisposed = true; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+  public dispose(): void {
+    this._isDisposed = true;
+  }
   public disposeGraphic(): void {
     this.graphic.dispose();
   }
@@ -90,18 +100,15 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
-    for (const value of this._featureOverrides.values())
-      dispose(value);
+    for (const value of this._featureOverrides.values()) dispose(value);
 
     this._featureOverrides.clear();
   }
 
   public getThematicSensors(batch: Batch): ThematicSensors {
-    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target))
-      this._thematicSensors = dispose(this._thematicSensors);
+    if (this._thematicSensors && !this._thematicSensors.matchesTarget(this.target)) this._thematicSensors = dispose(this._thematicSensors);
 
-    if (!this._thematicSensors)
-      this._thematicSensors = ThematicSensors.create(this.target, batch.range);
+    if (!this._thematicSensors) this._thematicSensors = ThematicSensors.create(this.target, batch.range);
 
     this._thematicSensors.update(this.target.uniforms.frustum.viewMatrix);
     return this._thematicSensors;
@@ -112,7 +119,7 @@ export class PerTargetBatchData {
     let ovrs = this._featureOverrides.get(source);
     if (!ovrs) {
       const cleanup = source ? source.onSourceDisposed.addOnce(() => this.onSourceDisposed(source)) : undefined;
-      this._featureOverrides.set(source, ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup));
+      this._featureOverrides.set(source, (ovrs = FeatureOverrides.createFromTarget(this.target, batch.options, cleanup)));
       ovrs.initFromMap(batch.featureTable);
     }
 
@@ -121,15 +128,15 @@ export class PerTargetBatchData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (this._thematicSensors)
-      stats.addThematicTexture(this._thematicSensors.bytesUsed);
+    if (this._thematicSensors) stats.addThematicTexture(this._thematicSensors.bytesUsed);
 
-    for (const ovrs of this._featureOverrides.values())
-      stats.addFeatureOverrides(ovrs.byteLength);
+    for (const ovrs of this._featureOverrides.values()) stats.addFeatureOverrides(ovrs.byteLength);
   }
 
   /** Exposed strictly for tests. */
-  public get featureOverrides() { return this._featureOverrides; }
+  public get featureOverrides() {
+    return this._featureOverrides;
+  }
 
   private onSourceDisposed(source: FeatureSymbology.Source): void {
     const ovrs = this._featureOverrides.get(source);
@@ -163,12 +170,13 @@ export class PerTargetData {
   }
 
   /** Exposed strictly for tests. */
-  public get data(): PerTargetBatchData[] { return this._data; }
+  public get data(): PerTargetBatchData[] {
+    return this._data;
+  }
 
   public onTargetDisposed(target: Target): void {
     const index = this._data.findIndex((x) => x.target === target);
-    if (-1 === index)
-      return;
+    if (-1 === index) return;
 
     const data = this._data[index];
     data.dispose();
@@ -176,8 +184,7 @@ export class PerTargetData {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const data of this._data)
-      data.collectStatistics(stats);
+    for (const data of this._data) data.collectStatistics(stats);
   }
 
   public getThematicSensors(target: Target): ThematicSensors {
@@ -191,7 +198,7 @@ export class PerTargetData {
   private getBatchData(target: Target): PerTargetBatchData {
     let data = this._data.find((x) => x.target === target);
     if (!data) {
-      this._data.push(data = new PerTargetBatchData(target));
+      this._data.push((data = new PerTargetBatchData(target)));
       target.addBatch(this._batch);
     }
 
@@ -218,8 +225,12 @@ export class Batch extends Graphic {
     return true === this.options.locateOnly;
   }
 
-  public get batchId() { return this._context.batchId; }
-  public get batchIModel() { return this._context.iModel; }
+  public get batchId() {
+    return this._context.batchId;
+  }
+  public get batchIModel() {
+    return this._context.iModel;
+  }
   public setContext(batchId: number, iModel: IModelConnection | undefined) {
     this._context.batchId = batchId;
     this._context.iModel = iModel;
@@ -300,30 +311,24 @@ export class Branch extends Graphic {
     this.branch = branch;
     this.localToWorldTransform = localToWorld;
 
-    if (undefined !== viewFlags)
-      branch.setViewFlags(viewFlags);
+    if (undefined !== viewFlags) branch.setViewFlags(viewFlags);
 
-    if (!opts)
-      return;
+    if (!opts) return;
 
     this.appearanceProvider = opts.appearanceProvider;
     this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
 
-    if (opts.hline)
-      this.edgeSettings = EdgeSettings.create(opts.hline);
+    if (opts.hline) this.edgeSettings = EdgeSettings.create(opts.hline);
 
-    if (opts.classifierOrDrape instanceof PlanarClassifier)
-      this.planarClassifier = opts.classifierOrDrape;
-    else if (opts.classifierOrDrape instanceof TextureDrape)
-      this.textureDrape = opts.classifierOrDrape;
+    if (opts.classifierOrDrape instanceof PlanarClassifier) this.planarClassifier = opts.classifierOrDrape;
+    else if (opts.classifierOrDrape instanceof TextureDrape) this.textureDrape = opts.classifierOrDrape;
 
     if (opts.secondaryClassifiers) {
       this.secondaryClassifiers = new Array<PlanarClassifier>();
       opts.secondaryClassifiers.forEach((classifier) => {
-        if (classifier instanceof PlanarClassifier)
-          this.secondaryClassifiers?.push(classifier);
+        if (classifier instanceof PlanarClassifier) this.secondaryClassifiers?.push(classifier);
       });
     }
   }
@@ -350,13 +355,11 @@ export class Branch extends Graphic {
   }
 
   public addCommands(commands: RenderCommands): void {
-    if (this.shouldAddCommands(commands))
-      commands.addBranch(this);
+    if (this.shouldAddCommands(commands)) commands.addBranch(this);
   }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    if (this.shouldAddCommands(commands))
-      commands.addHiliteBranch(this, pass);
+    if (this.shouldAddCommands(commands)) commands.addHiliteBranch(this, pass);
   }
 }
 
@@ -420,17 +423,20 @@ export class WorldDecorations extends Branch {
 /** @internal */
 export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
-  constructor(public graphics: RenderGraphic[]) { super(); }
+  constructor(public graphics: RenderGraphic[]) {
+    super();
+  }
 
-  public get isDisposed(): boolean { return 0 === this.graphics.length; }
+  public get isDisposed(): boolean {
+    return 0 === this.graphics.length;
+  }
 
   public override get isPickable(): boolean {
     return this.graphics.some((x) => (x as Graphic).isPickable);
   }
 
   public dispose() {
-    for (const graphic of this.graphics)
-      dispose(graphic);
+    for (const graphic of this.graphics) dispose(graphic);
     this.graphics.length = 0;
   }
 
@@ -447,7 +453,6 @@ export class GraphicsArray extends Graphic {
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const graphic of this.graphics)
-      graphic.collectStatistics(stats);
+    for (const graphic of this.graphics) graphic.collectStatistics(stats);
   }
 }

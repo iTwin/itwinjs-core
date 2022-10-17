@@ -6,9 +6,7 @@
 import { expect } from "chai";
 import { UnexpectedErrors } from "@itwin/core-bentley";
 import { Point2d } from "@itwin/core-geometry";
-import {
-  AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
-} from "@itwin/core-common";
+import { AnalysisStyle, ColorDef, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings } from "@itwin/core-common";
 import { ViewRect } from "../ViewRect";
 import { ScreenViewport } from "../Viewport";
 import { DisplayStyle3dState } from "../DisplayStyleState";
@@ -25,7 +23,12 @@ describe("Viewport", () => {
   describe("flashedId", () => {
     type ChangedEvent = [string | undefined, string | undefined];
 
-    function expectFlashedId(viewport: ScreenViewport, expectedId: string | undefined, expectedEvent: ChangedEvent | undefined, func: () => void): void {
+    function expectFlashedId(
+      viewport: ScreenViewport,
+      expectedId: string | undefined,
+      expectedEvent: ChangedEvent | undefined,
+      func: () => void
+    ): void {
       let event: ChangedEvent | undefined;
       const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
         expect(vp).to.equal(viewport);
@@ -42,36 +45,39 @@ describe("Viewport", () => {
 
     it("dispatches events when flashed Id changes", () => {
       testBlankViewport((viewport) => {
-        expectFlashedId(viewport, "0x123", [undefined, "0x123"], () => viewport.flashedId = "0x123");
-        expectFlashedId(viewport, "0x456", ["0x123", "0x456"], () => viewport.flashedId = "0x456");
-        expectFlashedId(viewport, "0x456", undefined, () => viewport.flashedId = "0x456");
-        expectFlashedId(viewport, undefined, ["0x456", undefined], () => viewport.flashedId = undefined);
-        expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = undefined);
+        expectFlashedId(viewport, "0x123", [undefined, "0x123"], () => (viewport.flashedId = "0x123"));
+        expectFlashedId(viewport, "0x456", ["0x123", "0x456"], () => (viewport.flashedId = "0x456"));
+        expectFlashedId(viewport, "0x456", undefined, () => (viewport.flashedId = "0x456"));
+        expectFlashedId(viewport, undefined, ["0x456", undefined], () => (viewport.flashedId = undefined));
+        expectFlashedId(viewport, undefined, undefined, () => (viewport.flashedId = undefined));
       });
     });
 
     it("treats invalid Id as undefined", () => {
       testBlankViewport((viewport) => {
         viewport.flashedId = "0x123";
-        expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = "0");
+        expectFlashedId(viewport, undefined, ["0x123", undefined], () => (viewport.flashedId = "0"));
         viewport.flashedId = "0x123";
-        expectFlashedId(viewport, undefined, ["0x123", undefined], () => viewport.flashedId = undefined);
+        expectFlashedId(viewport, undefined, ["0x123", undefined], () => (viewport.flashedId = undefined));
       });
     });
 
     it("rejects malformed Ids", () => {
       testBlankViewport((viewport) => {
-        expectFlashedId(viewport, undefined, undefined, () => viewport.flashedId = "not an id");
+        expectFlashedId(viewport, undefined, undefined, () => (viewport.flashedId = "not an id"));
         viewport.flashedId = "0x123";
-        expectFlashedId(viewport, "0x123", undefined, () => viewport.flashedId = "not an id");
+        expectFlashedId(viewport, "0x123", undefined, () => (viewport.flashedId = "not an id"));
       });
     });
 
     it("prohibits assignment from within event callback", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
-        viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => viewport.flashedId = "0x12345").to.throw(Error, "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        viewport.onFlashedIdChanged.addOnce(() => (viewport.flashedId = "0x12345"));
+        expect(() => (viewport.flashedId = "0x12345")).to.throw(
+          Error,
+          "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback"
+        );
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -114,8 +120,8 @@ describe("Viewport", () => {
 
         const a = AnalysisStyle.fromJSON({ normalChannelName: "a" });
 
-        expectChangedEvent(a, () => viewport.displayStyle.settings.analysisStyle = a);
-        expectChangedEvent("none", () => viewport.displayStyle.settings.analysisStyle = a);
+        expectChangedEvent(a, () => (viewport.displayStyle.settings.analysisStyle = a));
+        expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = a));
 
         const b = AnalysisStyle.fromJSON({ normalChannelName: "b" });
         expectChangedEvent(b, () => {
@@ -132,8 +138,8 @@ describe("Viewport", () => {
           viewport.changeView(view);
         });
 
-        expectChangedEvent("undefined", () => viewport.displayStyle.settings.analysisStyle = undefined);
-        expectChangedEvent("none", () => viewport.displayStyle.settings.analysisStyle = undefined);
+        expectChangedEvent("undefined", () => (viewport.displayStyle.settings.analysisStyle = undefined));
+        expectChangedEvent("none", () => (viewport.displayStyle.settings.analysisStyle = undefined));
       });
     });
   });
@@ -245,8 +251,7 @@ describe("Viewport", () => {
           expect(viewport.viewRect.width).to.equal(testCase.width);
           expect(viewport.viewRect.height).to.equal(rectHeight);
 
-          if (testCase.bgColor)
-            viewport.displayStyle.backgroundColor = testCase.bgColor;
+          if (testCase.bgColor) viewport.displayStyle.backgroundColor = testCase.bgColor;
 
           const decorator = new Decorator(testCase.image, testCase.width, decHeight);
           try {
@@ -267,7 +272,9 @@ describe("Viewport", () => {
       const actual: string[] = [];
       for (let i = 0; i < expected.length; i++) {
         const offset = i * 4;
-        actual.push(ColorDef.from(image.data[offset], image.data[offset + 1], image.data[offset + 2], 0xff - image.data[offset + 3]).tbgr.toString(16));
+        actual.push(
+          ColorDef.from(image.data[offset], image.data[offset + 1], image.data[offset + 2], 0xff - image.data[offset + 3]).tbgr.toString(16)
+        );
       }
 
       expect(actual).to.deep.equal(expected);
@@ -275,10 +282,7 @@ describe("Viewport", () => {
 
     const rgbw2: TestCase = {
       width: 2,
-      image: [
-        ColorDef.red, ColorDef.green,
-        ColorDef.blue, ColorDef.white,
-      ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white],
     };
 
     const purple = ColorDef.from(255, 0, 255);
@@ -290,28 +294,24 @@ describe("Viewport", () => {
 
     const rgbwp1: TestCase = {
       width: 1,
-      image: [ ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, purple],
     };
 
     const rTransp50pct: TestCase = {
       width: 1,
       height: 2,
-      image: [ ColorDef.red.withTransparency(0x7f) ],
+      image: [ColorDef.red.withTransparency(0x7f)],
       bgColor: transpBlack,
     };
 
     const rTransp100pct: TestCase = {
       ...rTransp50pct,
-      image: [ ColorDef.red.withTransparency(0xff) ],
+      image: [ColorDef.red.withTransparency(0xff)],
     };
 
     const square3: TestCase = {
       width: 3,
-      image: [
-        ColorDef.red, ColorDef.green, ColorDef.blue,
-        ColorDef.white, ColorDef.black, grey,
-        cyan, purple, yellow,
-      ],
+      image: [ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, ColorDef.black, grey, cyan, purple, yellow],
     };
 
     describe("readImage", () => {
@@ -320,7 +320,7 @@ describe("Viewport", () => {
           // eslint-disable-next-line deprecation/deprecation
           const image = viewport.readImage()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -338,7 +338,7 @@ describe("Viewport", () => {
           // eslint-disable-next-line deprecation/deprecation
           const image = viewport.readImage(new ViewRect(0, 1, 1, 3), undefined, true)!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white]);
         });
       });
     });
@@ -356,7 +356,7 @@ describe("Viewport", () => {
         test(rgbw2, (viewport) => {
           const image = viewport.readImageBuffer({ upsideDown: true })!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green ]);
+          expectColors(image, [ColorDef.blue, ColorDef.white, ColorDef.red, ColorDef.green]);
         });
       });
 
@@ -364,7 +364,7 @@ describe("Viewport", () => {
         test(rgbwp1, (viewport) => {
           const image = viewport.readImageBuffer({ rect: new ViewRect(0, 1, 1, 3) })!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.green, ColorDef.blue ]);
+          expectColors(image, [ColorDef.green, ColorDef.blue]);
         });
       });
 
@@ -378,11 +378,11 @@ describe("Viewport", () => {
           };
 
           capture(0, 0, 3, 3, square3.image);
-          capture(0, 0, 2, 2, [ ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black ]);
-          capture(1, 1, 2, 2, [ ColorDef.black, grey, purple, yellow ]);
-          capture(2, 0, 1, 3, [ ColorDef.blue, grey, yellow ]);
-          capture(0, 2, 3, 1, [ cyan, purple, yellow ]);
-          capture(1, 2, 1, 1, [ purple ]);
+          capture(0, 0, 2, 2, [ColorDef.red, ColorDef.green, ColorDef.white, ColorDef.black]);
+          capture(1, 1, 2, 2, [ColorDef.black, grey, purple, yellow]);
+          capture(2, 0, 1, 3, [ColorDef.blue, grey, yellow]);
+          capture(0, 2, 3, 1, [cyan, purple, yellow]);
+          capture(1, 2, 1, 1, [purple]);
         });
       });
 
@@ -402,14 +402,18 @@ describe("Viewport", () => {
 
       it("resizes", () => {
         test({ ...rgbw2, bgColor: grey }, (viewport) => {
-          const resize = (w: number, h: number, expectedBarPixels?: { top?: number, bottom?: number, left?: number, right?: number }, expectedColors?: ColorDef[]) => {
+          const resize = (
+            w: number,
+            h: number,
+            expectedBarPixels?: { top?: number; bottom?: number; left?: number; right?: number },
+            expectedColors?: ColorDef[]
+          ) => {
             const image = viewport.readImageBuffer({ size: { x: w, y: h } })!;
             expect(image).not.to.be.undefined;
             expect(image.width).to.equal(w);
             expect(image.height).to.equal(h);
 
-            if (expectedColors)
-              expectColors(image, expectedColors);
+            if (expectedColors) expectColors(image, expectedColors);
 
             const top = expectedBarPixels?.top ?? 0;
             const left = expectedBarPixels?.left ?? 0;
@@ -427,26 +431,12 @@ describe("Viewport", () => {
 
           resize(4, 4);
           resize(1, 1);
-          resize(4, 2, { left: 1, right: 1 }, [
-            grey, ColorDef.red, ColorDef.green, grey,
-            grey, ColorDef.blue, ColorDef.white, grey,
-          ]);
-          resize(2, 4, { top: 1, bottom: 1 }, [
-            grey, grey,
-            ColorDef.red, ColorDef.green,
-            ColorDef.blue, ColorDef.white,
-            grey, grey,
-          ]);
+          resize(4, 2, { left: 1, right: 1 }, [grey, ColorDef.red, ColorDef.green, grey, grey, ColorDef.blue, ColorDef.white, grey]);
+          resize(2, 4, { top: 1, bottom: 1 }, [grey, grey, ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, grey, grey]);
           resize(8, 4, { left: 2, right: 2 });
           resize(4, 8, { top: 2, bottom: 2 });
           resize(3, 2, { left: 1 });
-          resize(2, 5, { top: 1, bottom: 2 }, [
-            grey, grey,
-            ColorDef.red, ColorDef.green,
-            ColorDef.blue, ColorDef.white,
-            grey, grey,
-            grey, grey,
-          ]);
+          resize(2, 5, { top: 1, bottom: 2 }, [grey, grey, ColorDef.red, ColorDef.green, ColorDef.blue, ColorDef.white, grey, grey, grey, grey]);
         });
       });
 
@@ -467,13 +457,13 @@ describe("Viewport", () => {
         test({ ...rTransp50pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ halfRed, ColorDef.black ]);
+          expectColors(image, [halfRed, ColorDef.black]);
         });
 
         test({ ...rTransp100pct, bgColor: undefined }, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ ColorDef.black, ColorDef.black ]);
+          expectColors(image, [ColorDef.black, ColorDef.black]);
         });
       });
 
@@ -481,7 +471,7 @@ describe("Viewport", () => {
         test(rTransp50pct, (viewport) => {
           const image = viewport.readImageBuffer()!;
           expect(image).not.to.be.undefined;
-          expectColors(image, [ halfRed, transpBlack ]);
+          expectColors(image, [halfRed, transpBlack]);
         });
       });
 
@@ -490,8 +480,7 @@ describe("Viewport", () => {
         test(rTransp50pct, (viewport) => {
           const image = viewport.readImageBuffer({ size: { x: 2, y: 4 } })!;
           expect(image).not.to.be.undefined;
-          for (let i = 3; i < 2 * 4 * 4; i += 4)
-            expect(image.data[i]).to.equal(0xff);
+          for (let i = 3; i < 2 * 4 * 4; i += 4) expect(image.data[i]).to.equal(0xff);
         });
       });
 
@@ -529,11 +518,11 @@ describe("Viewport", () => {
           formatId: "BadFormat",
           url: "https://sampleUrl",
           name: "test",
-          subLayers: [{id: 0, name: "test", visible: true }],
+          subLayers: [{ id: 0, name: "test", visible: true }],
         });
 
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
-        expect(vp.displayStyle.attachMapLayer({settings})).not.to.throw;
+        expect(vp.displayStyle.attachMapLayer({ settings })).not.to.throw;
         await vp.waitForSceneCompletion();
       });
     });

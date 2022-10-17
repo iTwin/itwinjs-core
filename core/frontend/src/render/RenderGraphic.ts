@@ -35,11 +35,15 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
   /** The owned graphic. */
   public abstract get graphic(): RenderGraphic;
   /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
-  public dispose(): void { }
+  public dispose(): void {}
   /** Disposes of the owned graphic. */
-  public disposeGraphic(): void { this.graphic.dispose(); }
+  public disposeGraphic(): void {
+    this.graphic.dispose();
+  }
   /** @internal */
-  public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+  }
 }
 
 /** An array of [[RenderGraphic]]s.

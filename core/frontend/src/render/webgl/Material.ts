@@ -47,9 +47,15 @@ export class Material extends RenderMaterial {
   public readonly fragUniforms = new Float32Array(4);
   public readonly rgba = new Float32Array(4);
 
-  public get overridesRgb() { return this.rgba[0] >= 0; }
-  public get overridesAlpha() { return this.rgba[3] >= 0; }
-  public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
+  public get overridesRgb() {
+    return this.rgba[0] >= 0;
+  }
+  public get overridesAlpha() {
+    return this.rgba[3] >= 0;
+  }
+  public get hasTranslucency() {
+    return this.overridesAlpha && this.rgba[3] < 1;
+  }
 
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
@@ -80,7 +86,7 @@ export class Material extends RenderMaterial {
   }
 
   private setInteger(loByte: number, hiByte: number, index: number): void {
-    const clamp = (x: number) => Math.floor(Math.min(255, (Math.max(x, 0))));
+    const clamp = (x: number) => Math.floor(Math.min(255, Math.max(x, 0)));
 
     loByte = clamp(loByte);
     hiByte = clamp(hiByte);
@@ -98,10 +104,7 @@ export type MaterialInfo = Material | SurfaceMaterialAtlas;
 
 /** @internal */
 export function createMaterialInfo(source: SurfaceMaterial | undefined): MaterialInfo | undefined {
-  if (undefined === source)
-    return undefined;
-  else if (source.isAtlas)
-    return source;
-  else
-    return source.material as Material;
+  if (undefined === source) return undefined;
+  else if (source.isAtlas) return source;
+  else return source.material as Material;
 }

@@ -41,7 +41,9 @@ export class Uniform {
   private readonly _name: string;
   protected _handle?: UniformHandle;
 
-  protected constructor(name: string) { this._name = name; }
+  protected constructor(name: string) {
+    this._name = name;
+  }
 
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
@@ -52,7 +54,9 @@ export class Uniform {
     return this.isValid;
   }
 
-  public get isValid(): boolean { return undefined !== this._handle; }
+  public get isValid(): boolean {
+    return undefined !== this._handle;
+  }
 }
 
 /**
@@ -114,8 +118,8 @@ export class GraphicUniform extends Uniform {
  * @internal
  */
 export const enum CompileStatus {
-  Success,    // The program was successfully compiled.
-  Failure,    // The program failed to compile.
+  Success, // The program was successfully compiled.
+  Failure, // The program failed to compile.
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
@@ -138,7 +142,14 @@ export class ShaderProgram implements WebGLDisposable {
   private _fragHNdx: number = -1;
   public readonly outputsToPick;
 
-  public constructor(gl: WebGLContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
+  public constructor(
+    gl: WebGLContext,
+    vertSource: string,
+    fragSource: string,
+    attrMap: Map<string, AttributeDetails> | undefined,
+    description: string,
+    fragDescription: string
+  ) {
     this.description = description;
     this.outputsToPick = description.includes("Overrides") || description.includes("Pick");
     this._fragDescription = fragDescription;
@@ -147,10 +158,12 @@ export class ShaderProgram implements WebGLDisposable {
     this._attrMap = attrMap;
 
     const glProgram = gl.createProgram();
-    this._glProgram = (null === glProgram) ? undefined : glProgram;
+    this._glProgram = null === glProgram ? undefined : glProgram;
   }
 
-  public get isDisposed(): boolean { return this._glProgram === undefined; }
+  public get isDisposed(): boolean {
+    return this._glProgram === undefined;
+  }
 
   public dispose(): void {
     if (!this.isDisposed) {
@@ -161,23 +174,30 @@ export class ShaderProgram implements WebGLDisposable {
     }
   }
 
-  public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
-  public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
-  public get isCompiled() { return CompileStatus.Success === this._status; }
+  public get glProgram(): WebGLProgram | undefined {
+    return this._glProgram;
+  }
+  public get isUncompiled() {
+    return CompileStatus.Uncompiled === this._status;
+  }
+  public get isCompiled() {
+    return CompileStatus.Success === this._status;
+  }
 
   private compileShader(type: GL.ShaderType): WebGLShader | undefined {
     const gl = System.instance.context;
 
     const shader = gl.createShader(type);
-    if (null === shader)
-      return undefined;
+    if (null === shader) return undefined;
 
     const src = GL.ShaderType.Vertex === type ? this.vertSource : this.fragSource;
     gl.shaderSource(shader, src);
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     if (!succeeded) {
-      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this.description}`;
+      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(
+        shader
+      )} Program description: ${this.description}`;
       throw new Error(compileLog);
     }
 
@@ -192,7 +212,8 @@ export class ShaderProgram implements WebGLDisposable {
 
   private linkProgram(vert: WebGLShader, frag: WebGLShader): boolean {
     assert(undefined !== this.glProgram);
-    if (undefined === this._glProgram || null === this._glProgram) // because WebGL APIs used Thing|null, not Thing|undefined...
+    if (undefined === this._glProgram || null === this._glProgram)
+      // because WebGL APIs used Thing|null, not Thing|undefined...
       return false;
 
     const gl = System.instance.context;
@@ -222,12 +243,13 @@ export class ShaderProgram implements WebGLDisposable {
   }
 
   public compile(forUse: boolean = false): CompileStatus {
-    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
-      this.setDebugShaderUsage();
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success) this.setDebugShaderUsage();
 
     switch (this._status) {
-      case CompileStatus.Failure: return CompileStatus.Failure;
-      case CompileStatus.Success: return CompileStatus.Success;
+      case CompileStatus.Failure:
+        return CompileStatus.Failure;
+      case CompileStatus.Success:
+        return CompileStatus.Success;
       default: {
         if (this.isDisposed) {
           this._status = CompileStatus.Failure;
@@ -245,29 +267,24 @@ export class ShaderProgram implements WebGLDisposable {
       if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms))
         this._status = CompileStatus.Success;
 
-    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
-      this.setDebugShaderUsage();
+    if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success) this.setDebugShaderUsage();
 
-    if (true !== System.instance.options.preserveShaderSourceCode)
-      this.vertSource = this.fragSource = "";
+    if (true !== System.instance.options.preserveShaderSourceCode) this.vertSource = this.fragSource = "";
 
     return this._status;
   }
 
   public use(params: ShaderProgramParams): boolean {
-    if (this.compile(true) !== CompileStatus.Success)
-      return false;
+    if (this.compile(true) !== CompileStatus.Success) return false;
 
     assert(undefined !== this._glProgram);
-    if (null === this._glProgram || undefined === this._glProgram)
-      return false;
+    if (null === this._glProgram || undefined === this._glProgram) return false;
 
     assert(!this._inUse);
     this._inUse = true;
     params.context.useProgram(this._glProgram);
 
-    for (const uniform of this._programUniforms)
-      uniform.bind(params);
+    for (const uniform of this._programUniforms) uniform.bind(params);
 
     return true;
   }
@@ -279,8 +296,7 @@ export class ShaderProgram implements WebGLDisposable {
 
   public draw(params: DrawParams): void {
     assert(this._inUse);
-    for (const uniform of this._graphicUniforms)
-      uniform.bind(params);
+    for (const uniform of this._graphicUniforms) uniform.bind(params);
 
     params.geometry.draw();
   }
@@ -297,35 +313,28 @@ export class ShaderProgram implements WebGLDisposable {
 
   private compileUniforms<T extends Uniform>(uniforms: T[]): boolean {
     for (const uniform of uniforms) {
-      if (!uniform.compile(this))
-        return false;
+      if (!uniform.compile(this)) return false;
     }
 
     return true;
   }
 
   private setDebugShaderUsage() {
-    if (!System.instance.options.debugShaders)
-      return;
+    if (!System.instance.options.debugShaders) return;
 
     const shaderFiles = System.instance.debugShaderFiles;
-    if (this._vertGNdx >= 0)
-      shaderFiles[this._vertGNdx].isUsed = true;
+    if (this._vertGNdx >= 0) shaderFiles[this._vertGNdx].isUsed = true;
 
-    if (this._fragGNdx >= 0)
-      shaderFiles[this._fragGNdx].isUsed = true;
+    if (this._fragGNdx >= 0) shaderFiles[this._fragGNdx].isUsed = true;
 
-    if (this._vertHNdx >= 0)
-      shaderFiles[this._vertHNdx].isUsed = true;
+    if (this._vertHNdx >= 0) shaderFiles[this._vertHNdx].isUsed = true;
 
-    if (this._fragHNdx >= 0)
-      shaderFiles[this._fragHNdx].isUsed = true;
+    if (this._fragHNdx >= 0) shaderFiles[this._fragHNdx].isUsed = true;
   }
 
   private saveShaderCode(isVS: boolean, desc: string, src: string, shader: WebGLShader) {
     // save glsl and hlsl (from Angle and fixed up) in DebugShaderFile
-    if (!System.instance.options.debugShaders)
-      return;
+    if (!System.instance.options.debugShaders) return;
 
     const shaderFiles = System.instance.debugShaderFiles;
     let sname: string;
@@ -341,18 +350,14 @@ export class ShaderProgram implements WebGLDisposable {
     sname += isVS ? "_VS" : "_FS";
     const fname = `${sname}.glsl`;
     let dsfNdx = shaderFiles.push(new DebugShaderFile(fname, src, isVS, true, false));
-    if (isVS)
-      this._vertGNdx = dsfNdx - 1;
-    else
-      this._fragGNdx = dsfNdx - 1;
+    if (isVS) this._vertGNdx = dsfNdx - 1;
+    else this._fragGNdx = dsfNdx - 1;
 
     const ext2 = System.instance.context.getExtension("WEBGL_debug_shaders");
-    if (!ext2)
-      return;
+    if (!ext2) return;
 
     const srcH = ext2.getTranslatedShaderSource(shader);
-    if (!srcH)
-      return;
+    if (!srcH) return;
 
     // TODO: implement WebGL2 specific inputs for gl_VertexID and gl_InstanceID if ever used
 
@@ -371,18 +376,18 @@ export class ShaderProgram implements WebGLDisposable {
     const varyings: string[] = new Array<string>();
     const lines = srcH.split("\n");
     let toss = true;
-    for (let ndx = 0; ndx < lines.length;) {
+    for (let ndx = 0; ndx < lines.length; ) {
       let line = lines[ndx];
-      if (line.indexOf("// INITIAL HLSL END") >= 0)
-        toss = true;
+      if (line.indexOf("// INITIAL HLSL END") >= 0) toss = true;
 
-      if (toss)
-        lines.splice(ndx, 1);
+      if (toss) lines.splice(ndx, 1);
 
       if (line.indexOf("// INITIAL HLSL BEGIN") >= 0) {
         toss = false;
-      } else if (!toss) { // look for lines that need editing
-        if (line.indexOf("Varyings") >= 0) { // save off varyings in either case
+      } else if (!toss) {
+        // look for lines that need editing
+        if (line.indexOf("Varyings") >= 0) {
+          // save off varyings in either case
           while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
             ++ndx;
             line = lines[ndx].substring(6).trimLeft();
@@ -391,7 +396,8 @@ export class ShaderProgram implements WebGLDisposable {
         }
 
         if (isVS) {
-          if (line.indexOf("Attributes") >= 0) { // save off attributes
+          if (line.indexOf("Attributes") >= 0) {
+            // save off attributes
             while (ndx + 1 < lines.length && lines[ndx + 1].indexOf("static") >= 0) {
               ++ndx;
               line = lines[ndx].substring(6).trimLeft();
@@ -469,19 +475,17 @@ export class ShaderProgram implements WebGLDisposable {
             ++ndx;
             lines.splice(ndx, 0, "  return output;\n}");
           }
-        } else { // fragment shader
+        } else {
+          // fragment shader
           let tNdx = 0;
           if (line.indexOf("static float4 gl_Color[") >= 0) {
             //
           } else if (line.indexOf("gl_Color[0] =") >= 0) {
-            if (numTargets < 1)
-              numTargets = 1;
+            if (numTargets < 1) numTargets = 1;
           } else if (line.indexOf("gl_Color[1] =") >= 0) {
-            if (numTargets < 2)
-              numTargets = 2;
+            if (numTargets < 2) numTargets = 2;
           } else if (line.indexOf("gl_Color[2] =") >= 0) {
-            if (numTargets < 3)
-              numTargets = 3;
+            if (numTargets < 3) numTargets = 3;
           } else if (line.indexOf("gl_Color[3] =") >= 0) {
             numTargets = 4;
           } else if (line.indexOf("gl_Depth") >= 0) {
@@ -494,8 +498,7 @@ export class ShaderProgram implements WebGLDisposable {
             haveGLFragCoord = true;
           } else if ((tNdx = line.indexOf("out_FragColor")) >= 0) {
             const c = line.substr(tNdx + 13, 1);
-            if (c === " " || c === "=")
-              haveGLFragColorOnly = true;
+            if (c === " " || c === "=") haveGLFragColorOnly = true;
             else {
               tNdx = +c;
               haveGLFragColor[tNdx] = true;
@@ -619,10 +622,8 @@ export class ShaderProgram implements WebGLDisposable {
 
     const srcH2 = lines.join("\n");
     dsfNdx = shaderFiles.push(new DebugShaderFile(fnameH, srcH2, isVS, false, false));
-    if (isVS)
-      this._vertHNdx = dsfNdx - 1;
-    else
-      this._fragHNdx = dsfNdx - 1;
+    if (isVS) this._vertHNdx = dsfNdx - 1;
+    else this._fragHNdx = dsfNdx - 1;
   }
 }
 
@@ -645,7 +646,9 @@ export class ShaderProgramExecutor {
   }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
 
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() {
@@ -654,13 +657,20 @@ export class ShaderProgramExecutor {
     this._isDisposed = true;
   }
 
-  public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
-  public get isValid() { return undefined !== this._program; }
-  public get target() { return this.params.target; }
-  public get renderPass() { return this.params.renderPass; }
+  public setProgram(program: ShaderProgram): boolean {
+    return this.changeProgram(program);
+  }
+  public get isValid() {
+    return undefined !== this._program;
+  }
+  public get target() {
+    return this.params.target;
+  }
+  public get renderPass() {
+    return this.params.renderPass;
+  }
   public get params() {
-    if (undefined === ShaderProgramExecutor._params)
-      ShaderProgramExecutor._params = new ShaderProgramParams();
+    if (undefined === ShaderProgramExecutor._params) ShaderProgramExecutor._params = new ShaderProgramParams();
 
     return ShaderProgramExecutor._params;
   }
@@ -681,10 +691,18 @@ export class ShaderProgramExecutor {
     }
   }
 
-  public pushBranch(branch: Branch): void { this.target.pushBranch(branch); }
-  public popBranch(): void { this.target.popBranch(); }
-  public pushBatch(batch: Batch): void { this.target.pushBatch(batch); }
-  public popBatch(): void { this.target.popBatch(); }
+  public pushBranch(branch: Branch): void {
+    this.target.pushBranch(branch);
+  }
+  public popBranch(): void {
+    this.target.popBranch();
+  }
+  public pushBatch(batch: Batch): void {
+    this.target.pushBatch(batch);
+  }
+  public popBatch(): void {
+    this.target.popBatch();
+  }
 
   private changeProgram(program?: ShaderProgram): boolean {
     if (this._program === program) {

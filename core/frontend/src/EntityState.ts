@@ -18,19 +18,27 @@ export class EntityState implements EntityProps {
   /** The name of the BIS schema for this class.
    * @note Subclasses from other than the BisCore domain must override the static member "schemaName" with their schema name.
    */
-  public static get schemaName() { return "BisCore"; }
+  public static get schemaName() {
+    return "BisCore";
+  }
 
-  private get _ctor(): typeof EntityState { return this.constructor as typeof EntityState; }
+  private get _ctor(): typeof EntityState {
+    return this.constructor as typeof EntityState;
+  }
 
   /** The name of the BIS class associated with this class.
    * @note Every subclass of EntityState **MUST** override this method to identify its BIS class.
    * Failure to do so will ordinarily result in an error when the class is registered, since there may only
    * be one JavaScript class for a given BIS class (usually the errant class will collide with its superclass.)
    */
-  public static get className() { return "Entity"; }
+  public static get className() {
+    return "Entity";
+  }
 
   /** The name of the BIS class associated with this class. */
-  public get className(): string { return this._ctor.className; }
+  public get className(): string {
+    return this._ctor.className;
+  }
 
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
   public readonly id: Id64String;
@@ -57,21 +65,25 @@ export class EntityState implements EntityProps {
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
-    if (Id64.isValid(this.id))
-      val.id = this.id;
-    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
-      val.jsonProperties = this.jsonProperties;
+    if (Id64.isValid(this.id)) val.id = this.id;
+    if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0) val.jsonProperties = this.jsonProperties;
     return val;
   }
 
   /** Return true if this EntityState is equal to another one. */
-  public equals(other: this): boolean { return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON()); }
+  public equals(other: this): boolean {
+    return JSON.stringify(this.toJSON()) === JSON.stringify(other.toJSON());
+  }
 
   /** Make an independent copy of this EntityState */
-  public clone(iModel?: IModelConnection): this { return new this._ctor(this.toJSON(), iModel ? iModel : this.iModel, this) as this; }
+  public clone(iModel?: IModelConnection): this {
+    return new this._ctor(this.toJSON(), iModel ? iModel : this.iModel, this) as this;
+  }
 
   /** Get full BIS class name of this Entity in the form "SchemaName:ClassName".  */
-  public static get classFullName(): string { return `${this.schemaName}:${this.className}`; }
+  public static get classFullName(): string {
+    return `${this.schemaName}:${this.className}`;
+  }
 }
 
 /** The "state" of an Element as represented in a web browser.
@@ -80,7 +92,9 @@ export class EntityState implements EntityProps {
  */
 export class ElementState extends EntityState implements ElementProps {
   /** @internal */
-  public static override get className() { return "Element"; }
+  public static override get className() {
+    return "Element";
+  }
 
   /** The ModelId of the [Model]($docs/bis/guide/fundamentals/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
@@ -98,10 +112,8 @@ export class ElementState extends EntityState implements ElementProps {
     this.code = Code.fromJSON(props.code);
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    if (undefined !== props.federationGuid)
-      this.federationGuid = props.federationGuid;
-    if (undefined !== props.userLabel)
-      this.userLabel = props.userLabel;
+    if (undefined !== props.federationGuid) this.federationGuid = props.federationGuid;
+    if (undefined !== props.userLabel) this.userLabel = props.userLabel;
   }
 
   /** Obtain this element's JSON representation. Subclasses of ElementState typically override this method with a more
@@ -109,8 +121,7 @@ export class ElementState extends EntityState implements ElementProps {
    */
   public override toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (Id64.isValid(this.code.spec))
-      val.code = this.code;
+    if (Id64.isValid(this.code.spec)) val.code = this.code;
 
     val.model = this.model;
     val.parent = this.parent;

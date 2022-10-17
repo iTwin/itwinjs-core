@@ -75,8 +75,7 @@ export class FlashSettings {
     let duration = options?.duration;
     if (duration) {
       const ms = Math.max(0, Math.min(10 * 1000, duration.milliseconds));
-      if (ms !== duration.milliseconds)
-        duration = BeDuration.fromMilliseconds(ms);
+      if (ms !== duration.milliseconds) duration = BeDuration.fromMilliseconds(ms);
     } else {
       duration = BeDuration.fromSeconds(0.25);
     }
@@ -90,8 +89,7 @@ export class FlashSettings {
    * @returns A copy of these settings identical except as specified by `options`.
    */
   public clone(options?: FlashSettingsOptions): FlashSettings {
-    if (!options)
-      return this;
+    if (!options) return this;
 
     return new FlashSettings({ ...this, ...options });
   }

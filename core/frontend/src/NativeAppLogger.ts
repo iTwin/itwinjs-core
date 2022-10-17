@@ -29,7 +29,7 @@ export class NativeAppLogger {
   private static _onFlushed: Promise<void> | undefined;
   private static flushToBackend() {
     if (!this._onFlushed && this._messages.length > 0) {
-      this._onFlushed = new Promise<void>(() => this._onFlushed = undefined);
+      this._onFlushed = new Promise<void>(() => (this._onFlushed = undefined));
       const messages = this._messages;
       this._messages = [];
       setTimeout(async () => this.flushBucket(messages));

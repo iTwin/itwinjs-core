@@ -35,8 +35,7 @@ export class IdleTool extends InteractiveTool {
   public static override hidden = true;
 
   public override async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    if (!ev.viewport)
-      return EventHandled.No;
+    if (!ev.viewport) return EventHandled.No;
 
     let toolId: string;
     let handleId: ViewHandleType;
@@ -57,16 +56,14 @@ export class IdleTool extends InteractiveTool {
 
       case BeButton.Data:
         // When no active tool is present install rotate view tool on drag of data button
-        if (undefined !== IModelApp.toolAdmin.activeTool)
-          return EventHandled.No;
+        if (undefined !== IModelApp.toolAdmin.activeTool) return EventHandled.No;
         toolId = "View.Rotate";
         handleId = ViewHandleType.Rotate;
         break;
 
       default:
         // When no active tool is present install pan view tool on drag of reset button
-        if (undefined !== IModelApp.toolAdmin.activeTool)
-          return EventHandled.No;
+        if (undefined !== IModelApp.toolAdmin.activeTool) return EventHandled.No;
         toolId = "View.Pan";
         handleId = ViewHandleType.Pan;
         break;
@@ -74,37 +71,35 @@ export class IdleTool extends InteractiveTool {
 
     const currTool = IModelApp.toolAdmin.viewTool;
     if (currTool) {
-      if (currTool instanceof ViewManip)
-        return currTool.startHandleDrag(ev, handleId); // See if current view tool can drag using this handle, leave it active regardless...
+      if (currTool instanceof ViewManip) return currTool.startHandleDrag(ev, handleId); // See if current view tool can drag using this handle, leave it active regardless...
       return EventHandled.No;
     }
     const viewTool = IModelApp.tools.create(toolId, ev.viewport, true, true) as ViewManip | undefined;
-    if (viewTool && await viewTool.run())
-      return viewTool.startHandleDrag(ev);
+    if (viewTool && (await viewTool.run())) return viewTool.startHandleDrag(ev);
     return EventHandled.Yes;
   }
 
   public override async onMiddleButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
-    if (!ev.viewport)
-      return EventHandled.No;
+    if (!ev.viewport) return EventHandled.No;
 
     if (ev.isDoubleClick) {
       const viewTool = new FitViewTool(ev.viewport, true);
-      return await viewTool.run() ? EventHandled.Yes : EventHandled.No;
+      return (await viewTool.run()) ? EventHandled.Yes : EventHandled.No;
     }
 
-    if (ev.isControlKey || ev.isShiftKey)
-      return EventHandled.No;
+    if (ev.isControlKey || ev.isShiftKey) return EventHandled.No;
 
     IModelApp.tentativePoint.process(ev);
     return EventHandled.Yes;
   }
 
-  public override async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
+  public override async onMouseWheel(ev: BeWheelEvent) {
+    return IModelApp.toolAdmin.processWheelEvent(ev, true);
+  }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const tool = new DefaultViewTouchTool(startEv, ev);
-    return await tool.run() ? EventHandled.Yes : EventHandled.No;
+    return (await tool.run()) ? EventHandled.Yes : EventHandled.No;
   }
 
   public override async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
@@ -119,11 +114,13 @@ export class IdleTool extends InteractiveTool {
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.
       const tool = new FitViewTool(ev.viewport!, true);
-      return await tool.run() ? EventHandled.Yes : EventHandled.No;
+      return (await tool.run()) ? EventHandled.Yes : EventHandled.No;
     }
     return EventHandled.No;
   }
 
-  public async exitTool() { }
-  public override async run() { return true; }
+  public async exitTool() {}
+  public override async run() {
+    return true;
+  }
 }

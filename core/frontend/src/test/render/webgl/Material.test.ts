@@ -114,18 +114,15 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
   }
 
   expect(actual.specularColor).not.to.be.undefined;
-  if (undefined === expected.specularColor)
-    expect(actual.specularColor!.tbgr).to.equal(0xffffff);
-  else
-    expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
+  if (undefined === expected.specularColor) expect(actual.specularColor!.tbgr).to.equal(0xffffff);
+  else expect(actual.specularColor!.tbgr).to.equal(expected.specularColor.tbgr);
 
   expect(actual.rgbOverridden).to.equal(undefined !== expected.diffuseColor);
   expect(actual.alphaOverridden).to.equal(undefined !== expected.alpha);
 
   expect(actual.textureWeight).to.equal(undefined !== material.textureMapping ? material.textureMapping.params.weight : 1.0);
   expectEqualFloats(expected.specular, actual.specular);
-  if (undefined !== expected.alpha)
-    expectEqualFloats(1.0 - expected.alpha, actual.transparency);
+  if (undefined !== expected.alpha) expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
 // eslint-disable-next-line deprecation/deprecation
@@ -141,32 +138,38 @@ function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
 
 describe("Material", () => {
   it("should pack and unpack parameters", () => {
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.black,
-      diffuse: 0.0,
-      transparency: 0.0,
-      specular: 0.0,
-      specularExponent: 0.0,
-      specularColor: ColorDef.black,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.black,
+        diffuse: 0.0,
+        transparency: 0.0,
+        specular: 0.0,
+        specularExponent: 0.0,
+        specularColor: ColorDef.black,
+      })
+    );
 
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.white,
-      diffuse: 1.0,
-      transparency: 1.0,
-      specular: 1.0,
-      specularExponent: 1234.5,
-      specularColor: ColorDef.white,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.white,
+        diffuse: 1.0,
+        transparency: 1.0,
+        specular: 1.0,
+        specularExponent: 1234.5,
+        specularColor: ColorDef.white,
+      })
+    );
 
-    expectMaterialParams(makeMaterialParams({
-      diffuseColor: ColorDef.red,
-      diffuse: 0.95,
-      transparency: 0.12,
-      specular: 0.7,
-      specularExponent: -5.4321,
-      specularColor: ColorDef.blue,
-    }));
+    expectMaterialParams(
+      makeMaterialParams({
+        diffuseColor: ColorDef.red,
+        diffuse: 0.95,
+        transparency: 0.12,
+        specular: 0.7,
+        specularExponent: -5.4321,
+        specularColor: ColorDef.blue,
+      })
+    );
 
     // eslint-disable-next-line deprecation/deprecation
     expectMaterialParams(RenderMaterial.Params.defaults);

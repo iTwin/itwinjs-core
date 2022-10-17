@@ -47,8 +47,7 @@ class WebGL1ClippingProgram extends ClippingProgram {
   }
 
   public getProgram(numPlanes: number): ShaderProgram | undefined {
-    if (numPlanes <= 0)
-      return undefined;
+    if (numPlanes <= 0) return undefined;
 
     if (!this._program || this._maxClippingPlanes < numPlanes) {
       this._program?.endUse();

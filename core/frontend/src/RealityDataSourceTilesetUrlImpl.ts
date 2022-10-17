@@ -17,8 +17,8 @@ import { ThreeDTileFormatInterpreter } from "./tile/internal";
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -39,8 +39,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, _iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.TilesetUrl)
-      return undefined;
+    if (sourceKey.provider !== RealityDataProvider.TilesetUrl) return undefined;
     const rdSource = new RealityDataSourceTilesetUrlImpl({ sourceKey });
     return rdSource;
   }
@@ -50,7 +49,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   }
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return undefined;
   }
@@ -72,10 +71,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
+    if (urlParts.length === 0) this._baseUrl = "";
+    else this._baseUrl = `${urlParts.join("/")}/`;
   }
   private async _doRequest(url: string, responseType: string): Promise<any> {
     const options: RequestOptions = {
@@ -97,8 +94,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
 
   public async getRootDocument(iTwinId: GuidString | undefined): Promise<any> {
     const url = await this.getServiceUrl(iTwinId);
-    if (!url)
-      throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
+    if (!url) throw new IModelError(BentleyStatus.ERROR, "Unable to get service url");
 
     // The following is only if the reality data is not stored on PW Context Share.
     this.setBaseUrl(url);
@@ -128,7 +124,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
@@ -147,4 +143,3 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

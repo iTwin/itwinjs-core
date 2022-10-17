@@ -39,20 +39,15 @@ export class MeshRenderGeometry {
     this.range = params.vertices.qparams.computeRange();
     this.surface = SurfaceGeometry.create(data, params.surface.indices);
     const edges = params.edges;
-    if (!edges || data.type === SurfaceType.VolumeClassifier)
-      return;
+    if (!edges || data.type === SurfaceType.VolumeClassifier) return;
 
-    if (edges.silhouettes)
-      this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(data, edges.silhouettes);
+    if (edges.silhouettes) this.silhouetteEdges = SilhouetteEdgeGeometry.createSilhouettes(data, edges.silhouettes);
 
-    if (edges.segments)
-      this.segmentEdges = EdgeGeometry.create(data, edges.segments);
+    if (edges.segments) this.segmentEdges = EdgeGeometry.create(data, edges.segments);
 
-    if (edges.polylines)
-      this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
+    if (edges.polylines) this.polylineEdges = PolylineEdgeGeometry.create(data, edges.polylines);
 
-    if (edges.indexed)
-      this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
+    if (edges.indexed) this.indexedEdges = IndexedEdgeGeometry.create(data, edges.indexed);
   }
 
   public static create(params: MeshParams, viewIndependentOrigin: Point3d | undefined): MeshRenderGeometry | undefined {
@@ -93,8 +88,7 @@ export class MeshGraphic extends Graphic {
       } else {
         const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
         buffers = InstanceBuffers.create(instances, instancesRange);
-        if (!buffers)
-          return undefined;
+        if (!buffers) return undefined;
       }
     }
 
@@ -102,13 +96,11 @@ export class MeshGraphic extends Graphic {
   }
 
   private addPrimitive(geometry: RenderGeometry | undefined) {
-    if (!geometry)
-      return;
+    if (!geometry) return;
 
     assert(geometry instanceof CachedGeometry);
     const primitive = Primitive.createShared(geometry, this._instances);
-    if (primitive)
-      this._primitives.push(primitive);
+    if (primitive) this._primitives.push(primitive);
   }
 
   private constructor(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers) {
@@ -123,12 +115,15 @@ export class MeshGraphic extends Graphic {
     this.addPrimitive(geometry.indexedEdges);
   }
 
-  public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
-  public get isPickable() { return false; }
+  public get isDisposed(): boolean {
+    return this.meshData.isDisposed && 0 === this._primitives.length;
+  }
+  public get isPickable() {
+    return false;
+  }
 
   public dispose() {
-    for (const primitive of this._primitives)
-      dispose(primitive);
+    for (const primitive of this._primitives) dispose(primitive);
 
     dispose(this.meshData);
     dispose(this._instances);
@@ -141,8 +136,14 @@ export class MeshGraphic extends Graphic {
     this._instances?.collectStatistics(stats);
   }
 
-  public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
+  public addCommands(cmds: RenderCommands): void {
+    this._primitives.forEach((prim) => prim.addCommands(cmds));
+  }
+  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void {
+    this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass));
+  }
 
-  public get surfaceType(): SurfaceType { return this.meshData.type; }
+  public get surfaceType(): SurfaceType {
+    return this.meshData.type;
+  }
 }

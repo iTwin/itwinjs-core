@@ -15,8 +15,16 @@ import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  GeographicTilingScheme, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, RequestMeshDataArgs, TerrainMeshProvider,
-  TerrainMeshProviderOptions, Tile, TileAvailability,
+  GeographicTilingScheme,
+  MapTile,
+  MapTilingScheme,
+  QuadId,
+  ReadMeshArgs,
+  RequestMeshDataArgs,
+  TerrainMeshProvider,
+  TerrainMeshProviderOptions,
+  Tile,
+  TileAvailability,
 } from "../internal";
 
 /** @internal */
@@ -35,20 +43,17 @@ export function getCesiumAssetUrl(osmAssetId: number, requestKey: string): strin
 /** @internal */
 export function getCesiumOSMBuildingsUrl(): string | undefined {
   const key = IModelApp.tileAdmin.cesiumIonKey;
-  if (undefined === key)
-    return undefined;
+  if (undefined === key) return undefined;
 
   const osmBuildingAssetId = 96188;
   return getCesiumAssetUrl(osmBuildingAssetId, key);
 }
 
 /** @internal */
-export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string, url?: string }> {
-
+export async function getCesiumAccessTokenAndEndpointUrl(assetId = 1, requestKey?: string): Promise<{ token?: string; url?: string }> {
   if (undefined === requestKey) {
     requestKey = IModelApp.tileAdmin.cesiumIonKey;
-    if (undefined === requestKey)
-      return {};
+    if (undefined === requestKey) return {};
   }
 
   const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
@@ -72,11 +77,14 @@ let notifiedTerrainError = false;
 
 // Notify - once per session - of failure to obtain Cesium terrain provider.
 function notifyTerrainError(detailedDescription?: string): void {
-  if (notifiedTerrainError)
-    return;
+  if (notifiedTerrainError) return;
 
   notifiedTerrainError = true;
-  IModelApp.notifications.displayMessage(MessageSeverity.Information, IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`), detailedDescription);
+  IModelApp.notifications.displayMessage(
+    MessageSeverity.Information,
+    IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.CannotObtainTerrain`),
+    detailedDescription
+  );
 }
 
 /** @internal */
@@ -89,7 +97,11 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
 
   let layers;
   try {
-    const layerRequestOptions: RequestOptions = { method: "GET", responseType: "json", headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` } };
+    const layerRequestOptions: RequestOptions = {
+      method: "GET",
+      responseType: "json",
+      headers: { authorization: `Bearer ${accessTokenAndEndpointUrl.token}` },
+    };
     const layerUrl = `${accessTokenAndEndpointUrl.url}layer.json`;
     const layerResponse = await request(layerUrl, layerRequestOptions);
     if (undefined === layerResponse) {
@@ -122,17 +134,24 @@ export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions)
   }
 
   let tileUrlTemplate = accessTokenAndEndpointUrl.url + layers.tiles[0].replace("{version}", layers.version);
-  if (opts.wantNormals)
-    tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
+  if (opts.wantNormals) tileUrlTemplate = tileUrlTemplate.replace("?", "?extensions=octvertexnormals-watermask-metadata&");
 
   const maxDepth = JsonUtils.asInt(layers.maxzoom, 19);
 
   // TBD -- When we have  an API extract the heights for the project from the terrain tiles - for use temporary Bing elevation.
-  return new CesiumTerrainProvider(opts, accessTokenAndEndpointUrl.token, tileUrlTemplate, maxDepth, tilingScheme, tileAvailability, layers.metadataAvailability);
+  return new CesiumTerrainProvider(
+    opts,
+    accessTokenAndEndpointUrl.token,
+    tileUrlTemplate,
+    maxDepth,
+    tilingScheme,
+    tileAvailability,
+    layers.metadataAvailability
+  );
 }
 
 function zigZagDecode(value: number) {
-  return (value >> 1) ^ (-(value & 1));
+  return (value >> 1) ^ -(value & 1);
 }
 
 /**
@@ -174,7 +193,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   private static _scratchPoint = Point3d.createZero();
   private static _scratchNormal = Vector3d.createZero();
   private static _scratchHeightRange = Range1d.createNull();
-  private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30);      // Request a new access token every 30 minutes...
+  private static _tokenTimeoutInterval = BeDuration.fromSeconds(60 * 30); // Request a new access token every 30 minutes...
   private _tokenTimeOut: BeTimePoint;
 
   public override forceTileLoad(tile: Tile): boolean {
@@ -183,8 +202,15 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     return undefined !== this._metaDataAvailableLevel && mapTile.quadId.level === this._metaDataAvailableLevel && !mapTile.everLoaded;
   }
 
-  constructor(opts: TerrainMeshProviderOptions, accessToken: string, tileUrlTemplate: string, maxDepth: number, tilingScheme: MapTilingScheme,
-    tileAvailability: TileAvailability | undefined, metaDataAvailableLevel: number | undefined) {
+  constructor(
+    opts: TerrainMeshProviderOptions,
+    accessToken: string,
+    tileUrlTemplate: string,
+    maxDepth: number,
+    tilingScheme: MapTilingScheme,
+    tileAvailability: TileAvailability | undefined,
+    metaDataAvailableLevel: number | undefined
+  ) {
     super();
     this._wantSkirts = opts.wantSkirts;
     this._exaggeration = opts.exaggeration;
@@ -200,20 +226,26 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
   }
 
   public override addLogoCards(cards: HTMLTableElement): void {
-    if (cards.dataset.cesiumIonLogoCard)
-      return;
+    if (cards.dataset.cesiumIonLogoCard) return;
 
     cards.dataset.cesiumIonLogoCard = "true";
-    const card = IModelApp.makeLogoCard({ iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`, heading: "Cesium Ion", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution") });
+    const card = IModelApp.makeLogoCard({
+      iconSrc: `${IModelApp.publicPath}images/cesium-ion.svg`,
+      heading: "Cesium Ion",
+      notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.CesiumWorldTerrainAttribution"),
+    });
     cards.appendChild(card);
   }
 
-  public get maxDepth(): number { return this._maxDepth; }
-  public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
+  public get maxDepth(): number {
+    return this._maxDepth;
+  }
+  public get tilingScheme(): MapTilingScheme {
+    return this._tilingScheme;
+  }
 
   public override isTileAvailable(quadId: QuadId) {
-    if (quadId.level > this.maxDepth)
-      return false;
+    if (quadId.level > this.maxDepth) return false;
 
     return this._tileAvailability ? this._tileAvailability.isTileAvailable(quadId.level, quadId.column, quadId.row) : true;
   }
@@ -242,8 +274,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     // This function only returns undefined if it fails to acquire token - but it doesn't need the token...
     if (BeTimePoint.now().milliseconds > this._tokenTimeOut.milliseconds) {
       const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl();
-      if (!accessTokenAndEndpointUrl.token || args.isCanceled())
-        return undefined;
+      if (!accessTokenAndEndpointUrl.token || args.isCanceled()) return undefined;
 
       this._accessToken = accessTokenAndEndpointUrl.token;
       this._tokenTimeOut = BeTimePoint.now().plus(CesiumTerrainProvider._tokenTimeoutInterval);
@@ -257,7 +288,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const streamBuffer = ByteStream.fromUint8Array(blob);
     const center = nextPoint3d64FromByteStream(streamBuffer);
     const quadId = QuadId.createFromContentId(tile.contentId);
-    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0;  // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
+    const skirtHeight = this.getLevelMaximumGeometricError(quadId.level + 1) * 10.0; // Add 1 to level to restore height calculation to before the quadId level was from root. (4326 unification)
     const minHeight = this._exaggeration * streamBuffer.nextFloat32;
     const maxHeight = this._exaggeration * streamBuffer.nextFloat32;
     const boundCenter = nextPoint3d64FromByteStream(streamBuffer);
@@ -267,7 +298,8 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
 
     terrainTile.adjustHeights(minHeight, maxHeight);
 
-    if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) { }
+    if (undefined === center || undefined === boundCenter || undefined === boundRadius || undefined === horizonOcclusion) {
+    }
     const pointCount = streamBuffer.nextUint32;
     const encodedVertexBuffer = new Uint16Array(blob.buffer, streamBuffer.curPos, pointCount * 3);
     streamBuffer.advance(pointCount * 6);
@@ -284,8 +316,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     const triangleElements = 3;
 
     // skip over any additional padding that was added for 2/4 byte alignment
-    if (streamBuffer.curPos % bytesPerIndex !== 0)
-      streamBuffer.advance(bytesPerIndex - (streamBuffer.curPos % bytesPerIndex));
+    if (streamBuffer.curPos % bytesPerIndex !== 0) streamBuffer.advance(bytesPerIndex - (streamBuffer.curPos % bytesPerIndex));
 
     const triangleCount = streamBuffer.nextUint32;
     const indexCount = triangleCount * triangleElements;
@@ -348,7 +379,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
               if (undefined !== metaData.available && undefined !== this._tileAvailability) {
                 const availableTiles = metaData.available;
                 for (let offset = 0; offset < availableTiles.length; ++offset) {
-                  const availableLevel = tile.depth + offset;     // Our depth is includes root (1 + cesium Depth)
+                  const availableLevel = tile.depth + offset; // Our depth is includes root (1 + cesium Depth)
                   const rangesAtLevel = availableTiles[offset];
 
                   for (const range of rangesAtLevel)
@@ -368,8 +399,9 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
     let initialIndexCapacity = indexCount;
     let initialVertexCapacity = pointCount;
     if (this._wantSkirts) {
-      initialIndexCapacity += 6 * (Math.max(0, northCount - 1) + Math.max(0, southCount - 1) + Math.max(0, eastCount - 1) + Math.max(0, westCount - 1));
-      initialVertexCapacity += (northCount + southCount + eastCount + westCount);
+      initialIndexCapacity +=
+        6 * (Math.max(0, northCount - 1) + Math.max(0, southCount - 1) + Math.max(0, eastCount - 1) + Math.max(0, westCount - 1));
+      initialVertexCapacity += northCount + southCount + eastCount + westCount;
     }
 
     const wantNormals = undefined !== encodedNormalsBuffer;
@@ -380,8 +412,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       wantNormals,
     });
 
-    for (let i = 0; i < indexCount; i += 3)
-      builder.addTriangle(indices[i], indices[i + 1], indices[i + 2]);
+    for (let i = 0; i < indexCount; i += 3) builder.addTriangle(indices[i], indices[i + 1], indices[i + 2]);
 
     const position = new Point3d();
     const uv = new QPoint2d();
@@ -395,7 +426,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       let oen;
       if (encodedNormalsBuffer) {
         const normalIndex = i * 2;
-        OctEncodedNormal.decodeValue(encodedNormalsBuffer[normalIndex + 1] << 8 | encodedNormalsBuffer[normalIndex], normal);
+        OctEncodedNormal.decodeValue((encodedNormalsBuffer[normalIndex + 1] << 8) | encodedNormalsBuffer[normalIndex], normal);
         worldToEcef.multiplyTransposeVector(normal, normal);
         oen = OctEncodedNormal.encode(normal);
       }
@@ -403,8 +434,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
       builder.addVertex(position, uv, oen);
     }
 
-    if (!this._wantSkirts)
-      return builder.finish();
+    if (!this._wantSkirts) return builder.finish();
 
     westIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
     eastIndices.sort((a, b) => vBuffer[a] - vBuffer[b]);
@@ -464,7 +494,7 @@ class CesiumTerrainProvider extends TerrainMeshProvider {
    * @returns {Number} An estimated geometric error.
    */
   public getEstimatedLevelZeroGeometricErrorForAHeightmap(ellipsoidMaximumRadius = 6378137, tileImageWidth = 65, numberOfTilesAtLevelZero = 2) {
-    return ellipsoidMaximumRadius * 2 * Math.PI * this.heightmapTerrainQuality / (tileImageWidth * numberOfTilesAtLevelZero);
+    return (ellipsoidMaximumRadius * 2 * Math.PI * this.heightmapTerrainQuality) / (tileImageWidth * numberOfTilesAtLevelZero);
   }
 
   public getLevelMaximumGeometricError(level: number) {

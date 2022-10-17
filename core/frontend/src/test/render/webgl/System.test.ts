@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import {
-  Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency,
-} from "@itwin/core-common";
+import { Gradient, ImageSource, ImageSourceFormat, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../../IModelApp";
 import { CreateRenderMaterialArgs } from "../../../render/RenderMaterial";
@@ -20,8 +18,7 @@ import { unpackAndNormalizeMaterialParam } from "./Material.test";
 
 function _createCanvas(): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
-  if (null === canvas)
-    return undefined;
+  if (null === canvas) return undefined;
   return canvas;
 }
 
@@ -52,8 +49,7 @@ describe("Render Compatibility", () => {
     // force canvas to fail context creation if webgl2 is requested
     const originalMethod = canvas!.getContext.bind(canvas);
     (canvas as any).getContext = (contextId: any, args?: any) => {
-      if (contextId === "webgl2")
-        return null;
+      if (contextId === "webgl2") return null;
       return originalMethod(contextId, args);
     };
     const context = System.createContext(canvas!, false);
@@ -68,8 +64,7 @@ describe("Instancing", () => {
     public static async test(enableInstancing: boolean, supportsInstancing: boolean, expectEnabled: boolean): Promise<void> {
       const tileAdminProps: TileAdmin.Props = { enableInstancing };
       const renderSysOpts: RenderSystem.Options = { useWebGL2: false }; // use WebGL1 since instanced arrays cannot be disabled in WebGL2
-      if (!supportsInstancing)
-        renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
+      if (!supportsInstancing) renderSysOpts.disabledExtensions = ["ANGLE_instanced_arrays"];
 
       await IModelApp.startup({
         renderSys: renderSysOpts,
@@ -83,8 +78,7 @@ describe("Instancing", () => {
 
   after(async () => {
     // make sure app shut down if exception occurs during test
-    if (IModelApp.initialized)
-      await TestApp.shutdown();
+    if (IModelApp.initialized) await TestApp.shutdown();
   });
 
   it("should enable instancing if supported and requested", async () => {
@@ -122,8 +116,7 @@ describe("ExternalTextures", () => {
 
   after(async () => {
     // make sure app shut down if exception occurs during test
-    if (IModelApp.initialized)
-      await TestApp.shutdown();
+    if (IModelApp.initialized) await TestApp.shutdown();
   });
 
   it("should enable external textures if requested", async () => {
@@ -149,7 +142,12 @@ describe("System", () => {
     const defaultSys = System.create();
     expectAttributes(defaultSys, { antialias: true, premultipliedAlpha: true, preserveDrawingBuffer: false, powerPreference: "high-performance" });
 
-    const sys1Attrs: WebGLContextAttributes = { antialias: false, premultipliedAlpha: false, preserveDrawingBuffer: true, powerPreference: "low-power" };
+    const sys1Attrs: WebGLContextAttributes = {
+      antialias: false,
+      premultipliedAlpha: false,
+      preserveDrawingBuffer: true,
+      powerPreference: "low-power",
+    };
     const sys1 = System.create({ contextAttributes: sys1Attrs });
     expectAttributes(sys1, sys1Attrs);
 
@@ -187,12 +185,15 @@ describe("System", () => {
 
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const imageSource = new ImageSource(new Uint8Array([
-      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34,
-      232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0,
-      0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15,
-      4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
-    ]), ImageSourceFormat.Png);
+    const imageSource = new ImageSource(
+      new Uint8Array([
+        137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82,
+        71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0,
+        14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0,
+        195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+      ]),
+      ImageSourceFormat.Png
+    );
 
     before(async () => {
       await IModelApp.startup({
@@ -211,8 +212,11 @@ describe("System", () => {
     function requestThematicGradient(stepCount: number) {
       const symb = Gradient.Symb.fromJSON({
         mode: Gradient.Mode.Thematic,
-        thematicSettings: {stepCount},
-        keys: [{ value: 0.6804815398789292, color: 610 }, { value: 0.731472008309797, color: 229 }],
+        thematicSettings: { stepCount },
+        keys: [
+          { value: 0.6804815398789292, color: 610 },
+          { value: 0.731472008309797, color: 229 },
+        ],
       });
       return IModelApp.renderSystem.getGradientTexture(symb, imodel);
     }
@@ -429,11 +433,9 @@ describe("System", () => {
           },
         };
 
-        if (-1 !== mat.rgba[0])
-          args.diffuse!.color = unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]);
+        if (-1 !== mat.rgba[0]) args.diffuse!.color = unpackColor(mat.rgba[0], mat.rgba[1], mat.rgba[2]);
 
-        if (-1 !== mat.rgba[3])
-          args.alpha = mat.rgba[3];
+        if (-1 !== mat.rgba[3]) args.alpha = mat.rgba[3];
 
         if (mat.textureMapping) {
           args.textureMapping = {
@@ -481,7 +483,7 @@ describe("System", () => {
         expect(actual).to.deep.equal(expected);
       };
 
-      test({ }, defaults);
+      test({}, defaults);
       test(defaults);
 
       const color = { r: 1, g: 127, b: 255 };
@@ -538,8 +540,7 @@ describe("System", () => {
       };
 
       async function waitForContextLoss(): Promise<void> {
-        if (contextLost)
-          return Promise.resolve();
+        if (contextLost) return Promise.resolve();
 
         await new Promise<void>((resolve: any) => setTimeout(resolve, 10));
         return waitForContextLoss();

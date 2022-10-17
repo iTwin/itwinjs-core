@@ -155,8 +155,7 @@ const computeInstancedRtcMatrix = `
 
 /** @internal */
 export function addInstancedRtcMatrix(vert: VertexShaderBuilder): void {
-  if (!vert.usesInstancedGeometry)
-    return;
+  if (!vert.usesInstancedGeometry) return;
 
   assert(undefined !== vert.find("g_modelMatrixRTC")); // set up in VertexShaderBuilder constructor...
   vert.addUniform("u_instanced_rtc", VariableType.Mat4, (prog) => {
@@ -273,8 +272,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   const unquantized = "unquantized" === vert.positionType;
   const maxRgbaPerVert = unquantized ? 6 : 4;
-  for (let i = 0; i < maxRgbaPerVert; i++)
-    vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
+  for (let i = 0; i < maxRgbaPerVert; i++) vert.addGlobal(`g_vertLutData${i}`, VariableType.Vec4);
 
   vert.addFunction(decodeUint24);
   vert.addFunction(decodeUint16);
@@ -292,7 +290,7 @@ function addPositionFromLUT(vert: VertexShaderBuilder) {
 
   vert.addUniform("u_vertLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_vertLUT", (uniform, params) => {
-      (params.geometry.asLUT!).lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
+      params.geometry.asLUT!.lut.texture.bindSampler(uniform, TextureUnit.VertexLUT);
     });
   });
 

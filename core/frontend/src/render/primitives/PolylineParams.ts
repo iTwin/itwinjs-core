@@ -53,7 +53,7 @@ class PolylineVertex {
   public prevIndex: number = 0;
   public nextIndex: number = 0;
 
-  public constructor() { }
+  public constructor() {}
 
   public init(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number) {
     this.isSegmentStart = isSegmentStart;
@@ -64,22 +64,16 @@ class PolylineVertex {
   }
 
   public computeParam(negatePerp: boolean, adjacentToJoint: boolean = false, joint: boolean = false, noDisplacement: boolean = false): number {
-    if (joint)
-      return PolylineParam.kJointBase;
+    if (joint) return PolylineParam.kJointBase;
 
     let param: PolylineParam;
-    if (noDisplacement)
-      param = PolylineParam.kNoneAdjustWeight; // prevent getting tossed before width adjustment
-    else if (adjacentToJoint)
-      param = PolylineParam.kMiterInsideOnly;
-    else
-      param = this.isPolylineStartOrEnd ? PolylineParam.kSquare : PolylineParam.kMiter;
+    if (noDisplacement) param = PolylineParam.kNoneAdjustWeight; // prevent getting tossed before width adjustment
+    else if (adjacentToJoint) param = PolylineParam.kMiterInsideOnly;
+    else param = this.isPolylineStartOrEnd ? PolylineParam.kSquare : PolylineParam.kMiter;
 
     let adjust = 0;
-    if (negatePerp)
-      adjust = PolylineParam.kNegatePerp;
-    if (!this.isSegmentStart)
-      adjust += PolylineParam.kNegateAlong;
+    if (negatePerp) adjust = PolylineParam.kNegatePerp;
+    if (!this.isSegmentStart) adjust += PolylineParam.kNegateAlong;
 
     return param + adjust;
   }
@@ -98,8 +92,7 @@ class PolylineTesselator {
   public constructor(polylines: PolylineData[], points: QPoint3dList | Point3d[], doJointTriangles: boolean) {
     this._polylines = polylines;
     if (points instanceof QPoint3dList) {
-      for (const p of points.list)
-        this._position.push(p.unquantize(points.params));
+      for (const p of points.list) this._position.push(p.unquantize(points.params));
     } else {
       this._position = points;
     }
@@ -140,12 +133,12 @@ class PolylineTesselator {
   }
 
   private _tesselate() {
-    const v0 = new PolylineVertex(), v1 = new PolylineVertex();
+    const v0 = new PolylineVertex(),
+      v1 = new PolylineVertex();
     const maxJointDot = -0.7;
 
     for (const line of this._polylines) {
-      if (line.numIndices < 2)
-        continue;
+      if (line.numIndices < 2) continue;
 
       const last = line.numIndices - 1;
       const isClosed: boolean = line.vertIndices[0] === line.vertIndices[last];
@@ -153,8 +146,8 @@ class PolylineTesselator {
       for (let i = 0; i < last; ++i) {
         const idx0 = line.vertIndices[i];
         const idx1 = line.vertIndices[i + 1];
-        const isStart: boolean = (0 === i);
-        const isEnd: boolean = (last - 1 === i);
+        const isStart: boolean = 0 === i;
+        const isEnd: boolean = last - 1 === i;
         const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
         const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
 
@@ -178,11 +171,9 @@ class PolylineTesselator {
           this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
           this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
 
-          if (jointAt0)
-            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
+          if (jointAt0) this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
 
-          if (jointAt1)
-            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
+          if (jointAt1) this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
         } else {
           this._addVertex(v0, v0.computeParam(true));
           this._addVertex(v1, v1.computeParam(false));
@@ -240,7 +231,14 @@ export class PolylineParams {
   public readonly linePixels: LinePixels;
 
   /** Directly construct a PolylineParams. The PolylineParams takes ownership of all input data. */
-  public constructor(vertices: VertexTable, polyline: TesselatedPolyline, weight: number, linePixels: LinePixels, isPlanar: boolean, type: PolylineTypeFlags = PolylineTypeFlags.Normal) {
+  public constructor(
+    vertices: VertexTable,
+    polyline: TesselatedPolyline,
+    weight: number,
+    linePixels: LinePixels,
+    isPlanar: boolean,
+    type: PolylineTypeFlags = PolylineTypeFlags.Normal
+  ) {
     this.vertices = vertices;
     this.polyline = polyline;
     this.isPlanar = isPlanar;
@@ -253,12 +251,10 @@ export class PolylineParams {
   public static create(args: PolylineArgs): PolylineParams | undefined {
     assert(!args.flags.isDisjoint);
     const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
+    if (undefined === vertices) return undefined;
 
     const tesselator = PolylineTesselator.fromPolyline(args);
-    if (undefined === tesselator)
-      return undefined;
+    if (undefined === tesselator) return undefined;
 
     return new PolylineParams(vertices, tesselator.tesselate(), args.width, args.linePixels, args.flags.isPlanar, args.flags.type);
   }

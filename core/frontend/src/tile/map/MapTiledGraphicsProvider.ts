@@ -29,48 +29,67 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
   constructor(viewportId: number, displayStyle: DisplayStyleState) {
     const mapSettings = displayStyle.backgroundMapSettings;
     const mapImagery = displayStyle.settings.mapImagery;
-    this.backgroundMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, false, () => displayStyle.overrideTerrainDisplay());
+    this.backgroundMap = new MapTileTreeReference(
+      mapSettings,
+      mapImagery.backgroundBase,
+      mapImagery.backgroundLayers,
+      displayStyle.iModel,
+      viewportId,
+      false,
+      false,
+      () => displayStyle.overrideTerrainDisplay()
+    );
     this.overlayMap = new MapTileTreeReference(mapSettings, undefined, mapImagery.overlayLayers, displayStyle.iModel, viewportId, true, false);
-    this.backgroundDrapeMap = new MapTileTreeReference(mapSettings, mapImagery.backgroundBase, mapImagery.backgroundLayers, displayStyle.iModel, viewportId, false, true);
+    this.backgroundDrapeMap = new MapTileTreeReference(
+      mapSettings,
+      mapImagery.backgroundBase,
+      mapImagery.backgroundLayers,
+      displayStyle.iModel,
+      viewportId,
+      false,
+      true
+    );
 
     const removals = this._detachFromDisplayStyle;
-    removals.push(displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
-      this.backgroundMap.settings = settings;
-      this.overlayMap.settings = settings;
-      this.backgroundDrapeMap.settings = settings;
-    }));
+    removals.push(
+      displayStyle.settings.onBackgroundMapChanged.addListener((settings) => {
+        this.backgroundMap.settings = settings;
+        this.overlayMap.settings = settings;
+        this.backgroundDrapeMap.settings = settings;
+      })
+    );
 
-    removals.push(displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
-      this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
-      this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
-      this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
-      this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
-      this.overlayMap.setLayerSettings(imagery.overlayLayers);
-    }));
+    removals.push(
+      displayStyle.settings.onMapImageryChanged.addListener((imagery: Readonly<MapImagerySettings>) => {
+        this.backgroundMap.setBaseLayerSettings(imagery.backgroundBase);
+        this.backgroundMap.setLayerSettings(imagery.backgroundLayers);
+        this.backgroundDrapeMap.setBaseLayerSettings(mapImagery.backgroundBase);
+        this.backgroundDrapeMap.setLayerSettings(mapImagery.backgroundLayers);
+        this.overlayMap.setLayerSettings(imagery.overlayLayers);
+      })
+    );
   }
 
   // This is used in inital view setup and when views are synchronized.  If view is being synchronized
   // we need to clear the layers which purges tile graphics if the settings or layers are changed.
   public setView(newView: ViewState) {
-    const layersMatch = ((layers1: MapLayerSettings[], layers2: MapLayerSettings[]): boolean => {
-      if (layers1.length !== layers2.length)
-        return false;
+    const layersMatch = (layers1: MapLayerSettings[], layers2: MapLayerSettings[]): boolean => {
+      if (layers1.length !== layers2.length) return false;
 
-      for (let i = 0; i < layers1.length; i++)
-        if (!layers1[i].displayMatches(layers2[i]))
-          return false;
+      for (let i = 0; i < layers1.length; i++) if (!layers1[i].displayMatches(layers2[i])) return false;
 
       return true;
-    });
+    };
     const mapImagery = newView.displayStyle.settings.mapImagery;
-    if (!newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings)
-      || !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings)
-      || (mapImagery.backgroundBase instanceof BaseMapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))) {
+    if (
+      !newView.displayStyle.backgroundMapSettings.equals(this.backgroundMap.settings) ||
+      !layersMatch(mapImagery.backgroundLayers, this.backgroundMap.layerSettings) ||
+      (mapImagery.backgroundBase instanceof BaseMapLayerSettings && !layersMatch([mapImagery.backgroundBase], this.backgroundDrapeMap.layerSettings))
+    ) {
       this.backgroundMap.clearLayers();
       this.backgroundDrapeMap.clearLayers();
     }
-    if (!layersMatch(mapImagery.overlayLayers, this.overlayMap.layerSettings))
-      this.overlayMap.clearLayers();
+    if (!layersMatch(mapImagery.overlayLayers, this.overlayMap.layerSettings)) this.overlayMap.clearLayers();
   }
 
   public detachFromDisplayStyle(): void {
@@ -92,4 +111,3 @@ export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
     return mapLayer;
   }
 }
-

@@ -8,7 +8,18 @@
 
 import { assert } from "@itwin/core-bentley";
 import {
-  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
+  CurveChain,
+  IndexedPolyface,
+  Loop,
+  Path,
+  Point3d,
+  PolyfaceBuilder,
+  PolyfaceQuery,
+  Range3d,
+  SolidPrimitive,
+  StrokeOptions,
+  SweepContour,
+  Transform,
 } from "@itwin/core-geometry";
 import { Feature } from "@itwin/core-common";
 import { DisplayParams } from "../DisplayParams";
@@ -32,27 +43,65 @@ export abstract class Geometry {
     this.feature = feature;
   }
 
-  public static createFromPointString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+  public static createFromPointString(
+    pts: Point3d[],
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    feature: Feature | undefined
+  ): Geometry {
     return new PrimitivePointStringGeometry(pts, tf, tileRange, params, feature);
   }
 
-  public static createFromLineString(pts: Point3d[], tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+  public static createFromLineString(
+    pts: Point3d[],
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    feature: Feature | undefined
+  ): Geometry {
     return new PrimitiveLineStringGeometry(pts, tf, tileRange, params, feature);
   }
 
-  public static createFromLoop(loop: Loop, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean, feature: Feature | undefined): Geometry {
+  public static createFromLoop(
+    loop: Loop,
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    disjoint: boolean,
+    feature: Feature | undefined
+  ): Geometry {
     return new PrimitiveLoopGeometry(loop, tf, tileRange, params, disjoint, feature);
   }
 
-  public static createFromSolidPrimitive(primitive: SolidPrimitive, tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+  public static createFromSolidPrimitive(
+    primitive: SolidPrimitive,
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    feature: Feature | undefined
+  ): Geometry {
     return new SolidPrimitiveGeometry(primitive, tf, tileRange, params, feature);
   }
 
-  public static createFromPath(path: Path, tf: Transform, tileRange: Range3d, params: DisplayParams, disjoint: boolean, feature: Feature | undefined): Geometry {
+  public static createFromPath(
+    path: Path,
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    disjoint: boolean,
+    feature: Feature | undefined
+  ): Geometry {
     return new PrimitivePathGeometry(path, tf, tileRange, params, disjoint, feature);
   }
 
-  public static createFromPolyface(ipf: IndexedPolyface, tf: Transform, tileRange: Range3d, params: DisplayParams, feature: Feature | undefined): Geometry {
+  public static createFromPolyface(
+    ipf: IndexedPolyface,
+    tf: Transform,
+    tileRange: Range3d,
+    params: DisplayParams,
+    feature: Feature | undefined
+  ): Geometry {
     return new PrimitivePolyfaceGeometry(ipf, tf, tileRange, params, feature);
   }
 
@@ -62,10 +111,10 @@ export abstract class Geometry {
   public getPolyfaces(tolerance: number): PolyfacePrimitiveList | undefined {
     const facetOptions = StrokeOptions.createForFacets();
     facetOptions.chordTol = tolerance;
-    if (this.displayParams.isTextured)
-      facetOptions.needParams = true;
+    if (this.displayParams.isTextured) facetOptions.needParams = true;
 
-    if (!this.displayParams.ignoreLighting) // ###TODO don't generate normals for 2d views.
+    if (!this.displayParams.ignoreLighting)
+      // ###TODO don't generate normals for 2d views.
       facetOptions.needNormals = true;
 
     return this._getPolyfaces(facetOptions);
@@ -77,10 +126,18 @@ export abstract class Geometry {
     return this._getStrokes(strokeOptions);
   }
 
-  public get hasTexture() { return this.displayParams.isTextured; }
-  public doDecimate() { return false; }
-  public doVertexCluster() { return true; }
-  public part() { return undefined; }
+  public get hasTexture() {
+    return this.displayParams.isTextured;
+  }
+  public doDecimate() {
+    return false;
+  }
+  public doVertexCluster() {
+    return true;
+  }
+  public part() {
+    return undefined;
+  }
 }
 
 /** @internal */
@@ -94,13 +151,21 @@ export class PrimitivePathGeometry extends Geometry {
     this.isDisjoint = isDisjoint;
   }
 
-  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined { return undefined; }
+  protected _getPolyfaces(_facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
+    return undefined;
+  }
 
   protected _getStrokes(facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     return PrimitivePathGeometry.getStrokesForLoopOrPath(this.path, facetOptions, this.displayParams, this.isDisjoint, this.transform);
   }
 
-  public static getStrokesForLoopOrPath(loopOrPath: Loop | Path, facetOptions: StrokeOptions, params: DisplayParams, isDisjoint: boolean, transform: Transform): StrokesPrimitiveList | undefined {
+  public static getStrokesForLoopOrPath(
+    loopOrPath: Loop | Path,
+    facetOptions: StrokeOptions,
+    params: DisplayParams,
+    isDisjoint: boolean,
+    transform: Transform
+  ): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
 
     if (!loopOrPath.isAnyRegionType || params.wantRegionOutline) {
@@ -227,19 +292,15 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
     if (!this.hasTexture) {
-      if (this.polyface.data.param)
-        this.polyface.data.param.clear();
+      if (this.polyface.data.param) this.polyface.data.param.clear();
 
-      if (this.polyface.data.paramIndex)
-        this.polyface.data.paramIndex = [];
+      if (this.polyface.data.paramIndex) this.polyface.data.paramIndex = [];
     }
 
     if (!facetOptions.needNormals) {
-      if (this.polyface.data.normal)
-        this.polyface.data.normal.clear();
+      if (this.polyface.data.normal) this.polyface.data.normal.clear();
 
-      if (this.polyface.data.normalIndex)
-        this.polyface.data.normalIndex = [];
+      if (this.polyface.data.normalIndex) this.polyface.data.normalIndex = [];
     } else if (!this.polyface.data.normal || 0 === this.polyface.data.normal.length) {
       PolyfaceQuery.buildAverageNormals(this.polyface);
     }
@@ -247,7 +308,9 @@ export class PrimitivePolyfaceGeometry extends Geometry {
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 
-  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined { return undefined; }
+  protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
+    return undefined;
+  }
 }
 
 class SolidPrimitiveGeometry extends Geometry {
@@ -256,10 +319,12 @@ class SolidPrimitiveGeometry extends Geometry {
   public constructor(primitive: SolidPrimitive, tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
     super(tf, range, params, feature);
     const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
-    this._primitive = xformPrim !== undefined ? xformPrim as SolidPrimitive : primitive;
+    this._primitive = xformPrim !== undefined ? (xformPrim as SolidPrimitive) : primitive;
   }
 
-  protected _getStrokes() { return undefined; }
+  protected _getStrokes() {
+    return undefined;
+  }
 
   protected _getPolyfaces(opts: StrokeOptions): PolyfacePrimitiveList {
     const builder = PolyfaceBuilder.create(opts);

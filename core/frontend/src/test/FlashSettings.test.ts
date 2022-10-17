@@ -22,15 +22,21 @@ describe("FlashSettings", () => {
   });
 
   it("normalizes inputs", () => {
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(-100), litMode: -5 as FlashMode, maxIntensity: -1 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }
-    );
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }),
-      { duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }
-    );
-    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(11), litMode: 42 as FlashMode, maxIntensity: 1.1 }),
-      { duration: BeDuration.fromSeconds(10), litMode: FlashMode.Brighten, maxIntensity: 1 }
-    );
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(-100), litMode: -5 as FlashMode, maxIntensity: -1 }), {
+      duration: BeDuration.fromSeconds(0),
+      litMode: FlashMode.Brighten,
+      maxIntensity: 0,
+    });
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(0), litMode: FlashMode.Brighten, maxIntensity: 0 }), {
+      duration: BeDuration.fromSeconds(0),
+      litMode: FlashMode.Brighten,
+      maxIntensity: 0,
+    });
+    expectFlash(new FlashSettings({ duration: BeDuration.fromSeconds(11), litMode: 42 as FlashMode, maxIntensity: 1.1 }), {
+      duration: BeDuration.fromSeconds(10),
+      litMode: FlashMode.Brighten,
+      maxIntensity: 1,
+    });
   });
 
   it("clones", () => {
@@ -46,12 +52,16 @@ describe("FlashSettings", () => {
     let settings = clone(defaults, {}, defaults);
     expect(settings).not.to.equal(defaults);
 
-    settings = clone(settings,
+    settings = clone(
+      settings,
       { duration: BeDuration.fromSeconds(1), litMode: FlashMode.Hilite },
-      { duration: BeDuration.fromSeconds(1), litMode: FlashMode.Hilite, maxIntensity: 1 });
+      { duration: BeDuration.fromSeconds(1), litMode: FlashMode.Hilite, maxIntensity: 1 }
+    );
 
-    clone(settings,
+    clone(
+      settings,
       { duration: BeDuration.fromSeconds(2), maxIntensity: 0.2 },
-      { duration: BeDuration.fromSeconds(2), maxIntensity: 0.2, litMode: FlashMode.Hilite });
+      { duration: BeDuration.fromSeconds(2), maxIntensity: 0.2, litMode: FlashMode.Hilite }
+    );
   });
 });

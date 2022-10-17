@@ -37,7 +37,9 @@ export class SurfaceGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
 
-  public get lutBuffers() { return this._buffers; }
+  public get lutBuffers() {
+    return this._buffers;
+  }
 
   public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
@@ -45,8 +47,7 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   public get isDisposed(): boolean {
-    return this._buffers.isDisposed
-      && this._indices.isDisposed;
+    return this._buffers.isDisposed && this._indices.isDisposed;
   }
 
   public dispose() {
@@ -58,13 +59,27 @@ export class SurfaceGeometry extends MeshGeometry {
     stats.addSurface(this._indices.bytesUsed);
   }
 
-  public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
-  public get isGlyph() { return this.mesh.isGlyph; }
-  public override get alwaysRenderTranslucent() { return this.isGlyph; }
-  public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
-  public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+  public get isLit() {
+    return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
+  }
+  public get isTexturedType() {
+    return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
+  }
+  public get hasTexture() {
+    return this.isTexturedType && undefined !== this.texture;
+  }
+  public get isGlyph() {
+    return this.mesh.isGlyph;
+  }
+  public override get alwaysRenderTranslucent() {
+    return this.isGlyph;
+  }
+  public get isTileSection() {
+    return undefined !== this.texture && this.texture.isTileSection;
+  }
+  public get isClassifier() {
+    return SurfaceType.VolumeClassifier === this.surfaceType;
+  }
   public override get supportsThematicDisplay() {
     return !this.isGlyph;
   }
@@ -76,9 +91,15 @@ export class SurfaceGeometry extends MeshGeometry {
     return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
   }
 
-  public override get asSurface() { return this; }
-  public override get asEdge() { return undefined; }
-  public override get asSilhouette() { return undefined; }
+  public override get asSurface() {
+    return this;
+  }
+  public override get asEdge() {
+    return undefined;
+  }
+  public override get asSilhouette() {
+    return undefined;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
@@ -95,8 +116,7 @@ export class SurfaceGeometry extends MeshGeometry {
     system.drawArrays(GL.PrimitiveType.Triangles, 0, this._numIndices, numInstances);
     bufs.unbind();
 
-    if (offset)
-      system.context.disable(GL.POLYGON_OFFSET_FILL);
+    if (offset) system.context.disable(GL.POLYGON_OFFSET_FILL);
   }
 
   public override wantMixMonochromeColor(target: Target): boolean {
@@ -104,56 +124,55 @@ export class SurfaceGeometry extends MeshGeometry {
     return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.hasTexture));
   }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
-  public override get isLitSurface() { return this.isLit; }
-  public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
-  public override get hasFixedNormals() { return this.mesh.hasFixedNormals; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.Surface;
+  }
+  public override get isLitSurface() {
+    return this.isLit;
+  }
+  public override get hasBakedLighting() {
+    return this.mesh.hasBakedLighting;
+  }
+  public override get hasFixedNormals() {
+    return this.mesh.hasFixedNormals;
+  }
   public get renderOrder(): RenderOrder {
-    if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
-      return RenderOrder.BlankingRegion;
+    if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind)) return RenderOrder.BlankingRegion;
 
     let order = this.isLit ? RenderOrder.LitSurface : RenderOrder.UnlitSurface;
-    if (this.isPlanar)
-      order = order | RenderOrder.PlanarBit;
+    if (this.isPlanar) order = order | RenderOrder.PlanarBit;
 
     return order;
   }
 
   public override getColor(target: Target) {
-    if (FillFlags.Background === (this.fillFlags & FillFlags.Background))
-      return target.uniforms.style.backgroundColorInfo;
-    else
-      return this.colorInfo;
+    if (FillFlags.Background === (this.fillFlags & FillFlags.Background)) return target.uniforms.style.backgroundColorInfo;
+    else return this.colorInfo;
   }
 
   public override getPass(target: Target): Pass {
     // Classifiers have a dedicated pass
-    if (this.isClassifier)
-      return "classification";
+    if (this.isClassifier) return "classification";
 
     let opaquePass: Pass = this.isPlanar ? "opaque-planar" : "opaque";
 
     // When reading pixels, glyphs are always opaque. Otherwise always transparent (for anti-aliasing).
-    if (this.isGlyph)
-      return target.isReadPixelsInProgress ? opaquePass : "translucent";
+    if (this.isGlyph) return target.isReadPixelsInProgress ? opaquePass : "translucent";
 
     const vf = target.currentViewFlags;
 
     // When rendering thematic isolines, we need translucency because they have anti-aliasing.
-    if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines)
-      return "translucent";
+    if (target.wantThematicDisplay && this.supportsThematicDisplay && target.uniforms.thematic.wantIsoLines) return "translucent";
 
     // In wireframe, unless fill is explicitly enabled for planar region, surface does not draw
     if (RenderMode.Wireframe === vf.renderMode && !this.mesh.isTextureAlwaysDisplayed) {
       const fillFlags = this.fillFlags;
       const showFill = FillFlags.Always === (fillFlags & FillFlags.Always) || (vf.fill && FillFlags.ByView === (fillFlags & FillFlags.ByView));
-      if (!showFill)
-        return "none";
+      if (!showFill) return "none";
     }
 
     // If transparency disabled by render mode or view flag, always draw opaque.
-    if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode)
-      return opaquePass;
+    if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) return opaquePass;
 
     // We have 3 sources of alpha: the material, the texture, and the color.
     // Base alpha comes from the material if it overrides it; otherwise from the color.
@@ -161,10 +180,8 @@ export class SurfaceGeometry extends MeshGeometry {
     // So we must draw in the translucent pass if the texture has transparency OR the base alpha is less than 1.
     let hasAlpha = false;
     const mat = wantMaterials(vf) ? this.mesh.materialInfo : undefined;
-    if (undefined !== mat && mat.overridesAlpha)
-      hasAlpha = mat.hasTranslucency;
-    else
-      hasAlpha = this.getColor(target).hasTranslucency;
+    if (undefined !== mat && mat.overridesAlpha) hasAlpha = mat.hasTranslucency;
+    else hasAlpha = this.getColor(target).hasTranslucency;
 
     if (!hasAlpha) {
       // ###TODO handle TextureTransparency.Mixed; remove Texture.hasTranslucency.
@@ -184,24 +201,22 @@ export class SurfaceGeometry extends MeshGeometry {
 
   protected _wantWoWReversal(target: Target): boolean {
     const fillFlags = this.fillFlags;
-    if (FillFlags.None !== (fillFlags & FillFlags.Background))
-      return false; // fill color explicitly from background
+    if (FillFlags.None !== (fillFlags & FillFlags.Background)) return false; // fill color explicitly from background
 
-    if (FillFlags.None !== (fillFlags & FillFlags.Always))
-      return true; // fill displayed even in wireframe
+    if (FillFlags.None !== (fillFlags & FillFlags.Always)) return true; // fill displayed even in wireframe
 
     const vf = target.currentViewFlags;
-    if (RenderMode.Wireframe === vf.renderMode || vf.visibleEdges)
-      return false; // never invert surfaces when edges are displayed
+    if (RenderMode.Wireframe === vf.renderMode || vf.visibleEdges) return false; // never invert surfaces when edges are displayed
 
-    if (this.isLit && wantLighting(vf))
-      return false;
+    if (this.isLit && wantLighting(vf)) return false;
 
     // Don't invert white pixels of textures...
     return !this.wantTextures(target, this.hasTexture);
   }
 
-  public override get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
+  public override get materialInfo(): MaterialInfo | undefined {
+    return this.mesh.materialInfo;
+  }
 
   public useTexture(params: ShaderProgramParams): boolean {
     return this.wantTextures(params.target, this.hasTexture);
@@ -222,8 +237,7 @@ export class SurfaceGeometry extends MeshGeometry {
       flags[SurfaceBitIndex.HasNormals] = 1;
       if (wantLighting(vf)) {
         flags[SurfaceBitIndex.ApplyLighting] = 1;
-        if (this.hasFixedNormals)
-          flags[SurfaceBitIndex.NoFaceFront] = 1;
+        if (this.hasFixedNormals) flags[SurfaceBitIndex.NoFaceFront] = 1;
       }
 
       // Textured meshes store normal in place of color index.
@@ -274,17 +288,13 @@ export class SurfaceGeometry extends MeshGeometry {
   }
 
   private wantTextures(target: Target, surfaceTextureExists: boolean): boolean {
-    if (this.hasScalarAnimation && undefined !== target.analysisTexture)
-      return true;
+    if (this.hasScalarAnimation && undefined !== target.analysisTexture) return true;
 
-    if (!surfaceTextureExists)
-      return false;
+    if (!surfaceTextureExists) return false;
 
-    if (this.mesh.isTextureAlwaysDisplayed)
-      return true;
+    if (this.mesh.isTextureAlwaysDisplayed) return true;
 
-    if (this.supportsThematicDisplay && target.wantThematicDisplay)
-      return false;
+    if (this.supportsThematicDisplay && target.wantThematicDisplay) return false;
 
     const fill = this.fillFlags;
     const flags = target.currentViewFlags;

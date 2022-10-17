@@ -99,5 +99,5 @@ export interface CreateTextureFromSourceArgs {
    * Ideally, the decorator will take ownership of the texture by specifying "external" and disposing of the texture when it is no longer needed,
    * rather than recreating the texture every time it creates its decoration graphics.
    */
-  ownership?: TextureCacheOwnership & { key: string } | "external";
+  ownership?: (TextureCacheOwnership & { key: string }) | "external";
 }

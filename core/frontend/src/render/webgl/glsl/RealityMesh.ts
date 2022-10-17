@@ -138,7 +138,14 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     const textureLabel = `s_texture${i}`;
     builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
-        const textureUnits = [TextureUnit.RealityMesh0, TextureUnit.RealityMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.RealityMesh3, TextureUnit.RealityMesh4, TextureUnit.RealityMesh5];
+        const textureUnits = [
+          TextureUnit.RealityMesh0,
+          TextureUnit.RealityMesh1,
+          params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder,
+          TextureUnit.RealityMesh3,
+          TextureUnit.RealityMesh4,
+          TextureUnit.RealityMesh5,
+        ];
         const realityMesh = params.geometry.asRealityMesh!;
         const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.params[i].texture : undefined;
         if (realityTexture !== undefined) {
@@ -150,20 +157,20 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
         }
       });
     });
-    const paramsLabel = `u_texParams${i}`, matrixLabel =  `u_texMatrix${i}`;
+    const paramsLabel = `u_texParams${i}`,
+      matrixLabel = `u_texMatrix${i}`;
     builder.frag.addUniform(matrixLabel, VariableType.Mat4, (prog) => {
       prog.addGraphicUniform(matrixLabel, (uniform, params) => {
         const realityMesh = params.geometry.asRealityMesh!;
         const textureParam = realityMesh.textureParams?.params[i];
         assert(undefined !== textureParam);
         if (undefined !== textureParam) {
-          const  projectionMatrix = textureParam.getProjectionMatrix();
+          const projectionMatrix = textureParam.getProjectionMatrix();
           if (projectionMatrix) {
             const eyeToModel = Matrix4d.createTransform(params.target.uniforms.frustum.viewMatrix.inverse()!, scratchMatrix4d1);
             const eyeToTexture = projectionMatrix.multiplyMatrixMatrix(eyeToModel, scratchMatrix4d2);
             uniform.setMatrix4(Matrix4.fromMatrix4d(eyeToTexture, scratchMatrix));
-          } else
-            uniform.setMatrix4(textureParam.getTerrainMatrix()!);
+          } else uniform.setMatrix4(textureParam.getTerrainMatrix()!);
         }
       });
     });
@@ -225,7 +232,10 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   });
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
-      params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));
+      params.target.uniforms.thematic.bindTexture(
+        uniform,
+        gradientTextureUnit >= 0 ? gradientTextureUnit : params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder
+      );
     });
   });
 }
@@ -246,7 +256,6 @@ function createRealityMeshHiliterBuilder(): ProgramBuilder {
   addModelViewProjectionMatrix(vert);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   return builder;
-
 }
 
 /** @internal */
@@ -270,8 +279,7 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   vert.set(VertexShaderComponent.ComputePosition, computePosition);
   addModelViewProjectionMatrix(vert);
 
-  if (flags.isShadowable === IsShadowable.Yes)
-    addSolarShadowMap(builder, true);
+  if (flags.isShadowable === IsShadowable.Yes) addSolarShadowMap(builder, true);
 
   const frag = builder.frag;
   frag.addGlobal("featureIncrement", VariableType.Float, "0.0");
@@ -319,25 +327,19 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, computeFragmentBaseColor);
   if (!flags.isTranslucent) {
     if (FeatureMode.None !== feat) {
-      if (flags.isClassified)
-        addFeaturePlanarClassifier(builder);
+      if (flags.isClassified) addFeaturePlanarClassifier(builder);
 
       builder.frag.addFunction(decodeDepthRgb);
-      if (flags.isClassified)
-        addPickBufferOutputs(builder.frag);
-      else
-        addAltPickBufferOutputs(builder.frag);
+      if (flags.isClassified) addPickBufferOutputs(builder.frag);
+      else addAltPickBufferOutputs(builder.frag);
     }
   }
 
   addTextures(builder, textureCount);
 
-  if (IsThematic.Yes === flags.isThematic)
-    addThematicToRealityMesh(builder, gradientTextureUnit);
+  if (IsThematic.Yes === flags.isThematic) addThematicToRealityMesh(builder, gradientTextureUnit);
 
-  if (flags.isWiremesh)
-    addWiremesh(builder);
+  if (flags.isWiremesh) addWiremesh(builder);
 
   return builder;
 }
-

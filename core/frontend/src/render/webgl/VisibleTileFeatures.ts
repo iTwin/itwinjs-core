@@ -51,16 +51,20 @@ const clippedPasses: RenderPass[] = [
 
 function isFeatureVisible(feature: PackedFeature, target: Target, modelIdParts: Id64.Uint32Pair, includeNonLocatable: boolean) {
   const ovrs = target.currentFeatureSymbologyOverrides;
-  if (!ovrs)
-    return true;
+  if (!ovrs) return true;
 
   const app = target.currentBranch.getFeatureAppearance(
     ovrs,
-    feature.elementId.lower, feature.elementId.upper,
-    feature.subCategoryId.lower, feature.subCategoryId.upper,
+    feature.elementId.lower,
+    feature.elementId.upper,
+    feature.subCategoryId.lower,
+    feature.subCategoryId.upper,
     feature.geometryClass,
-    modelIdParts.lower, modelIdParts.upper,
-    BatchType.Primary, feature.animationNodeId);
+    modelIdParts.lower,
+    modelIdParts.upper,
+    BatchType.Primary,
+    feature.animationNodeId
+  );
 
   return undefined !== app && (includeNonLocatable || !app.nonLocatable);
 }
@@ -70,15 +74,12 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
   const executor = new ShaderProgramExecutor(features.target, pass);
   try {
     for (const command of commands) {
-      if (command.opcode !== "drawPrimitive")
-        command.execute(executor);
+      if (command.opcode !== "drawPrimitive") command.execute(executor);
 
-      if (command.opcode !== "pushBatch")
-        continue;
+      if (command.opcode !== "pushBatch") continue;
 
       const ovrs = command.batch.getOverrides(features.target);
-      if (ovrs.allHidden)
-        continue;
+      if (ovrs.allHidden) continue;
 
       const table = command.batch.featureTable;
       const modelIdParts = Id64.getUint32Pair(table.modelId);
@@ -103,8 +104,7 @@ function* commandIterator(features: VisibleTileFeatures, pass: RenderPass) {
 function* iterator(features: VisibleTileFeatures) {
   try {
     features.target.pushViewClip();
-    for (const pass of clippedPasses)
-      yield* commandIterator(features, pass);
+    for (const pass of clippedPasses) yield* commandIterator(features, pass);
   } finally {
     features.target.popViewClip();
   }

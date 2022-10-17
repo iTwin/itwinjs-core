@@ -26,7 +26,7 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
  * - Respond to button events on the control handle decoration and run a sub-class of [[EditManipulator.HandleTool]] to modify.
  * @public
  * @extensions
-*/
+ */
 export namespace EditManipulator {
   /** Specifies the event for [[EditManipulator.HandleProvider.onManipulatorEvent]] */
   export enum EventType {
@@ -35,7 +35,7 @@ export namespace EditManipulator {
     /** Control handle modification was cancelled by user. */
     Cancel,
     /** Control handle modification was accepted by user. */
-    Accept
+    Accept,
   }
 
   /** Interactive control handle modification is done by installing an [[InputCollector]].
@@ -63,21 +63,23 @@ export namespace EditManipulator {
       this.receivedDownEvent = true;
 
       // Override inherited tool state from suspended primitive tool...
-      if (this.wantAccuSnap)
-        this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None);
-      else
-        this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All);
+      if (this.wantAccuSnap) this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None);
+      else this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All);
     }
 
     /** Whether to call [[AccuSnap.enableSnap]] for handle modification.
      * @return true to enable snapping to elements.
      */
-    protected get wantAccuSnap(): boolean { return true; }
+    protected get wantAccuSnap(): boolean {
+      return true;
+    }
 
     /** Called from reset button up event to allow modification to be cancelled.
      * @return true to cancel modification.
      */
-    protected cancel(_ev: BeButtonEvent): boolean { return true; }
+    protected cancel(_ev: BeButtonEvent): boolean {
+      return true;
+    }
 
     /** Called from data button down event to check if enough input has been gathered to complete the modification.
      * @return true to complete modification.
@@ -95,22 +97,26 @@ export namespace EditManipulator {
     }
 
     public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
-      if (!this.accept(ev))
-        return EventHandled.No;
+      if (!this.accept(ev)) return EventHandled.No;
 
       return this.onComplete(ev, EventType.Accept);
     }
 
     public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
-      if (!this.cancel(ev))
-        return EventHandled.No;
+      if (!this.cancel(ev)) return EventHandled.No;
 
       return this.onComplete(ev, EventType.Cancel);
     }
 
-    public override async onTouchMove(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-    public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-    public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+    public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+    }
+    public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+    }
+    public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+    }
 
     public override async onPostInstall() {
       await super.onPostInstall();
@@ -132,7 +138,9 @@ export namespace EditManipulator {
      * Usually followed by a call to [[IModelApp.toolAdmin.startDefaultTool]] to immediately raise the [[ManipulatorToolEvent.Start]] event.
      */
     public constructor(public iModel: IModelConnection) {
-      this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => this.onManipulatorToolEvent(tool, event));
+      this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) =>
+        this.onManipulatorToolEvent(tool, event)
+      );
     }
 
     /** Call to clear this handle provider. */
@@ -156,16 +164,13 @@ export namespace EditManipulator {
     public onManipulatorToolEvent(_tool: Tool, event: ManipulatorToolEvent): void {
       switch (event) {
         case ManipulatorToolEvent.Start: {
-          if (this._removeSelectionListener)
-            break;
+          if (this._removeSelectionListener) break;
           this._removeSelectionListener = this.iModel.selectionSet.onChanged.addListener((ev) => this.onSelectionChanged(ev));
-          if (this.iModel.selectionSet.isActive)
-            this.onManipulatorEvent(EventType.Synch); // Give opportunity to add controls when tool is started with an existing selection...
+          if (this.iModel.selectionSet.isActive) this.onManipulatorEvent(EventType.Synch); // Give opportunity to add controls when tool is started with an existing selection...
           break;
         }
         case ManipulatorToolEvent.Stop: {
-          if (!this._removeSelectionListener)
-            break;
+          if (!this._removeSelectionListener) break;
           this._removeSelectionListener();
           this._removeSelectionListener = undefined;
           this.clearControls();
@@ -178,8 +183,7 @@ export namespace EditManipulator {
      * @see [[SelectionSet]]
      */
     public onSelectionChanged(ev: SelectionSetEvent): void {
-      if (this.iModel === ev.set.iModel)
-        this.onManipulatorEvent(EventType.Synch);
+      if (this.iModel === ev.set.iModel) this.onManipulatorEvent(EventType.Synch);
     }
 
     /** Register for decorate event to start displaying control handles. */
@@ -191,14 +195,13 @@ export namespace EditManipulator {
         }
         IModelApp.viewManager.invalidateDecorationsAllViews();
       } else if (add) {
-        if (!this._removeDecorationListener)
-          this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
+        if (!this._removeDecorationListener) this._removeDecorationListener = IModelApp.viewManager.addDecorator(this);
         IModelApp.viewManager.invalidateDecorationsAllViews();
       }
     }
 
     /** Sub-classes should override to display the pickable graphics for their controls. */
-    public decorate(_context: DecorateContext): void { }
+    public decorate(_context: DecorateContext): void {}
 
     /** The provider is responsible for checking if modification by controls is valid.
      * May still wish to present controls for "transient" geometry in non-read/write applications, etc.
@@ -207,22 +210,20 @@ export namespace EditManipulator {
 
     /* Call to stop displaying the the control handles */
     protected clearControls(): void {
-      this.updateDecorationListener(this._isActive = false);
+      this.updateDecorationListener((this._isActive = false));
     }
 
     /** A provider can install an [[InputCollector]] to support interactive modification.
      * @return true if a tool was successfully run.
      * @see [[EditManipulator.HandleTool]]
-    */
+     */
     protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): Promise<boolean>;
 
     /* Create, update, or clear based on the current selection. */
     protected async updateControls(): Promise<void> {
       const created = await this.createControls();
-      if (this._isActive && !created)
-        this.clearControls();
-      else
-        this.updateDecorationListener(this._isActive = created);
+      if (this._isActive && !created) this.clearControls();
+      else this.updateDecorationListener((this._isActive = created));
     }
 
     /* Update controls to reflect active selection or post-modification state. */
@@ -232,39 +233,37 @@ export namespace EditManipulator {
     }
 
     /** Sub-classes can override to perform some operation for a double click on a handle. */
-    protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.No;
+    }
 
     /** Sub-classes can override to present a menu for a right click on a handle. */
-    protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.No;
+    }
 
     /** Sub-classes can override to respond to a touch tap on a handle. By default, handles are selected by touch drag and taps are ignored. */
-    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.Yes; }
+    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.Yes;
+    }
 
     /** Event raised by a PrimitiveTool that supports handle providers to allow a pickable decoration to respond to being located. */
     public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
-      if (!this._isActive)
-        return EventHandled.No;
+      if (!this._isActive) return EventHandled.No;
 
-      if (ev.isDoubleClick)
-        return this.onDoubleClick(hit, ev); // Allow double click on handle to override default operation (ex. fit view).
+      if (ev.isDoubleClick) return this.onDoubleClick(hit, ev); // Allow double click on handle to override default operation (ex. fit view).
 
-      if (BeButton.Reset === ev.button && !ev.isDown && !ev.isDragging)
-        return this.onRightClick(hit, ev); // Allow right click on handle to present a menu.
+      if (BeButton.Reset === ev.button && !ev.isDown && !ev.isDragging) return this.onRightClick(hit, ev); // Allow right click on handle to present a menu.
 
-      if (BeButton.Data !== ev.button)
-        return EventHandled.No;
+      if (BeButton.Data !== ev.button) return EventHandled.No;
 
-      if (ev.isControlKey)
-        return EventHandled.No; // Support ctrl+click to select multiple controls (ex. linestring vertices)...
+      if (ev.isControlKey) return EventHandled.No; // Support ctrl+click to select multiple controls (ex. linestring vertices)...
 
-      if (InputSource.Touch === ev.inputSource && !ev.isDragging)
-        return this.onTouchTap(hit, ev); // Default is to select controls on touch drag only, ignore tap on control...
+      if (InputSource.Touch === ev.inputSource && !ev.isDragging) return this.onTouchTap(hit, ev); // Default is to select controls on touch drag only, ignore tap on control...
 
-      if (ev.isDown && !ev.isDragging)
-        return EventHandled.No; // Select controls on up event or down event only after drag started...
+      if (ev.isDown && !ev.isDragging) return EventHandled.No; // Select controls on up event or down event only after drag started...
 
-      if (!await this.modifyControls(hit, ev))
-        return EventHandled.No;
+      if (!(await this.modifyControls(hit, ev))) return EventHandled.No;
 
       // In case InputCollector was installed for handle modification, don't wait for motion to show dynamic frame adjusted for AccuDraw hints...
       IModelApp.accuDraw.refreshDecorationsAndDynamics();
@@ -281,8 +280,7 @@ export namespace EditManipulator {
      * @return color adjusted for view background color or original color if view background color isn't being used.
      */
     public static adjustForBackgroundColor(color: ColorDef, vp: Viewport): ColorDef {
-      if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.displaySky)
-        return color;
+      if (vp.view.is3d() && vp.view.getDisplayStyle3d().environment.displaySky) return color;
 
       return color.adjustedForContrast(vp.view.backgroundColor);
     }
@@ -297,21 +295,27 @@ export namespace EditManipulator {
      */
     public static getArrowTransform(vp: Viewport, base: Point3d, direction: Vector3d, sizeInches: number): Transform | undefined {
       const boresite = AccuDrawHintBuilder.getBoresite(base, vp);
-      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99)
-        return undefined;
+      if (Math.abs(direction.dotProduct(boresite.direction)) >= 0.99) return undefined;
 
       const pixelSize = vp.pixelsFromInches(sizeInches);
       const scale = vp.viewingSpace.getPixelSizeAtPoint(base) * pixelSize;
       const matrix = Matrix3d.createRigidFromColumns(direction, boresite.direction, AxisOrder.XZY);
-      if (undefined === matrix)
-        return undefined;
+      if (undefined === matrix) return undefined;
 
       matrix.scaleColumnsInPlace(scale, scale, scale);
       return Transform.createRefs(base.clone(), matrix);
     }
 
     /** Return array of shape points representing a unit arrow in xy plane pointing in positive x direction. */
-    public static getArrowShape(baseStart: number = 0.0, baseWidth: number = 0.15, tipStart: number = 0.55, tipEnd: number = 1.0, tipWidth: number = 0.3, flangeStart: number = tipStart, flangeWidth: number = baseWidth): Point3d[] {
+    public static getArrowShape(
+      baseStart: number = 0.0,
+      baseWidth: number = 0.15,
+      tipStart: number = 0.55,
+      tipEnd: number = 1.0,
+      tipWidth: number = 0.3,
+      flangeStart: number = tipStart,
+      flangeWidth: number = baseWidth
+    ): Point3d[] {
       const shapePts: Point3d[] = [];
       shapePts[0] = Point3d.create(tipEnd, 0.0);
       shapePts[1] = Point3d.create(flangeStart, tipWidth);

@@ -16,7 +16,7 @@ function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number):
 
 describe("ViewRect", () => {
   it("rounds negative inputs up to zero", () => {
-    expectRect(new ViewRect(-0.001, -50,  1, 2), 0, 0, 1, 2);
+    expectRect(new ViewRect(-0.001, -50, 1, 2), 0, 0, 1, 2);
   });
 
   it("truncates inputs", () => {

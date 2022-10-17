@@ -14,14 +14,12 @@ import { CanvasDecoration } from "./render/CanvasDecoration";
 
 /** @internal */
 export type CachedDecoration =
-  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
-  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
-  { type: "html", htmlElement: HTMLElement };
+  | { type: "graphic"; graphicType: GraphicType; graphicOwner: RenderGraphicOwner }
+  | { type: "canvas"; canvasDecoration: CanvasDecoration; atFront: boolean }
+  | { type: "html"; htmlElement: HTMLElement };
 
 function disposeCachedDecorations(decorations: CachedDecoration[]): void {
-  for (const dec of decorations)
-    if ("graphic" === dec.type)
-      dec.graphicOwner.disposeGraphic();
+  for (const dec of decorations) if ("graphic" === dec.type) dec.graphicOwner.disposeGraphic();
 }
 
 /** A cache of decorations previously produced by a [[ViewportDecorator]] for which `useCachedDecorations` is `true`.
@@ -51,20 +49,17 @@ export class DecorationsCache {
   /** Add a decoration to the list of cached decorations for the decorator. */
   public add(decorator: ViewportDecorator, decoration: CachedDecoration): void {
     assert(true === decorator.useCachedDecorations);
-    if (!decorator.useCachedDecorations)
-      return;
+    if (!decorator.useCachedDecorations) return;
 
     let decorations = this.get(decorator);
-    if (!decorations)
-      this._cache.set(decorator, decorations = []);
+    if (!decorations) this._cache.set(decorator, (decorations = []));
 
     decorations.push(decoration);
   }
 
   /** Delete the decorator and all of its decorations, disposing of the decorations' graphics. */
   public delete(decorator: ViewportDecorator): void {
-    if (this.prohibitRemoval)
-      return;
+    if (this.prohibitRemoval) return;
 
     assert(true === decorator.useCachedDecorations);
     const decs = this._cache.get(decorator);
@@ -76,11 +71,9 @@ export class DecorationsCache {
 
   /** Remove all decorators and their decorations from the cache, disposing of the decorations' graphics. */
   public clear(): void {
-    if (this.prohibitRemoval)
-      return;
+    if (this.prohibitRemoval) return;
 
-    for (const decorations of this._cache.values())
-      disposeCachedDecorations(decorations);
+    for (const decorations of this._cache.values()) disposeCachedDecorations(decorations);
 
     this._cache.clear();
   }

@@ -9,7 +9,16 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
+  ColorDef,
+  ColorIndex,
+  Feature,
+  FeatureIndex,
+  FeatureTable,
+  FillFlags,
+  PackedFeatureTable,
+  QParams3d,
+  QPoint3dList,
+  RenderTexture,
 } from "@itwin/core-common";
 import { Viewport } from "../Viewport";
 import { RenderGraphic } from "./RenderGraphic";
@@ -81,7 +90,7 @@ export interface ParticleProps extends XYAndZ {
  *
  * Creating a particle collection using a ParticleCollectionBuilder is far more efficient (in both CPU and GPU usage) than doing so using a [[GraphicBuilder]].
  * @see interactive demonstrations of [Snow and Rain](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=snow-rain-sample&imodel=Villa) and
-   * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
+ * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @public
  * @extensions
@@ -154,15 +163,14 @@ class Builder implements ParticleCollectionBuilder {
     this._pickableId = params.pickableId;
     this._texture = params.texture;
     this._transparency = undefined !== params.transparency ? clampTransparency(params.transparency) : 0;
-    this._localToWorldTransform = params.origin ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z) : Transform.createIdentity();
+    this._localToWorldTransform = params.origin
+      ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z)
+      : Transform.createIdentity();
 
-    if ("number" === typeof params.size)
-      this._size = new Vector2d(params.size, params.size);
-    else
-      this._size = Vector2d.fromJSON(params.size);
+    if ("number" === typeof params.size) this._size = new Vector2d(params.size, params.size);
+    else this._size = Vector2d.fromJSON(params.size);
 
-    if (this._size.x <= 0 || this._size.y <= 0)
-      throw new Error("Particle size must be greater than zero");
+    if (this._size.x <= 0 || this._size.y <= 0) throw new Error("Particle size must be greater than zero");
   }
 
   public get size(): XAndY {
@@ -191,24 +199,19 @@ class Builder implements ParticleCollectionBuilder {
       height = size.y;
     }
 
-    if (width <= 0 || height <= 0)
-      throw new Error("A particle must have a size greater than zero");
+    if (width <= 0 || height <= 0) throw new Error("A particle must have a size greater than zero");
 
     const transparency = undefined !== props.transparency ? clampTransparency(props.transparency) : this.transparency;
-    if (transparency !== this.transparency && this._particlesTranslucent.length > 0)
-      this._hasVaryingTransparency = true;
+    if (transparency !== this.transparency && this._particlesTranslucent.length > 0) this._hasVaryingTransparency = true;
 
     const particle = new Particle(props, width, height, transparency, props.rotationMatrix);
-    if (transparency > 0)
-      this._particlesTranslucent.push(particle);
-    else
-      this._particlesOpaque.push(particle);
+    if (transparency > 0) this._particlesTranslucent.push(particle);
+    else this._particlesOpaque.push(particle);
     this._range.extendPoint(particle.centroid);
   }
 
   public finish(): RenderGraphic | undefined {
-    if (0 === this._particlesTranslucent.length + this._particlesOpaque.length)
-      return undefined;
+    if (0 === this._particlesTranslucent.length + this._particlesOpaque.length) return undefined;
 
     // Order-independent transparency doesn't work well with opaque geometry - it will look semi-transparent.
     // If we have a mix of opaque and transparent particles, put them in separate graphics to be rendered in separate passes.
@@ -222,18 +225,15 @@ class Builder implements ParticleCollectionBuilder {
     this._particlesTranslucent.length = 0;
     this._hasVaryingTransparency = false;
 
-    if (!transparent && !opaque)
-      return undefined;
+    if (!transparent && !opaque) return undefined;
 
     // Transform from origin to collection, then to world.
     const toCollection = Transform.createTranslation(range.center);
     const toWorld = toCollection.multiplyTransformTransform(this._localToWorldTransform);
     const branch = new GraphicBranch(true);
-    if (opaque)
-      branch.add(opaque);
+    if (opaque) branch.add(opaque);
 
-    if (transparent)
-      branch.add(transparent);
+    if (transparent) branch.add(transparent);
 
     let graphic = this._viewport.target.renderSystem.createGraphicBranch(branch, toWorld);
 
@@ -252,8 +252,7 @@ class Builder implements ParticleCollectionBuilder {
 
   private createGraphic(particles: Particle[], uniformTransparency: number | undefined): RenderGraphic | undefined {
     const numParticles = particles.length;
-    if (numParticles <= 0)
-      return undefined;
+    if (numParticles <= 0) return undefined;
 
     // To keep scale values close to 1, compute mean size to use as size of quad.
     const meanSize = new Vector2d();
@@ -261,10 +260,8 @@ class Builder implements ParticleCollectionBuilder {
     for (const particle of particles) {
       meanSize.x += particle.width;
       meanSize.y += particle.height;
-      if (particle.width > maxSize)
-        maxSize = particle.width;
-      if (particle.height > maxSize)
-        maxSize = particle.height;
+      if (particle.width > maxSize) maxSize = particle.width;
+      if (particle.height > maxSize) maxSize = particle.height;
     }
     meanSize.x /= numParticles;
     meanSize.y /= numParticles;
@@ -342,8 +339,10 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
   const halfWidth = size.x / 2;
   const halfHeight = size.y / 2;
   const corners = [
-    new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
-    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth, halfHeight, 0),
+    new Point3d(-halfWidth, -halfHeight, 0),
+    new Point3d(halfWidth, -halfHeight, 0),
+    new Point3d(-halfWidth, halfHeight, 0),
+    new Point3d(halfWidth, halfHeight, 0),
   ];
 
   const range = new Range3d();
@@ -351,8 +350,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
   range.high = corners[3];
 
   const points = new QPoint3dList(QParams3d.fromRange(range));
-  for (const corner of corners)
-    points.add(corner);
+  for (const corner of corners) points.add(corner);
 
   const colors = new ColorIndex();
   colors.initUniform(ColorDef.white.withTransparency(transparency));
@@ -376,8 +374,7 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number): 
 function clampTransparency(transparency: number): number {
   transparency = Math.min(255, transparency, Math.max(0, transparency));
   transparency = Math.floor(transparency);
-  if (transparency < DisplayParams.minTransparency)
-    transparency = 0;
+  if (transparency < DisplayParams.minTransparency) transparency = 0;
 
   return transparency;
 }

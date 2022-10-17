@@ -11,7 +11,9 @@ import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 import { VertexKey } from "../../../render/primitives/VertexKey";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
 /**

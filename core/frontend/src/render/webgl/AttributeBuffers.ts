@@ -21,7 +21,7 @@ interface BufferHandleLinkage {
 
 /** Provides convenience methods for creating a BufferHandleLinkage interface. */
 class BufferHandleLinkage {
-  private constructor() { }
+  private constructor() {}
   public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
     return { buffer, params };
   }
@@ -60,12 +60,28 @@ export interface BufferParameters {
  * @internal
  */
 export namespace BufferParameters {
-  export function create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean): BufferParameters {
+  export function create(
+    glAttribLoc: number,
+    glSize: number,
+    glType: number,
+    glNormalized: boolean,
+    glStride: number,
+    glOffset: number,
+    glInstanced: boolean
+  ): BufferParameters {
     return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced };
   }
 
   export function clone(params: BufferParameters): BufferParameters {
-    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced);
+    return BufferParameters.create(
+      params.glAttribLoc,
+      params.glSize,
+      params.glType,
+      params.glNormalized,
+      params.glStride,
+      params.glOffset,
+      params.glInstanced
+    );
   }
 }
 
@@ -76,9 +92,11 @@ export namespace BufferParameters {
 export abstract class BuffersContainer implements WebGLDisposable {
   protected _linkages: BufferHandleLinkage[] = [];
 
-  protected constructor() { }
+  protected constructor() {}
 
-  public get linkages(): BufferHandleLinkage[] { return this._linkages; }
+  public get linkages(): BufferHandleLinkage[] {
+    return this._linkages;
+  }
 
   public abstract bind(): void;
   public abstract unbind(): void;
@@ -89,8 +107,7 @@ export abstract class BuffersContainer implements WebGLDisposable {
   public abstract dispose(): void; // NB: BufferHandle objects contained within BufferHandleLinkage entries are disposed where they are created because they could be shared among multiple BuffersContainer objects.
 
   public static create(): BuffersContainer {
-    if (System.instance.capabilities.isWebGL2)
-      return new VAOContainerWebGL2(System.instance.context as WebGL2RenderingContext);
+    if (System.instance.capabilities.isWebGL2) return new VAOContainerWebGL2(System.instance.context as WebGL2RenderingContext);
     else {
       const vaoExt = System.instance.capabilities.queryExtensionObject<OES_vertex_array_object>("OES_vertex_array_object");
       if (undefined !== vaoExt) {
@@ -111,9 +128,9 @@ export abstract class VAOContainer extends BuffersContainer {
     super();
   }
 
-  public bind(): void { }
+  public bind(): void {}
 
-  public unbind(): void { }
+  public unbind(): void {}
 
   public addBuffer(buffer: BufferHandle, params: BufferParameters[]): void {
     const linkage = BufferHandleLinkage.create(buffer, params);
@@ -141,9 +158,11 @@ export abstract class VAOContainer extends BuffersContainer {
     this.unbind();
   }
 
-  public get isDisposed(): boolean { return false; }
+  public get isDisposed(): boolean {
+    return false;
+  }
 
-  public dispose(): void { }
+  public dispose(): void {}
 }
 
 /**
@@ -168,7 +187,9 @@ export class VAOContainerWebGL1 extends VAOContainer {
     VertexArrayObjectHandle.unbind(this._vaoExt);
   }
 
-  public override get isDisposed(): boolean { return this._vao.isDisposed; }
+  public override get isDisposed(): boolean {
+    return this._vao.isDisposed;
+  }
 
   public override dispose(): void {
     this._vao.dispose();
@@ -197,7 +218,9 @@ export class VAOContainerWebGL2 extends VAOContainer {
     VertexArrayObjectHandleWebGL2.unbind(this._context);
   }
 
-  public override get isDisposed(): boolean { return this._vao.isDisposed; }
+  public override get isDisposed(): boolean {
+    return this._vao.isDisposed;
+  }
 
   public override dispose(): void {
     this._vao.dispose();
@@ -241,8 +264,12 @@ export class VBOContainer extends BuffersContainer {
   }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
-  public dispose() { this._isDisposed = true; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+  public dispose() {
+    this._isDisposed = true;
+  }
 }
 
 /**
@@ -269,7 +296,9 @@ export class VertexArrayObjectHandleWebGL2 implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+  public get isDisposed(): boolean {
+    return this._arrayObject === undefined;
+  }
 
   /** Frees the WebGL vertex array object */
   public dispose(): void {
@@ -316,7 +345,9 @@ export class VertexArrayObjectHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+  public get isDisposed(): boolean {
+    return this._arrayObject === undefined;
+  }
 
   /** Frees the WebGL vertex array object */
   public dispose(): void {
@@ -364,8 +395,12 @@ export class BufferHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._glBuffer === undefined; }
-  public get bytesUsed(): number { return this._bytesUsed; }
+  public get isDisposed(): boolean {
+    return this._glBuffer === undefined;
+  }
+  public get bytesUsed(): number {
+    return this._bytesUsed;
+  }
 
   /** Frees the WebGL buffer */
   public dispose(): void {
@@ -384,7 +419,9 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Sets the specified target to be bound to no buffer */
-  public unbind(): void { System.instance.context.bindBuffer(this._target, null); }
+  public unbind(): void {
+    System.instance.context.bindBuffer(this._target, null);
+  }
 
   /** Binds this buffer to the target specified at construction and sets the buffer's data store. */
   public bindData(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
@@ -395,7 +432,11 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Creates a BufferHandle and binds its data */
-  public static createBuffer(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+  public static createBuffer(
+    target: GL.Buffer.Target,
+    data: BufferSource,
+    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw
+  ): BufferHandle | undefined {
     const handle = new BufferHandle(target);
     if (handle.isDisposed) {
       return undefined;
@@ -409,7 +450,9 @@ export class BufferHandle implements WebGLDisposable {
     return BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 
-  public isBound(binding: GL.Buffer.Binding) { return System.instance.context.getParameter(binding) === this._glBuffer; }
+  public isBound(binding: GL.Buffer.Binding) {
+    return System.instance.context.getParameter(binding) === this._glBuffer;
+  }
 }
 
 function setScale(index: number, value: number, array: Float32Array) {
@@ -456,7 +499,7 @@ export function qscale3dToArray(qscale: Point3d): Float32Array {
 /** Converts 3d quantization params to a pair of Float32Arrays
  * @internal
  */
-export function qparams3dToArray(params: QParams3d): { origin: Float32Array, scale: Float32Array } {
+export function qparams3dToArray(params: QParams3d): { origin: Float32Array; scale: Float32Array } {
   const origin = qorigin3dToArray(params.origin);
   const scale = qscale3dToArray(params.scale);
   return { origin, scale };

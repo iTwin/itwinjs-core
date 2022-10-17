@@ -14,10 +14,10 @@ import { PanViewTool, RotateViewTool } from "../tools/ViewTool";
 import { BentleyStatus, DbResult, IModelStatus } from "@itwin/core-bentley";
 
 /** class to simulate overriding the default AccuDraw */
-class TestAccuDraw extends AccuDraw { }
+class TestAccuDraw extends AccuDraw {}
 
 /** class to simulate overriding the Idle tool */
-class TestIdleTool extends IdleTool { }
+class TestIdleTool extends IdleTool {}
 
 let testVal1: string;
 let testVal2: string;
@@ -44,8 +44,8 @@ class FourthImmediate extends Tool {
   public static override toolId = "Test.FourthImmediate";
 }
 
-class TestRotateTool extends RotateViewTool { }
-class TestSelectTool extends SelectionTool { }
+class TestRotateTool extends RotateViewTool {}
+class TestSelectTool extends SelectionTool {}
 
 class TestApp extends MockRender.App {
   public static override async startup(opts?: IModelAppOptions): Promise<void> {
@@ -66,7 +66,8 @@ class TestApp extends MockRender.App {
 
     // register an anonymous class with the toolId "Null.Tool"
     const testNull = class extends Tool {
-      public static override toolId = "Null.Tool"; public override async run() {
+      public static override toolId = "Null.Tool";
+      public override async run() {
         testVal1 = "fromNullTool";
         return true;
       }
@@ -74,13 +75,15 @@ class TestApp extends MockRender.App {
     testNull.register(namespace);
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
+  protected static supplyI18NOptions() {
+    return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
+  }
 }
 
 describe("IModelApp", () => {
   before(async () => {
     await TestApp.startup();
-    await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
+    await IModelApp.localization.registerNamespace("TestApp"); // we must wait for the localization read to finish.
   });
   after(async () => TestApp.shutdown());
 
@@ -125,14 +128,24 @@ describe("IModelApp", () => {
     // we have "TrivialTest.Test1" as the key in TestApp.json
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test1"), "Localized Trivial Test 1");
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test2"), "Localized Trivial Test 2");
-    assert.equal(IModelApp.localization.getLocalizedString("LocateFailure.NoElements"), "No Elements Found", "message from default (iModelJs) namespace");
+    assert.equal(
+      IModelApp.localization.getLocalizedString("LocateFailure.NoElements"),
+      "No Elements Found",
+      "message from default (iModelJs) namespace"
+    );
 
     // there is no key for TrivialTest.Test3
     assert.equal(IModelApp.localization.getLocalizedString("TestApp:TrivialTests.Test3"), "TrivialTests.Test3");
 
     // Should properly substitute the values in localized strings with interpolations
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }), "Substitute Variable1 and Variable2");
-    assert.equal(IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }), "Reverse substitute Variable2 and Variable1");
+    assert.equal(
+      IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test1", { varA: "Variable1", varB: "Variable2" }),
+      "Substitute Variable1 and Variable2"
+    );
+    assert.equal(
+      IModelApp.localization.getLocalizedString("TestApp:SubstitutionTests.Test2", { varA: "Variable1", varB: "Variable2" }),
+      "Reverse substitute Variable2 and Variable1"
+    );
 
     assert.equal(IModelApp.translateStatus(IModelStatus.AlreadyOpen), "Already open");
     assert.equal(IModelApp.translateStatus(IModelStatus.DuplicateCode), "Duplicate code");
@@ -142,7 +155,6 @@ describe("IModelApp", () => {
     assert.equal(IModelApp.translateStatus(101), "DbResult.BE_SQLITE_DONE");
     assert.equal(IModelApp.translateStatus(11111), "Status: 11111");
     assert.equal(IModelApp.translateStatus(undefined as any), "Illegal value");
-
   });
 
   it("Should support WebGL", () => {

@@ -8,7 +8,15 @@
 
 import { ToolType } from "../tools/Tool";
 import { IModelApp } from "../IModelApp";
-import { CommonToolbarItem, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@itwin/appui-abstract";
+import {
+  CommonToolbarItem,
+  StageUsage,
+  ToolbarItemUtilities,
+  ToolbarOrientation,
+  ToolbarUsage,
+  UiItemsManager,
+  UiItemsProvider,
+} from "@itwin/appui-abstract";
 
 /** @alpha */
 export class ToolProvider implements UiItemsProvider {
@@ -24,18 +32,27 @@ export class ToolProvider implements UiItemsProvider {
     this._toolLabel = tool.description;
   }
 
-  public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public provideToolbarButtonItems(
+    _stageId: string,
+    stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation
+  ): CommonToolbarItem[] {
     const toolbarItem = ToolbarItemUtilities.createActionButton(this._toolId, 0, this._toolIcon, this._toolLabel, async () => {
       await IModelApp.tools.run(this._toolId);
     });
 
-    return stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical ? [toolbarItem] : [];
+    return stageUsage === StageUsage.General &&
+      toolbarUsage === ToolbarUsage.ContentManipulation &&
+      toolbarOrientation === ToolbarOrientation.Vertical
+      ? [toolbarItem]
+      : [];
   }
 }
 
 /** @alpha */
 export class ExtensionImpl {
-  constructor(private _id: string) { }
+  constructor(private _id: string) {}
 
   public async registerTool(tool: ToolType, onRegistered?: () => any): Promise<void> {
     try {

@@ -24,14 +24,11 @@ import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
-  if (a === b)
-    return true;
+  if (a === b) return true;
 
-  if ((undefined === a) !== (undefined === b))
-    return false;
+  if ((undefined === a) !== (undefined === b)) return false;
 
-  if (undefined !== a && undefined !== b)
-    return a.isExactEqual(b);
+  if (undefined !== a && undefined !== b) return a.isExactEqual(b);
 
   assert(undefined === a && undefined === b);
   return true;
@@ -72,13 +69,15 @@ export class BranchUniforms {
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
   private readonly _zeroPoint = new Point3d(0, 0, 0);
 
-  public get stack(): BranchStack { return this._stack; }
+  public get stack(): BranchStack {
+    return this._stack;
+  }
 
   public constructor(target: Target) {
     this._target = target;
     this.clipStack = new ClipStack(
       () => target.uniforms.frustum.viewMatrix,
-      () => this._viewClipEnabled && this.top.viewFlags.clipVolume,
+      () => this._viewClipEnabled && this.top.viewFlags.clipVolume
     );
   }
 
@@ -105,27 +104,22 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
-    if (this.top.clipVolume)
-      this.clipStack.push(this.top.clipVolume);
+    if (this.top.clipVolume) this.clipStack.push(this.top.clipVolume);
 
-    if (branch.branch.realityModelDisplaySettings)
-      this._target.uniforms.realityModel.update(branch.branch.realityModelDisplaySettings);
+    if (branch.branch.realityModelDisplaySettings) this._target.uniforms.realityModel.update(branch.branch.realityModelDisplaySettings);
   }
 
   public pushState(state: BranchState): void {
     desync(this);
     this._stack.pushState(state);
-    if (this.top.clipVolume)
-      this.clipStack.push(this.top.clipVolume);
+    if (this.top.clipVolume) this.clipStack.push(this.top.clipVolume);
 
-    if (state.realityModelDisplaySettings)
-      this._target.uniforms.realityModel.update(state.realityModelDisplaySettings);
+    if (state.realityModelDisplaySettings) this._target.uniforms.realityModel.update(state.realityModelDisplaySettings);
   }
 
   public pop(): void {
     desync(this);
-    if (this.top.clipVolume)
-      this.clipStack.pop();
+    if (this.top.clipVolume) this.clipStack.pop();
 
     this._stack.pop();
   }
@@ -157,34 +151,28 @@ export class BranchUniforms {
   }
 
   public bindModelViewMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix4(this._mv32);
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._mv32);
   }
 
   public bindModelViewProjectionMatrix(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean): void {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix4(this._mvp32);
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._mvp32);
   }
 
   public bindModelToWorldTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix4(this._m32);
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix4(this._m32);
   }
 
   public bindWorldToViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix3(this._v32);
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix3(this._v32);
   }
 
   public bindModelViewNTransform(uniform: UniformHandle, geom: CachedGeometry, isViewCoords: boolean) {
-    if (this.update(uniform, geom, isViewCoords))
-      uniform.setMatrix3(this._mvn32);
+    if (this.update(uniform, geom, isViewCoords)) uniform.setMatrix3(this._mvn32);
   }
 
   private update(uniform: UniformHandle, geometry: CachedGeometry, isViewCoords: boolean): boolean {
     const uniforms = this._target.uniforms[isViewCoords ? "viewRect" : "frustum"];
-    if (!sync(uniforms, this))
-      desync(this);
+    if (!sync(uniforms, this)) desync(this);
 
     const instancedGeom = geometry.asInstanced;
     if (undefined !== instancedGeom || this._isInstanced) {
@@ -198,8 +186,7 @@ export class BranchUniforms {
       desync(this);
     }
 
-    if (sync(this, uniform))
-      return false;
+    if (sync(this, uniform)) return false;
 
     let mv;
     const modelMatrix = this._target.currentTransform;
@@ -207,8 +194,7 @@ export class BranchUniforms {
       // Zero out Z for silly clipping tools...
       mv = modelMatrix.clone(this._scratchTransform);
       mv.matrix.coffs[2] = mv.matrix.coffs[5] = mv.matrix.coffs[8] = 0.0;
-      if (instancedGeom)
-        mv = instancedGeom.getRtcModelTransform(mv);
+      if (instancedGeom) mv = instancedGeom.getRtcModelTransform(mv);
 
       // Scale based on device-pixel ratio.
       const scale = this._target.devicePixelRatio;
@@ -224,7 +210,10 @@ export class BranchUniforms {
         if (vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
           const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
-          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(
+            instancedGeom.getRtcModelTransform(modelMatrix),
+            this._scratchVIModelMatrix
+          );
           mv.multiplyTransformTransform(viModelMatrix, mv);
         } else {
           mv.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), mv);
@@ -253,7 +242,8 @@ export class BranchUniforms {
     if (!this._isInstanced) {
       uniforms.projectionMatrix.multiplyMatrixMatrix(this._mv, this._mvp);
       this._mvp32.initFromMatrix4d(this._mvp);
-      if (!System.instance.capabilities.isWebGL2) { // inverse model to view is only used if not instanced and not WebGL2
+      if (!System.instance.capabilities.isWebGL2) {
+        // inverse model to view is only used if not instanced and not WebGL2
         const inv = this._mv.createInverse();
         if (undefined !== inv) {
           const invTr = inv.cloneTransposed();

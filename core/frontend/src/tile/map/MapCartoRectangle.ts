@@ -73,31 +73,49 @@ export class MapCartoRectangle extends Range2d {
   }
 
   /** The western longitude in radians. */
-  public get west() { return this.low.x; }
-  public set west(x: number) { this.low.x = x; }
+  public get west() {
+    return this.low.x;
+  }
+  public set west(x: number) {
+    this.low.x = x;
+  }
 
   /** The southern latitude in radians. */
-  public get south() { return this.low.y; }
-  public set south(y: number) { this.low.y = y; }
+  public get south() {
+    return this.low.y;
+  }
+  public set south(y: number) {
+    this.low.y = y;
+  }
 
   /** The eastern longitude in radians. */
-  public get east() { return this.high.x; }
-  public set east(x: number) { this.high.x = x; }
+  public get east() {
+    return this.high.x;
+  }
+  public set east(x: number) {
+    this.high.x = x;
+  }
 
   /** The northern latitude in radians. */
-  public get north() { return this.high.y; }
-  public set north(y: number) { this.high.y = y; }
+  public get north() {
+    return this.high.y;
+  }
+  public set north(y: number) {
+    this.high.y = y;
+  }
 
   /** A non-localized string representation of this rectangle, for debugging purposes. */
   public get latLongString() {
-    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${this.low.x * Angle.degreesPerRadian} - ${this.high.x * Angle.degreesPerRadian}`;
+    return `Latitude: ${this.low.y * Angle.degreesPerRadian} - ${this.high.y * Angle.degreesPerRadian} Longitude: ${
+      this.low.x * Angle.degreesPerRadian
+    } - ${this.high.x * Angle.degreesPerRadian}`;
   }
 
   /** A pair of [[Cartographic]]s representing the same area as this rectangle. */
   public get globalLocationArea(): GlobalLocationArea {
     return {
-      southwest: Cartographic.fromRadians({longitude: this.west, latitude: this.south}),
-      northeast: Cartographic.fromRadians({longitude: this.east, latitude: this.north}),
+      southwest: Cartographic.fromRadians({ longitude: this.west, latitude: this.south }),
+      northeast: Cartographic.fromRadians({ longitude: this.east, latitude: this.north }),
     };
   }
 
@@ -141,11 +159,14 @@ export class MapCartoRectangle extends Range2d {
    * @returns the center of this rectangle.
    */
   public getCenter(result?: Cartographic): Cartographic {
-    return Cartographic.fromRadians({
-      longitude: (this.west + this.east) / 2,
-      latitude: (this.north + this.south) / 2,
-      height: 0,
-    }, result);
+    return Cartographic.fromRadians(
+      {
+        longitude: (this.west + this.east) / 2,
+        latitude: (this.north + this.south) / 2,
+        height: 0,
+      },
+      result
+    );
   }
 
   /** Computes fractional coordinates of the specified position within this rectangle's area.

@@ -16,31 +16,52 @@ import { Target } from "./Target";
  * @internal
  */
 export const enum FeatureMode {
-  None,       // no features
-  Pick,       // feature table only
-  Overrides,  // feature table with symbology overrides
+  None, // no features
+  Pick, // feature table only
+  Overrides, // feature table with symbology overrides
 }
 
 /** @internal */
-export const enum IsInstanced { No, Yes }
+export const enum IsInstanced {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsAnimated { No, Yes }
+export const enum IsAnimated {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsClassified { No, Yes }
+export const enum IsClassified {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsEdgeTestNeeded { No, Yes }
+export const enum IsEdgeTestNeeded {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsShadowable { No, Yes }
+export const enum IsShadowable {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsThematic { No, Yes }
+export const enum IsThematic {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsWiremesh { No, Yes }
+export const enum IsWiremesh {
+  No,
+  Yes,
+}
 
 /** @internal */
 export type PositionType = "quantized" | "unquantized";
@@ -74,13 +95,23 @@ export class TechniqueFlags {
     return "quantized" === this.positionType;
   }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No, posType: PositionType = "quantized"): void {
+  public init(
+    target: Target,
+    pass: RenderPass,
+    instanced: IsInstanced,
+    animated: IsAnimated = IsAnimated.No,
+    classified = IsClassified.No,
+    shadowable = IsShadowable.No,
+    thematic = IsThematic.No,
+    wiremesh = IsWiremesh.No,
+    posType: PositionType = "quantized"
+  ): void {
     const clipStack = target.uniforms.branch.clipStack;
     const numClipPlanes = clipStack.hasClip ? clipStack.textureHeight : 0;
     this.positionType = posType;
 
     if (RenderPass.Hilite === pass || RenderPass.HiliteClassification === pass || RenderPass.HilitePlanarClassification === pass) {
-      const isClassified = (classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass) ? IsClassified.Yes : IsClassified.No;
+      const isClassified = classified === IsClassified.Yes && RenderPass.HilitePlanarClassification === pass ? IsClassified.Yes : IsClassified.No;
       this.initForHilite(numClipPlanes, instanced, isClassified, posType);
     } else {
       this._isHilite = false;
@@ -134,15 +165,23 @@ export class TechniqueFlags {
     this.numClipPlanes = 0;
   }
 
-  public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
+  public get hasFeatures() {
+    return FeatureMode.None !== this.featureMode;
+  }
 
-  public setAnimated(animated: boolean) { this.isAnimated = animated ? IsAnimated.Yes : IsAnimated.No; }
-  public setInstanced(instanced: boolean) { this.isInstanced = instanced ? IsInstanced.Yes : IsInstanced.No; }
+  public setAnimated(animated: boolean) {
+    this.isAnimated = animated ? IsAnimated.Yes : IsAnimated.No;
+  }
+  public setInstanced(instanced: boolean) {
+    this.isInstanced = instanced ? IsInstanced.Yes : IsInstanced.No;
+  }
   public setClassified(classified: boolean) {
     this.isClassified = classified ? IsClassified.Yes : IsClassified.No;
   }
 
-  public get isHilite() { return this._isHilite; }
+  public get isHilite() {
+    return this._isHilite;
+  }
   public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified, posType: PositionType) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;
@@ -156,44 +195,35 @@ export class TechniqueFlags {
   }
 
   public equals(other: TechniqueFlags): boolean {
-    return this.numClipPlanes === other.numClipPlanes
-      && this.featureMode === other.featureMode
-      && this.isTranslucent === other.isTranslucent
-      && this.isEdgeTestNeeded === other.isEdgeTestNeeded
-      && this.isAnimated === other.isAnimated
-      && this.isInstanced === other.isInstanced
-      && this.isClassified === other.isClassified
-      && this.isShadowable === other.isShadowable
-      && this.isThematic === other.isThematic
-      && this.isWiremesh === other.isWiremesh
-      && this.positionType === other.positionType
-      && this.isHilite === other.isHilite;
+    return (
+      this.numClipPlanes === other.numClipPlanes &&
+      this.featureMode === other.featureMode &&
+      this.isTranslucent === other.isTranslucent &&
+      this.isEdgeTestNeeded === other.isEdgeTestNeeded &&
+      this.isAnimated === other.isAnimated &&
+      this.isInstanced === other.isInstanced &&
+      this.isClassified === other.isClassified &&
+      this.isShadowable === other.isShadowable &&
+      this.isThematic === other.isThematic &&
+      this.isWiremesh === other.isWiremesh &&
+      this.positionType === other.positionType &&
+      this.isHilite === other.isHilite
+    );
   }
 
   public buildDescription(): string {
     const parts = [this.isTranslucent ? "Translucent" : "Opaque"];
-    if (this.isInstanced)
-      parts.push("Instanced");
-    if (this.isEdgeTestNeeded)
-      parts.push("EdgeTestNeeded");
-    if (this.isAnimated)
-      parts.push("Animated");
-    if (this.isHilite)
-      parts.push("Hilite");
-    if (this.isClassified)
-      parts.push("Classified");
-    if (this.hasClip)
-      parts.push("Clip");
-    if (this.isShadowable)
-      parts.push("Shadowable");
-    if (this.isThematic)
-      parts.push("Thematic");
-    if (this.hasFeatures)
-      parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
-    if (this.isWiremesh)
-      parts.push("Wiremesh");
-    if (this.positionType === "unquantized")
-      parts.push("Unquantized");
+    if (this.isInstanced) parts.push("Instanced");
+    if (this.isEdgeTestNeeded) parts.push("EdgeTestNeeded");
+    if (this.isAnimated) parts.push("Animated");
+    if (this.isHilite) parts.push("Hilite");
+    if (this.isClassified) parts.push("Classified");
+    if (this.hasClip) parts.push("Clip");
+    if (this.isShadowable) parts.push("Shadowable");
+    if (this.isThematic) parts.push("Thematic");
+    if (this.hasFeatures) parts.push(FeatureMode.Pick === this.featureMode ? "Pick" : "Overrides");
+    if (this.isWiremesh) parts.push("Wiremesh");
+    if (this.positionType === "unquantized") parts.push("Unquantized");
 
     return parts.join("-");
   }

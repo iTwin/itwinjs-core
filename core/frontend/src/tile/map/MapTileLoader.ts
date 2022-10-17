@@ -12,22 +12,46 @@ import { Feature, FeatureTable } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
-import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../internal";
+import {
+  MapCartoRectangle,
+  MapTile,
+  QuadId,
+  RealityTile,
+  RealityTileLoader,
+  TerrainMeshProvider,
+  TerrainTileContent,
+  Tile,
+  TileLoadPriority,
+  TileRequest,
+} from "../internal";
 
 /** Specialization of map tile loader that includes terrain geometry with map imagery draped on it.
  * @internal
  */
 export class MapTileLoader extends RealityTileLoader {
-  public get priority(): TileLoadPriority { return TileLoadPriority.Terrain; }
-  public get clipLowResolutionTiles(): boolean { return true; }
+  public get priority(): TileLoadPriority {
+    return TileLoadPriority.Terrain;
+  }
+  public get clipLowResolutionTiles(): boolean {
+    return true;
+  }
   protected _applyLights = false;
   public readonly featureTable: FeatureTable;
   // public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
-  public override get isContentUnbounded(): boolean { return true; }
-  public isTileAvailable(quadId: QuadId) { return this.terrainProvider.isTileAvailable(quadId); }
+  public override get isContentUnbounded(): boolean {
+    return true;
+  }
+  public isTileAvailable(quadId: QuadId) {
+    return this.terrainProvider.isTileAvailable(quadId);
+  }
 
-  public constructor(protected _iModel: IModelConnection, protected _modelId: Id64String, protected _groundBias: number, private _terrainProvider: TerrainMeshProvider) {
+  public constructor(
+    protected _iModel: IModelConnection,
+    protected _modelId: Id64String,
+    protected _groundBias: number,
+    private _terrainProvider: TerrainMeshProvider
+  ) {
     super();
     this.featureTable = new FeatureTable(0xffff, this._modelId);
     this.featureTable.insert(new Feature(this._modelId));
@@ -36,9 +60,15 @@ export class MapTileLoader extends RealityTileLoader {
     return this.featureTable.insert(new Feature(layerModelId))!;
   }
 
-  public get maxDepth(): number { return this._terrainProvider.maxDepth; }
-  public get minDepth(): number { return 0; }
-  public get terrainProvider(): TerrainMeshProvider { return this._terrainProvider; }
+  public get maxDepth(): number {
+    return this._terrainProvider.maxDepth;
+  }
+  public get minDepth(): number {
+    return 0;
+  }
+  public get terrainProvider(): TerrainMeshProvider {
+    return this._terrainProvider;
+  }
 
   public getRequestChannel(_tile: Tile) {
     // ###TODO use hostname from url - but so many layers to go through to get that...
@@ -59,14 +89,18 @@ export class MapTileLoader extends RealityTileLoader {
     return this._terrainProvider.forceTileLoad(tile);
   }
 
-  public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
+  public override async loadTileContent(
+    tile: MapTile,
+    data: TileRequest.ResponseData,
+    system: RenderSystem,
+    isCanceled?: () => boolean
+  ): Promise<TerrainTileContent> {
     assert("data" in data);
     isCanceled = isCanceled ?? (() => !tile.isLoading);
 
     const quadId = tile.quadId;
     const mesh = await this._terrainProvider.readMesh({ data: data.data, isCanceled, tile });
-    if (!mesh || isCanceled())
-      return {};
+    if (!mesh || isCanceled()) return {};
 
     const projection = tile.getProjection(tile.heightRange);
     const terrainGeometry = system.createTerrainMesh(mesh, projection.transformFromLocal, true);
@@ -92,7 +126,7 @@ export class MapTileLoader extends RealityTileLoader {
   }
 
   public loadPolyfaces(): Polyface[] | undefined {
-    assert (false, "load polyFaces not implmented for map tiles");
+    assert(false, "load polyFaces not implmented for map tiles");
   }
 
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {

@@ -43,12 +43,14 @@ export class RenderStateFlags {
   }
 
   public equals(rhs: RenderStateFlags): boolean {
-    return this.cull === rhs.cull
-      && this.depthTest === rhs.depthTest
-      && this.blend === rhs.blend
-      && this.stencilTest === rhs.stencilTest
-      && this.depthMask === rhs.depthMask
-      && this.colorWrite === rhs.colorWrite;
+    return (
+      this.cull === rhs.cull &&
+      this.depthTest === rhs.depthTest &&
+      this.blend === rhs.blend &&
+      this.stencilTest === rhs.stencilTest &&
+      this.depthMask === rhs.depthMask &&
+      this.colorWrite === rhs.colorWrite
+    );
   }
 
   public apply(previousFlags: RenderStateFlags): void {
@@ -103,8 +105,13 @@ export class RenderStateBlend {
     if (previousBlend === undefined || previousBlend.equationRgb !== this.equationRgb || previousBlend.equationAlpha !== this.equationAlpha) {
       gl.blendEquationSeparate(this.equationRgb, this.equationAlpha);
     }
-    if (previousBlend === undefined || previousBlend.functionSourceRgb !== this.functionSourceRgb || previousBlend.functionSourceAlpha !== this.functionSourceAlpha
-      || previousBlend.functionDestRgb !== this.functionDestRgb || previousBlend.functionDestAlpha !== this.functionDestAlpha) {
+    if (
+      previousBlend === undefined ||
+      previousBlend.functionSourceRgb !== this.functionSourceRgb ||
+      previousBlend.functionSourceAlpha !== this.functionSourceAlpha ||
+      previousBlend.functionDestRgb !== this.functionDestRgb ||
+      previousBlend.functionDestAlpha !== this.functionDestAlpha
+    ) {
       gl.blendFuncSeparate(this.functionSourceRgb, this.functionDestRgb, this.functionSourceAlpha, this.functionDestAlpha);
     }
   }
@@ -129,20 +136,19 @@ export class RenderStateBlend {
   }
 
   public equals(rhs: RenderStateBlend): boolean {
-    return this.equalColors(rhs)
-      && this.equationRgb === rhs.equationRgb
-      && this.equationAlpha === rhs.equationAlpha
-      && this.functionSourceRgb === rhs.functionSourceRgb
-      && this.functionSourceAlpha === rhs.functionSourceAlpha
-      && this.functionDestRgb === rhs.functionDestRgb
-      && this.functionDestAlpha === rhs.functionDestAlpha;
+    return (
+      this.equalColors(rhs) &&
+      this.equationRgb === rhs.equationRgb &&
+      this.equationAlpha === rhs.equationAlpha &&
+      this.functionSourceRgb === rhs.functionSourceRgb &&
+      this.functionSourceAlpha === rhs.functionSourceAlpha &&
+      this.functionDestRgb === rhs.functionDestRgb &&
+      this.functionDestAlpha === rhs.functionDestAlpha
+    );
   }
 
   public equalColors(rhs: RenderStateBlend): boolean {
-    return this.color[0] === rhs.color[0] &&
-      this.color[1] === rhs.color[1] &&
-      this.color[2] === rhs.color[2] &&
-      this.color[3] === rhs.color[3];
+    return this.color[0] === rhs.color[0] && this.color[1] === rhs.color[1] && this.color[2] === rhs.color[2] && this.color[3] === rhs.color[3];
   }
 
   public setColor(color: [number, number, number, number]) {
@@ -192,9 +198,7 @@ export class RenderStateStencilOperation {
   }
 
   public equals(rhs: RenderStateStencilOperation): boolean {
-    return this.fail === rhs.fail
-      && this.zFail === rhs.zFail
-      && this.zPass === rhs.zPass;
+    return this.fail === rhs.fail && this.zFail === rhs.zFail && this.zPass === rhs.zPass;
   }
 }
 
@@ -202,7 +206,7 @@ export class RenderStateStencilOperation {
 export class RenderStateStencilFunction {
   public function: GL.StencilFunction = GL.StencilFunction.Default;
   public ref: number = 0;
-  public mask: number = 0xFFFFFFFF;
+  public mask: number = 0xffffffff;
 
   public constructor(src?: RenderStateStencilFunction) {
     if (src) {
@@ -226,9 +230,7 @@ export class RenderStateStencilFunction {
   }
 
   public equals(rhs: RenderStateStencilFunction): boolean {
-    return this.function === rhs.function
-      && this.ref === rhs.ref
-      && this.mask === rhs.mask;
+    return this.function === rhs.function && this.ref === rhs.ref && this.mask === rhs.mask;
   }
 }
 
@@ -278,10 +280,12 @@ export class RenderStateStencil {
   }
 
   public equals(rhs: RenderStateStencil): boolean {
-    return this.frontFunction.equals(rhs.frontFunction)
-      && this.backFunction.equals(rhs.backFunction)
-      && this.frontOperation.equals(rhs.frontOperation)
-      && this.backOperation.equals(rhs.backOperation);
+    return (
+      this.frontFunction.equals(rhs.frontFunction) &&
+      this.backFunction.equals(rhs.backFunction) &&
+      this.frontOperation.equals(rhs.frontOperation) &&
+      this.backOperation.equals(rhs.backOperation)
+    );
   }
 }
 
@@ -301,7 +305,7 @@ export class RenderState {
   public frontFace: GL.FrontFace = GL.FrontFace.Default;
   public cullFace: GL.CullFace = GL.CullFace.Default;
   public depthFunc: GL.DepthFunc = GL.DepthFunc.Default;
-  public stencilMask: number = 0xFFFFFFFF;
+  public stencilMask: number = 0xffffffff;
 
   public constructor(src?: RenderState) {
     if (src) {
@@ -335,23 +339,23 @@ export class RenderState {
   }
 
   public equals(rhs: RenderState): boolean {
-    return this.flags.equals(rhs.flags)
-      && this.blend.equals(rhs.blend)
-      && this.stencil.equals(rhs.stencil)
-      && this.frontFace === rhs.frontFace
-      && this.cullFace === rhs.cullFace
-      && this.depthFunc === rhs.depthFunc
-      && this.stencilMask === rhs.stencilMask;
+    return (
+      this.flags.equals(rhs.flags) &&
+      this.blend.equals(rhs.blend) &&
+      this.stencil.equals(rhs.stencil) &&
+      this.frontFace === rhs.frontFace &&
+      this.cullFace === rhs.cullFace &&
+      this.depthFunc === rhs.depthFunc &&
+      this.stencilMask === rhs.stencilMask
+    );
   }
 
   public apply(prevState: RenderState): void {
     this.flags.apply(prevState.flags);
 
     if (this.flags.blend) {
-      if (prevState.flags.blend)
-        this.blend.apply(prevState.blend);
-      else
-        this.blend.apply();
+      if (prevState.flags.blend) this.blend.apply(prevState.blend);
+      else this.blend.apply();
     }
 
     if (this.flags.cull) {
@@ -367,10 +371,8 @@ export class RenderState {
     }
 
     if (this.flags.stencilTest) {
-      if (prevState.flags.stencilTest)
-        this.stencil.apply(prevState.stencil);
-      else
-        this.stencil.apply();
+      if (prevState.flags.stencilTest) this.stencil.apply(prevState.stencil);
+      else this.stencil.apply();
     }
 
     if (this.frontFace !== prevState.frontFace) {

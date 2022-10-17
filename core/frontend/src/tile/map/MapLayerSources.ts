@@ -8,7 +8,12 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider,
+  BackgroundMapType,
+  BaseMapLayerSettings,
+  DeprecatedBackgroundMapProps,
+  ImageMapLayerSettings,
+  MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -73,8 +78,7 @@ export class MapLayerSource {
   }
 
   public static fromJSON(json: MapLayerSourceProps): MapLayerSource | undefined {
-    if (json === undefined)
-      return undefined;
+    if (json === undefined) return undefined;
 
     return new MapLayerSource(json.formatId, json.name, json.url, json.baseMap, json.transparentBackground);
   }
@@ -121,33 +125,33 @@ export class MapLayerSource {
  */
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
-  private constructor(private _sources: MapLayerSource[]) { }
+  private constructor(private _sources: MapLayerSource[]) {}
 
-  public static getInstance() { return MapLayerSources._instance; }
+  public static getInstance() {
+    return MapLayerSources._instance;
+  }
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
-    for (const source of this._sources)
-      if (source.baseMap === baseMap && source.name.toLowerCase().indexOf(nameTest) !== -1)
-        return source;
+    for (const source of this._sources) if (source.baseMap === baseMap && source.name.toLowerCase().indexOf(nameTest) !== -1) return source;
 
     return undefined;
   }
   public get layers(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
     this._sources.forEach((source) => {
-      if (!source.baseMap)
-        layers.push(source);
+      if (!source.baseMap) layers.push(source);
     });
 
     return layers;
   }
-  public get allSource() { return this._sources; }
+  public get allSource() {
+    return this._sources;
+  }
   public get bases(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
     this._sources.forEach((source) => {
-      if (source.baseMap)
-        layers.push(source);
+      if (source.baseMap) layers.push(source);
     });
 
     return layers;
@@ -155,44 +159,59 @@ export class MapLayerSources {
 
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!
+    );
     return mapLayerSources;
   }
 
   private static getMapBoxLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!
+    );
     return mapLayerSources;
   }
 
   public static async create(iModel?: IModelConnection, queryForPublicSources = false, addMapBoxSources = false): Promise<MapLayerSources> {
-    if (!queryForPublicSources && MapLayerSources._instance)
-      return MapLayerSources._instance;
+    if (!queryForPublicSources && MapLayerSources._instance) return MapLayerSources._instance;
 
-    if (!iModel)
-      iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
+    if (!iModel) iModel = IModelApp.viewManager.selectedView ? IModelApp.viewManager.selectedView.iModel : undefined;
 
     let sourceRange = MapCartoRectangle.createMaximum();
     if (iModel) {
-      const projectCenter = iModel.projectExtents.localXYZToWorld(.5, .5, .5)!;
+      const projectCenter = iModel.projectExtents.localXYZToWorld(0.5, 0.5, 0.5)!;
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
       const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.fromRadians(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.fromRadians(
+        cartoCenter.longitude - nearDelta.x,
+        cartoCenter.latitude - nearDelta.y,
+        cartoCenter.longitude + nearDelta.x,
+        cartoCenter.latitude + nearDelta.y
+      );
     }
 
     const sources = new Array<MapLayerSource>();
     const urlSet = new Set<string>();
-    const addSource = ((source: MapLayerSource) => {
+    const addSource = (source: MapLayerSource) => {
       if (!urlSet.has(source.url)) {
         sources.push(source);
         urlSet.add(source.url);
       }
-    });
+    };
 
     this.getBingMapLayerSource().forEach((source) => {
       addSource(source);
@@ -209,8 +228,7 @@ export class MapLayerSources {
 
       for (const sourceJson of sourcesJson) {
         const source = MapLayerSource.fromJSON(sourceJson);
-        if (source)
-          addSource(source);
+        if (source) addSource(source);
       }
 
       (await ArcGisUtilities.getSourcesFromQuery(sourceRange)).forEach((queriedSource) => addSource(queriedSource));
@@ -244,8 +262,8 @@ export class MapLayerSources {
     // For now we only rely on the name
     const lengthBeforeRemove = MapLayerSources._instance._sources.length;
     MapLayerSources._instance._sources = MapLayerSources._instance._sources.filter((source) => {
-      return (source.name !== name);
+      return source.name !== name;
     });
-    return (lengthBeforeRemove !== MapLayerSources._instance._sources.length);
+    return lengthBeforeRemove !== MapLayerSources._instance._sources.length;
   }
 }

@@ -17,8 +17,17 @@ import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
 import { BranchState } from "./BranchState";
 import {
-  DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
-  PushBranchCommand, PushClipCommand, PushCommand, PushStateCommand,
+  DrawCommands,
+  PopBatchCommand,
+  PopBranchCommand,
+  PopClipCommand,
+  PopCommand,
+  PrimitiveCommand,
+  PushBatchCommand,
+  PushBranchCommand,
+  PushClipCommand,
+  PushCommand,
+  PushStateCommand,
 } from "./DrawCommand";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
@@ -48,16 +57,16 @@ export class RenderCommands implements Iterable<DrawCommands> {
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   private readonly _layers: LayerCommandLists;
 
-  public get target(): Target { return this._target; }
+  public get target(): Target {
+    return this._target;
+  }
 
   public [Symbol.iterator](): Iterator<DrawCommands> {
     return this._commands[Symbol.iterator]();
   }
 
   public get isEmpty(): boolean {
-    for (const commands of this._commands)
-      if (0 < commands.length)
-        return false;
+    for (const commands of this._commands) if (0 < commands.length) return false;
 
     return true;
   }
@@ -73,25 +82,35 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
   }
 
-  public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
+  public get currentViewFlags(): ViewFlags {
+    return this._stack.top.viewFlags;
+  }
   public get compositeFlags(): CompositeFlags {
     let flags = CompositeFlags.None;
-    if (this.hasCommands(RenderPass.Translucent))
-      flags |= CompositeFlags.Translucent;
+    if (this.hasCommands(RenderPass.Translucent)) flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification) || this.hasCommands(RenderPass.HilitePlanarClassification))
+    if (
+      this.hasCommands(RenderPass.Hilite) ||
+      this.hasCommands(RenderPass.HiliteClassification) ||
+      this.hasCommands(RenderPass.HilitePlanarClassification)
+    )
       flags |= CompositeFlags.Hilite;
 
-    if (this.target.wantAmbientOcclusion)
-      flags |= CompositeFlags.AmbientOcclusion;
+    if (this.target.wantAmbientOcclusion) flags |= CompositeFlags.AmbientOcclusion;
 
     return flags;
   }
 
-  private get _curBatch(): Batch | undefined { return this._batchState.currentBatch; }
+  private get _curBatch(): Batch | undefined {
+    return this._batchState.currentBatch;
+  }
 
-  public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }
-  public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
+  public hasCommands(pass: RenderPass): boolean {
+    return 0 !== this.getCommands(pass).length;
+  }
+  public isOpaquePass(pass: RenderPass): boolean {
+    return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral;
+  }
 
   constructor(target: Target, stack: BranchStack, batchState: BatchState) {
     this._target = target;
@@ -99,8 +118,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._batchState = batchState;
     this._layers = new LayerCommandLists(this);
 
-    for (let i = 0; i < RenderPass.COUNT; ++i)
-      this._commands[i] = [];
+    for (let i = 0; i < RenderPass.COUNT; ++i) this._commands[i] = [];
   }
 
   public reset(target: Target, stack: BranchStack, batchState: BatchState): void {
@@ -160,8 +178,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     if (undefined !== decs.normal) {
       for (const normal of decs.normal) {
         const gf = normal as Graphic;
-        if (gf.isPickable)
-          gf.addCommands(this);
+        if (gf.isPickable) gf.addCommands(this);
       }
     }
 
@@ -169,16 +186,14 @@ export class RenderCommands implements Iterable<DrawCommands> {
       const world = this.target.getWorldDecorations(decs.world);
       this.pushAndPopBranch(world, () => {
         for (const gf of world.branch.entries) {
-          if ((gf as Graphic).isPickable)
-            (gf as Graphic).addCommands(this);
+          if ((gf as Graphic).isPickable) (gf as Graphic).addCommands(this);
         }
       });
     }
   }
 
   public addBackground(gf?: Graphic): void {
-    if (undefined === gf)
-      return;
+    if (undefined === gf) return;
 
     assert(RenderPass.None === this._forcedRenderPass);
 
@@ -188,8 +203,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public addSkyBox(gf?: Graphic): void {
-    if (undefined === gf)
-      return;
+    if (undefined === gf) return;
 
     assert(RenderPass.None === this._forcedRenderPass);
 
@@ -199,10 +213,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public addPrimitiveCommand(command: PrimitiveCommand, pass?: Pass): void {
-    if (undefined === pass)
-      pass = command.getPass(this.target);
+    if (undefined === pass) pass = command.getPass(this.target);
 
-    if ("none" === pass) // Edges will return none if they don't want to draw at all (edges not turned on).
+    if ("none" === pass)
+      // Edges will return none if they don't want to draw at all (edges not turned on).
       return;
 
     if (RenderPass.None !== this._forcedRenderPass) {
@@ -273,15 +287,13 @@ export class RenderCommands implements Iterable<DrawCommands> {
     if (renderOpaqueDuringTranslucent && Pass.rendersOpaque(pass) && !this._addTranslucentAsOpaque)
       this.getCommands(RenderPass.Translucent).push(command);
 
-    if (!Pass.rendersOpaqueAndTranslucent(pass))
-      this.getCommands(Pass.toRenderPass(pass)).push(command);
+    if (!Pass.rendersOpaqueAndTranslucent(pass)) this.getCommands(Pass.toRenderPass(pass)).push(command);
   }
 
   public getCommands(pass: RenderPass): DrawCommands {
     let idx = pass as number;
     assert(idx < this._commands.length);
-    if (idx >= this._commands.length)
-      idx -= 1;
+    if (idx >= this._commands.length) idx -= 1;
 
     return this._commands[idx];
   }
@@ -300,8 +312,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
   public processLayers(container: LayerContainer): void {
     assert(RenderPass.None === this._forcedRenderPass);
-    if (RenderPass.None !== this._forcedRenderPass)
-      return;
+    if (RenderPass.None !== this._forcedRenderPass) return;
 
     this._forcedRenderPass = container.renderPass;
     this._layers.processLayers(container, () => container.graphic.addCommands(this));
@@ -320,8 +331,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
 
     assert(this.isDrawingLayers);
-    if (!this.isDrawingLayers)
-      return;
+    if (!this.isDrawingLayers) return;
 
     // Let the graphic add its commands. Afterward, pull them out and add them to the LayerCommands.
     this._layers.currentLayer = layer;
@@ -336,8 +346,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
   public addHiliteLayerCommands(graphic: Graphic, pass: RenderPass): void {
     assert(this.isDrawingLayers || this._addLayersAsNormalGraphics);
-    if (!this.isDrawingLayers && !this._addLayersAsNormalGraphics)
-      return;
+    if (!this.isDrawingLayers && !this._addLayersAsNormalGraphics) return;
 
     const prevPass = this._forcedRenderPass;
     this._forcedRenderPass = RenderPass.None;
@@ -356,23 +365,19 @@ export class RenderCommands implements Iterable<DrawCommands> {
     assert(!this.isDrawingLayers);
 
     const animState = this.getAnimationBranchState(branch);
-    if (animState?.omit)
-      return;
+    if (animState?.omit) return;
 
     assert(RenderPass.None !== pass);
 
     this._stack.pushBranch(branch);
-    if (branch.planarClassifier)
-      branch.planarClassifier.pushBatchState(this._batchState);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
 
-    if (branch.secondaryClassifiers)
-      branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
+    if (branch.secondaryClassifiers) branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
 
     const cmds = this.getCommands(pass);
     const clip = animState?.clip as ClipVolume | undefined;
     const pushClip = undefined !== clip ? new PushClipCommand(clip) : undefined;
-    if (pushClip)
-      cmds.push(pushClip);
+    if (pushClip) cmds.push(pushClip);
 
     const push = new PushBranchCommand(branch);
     cmds.push(push);
@@ -382,12 +387,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this._stack.pop();
     if (cmds[cmds.length - 1] === push) {
       cmds.pop();
-      if (pushClip)
-        cmds.pop();
+      if (pushClip) cmds.pop();
     } else {
       cmds.push(PopBranchCommand.instance);
-      if (pushClip)
-        cmds.push(PopClipCommand.instance);
+      if (pushClip) cmds.push(PopClipCommand.instance);
     }
   }
 
@@ -397,18 +400,15 @@ export class RenderCommands implements Iterable<DrawCommands> {
       this._layers.pushAndPop(push, pop, func);
 
       const cmds = this._commands[RenderPass.Hilite];
-      if (0 < cmds.length && cmds[cmds.length - 1] === push)
-        cmds.pop();
-      else
-        cmds.push(pop);
+      if (0 < cmds.length && cmds[cmds.length - 1] === push) cmds.pop();
+      else cmds.push(pop);
 
       return;
     }
 
     if (RenderPass.None === this._forcedRenderPass) {
       // Need to make sure the push command precedes any subsequent commands added to any render pass.
-      for (const cmds of this._commands)
-        cmds.push(push);
+      for (const cmds of this._commands) cmds.push(push);
     } else {
       // May want to add hilite commands as well - add the push command to that pass.
       this._commands[this._forcedRenderPass].push(push);
@@ -421,47 +421,37 @@ export class RenderCommands implements Iterable<DrawCommands> {
     if (RenderPass.None === this._forcedRenderPass) {
       for (const cmds of this._commands) {
         assert(0 < cmds.length);
-        if (0 < cmds.length && cmds[cmds.length - 1] === push)
-          cmds.pop();
-        else
-          cmds.push(pop);
+        if (0 < cmds.length && cmds[cmds.length - 1] === push) cmds.pop();
+        else cmds.push(pop);
       }
     } else {
       assert(0 < this._commands[this._forcedRenderPass].length);
       assert(0 < this._commands[RenderPass.Hilite].length);
 
       let cmds = this._commands[this._forcedRenderPass];
-      if (cmds[cmds.length - 1] === push)
-        cmds.pop();
-      else
-        cmds.push(pop);
+      if (cmds[cmds.length - 1] === push) cmds.pop();
+      else cmds.push(pop);
 
       cmds = this._commands[RenderPass.Hilite];
-      if (cmds[cmds.length - 1] === push)
-        cmds.pop();
-      else
-        cmds.push(pop);
+      if (cmds[cmds.length - 1] === push) cmds.pop();
+      else cmds.push(pop);
     }
   }
 
   public pushAndPopBranch(branch: Branch, func: () => void): void {
     const animState = this.getAnimationBranchState(branch);
-    if (animState?.omit)
-      return;
+    if (animState?.omit) return;
 
     if (animState?.clip)
       this.pushAndPop(new PushClipCommand(animState.clip as ClipVolume), PopClipCommand.instance, () => this._pushAndPopBranch(branch, func));
-    else
-      this._pushAndPopBranch(branch, func);
+    else this._pushAndPopBranch(branch, func);
   }
 
   private _pushAndPopBranch(branch: Branch, func: () => void): void {
     this._stack.pushBranch(branch);
-    if (branch.planarClassifier)
-      branch.planarClassifier.pushBatchState(this._batchState);
+    if (branch.planarClassifier) branch.planarClassifier.pushBatchState(this._batchState);
 
-    if (branch.secondaryClassifiers)
-      branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
+    if (branch.secondaryClassifiers) branch.secondaryClassifiers.forEach((classifier) => classifier.pushBatchState(this._batchState));
 
     this.pushAndPop(new PushBranchCommand(branch), PopBranchCommand.instance, func);
 
@@ -489,15 +479,13 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
     this._addTranslucentAsOpaque = true;
 
-    for (const sceneGf of sceneOverlays)
-      (sceneGf as Graphic).addCommands(this);
+    for (const sceneGf of sceneOverlays) (sceneGf as Graphic).addCommands(this);
 
     if (undefined !== overlayDecorations) {
       this.pushAndPopState(this.target.decorationsState, () => {
         for (const overlay of overlayDecorations) {
           const gf = overlay as Graphic;
-          if (gf.isPickable)
-            gf.addCommands(this);
+          if (gf.isPickable) gf.addCommands(this);
         }
       });
     }
@@ -515,8 +503,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this.addGraphics(gfx.foreground);
 
     // Also add any pickable decorations.
-    if (undefined !== gfx.decorations)
-      this.addPickableDecorations(gfx.decorations);
+    if (undefined !== gfx.decorations) this.addPickableDecorations(gfx.decorations);
 
     // Also background map is pickable
     this.addBackgroundMapGraphics(gfx.background);
@@ -535,8 +522,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     this.addOverlayGraphics(gfx.overlays);
 
     const dynamics = gfx.dynamics;
-    if (dynamics && dynamics.length > 0)
-      this.addDecorations(dynamics);
+    if (dynamics && dynamics.length > 0) this.addDecorations(dynamics);
 
     const dec = gfx.decorations;
     if (undefined !== dec) {
@@ -544,18 +530,14 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
       this.addSkyBox(dec.skyBox as Graphic);
 
-      if (undefined !== dec.normal && 0 < dec.normal.length)
-        this.addGraphics(dec.normal);
+      if (undefined !== dec.normal && 0 < dec.normal.length) this.addGraphics(dec.normal);
 
-      if (undefined !== dec.world && 0 < dec.world.length)
-        this.addWorldDecorations(dec.world);
+      if (undefined !== dec.world && 0 < dec.world.length) this.addWorldDecorations(dec.world);
 
       this.pushAndPopState(this.target.decorationsState, () => {
-        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length)
-          this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
+        if (undefined !== dec.viewOverlay && 0 < dec.viewOverlay.length) this.addDecorations(dec.viewOverlay, RenderPass.ViewOverlay);
 
-        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length)
-          this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
+        if (undefined !== dec.worldOverlay && 0 < dec.worldOverlay.length) this.addDecorations(dec.worldOverlay, RenderPass.WorldOverlay);
       });
     }
 
@@ -568,7 +550,8 @@ export class RenderCommands implements Iterable<DrawCommands> {
     // if (this.target.isGeometryOutsideActiveVolume(prim.cachedGeometry))
     //   return;
 
-    if (undefined !== this._frustumPlanes) { // See if we can cull this primitive.
+    if (undefined !== this._frustumPlanes) {
+      // See if we can cull this primitive.
       if ("classification" === prim.getPass(this.target)) {
         const geom = prim.cachedGeometry;
         geom.computeRange(this._scratchRange);
@@ -585,8 +568,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
     if (RenderPass.None === this._forcedRenderPass && prim.isEdge) {
       const vf: ViewFlags = this.target.currentViewFlags;
-      if (vf.renderMode !== RenderMode.Wireframe && vf.hiddenEdges)
-        this.getCommands(RenderPass.HiddenEdge).push(command);
+      if (vf.renderMode !== RenderMode.Wireframe && vf.hiddenEdges) this.getCommands(RenderPass.HiddenEdge).push(command);
     }
   }
 
@@ -600,20 +582,17 @@ export class RenderCommands implements Iterable<DrawCommands> {
     let pass = RenderPass.Hilite;
     if (batch.graphic instanceof MeshGraphic) {
       const mg = batch.graphic;
-      if (SurfaceType.VolumeClassifier === mg.surfaceType)
-        pass = RenderPass.HiliteClassification;
+      if (SurfaceType.VolumeClassifier === mg.surfaceType) pass = RenderPass.HiliteClassification;
     } else if (batch.graphic instanceof GraphicsArray) {
       const ga = batch.graphic;
       if (ga.graphics[0] instanceof MeshGraphic) {
         const mg = ga.graphics[0];
-        if (SurfaceType.VolumeClassifier === mg.surfaceType)
-          pass = RenderPass.HiliteClassification;
+        if (SurfaceType.VolumeClassifier === mg.surfaceType) pass = RenderPass.HiliteClassification;
       } else if (ga.graphics[0] instanceof Branch) {
         const b = ga.graphics[0];
         if (b.branch.entries.length > 0 && b.branch.entries[0] instanceof MeshGraphic) {
           const mg = b.branch.entries[0];
-          if (SurfaceType.VolumeClassifier === mg.surfaceType)
-            pass = RenderPass.HiliteClassification;
+          if (SurfaceType.VolumeClassifier === mg.surfaceType) pass = RenderPass.HiliteClassification;
         }
       }
     }
@@ -621,8 +600,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   public addBatch(batch: Batch): void {
-    if (batch.locateOnly && !this.target.isReadPixelsInProgress)
-      return;
+    if (batch.locateOnly && !this.target.isReadPixelsInProgress) return;
 
     // Batches (aka element tiles) should only draw during ordinary (translucent or opaque) passes.
     // They may draw during both, or neither.
@@ -633,8 +611,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
     // If all features are overridden to be invisible, draw no graphics in this batch
     const overrides = batch.getOverrides(this.target);
-    if (overrides.allHidden)
-      return;
+    if (overrides.allHidden) return;
 
     if (!batch.range.isNull) {
       // ###TODO Would be nice if we could detect outside active volume here, but active volume only applies to specific render passes
@@ -674,15 +651,16 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
       (batch.graphic as Graphic).addCommands(this);
 
-      if (RenderPass.VolumeClassifiedRealityData === this._forcedRenderPass)
-        this._forcedRenderPass = savedForcedRenderPass;
+      if (RenderPass.VolumeClassifiedRealityData === this._forcedRenderPass) this._forcedRenderPass = savedForcedRenderPass;
 
       // If the batch contains hilited features, need to render them in the hilite pass
       const anyHilited = overrides.anyHilited;
       const planarClassifierHilited = undefined !== classifier && classifier.anyHilited;
       if (anyHilited || planarClassifierHilited)
-        (batch.graphic as Graphic).addHiliteCommands(this, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
-
+        (batch.graphic as Graphic).addHiliteCommands(
+          this,
+          planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch)
+        );
     });
 
     this._opaqueOverrides = this._translucentOverrides = false;
@@ -690,9 +668,13 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   // Define a culling frustum. Commands associated with Graphics whose ranges do not intersect the frustum will be skipped.
-  public setCheckRange(frustum: Frustum) { this._frustumPlanes = new FrustumPlanes(frustum); }
+  public setCheckRange(frustum: Frustum) {
+    this._frustumPlanes = new FrustumPlanes(frustum);
+  }
   // Clear the culling frustum.
-  public clearCheckRange(): void { this._frustumPlanes = undefined; }
+  public clearCheckRange(): void {
+    this._frustumPlanes = undefined;
+  }
 
   private setupClassificationByVolume(): void {
     // To make it easier to process the classifiers individually, set up a secondary command list for them where they
@@ -714,10 +696,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
           }
           byIndexCmds.push(cmd);
           for (let i = pushCommands.length - 1; i >= 0; --i) {
-            if ("pushBatch" === pushCommands[i].opcode)
-              byIndexCmds.push(PopBatchCommand.instance);
-            else // should be eith pushBranch or pushState opcode
-              byIndexCmds.push(PopBranchCommand.instance);
+            if ("pushBatch" === pushCommands[i].opcode) byIndexCmds.push(PopBatchCommand.instance);
+            // should be eith pushBranch or pushState opcode
+            else byIndexCmds.push(PopBranchCommand.instance);
           }
           break;
         case "popBatch":
@@ -728,7 +709,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
   }
 
-  public dump(): Array<{ name: string, count: number }> {
+  public dump(): Array<{ name: string; count: number }> {
     const dump = [
       { name: "Primitives", count: 0 },
       { name: "Batches", count: 0 },

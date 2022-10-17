@@ -27,7 +27,9 @@ export class IModelRoutingContext {
 
   public readonly token: RpcRoutingToken;
 
-  public get active(): boolean { return IModelRoutingContext.current === this; }
+  public get active(): boolean {
+    return IModelRoutingContext.current === this;
+  }
 
   private constructor(token: RpcRoutingToken) {
     this.token = token;

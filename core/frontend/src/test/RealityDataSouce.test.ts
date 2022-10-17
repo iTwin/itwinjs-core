@@ -31,10 +31,10 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("CesiumIonAsset:ThreeDTile:OSMBuildings:undefined");
   });
   it("should handle creation from any CesiumIonAsset url (not OSM Building)", () => {
-    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(75343,"ThisIsADummyCesiumIonKey");
+    const rdSourceKey = RealityDataSource.createCesiumIonAssetKey(75343, "ThisIsADummyCesiumIonKey");
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.CesiumIonAsset);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
-    const tilesetUrl = getCesiumAssetUrl(75343,"ThisIsADummyCesiumIonKey");
+    const tilesetUrl = getCesiumAssetUrl(75343, "ThisIsADummyCesiumIonKey");
     expect(rdSourceKey.id).to.be.equal(tilesetUrl);
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
@@ -49,7 +49,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyFromURLStr).to.be.equal(`CesiumIonAsset:ThreeDTile:${tilesetUrl}:undefined`);
   });
   it("should handle creation from Context Share url", () => {
-    const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
+    const tilesetUrl =
+      "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
@@ -59,7 +60,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd");
   });
   it("should handle creation from Context Share url with server context", () => {
-    const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--server/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
+    const tilesetUrl =
+      "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--server/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
@@ -69,7 +71,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:server");
   });
   it("should handle creation from Context Share url with empty guid context", () => {
-    const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--00000000-0000-0000-0000-000000000000/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
+    const tilesetUrl =
+      "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--00000000-0000-0000-0000-000000000000/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.ThreeDTile);
@@ -99,7 +102,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:ThreeDTile:c9fddf2c-e519-468b-b6fa-6d0e39f198a7:a57f6b1c-747d-4253-b0ce-9900c4dd7c1c");
   });
   it("should handle creation from url to an .opc file on an azure blob", () => {
-    const tilesetUrl = "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
+    const tilesetUrl =
+      "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(tilesetUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
@@ -150,7 +154,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("TilesetUrl:ThreeDTile:Anything that is not a valid url:undefined");
   });
   it("should handle creation from Context Share url with provider override", () => {
-    const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
+    const tilesetUrl =
+      "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const forceProvider = RealityDataProvider.TilesetUrl;
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl, forceProvider);
     expect(rdSourceKey.provider).to.equal(forceProvider);
@@ -161,7 +166,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("TilesetUrl:ThreeDTile:994fc408-401f-4ee1-91f0-3d7bfba50136:5b4ebd22-d94b-456b-8bd8-d59563de9acd");
   });
   it("should handle creation from Context Share url with format override", () => {
-    const tilesetUrl = "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
+    const tilesetUrl =
+      "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136";
     const forceFormat = RealityDataFormat.OPC;
     const rdSourceKey = RealityDataSource.createKeyFromUrl(tilesetUrl, undefined, forceFormat);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
@@ -173,7 +179,8 @@ describe("RealityDataSource", () => {
   });
 
   it("should handle creation from a blob url to an .opc file on an azure blob", () => {
-    const blobUrl = "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
+    const blobUrl =
+      "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(blobUrl);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
@@ -183,7 +190,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("ContextShare:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from blob url with provider override", () => {
-    const blobUrl = "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
+    const blobUrl =
+      "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const forceProvider = RealityDataProvider.TilesetUrl;
     const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(blobUrl, forceProvider);
     expect(rdSourceKey.provider).to.equal(forceProvider);
@@ -194,7 +202,8 @@ describe("RealityDataSource", () => {
     expect(rdSourceKeyStr).to.be.equal("TilesetUrl:OPC:fe8d32a5-f6ab-4157-b3ec-a9b53db923e3:undefined");
   });
   it("should handle creation from blob url with format override", () => {
-    const blobUrl = "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
+    const blobUrl =
+      "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D";
     const forceFormat = RealityDataFormat.ThreeDTile;
     const rdSourceKey = RealityDataSource.createKeyFromBlobUrl(blobUrl, undefined, forceFormat);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.ContextShare);
@@ -214,10 +223,14 @@ describe("RealityDataSource", () => {
     const rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
     expect(rdSourceKey.provider).to.equal(RealityDataProvider.OrbitGtBlob);
     expect(rdSourceKey.format).to.equal(RealityDataFormat.OPC);
-    expect(rdSourceKey.id).to.be.equal("ocpalphaeudata001:a5932aa8-2fde-470d-b5ab-637412ec4e49:/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc:?sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b");
+    expect(rdSourceKey.id).to.be.equal(
+      "ocpalphaeudata001:a5932aa8-2fde-470d-b5ab-637412ec4e49:/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc:?sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b"
+    );
     expect(rdSourceKey.iTwinId).to.be.undefined;
     const rdSourceKeyStr = RealityDataSourceKey.convertToString(rdSourceKey);
-    expect(rdSourceKeyStr).to.be.equal("OrbitGtBlob:OPC:ocpalphaeudata001:a5932aa8-2fde-470d-b5ab-637412ec4e49:/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc:?sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b:undefined");
+    expect(rdSourceKeyStr).to.be.equal(
+      "OrbitGtBlob:OPC:ocpalphaeudata001:a5932aa8-2fde-470d-b5ab-637412ec4e49:/datasources/0b2ad731-ec01-4b8b-8f0f-c99a593f1ff3/Seinajoki_Trees_utm.opc:?sig=EaHCCCSX6bWw%2FOHgad%2Fn3VCgUs2gPbDn%2BE2p5osMYIg%3D&se=2022-01-11T12%3A01%3A20Z&sv=2019-02-02&sp=r&sr=b:undefined"
+    );
     const orbitGtBlobFromKey = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
     expect(orbitGtBlobFromKey).to.not.be.undefined;
     if (orbitGtBlobFromKey !== undefined) {
@@ -231,7 +244,8 @@ describe("RealityDataSource", () => {
     const orbitGtBlob: OrbitGtBlobProps = {
       accountName: "",
       containerName: "fe8d32a5-f6ab-4157-b3ec-a9b53db923e3",
-      blobFileName: "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D",
+      blobFileName:
+        "https://realityblobqaeussa01.blob.core.windows.net/fe8d32a5-f6ab-4157-b3ec-a9b53db923e3/Tuxford.opc?sv=2020-08-04&se=2021-08-26T05%3A11%3A31Z&sr=c&sp=rl&sig=J9wGT1f3nyKePPj%2FI%2BJdx086GylEfM0P4ZXBQL%2FaRD4%3D",
       sasToken: "",
     };
     const rdSourceKey = RealityDataSource.createKeyFromOrbitGtBlobProps(orbitGtBlob);
@@ -246,7 +260,8 @@ describe("RealityDataSource", () => {
   });
   it("should handle creation from orbitGtBlobProps when rdsUrl is defined", () => {
     const orbitGtBlob: OrbitGtBlobProps = {
-      rdsUrl: "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136",
+      rdsUrl:
+        "https://connect-realitydataservices.bentley.com/v2.9/Repositories/S3MXECPlugin--5b4ebd22-d94b-456b-8bd8-d59563de9acd/S3MX/RealityData/994fc408-401f-4ee1-91f0-3d7bfba50136",
       accountName: "",
       containerName: "",
       blobFileName: "",

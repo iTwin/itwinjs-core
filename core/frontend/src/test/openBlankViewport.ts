@@ -39,8 +39,7 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   parentDiv.style.height = hPx;
   parentDiv.style.width = wPx;
 
-  if (options?.position)
-    parentDiv.style.position = options.position;
+  if (options?.position) parentDiv.style.position = options.position;
 
   document.body.appendChild(parentDiv);
 
@@ -57,8 +56,7 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
   }
 
   const viewport = BlankViewport.create(parentDiv, view) as BlankViewport;
-  if (undefined === options?.iModel)
-    viewport.ownedIModel = iModel;
+  if (undefined === options?.iModel) viewport.ownedIModel = iModel;
 
   return viewport;
 }
@@ -71,10 +69,8 @@ export type TestBlankViewportOptions = BlankViewportOptions & { test: (vp: Scree
 export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenViewport) => void)): void {
   const vp = openBlankViewport(typeof args === "function" ? undefined : args);
   try {
-    if (typeof args === "function")
-      args(vp);
-    else
-      args.test(vp);
+    if (typeof args === "function") args(vp);
+    else args.test(vp);
   } finally {
     vp.dispose();
   }
@@ -83,7 +79,7 @@ export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenV
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+export async function testBlankViewportAsync(args: (vp: ScreenViewport) => Promise<void>): Promise<void> {
   const vp = openBlankViewport(typeof args === "function" ? undefined : args);
   try {
     await args(vp);

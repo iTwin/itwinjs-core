@@ -42,28 +42,28 @@ const computeInstancedModelMatrixRTC = `
   }
 `;
 function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
-  if (matrix)
-    uniform.setMatrix4(matrix);
+  if (matrix) uniform.setMatrix4(matrix);
 }
 
 function addPatternTransforms(vert: VertexShaderBuilder): void {
   vert.addUniform("u_patOrg", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patOrg", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)));
+    prog.addGraphicUniform("u_patOrg", (uniform, params) => setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform))
+  );
 
   vert.addUniform("u_patLocalToModel", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patLocalToModel", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel)));
+    prog.addGraphicUniform("u_patLocalToModel", (uniform, params) => setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel))
+  );
 
   vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
     prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)));
+      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)
+    )
+  );
 
   vert.addUniform("u_patternOrigin", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_patternOrigin", (uniform, params) => {
       const origin = params.geometry.asInstanced?.patternTransforms?.origin;
-      if (origin)
-        uniform.setUniform2fv(origin);
+      if (origin) uniform.setUniform2fv(origin);
     });
   });
 }
@@ -76,8 +76,7 @@ export function addInstancedModelMatrixRTC(vert: VertexShaderBuilder) {
     prog.addGraphicUniform("u_patternParams", (uniform, params) => {
       const inst = params.geometry.asInstanced;
       assert(undefined !== inst);
-      if (inst)
-        uniform.setUniform4fv(inst.patternParams);
+      if (inst) uniform.setUniform4fv(inst.patternParams);
     });
   });
 
@@ -92,8 +91,7 @@ export function addInstancedModelMatrixRTC(vert: VertexShaderBuilder) {
 
 /** @internal */
 export function addInstanceOverrides(vert: VertexShaderBuilder): void {
-  if (undefined !== vert.find("a_instanceOverrides"))
-    return;
+  if (undefined !== vert.find("a_instanceOverrides")) return;
 
   addOvrFlagConstants(vert);
 
@@ -108,8 +106,7 @@ export function addInstanceColor(vert: VertexShaderBuilder): void {
   vert.addUniform("u_applyInstanceColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_applyInstanceColor", (uniform, params) => {
       let val = 1.0;
-      if (params.geometry.isEdge && undefined !== params.target.currentEdgeSettings.getColor(params.target.currentViewFlags))
-        val = 0.0;
+      if (params.geometry.isEdge && undefined !== params.target.currentEdgeSettings.getColor(params.target.currentViewFlags)) val = 0.0;
 
       uniform.setUniform1f(val);
     });

@@ -55,25 +55,45 @@ export namespace RenderMemory {
     public constructor() {
       super();
       this.consumers = [];
-      for (let i = 0; i < BufferType.COUNT; i++)
-        this.consumers[i] = new Consumers();
+      for (let i = 0; i < BufferType.COUNT; i++) this.consumers[i] = new Consumers();
     }
 
-    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
-    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
-    public get indexedEdges() { return this.consumers[BufferType.IndexedEdges]; }
-    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
-    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
-    public get polylines() { return this.consumers[BufferType.Polylines]; }
-    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
-    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
-    public get instances() { return this.consumers[BufferType.Instances]; }
-    public get terrain() { return this.consumers[BufferType.Terrain]; }
-    public get reality() { return this.consumers[BufferType.RealityMesh]; }
+    public get surfaces() {
+      return this.consumers[BufferType.Surfaces];
+    }
+    public get visibleEdges() {
+      return this.consumers[BufferType.VisibleEdges];
+    }
+    public get indexedEdges() {
+      return this.consumers[BufferType.IndexedEdges];
+    }
+    public get silhouetteEdges() {
+      return this.consumers[BufferType.SilhouetteEdges];
+    }
+    public get polylineEdges() {
+      return this.consumers[BufferType.PolylineEdges];
+    }
+    public get polylines() {
+      return this.consumers[BufferType.Polylines];
+    }
+    public get pointStrings() {
+      return this.consumers[BufferType.PointStrings];
+    }
+    public get pointClouds() {
+      return this.consumers[BufferType.PointClouds];
+    }
+    public get instances() {
+      return this.consumers[BufferType.Instances];
+    }
+    public get terrain() {
+      return this.consumers[BufferType.Terrain];
+    }
+    public get reality() {
+      return this.consumers[BufferType.RealityMesh];
+    }
 
     public override clear(): void {
-      for (const consumer of this.consumers)
-        consumer.clear();
+      for (const consumer of this.consumers) consumer.clear();
 
       super.clear();
     }
@@ -107,21 +127,42 @@ export namespace RenderMemory {
 
     public constructor() {
       this.consumers = [];
-      for (let i = 0; i < ConsumerType.COUNT; i++)
-        this.consumers[i] = new Consumers();
+      for (let i = 0; i < ConsumerType.COUNT; i++) this.consumers[i] = new Consumers();
     }
 
-    public get totalBytes(): number { return this._totalBytes; }
-    public get textures() { return this.consumers[ConsumerType.Textures]; }
-    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
-    public get edgeTables() { return this.consumers[ConsumerType.EdgeTables]; }
-    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
-    public get thematicTextures() { return this.consumers[ConsumerType.ThematicTextures]; }
-    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
-    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
-    public get planarClassifiers() { return this.consumers[ConsumerType.PlanarClassifiers]; }
-    public get shadowMaps() { return this.consumers[ConsumerType.ShadowMaps]; }
-    public get textureAttachments() { return this.consumers[ConsumerType.TextureAttachments]; }
+    public get totalBytes(): number {
+      return this._totalBytes;
+    }
+    public get textures() {
+      return this.consumers[ConsumerType.Textures];
+    }
+    public get vertexTables() {
+      return this.consumers[ConsumerType.VertexTables];
+    }
+    public get edgeTables() {
+      return this.consumers[ConsumerType.EdgeTables];
+    }
+    public get featureTables() {
+      return this.consumers[ConsumerType.FeatureTables];
+    }
+    public get thematicTextures() {
+      return this.consumers[ConsumerType.ThematicTextures];
+    }
+    public get featureOverrides() {
+      return this.consumers[ConsumerType.FeatureOverrides];
+    }
+    public get clipVolumes() {
+      return this.consumers[ConsumerType.ClipVolumes];
+    }
+    public get planarClassifiers() {
+      return this.consumers[ConsumerType.PlanarClassifiers];
+    }
+    public get shadowMaps() {
+      return this.consumers[ConsumerType.ShadowMaps];
+    }
+    public get textureAttachments() {
+      return this.consumers[ConsumerType.TextureAttachments];
+    }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -136,36 +177,73 @@ export namespace RenderMemory {
     public clear(): void {
       this._totalBytes = 0;
       this.buffers.clear();
-      for (const consumer of this.consumers)
-        consumer.clear();
+      for (const consumer of this.consumers) consumer.clear();
     }
 
-    public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
-    public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
-    public addEdgeTable(numBytes: number) { this.addConsumer(ConsumerType.EdgeTables, numBytes); }
-    public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
-    public addThematicTexture(numBytes: number) { this.addConsumer(ConsumerType.ThematicTextures, numBytes); }
-    public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
-    public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
-    public addPlanarClassifier(numBytes: number) { this.addConsumer(ConsumerType.PlanarClassifiers, numBytes); }
-    public addShadowMap(numBytes: number) { this.addConsumer(ConsumerType.ShadowMaps, numBytes); }
-    public addTextureAttachment(numBytes: number) { this.addConsumer(ConsumerType.TextureAttachments, numBytes); }
+    public addTexture(numBytes: number) {
+      this.addConsumer(ConsumerType.Textures, numBytes);
+    }
+    public addVertexTable(numBytes: number) {
+      this.addConsumer(ConsumerType.VertexTables, numBytes);
+    }
+    public addEdgeTable(numBytes: number) {
+      this.addConsumer(ConsumerType.EdgeTables, numBytes);
+    }
+    public addFeatureTable(numBytes: number) {
+      this.addConsumer(ConsumerType.FeatureTables, numBytes);
+    }
+    public addThematicTexture(numBytes: number) {
+      this.addConsumer(ConsumerType.ThematicTextures, numBytes);
+    }
+    public addFeatureOverrides(numBytes: number) {
+      this.addConsumer(ConsumerType.FeatureOverrides, numBytes);
+    }
+    public addClipVolume(numBytes: number) {
+      this.addConsumer(ConsumerType.ClipVolumes, numBytes);
+    }
+    public addPlanarClassifier(numBytes: number) {
+      this.addConsumer(ConsumerType.PlanarClassifiers, numBytes);
+    }
+    public addShadowMap(numBytes: number) {
+      this.addConsumer(ConsumerType.ShadowMaps, numBytes);
+    }
+    public addTextureAttachment(numBytes: number) {
+      this.addConsumer(ConsumerType.TextureAttachments, numBytes);
+    }
 
-    public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
-    public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
-    public addIndexedEdges(numBytes: number) { this.addBuffer(BufferType.IndexedEdges, numBytes); }
-    public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
-    public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
-    public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
-    public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
-    public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
+    public addSurface(numBytes: number) {
+      this.addBuffer(BufferType.Surfaces, numBytes);
+    }
+    public addVisibleEdges(numBytes: number) {
+      this.addBuffer(BufferType.VisibleEdges, numBytes);
+    }
+    public addIndexedEdges(numBytes: number) {
+      this.addBuffer(BufferType.IndexedEdges, numBytes);
+    }
+    public addSilhouetteEdges(numBytes: number) {
+      this.addBuffer(BufferType.SilhouetteEdges, numBytes);
+    }
+    public addPolylineEdges(numBytes: number) {
+      this.addBuffer(BufferType.PolylineEdges, numBytes);
+    }
+    public addPolyline(numBytes: number) {
+      this.addBuffer(BufferType.Polylines, numBytes);
+    }
+    public addPointString(numBytes: number) {
+      this.addBuffer(BufferType.PointStrings, numBytes);
+    }
+    public addPointCloud(numBytes: number) {
+      this.addBuffer(BufferType.PointClouds, numBytes);
+    }
     public addTerrain(numBytes: number) {
       this.addBuffer(BufferType.Terrain, numBytes);
     }
     public addRealityMesh(numBytes: number) {
       this.addBuffer(BufferType.RealityMesh, numBytes);
     }
-    public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
+    public addInstances(numBytes: number) {
+      this.addBuffer(BufferType.Instances, numBytes);
+    }
   }
 
   /** @internal */

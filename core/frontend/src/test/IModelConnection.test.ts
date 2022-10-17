@@ -14,7 +14,7 @@ describe("IModelConnection", () => {
     let imodel: IModelConnection;
 
     before(async () => IModelApp.startup());
-    beforeEach(() => imodel = createBlankConnection(undefined, undefined, defaultExtents));
+    beforeEach(() => (imodel = createBlankConnection(undefined, undefined, defaultExtents)));
     afterEach(async () => imodel.close());
     after(async () => IModelApp.shutdown());
 

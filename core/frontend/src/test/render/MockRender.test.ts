@@ -10,11 +10,15 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderTarget } from "../../render/RenderTarget";
 import { ViewRect } from "../../ViewRect";
 
-class MyTarget extends MockRender.OffScreenTarget { }
-class MyList extends MockRender.List { }
+class MyTarget extends MockRender.OffScreenTarget {}
+class MyList extends MockRender.List {}
 class MySystem extends MockRender.System {
-  public override createOffscreenTarget(rect: ViewRect): RenderTarget { return new MyTarget(this, rect); }
-  public override createGraphicList(list: RenderGraphic[]) { return new MyList(list); }
+  public override createOffscreenTarget(rect: ViewRect): RenderTarget {
+    return new MyTarget(this, rect);
+  }
+  public override createGraphicList(list: RenderGraphic[]) {
+    return new MyList(list);
+  }
 }
 
 describe("MockRender", () => {

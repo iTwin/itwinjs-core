@@ -38,11 +38,11 @@ export interface TileTreeSupplier {
    * @see [[Tiles.updateForScheduleScript]].
    * @internal
    */
-  addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: any, owner: TileTreeOwner }>) => void;
+  addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: any; owner: TileTreeOwner }>) => void;
 
   /** Given the set of trees belonging to this supplier, add the modelIds associated with any trees representing spatial models.
    * @see [[Tiles.getSpatialModels]].
    * @internal
    */
-  addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{ id: any, owner: TileTreeOwner }>) => void;
+  addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{ id: any; owner: TileTreeOwner }>) => void;
 }

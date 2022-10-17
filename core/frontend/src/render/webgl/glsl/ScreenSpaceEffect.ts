@@ -33,14 +33,12 @@ const computeBaseColorWithShift = `
 export function createScreenSpaceEffectProgramBuilder(params: ScreenSpaceEffectBuilderParams): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
 
-  if (params.textureCoordFromPosition)
-    builder.vert.addFunction(textureCoordFromPosition);
+  if (params.textureCoordFromPosition) builder.vert.addFunction(textureCoordFromPosition);
 
   builder.vert.addFunction(params.source.vertex);
   builder.vert.set(VertexShaderComponent.ComputePosition, computePosition);
 
-  if (params.source.sampleSourcePixel)
-    builder.frag.addFunction("vec4 sampleSourcePixel()", params.source.sampleSourcePixel);
+  if (params.source.sampleSourcePixel) builder.frag.addFunction("vec4 sampleSourcePixel()", params.source.sampleSourcePixel);
 
   builder.frag.addFunction(params.source.fragment);
   builder.addUniform("u_diffuse", VariableType.Sampler2D, (prog) => {

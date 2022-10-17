@@ -64,17 +64,28 @@ export const enum VariablePrecision {
 namespace Convert {
   export function typeToString(type: VariableType): string {
     switch (type) {
-      case VariableType.Boolean: return "bool";
-      case VariableType.Int: return "int";
-      case VariableType.Float: return "float";
-      case VariableType.Vec2: return "vec2";
-      case VariableType.Vec3: return "vec3";
-      case VariableType.Vec4: return "vec4";
-      case VariableType.Mat3: return "mat3";
-      case VariableType.Mat4: return "mat4";
-      case VariableType.Sampler2D: return "sampler2D";
-      case VariableType.SamplerCube: return "samplerCube";
-      case VariableType.Uint: return "uint";
+      case VariableType.Boolean:
+        return "bool";
+      case VariableType.Int:
+        return "int";
+      case VariableType.Float:
+        return "float";
+      case VariableType.Vec2:
+        return "vec2";
+      case VariableType.Vec3:
+        return "vec3";
+      case VariableType.Vec4:
+        return "vec4";
+      case VariableType.Mat3:
+        return "mat3";
+      case VariableType.Mat4:
+        return "mat4";
+      case VariableType.Sampler2D:
+        return "sampler2D";
+      case VariableType.SamplerCube:
+        return "samplerCube";
+      case VariableType.Uint:
+        return "uint";
       default:
         assert(false);
         return "undefined";
@@ -83,14 +94,14 @@ namespace Convert {
 
   export function scopeToString(scope: VariableScope, isVertexShader: boolean): string {
     switch (scope) {
-      case VariableScope.Global: return "";
+      case VariableScope.Global:
+        return "";
       case VariableScope.Varying: {
-        if (System.instance.capabilities.isWebGL2)
-          return (isVertexShader ? "out" : "in");
-        else
-          return "varying";
+        if (System.instance.capabilities.isWebGL2) return isVertexShader ? "out" : "in";
+        else return "varying";
       }
-      case VariableScope.Uniform: return "uniform";
+      case VariableScope.Uniform:
+        return "uniform";
       default:
         assert(false);
         return "undefined";
@@ -99,10 +110,14 @@ namespace Convert {
 
   export function precisionToString(precision: VariablePrecision): string {
     switch (precision) {
-      case VariablePrecision.Default: return "";
-      case VariablePrecision.Low: return "lowp";
-      case VariablePrecision.Medium: return "mediump";
-      case VariablePrecision.High: return "highp";
+      case VariablePrecision.Default:
+        return "";
+      case VariablePrecision.Low:
+        return "lowp";
+      case VariablePrecision.Medium:
+        return "mediump";
+      case VariablePrecision.High:
+        return "highp";
       default:
         assert(false);
         return "undefined";
@@ -131,7 +146,16 @@ export class ShaderVariable {
   public readonly isConst: boolean = false; // for global variables only
   public readonly length: number; // for uniform arrays only
 
-  private constructor(name: string, type: VariableType, scope: VariableScope, precision: VariablePrecision, isConst: boolean, addBinding?: AddVariableBinding, value?: string, length: number = 0) {
+  private constructor(
+    name: string,
+    type: VariableType,
+    scope: VariableScope,
+    precision: VariablePrecision,
+    isConst: boolean,
+    addBinding?: AddVariableBinding,
+    value?: string,
+    length: number = 0
+  ) {
     this._addBinding = addBinding;
     this.name = name;
     this.value = value;
@@ -142,11 +166,24 @@ export class ShaderVariable {
     this.length = length;
   }
 
-  public static create(name: string, type: VariableType, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
+  public static create(
+    name: string,
+    type: VariableType,
+    scope: VariableScope,
+    addBinding?: AddVariableBinding,
+    precision: VariablePrecision = VariablePrecision.Default
+  ): ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined);
   }
 
-  public static createArray(name: string, type: VariableType, length: number, scope: VariableScope, addBinding?: AddVariableBinding, precision: VariablePrecision = VariablePrecision.Default): ShaderVariable {
+  public static createArray(
+    name: string,
+    type: VariableType,
+    length: number,
+    scope: VariableScope,
+    addBinding?: AddVariableBinding,
+    precision: VariablePrecision = VariablePrecision.Default
+  ): ShaderVariable {
     return new ShaderVariable(name, type, scope, precision, false, addBinding, undefined, length);
   }
 
@@ -154,36 +191,38 @@ export class ShaderVariable {
     return new ShaderVariable(name, type, VariableScope.Global, VariablePrecision.Default, isConst, undefined, value);
   }
 
-  public get hasBinding(): boolean { return undefined !== this._addBinding; }
+  public get hasBinding(): boolean {
+    return undefined !== this._addBinding;
+  }
   public addBinding(prog: ShaderProgram) {
-    if (undefined !== this._addBinding)
-      this._addBinding(prog);
+    if (undefined !== this._addBinding) this._addBinding(prog);
   }
 
-  public get typeName(): string { return Convert.typeToString(this.type); }
-  public getScopeName(isVertexShader: boolean): string { return Convert.scopeToString(this.scope, isVertexShader); }
-  public get precisionName(): string { return Convert.precisionToString(this.precision); }
+  public get typeName(): string {
+    return Convert.typeToString(this.type);
+  }
+  public getScopeName(isVertexShader: boolean): string {
+    return Convert.scopeToString(this.scope, isVertexShader);
+  }
+  public get precisionName(): string {
+    return Convert.precisionToString(this.precision);
+  }
 
   /** Constructs the single-line declaration of this variable */
   public buildDeclaration(isVertexShader: boolean): string {
     const parts = new Array<string>();
-    if (this.isConst)
-      parts.push("const");
+    if (this.isConst) parts.push("const");
 
     const scopeName = this.getScopeName(isVertexShader);
-    if (0 < scopeName.length)
-      parts.push(scopeName);
+    if (0 < scopeName.length) parts.push(scopeName);
 
     const precisionName = this.precisionName;
-    if (0 < precisionName.length)
-      parts.push(precisionName);
+    if (0 < precisionName.length) parts.push(precisionName);
 
     parts.push(this.typeName);
 
-    if (this.length > 0)
-      parts.push(`${this.name}[${this.length.toFixed(0)}]`);
-    else
-      parts.push(this.name);
+    if (this.length > 0) parts.push(`${this.name}[${this.length.toFixed(0)}]`);
+    else parts.push(this.name);
 
     if (undefined !== this.value && 0 < this.value.length) {
       parts.push("=");
@@ -203,7 +242,9 @@ export class ShaderVariables {
   protected _list: ShaderVariable[] = new Array<ShaderVariable>();
 
   /** Find an existing variable with the specified name */
-  public find(name: string): ShaderVariable | undefined { return this._list.find((v: ShaderVariable) => v.name === name); }
+  public find(name: string): ShaderVariable | undefined {
+    return this._list.find((v: ShaderVariable) => v.name === name);
+  }
 
   /** Add a new variable, if a variable with the same name does not already exist.  return true if added */
   public addVariable(v: ShaderVariable): boolean {
@@ -235,18 +276,15 @@ export class ShaderVariables {
   }
 
   public addBitFlagConstant(name: string, value: number) {
-    if (System.instance.capabilities.isWebGL2)
-      this.addGlobal(name, VariableType.Uint, `${(2 ** value).toFixed(0)}u`, true);
-    else
-      this.addGlobal(name, VariableType.Float, (1.0 / (2 ** (value + 1))).toExponential(7), true);
+    if (System.instance.capabilities.isWebGL2) this.addGlobal(name, VariableType.Uint, `${(2 ** value).toFixed(0)}u`, true);
+    else this.addGlobal(name, VariableType.Float, (1.0 / 2 ** (value + 1)).toExponential(7), true);
   }
 
   /** Constructs the lines of glsl code declaring the variables of a certain scope. */
   public buildScopeDeclarations(isVertexShader: boolean, scope: VariableScope, constants?: boolean): string {
     let decls = "";
     for (const v of this._list) {
-      if (scope === v.scope && (undefined === constants ? true : v.isConst === constants))
-        decls += `${v.buildDeclaration(isVertexShader)}\n`;
+      if (scope === v.scope && (undefined === constants ? true : v.isConst === constants)) decls += `${v.buildDeclaration(isVertexShader)}\n`;
     }
 
     return decls;
@@ -282,7 +320,9 @@ export class ShaderVariables {
     }
   }
 
-  public get length(): number { return this._list.length; }
+  public get length(): number {
+    return this._list.length;
+  }
 
   private findSlot(variableSize: number, loopSize: number, registers: number[]): number {
     // Find the first available slot into which to insert this variable
@@ -354,14 +394,12 @@ export class ShaderVariables {
     outStr += `// Slots used: ${slotsUsed}  [${registers.toString()}]\n`;
 
     // debug output modes
-    const outputAll = true;  // false just outputs varyings that use more than 8
+    const outputAll = true; // false just outputs varyings that use more than 8
     if (outputAll) {
       return outStr;
     } else {
-      if (slotsUsed > 8)
-        return outStr;
-      else
-        return "";
+      if (slotsUsed > 8) return outStr;
+      else return "";
     }
   }
 
@@ -393,8 +431,7 @@ export class ShaderVariables {
     varyings.sort((a, b) => b.type - a.type); // this is good enough to sort by
 
     for (const variable of varyings) {
-      if (VariableScope.Varying !== variable.scope)
-        continue;
+      if (VariableScope.Varying !== variable.scope) continue;
 
       let variableSize = 0;
       switch (variable.type) {
@@ -432,10 +469,14 @@ export class SourceBuilder {
   public source: string = "";
 
   /* Append the specified string to the glsl source */
-  public add(what: string): void { this.source += what; }
+  public add(what: string): void {
+    this.source += what;
+  }
 
   /* Append a new-line to the glsl source */
-  public newline(): void { this.add("\n"); }
+  public newline(): void {
+    this.add("\n");
+  }
 
   /* Append the specified string to the glsl source, followed by a new-line */
   public addline(what: string): void {
@@ -457,17 +498,19 @@ export class SourceBuilder {
    */
   public static buildFunctionDefinition(declaration: string, implementation: string): string {
     // If implementation does not start with a newline then assume it is an inline function & add spaces between braces.
-    if ("\n" === implementation.charAt(0))
-      return `${declaration} {${implementation}}\n\n`;
-    else
-      return `${declaration} { ${implementation} }\n\n`;
+    if ("\n" === implementation.charAt(0)) return `${declaration} {${implementation}}\n\n`;
+    else return `${declaration} { ${implementation} }\n\n`;
   }
 
   /** Constructs a function definition as described by buildFunctionDefinition() and appends it to the glsl source. */
-  public addFunction(declaration: string, implementation: string): void { this.add(SourceBuilder.buildFunctionDefinition(declaration, implementation)); }
+  public addFunction(declaration: string, implementation: string): void {
+    this.add(SourceBuilder.buildFunctionDefinition(declaration, implementation));
+  }
 
   /** Constructs the definition of the main() function using the supplied function body and appends it to the glsl source. */
-  public addMain(implementation: string): void { this.addFunction("void main()", implementation); }
+  public addMain(implementation: string): void {
+    this.addFunction("void main()", implementation);
+  }
 }
 
 /** @internal */
@@ -499,8 +542,7 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public addInitializer(initializer: string): void {
-    if (-1 === this._initializers.indexOf(initializer))
-      this._initializers.push(initializer);
+    if (-1 === this._initializers.indexOf(initializer)) this._initializers.push(initializer);
   }
 
   protected constructor(maxComponents: number, flags: ShaderBuilderFlags) {
@@ -538,11 +580,9 @@ export class ShaderBuilder extends ShaderVariables {
 
   public addFunction(declarationOrFull: string, implementation?: string): void {
     let def = declarationOrFull;
-    if (undefined !== implementation)
-      def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
+    if (undefined !== implementation) def = SourceBuilder.buildFunctionDefinition(`\n${declarationOrFull}`, implementation);
 
-    if (undefined === this.findFunction(def))
-      this._functions.push(def);
+    if (undefined === this.findFunction(def)) this._functions.push(def);
   }
 
   public replaceFunction(existing: string, replacement: string): boolean {
@@ -560,13 +600,11 @@ export class ShaderBuilder extends ShaderVariables {
   }
 
   public addExtension(extName: string): void {
-    if (-1 === this._extensions.indexOf(extName))
-      this._extensions.push(extName);
+    if (-1 === this._extensions.indexOf(extName)) this._extensions.push(extName);
   }
 
   public addMacro(macro: string): void {
-    if (-1 === this._macros.indexOf(macro))
-      this._macros.push(macro);
+    if (-1 === this._macros.indexOf(macro)) this._macros.push(macro);
   }
 
   public addDefine(name: string, value: string): void {
@@ -574,15 +612,12 @@ export class ShaderBuilder extends ShaderVariables {
     const macro = defineName + value;
 
     const index = this._macros.findIndex((x) => x.startsWith(defineName));
-    if (-1 !== index)
-      this._macros[index] = macro;
-    else
-      this._macros.push(defineName + value);
+    if (-1 !== index) this._macros[index] = macro;
+    else this._macros.push(defineName + value);
   }
 
   public clearFragOutput(): void {
-    while (this._fragOutputs.length > 0)
-      this._fragOutputs.pop();
+    while (this._fragOutputs.length > 0) this._fragOutputs.pop();
   }
 
   public addFragOutput(name: string, value: number): void {
@@ -607,12 +642,10 @@ export class ShaderBuilder extends ShaderVariables {
     }
 
     // Macros
-    for (const macro of this._macros)
-      src.addline(macro);
+    for (const macro of this._macros) src.addline(macro);
 
     // Extensions
-    for (const ext of this._extensions)
-      src.addline(`#extension ${ext} : enable`);
+    for (const ext of this._extensions) src.addline(`#extension ${ext} : enable`);
 
     // Default precisions
     src.addline("precision highp float;");
@@ -623,10 +656,8 @@ export class ShaderBuilder extends ShaderVariables {
     if (attrMap !== undefined) {
       const webGL2 = System.instance.capabilities.isWebGL2;
       attrMap.forEach((attr: AttributeDetails, key: string) => {
-        if (webGL2)
-          src.addline(`in ${Convert.typeToString(attr.type)} ${key};`);
-        else
-          src.addline(`attribute ${Convert.typeToString(attr.type)} ${key};`);
+        if (webGL2) src.addline(`in ${Convert.typeToString(attr.type)} ${key};`);
+        else src.addline(`attribute ${Convert.typeToString(attr.type)} ${key};`);
       });
     }
 
@@ -634,16 +665,14 @@ export class ShaderBuilder extends ShaderVariables {
     src.add(this.buildDeclarations(isVertexShader));
 
     // Layouts (WebGL2 only)
-    for (const layout of this._fragOutputs)
-      src.addline(layout);
+    for (const layout of this._fragOutputs) src.addline(layout);
 
     // Functions
     for (const func of this._functions) {
       src.add(func);
     }
 
-    if (!src.source.endsWith("\n\n"))
-      src.newline();
+    if (!src.source.endsWith("\n\n")) src.newline();
 
     return src;
   }
@@ -717,9 +746,11 @@ export const enum VertexShaderComponent {
 export class VertexShaderBuilder extends ShaderBuilder {
   private _computedVarying: string[] = new Array<string>();
 
-  private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder { return this.buildPreludeCommon(attrMap, true); }
+  private buildPrelude(attrMap?: Map<string, AttributeDetails>): SourceBuilder {
+    return this.buildPreludeCommon(attrMap, true);
+  }
 
-  public constructor(flags: ShaderBuilderFlags = { }) {
+  public constructor(flags: ShaderBuilderFlags = {}) {
     super(VertexShaderComponent.COUNT, flags);
 
     this.addDefine("MAT_NORM", "g_nmx");
@@ -744,9 +775,15 @@ export class VertexShaderBuilder extends ShaderBuilder {
     return this._flags.positionType;
   }
 
-  public get(id: VertexShaderComponent): string | undefined { return this.getComponent(id); }
-  public set(id: VertexShaderComponent, component: string) { this.addComponent(id, component); }
-  public unset(id: VertexShaderComponent) { this.removeComponent(id); }
+  public get(id: VertexShaderComponent): string | undefined {
+    return this.getComponent(id);
+  }
+  public set(id: VertexShaderComponent, component: string) {
+    this.addComponent(id, component);
+  }
+  public unset(id: VertexShaderComponent) {
+    this.removeComponent(id);
+  }
 
   public addComputedVarying(name: string, type: VariableType, computation: string): void {
     this.addVarying(name, type);
@@ -771,10 +808,8 @@ export class VertexShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      if ("\n" === init.charAt(0))
-        main.addline(`  {${init}  }\n`);
-      else
-        main.addline(`  { ${init} }\n`);
+      if ("\n" === init.charAt(0)) main.addline(`  {${init}  }\n`);
+      else main.addline(`  { ${init} }\n`);
     }
 
     main.addline("  vec4 rawPosition = computeVertexPosition(qpos);");
@@ -939,29 +974,31 @@ export const enum FragmentShaderComponent {
 export class FragmentShaderBuilder extends ShaderBuilder {
   public requiresEarlyZWorkaround = false;
 
-  public constructor(flags: ShaderBuilderFlags = { }) {
+  public constructor(flags: ShaderBuilderFlags = {}) {
     super(FragmentShaderComponent.COUNT, flags);
 
-    if (System.instance.capabilities.isWebGL2)
-      this.addFragOutput("FragColor", -1);
-    else
-      this.addDefine("FragColor", "gl_FragColor");
+    if (System.instance.capabilities.isWebGL2) this.addFragOutput("FragColor", -1);
+    else this.addDefine("FragColor", "gl_FragColor");
   }
 
-  public get(id: FragmentShaderComponent): string | undefined { return this.getComponent(id); }
-  public set(id: FragmentShaderComponent, component: string) { this.addComponent(id, component); }
-  public unset(id: FragmentShaderComponent) { this.removeComponent(id); }
+  public get(id: FragmentShaderComponent): string | undefined {
+    return this.getComponent(id);
+  }
+  public set(id: FragmentShaderComponent, component: string) {
+    this.addComponent(id, component);
+  }
+  public unset(id: FragmentShaderComponent) {
+    this.removeComponent(id);
+  }
 
   public addDrawBuffersExtension(n: number): void {
     if (System.instance.capabilities.isWebGL2) {
       this.clearFragOutput();
-      for (let i = 0; i < n; i++)
-        this.addFragOutput(`FragColor${i}`, i);
+      for (let i = 0; i < n; i++) this.addFragOutput(`FragColor${i}`, i);
     } else {
       assert(System.instance.capabilities.supportsDrawBuffers, "WEBGL_draw_buffers unsupported");
       this.addExtension("GL_EXT_draw_buffers");
-      for (let i = 0; i < n; i++)
-        this.addDefine(`FragColor${i}`, `gl_FragData[${i}]`);
+      for (let i = 0; i < n; i++) this.addDefine(`FragColor${i}`, `gl_FragData[${i}]`);
     }
   }
 
@@ -981,10 +1018,8 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     // Initialization logic that should occur at start of main() - primarily global variables whose values
     // are too complex to compute inline or which depend on uniforms and/or other globals.
     for (const init of this._initializers) {
-      if ("\n" === init.charAt(0))
-        main.addline(`  {${init}  }\n`);
-      else
-        main.addline(`  { ${init} }\n`);
+      if ("\n" === init.charAt(0)) main.addline(`  {${init}  }\n`);
+      else main.addline(`  { ${init} }\n`);
     }
 
     const checkForEarlyDiscard = this.get(FragmentShaderComponent.CheckForEarlyDiscard);
@@ -999,10 +1034,8 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== finalizeDepth) {
       prelude.addFunction("float finalizeDepth()", finalizeDepth);
       main.addline("  float finalDepth = finalizeDepth();");
-      if (System.instance.capabilities.isWebGL2)
-        main.addline("  gl_FragDepth = finalDepth;");
-      else
-        main.addline("  gl_FragDepthEXT = finalDepth;");
+      if (System.instance.capabilities.isWebGL2) main.addline("  gl_FragDepth = finalDepth;");
+      else main.addline("  gl_FragDepthEXT = finalDepth;");
     }
 
     let clipIndent = "";
@@ -1031,10 +1064,8 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     const applyPlanarClassifier = this.get(FragmentShaderComponent.ApplyPlanarClassifier);
     if (undefined !== applyPlanarClassifier) {
       if (undefined === finalizeDepth) {
-        if (this.findFunction(volClassOpaqueColor))
-          main.addline(`${clipIndent}  float finalDepth = gl_FragCoord.z;`);
-        else
-          main.addline(`${clipIndent}  float finalDepth = 1.0;`);
+        if (this.findFunction(volClassOpaqueColor)) main.addline(`${clipIndent}  float finalDepth = gl_FragCoord.z;`);
+        else main.addline(`${clipIndent}  float finalDepth = 1.0;`);
       }
       prelude.addFunction("vec4 applyPlanarClassifications(vec4 baseColor, float depth)", applyPlanarClassifier);
       main.addline(`${clipIndent}  baseColor = applyPlanarClassifications(baseColor, finalDepth);`);
@@ -1064,8 +1095,7 @@ export class FragmentShaderBuilder extends ShaderBuilder {
       main.addline(`${clipIndent}  if (discardByAlpha(baseColor.a)) { discard; return; }`);
     }
 
-    if (undefined !== applyClipping)
-      main.addline("  }");
+    if (undefined !== applyClipping) main.addline("  }");
 
     const applyMonochrome = this.get(FragmentShaderComponent.ApplyMonochrome);
     if (undefined !== applyMonochrome) {
@@ -1146,7 +1176,7 @@ export class ProgramBuilder {
   private readonly _flags: ShaderBuilderFlags;
   private readonly _attrMap?: Map<string, AttributeDetails>;
 
-  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = { }) {
+  public constructor(attrMap?: Map<string, AttributeDetails>, flags: ShaderBuilderFlags = {}) {
     this._attrMap = attrMap;
     this.vert = new VertexShaderBuilder(flags);
     this.frag = new FragmentShaderBuilder(flags);
@@ -1177,8 +1207,7 @@ export class ProgramBuilder {
   }
 
   public addInlineComputedVarying(name: string, type: VariableType, inlineComputation: string) {
-    if (this.frag.addVarying(name, type))
-      this.vert.addComputedVarying(name, type, inlineComputation);
+    if (this.frag.addVarying(name, type)) this.vert.addComputedVarying(name, type, inlineComputation);
   }
   public addFunctionComputedVarying(name: string, type: VariableType, funcName: string, funcBody: string) {
     let funcDecl = `\n${Convert.typeToString(type)} ${funcName}()`;
@@ -1230,8 +1259,8 @@ export class ProgramBuilder {
   }
 
   public setDebugDescription(description: string): void {
-    this.vert.headerComment = (`//!V! ${description}`);
-    this.frag.headerComment = (`//!F! ${description}`);
+    this.vert.headerComment = `//!V! ${description}`;
+    this.frag.headerComment = `//!F! ${description}`;
   }
 
   /** Returns a deep copy of this program builder. */

@@ -30,17 +30,27 @@ export function createCombineTexturesProgram(context: WebGLContext): ShaderProgr
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  frag.addUniform("u_texture0", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_texture0", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture0, TextureUnit.Zero);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_texture0",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addGraphicUniform("u_texture0", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture0, TextureUnit.Zero);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_texture1", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_texture1", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture1, TextureUnit.One);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_texture1",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addGraphicUniform("u_texture1", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CombineTexturesGeometry).texture1, TextureUnit.One);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 

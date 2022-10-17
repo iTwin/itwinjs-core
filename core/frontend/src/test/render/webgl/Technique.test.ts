@@ -128,13 +128,11 @@ describe("Techniques", () => {
 
       if (!useWebGL2) {
         it("should compile all shader programs without MRT", async () => {
-          if (System.instance.capabilities.supportsDrawBuffers)
-            await compileAllShaders("WEBGL_draw_buffers");
+          if (System.instance.capabilities.supportsDrawBuffers) await compileAllShaders("WEBGL_draw_buffers");
         }).timeout(compileTimeout);
 
         it("should compile all shader programs without logarithmic depth", async () => {
-          if (System.instance.capabilities.supportsFragDepth)
-            await compileAllShaders("EXT_frag_depth");
+          if (System.instance.capabilities.supportsFragDepth) await compileAllShaders("EXT_frag_depth");
         }).timeout(compileTimeout);
       }
 
@@ -195,7 +193,7 @@ describe("Techniques", () => {
 
       describe("Number of varying vectors", () => {
         const buildProgram = ProgramBuilder.prototype.buildProgram; // eslint-disable-line @typescript-eslint/unbound-method
-        after(() => ProgramBuilder.prototype.buildProgram = buildProgram);
+        after(() => (ProgramBuilder.prototype.buildProgram = buildProgram));
 
         it("does not exceed minimum guaranteed", () => {
           // GL_MAX_VARYING_VECTORS must be at least 8 on WebGL 1 and 15 on WebGL 2.

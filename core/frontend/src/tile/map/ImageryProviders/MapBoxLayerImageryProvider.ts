@@ -25,10 +25,18 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
     this._zoomMax = 20;
   }
 
-  public get tileWidth(): number { return 256; }
-  public get tileHeight(): number { return 256; }
-  public override get minimumZoomLevel(): number { return this._zoomMin; }
-  public override get maximumZoomLevel(): number { return this._zoomMax; }
+  public get tileWidth(): number {
+    return 256;
+  }
+  public get tileHeight(): number {
+    return 256;
+  }
+  public override get minimumZoomLevel(): number {
+    return this._zoomMin;
+  }
+  public override get maximumZoomLevel(): number {
+    return this._zoomMax;
+  }
 
   // construct the Url from the desired Tile
   public async constructUrl(row: number, column: number, zoomLevel: number): Promise<string> {
@@ -48,10 +56,12 @@ export class MapBoxLayerImageryProvider extends MapLayerImageryProvider {
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.mapboxLogoCard) {
       cards.dataset.mapboxLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") }));
+      cards.appendChild(
+        IModelApp.makeLogoCard({ heading: "Mapbox", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.MapBoxCopyright") })
+      );
     }
   }
 
   // no initialization needed for MapBoxImageryProvider.
-  public override async initialize(): Promise<void> { }
+  public override async initialize(): Promise<void> {}
 }

@@ -161,14 +161,18 @@ export function addClipping(prog: ProgramBuilder, isWebGL2: boolean) {
   }
 
   frag.addFunction(calcClipPlaneDist);
-  frag.addUniform("s_clipSampler", VariableType.Sampler2D, (program) => {
-    program.addGraphicUniform("s_clipSampler", (uniform, params) => {
-      const texture = params.target.uniforms.branch.clipStack.texture;
-      assert(texture !== undefined);
-      if (texture !== undefined)
-        texture.bindSampler(uniform, TextureUnit.ClipVolume);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "s_clipSampler",
+    VariableType.Sampler2D,
+    (program) => {
+      program.addGraphicUniform("s_clipSampler", (uniform, params) => {
+        const texture = params.target.uniforms.branch.clipStack.texture;
+        assert(texture !== undefined);
+        if (texture !== undefined) texture.bindSampler(uniform, TextureUnit.ClipVolume);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.set(FragmentShaderComponent.ApplyClipping, isWebGL2 ? applyClipPlanesWebGL2 : applyClipPlanesWebGL1);
 }

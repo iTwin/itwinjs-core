@@ -84,8 +84,7 @@ export function createVolClassColorUsingStencilProgram(context: WebGLContext): S
       if (useLighting) {
         const hiliteColor = params.target.uniforms.hilite.hiliteColor;
         scratchColor.set(hiliteColor.red, hiliteColor.green, hiliteColor.blue, 1.0);
-      } else
-        scratchColor.set(1.0, 1.0, 1.0, 0.0);
+      } else scratchColor.set(1.0, 1.0, 1.0, 0.0);
       scratchColor.bind(uniform);
     });
   });
@@ -120,8 +119,7 @@ export function createVolClassCopyZProgram(context: WebGLContext): ShaderProgram
     });
   });
 
-  if (!System.instance.capabilities.isWebGL2)
-    frag.addExtension("GL_EXT_frag_depth");
+  if (!System.instance.capabilities.isWebGL2) frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, depthFromTexture);
 
   builder.vert.headerComment = "//!V! VolClassCopyZ";

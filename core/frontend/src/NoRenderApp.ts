@@ -14,30 +14,44 @@ import { ViewRect } from "./ViewRect";
  * @internal
  */
 export class NullTarget extends RenderTarget {
-  public get analysisFraction(): number { return 0; }
-  public set analysisFraction(_fraction: number) { }
-  public get renderSystem() { return undefined as any; }
-  public get viewRect(): ViewRect { return new ViewRect(); }
-  public get wantInvertBlackBackground(): boolean { return false; }
-  public override get animationBranches(): AnimationBranchStates | undefined { return undefined; }
-  public override set animationBranches(_branches: AnimationBranchStates | undefined) { }
-  public onDestroy(): void { }
-  public override reset(): void { }
-  public changeScene(): void { }
-  public changeDynamics(): void { }
-  public changeDecorations(): void { }
-  public changeRenderPlan(): void { }
-  public drawFrame(_sceneMilSecElapsed?: number): void { }
-  public override overrideFeatureSymbology(): void { }
-  public override setHiliteSet(): void { }
-  public override setFlashed(): void { }
-  public setViewRect(): void { }
-  public override onResized(): void { }
-  public override dispose(): void { }
-  public updateViewRect(): boolean { return false; }
-  public readPixels(): void { }
-  public get screenSpaceEffects(): Iterable<string> { return []; }
-  public set screenSpaceEffects(_effects: Iterable<string>) { }
+  public get analysisFraction(): number {
+    return 0;
+  }
+  public set analysisFraction(_fraction: number) {}
+  public get renderSystem() {
+    return undefined as any;
+  }
+  public get viewRect(): ViewRect {
+    return new ViewRect();
+  }
+  public get wantInvertBlackBackground(): boolean {
+    return false;
+  }
+  public override get animationBranches(): AnimationBranchStates | undefined {
+    return undefined;
+  }
+  public override set animationBranches(_branches: AnimationBranchStates | undefined) {}
+  public onDestroy(): void {}
+  public override reset(): void {}
+  public changeScene(): void {}
+  public changeDynamics(): void {}
+  public changeDecorations(): void {}
+  public changeRenderPlan(): void {}
+  public drawFrame(_sceneMilSecElapsed?: number): void {}
+  public override overrideFeatureSymbology(): void {}
+  public override setHiliteSet(): void {}
+  public override setFlashed(): void {}
+  public setViewRect(): void {}
+  public override onResized(): void {}
+  public override dispose(): void {}
+  public updateViewRect(): boolean {
+    return false;
+  }
+  public readPixels(): void {}
+  public get screenSpaceEffects(): Iterable<string> {
+    return [];
+  }
+  public set screenSpaceEffects(_effects: Iterable<string>) {}
 }
 
 /**
@@ -46,17 +60,37 @@ export class NullTarget extends RenderTarget {
  * @internal
  */
 export class NullRenderSystem extends RenderSystem {
-  public get isValid(): boolean { return false; }
-  public doIdleWork(): boolean { return false; }
-  public createTarget() { return new NullTarget(); }
-  public createOffscreenTarget() { return new NullTarget(); }
-  public createGraphic() { return undefined as any; }
-  public createGraphicList() { return undefined as any; }
-  public createGraphicBranch() { return undefined as any; }
-  public createBatch() { return undefined as any; }
-  public dispose() { }
-  public constructor() { super(); }
-  public override createRenderGraphic() { return undefined; }
+  public get isValid(): boolean {
+    return false;
+  }
+  public doIdleWork(): boolean {
+    return false;
+  }
+  public createTarget() {
+    return new NullTarget();
+  }
+  public createOffscreenTarget() {
+    return new NullTarget();
+  }
+  public createGraphic() {
+    return undefined as any;
+  }
+  public createGraphicList() {
+    return undefined as any;
+  }
+  public createGraphicBranch() {
+    return undefined as any;
+  }
+  public createBatch() {
+    return undefined as any;
+  }
+  public dispose() {}
+  public constructor() {
+    super();
+  }
+  public override createRenderGraphic() {
+    return undefined;
+  }
 }
 
 /**

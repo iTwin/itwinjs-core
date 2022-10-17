@@ -5,8 +5,14 @@
 // cspell:ignore GCRS
 import { XYZProps } from "@itwin/core-geometry";
 import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps,
+  GeoCoordStatus,
+  GeographicCRSProps,
+  IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps,
+  IModelReadRpcInterface,
+  PointWithStatus,
 } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 
@@ -43,8 +49,7 @@ class GCtoIMCResultCache {
       const imodelCoord = this._cache[key];
       result.push(imodelCoord);
       if (undefined === imodelCoord) {
-        if (undefined === missing)
-          missing = [];
+        if (undefined === missing) missing = [];
 
         missing.push(geoPoint);
       }
@@ -70,8 +75,7 @@ class GCtoIMCResultCache {
       if (this._cache[thisCacheKey]) {
         response.iModelCoords.push(this._cache[thisCacheKey]);
       } else {
-        if (undefined === missing)
-          missing = [];
+        if (undefined === missing) missing = [];
 
         // add this geoCoord to the request we are going to send.
         missing.push(thisGeoCoord);
@@ -106,27 +110,29 @@ class GCtoIMCResultCache {
       const promises: Array<Promise<void>> = [];
       for (let i = 0; i < missing.length; i += maxPointsPerRequest) {
         const remainingRequest = { source: this._source, geoCoords: missing.slice(i, i + maxPointsPerRequest) };
-        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), remainingRequest).then((remainingResponse) => {
-          // put the responses into the cache, and fill in the output response for each
-          for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
-            const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
+        const promise = IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token)
+          .getIModelCoordinatesFromGeoCoordinates(this._iModel.getRpcProps(), remainingRequest)
+          .then((remainingResponse) => {
+            // put the responses into the cache, and fill in the output response for each
+            for (let iResponse: number = 0; iResponse < remainingResponse.iModelCoords.length; ++iResponse) {
+              const thisPoint: PointWithStatus = remainingResponse.iModelCoords[iResponse];
 
-            // put the answer in the cache.
-            const thisGeoCoord: XYZProps = remainingRequest.geoCoords[iResponse];
-            const thisCacheKey: string = JSON.stringify(thisGeoCoord);
-            this._cache[thisCacheKey] = thisPoint;
+              // put the answer in the cache.
+              const thisGeoCoord: XYZProps = remainingRequest.geoCoords[iResponse];
+              const thisCacheKey: string = JSON.stringify(thisGeoCoord);
+              this._cache[thisCacheKey] = thisPoint;
 
-            // transfer the answer stored in remainingResponse to the correct position in the overall response.
-            const responseIndex = originalPositions[thisCacheKey];
-            if (Array.isArray(responseIndex)) {
-              for (const thisIndex of responseIndex) {
-                response.iModelCoords[thisIndex] = thisPoint;
+              // transfer the answer stored in remainingResponse to the correct position in the overall response.
+              const responseIndex = originalPositions[thisCacheKey];
+              if (Array.isArray(responseIndex)) {
+                for (const thisIndex of responseIndex) {
+                  response.iModelCoords[thisIndex] = thisPoint;
+                }
+              } else {
+                response.iModelCoords[responseIndex] = thisPoint;
               }
-            } else {
-              response.iModelCoords[responseIndex] = thisPoint;
             }
-          }
-        });
+          });
 
         promises.push(promise);
       }
@@ -168,8 +174,7 @@ class IMCtoGCResultCache {
       if (this._cache[thisCacheKey]) {
         response.geoCoords.push(this._cache[thisCacheKey]);
       } else {
-        if (!remainingRequest)
-          remainingRequest = { target: this._target, iModelCoords: [] };
+        if (!remainingRequest) remainingRequest = { target: this._target, iModelCoords: [] };
 
         // add this geoCoord to the request we are going to send.
         remainingRequest.iModelCoords.push(thisIModelCoord);
@@ -190,7 +195,9 @@ class IMCtoGCResultCache {
     } else {
       // keep track of how many came from the cache (mostly for tests).
       response.fromCache = request.iModelCoords.length - originalPositions.length;
-      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), remainingRequest!);
+      const remainingResponse = await IModelReadRpcInterface.getClientForRouting(
+        this._iModel.routingContext.token
+      ).getGeoCoordinatesFromIModelCoordinates(this._iModel.getRpcProps(), remainingRequest!);
       // put the responses into the cache, and fill in the output response for each
       for (let iResponse = 0; iResponse < remainingResponse.geoCoords.length; ++iResponse) {
         const thisPoint: PointWithStatus = remainingResponse.geoCoords[iResponse];
@@ -217,10 +224,8 @@ export class GeoConverter {
   private _gCtoIMCResultCache: GCtoIMCResultCache;
   private _iMCtoGCResultCache: IMCtoGCResultCache;
   constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps) {
-    if (typeof (datumOrGCRS) === "object")
-      this._datumOrGCRS = JSON.stringify(datumOrGCRS);
-    else
-      this._datumOrGCRS = datumOrGCRS;
+    if (typeof datumOrGCRS === "object") this._datumOrGCRS = JSON.stringify(datumOrGCRS);
+    else this._datumOrGCRS = datumOrGCRS;
     this._gCtoIMCResultCache = new GCtoIMCResultCache(iModel, this._datumOrGCRS);
     this._iMCtoGCResultCache = new IMCtoGCResultCache(iModel, this._datumOrGCRS);
   }

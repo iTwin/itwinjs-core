@@ -36,15 +36,14 @@ export class QuadId {
   public static createFromContentId(stringId: string) {
     const idParts = stringId.split("_");
     assert(idParts.length === 3);
-    if (3 !== idParts.length)
-      return new QuadId(-1, -1, -1);
+    if (3 !== idParts.length) return new QuadId(-1, -1, -1);
 
     return new QuadId(parseInt(idParts[0], 10), parseInt(idParts[1], 10), parseInt(idParts[2], 10));
   }
 
   /** @alpha */
   public get contentId(): string {
-    return  QuadId.getTileContentId(this.level, this.column, this.row);
+    return QuadId.getTileContentId(this.level, this.column, this.row);
   }
 
   /** @alpha */
@@ -70,9 +69,7 @@ export class QuadId {
     const level = this.level + 1;
     const column = this.column * 2;
     const row = this.row * 2;
-    for (let j = 0; j < rowCount; j++)
-      for (let i = 0; i < columnCount; i++)
-        childIds.push(new QuadId(level, column + i, row + j));
+    for (let j = 0; j < rowCount; j++) for (let i = 0; i < columnCount; i++) childIds.push(new QuadId(level, column + i, row + j));
 
     return childIds;
   }
@@ -100,7 +97,7 @@ export class QuadId {
   }
 
   /** @alpha */
-  public getAngleSweep(mapTilingScheme: MapTilingScheme): { longitude: AngleSweep, latitude: AngleSweep } {
+  public getAngleSweep(mapTilingScheme: MapTilingScheme): { longitude: AngleSweep; latitude: AngleSweep } {
     mapTilingScheme.tileXYToCartographic(this.column, this.row, this.level, scratchCartographic1);
     mapTilingScheme.tileXYToCartographic(this.column + 1, this.row + 1, this.level, scratchCartographic2);
     return {
@@ -124,8 +121,6 @@ export class QuadId {
 
   /** Compares this Id to another according to the conventions of an [OrderedComparator]($bentley). */
   public compare(other: QuadId): number {
-    return compareNumbers(this.level, other.level) ||
-      compareNumbers(this.row, other.row) ||
-      compareNumbers(this.column, other.column);
+    return compareNumbers(this.level, other.level) || compareNumbers(this.row, other.row) || compareNumbers(this.column, other.column);
   }
 }

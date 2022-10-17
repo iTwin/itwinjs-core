@@ -55,13 +55,7 @@ export class BoxDecorator extends TestDecorator {
     } else {
       const w = 0.5;
       const h = 0.5;
-      this.points = [
-        new Point3d(0, 0, 0),
-        new Point3d(w, 0, 0),
-        new Point3d(w, h, 0),
-        new Point3d(0, h, 0),
-        new Point3d(0, 0, 0),
-      ];
+      this.points = [new Point3d(0, 0, 0), new Point3d(w, 0, 0), new Point3d(w, h, 0), new Point3d(0, h, 0), new Point3d(0, 0, 0)];
 
       this.viewport.npcToWorldArray(this.points);
     }
@@ -99,7 +93,14 @@ export class BoxDecorator extends TestDecorator {
  * @internal
  */
 export class SphereDecorator extends TestDecorator {
-  public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _center: Point3d = new Point3d(), private _radius: number = 1) {
+  public constructor(
+    public readonly vp: ScreenViewport,
+    public readonly color: ColorDef,
+    public readonly pickable?: PickableGraphicOptions,
+    public readonly placement?: Transform,
+    private _center: Point3d = new Point3d(),
+    private _radius: number = 1
+  ) {
     super();
     IModelApp.viewManager.addDecorator(this);
   }

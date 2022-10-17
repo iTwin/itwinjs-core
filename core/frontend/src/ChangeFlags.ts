@@ -42,53 +42,79 @@ export class ChangeFlags {
   /** The set of always-drawn elements has changed.
    * @see [[Viewport.setAlwaysDrawn]] and [[Viewport.clearAlwaysDrawn]].
    */
-  public get alwaysDrawn() { return this.isSet(ChangeFlag.AlwaysDrawn); }
+  public get alwaysDrawn() {
+    return this.isSet(ChangeFlag.AlwaysDrawn);
+  }
 
   /** The set of never-drawn elements has changed.
    * @see [[Viewport.setNeverDrawn]] and [[Viewport.clearNeverDrawn]].
    */
-  public get neverDrawn() { return this.isSet(ChangeFlag.NeverDrawn); }
+  public get neverDrawn() {
+    return this.isSet(ChangeFlag.NeverDrawn);
+  }
 
   /** The set of displayed categories defined by the viewport's [[CategorySelectorState]] has changed. */
-  public get viewedCategories() { return this.isSet(ChangeFlag.ViewedCategories); }
+  public get viewedCategories() {
+    return this.isSet(ChangeFlag.ViewedCategories);
+  }
 
   /** The set of models to be displayed in the viewport has changed. */
-  public get viewedModels() { return this.isSet(ChangeFlag.ViewedModels); }
+  public get viewedModels() {
+    return this.isSet(ChangeFlag.ViewedModels);
+  }
 
   /** The [[DisplayStyleState]] or its settings such as [ViewFlags]($common) have changed. */
-  public get displayStyle() { return this.isSet(ChangeFlag.DisplayStyle); }
+  public get displayStyle() {
+    return this.isSet(ChangeFlag.DisplayStyle);
+  }
 
   /** The [[FeatureOverrideProvider]] has changed, or its internal state has changed such that its overrides must be recomputed.
    * @see [[Viewport.addFeatureOverrideProvider]] and [[Viewport.setFeatureOverrideProviderChanged]].
    */
-  public get featureOverrideProvider() { return this.isSet(ChangeFlag.FeatureOverrideProvider); }
+  public get featureOverrideProvider() {
+    return this.isSet(ChangeFlag.FeatureOverrideProvider);
+  }
 
   /** [[Vewport.changeView]] was used to replace the previous [[ViewState]] with a new one. */
-  public get viewState() { return this.isSet(ChangeFlag.ViewState); }
+  public get viewState() {
+    return this.isSet(ChangeFlag.ViewState);
+  }
 
   /** The [[PerModelCategoryVisibility.Overrides]] associated with the viewport have changed.
    * @beta
    */
-  public get viewedCategoriesPerModel() { return this.isSet(ChangeFlag.ViewedCategoriesPerModel); }
+  public get viewedCategoriesPerModel() {
+    return this.isSet(ChangeFlag.ViewedCategoriesPerModel);
+  }
 
   /** Return true if any of the specified flags are set.
    * @internal
    */
-  public isSet(flags: ChangeFlag): boolean { return 0 !== (this._flags & flags); }
+  public isSet(flags: ChangeFlag): boolean {
+    return 0 !== (this._flags & flags);
+  }
 
   /** Return true if all of the specified flags are set.
    * @internal
    */
-  public areAllSet(flags: ChangeFlag): boolean { return flags === (this._flags & flags); }
+  public areAllSet(flags: ChangeFlag): boolean {
+    return flags === (this._flags & flags);
+  }
 
   /** Returns true if any aspects affecting [[FeatureSymbology.Overrides]] have changed. */
-  public get areFeatureOverridesDirty() { return this.isSet(ChangeFlag.Overrides); }
+  public get areFeatureOverridesDirty() {
+    return this.isSet(ChangeFlag.Overrides);
+  }
 
   /** Returns true if any aspect at all has changed. */
-  public get hasChanges() { return this.isSet(ChangeFlag.All); }
+  public get hasChanges() {
+    return this.isSet(ChangeFlag.All);
+  }
 
   /** @internal */
-  public get value(): ChangeFlag { return this._flags; }
+  public get value(): ChangeFlag {
+    return this._flags;
+  }
 }
 
 /** Mutable [[ChangelFlags]].
@@ -100,17 +126,37 @@ export class MutableChangeFlags extends ChangeFlags {
   }
 
   /** Set all of the specified flags. */
-  private set(flags: ChangeFlag): void { this._flags |= flags; }
+  private set(flags: ChangeFlag): void {
+    this._flags |= flags;
+  }
 
-  public setAlwaysDrawn() { this.set(ChangeFlag.AlwaysDrawn); }
-  public setNeverDrawn() { this.set(ChangeFlag.NeverDrawn); }
-  public setViewedCategories() { this.set(ChangeFlag.ViewedCategories); }
-  public setViewedModels() { this.set(ChangeFlag.ViewedModels); }
-  public setDisplayStyle() { this.set(ChangeFlag.DisplayStyle); }
-  public setFeatureOverrideProvider() { this.set(ChangeFlag.FeatureOverrideProvider); }
-  public setViewState() { this.set(ChangeFlag.ViewState); }
-  public setViewedCategoriesPerModel() { this.set(ChangeFlag.ViewedCategoriesPerModel); }
+  public setAlwaysDrawn() {
+    this.set(ChangeFlag.AlwaysDrawn);
+  }
+  public setNeverDrawn() {
+    this.set(ChangeFlag.NeverDrawn);
+  }
+  public setViewedCategories() {
+    this.set(ChangeFlag.ViewedCategories);
+  }
+  public setViewedModels() {
+    this.set(ChangeFlag.ViewedModels);
+  }
+  public setDisplayStyle() {
+    this.set(ChangeFlag.DisplayStyle);
+  }
+  public setFeatureOverrideProvider() {
+    this.set(ChangeFlag.FeatureOverrideProvider);
+  }
+  public setViewState() {
+    this.set(ChangeFlag.ViewState);
+  }
+  public setViewedCategoriesPerModel() {
+    this.set(ChangeFlag.ViewedCategoriesPerModel);
+  }
 
   /** Clear all of the specified flags. By default, clears all flags. */
-  public clear(flags: ChangeFlag = ChangeFlag.All): void { this._flags &= ~flags; }
+  public clear(flags: ChangeFlag = ChangeFlag.All): void {
+    this._flags &= ~flags;
+  }
 }

@@ -22,11 +22,14 @@ class TestImmediate extends Tool {
     testVal2 = v2;
     return true;
   }
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
-    if (arguments.length !== 2)
-      return false;
+    if (arguments.length !== 2) return false;
     return this.run(parseInt(v1, 10), parseInt(v2, 10));
   }
 }
@@ -42,7 +45,9 @@ class TestCommandApp extends MockRender.App {
     TestImmediate.register(this.testNamespace);
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
+  protected static supplyI18NOptions() {
+    return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
+  }
 }
 
 async function setupToolRegistryTests() {
@@ -90,16 +95,14 @@ describe("ToolRegistry", () => {
     if (result.ok) {
       assert.equal(result.args.length, args.length);
       args.forEach((parsedArg, index) => assert.equal(parsedArg, result.args[index]));
-      if (undefined !== expectedToolKeyin)
-        expect(result.tool.keyin).to.equal(expectedToolKeyin);
+      if (undefined !== expectedToolKeyin) expect(result.tool.keyin).to.equal(expectedToolKeyin);
     }
   }
 
   function expectParseError(keyin: string, expectedError: KeyinParseError) {
     const result = IModelApp.tools.parseKeyin(keyin);
     expect(result.ok).to.be.false;
-    if (!result.ok)
-      expect(result.error).to.equal(expectedError);
+    if (!result.ok) expect(result.error).to.equal(expectedError);
   }
 
   it("Should parse command with quoted arguments", () => {
@@ -134,8 +137,7 @@ describe("ToolRegistry", () => {
 
     const result = IModelApp.tools.parseKeyin(`"preprocessor" format double`);
     expect(result.ok).to.be.false;
-    if (!result.ok)
-      expect(result.error).to.equal(KeyinParseError.ToolNotFound);
+    if (!result.ok) expect(result.error).to.equal(KeyinParseError.ToolNotFound);
   });
 
   it("Should parse whitespace", () => {
@@ -206,8 +208,7 @@ function showSearchResults(title: string, searchResults: FuzzySearchResults<type
 
 function showSearchResultsUsingIndexApi(title: string, searchResults?: FuzzySearchResults<typeof Tool>) {
   assert.isDefined(searchResults);
-  if (!searchResults)
-    return;
+  if (!searchResults) return;
   logResult(searchResults.length, title);
 
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -233,9 +234,10 @@ function registerTestClass(id: string, keyin: string, ns: string) {
       return true;
     }
 
-    public static override get keyin(): string { return keyin; }
-
-  }).register(ns);
+    public static override get keyin(): string {
+      return keyin;
+    }
+  }.register(ns));
 }
 
 function createTestTools(): void {
@@ -248,7 +250,8 @@ function createTestTools(): void {
   }
 }
 
-const testCommandsString: string = '[\
+const testCommandsString: string =
+  '[\
     {\
       "commandString": "update"\
     },\

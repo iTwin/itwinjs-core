@@ -30,7 +30,7 @@ export class MeshData implements WebGLDisposable {
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
-  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
+  public readonly hasFixedNormals: boolean; // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
   public readonly viewIndependentOrigin?: Point3d;
   private readonly _textureAlwaysDisplayed: boolean;
@@ -40,8 +40,7 @@ export class MeshData implements WebGLDisposable {
     this.viewIndependentOrigin = viOrigin;
 
     this.hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
-    if (FeatureIndexType.Uniform === params.vertices.featureIndexType)
-      this.uniformFeatureId = params.vertices.uniformFeatureID;
+    if (FeatureIndexType.Uniform === params.vertices.featureIndexType) this.uniformFeatureId = params.vertices.uniformFeatureID;
 
     if (undefined !== params.surface.textureMapping) {
       this.texture = params.surface.textureMapping.texture as Texture;
@@ -68,16 +67,21 @@ export class MeshData implements WebGLDisposable {
     return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
 
-  public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
+  public get isDisposed(): boolean {
+    return undefined === this.texture && this.lut.isDisposed;
+  }
 
   public dispose() {
     dispose(this.lut);
-    if (this._ownsTexture)
-      this.texture!.dispose();
+    if (this._ownsTexture) this.texture!.dispose();
   }
 
-  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
-  public get isTextureAlwaysDisplayed() { return this.isGlyph || this._textureAlwaysDisplayed; }
+  public get isGlyph() {
+    return undefined !== this.texture && this.texture.isGlyph;
+  }
+  public get isTextureAlwaysDisplayed() {
+    return this.isGlyph || this._textureAlwaysDisplayed;
+  }
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {
@@ -86,7 +90,6 @@ export class MeshData implements WebGLDisposable {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.lut.bytesUsed);
-    if (this._ownsTexture)
-      stats.addTexture(this.texture!.bytesUsed);
+    if (this._ownsTexture) stats.addTexture(this.texture!.bytesUsed);
   }
 }

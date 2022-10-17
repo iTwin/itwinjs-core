@@ -14,21 +14,27 @@ function mockTile(bytesUsed: number): Tile {
 }
 
 class List extends LRUTileList {
-  public get sentinel() { return this._sentinel; }
-  public get head() { return this._head; }
-  public get tail() { return this._tail; }
-  public override get totalBytesUsed() { return this._totalBytesUsed; }
+  public get sentinel() {
+    return this._sentinel;
+  }
+  public get head() {
+    return this._head;
+  }
+  public get tail() {
+    return this._tail;
+  }
+  public override get totalBytesUsed() {
+    return this._totalBytesUsed;
+  }
 
   public expectOrder(...expected: LRUTileListNode[]): void {
     expect(this.head.previous).to.be.undefined;
     expect(this.tail.next).to.be.undefined;
     const actual = [];
-    for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next)
-      actual.push(node);
+    for (let node: LRUTileListNode | undefined = this.head; node !== undefined; node = node.next) actual.push(node);
 
     expect(actual.length).to.equal(expected.length);
-    for (let i = 0; i < actual.length; i++)
-      expect(actual[i]).to.equal(expected[i]);
+    for (let i = 0; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
 
     let j = actual.length;
     for (let node: LRUTileListNode | undefined = this.tail; node !== undefined; node = node.previous) {
@@ -39,8 +45,12 @@ class List extends LRUTileList {
     expect(j).to.equal(0);
   }
 
-  public moveTileToEnd(tile: Tile) { this.moveToEnd(tile); }
-  public moveTileBeforeSentinel(tile: Tile) { this.moveBeforeSentinel(tile); }
+  public moveTileToEnd(tile: Tile) {
+    this.moveToEnd(tile);
+  }
+  public moveTileBeforeSentinel(tile: Tile) {
+    this.moveBeforeSentinel(tile);
+  }
 }
 
 function expectUnlinked(node: LRUTileListNode): void {
@@ -65,8 +75,7 @@ describe("LRUTileList", () => {
       expect(list.head).to.equal(tiles[0]);
       expect(list.tail).to.equal(list.sentinel);
       expect(tile.previous).to.equal(i > 0 ? tiles[i - 1] : undefined);
-      if (tile.previous)
-        expect(tile.previous.next).to.equal(tile);
+      if (tile.previous) expect(tile.previous.next).to.equal(tile);
 
       expect(tile.next).to.equal(list.sentinel);
     }
@@ -206,8 +215,7 @@ describe("LRUTileList", () => {
     function expectPartition(which: "selected" | "unselected", ...expected: LRUTileListNode[]): void {
       const actual = Array.from("selected" === which ? list.selectedTiles : list.unselectedTiles);
       expect(actual.length).to.equal(expected.length);
-      for (let i = 0; i < actual.length; i++)
-        expect(actual[i]).to.equal(expected[i]);
+      for (let i = 0; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
     }
 
     function expectSelected(...expected: LRUTileListNode[]) {

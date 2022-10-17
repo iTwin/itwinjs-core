@@ -28,12 +28,11 @@ async function getXml(url: string, credentials?: RequestBasicCredentials): Promi
   return data.text;
 }
 function rangeFromJSONArray(json: any): MapCartoRectangle | undefined {
-  return (Array.isArray(json) && json.length === 4) ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
+  return Array.isArray(json) && json.length === 4 ? MapCartoRectangle.fromDegrees(json[0], json[1], json[2], json[3]) : undefined;
 }
 
 function rangeFromJSON(json: any): MapCartoRectangle | undefined {
-  if (undefined !== json.LatLonBoundingBox)
-    return rangeFromJSONArray(json.LatLonBoundingBox);
+  if (undefined !== json.LatLonBoundingBox) return rangeFromJSONArray(json.LatLonBoundingBox);
   else if (Array.isArray(json.EX_GeographicBoundingBox)) {
     return rangeFromJSONArray(json.EX_GeographicBoundingBox);
   } else {
@@ -55,7 +54,6 @@ function initArray<T>(input: any): undefined | T[] {
  * @internal
  */
 export namespace WmsCapability {
-
   export class Service {
     public readonly name: string;
     public readonly title?: string;
@@ -93,7 +91,7 @@ export namespace WmsCapability {
       const subLayers = new Array<MapSubLayerProps>();
       let index = 1;
       let childrenFound = false;
-      const pushSubLayer = ((subLayer: SubLayer, parent?: number) => {
+      const pushSubLayer = (subLayer: SubLayer, parent?: number) => {
         let children;
         const id = index++;
         if (subLayer.children) {
@@ -105,7 +103,7 @@ export namespace WmsCapability {
           });
         }
         subLayers.push({ name: subLayer.name, title: subLayer.title, visible, parent, children, id });
-      });
+      };
       this.subLayers.forEach((subLayer) => pushSubLayer(subLayer));
 
       if (!childrenFound) {
@@ -114,15 +112,16 @@ export namespace WmsCapability {
           if (subLayer.name && subLayer.name.indexOf(Layer.PREFIX_SEPARATOR) > 0) {
             const prefix = subLayer.name.slice(0, subLayer.name.indexOf(Layer.PREFIX_SEPARATOR));
             const found = prefixed.get(prefix);
-            if (found)
-              found.push(subLayer);
-            else
-              prefixed.set(prefix, [subLayer]);
+            if (found) found.push(subLayer);
+            else prefixed.set(prefix, [subLayer]);
           }
         });
         if (prefixed.size > 1) {
           // Preserve the root node if any.
-          const rootNode = (this.subLayers.length === 1 && this.subLayers[0].children && this.subLayers[0].children.length > 1) ? subLayers.find((curSubLayer) => this.subLayers[0].name === curSubLayer.name)?.id : undefined;
+          const rootNode =
+            this.subLayers.length === 1 && this.subLayers[0].children && this.subLayers[0].children.length > 1
+              ? subLayers.find((curSubLayer) => this.subLayers[0].name === curSubLayer.name)?.id
+              : undefined;
           prefixed.forEach((children, parent) => {
             children.forEach((child) => {
               child.parent = index;
@@ -130,7 +129,14 @@ export namespace WmsCapability {
               if (child.title && child.title.indexOf(parent + Layer.PREFIX_SEPARATOR) === 0)
                 child.title = child.title.slice(parent.length + Layer.PREFIX_SEPARATOR.length);
             });
-            subLayers.push({ name: "", title: parent, parent: rootNode, id: index++, children: children.map((child) => child.id as number), visible });
+            subLayers.push({
+              name: "",
+              title: parent,
+              parent: rootNode,
+              id: index++,
+              children: children.map((child) => child.id as number),
+              visible,
+            });
           });
         }
       }
@@ -141,7 +147,7 @@ export namespace WmsCapability {
     public getSubLayersCrs(layerNameFilter: string[]): Map<string, string[]> {
       const subLayerCrs = new Map<string, string[]>();
 
-      const processSubLayer = ((subLayer: SubLayer) => {
+      const processSubLayer = (subLayer: SubLayer) => {
         if (layerNameFilter.includes(subLayer.name)) {
           subLayerCrs.set(subLayer.name, subLayer.crs);
         }
@@ -150,7 +156,7 @@ export namespace WmsCapability {
             processSubLayer(child);
           });
         }
-      });
+      };
 
       this.subLayers.forEach((subLayer) => processSubLayer(subLayer));
       return subLayerCrs;
@@ -162,12 +168,11 @@ export namespace WmsCapability {
     public readonly name: string;
     public readonly title: string;
     public readonly crs: string[];
-    public readonly ownCrs: string[];   // CRS specific to this layer (ie. not including inherited CRS)
+    public readonly ownCrs: string[]; // CRS specific to this layer (ie. not including inherited CRS)
     public readonly cartoRange?: MapCartoRectangle;
     public readonly children?: SubLayer[];
     public readonly queryable: boolean;
     public constructor(_json: any, capabilities: WmsCapabilities, public readonly parent?: SubLayer) {
-
       const getParentCrs = (parentLayer: SubLayer, crsSet: Set<string>) => {
         parentLayer.crs.forEach((parentCrs) => crsSet.add(parentCrs));
         if (parentLayer.parent) {
@@ -203,30 +208,37 @@ export class WmsCapabilities {
   public readonly version?: string;
   public readonly isVersion13: boolean;
   public readonly layer?: WmsCapability.Layer;
-  public get json() { return this._json; }
-  public get maxLevel(): number { return this.layer ? this.layer.subLayers.length : - 1; }
-  public get cartoRange(): MapCartoRectangle | undefined { return this.layer?.cartoRange; }
-  public get featureInfoSupported() { return undefined !== this._json.Capability?.Request?.GetFeatureInfo; }
-  public get featureInfoFormats(): string[] | undefined { return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined; }
+  public get json() {
+    return this._json;
+  }
+  public get maxLevel(): number {
+    return this.layer ? this.layer.subLayers.length : -1;
+  }
+  public get cartoRange(): MapCartoRectangle | undefined {
+    return this.layer?.cartoRange;
+  }
+  public get featureInfoSupported() {
+    return undefined !== this._json.Capability?.Request?.GetFeatureInfo;
+  }
+  public get featureInfoFormats(): string[] | undefined {
+    return Array.isArray(this._json.Capability?.Request?.GetFeatureInfo?.Format) ? this._json.Capability?.Request?.GetFeatureInfo?.Format : undefined;
+  }
   constructor(private _json: any) {
     this.version = _json.version;
     this.isVersion13 = _json.version !== undefined && 0 === _json.version.indexOf("1.3");
     this.service = new WmsCapability.Service(_json.Service);
-    if (_json.Capability)
-      this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
+    if (_json.Capability) this.layer = new WmsCapability.Layer(_json.Capability.Layer, this);
   }
 
   public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<WmsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmsCapabilities._capabilitiesCache.get(url);
-      if (cached !== undefined)
-        return cached;
+      if (cached !== undefined) return cached;
     }
 
     const xmlCapabilities = await getXml(`${WmsUtilities.getBaseUrl(url)}?request=GetCapabilities&service=WMS`, credentials);
 
-    if (!xmlCapabilities)
-      return undefined;
+    if (!xmlCapabilities) return undefined;
 
     const capabilities = new WmsCapabilities(new WMS().parse(xmlCapabilities));
     WmsCapabilities._capabilitiesCache.set(url, capabilities);
@@ -237,7 +249,7 @@ export class WmsCapabilities {
     return this.layer ? this.layer.getSubLayers(visible) : undefined;
   }
 
-  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]>|undefined {
+  public getSubLayersCrs(subLayerNames: string[]): Map<string, string[]> | undefined {
     return this.layer ? this.layer.getSubLayersCrs(subLayerNames) : undefined;
   }
 }

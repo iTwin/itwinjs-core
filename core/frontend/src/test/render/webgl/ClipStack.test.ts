@@ -21,7 +21,12 @@ for (let i = 0; i < 2; i++) {
 
   function createClipVector(offset = 0): ClipVector {
     const clip = ClipVector.createEmpty();
-    clip.appendShape([Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
+    clip.appendShape([
+      Point3d.create(offset + 1, 1, 0),
+      Point3d.create(offset + 2, 1, 0),
+      Point3d.create(offset + 2, 2, 0),
+      Point3d.create(offset + 1, 2, 0),
+    ]);
     return clip;
   }
 
@@ -53,7 +58,10 @@ for (let i = 0; i < 2; i++) {
       };
 
       public constructor() {
-        super(() => this.transform, () => this.wantViewClip);
+        super(
+          () => this.transform,
+          () => this.wantViewClip
+        );
 
         // Constructor invokes this method - must override afterward.
         this.allocateGpuBuffer = () => {
@@ -62,12 +70,24 @@ for (let i = 0; i < 2; i++) {
         };
       }
 
-      public get cpuBuffer() { return this._cpuBuffer; }
-      public get gpuBuffer() { return this._gpuBuffer; }
-      public get numTotalRows() { return this._numTotalRows; }
-      public get numRowsInUse() { return this._numRowsInUse; }
-      public get stack() { return this._stack; }
-      public get isStackDirty() { return this._isStackDirty; }
+      public get cpuBuffer() {
+        return this._cpuBuffer;
+      }
+      public get gpuBuffer() {
+        return this._gpuBuffer;
+      }
+      public get numTotalRows() {
+        return this._numTotalRows;
+      }
+      public get numRowsInUse() {
+        return this._numRowsInUse;
+      }
+      public get stack() {
+        return this._stack;
+      }
+      public get isStackDirty() {
+        return this._isStackDirty;
+      }
 
       public pushClip(offset = 0): void {
         const clip = createClipVector(offset);
@@ -86,17 +106,13 @@ for (let i = 0; i < 2; i++) {
       }
 
       public expectInvoked(expected: Partial<Invoked>) {
-        if (undefined !== expected.uploadTexture)
-          expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture);
+        if (undefined !== expected.uploadTexture) expect(this.invoked.uploadTexture).to.equal(expected.uploadTexture);
 
-        if (undefined !== expected.updateTexture)
-          expect(this.invoked.updateTexture).to.equal(expected.updateTexture);
+        if (undefined !== expected.updateTexture) expect(this.invoked.updateTexture).to.equal(expected.updateTexture);
 
-        if (undefined !== expected.allocateGpuBuffer)
-          expect(this.invoked.allocateGpuBuffer).to.equal(expected.allocateGpuBuffer);
+        if (undefined !== expected.allocateGpuBuffer) expect(this.invoked.allocateGpuBuffer).to.equal(expected.allocateGpuBuffer);
 
-        if (undefined !== expected.recomputeTexture)
-          expect(this.invoked.recomputeTexture).to.equal(expected.recomputeTexture);
+        if (undefined !== expected.recomputeTexture) expect(this.invoked.recomputeTexture).to.equal(expected.recomputeTexture);
 
         this.reset();
       }

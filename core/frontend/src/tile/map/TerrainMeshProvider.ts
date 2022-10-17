@@ -10,9 +10,7 @@ import { Range1d } from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { ScreenViewport } from "../../Viewport";
 import { RealityMeshParams } from "../../render/RealityMeshParams";
-import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId,
-} from "../internal";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId } from "../internal";
 
 /** Options supplied to [[TerrainProvider.createTerrainMeshProvider]] to construct a [[TerrainMeshProvider]].
  * @beta
@@ -81,7 +79,7 @@ export abstract class TerrainMeshProvider {
    * For example, a provider that produces meshes from [Bing Maps](https://docs.microsoft.com/en-us/bingmaps/rest-services/elevations/) would be required to
    * disclose any copyrighted data used in the production of those meshes.
    */
-  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void {}
 
   /** Return whether terrain data can be obtained for the [[MapTile]] specified by `quadId`. If it returns false, a terrain mesh will instead be produced for
    * that tile by up-sampling the terrain mesh provided by its parent tile.
@@ -99,7 +97,9 @@ export abstract class TerrainMeshProvider {
    * The default implementation uses a fast approximation.
    */
   public getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined {
-    return (quadId.level < ApproximateTerrainHeights.maxLevel) ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle) : parent.heightRange;
+    return quadId.level < ApproximateTerrainHeights.maxLevel
+      ? ApproximateTerrainHeights.instance.getMinimumMaximumHeights(rectangle)
+      : parent.heightRange;
   }
 
   /** The tiling scheme used by this provider to convert between tile coordinates and geodetic coordinates. */
@@ -109,5 +109,7 @@ export abstract class TerrainMeshProvider {
    * For example, a parent tile might contain information about the availability or height ranges of its child tiles that can be used to
    * implement [[isTileAvailable]] or [[getChildHeightRange]], respectively.
    */
-  public forceTileLoad(_tile: MapTile): boolean { return false; }
+  public forceTileLoad(_tile: MapTile): boolean {
+    return false;
+  }
 }

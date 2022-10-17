@@ -10,12 +10,11 @@ import Fuse from "fuse.js";
 
 /** @public */
 export class FuzzySearch<T> {
-
   /** Override to provide non-standard FuseOptions for searches where the a single word pattern is used */
   public onGetSingleWordSearchOptions(): Fuse.FuseOptions<T> {
     return {
       shouldSort: true,
-      threshold: 0.40,
+      threshold: 0.4,
       location: 0,
       distance: 100,
       maxPatternLength: 32,
@@ -29,7 +28,7 @@ export class FuzzySearch<T> {
   public onGetMultiWordSearchOptions(): Fuse.FuseOptions<T> {
     return {
       shouldSort: true,
-      threshold: 0.40,
+      threshold: 0.4,
       tokenize: true,
       matchAllTokens: true,
       maxPatternLength: 32,
@@ -46,12 +45,11 @@ export class FuzzySearch<T> {
    * @return FuzzySearchResults.
    */
   public search(searchedObjects: T[], keys: Array<keyof T>, pattern: string): FuzzySearchResults<T> {
-    if (!pattern || pattern.length < 2)
-      return new FuzzySearchResults<T>(undefined);
+    if (!pattern || pattern.length < 2) return new FuzzySearchResults<T>(undefined);
 
     // it is a multi-word pattern if there's a space other than at the end of the pattern.
     const spaceIndex: number = pattern.indexOf(" ");
-    const multiWord: boolean = (-1 !== spaceIndex) && (spaceIndex !== (pattern.length - 1));
+    const multiWord: boolean = -1 !== spaceIndex && spaceIndex !== pattern.length - 1;
     const options: Fuse.FuseOptions<T> = multiWord ? this.onGetMultiWordSearchOptions() : this.onGetSingleWordSearchOptions();
     options.keys = keys;
     const fuse = new Fuse(searchedObjects, options);
@@ -64,8 +62,7 @@ export class FuzzySearch<T> {
     let averageScoreDeltaThreshold = 1;
     if (results.length > 30) {
       averageScoreDeltaThreshold = ((results[results.length - 1].score - results[0].score) / results.length) * 10;
-      if (averageScoreDeltaThreshold > 0.01)
-        checkScoreDelta = true;
+      if (averageScoreDeltaThreshold > 0.01) checkScoreDelta = true;
     }
 
     // Sometimes fuse returns results in the array where the matches array is empty. That seems like a bug to me, but it happens when
@@ -87,11 +84,10 @@ export class FuzzySearch<T> {
         thisResult.matchedKey = keys[0];
       }
 
-      if (checkScoreDelta && (resultIndex > 0)) {
+      if (checkScoreDelta && resultIndex > 0) {
         const resultScore = results[resultIndex].score;
-        if (resultScore < 0.101)
-          continue;
-        if ((resultScore - results[resultIndex - 1].score) > averageScoreDeltaThreshold) {
+        if (resultScore < 0.101) continue;
+        if (resultScore - results[resultIndex - 1].score > averageScoreDeltaThreshold) {
           results = results.slice(0, resultIndex);
           break;
         }
@@ -134,24 +130,23 @@ function getResult(this: any) {
 
 /** Added to each result to support the FuzzySearchResult interface. */
 function getMatchedKey(this: any): string {
-  return (this.matches.length > 0) ? this.matches[0].key : this.matchedKey;
+  return this.matches.length > 0 ? this.matches[0].key : this.matchedKey;
 }
 
 /** Added to each result to support the FuzzySearchResult interface. */
 function getMatchedValue(this: any): string {
-  return (this.matches.length > 0) ? this.matches[0].value : this.matchedValue;
+  return this.matches.length > 0 ? this.matches[0].value : this.matchedValue;
 }
 
 /** this function is added to each result to support the FuzzySearchResult interface. */
 function getBoldMask(this: any): boolean[] | undefined {
-  if (this.boldMask)
-    return this.boldMask;
+  if (this.boldMask) return this.boldMask;
 
   // if we had no matches, we return a bold mask with all false.
   if (0 === this.matches.length) {
     const noBoldMask = new Array<boolean>(this.matchedValue.length);
     noBoldMask.fill(false);
-    return this.boldMask = noBoldMask;
+    return (this.boldMask = noBoldMask);
   }
 
   // we have some matched portions.
@@ -166,7 +161,7 @@ function getBoldMask(this: any): boolean[] | undefined {
     }
   });
   // cache it so if someone asks again we don't have to recalculate it.
-  return this.boldMask = boldMask;
+  return (this.boldMask = boldMask);
 }
 
 /**
@@ -179,17 +174,19 @@ export class FuzzySearchResults<T> implements Iterable<T> {
 
   constructor(results: any[] | undefined) {
     this.results = [];
-    if (results)
-      this.results = results;
+    if (results) this.results = results;
   }
 
-  public [Symbol.iterator](): any { return new FuzzySearchResultsIterator(this); }
+  public [Symbol.iterator](): any {
+    return new FuzzySearchResultsIterator(this);
+  }
 
-  public get length(): number { return this.results.length; }
+  public get length(): number {
+    return this.results.length;
+  }
 
   public getResult(resultIndex: number): FuzzySearchResult<T> | undefined {
-    if ((resultIndex < 0) || (resultIndex > this.results.length))
-      return undefined;
+    if (resultIndex < 0 || resultIndex > this.results.length) return undefined;
     return this.results[resultIndex];
   }
 }

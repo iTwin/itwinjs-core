@@ -9,12 +9,20 @@
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = require("../../package.json").version as string; // require resolves from the lib/{cjs,esm} dir
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE =
+  'Copyright © 2017-2022 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+  AuthorizationClient,
+  IModelStatus,
+  Localization,
+  RealityDataAccess,
+  RpcConfiguration,
+  RpcInterfaceDefinition,
+  RpcRequest,
+  SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TelemetryManager } from "@itwin/core-telemetry";
@@ -207,7 +215,7 @@ export class IModelApp {
   private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
-  protected constructor() { }
+  protected constructor() {}
 
   /** Event raised just before the frontend IModelApp is to be shut down */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
@@ -226,64 +234,110 @@ export class IModelApp {
   /** The [[MapLayerProviderRegistry]] for this session.
    * @internal
    */
-  public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  public static get mapLayerFormatRegistry(): MapLayerFormatRegistry {
+    return this._mapLayerFormatRegistry;
+  }
   /** The [[TerrainProviderRegistry]] for this session.
    * @beta
    */
-  public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  public static get terrainProviderRegistry(): TerrainProviderRegistry {
+    return this._terrainProviderRegistry;
+  }
   /** The [[RenderSystem]] for this session. */
-  public static get renderSystem(): RenderSystem { return this._renderSystem!; }
+  public static get renderSystem(): RenderSystem {
+    return this._renderSystem!;
+  }
   /** The [[ViewManager]] for this session. */
-  public static get viewManager(): ViewManager { return this._viewManager; }
+  public static get viewManager(): ViewManager {
+    return this._viewManager;
+  }
   /** The [[NotificationManager]] for this session. */
-  public static get notifications(): NotificationManager { return this._notifications; }
+  public static get notifications(): NotificationManager {
+    return this._notifications;
+  }
   /** The [[TileAdmin]] for this session. */
-  public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
+  public static get tileAdmin(): TileAdmin {
+    return this._tileAdmin;
+  }
   /** The [[QuantityFormatter]] for this session. */
-  public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
+  public static get quantityFormatter(): QuantityFormatter {
+    return this._quantityFormatter;
+  }
   /** The [[ToolAdmin]] for this session. */
-  public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
+  public static get toolAdmin(): ToolAdmin {
+    return this._toolAdmin;
+  }
   /** The [[AccuDraw]] for this session.
    * @internal
    */
-  public static get accuDraw(): AccuDraw { return this._accuDraw; }
+  public static get accuDraw(): AccuDraw {
+    return this._accuDraw;
+  }
   /** The [[AccuSnap]] for this session. */
-  public static get accuSnap(): AccuSnap { return this._accuSnap; }
-  public static get locateManager(): ElementLocateManager { return this._locateManager; }
+  public static get accuSnap(): AccuSnap {
+    return this._accuSnap;
+  }
+  public static get locateManager(): ElementLocateManager {
+    return this._locateManager;
+  }
   /** @internal */
-  public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
+  public static get tentativePoint(): TentativePoint {
+    return this._tentativePoint;
+  }
   /** The [[Localization]] for this session. */
-  public static get localization(): Localization { return this._localization; }
+  public static get localization(): Localization {
+    return this._localization;
+  }
   /** The [[UserPreferencesAccess]] for this session.
    * @beta
    */
-  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
+  public static get userPreferences(): UserPreferencesAccess | undefined {
+    return this._userPreferences;
+  }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
-  public static get applicationId(): string { return this._applicationId; }
+  public static get applicationId(): string {
+    return this._applicationId;
+  }
   /** The version of this application. Must be set for usage logging. */
-  public static get applicationVersion(): string { return this._applicationVersion; }
+  public static get applicationVersion(): string {
+    return this._applicationVersion;
+  }
   /** @internal */
-  public static get initialized() { return this._initialized; }
+  public static get initialized() {
+    return this._initialized;
+  }
 
   /** Provides access to the IModelHub implementation for this IModelApp.
    * @internal
    */
-  public static get hubAccess(): FrontendHubAccess | undefined { return this._hubAccess; }
+  public static get hubAccess(): FrontendHubAccess | undefined {
+    return this._hubAccess;
+  }
   /** Provides access to the RealityData service implementation for this IModelApp
    * @beta
    */
-  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
+  public static get realityDataAccess(): RealityDataAccess | undefined {
+    return this._realityDataAccess;
+  }
 
   /** @internal */
-  public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
+  public static get hasRenderSystem() {
+    return this._renderSystem !== undefined && this._renderSystem.isValid;
+  }
   /** The [[UiAdmin]] for this session. */
-  public static get uiAdmin() { return this._uiAdmin; }
+  public static get uiAdmin() {
+    return this._uiAdmin;
+  }
   /** The requested security options for the frontend. */
-  public static get securityOptions() { return this._securityOptions; }
+  public static get securityOptions() {
+    return this._securityOptions;
+  }
   /** The root URL for the assets 'public' folder.
    * @beta
    */
-  public static get publicPath() { return this._publicPath; }
+  public static get publicPath() {
+    return this._publicPath;
+  }
   /** The [[TelemetryManager]] for this session
    * @internal
    */
@@ -299,7 +353,8 @@ export class IModelApp {
    * @internal
    */
   public static registerModuleEntities(moduleObj: any) {
-    for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
+    for (const thisMember in moduleObj) {
+      // eslint-disable-line guard-for-in
       const thisEntityState = moduleObj[thisMember];
       if (thisEntityState.prototype instanceof EntityState) {
         this.registerEntityState(thisEntityState.classFullName, thisEntityState);
@@ -322,7 +377,9 @@ export class IModelApp {
   }
 
   /** @internal */
-  public static lookupEntityClass(classFullName: string) { return this._entityClasses.get(classFullName.toLowerCase()); }
+  public static lookupEntityClass(classFullName: string) {
+    return this._entityClasses.get(classFullName.toLowerCase());
+  }
 
   /**
    * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
@@ -330,10 +387,8 @@ export class IModelApp {
    * and/or performance.
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
-      return queryRenderCompatibility(true, System.createContext);
-    else
-      return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
+    if (undefined === System.instance || undefined === System.instance.options.useWebGL2) return queryRenderCompatibility(true, System.createContext);
+    else return queryRenderCompatibility(System.instance.options.useWebGL2, System.createContext);
   }
 
   /**
@@ -345,8 +400,7 @@ export class IModelApp {
    * @param opts The options for configuring IModelApp
    */
   public static async startup(opts?: IModelAppOptions): Promise<void> {
-    if (this._initialized)
-      return; // we're already initialized, do nothing.
+    if (this._initialized) return; // we're already initialized, do nothing.
     this._initialized = true;
 
     opts = opts ?? {};
@@ -358,7 +412,7 @@ export class IModelApp {
     }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
-    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
+    this._applicationId = opts.applicationId ?? "2686"; // Default to product id of iTwin.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
@@ -369,14 +423,7 @@ export class IModelApp {
     this._localization = opts.localization ?? new ITwinLocalization();
     const toolsNs = "CoreTools";
     await this.localization.initialize(["iModelJs", toolsNs]);
-    [
-      selectTool,
-      idleTool,
-      viewTool,
-      clipViewTool,
-      measureTool,
-      accudrawTool,
-    ].forEach((tool) => this.tools.registerModule(tool, toolsNs));
+    [selectTool, idleTool, viewTool, clipViewTool, measureTool, accudrawTool].forEach((tool) => this.tools.registerModule(tool, toolsNs));
 
     this.registerEntityState(EntityState.classFullName, EntityState);
     [
@@ -391,9 +438,8 @@ export class IModelApp {
       auxCoordState,
     ].forEach((module) => this.registerModuleEntities(module));
 
-    this._renderSystem = (opts.renderSys instanceof RenderSystem) ? opts.renderSys : this.createRenderSys(opts.renderSys);
-    if (opts.userPreferences)
-      this._userPreferences = opts.userPreferences;
+    this._renderSystem = opts.renderSys instanceof RenderSystem ? opts.renderSys : this.createRenderSys(opts.renderSys);
+    if (opts.userPreferences) this._userPreferences = opts.userPreferences;
     this._viewManager = opts.viewManager ?? new ViewManager();
     this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = opts.notifications ?? new NotificationManager();
@@ -426,8 +472,7 @@ export class IModelApp {
 
   /** Must be called before the application exits to release any held resources. */
   public static async shutdown() {
-    if (!this._initialized)
-      return;
+    if (!this._initialized) return;
 
     // notify listeners that this IModelApp is about to be shut down.
     this.onBeforeShutdown.raiseEvent();
@@ -457,23 +502,22 @@ export class IModelApp {
    * @param interval The interval at which to poll for changes. If undefined (or negative), the application will never poll. If zero, the application will poll as frequently as possible.
    * @beta
    */
-  public static get animationInterval(): BeDuration | undefined { return IModelApp._animationInterval; }
+  public static get animationInterval(): BeDuration | undefined {
+    return IModelApp._animationInterval;
+  }
   public static set animationInterval(interval: BeDuration | undefined) {
-    if (undefined !== interval && interval.isTowardsPast)
-      interval = undefined;
+    if (undefined !== interval && interval.isTowardsPast) interval = undefined;
 
     if (interval !== IModelApp._animationInterval) {
       IModelApp._animationInterval = interval;
-      if (IModelApp._wantEventLoop)
-        IModelApp.requestIntervalAnimation();
+      if (IModelApp._wantEventLoop) IModelApp.requestIntervalAnimation();
     }
   }
 
   /** @internal */
   public static requestNextAnimation() {
     // Only want to call requestAnimationFrame if it is defined. Need to check whether current iModelApp is a NoRenderApp.
-    if (IModelApp._noRender)
-      return;
+    if (IModelApp._noRender) return;
 
     if (!IModelApp._animationRequested) {
       IModelApp._animationRequested = true;
@@ -517,7 +561,8 @@ export class IModelApp {
   /** The main event processing loop for Tools and rendering. */
   private static eventLoop() {
     IModelApp._animationRequested = false;
-    if (!IModelApp._wantEventLoop) // flag turned on at startup
+    if (!IModelApp._wantEventLoop)
+      // flag turned on at startup
       return;
 
     try {
@@ -546,7 +591,9 @@ export class IModelApp {
   }
 
   /** @internal */
-  public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
+  public static createRenderSys(opts?: RenderSystem.Options): RenderSystem {
+    return System.create(opts);
+  }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
@@ -582,30 +629,28 @@ export class IModelApp {
   /** Shortcut for creating an HTMLElement with optional parent, className, id, innerHTML, innerText
    *  @internal
    */
-  public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(type: K, opt?: {
-    /** The parent for the new HTMLElement */
-    parent?: HTMLElement;
-    /** The className for the new HTMLElement */
-    className?: string;
-    /** The Id for the new HTMLElement */
-    id?: string;
-    /** innerHTML for the new HTMLElement */
-    innerHTML?: string;
-    /** innerText for the new HTMLElement */
-    innerText?: string;
-  }) {
+  public static makeHTMLElement<K extends keyof HTMLElementTagNameMap>(
+    type: K,
+    opt?: {
+      /** The parent for the new HTMLElement */
+      parent?: HTMLElement;
+      /** The className for the new HTMLElement */
+      className?: string;
+      /** The Id for the new HTMLElement */
+      id?: string;
+      /** innerHTML for the new HTMLElement */
+      innerHTML?: string;
+      /** innerText for the new HTMLElement */
+      innerText?: string;
+    }
+  ) {
     const el = document.createElement(type);
     if (undefined !== opt) {
-      if (undefined !== opt.className)
-        el.className = opt.className;
-      if (undefined !== opt.id)
-        el.id = opt.id;
-      if (undefined !== opt.innerHTML)
-        el.innerHTML = opt.innerHTML;
-      if (undefined !== opt.innerText)
-        el.innerText = opt.innerText;
-      if (undefined !== opt.parent)
-        opt.parent.appendChild(el);
+      if (undefined !== opt.className) el.className = opt.className;
+      if (undefined !== opt.id) el.id = opt.id;
+      if (undefined !== opt.innerHTML) el.innerHTML = opt.innerHTML;
+      if (undefined !== opt.innerText) el.innerText = opt.innerText;
+      if (undefined !== opt.parent) opt.parent.appendChild(el);
     }
     return el;
   }
@@ -629,7 +674,8 @@ export class IModelApp {
 
     if (options.autoClose) {
       overlay.onclick = overlay.oncontextmenu = stop;
-      overlay.onkeydown = overlay.onkeyup = (ev: KeyboardEvent) => { // ignore all keystrokes other than enter and escape
+      overlay.onkeydown = overlay.onkeyup = (ev: KeyboardEvent) => {
+        // ignore all keystrokes other than enter and escape
         switch (ev.key) {
           case "Enter":
           case "Escape":
@@ -665,17 +711,16 @@ export class IModelApp {
    * @param opts Options for Logo Card
    * @beta
    */
-  public static makeLogoCard(
-    opts: {
-      /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
-      heading: string | HTMLElement;
-      /** The URL or HTMLImageElement for the icon on this logo card. */
-      iconSrc?: string | HTMLImageElement;
-      /** The width of the icon, if `iconSrc` is a string. Default is 64. */
-      iconWidth?: number;
-      /** A *notice* string to be shown on the logo card. May include HTML.  */
-      notice?: string | HTMLElement;
-    }): HTMLTableRowElement {
+  public static makeLogoCard(opts: {
+    /** The heading to be put at the top of this logo card inside an <h2>. May include HTML. */
+    heading: string | HTMLElement;
+    /** The URL or HTMLImageElement for the icon on this logo card. */
+    iconSrc?: string | HTMLImageElement;
+    /** The width of the icon, if `iconSrc` is a string. Default is 64. */
+    iconWidth?: number;
+    /** A *notice* string to be shown on the logo card. May include HTML.  */
+    notice?: string | HTMLElement;
+  }): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
     if (undefined !== opts.iconSrc) {
@@ -691,14 +736,11 @@ export class IModelApp {
     if (undefined !== opts.heading) {
       if (typeof opts.heading === "string")
         IModelApp.makeHTMLElement("h2", { parent: noticeCell, innerHTML: opts.heading, className: "logo-card-header" });
-      else
-        noticeCell.appendChild(opts.heading);
+      else noticeCell.appendChild(opts.heading);
     }
     if (undefined !== opts.notice) {
-      if (typeof opts.notice === "string")
-        IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
-      else
-        noticeCell.appendChild(opts.notice);
+      if (typeof opts.notice === "string") IModelApp.makeHTMLElement("p", { parent: noticeCell, innerHTML: opts.notice, className: "logo-cards" });
+      else noticeCell.appendChild(opts.notice);
     }
     return card;
   }
@@ -719,7 +761,7 @@ export class IModelApp {
    */
   public static formatElementToolTip(msg: string[]): HTMLElement {
     let out = "";
-    msg.forEach((line) => out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`);
+    msg.forEach((line) => (out += `${IModelApp.localization?.getLocalizedKeys(line)}<br>`));
     const div = document.createElement("div");
     div.innerHTML = out;
     return div;
@@ -731,17 +773,14 @@ export class IModelApp {
    * @beta
    */
   public static translateStatus(status: number) {
-    let key: { scope: string, val: string, status?: string };
+    let key: { scope: string; val: string; status?: string };
     if (typeof status !== "number") {
       key = { scope: "Errors", val: "IllegalValue" };
     } else {
       key = { scope: "BentleyStatus", val: BentleyStatus[status] };
-      if (!key.val)
-        key = { scope: "IModelStatus", val: IModelStatus[status] };
-      if (!key.val)
-        key = { scope: "DbResult", val: DbResult[status] };
-      if (!key.val)
-        key = { scope: "Errors", val: "Status", status: status.toString() };
+      if (!key.val) key = { scope: "IModelStatus", val: IModelStatus[status] };
+      if (!key.val) key = { scope: "DbResult", val: DbResult[status] };
+      if (!key.val) key = { scope: "Errors", val: "Status", status: status.toString() };
     }
 
     return this.localization.getLocalizedString(`iModelJs:${key.scope}.${key.val}`, key);

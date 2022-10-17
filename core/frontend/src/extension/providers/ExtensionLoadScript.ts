@@ -19,19 +19,14 @@ export async function loadScript(jsUrl: string): Promise<any> {
   // "Critical dependency: the request of a dependency is an expression"
   // Because tsc transpiles "await import" to "require" (when compiled to is CommonJS).
   // So use FunctionConstructor to avoid tsc.
-  const module = await Function("x","return import(x)")(jsUrl);
+  const module = await Function("x", "return import(x)")(jsUrl);
   return execute(module);
 }
 
 /** attempts to execute an extension module */
 function execute(m: any) {
-  if (typeof m === "function")
-    return m();
-  if (m.main && typeof m.main === "function")
-    return m.main();
-  if (m.default && typeof m.default === "function")
-    return m.default();
-  throw new Error(
-    `Failed to execute extension. No default function was found to execute.`
-  );
+  if (typeof m === "function") return m();
+  if (m.main && typeof m.main === "function") return m.main();
+  if (m.default && typeof m.default === "function") return m.default();
+  throw new Error(`Failed to execute extension. No default function was found to execute.`);
 }

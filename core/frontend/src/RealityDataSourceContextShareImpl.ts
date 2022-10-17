@@ -19,8 +19,8 @@ import { OPCFormatInterpreter, ThreeDTileFormatInterpreter } from "./tile/intern
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceContextShareImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -44,25 +44,23 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * Create an instance of this class from a source key and iTwin context/
    */
   public static async createFromKey(sourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    if (sourceKey.provider !== RealityDataProvider.ContextShare)
-      return undefined;
+    if (sourceKey.provider !== RealityDataProvider.ContextShare) return undefined;
     const rdSource = new RealityDataSourceContextShareImpl({ sourceKey });
     let tilesetUrl: string | undefined;
     try {
       await rdSource.queryRealityData(iTwinId);
       tilesetUrl = await rdSource.getServiceUrl(iTwinId);
-    } catch (e) {
-    }
+    } catch (e) {}
 
-    return (tilesetUrl !== undefined) ? rdSource : undefined;
+    return tilesetUrl !== undefined ? rdSource : undefined;
   }
 
   public get isContextShare(): boolean {
-    return (this.key.provider === RealityDataProvider.ContextShare);
+    return this.key.provider === RealityDataProvider.ContextShare;
   }
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return this._rd;
   }
@@ -85,7 +83,9 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
       const token = await IModelApp.getAccessToken();
       if (token && this.realityDataId) {
         if (undefined === IModelApp.realityDataAccess)
-          throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+          throw new Error(
+            "Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess."
+          );
         this._rd = await IModelApp.realityDataAccess.getRealityData(token, iTwinId, this.realityDataId);
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = this._rd.rootDocument ?? "";
@@ -101,10 +101,8 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
     urlParts.pop();
-    if (urlParts.length === 0)
-      this._baseUrl = "";
-    else
-      this._baseUrl = `${urlParts.join("/")}/`;
+    if (urlParts.length === 0) this._baseUrl = "";
+    else this._baseUrl = `${urlParts.join("/")}/`;
   }
 
   /**
@@ -133,7 +131,9 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
       const rdSourceKey = this.key;
       // we need to resolve tilesetURl from realityDataId and iTwinId
       if (undefined === IModelApp.realityDataAccess)
-        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+        throw new Error(
+          "Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess."
+        );
       try {
         const resolvedITwinId = iTwinId ? iTwinId : rdSourceKey.iTwinId;
 
@@ -152,11 +152,9 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
     if (token) {
       const realityData = this.realityData;
 
-      if (!realityData)
-        throw new Error(`Reality Data not defined`);
+      if (!realityData) throw new Error(`Reality Data not defined`);
 
-      if (!realityData.rootDocument)
-        throw new Error(`Root document not defined for reality data: ${realityData.id}`);
+      if (!realityData.rootDocument) throw new Error(`Root document not defined for reality data: ${realityData.id}`);
 
       return this.getRealityDataTileJson(token, realityData.rootDocument, realityData);
     }
@@ -209,27 +207,23 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
    * @returns spatial location and extents
    * @internal
    */
-  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>  {
+  public async getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined> {
     let spatialLocation: SpatialLocationAndExtents | undefined;
     const fileType = this.realityDataType;
 
     // Mapping Resource are not currenlty supported
-    if (fileType === "OMR")
-      return undefined;
+    if (fileType === "OMR") return undefined;
 
     if (this.key.format === RealityDataFormat.ThreeDTile) {
       const rootDocument = await this.getRootDocument(undefined);
       spatialLocation = ThreeDTileFormatInterpreter.getSpatialLocationAndExtents(rootDocument);
     } else if (this.key.format === RealityDataFormat.OPC) {
-      if (this.realityData === undefined)
-        return undefined;
+      if (this.realityData === undefined) return undefined;
       const token = await IModelApp.getAccessToken();
       const docRootName = this.realityData.rootDocument;
-      if (!docRootName)
-        return undefined;
+      if (!docRootName) return undefined;
       const blobUrl = await this.realityData.getBlobUrl(token, docRootName);
-      if (!blobUrl)
-        return undefined;
+      if (!blobUrl) return undefined;
       const blobStringUrl = blobUrl.toString();
       const filereader = await OPCFormatInterpreter.getFileReaderFromBlobFileURL(blobStringUrl);
       spatialLocation = await OPCFormatInterpreter.getSpatialLocationAndExtents(filereader);
@@ -251,4 +245,3 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

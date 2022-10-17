@@ -7,9 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d,
-} from "@itwin/core-geometry";
+import { ClipVector, Point3d, Transform, UnionOfConvexClipPlaneSets, Vector3d } from "@itwin/core-geometry";
 import { RenderClipVolume } from "../RenderClipVolume";
 import { System } from "./System";
 
@@ -41,8 +39,7 @@ class ClipPlanesBuffer {
   public readonly numRows: number;
 
   public getData(viewMatrix: Transform): Uint8Array {
-    if (!viewMatrix.isAlmostEqual(this._viewMatrix))
-      this.updateData(viewMatrix);
+    if (!viewMatrix.isAlmostEqual(this._viewMatrix)) this.updateData(viewMatrix);
 
     return this._data;
   }
@@ -62,10 +59,8 @@ class ClipPlanesBuffer {
     this._clips = clips;
     this.numRows = numRows;
 
-    if (System.instance.capabilities.supportsTextureFloat)
-      this._append = (value: number) => this.appendFloat(value);
-    else
-      this._append = (value: number) => this.appendEncodedFloat(value);
+    if (System.instance.capabilities.supportsTextureFloat) this._append = (value: number) => this.appendFloat(value);
+    else this._append = (value: number) => this.appendEncodedFloat(value);
   }
 
   private appendFloat(value: number): void {
@@ -134,11 +129,9 @@ class ClipPlanesBuffer {
     for (const clip of this._clips) {
       for (let j = 0; j < clip.convexSets.length; j++) {
         const set = clip.convexSets[j];
-        if (0 === set.planes.length)
-          continue;
+        if (0 === set.planes.length) continue;
 
-        if (j > 0)
-          this.appendSetBoundary();
+        if (j > 0) this.appendSetBoundary();
 
         for (const plane of set.planes) {
           plane.inwardNormalRef.clone(normal);
@@ -181,16 +174,14 @@ export class ClipVolume extends RenderClipVolume {
   }
 
   public static create(clip: ClipVector): ClipVolume | undefined {
-    if (!clip.isValid)
-      return undefined;
+    if (!clip.isValid) return undefined;
 
     // Compute how many rows of data we need.
     const unions = [];
     let numRows = 0;
     for (const primitive of clip.clips) {
       const union = primitive.fetchClipPlanesRef();
-      if (!union)
-        continue;
+      if (!union) continue;
 
       let numSets = 0;
       for (const set of union.convexSets) {
@@ -207,8 +198,7 @@ export class ClipVolume extends RenderClipVolume {
       }
     }
 
-    if (unions.length === 0)
-      return undefined;
+    if (unions.length === 0) return undefined;
 
     numRows += unions.length; // Additional boundary row after each union - *including* the last union.
     const buffer = ClipPlanesBuffer.create(unions, numRows);

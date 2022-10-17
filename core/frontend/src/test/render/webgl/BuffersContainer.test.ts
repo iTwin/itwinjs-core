@@ -8,8 +8,7 @@ import { IModelApp } from "../../../IModelApp";
 
 describe("BuffersContainer", () => {
   afterEach(async () => {
-    if (IModelApp.initialized)
-      await IModelApp.shutdown();
+    if (IModelApp.initialized) await IModelApp.shutdown();
   });
 
   it("should use VAO if enabled", async () => {

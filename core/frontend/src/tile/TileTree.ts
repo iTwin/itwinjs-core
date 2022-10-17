@@ -67,7 +67,9 @@ export abstract class TileTree {
   /** The length of time after which tiles belonging to this tree are considered elegible for disposal if they are no longer in use. */
   public readonly expirationTime: BeDuration;
   /** @internal */
-  public get loadPriority(): TileLoadPriority { return this._loadPriority; }
+  public get loadPriority(): TileLoadPriority {
+    return this._loadPriority;
+  }
   private readonly _loadPriority: TileLoadPriority;
   /** Optional tight bounding box around the entire contents of all of this tree's tiles. */
   public readonly contentRange?: ElementAlignedBox3d;
@@ -97,20 +99,32 @@ export abstract class TileTree {
   public abstract prune(): void;
 
   /** True if this tile tree contains 2d graphics. */
-  public get is2d(): boolean { return !this.is3d; }
+  public get is2d(): boolean {
+    return !this.is3d;
+  }
   /** @internal */
-  public get isPointCloud(): boolean { return false; }
+  public get isPointCloud(): boolean {
+    return false;
+  }
   /** @internal */
-  public get clipVolume(): RenderClipVolume | undefined { return this._clipVolume; }
+  public get clipVolume(): RenderClipVolume | undefined {
+    return this._clipVolume;
+  }
 
   /** The volume of space occupied by this tile tree. */
-  public get range(): ElementAlignedBox3d { return this.rootTile.range; }
+  public get range(): ElementAlignedBox3d {
+    return this.rootTile.range;
+  }
   /** The most recent time at which tiles [[selectTiles]] was called. */
-  public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
+  public get lastSelectedTime(): BeTimePoint {
+    return this._lastSelected;
+  }
   /** True if a tile and its child tiles should not be drawn simultaneously.
    * Default: true.
    */
-  public get parentsAndChildrenExclusive(): boolean { return true; }
+  public get parentsAndChildrenExclusive(): boolean {
+    return true;
+  }
 
   /** Constructor */
   protected constructor(params: TileTreeParams) {
@@ -139,12 +153,13 @@ export abstract class TileTree {
   }
 
   /** True if [[dispose]] has been called on this tile tree. */
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
 
   /** Dispose of this tree and any resources owned by it. This is typically invoked by a [[TileTreeOwner]]. */
   public dispose(): void {
-    if (this.isDisposed)
-      return;
+    if (this.isDisposed) return;
 
     this._isDisposed = true;
     dispose(this.rootTile);
@@ -171,19 +186,17 @@ export abstract class TileTree {
    * @beta
    */
   public async getEcefTransform(): Promise<Transform | undefined> {
-    if (!this.iModel.ecefLocation)
-      return undefined;
+    if (!this.iModel.ecefLocation) return undefined;
 
     let dbToEcef: Transform | undefined;
     const range = this.contentRange ? this.contentRange : this.range;
-    const center = range.localXYZToWorld(.5, .5, .5);
+    const center = range.localXYZToWorld(0.5, 0.5, 0.5);
     if (center) {
       this.iModelTransform.multiplyPoint3d(center, center);
       const ecefToDb = await calculateEcefToDbTransformAtLocation(center, this.iModel);
       dbToEcef = ecefToDb?.inverse();
     }
-    if (!dbToEcef)
-      dbToEcef = this.iModel.ecefLocation.getTransform();
+    if (!dbToEcef) dbToEcef = this.iModel.ecefLocation.getTransform();
 
     return dbToEcef.multiplyTransformTransform(this.iModelTransform);
   }
@@ -193,7 +206,5 @@ export abstract class TileTree {
    * @see [[TileTreeReference.createGeometryTreeReference]] to attempt to create a TileTree that can collect geometry.
    * @beta
    */
-  public collectTileGeometry(_collector: TileGeometryCollector): void {
-  }
+  public collectTileGeometry(_collector: TileGeometryCollector): void {}
 }
-

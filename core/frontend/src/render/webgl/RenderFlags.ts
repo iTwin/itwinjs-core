@@ -15,21 +15,21 @@
 export const enum RenderPass {
   None = 0xff,
   Background = 0,
-  OpaqueLayers,       // XY planar models render without depth-testing in order based on priority
-  OpaqueLinear,       // Linear geometry that is opaque and needs to be written to the pick data buffers
-  OpaquePlanar,       // Planar surface geometry that is opaque and needs to be written to the pick data buffers
-  OpaqueGeneral,      // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
-  Classification,     // Stencil volumes for normal processing of reality data classification.
-  TranslucentLayers,  // like Layers but drawn without depth write, blending with opaque
+  OpaqueLayers, // XY planar models render without depth-testing in order based on priority
+  OpaqueLinear, // Linear geometry that is opaque and needs to be written to the pick data buffers
+  OpaquePlanar, // Planar surface geometry that is opaque and needs to be written to the pick data buffers
+  OpaqueGeneral, // All other opaque geometry (including point clouds and reality meshes) which are not written to the pick data buffers
+  Classification, // Stencil volumes for normal processing of reality data classification.
+  TranslucentLayers, // like Layers but drawn without depth write, blending with opaque
   Translucent,
   HiddenEdge,
   Hilite,
-  OverlayLayers,      // Like Layers, but drawn atop all other geometry
-  WorldOverlay,       // Decorations
-  ViewOverlay,        // Decorations
+  OverlayLayers, // Like Layers, but drawn atop all other geometry
+  WorldOverlay, // Decorations
+  ViewOverlay, // Decorations
   SkyBox,
   BackgroundMap,
-  HiliteClassification,  // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
+  HiliteClassification, // Secondary hilite pass for stencil volumes to process hilited classifiers for reality data
   ClassificationByIndex, // Stencil volumes for processing classification one classifier at a time (used for generating pick data Ids and flashing a single classifier).
   HilitePlanarClassification,
   PlanarClassification,
@@ -46,19 +46,19 @@ export const enum RenderPass {
  * @internal
  */
 export type Pass =
-  "skybox" | // SkyBox
-  "opaque" | // OpaqueGeneral
-  "opaque-linear" | // OpaqueLinear
-  "opaque-planar" | // OpaquePlanar
-  "translucent" | // Translucent
-  "view-overlay" | // ViewOverlay
-  "classification" | // Classification
-  "none" | // None
+  | "skybox" // SkyBox
+  | "opaque" // OpaqueGeneral
+  | "opaque-linear" // OpaqueLinear
+  | "opaque-planar" // OpaquePlanar
+  | "translucent" // Translucent
+  | "view-overlay" // ViewOverlay
+  | "classification" // Classification
+  | "none" // None
   // The following apply to textured meshes when the texture image contains a mix of opaque and transparent pixels.
   // The mesh requests to be rendered in both opaque and transparent passes, with each pass discarding pixels that don't match that pass.
   // (i.e., discard transparent pixels during opaque pass and vice-versa).
-  "opaque-translucent" | // OpaqueGeneral and Translucent
-  "opaque-planar-translucent"; // OpaquePlanar and Translucent
+  | "opaque-translucent" // OpaqueGeneral and Translucent
+  | "opaque-planar-translucent"; // OpaquePlanar and Translucent
 
 /** [[Pass]]es that map to two [[RenderPass]]es.
  * @internal
@@ -79,18 +79,27 @@ export const enum GeometryType {
 }
 
 /** @internal */
-export namespace Pass { // eslint-disable-line @typescript-eslint/no-redeclare
+export namespace Pass {
+  // eslint-disable-line @typescript-eslint/no-redeclare
   /** Return the RenderPass corresponding to the specified Pass. */
   export function toRenderPass(pass: SinglePass): RenderPass {
     switch (pass) {
-      case "skybox": return RenderPass.SkyBox;
-      case "opaque": return RenderPass.OpaqueGeneral;
-      case "opaque-linear": return RenderPass.OpaqueLinear;
-      case "opaque-planar": return RenderPass.OpaquePlanar;
-      case "translucent": return RenderPass.Translucent;
-      case "view-overlay": return RenderPass.ViewOverlay;
-      case "classification": return RenderPass.Classification;
-      case "none": return RenderPass.None;
+      case "skybox":
+        return RenderPass.SkyBox;
+      case "opaque":
+        return RenderPass.OpaqueGeneral;
+      case "opaque-linear":
+        return RenderPass.OpaqueLinear;
+      case "opaque-planar":
+        return RenderPass.OpaquePlanar;
+      case "translucent":
+        return RenderPass.Translucent;
+      case "view-overlay":
+        return RenderPass.ViewOverlay;
+      case "classification":
+        return RenderPass.Classification;
+      case "none":
+        return RenderPass.None;
     }
   }
 
@@ -308,4 +317,8 @@ export const enum EmphasisFlags {
 }
 
 /** @internal */
-export const enum IsTranslucent { No, Yes, Maybe }
+export const enum IsTranslucent {
+  No,
+  Yes,
+  Maybe,
+}

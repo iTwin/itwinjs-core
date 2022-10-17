@@ -8,9 +8,11 @@ import { Cartographic } from "@itwin/core-common";
 import { BlankConnection } from "../IModelConnection";
 
 /** Open a blank connection for tests. */
-export function createBlankConnection(name = "test-blank-connection",
+export function createBlankConnection(
+  name = "test-blank-connection",
   location = Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
   extents = new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-  iTwinId = Guid.createValue()): BlankConnection {
+  iTwinId = Guid.createValue()
+): BlankConnection {
   return BlankConnection.create({ name, location, extents, iTwinId });
 }

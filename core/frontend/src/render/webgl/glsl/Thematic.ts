@@ -182,9 +182,9 @@ const applyThematicColorPostludeForPointClouds = `
 `;
 
 function _getShader(isPointCloud: boolean) {
-  return isPointCloud ?
-    applyThematicColorPrelude + applyThematicColorPostludeForPointClouds : // do not include slope and hillshade for point clouds
-    applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude; // include all modes for everything else
+  return isPointCloud
+    ? applyThematicColorPrelude + applyThematicColorPostludeForPointClouds // do not include slope and hillshade for point clouds
+    : applyThematicColorPrelude + slopeAndHillShadeShader + applyThematicColorPostlude; // include all modes for everything else
 }
 
 // Compute the value for the varying to be interpolated to the fragment shader in order to access the color in the thematic gradient texture
@@ -237,13 +237,11 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
 
   addRenderPass(builder.frag);
 
-  if (!isForPointClouds && !isForTerrainMesh)
-    addProjectionMatrix(vert);
+  if (!isForPointClouds && !isForTerrainMesh) addProjectionMatrix(vert);
 
   addEyeSpace(builder);
 
-  if (vert.usesInstancedGeometry)
-    addInstancedRtcMatrix(vert);
+  if (vert.usesInstancedGeometry) addInstancedRtcMatrix(vert);
 
   vert.addFunction("float findFractionalPositionOnLine(vec3 a, vec3 b, vec3 c)", findFractionalPositionOnLine);
 
@@ -314,10 +312,9 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
   frag.addUniform("u_numSensors", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_numSensors", (uniform, params) => {
       if (params.target.wantThematicSensors) {
-        if (params.target.uniforms.thematic.wantGlobalSensorTexture)
-          params.target.uniforms.thematic.bindNumSensors(uniform);
-        else // we are batching separate sensor textures per-tile; use the number of sensors from the batch
-          params.target.uniforms.batch.bindNumThematicSensors(uniform);
+        if (params.target.uniforms.thematic.wantGlobalSensorTexture) params.target.uniforms.thematic.bindNumSensors(uniform);
+        // we are batching separate sensor textures per-tile; use the number of sensors from the batch
+        else params.target.uniforms.batch.bindNumThematicSensors(uniform);
       } else {
         uniform.setUniform1i(0);
       }
@@ -329,7 +326,8 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
       if (params.target.wantThematicSensors) {
         if (params.target.uniforms.thematic.wantGlobalSensorTexture) {
           params.target.uniforms.thematic.bindSensors(uniform);
-        } else { // we are batching separate sensor textures per-tile; bind the batch's sensor texture
+        } else {
+          // we are batching separate sensor textures per-tile; bind the batch's sensor texture
           params.target.uniforms.batch.bindThematicSensors(uniform);
         }
       } else {
@@ -338,7 +336,8 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
     });
   });
 
-  if (!isForPointClouds) { // allows us to know when to discard between isolines to make them pickable
+  if (!isForPointClouds) {
+    // allows us to know when to discard between isolines to make them pickable
     builder.frag.addUniform("u_discardBetweenIsolines", VariableType.Boolean, (prog) => {
       prog.addProgramUniform("u_discardBetweenIsolines", (uniform, params) => {
         uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);

@@ -10,7 +10,7 @@ import { BeEvent, Listener } from "@itwin/core-bentley";
 
 /** @beta */
 export interface MapLayerTokenEndpoint {
-  getLoginUrl(stateData?: any): string|undefined;
+  getLoginUrl(stateData?: any): string | undefined;
   getUrl(): string;
 }
 
@@ -36,10 +36,9 @@ export interface MapLayerAccessTokenParams {
 
 /** @beta */
 export interface MapLayerAccessClient {
-  getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken|undefined>;
+  getAccessToken(params: MapLayerAccessTokenParams): Promise<MapLayerAccessToken | undefined>;
   getTokenServiceEndPoint?(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined>;
   invalidateToken?(token: MapLayerAccessToken): boolean;
 
   onOAuthProcessEnd?: BeEvent<Listener>;
 }
-

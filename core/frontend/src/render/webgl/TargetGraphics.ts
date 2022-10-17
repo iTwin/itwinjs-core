@@ -29,8 +29,13 @@ export class TargetGraphics {
   }
 
   public get isDisposed(): boolean {
-    return 0 === this.foreground.length && 0 === this.background.length && 0 === this.overlays.length
-      && undefined === this._dynamics && undefined === this._decorations;
+    return (
+      0 === this.foreground.length &&
+      0 === this.background.length &&
+      0 === this.overlays.length &&
+      undefined === this._dynamics &&
+      undefined === this._decorations
+    );
   }
 
   public changeScene(scene: Scene): void {
@@ -39,13 +44,17 @@ export class TargetGraphics {
     this.overlays = scene.overlay;
   }
 
-  public get dynamics(): GraphicList | undefined { return this._dynamics; }
+  public get dynamics(): GraphicList | undefined {
+    return this._dynamics;
+  }
   public set dynamics(dynamics: GraphicList | undefined) {
     disposeArray(this._dynamics);
     this._dynamics = dynamics;
   }
 
-  public get decorations(): Decorations | undefined { return this._decorations; }
+  public get decorations(): Decorations | undefined {
+    return this._decorations;
+  }
   public set decorations(decorations: Decorations | undefined) {
     dispose(this._decorations);
     this._decorations = decorations;

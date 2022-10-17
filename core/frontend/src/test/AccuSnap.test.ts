@@ -26,7 +26,7 @@ interface HitDetailProps {
 }
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
-  const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
+  const hitPoint = props?.hitPoint ?? [0, 0, 0];
   return new HitDetail(
     Point3d.fromJSON(props?.testPoint ?? hitPoint),
     vp,
@@ -51,13 +51,23 @@ describe("AccuSnap", () => {
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
-      iModel.requestSnap = async (props) => Promise.resolve(impl ? impl(props) : {
-        status: SnapStatus.Success,
-        hitPoint: props.testPoint,
-        snapPoint: props.testPoint,
-        normal: [0, 1, 0],
-        curve: { lineSegment: [ [0, 0, 0], [1, 0, 0] ] },
-      });
+      iModel.requestSnap = async (props) =>
+        Promise.resolve(
+          impl
+            ? impl(props)
+            : {
+                status: SnapStatus.Success,
+                hitPoint: props.testPoint,
+                snapPoint: props.testPoint,
+                normal: [0, 1, 0],
+                curve: {
+                  lineSegment: [
+                    [0, 0, 0],
+                    [1, 0, 0],
+                  ],
+                },
+              }
+        );
     }
 
     type SnapResponse = SnapStatus | SnapDetail;
@@ -106,11 +116,15 @@ describe("AccuSnap", () => {
       }
     }
 
-    async function testSnap(hit: HitDetailProps, verify: (response: SnapResponse) => void, snapModes: SnapMode[] = [], configureViewport?: (vp: ScreenViewport) => void): Promise<void> {
+    async function testSnap(
+      hit: HitDetailProps,
+      verify: (response: SnapResponse) => void,
+      snapModes: SnapMode[] = [],
+      configureViewport?: (vp: ScreenViewport) => void
+    ): Promise<void> {
       await testBlankViewportAsync(async (vp) => {
         overrideRequestSnap(vp.iModel);
-        if (configureViewport)
-          configureViewport(vp);
+        if (configureViewport) configureViewport(vp);
 
         const response = await requestSnap(vp, hit, snapModes);
         verify(response);
@@ -125,28 +139,45 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x123" },
         (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
         modes,
-        (vp) => vp.mapLayerFromHit = () => { return {} as any; }
+        (vp) =>
+          (vp.mapLayerFromHit = () => {
+            return {} as any;
+          })
       );
     });
 
     it("produces expected result with no display transform", async () => {
-      await testSnap(
-        { sourceId: "0x123", modelId: "0x456", hitPoint: [ 1, 2, 3 ] },
-        (response) => expectSnapDetail(response, { point: [ 1, 2, 3 ], normal: [ 0, 1, 0 ], curve: [[0, 0, 0], [1, 0, 0]] })
+      await testSnap({ sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] }, (response) =>
+        expectSnapDetail(response, {
+          point: [1, 2, 3],
+          normal: [0, 1, 0],
+          curve: [
+            [0, 0, 0],
+            [1, 0, 0],
+          ],
+        })
       );
     });
 
     it("applies elevation to elements in plan projection models", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [1, 2, 7], normal: [0, 1, 0], curve: [[0, 0, 4], [1, 0, 4]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [1, 2, 7],
+            normal: [0, 1, 0],
+            curve: [
+              [0, 0, 4],
+              [1, 0, 4],
+            ],
+          }),
         [],
-        (vp) => vp.view.getModelElevation = () => 4
+        (vp) => (vp.view.getModelElevation = () => 4)
       );
     });
 
     class Transformer {
-      public constructor(public readonly transform: Transform) { }
+      public constructor(public readonly transform: Transform) {}
 
       public getModelDisplayTransform(): Transform {
         return this.transform.clone();
@@ -156,23 +187,50 @@ describe("AccuSnap", () => {
     it("applies model display transform to elements", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [0, 2, 4],
+            normal: [0, 1, 0],
+            curve: [
+              [-1, 0, 1],
+              [0, 0, 1],
+            ],
+          }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1))
+        (vp) => (vp.view.modelDisplayTransformProvider = new Transformer(Transform.createTranslationXYZ(-1, 0, 1)))
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [-1, -2, -3],
+            normal: [0, -1, 0],
+            curve: [
+              [0, 0, 0],
+              [-1, 0, 0],
+            ],
+          }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+        (vp) => (vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1))))
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [2, -1, 3],
+            normal: [1, 0, 0],
+            curve: [
+              [0, 0, 0],
+              [0, -1, 0],
+            ],
+          }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
+        (vp) =>
+          (vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))
+          ))
       );
     });
 
@@ -190,34 +248,71 @@ describe("AccuSnap", () => {
     it("applies schedule script transforms to elements", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [0, 2, 4], normal: [0, 1, 0], curve: [[-1, 0, 1], [0, 0, 1]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [0, 2, 4],
+            normal: [0, 1, 0],
+            curve: [
+              [-1, 0, 1],
+              [0, 0, 1],
+            ],
+          }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(-1, 0, 1))
+        (vp) => (vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(-1, 0, 1)))
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [-1, -2, -3], normal: [0, -1, 0], curve: [[0, 0, 0], [-1, 0, 0]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [-1, -2, -3],
+            normal: [0, -1, 0],
+            curve: [
+              [0, 0, 0],
+              [-1, 0, 0],
+            ],
+          }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1)))
+        (vp) => (vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createUniformScale(-1))))
       );
 
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [2, -1, 3],
+            normal: [1, 0, 0],
+            curve: [
+              [0, 0, 0],
+              [0, -1, 0],
+            ],
+          }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))))
+        (vp) =>
+          (vp.view.displayStyle.scheduleScript = makeElementTransformScript(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))
+          ))
       );
     });
 
     it("applies multiple transforms", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, -1, 9], normal: [1, 0, 0], curve: [[0, 0, 6], [0, -1, 6]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [2, -1, 9],
+            normal: [1, 0, 0],
+            curve: [
+              [0, 0, 6],
+              [0, -1, 6],
+            ],
+          }),
         [],
         (vp) => {
           vp.view.getModelElevation = () => 10;
-          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))));
+          vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))
+          );
           vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(0, 0, -4));
         }
       );
@@ -226,7 +321,15 @@ describe("AccuSnap", () => {
     it("applies elevation and model display transform", async () => {
       await testSnap(
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
-        (response) => expectSnapDetail(response, { point: [2, 1, 9], normal: [0, 1, 0], curve: [[1, -1, 6], [2, -1, 6]] }),
+        (response) =>
+          expectSnapDetail(response, {
+            point: [2, 1, 9],
+            normal: [0, 1, 0],
+            curve: [
+              [1, -1, 6],
+              [2, -1, 6],
+            ],
+          }),
         [],
         (vp) => {
           vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(new Point3d(1, -1, 10), Matrix3d.createIdentity()));

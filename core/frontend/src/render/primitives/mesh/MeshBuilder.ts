@@ -27,13 +27,16 @@ export class MeshBuilder {
   public readonly tolerance: number;
   public readonly areaTolerance: number;
   public readonly tileRange: Range3d;
-  public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
-  public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
+  public get currentPolyface(): MeshBuilderPolyface | undefined {
+    return this._currentPolyface;
+  }
+  public set displayParams(params: DisplayParams) {
+    this.mesh.displayParams = params;
+  }
 
   /** create reference for triangleSet on demand */
   public get triangleSet(): TriangleSet {
-    if (undefined === this._triangleSet)
-      this._triangleSet = new TriangleSet();
+    if (undefined === this._triangleSet) this._triangleSet = new TriangleSet();
 
     return this._triangleSet;
   }
@@ -71,10 +74,8 @@ export class MeshBuilder {
    */
   public addStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number, feature: Feature | undefined): void {
     for (const strokePoints of strokes) {
-      if (isDisjoint)
-        this.addPointString(strokePoints.points, fillColor, feature);
-      else
-        this.addPolyline(strokePoints.points, fillColor, feature);
+      if (isDisjoint) this.addPointString(strokePoints.points, fillColor, feature);
+      else this.addPolyline(strokePoints.points, fillColor, feature);
     }
   }
 
@@ -105,8 +106,7 @@ export class MeshBuilder {
     const isDegenerate = requireNormals && normalCount < pointCount; // TFS#790263: Degenerate triangle - no normals.
 
     // a triangle must have at least 3 points
-    if (pointCount < 3 || isDegenerate)
-      return;
+    if (pointCount < 3 || isDegenerate) return;
 
     const haveParam = includeParams && paramCount > 0;
     const triangleCount = pointCount - 2;
@@ -118,12 +118,16 @@ export class MeshBuilder {
     const polyfaceVisitorOptions = { ...options, triangleCount, haveParam };
     for (let triangleIndex = 0; triangleIndex < triangleCount; triangleIndex++) {
       const triangle = this.createTriangle(triangleIndex, visitor, polyfaceVisitorOptions, feature);
-      if (undefined !== triangle)
-        this.addTriangle(triangle);
+      if (undefined !== triangle) this.addTriangle(triangle);
     }
   }
 
-  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): VertexKeyPropsWithIndex[] | undefined {
+  public createTriangleVertices(
+    triangleIndex: number,
+    visitor: PolyfaceVisitor,
+    options: MeshBuilder.PolyfaceVisitorOptions,
+    feature: Feature | undefined
+  ): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
 
@@ -133,8 +137,7 @@ export class MeshBuilder {
       assert(this.mesh.points.length === 0 || this.mesh.uvParams.length !== 0);
       const mappedTexture = options.mappedTexture;
       const transformToImodel = mappedTexture.params.textureMatrix.transform;
-      if (transformToImodel)
-        params = mappedTexture.computeUVParams(visitor, transformToImodel);
+      if (transformToImodel) params = mappedTexture.computeUVParams(visitor, transformToImodel);
       assert(params !== undefined);
     }
 
@@ -150,21 +153,27 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1])
-      || this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[2])
-      || this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2]))
+    if (
+      this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1]) ||
+      this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[2]) ||
+      this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2])
+    )
       return undefined;
 
     return vertices;
   }
 
-  public createTriangle(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): Triangle | undefined {
+  public createTriangle(
+    triangleIndex: number,
+    visitor: PolyfaceVisitor,
+    options: MeshBuilder.PolyfaceVisitorOptions,
+    feature: Feature | undefined
+  ): Triangle | undefined {
     // generate vertex key properties for each of the three sides of the triangle
     const vertices = this.createTriangleVertices(triangleIndex, visitor, options, feature);
 
     // avoid creating degenerate triangles
-    if (undefined === vertices)
-      return undefined;
+    if (undefined === vertices) return undefined;
 
     const { edgeVisible } = visitor;
 
@@ -173,7 +182,7 @@ export class MeshBuilder {
     triangle.setEdgeVisibility(
       0 === triangleIndex ? edgeVisible[0] : false,
       edgeVisible[triangleIndex + 1],
-      triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false,
+      triangleIndex === options.triangleCount - 1 ? edgeVisible[triangleIndex + 2] : false
     );
 
     // set each triangle index to the index associated with the vertex key location in the vertex map
@@ -202,8 +211,7 @@ export class MeshBuilder {
     const { mesh } = this;
 
     const poly = new MeshPolyline();
-    for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor, feature }));
+    for (const position of points) poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }
@@ -213,8 +221,7 @@ export class MeshBuilder {
     const { mesh } = this;
     const poly = new MeshPolyline();
 
-    for (const position of points)
-      poly.addIndex(this.addVertex({ position, fillColor, feature }));
+    for (const position of points) poly.addIndex(this.addVertex({ position, fillColor, feature }));
 
     mesh.addPolyline(poly);
   }
@@ -228,8 +235,7 @@ export class MeshBuilder {
 
   public endPolyface(): void {
     const { currentPolyface, mesh } = this;
-    if (undefined === currentPolyface)
-      return;
+    if (undefined === currentPolyface) return;
 
     this._currentPolyface = undefined;
     buildMeshEdges(mesh, currentPolyface);
@@ -251,7 +257,8 @@ export class MeshBuilder {
 }
 
 /** @internal */
-export namespace MeshBuilder { // eslint-disable-line no-redeclare
+export namespace MeshBuilder {
+  // eslint-disable-line no-redeclare
   export interface Props extends Mesh.Props {
     tolerance: number;
     areaTolerance: number;
@@ -273,16 +280,27 @@ export namespace MeshBuilder { // eslint-disable-line no-redeclare
 export class MeshEdgeCreationOptions {
   public readonly type: MeshEdgeCreationOptions.Type;
   public readonly minCreaseAngle = 20.0 * Angle.radiansPerDegree;
-  public get generateAllEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.AllEdges; }
-  public get generateNoEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.NoEdges; }
-  public get generateCreaseEdges(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreaseEdges); }
+  public get generateAllEdges(): boolean {
+    return this.type === MeshEdgeCreationOptions.Type.AllEdges;
+  }
+  public get generateNoEdges(): boolean {
+    return this.type === MeshEdgeCreationOptions.Type.NoEdges;
+  }
+  public get generateCreaseEdges(): boolean {
+    return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreaseEdges);
+  }
   /** Create edge chains for polyfaces that do not already have them. */
-  public get createEdgeChains(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreateChains); }
-  constructor(type = MeshEdgeCreationOptions.Type.NoEdges) { this.type = type; }
+  public get createEdgeChains(): boolean {
+    return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreateChains);
+  }
+  constructor(type = MeshEdgeCreationOptions.Type.NoEdges) {
+    this.type = type;
+  }
 }
 
 /** @internal */
-export namespace MeshEdgeCreationOptions { // eslint-disable-line no-redeclare
+export namespace MeshEdgeCreationOptions {
+  // eslint-disable-line no-redeclare
   export enum Type {
     NoEdges = 0x0000,
     CreaseEdges = 0x0001 << 1,
@@ -309,13 +327,7 @@ export class MeshBuilderPolyface {
 class EdgeInfo {
   public faceIndex1?: number;
 
-  public constructor(
-    public visible: boolean,
-    public faceIndex0: number,
-    public edge: MeshEdge,
-    public point0: Point3d,
-    public point1: Point3d) {
-  }
+  public constructor(public visible: boolean, public faceIndex0: number, public edge: MeshEdge, public point0: Point3d, public point1: Point3d) {}
 
   public addFace(visible: boolean, faceIndex: number) {
     if (undefined === this.faceIndex1) {
@@ -326,8 +338,7 @@ class EdgeInfo {
 }
 
 function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
-  if (!mesh.triangles)
-    return;
+  if (!mesh.triangles) return;
 
   const edgeMap = new Dictionary<MeshEdge, EdgeInfo>((lhs, rhs) => lhs.compareTo(rhs));
   const triangleNormals: Vector3d[] = [];
@@ -354,8 +365,7 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       polyface.polyface.data.getPoint(foundPolyfaceIndex, polyfacePoints[j]);
     }
 
-    if (indexNotFound)
-      continue;
+    if (indexNotFound) continue;
 
     for (let j = 0; j < 3; j++) {
       const jNext = (j + 1) % 3;
@@ -365,8 +375,7 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       const edgeInfo = new EdgeInfo(triangle.isEdgeVisible(j), triangleNormalIndex, meshEdge, polyfacePoints[j], polyfacePoints[jNext]);
 
       const findOrInsert = edgeMap.findOrInsert(polyfaceEdge, edgeInfo);
-      if (!findOrInsert.inserted)
-        findOrInsert.value.addFace(edgeInfo.visible, triangleNormalIndex);
+      if (!findOrInsert.inserted) findOrInsert.value.addFace(edgeInfo.visible, triangleNormalIndex);
     }
 
     const normal = Vector3d.createCrossProductToPoints(polyfacePoints[0], polyfacePoints[1], polyfacePoints[2]);
@@ -381,16 +390,14 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       if (undefined !== edgeInfo.faceIndex1) {
         const normal0 = triangleNormals[edgeInfo.faceIndex0];
         const normal1 = triangleNormals[edgeInfo.faceIndex1];
-        if (Math.abs(normal0.dotProduct(normal1)) > minEdgeDot)
-          edgeInfo.visible = false;
+        if (Math.abs(normal0.dotProduct(normal1)) > minEdgeDot) edgeInfo.visible = false;
       }
     }
   }
 
   // Now populate the MeshEdges.
   // ###TODO edge chains?
-  if (undefined === mesh.edges)
-    mesh.edges = new MeshEdges();
+  if (undefined === mesh.edges) mesh.edges = new MeshEdges();
 
   const maxPlanarDot = 0.999999;
   for (const edgeInfo of edgeMap.values()) {

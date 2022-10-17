@@ -17,28 +17,28 @@ describe("ColorMap", () => {
   it("test insert function", () => {
     /** Test static getMaxIndex function */
     const a: ColorMap = new ColorMap();
-    assert.isTrue(a.insert(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xff0000) === 0);
     assert.isTrue(a.length === 1);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000ff) === 1);
     assert.isTrue(a.length === 2);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000ff) === 1);
     assert.isTrue(a.length === 2);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xff0000) === 0);
     assert.isTrue(a.length === 2);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0xFFFFFF) === 2);
+    assert.isTrue(a.insert(0xffffff) === 2);
     assert.isTrue(a.length === 3);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0x0000FF) === 1);
+    assert.isTrue(a.insert(0x0000ff) === 1);
     assert.isTrue(a.length === 3);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0xFF0000) === 0);
+    assert.isTrue(a.insert(0xff0000) === 0);
     assert.isTrue(a.length === 3);
     assert.isFalse(a.hasTransparency);
-    assert.isTrue(a.insert(0xFFFFFF) === 2);
+    assert.isTrue(a.insert(0xffffff) === 2);
     assert.isTrue(a.length === 3);
     assert.isFalse(a.hasTransparency);
   });
@@ -49,19 +49,19 @@ describe("ColorMap", () => {
     assert.isFalse(a.hasTransparency);
     a.insert(0x01000000);
     assert.isTrue(a.hasTransparency);
-    a.insert(0xFF000000);
+    a.insert(0xff000000);
     assert.isTrue(a.hasTransparency);
-    a.insert(0x7FFFFFFF);
+    a.insert(0x7fffffff);
     assert.isTrue(a.hasTransparency);
   });
   it("test hasTransparency function 2", () => {
     const a = new ColorMap();
-    a.insert(0xFF000000);
+    a.insert(0xff000000);
     assert.isTrue(a.hasTransparency);
   });
   it("test hasTransparency function 3", () => {
     const a = new ColorMap();
-    a.insert(0x7FFFFFFF);
+    a.insert(0x7fffffff);
     assert.isTrue(a.hasTransparency);
   });
   it("test hasTransparency function 4", () => {
@@ -74,11 +74,11 @@ describe("ColorMap", () => {
   it("test isUniform function", () => {
     const a = new ColorMap();
     assert.isFalse(a.isUniform);
-    a.insert(0xFF0000);
+    a.insert(0xff0000);
     assert.isTrue(a.isUniform);
-    a.insert(0x00FF00);
+    a.insert(0x00ff00);
     assert.isFalse(a.isUniform);
-    a.insert(0x0000FF);
+    a.insert(0x0000ff);
     assert.isFalse(a.isUniform);
   });
 
@@ -120,11 +120,11 @@ describe("ColorMap", () => {
   it("test empty function", () => {
     const a = new ColorMap();
     assert.isTrue(a.isEmpty);
-    a.insert(0x00FFFF);
+    a.insert(0x00ffff);
     assert.isFalse(a.isEmpty);
-    a.insert(0xFFFF00);
+    a.insert(0xffff00);
     assert.isFalse(a.isEmpty);
-    a.insert(0xFFFFFF);
+    a.insert(0xffffff);
     assert.isFalse(a.isEmpty);
   });
 
@@ -134,40 +134,40 @@ describe("ColorMap", () => {
     const indices = [0, 0];
     let colorIndex = new ColorIndex();
 
-    a.insert(0xFFFFFF);
+    a.insert(0xffffff);
     a.toColorIndex(colorIndex, indices);
-    expect(colorIndex.uniform!.tbgr).to.equal(0xFFFFFF);
+    expect(colorIndex.uniform!.tbgr).to.equal(0xffffff);
     assert.isTrue(colorIndex.numColors === 1);
 
     a = new ColorMap();
     colorIndex = new ColorIndex();
     expect(colorIndex.uniform!.tbgr).to.equal(ColorDef.white.tbgr);
     assert.isTrue(colorIndex.numColors === 1);
-    a.insert(0x0000FFFF);
+    a.insert(0x0000ffff);
     a.toColorIndex(colorIndex, indices);
     expect(colorIndex.isUniform).to.equal(true);
-    assert.isTrue(colorIndex.uniform!.tbgr === 0x0000FFFF);
+    assert.isTrue(colorIndex.uniform!.tbgr === 0x0000ffff);
     assert.isTrue(colorIndex.numColors === 1);
 
     a = new ColorMap();
-    a.insert(0x0000FFFF);
-    a.insert(0x000000FF);
+    a.insert(0x0000ffff);
+    a.insert(0x000000ff);
     colorIndex = new ColorIndex();
-    colorIndex.initUniform(0x00FF00FF);
+    colorIndex.initUniform(0x00ff00ff);
     assert.isTrue(colorIndex.numColors === 1);
     a.toColorIndex(colorIndex, indices);
     assert.isFalse(colorIndex.isUniform);
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 2);
     let values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
-    assert.isTrue(values && values.next().value === 0x0000FFFF);
-    assert.isTrue(values && values.next().value === 0x000000FF);
+    assert.isTrue(values && values.next().value === 0x0000ffff);
+    assert.isTrue(values && values.next().value === 0x000000ff);
     assert.isTrue(values && values.next().done);
     assert.isTrue(colorIndex.numColors === 2);
 
     a = new ColorMap();
     a.insert(0x00000000);
-    a.insert(0x0000FFFF);
-    a.insert(0x000000FF);
+    a.insert(0x0000ffff);
+    a.insert(0x000000ff);
     colorIndex = new ColorIndex();
     assert.isTrue(colorIndex.numColors === 1);
     a.toColorIndex(colorIndex, indices);
@@ -175,8 +175,8 @@ describe("ColorMap", () => {
     assert.isTrue(colorIndex.nonUniform && colorIndex.nonUniform.colors.length === 3);
     values = colorIndex.nonUniform ? colorIndex.nonUniform.colors.values() : undefined;
     assert.isTrue(values && values.next().value === 0x00000000);
-    assert.isTrue(values && values.next().value === 0x0000FFFF);
-    assert.isTrue(values && values.next().value === 0x000000FF);
+    assert.isTrue(values && values.next().value === 0x0000ffff);
+    assert.isTrue(values && values.next().value === 0x000000ff);
     assert.isTrue(values && values.next().done);
     assert.isTrue(colorIndex.numColors === 3);
   });

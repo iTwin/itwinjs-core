@@ -13,22 +13,28 @@ import { ColorDef, ColorIndex } from "@itwin/core-common";
 export class ColorMap extends IndexMap<number> {
   private _hasTransparency: boolean = false;
 
-  public constructor() { super(compareNumbers, 0xffff); }
+  public constructor() {
+    super(compareNumbers, 0xffff);
+  }
 
-  public hasColor(color: number): boolean { return -1 !== this.indexOf(color); }
+  public hasColor(color: number): boolean {
+    return -1 !== this.indexOf(color);
+  }
 
   public override insert(color: number): number {
     // The table should never contain a mix of opaque and translucent colors.
-    if (this.isEmpty)
-      this._hasTransparency = ColorMap.isTranslucent(color);
-    else
-      assert(ColorMap.isTranslucent(color) === this.hasTransparency);
+    if (this.isEmpty) this._hasTransparency = ColorMap.isTranslucent(color);
+    else assert(ColorMap.isTranslucent(color) === this.hasTransparency);
 
     return super.insert(color);
   }
 
-  public get hasTransparency(): boolean { return this._hasTransparency; }
-  public get isUniform(): boolean { return 1 === this.length; }
+  public get hasTransparency(): boolean {
+    return this._hasTransparency;
+  }
+  public get isUniform(): boolean {
+    return 1 === this.length;
+  }
 
   public toColorIndex(index: ColorIndex, indices: number[]): void {
     index.reset();
@@ -39,8 +45,7 @@ export class ColorMap extends IndexMap<number> {
       index.initUniform(this._array[0].value);
     } else {
       const colors = new Uint32Array(this.length);
-      for (const entry of this._array)
-        colors[entry.index] = entry.value;
+      for (const entry of this._array) colors[entry.index] = entry.value;
 
       index.initNonUniform(colors, indices, this.hasTransparency);
     }

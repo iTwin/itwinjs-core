@@ -234,9 +234,10 @@ export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProg
       });
     });
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, shouldUseDB ?
-    computeAmbientOcclusionPrefixDB + computeAmbientOcclusion :
-    computeAmbientOcclusionPrefixPB + computeAmbientOcclusion);
+  frag.set(
+    FragmentShaderComponent.ComputeBaseColor,
+    shouldUseDB ? computeAmbientOcclusionPrefixDB + computeAmbientOcclusion : computeAmbientOcclusionPrefixPB + computeAmbientOcclusion
+  );
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
@@ -278,22 +279,33 @@ export function createAmbientOcclusionProgram(context: WebGLContext): ShaderProg
     });
   });
 
-  frag.addUniform("u_hbaoSettings", VariableType.Vec4, (prog) => {
-    prog.addProgramUniform("u_hbaoSettings", (uniform, params) => {
-      const hbaoSettings = new Float32Array([
-        params.target.ambientOcclusionSettings.bias,
-        params.target.ambientOcclusionSettings.zLengthCap,
-        params.target.ambientOcclusionSettings.intensity,
-        params.target.ambientOcclusionSettings.texelStepSize]);
-      uniform.setUniform4fv(hbaoSettings);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_hbaoSettings",
+    VariableType.Vec4,
+    (prog) => {
+      prog.addProgramUniform("u_hbaoSettings", (uniform, params) => {
+        const hbaoSettings = new Float32Array([
+          params.target.ambientOcclusionSettings.bias,
+          params.target.ambientOcclusionSettings.zLengthCap,
+          params.target.ambientOcclusionSettings.intensity,
+          params.target.ambientOcclusionSettings.texelStepSize,
+        ]);
+        uniform.setUniform4fv(hbaoSettings);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_maxDistance", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_maxDistance", (uniform, params) => {
-      uniform.setUniform1f(params.target.ambientOcclusionSettings.maxDistance);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_maxDistance",
+    VariableType.Float,
+    (prog) => {
+      prog.addProgramUniform("u_maxDistance", (uniform, params) => {
+        uniform.setUniform1f(params.target.ambientOcclusionSettings.maxDistance);
+      });
+    },
+    VariablePrecision.High
+  );
 
   builder.vert.headerComment = "//!V! AmbientOcclusion";
   builder.frag.headerComment = "//!F! AmbientOcclusion";

@@ -11,8 +11,12 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { SelectedViewportChangedArgs } from "../ViewManager";
 import {
-  FormattingUnitSystemChangedArgs, OverrideFormatEntry, QuantityFormatOverridesChangedArgs, QuantityFormatter,
-  QuantityTypeKey, UnitFormattingSettingsProvider,
+  FormattingUnitSystemChangedArgs,
+  OverrideFormatEntry,
+  QuantityFormatOverridesChangedArgs,
+  QuantityFormatter,
+  QuantityTypeKey,
+  UnitFormattingSettingsProvider,
 } from "./QuantityFormatter";
 
 /** This abstract class reacts to changes in the "active" iModel and updates the [[QuantityFormatter]] overrides and active
@@ -42,34 +46,34 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
     return !!this._maintainOverridesPerIModel;
   }
 
-  public storeFormatOverrides = async ({typeKey, overrideEntry, unitSystem}: QuantityFormatOverridesChangedArgs) => {
+  public storeFormatOverrides = async ({ typeKey, overrideEntry, unitSystem }: QuantityFormatOverridesChangedArgs) => {
     if (undefined === overrideEntry) {
       // remove all overrides for quantity type
       if (undefined === unitSystem) {
-        await this.remove (typeKey);
+        await this.remove(typeKey);
         return;
-      }else {
+      } else {
         // remove only system specific overrides for quantity type
-        const storedJson = await this.retrieve (typeKey);
+        const storedJson = await this.retrieve(typeKey);
         if (storedJson) {
           delete storedJson[unitSystem];
           if (Object.keys(storedJson).length) {
-            await this.store (typeKey, storedJson);
+            await this.store(typeKey, storedJson);
           } else {
-            await this.remove (typeKey);
+            await this.remove(typeKey);
           }
         }
       }
     } else {
       // setting a new override or set of overrides
-      const storedJson = await this.retrieve (typeKey);
-      const updatedFormat = {...storedJson, ...overrideEntry};
-      await this.store (typeKey, updatedFormat);
+      const storedJson = await this.retrieve(typeKey);
+      const updatedFormat = { ...storedJson, ...overrideEntry };
+      await this.store(typeKey, updatedFormat);
     }
   };
 
   /** save UnitSystem for active iModel */
-  public storeUnitSystemSetting = async ({system}: FormattingUnitSystemChangedArgs) => {
+  public storeUnitSystemSetting = async ({ system }: FormattingUnitSystemChangedArgs) => {
     await this.storeUnitSystemKey(system);
   };
 
@@ -78,20 +82,19 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
   }
 
   protected applyQuantityFormattingSettingsForIModel = async (imodel?: IModelConnection) => {
-    if (this._maintainOverridesPerIModel)
-      this._imodelConnection = imodel;
+    if (this._maintainOverridesPerIModel) this._imodelConnection = imodel;
     const overrideFormatProps = await this.buildQuantityFormatOverridesMap();
-    const unitSystemKey = await this.retrieveUnitSystem (this._quantityFormatter.activeUnitSystem);
+    const unitSystemKey = await this.retrieveUnitSystem(this._quantityFormatter.activeUnitSystem);
     await this._quantityFormatter.reinitializeFormatAndParsingsMaps(overrideFormatProps, unitSystemKey, true, true);
   };
 
   private handleIModelOpen = async (imodel: IModelConnection) => {
-    await this.applyQuantityFormattingSettingsForIModel (imodel);
+    await this.applyQuantityFormattingSettingsForIModel(imodel);
   };
 
   private handleViewportChanged = async (args: SelectedViewportChangedArgs) => {
-    if(args.current?.iModel && (args.current?.iModel?.iModelId !== this.imodelConnection?.iModelId)) {
-      await this.applyQuantityFormattingSettingsForIModel (args.current?.iModel);
+    if (args.current?.iModel && args.current?.iModel?.iModelId !== this.imodelConnection?.iModelId) {
+      await this.applyQuantityFormattingSettingsForIModel(args.current?.iModel);
     }
   };
 
@@ -100,7 +103,7 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
   };
 
   protected get imodelConnection() {
-    return  this._imodelConnection;
+    return this._imodelConnection;
   }
 
   /** function to convert from serialized JSON format for Quantity Type overrides to build a map compatible with QuantityManager */
@@ -112,10 +115,10 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
       const quantityTypeDef = this._quantityFormatter.quantityTypesRegistry.get(quantityTypeKey);
       if (quantityTypeDef) {
         const typeKey = quantityTypeDef.key;
-        const overrideEntry = await this.retrieve (typeKey);
+        const overrideEntry = await this.retrieve(typeKey);
         if (overrideEntry) {
           // extract overrides and insert into appropriate override map entry
-          Object.keys(overrideEntry).forEach ((systemKey) => {
+          Object.keys(overrideEntry).forEach((systemKey) => {
             const unitSystemKey = systemKey as UnitSystemKey;
             const props = overrideEntry[unitSystemKey];
             if (props) {
@@ -138,15 +141,14 @@ export abstract class BaseUnitFormattingSettingsProvider implements UnitFormatti
   abstract store(quantityTypeKey: QuantityTypeKey, overrideProps: OverrideFormatEntry): Promise<boolean>;
 
   /** Retrieves serialized JSON object containing format overrides for a specific quantity type. */
-  abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry|undefined>;
+  abstract retrieve(quantityTypeKey: QuantityTypeKey): Promise<OverrideFormatEntry | undefined>;
 
   /** Removes the override formats for a specific quantity type. */
   abstract remove(quantityTypeKey: QuantityTypeKey): Promise<boolean>;
 
   /** Retrieves the active unit system typically based on the "active" iModelConnection. */
-  abstract  retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
+  abstract retrieveUnitSystem(defaultKey: UnitSystemKey): Promise<UnitSystemKey>;
 
   /** Store the active unit system typically for the "active" iModelConnection. */
-  abstract  storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
+  abstract storeUnitSystemKey(unitSystemKey: UnitSystemKey): Promise<boolean>;
 }
-

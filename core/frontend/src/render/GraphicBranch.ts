@@ -7,9 +7,7 @@
  */
 
 import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
-import {
-  FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags,
-} from "@itwin/core-common";
+import { FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -112,16 +110,13 @@ export class GraphicBranch implements IDisposable /* , RenderMemory.Consumer */ 
 
   /** Empties the list of [[RenderGraphic]]s contained in this branch, and if the [[ownsEntries]] flag is set, also disposes of them. */
   public clear(): void {
-    if (this.ownsEntries)
-      disposeArray(this.entries);
-    else
-      this.entries.length = 0;
+    if (this.ownsEntries) disposeArray(this.entries);
+    else this.entries.length = 0;
   }
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const entry of this.entries)
-      entry.collectStatistics(stats);
+    for (const entry of this.entries) entry.collectStatistics(stats);
   }
 }
 
@@ -156,17 +151,21 @@ export interface AnimationBranchState {
 
 /** @internal */
 export function formatAnimationBranchId(modelId: Id64String, branchId: number): string {
-  if (branchId < 0)
-    return modelId;
+  if (branchId < 0) return modelId;
 
   return `${modelId}_Node_${branchId.toString()}`;
 }
 
-function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: Map<string, AnimationBranchState>, time: number): void {
+function addAnimationBranch(
+  modelId: Id64String,
+  timeline: RenderSchedule.Timeline,
+  branchId: number,
+  branches: Map<string, AnimationBranchState>,
+  time: number
+): void {
   const clipVector = timeline.getClipVector(time);
   const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
-  if (clip)
-    branches.set(formatAnimationBranchId(modelId, branchId), { clip });
+  if (clip) branches.set(formatAnimationBranchId(modelId, branchId), { clip });
 }
 
 /** Mapping from node/branch IDs to animation branch state
@@ -182,17 +181,14 @@ export interface AnimationBranchStates {
 /** @internal */
 export namespace AnimationBranchStates {
   export function fromScript(script: RenderSchedule.Script, time: number): AnimationBranchStates | undefined {
-    if (!script.containsModelClipping && !script.requiresBatching)
-      return undefined;
+    if (!script.containsModelClipping && !script.requiresBatching) return undefined;
 
     const branches = new Map<string, AnimationBranchState>();
     for (const model of script.modelTimelines) {
       addAnimationBranch(model.modelId, model, -1, branches, time);
       for (const elem of model.elementTimelines) {
-        if (elem.getVisibility(time) <= 0)
-          branches.set(formatAnimationBranchId(model.modelId, elem.batchId), { omit: true });
-        else
-          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
+        if (elem.getVisibility(time) <= 0) branches.set(formatAnimationBranchId(model.modelId, elem.batchId), { omit: true });
+        else addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }
     }
 

@@ -19,19 +19,28 @@ export namespace ToleranceRatio {
  * @internal
  */
 export enum NormalMode {
-  Never,              // Never generate normals
-  Always,             // Always generate normals
+  Never, // Never generate normals
+  Always, // Always generate normals
   CurvedSurfacesOnly, // Generate normals only for curved surfaces
 }
 
 /** @internal */
-export enum SurfacesOnly { Yes = 1, No = 0 }  // Yes indicates polylines will not be generated, only meshes.
+export enum SurfacesOnly {
+  Yes = 1,
+  No = 0,
+} // Yes indicates polylines will not be generated, only meshes.
 
 /** @internal */
-export enum PreserveOrder { Yes = 1, No = 0 } // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
+export enum PreserveOrder {
+  Yes = 1,
+  No = 0,
+} // Yes indicates primitives will not be merged, and the order in which they were added to the GraphicBuilder will be preserved.
 
 /** @internal */
-export enum GenerateEdges { Yes = 1, No = 0 } // Yes indicates edges will be generated for surfaces
+export enum GenerateEdges {
+  Yes = 1,
+  No = 0,
+} // Yes indicates edges will be generated for surfaces
 
 /** @internal */
 export class GeometryOptions {
@@ -39,19 +48,39 @@ export class GeometryOptions {
   public readonly surfaces: SurfacesOnly;
   public readonly preserveOrder: PreserveOrder;
   public readonly edges: GenerateEdges;
-  constructor(edges: GenerateEdges, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No) {
+  constructor(
+    edges: GenerateEdges,
+    normals: NormalMode = NormalMode.Always,
+    surfaces: SurfacesOnly = SurfacesOnly.No,
+    preserveOrder: PreserveOrder = PreserveOrder.No
+  ) {
     this.normals = normals;
     this.surfaces = surfaces;
     this.preserveOrder = preserveOrder;
     this.edges = edges;
   }
 
-  public get wantSurfacesOnly(): boolean { return this.surfaces === SurfacesOnly.Yes; }
-  public get wantPreserveOrder(): boolean { return this.preserveOrder === PreserveOrder.Yes; }
-  public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
+  public get wantSurfacesOnly(): boolean {
+    return this.surfaces === SurfacesOnly.Yes;
+  }
+  public get wantPreserveOrder(): boolean {
+    return this.preserveOrder === PreserveOrder.Yes;
+  }
+  public get wantEdges(): boolean {
+    return this.edges === GenerateEdges.Yes;
+  }
 
-  public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
-    return new GeometryOptions(params.wantEdges ? GenerateEdges.Yes : GenerateEdges.No, normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No);
+  public static createForGraphicBuilder(
+    params: GraphicBuilder,
+    normals: NormalMode = NormalMode.Always,
+    surfaces: SurfacesOnly = SurfacesOnly.No
+  ): GeometryOptions {
+    return new GeometryOptions(
+      params.wantEdges ? GenerateEdges.Yes : GenerateEdges.No,
+      normals,
+      surfaces,
+      params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No
+    );
   }
 }
 
@@ -61,7 +90,9 @@ export class Triangle {
   public readonly visible = [true, true, true];
   public singleSided: boolean;
 
-  public constructor(singleSided: boolean = true) { this.singleSided = singleSided; }
+  public constructor(singleSided: boolean = true) {
+    this.singleSided = singleSided;
+  }
 
   public setIndices(a: number, b: number, c: number) {
     this.indices[0] = a;
@@ -80,7 +111,9 @@ export class Triangle {
     return this.visible[index];
   }
 
-  public get isDegenerate() { return this.indices[0] === this.indices[1] || this.indices[0] === this.indices[2] || this.indices[1] === this.indices[2]; }
+  public get isDegenerate() {
+    return this.indices[0] === this.indices[1] || this.indices[0] === this.indices[2] || this.indices[1] === this.indices[2];
+  }
 }
 
 /** @internal */
@@ -88,14 +121,17 @@ export class TriangleList {
   private readonly _flags: number[] = [];
   public readonly indices: number[] = [];
 
-  public get length(): number { return this._flags.length; }
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get length(): number {
+    return this._flags.length;
+  }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   public addTriangle(triangle: Triangle): void {
     let flags = triangle.singleSided ? 1 : 0;
     for (let i = 0; i < 3; i++) {
-      if (triangle.isEdgeVisible(i))
-        flags |= (0x0002 << i);
+      if (triangle.isEdgeVisible(i)) flags |= 0x0002 << i;
 
       this.indices.push(triangle.indices[i]);
     }
@@ -104,7 +140,7 @@ export class TriangleList {
   }
 
   public addFromTypedArray(indices: Uint8Array | Uint16Array | Uint32Array, flags: number = 0) {
-    for (let i = 0; i < indices.length;) {
+    for (let i = 0; i < indices.length; ) {
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);
       this.indices.push(indices[i++]);
@@ -126,7 +162,7 @@ export class TriangleList {
     const baseIndex = index * 3;
     for (let i = 0; i < 3; i++) {
       triangle.indices[i] = this.indices[baseIndex + i];
-      triangle.visible[i] = 0 !== (flags & 0x0002 << i);
+      triangle.visible[i] = 0 !== (flags & (0x0002 << i));
     }
 
     return triangle;
@@ -181,8 +217,7 @@ export class TriangleKey {
     let diff = 0;
     for (let i = 0; i < 3; i++) {
       diff = this._sortedIndices[i] - rhs._sortedIndices[i];
-      if (0 !== diff)
-        break;
+      if (0 !== diff) break;
     }
 
     return diff;

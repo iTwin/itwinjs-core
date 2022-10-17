@@ -17,7 +17,7 @@ import { OvrFlags } from "../../../render/webgl/RenderFlags";
 import { testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
-  before(async () =>  IModelApp.startup());
+  before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
   function makeTarget(): Target {
@@ -132,14 +132,12 @@ describe("FeatureOverrides", () => {
     }
 
     function reset(overrides: Overrides[]): void {
-      for (const ovr of overrides)
-        ovr.updated = false;
+      for (const ovr of overrides) ovr.updated = false;
     }
 
     function hook(overrides: Overrides[]): void {
       reset(overrides);
-      for (const ovr of overrides)
-        ovr.buildLookupTable = () => ovr.updated = true;
+      for (const ovr of overrides) ovr.buildLookupTable = () => (ovr.updated = true);
     }
 
     const target = makeTarget();
@@ -232,8 +230,7 @@ describe("FeatureOverrides", () => {
       for (let i = 0; i < 2; i++) {
         const ovrs = batch.perTargetData.data[i].featureOverrides;
         expect(ovrs.size).to.equal(3);
-        for (const source of [undefined, s1, s2])
-          expect(ovrs.get(source)).not.to.be.undefined;
+        for (const source of [undefined, s1, s2]) expect(ovrs.get(source)).not.to.be.undefined;
       }
     }
 
@@ -340,7 +337,9 @@ describe("FeatureOverrides", () => {
           expect(target.hilites).to.equal(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).to.equal(1);
 
-          const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
+          const expected = new Set<string>(
+            expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []
+          );
           if (expected.size > 0) {
             expect(b1.perTargetData.data.length).to.equal(1);
             expect(b2.perTargetData.data.length).to.equal(1);
@@ -359,8 +358,7 @@ describe("FeatureOverrides", () => {
             h.modelSubCategoryMode = "union";
           });
 
-          if (withSymbOvrs)
-            vp.setFeatureOverrideProviderChanged();
+          if (withSymbOvrs) vp.setFeatureOverrideProviderChanged();
         }
 
         reset();
@@ -393,8 +391,8 @@ describe("FeatureOverrides", () => {
           h.subcategories.addId(s2);
         });
 
-        test(e22, () => h.modelSubCategoryMode = "intersection");
-        test([e12, e21, e22], () => h.modelSubCategoryMode = "union");
+        test(e22, () => (h.modelSubCategoryMode = "intersection"));
+        test([e12, e21, e22], () => (h.modelSubCategoryMode = "union"));
 
         reset();
         test([], () => {

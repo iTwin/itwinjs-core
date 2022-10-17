@@ -56,13 +56,11 @@ describe("Pickable graphic", () => {
 
     const actual = new Set<string>();
     viewport.queryVisibleFeatures({ source: "screen" }, (features) => {
-      for (const feature of features)
-        actual.add(feature.elementId);
+      for (const feature of features) actual.add(feature.elementId);
     });
 
     expect(actual.size).to.equal(expected.length);
-    for (const id of expected)
-      expect(actual.has(id)).to.be.true;
+    for (const id of expected) expect(actual.has(id)).to.be.true;
   }
 
   it("is pickable", () => {

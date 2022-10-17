@@ -23,11 +23,15 @@ describe("WmtsCapabilities", () => {
     if (capabilities?.operationsMetadata?.getCapabilities?.getDcpHttp) {
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].encoding).to.equals("RESTful");
-      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/1.0.0/WMTSCapabilities.xml");
+      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/1.0.0/WMTSCapabilities.xml"
+      );
 
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].encoding).to.equals("KVP");
-      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
+      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?"
+      );
     }
 
     // Test GetTile operation metadata
@@ -39,11 +43,15 @@ describe("WmtsCapabilities", () => {
     if (capabilities?.operationsMetadata?.getTile?.getDcpHttp) {
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].encoding).to.equals("RESTful");
-      expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/tile/1.0.0/");
+      expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/tile/1.0.0/"
+      );
 
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].encoding).to.equals("KVP");
-      expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
+      expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?"
+      );
     }
 
     // Check that no GetFeatureInfo has been configured
@@ -65,8 +73,8 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents?.layers[0].boundingBox).to.not.undefined;
     expect(capabilities?.contents?.layers[0].boundingBox?.crs).to.equal("urn:ogc:def:crs:EPSG::3857");
     expect(capabilities?.contents?.layers[0].boundingBox?.range).to.not.undefined;
-    expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(-2.003750785759102E7, -3.024245526192411E7));
-    expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(2.003872561259901E7, 3.0240971955423884E7));
+    expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(-2.003750785759102e7, -3.024245526192411e7));
+    expect(capabilities?.contents?.layers[0].boundingBox?.range?.low.isAlmostEqualXY(2.003872561259901e7, 3.0240971955423884e7));
 
     // WSG84 BoundingBox
     expect(capabilities?.contents?.layers[0].wsg84BoundingBox).to.not.undefined;
@@ -75,10 +83,10 @@ describe("WmtsCapabilities", () => {
     if (capabilities?.contents?.layers[0].wsg84BoundingBox?.west) {
       const area = capabilities.contents.layers[0].wsg84BoundingBox.globalLocationArea;
 
-      expect(Math.abs(area.southwest.longitudeDegrees - (-179.99999550841463))).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
-      expect(Math.abs(area.southwest.latitudeDegrees - (-88.99999992161116))).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
-      expect(Math.abs(area.northeast.longitudeDegrees - (179.99999550841463))).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
-      expect(Math.abs(area.northeast.latitudeDegrees - (88.99999992161116))).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
+      expect(Math.abs(area.southwest.longitudeDegrees - -179.99999550841463)).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
+      expect(Math.abs(area.southwest.latitudeDegrees - -88.99999992161116)).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
+      expect(Math.abs(area.northeast.longitudeDegrees - 179.99999550841463)).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
+      expect(Math.abs(area.northeast.latitudeDegrees - 88.99999992161116)).to.be.lessThan(SMALL_DEGREES_DIFFERENCE);
     }
 
     // Style
@@ -106,11 +114,13 @@ describe("WmtsCapabilities", () => {
 
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator).to.not.undefined;
     if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator)
-      expect(Math.abs(capabilities.contents.tileMatrixSets[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(SMALL_DECIMAL_DIFFERENCE);
+      expect(Math.abs(capabilities.contents.tileMatrixSets[0].tileMatrix[0].scaleDenominator - 5.590822640285016e8)).to.lessThan(
+        SMALL_DECIMAL_DIFFERENCE
+      );
 
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner).to.not.undefined;
     if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner)
-      expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner.isAlmostEqualXY(-2.0037508342787E7, 2.0037508342787E7)).to.true;
+      expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner.isAlmostEqualXY(-2.0037508342787e7, 2.0037508342787e7)).to.true;
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileWidth).to.equals(256);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].tileHeight).to.equals(256);
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].matrixWidth).to.equals(2);
@@ -129,8 +139,7 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.serviceIdentification?.serviceType).to.equals("OGC WMTS");
     expect(capabilities?.serviceIdentification?.serviceTypeVersion).to.equals("1.0.0");
     expect(capabilities?.serviceIdentification?.keywords?.length).to.equals(4);
-    if (capabilities?.serviceIdentification?.keywords)
-      expect(capabilities?.serviceIdentification?.keywords[0]).to.equals("World");
+    if (capabilities?.serviceIdentification?.keywords) expect(capabilities?.serviceIdentification?.keywords[0]).to.equals("World");
     expect(capabilities?.serviceIdentification?.fees).to.equals("none");
     expect(capabilities?.serviceIdentification?.accessConstraints).to.equals("none");
 
@@ -185,7 +194,7 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents).to.not.undefined;
 
     // layer
-    expect(capabilities?.contents?.layers.length).to.equal(2);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers.length).to.equal(2); // this sample capabilities has 2 layers
     expect(capabilities?.contents?.layers[0].identifier).to.equal("etopo2");
 
     // tileMatrixSetLinks
@@ -212,7 +221,7 @@ describe("WmtsCapabilities", () => {
 
     //  Check the layer styles
     expect(capabilities?.contents?.layers).to.not.undefined;
-    expect(capabilities?.contents?.layers.length).to.equal(1);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers.length).to.equal(1); // this sample capabilities has 2 layers
     expect(capabilities?.contents?.layers[0].styles.length).to.equal(2);
     expect(capabilities?.contents?.layers[0].styles[0].identifier).to.equal("gab:gab_formation_elevation_equalised_histogram");
     expect(capabilities?.contents?.layers[0].styles[0].isDefault).to.equal(false);

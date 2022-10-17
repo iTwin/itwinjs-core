@@ -35,12 +35,12 @@ export abstract class MapTilingScheme {
 
   /** Convert a longitude in [-pi, pi] radisn to a fraction in [0, 1] along the X axis. */
   public longitudeToXFraction(longitude: number) {
-    return longitude / Angle.pi2Radians + .5;
+    return longitude / Angle.pi2Radians + 0.5;
   }
 
   /** Convert a fraction in [0, 1] along the X axis into a longitude in [-pi, pi] radians. */
   public xFractionToLongitude(xFraction: number) {
-    return Angle.pi2Radians * (xFraction - .5);
+    return Angle.pi2Radians * (xFraction - 0.5);
   }
 
   /** Convert a fraction in [0, 1] along the Y axis into a latitude in [-pi/2, pi/2] radians. */
@@ -66,7 +66,7 @@ export abstract class MapTilingScheme {
    * @param level The level of detail, with 0 corresponding to the root tile.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
+    return level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
   }
 
   /** @alpha */
@@ -118,8 +118,7 @@ export abstract class MapTilingScheme {
 
   /** Given the components of a [[QuadId]], compute its fractional coordinates in the XY plane. */
   public tileXYToFraction(x: number, y: number, level: number, result?: Point2d): Point2d {
-    if (undefined === result)
-      result = Point2d.createZero();
+    if (undefined === result) result = Point2d.createZero();
 
     result.x = this.tileXToFraction(x, level);
     result.y = this.tileYToFraction(y, level);
@@ -141,14 +140,13 @@ export abstract class MapTilingScheme {
 
   /** Given the components of a [[QuadId]], compute the corresponding region of the Earth's surface. */
   public tileXYToRectangle(x: number, y: number, level: number, result?: MapCartoRectangle) {
-    if (level < 0)
-      return MapCartoRectangle.createMaximum();
+    if (level < 0) return MapCartoRectangle.createMaximum();
 
     return MapCartoRectangle.fromRadians(
       this.tileXToLongitude(x, level),
-      this.tileYToLatitude(this.rowZeroAtNorthPole ? (y + 1) : y, level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? y + 1 : y, level),
       this.tileXToLongitude(x + 1, level),
-      this.tileYToLatitude(this.rowZeroAtNorthPole ? y : (y + 1), level),
+      this.tileYToLatitude(this.rowZeroAtNorthPole ? y : y + 1, level),
       result
     );
   }
@@ -169,7 +167,6 @@ export abstract class MapTilingScheme {
   public cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d {
     const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, this._scratchPoint2d);
     return Point2d.create(this.xFractionToTileX(fraction.x, level), this.yFractionToTileY(fraction.y, level), result);
-
   }
 
   /** Given fractional coordinates in the XY plane and an elevation, compute the corresponding cartographic position. */
@@ -190,7 +187,11 @@ export abstract class MapTilingScheme {
   /** @alpha */
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
+    return Point3d.create(
+      this.longitudeToXFraction(cartoGraphic.longitude),
+      this.latitudeToYFraction(cartoGraphic.latitude),
+      applyTerrain ? cartoGraphic.height : 0
+    );
   }
 
   /** @alpha */
@@ -216,7 +217,7 @@ export abstract class MapTilingScheme {
 
   /** @alpha */
   protected yFractionFlip(fraction: number) {
-    return this.rowZeroAtNorthPole ? (1.0 - fraction) : fraction;
+    return this.rowZeroAtNorthPole ? 1.0 - fraction : fraction;
   }
 }
 
@@ -231,12 +232,12 @@ export class GeographicTilingScheme extends MapTilingScheme {
 
   /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
-    return Math.PI * (this.yFractionFlip(yFraction) - .5);
+    return Math.PI * (this.yFractionFlip(yFraction) - 0.5);
   }
 
   /** @internal override */
   public latitudeToYFraction(latitude: number): number {
-    return this.yFractionFlip(.5 + latitude / Math.PI);
+    return this.yFractionFlip(0.5 + latitude / Math.PI);
   }
 }
 
@@ -250,17 +251,15 @@ export class WebMercatorProjection {
    * @returns {Number} The geodetic latitude in radians.
    */
   public static mercatorAngleToGeodeticLatitude(mercatorAngle: number) {
-    return Angle.piOver2Radians - (2.0 * Math.atan(Math.exp(-mercatorAngle)));
+    return Angle.piOver2Radians - 2.0 * Math.atan(Math.exp(-mercatorAngle));
   }
 
   public static maximumLatitude = WebMercatorProjection.mercatorAngleToGeodeticLatitude(Angle.piRadians);
 
   public static geodeticLatitudeToMercatorAngle(latitude: number) {
     // Clamp the latitude coordinate to the valid Mercator bounds.
-    if (latitude > WebMercatorProjection.maximumLatitude)
-      latitude = WebMercatorProjection.maximumLatitude;
-    else if (latitude < -WebMercatorProjection.maximumLatitude)
-      latitude = -WebMercatorProjection.maximumLatitude;
+    if (latitude > WebMercatorProjection.maximumLatitude) latitude = WebMercatorProjection.maximumLatitude;
+    else if (latitude < -WebMercatorProjection.maximumLatitude) latitude = -WebMercatorProjection.maximumLatitude;
 
     const sinLatitude = Math.sin(latitude);
     return 0.5 * Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude));
@@ -278,7 +277,7 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
 
   /** @internal override */
   public yFractionToLatitude(yFraction: number): number {
-    const mercatorAngle = Angle.pi2Radians * (this.rowZeroAtNorthPole ? (.5 - yFraction) : (yFraction - .5));
+    const mercatorAngle = Angle.pi2Radians * (this.rowZeroAtNorthPole ? 0.5 - yFraction : yFraction - 0.5);
     return WebMercatorProjection.mercatorAngleToGeodeticLatitude(mercatorAngle);
   }
 
@@ -291,6 +290,6 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
       latitude = -WebMercatorProjection.maximumLatitude;
     }
     const sinLatitude = Math.sin(latitude);
-    return (0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians));   // https://msdn.microsoft.com/en-us/library/bb259689.aspx
+    return 0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians); // https://msdn.microsoft.com/en-us/library/bb259689.aspx
   }
 }

@@ -8,8 +8,17 @@
 
 import { AsyncMethodsOf, PromiseReturnType } from "@itwin/core-bentley";
 import {
-  BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
-  iTwinChannel, RemoveFunction,
+  BackendError,
+  IModelError,
+  IModelStatus,
+  IpcAppChannel,
+  IpcAppFunctions,
+  IpcAppNotifications,
+  IpcInvokeReturn,
+  IpcListener,
+  IpcSocketFrontend,
+  iTwinChannel,
+  RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -29,10 +38,14 @@ export class IpcApp {
   private static _ipc: IpcSocketFrontend | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
-  private static get ipc(): IpcSocketFrontend { return this._ipc!; }
+  private static get ipc(): IpcSocketFrontend {
+    return this._ipc!;
+  }
 
   /** Determine whether Ipc is available for this frontend. This will only be true if [[startup]] has been called on this class. */
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+  public static get isValid(): boolean {
+    return undefined !== this._ipc;
+  }
 
   /**
    * Establish a message handler function for the supplied channel over Ipc. The handler will be called when messages are sent for
@@ -142,7 +155,10 @@ export abstract class NotificationHandler {
     return IpcApp.addListener(this.channelName, (_evt: Event, funcName: string, ...args: any[]) => {
       const func = (this as any)[funcName];
       if (typeof func !== "function")
-        throw new IModelError(IModelStatus.FunctionNotFound, `Method "${this.constructor.name}.${funcName}" not found on NotificationHandler registered for channel: ${this.channelName}`);
+        throw new IModelError(
+          IModelStatus.FunctionNotFound,
+          `Method "${this.constructor.name}.${funcName}" not found on NotificationHandler registered for channel: ${this.channelName}`
+        );
 
       func.call(this, ...args);
     });
@@ -161,6 +177,8 @@ export abstract class NotificationHandler {
 
 /** IpcApp notifications from backend */
 class IpcAppNotifyHandler extends NotificationHandler implements IpcAppNotifications {
-  public get channelName() { return IpcAppChannel.AppNotify; }
-  public notifyApp() { }
+  public get channelName() {
+    return IpcAppChannel.AppNotify;
+  }
+  public notifyApp() {}
 }

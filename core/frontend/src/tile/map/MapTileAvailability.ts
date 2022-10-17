@@ -26,30 +26,32 @@ class QuadTreeNode {
   public neNode?: QuadTreeNode;
   public extent: MapCartoRectangle;
   public rectangles = new SortedArray<RectangleWithLevel>((lhs: RectangleWithLevel, rhs: RectangleWithLevel) => lhs.level - rhs.level, true);
-  constructor(public tilingScheme: MapTilingScheme, public parent: QuadTreeNode | undefined, public level: number, public x: number, public y: number) {
+  constructor(
+    public tilingScheme: MapTilingScheme,
+    public parent: QuadTreeNode | undefined,
+    public level: number,
+    public x: number,
+    public y: number
+  ) {
     this.extent = tilingScheme.tileXYToRectangle(x, y, level + 1);
   }
   public get nw(): QuadTreeNode {
-    if (!this.nwNode)
-      this.nwNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2);
+    if (!this.nwNode) this.nwNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2);
 
     return this.nwNode;
   }
   public get ne(): QuadTreeNode {
-    if (!this.neNode)
-      this.neNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2);
+    if (!this.neNode) this.neNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2);
 
     return this.neNode;
   }
   public get sw(): QuadTreeNode {
-    if (!this.swNode)
-      this.swNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2 + 1);
+    if (!this.swNode) this.swNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2, this.y * 2 + 1);
 
     return this.swNode;
   }
   public get se(): QuadTreeNode {
-    if (!this.seNode)
-      this.seNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2 + 1);
+    if (!this.seNode) this.seNode = new QuadTreeNode(this.tilingScheme, this, this.level + 1, this.x * 2 + 1, this.y * 2 + 1);
 
     return this.seNode;
   }
@@ -77,7 +79,7 @@ function putRectangleInQuadtree(maxDepth: number, node: QuadTreeNode, rectangle:
 /** @internal */
 export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
-  constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) { }
+  constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) {}
 
   public static rectangleScratch = MapCartoRectangle.createMaximum();
 
@@ -215,8 +217,7 @@ export class TileAvailability {
       // Rectangles are sorted by level, lowest first.
       for (let i = rectangles.length - 1; i >= 0 && rectangles.get(i)!.level > maxLevel; --i) {
         const rectangle = rectangles.get(i)!;
-        if (rectangle.containsCartographic(position))
-          maxLevel = rectangle.level;
+        if (rectangle.containsCartographic(position)) maxLevel = rectangle.level;
       }
       node = node!.parent!;
     }

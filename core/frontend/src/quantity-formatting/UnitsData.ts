@@ -34,7 +34,7 @@ export const UNIT_EXTRA_DATA = [
   { name: "Units.MILLIINCH", altDisplayLabels: [] },
   { name: "Units.MICROINCH", altDisplayLabels: [] },
   { name: "Units.MILLIFOOT", altDisplayLabels: [] },
-  { name: "Units.IN", altDisplayLabels: ["IN", "\""] },
+  { name: "Units.IN", altDisplayLabels: ["IN", '"'] },
   { name: "Units.FT", altDisplayLabels: ["F", "FT", "'"] },
   { name: "Units.CHAIN", altDisplayLabels: ["CHAIN"] },
   { name: "Units.YRD", altDisplayLabels: ["YRD", "yrd"] },

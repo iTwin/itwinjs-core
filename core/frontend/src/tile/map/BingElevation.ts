@@ -28,18 +28,22 @@ export class BingElevationProvider {
   /** @public */
   constructor() {
     let bingKey = "";
-    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps)
-      bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
+    if (IModelApp.mapLayerFormatRegistry.configOptions.BingMaps) bingKey = IModelApp.mapLayerFormatRegistry.configOptions.BingMaps.value;
 
     this._heightRangeRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
-    this._seaLevelOffsetRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+      "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}".replace(
+        "{BingMapsAPIKey}",
+        bingKey
+      );
+    this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}".replace(
+      "{BingMapsAPIKey}",
+      bingKey
+    );
     this._heightListRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+      "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}".replace(
+        "{BingMapsAPIKey}",
+        bingKey
+      );
   }
 
   /** Return the height (altitude) at a given cartographic location.
@@ -47,13 +51,11 @@ export class BingElevationProvider {
    * @public
    */
   public async getHeight(carto: Cartographic, geodetic = true) {
-    if (undefined === carto)
-      return 0.0;
+    if (undefined === carto) return 0.0;
 
-    const requestUrl =
-      this._heightListRequestTemplate
-        .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
-        .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestUrl = this._heightListRequestTemplate
+      .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
+      .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
 
     try {
       const tileResponse: Response = await request(requestUrl, {
@@ -90,8 +92,7 @@ export class BingElevationProvider {
   /** @internal */
   public async getGeodeticToSeaLevelOffset(point: Point3d, iModel: IModelConnection): Promise<number> {
     const carto = iModel.spatialToCartographicFromEcef(point);
-    if (carto === undefined)
-      return 0.0;
+    if (carto === undefined) return 0.0;
 
     const requestUrl = this._seaLevelOffsetRequestTemplate.replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`);
     try {
@@ -122,7 +123,7 @@ export class BingElevationProvider {
     const range = iModel.projectExtents.clone();
 
     // Expand for project surroundings.
-    range.expandInPlace(1000.);
+    range.expandInPlace(1000);
     for (const corner of range.corners()) {
       const carto = iModel.spatialToCartographicFromEcef(corner);
       latLongRange.extendXY(carto.longitudeDegrees, carto.latitudeDegrees);
@@ -143,12 +144,10 @@ export class BingElevationProvider {
     }
 
     const heights = await this.getHeights(latLongRange);
-    if (!heights || !heights.length)
-      return 0;
+    if (!heights || !heights.length) return 0;
 
     let total = 0.0;
-    for (const height of heights)
-      total += height;
+    for (const height of heights) total += height;
 
     return total / heights.length;
   }

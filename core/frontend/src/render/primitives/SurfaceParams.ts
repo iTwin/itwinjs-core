@@ -55,10 +55,8 @@ export type SurfaceMaterial = SurfaceRenderMaterial | SurfaceMaterialAtlas;
 
 /** @internal */
 export function createSurfaceMaterial(source: RenderMaterial | undefined): SurfaceMaterial | undefined {
-  if (undefined === source)
-    return undefined;
-  else
-    return { isAtlas: false, material: source };
+  if (undefined === source) return undefined;
+  else return { isAtlas: false, material: source };
 }
 
 /** @internal */
@@ -74,4 +72,3 @@ export interface SurfaceParams {
   };
   readonly material?: SurfaceMaterial;
 }
-

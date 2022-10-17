@@ -25,7 +25,7 @@ function interpolateSwingingEye(
   distance1: number,
   fraction: number,
   axesAtFraction: Matrix3d
-): { target: Point3d, eye: Point3d, distance: number } {
+): { target: Point3d; eye: Point3d; distance: number } {
   const z0 = axes0.rowZ();
   const z1 = axes1.rowZ();
   const zA = axesAtFraction.rowZ();
@@ -59,7 +59,8 @@ export class FrustumAnimator implements Animator {
     const zoomSettings = settings.zoomOut;
 
     let duration = undefined !== options.animationTime ? options.animationTime : settings.time.normal.milliseconds;
-    if (duration <= 0 || begin.cameraOn !== end.cameraOn) // no duration means skip animation. We can't animate if the camera toggles.
+    if (duration <= 0 || begin.cameraOn !== end.cameraOn)
+      // no duration means skip animation. We can't animate if the camera toggles.
       return;
 
     this._duration = duration;
@@ -94,8 +95,7 @@ export class FrustumAnimator implements Animator {
         view3.lookAtViewAlignedVolume(beginRange.union(endRange), viewport.viewRect.aspect); // set up a view that would show both extents
         duration *= zoomSettings.durationFactor; // increase duration so the zooming isn't too fast
         extentBias = view.getExtents().minus(begin.extents); // if the camera is off, the "bias" is the amount the union-ed view is larger than the starting view
-        if (begin.cameraOn)
-          eyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye))); // if the camera is on, the bias is the difference in height of the two eye positions
+        if (begin.cameraOn) eyeBias = zVec.scaleToLength(zVec.dotProduct(begin3.camera.eye.vectorTo(view3.camera.eye))); // if the camera is on, the bias is the difference in height of the two eye positions
       }
     }
 
@@ -105,28 +105,38 @@ export class FrustumAnimator implements Animator {
       start: true,
       easing: options.easingFunction ? options.easingFunction : settings.easing,
       interpolation: zoomSettings.interpolation,
-      onComplete: () =>
-        viewport.setupFromView(end), // when we're done, set up from final state
+      onComplete: () => viewport.setupFromView(end), // when we're done, set up from final state
       onUpdate: () => {
         const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
-        const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
+        const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(
+          begin.rotation
+        );
         if (begin.cameraOn) {
           const newExtents = begin.extents.interpolate(fraction, end.extents);
           if (undefined !== eyeBias) {
             const eyePoint = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
             eyePoint.plusScaled(eyeBias, timing.height, eyePoint);
-            const targetPoint = eyePoint.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
+            const targetPoint = eyePoint.plusScaled(
+              rot.getRow(2),
+              -1.0 * Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)
+            );
             view3.lookAt({ eyePoint, targetPoint, upVector: rot.getRow(1), newExtents });
           } else {
             const data = interpolateSwingingEye(
-              begin3.rotation, begin3.camera.eye, begin3.camera.focusDist,
-              end3.rotation, end3.camera.eye, end3.camera.focusDist, fraction, rot);
+              begin3.rotation,
+              begin3.camera.eye,
+              begin3.camera.focusDist,
+              end3.rotation,
+              end3.camera.eye,
+              end3.camera.focusDist,
+              fraction,
+              rot
+            );
             view3.lookAt({ eyePoint: data.eye, targetPoint: data.target, upVector: rot.getRow(1), newExtents });
           }
         } else {
           const extents = begin.extents.interpolate(timing.fraction, end.extents);
-          if (undefined !== extentBias)
-            extents.plusScaled(extentBias, timing.height, extents); // no camera, zooming out expands extents
+          if (undefined !== extentBias) extents.plusScaled(extentBias, timing.height, extents); // no camera, zooming out expands extents
           view.setExtents(extents);
           view.setRotation(rot);
           view.setCenter(beginTarget.interpolate(fraction, endTarget)); // must be done last - depends on extents and rotation
@@ -139,8 +149,7 @@ export class FrustumAnimator implements Animator {
   /** @internal */
   public animate() {
     const didFinish = !this._tweens.update();
-    if (didFinish && this.options.animationFinishedCallback)
-      this.options.animationFinishedCallback(true);
+    if (didFinish && this.options.animationFinishedCallback) this.options.animationFinishedCallback(true);
     return didFinish;
   }
 
@@ -148,8 +157,7 @@ export class FrustumAnimator implements Animator {
   public interrupt() {
     // We were interrupted. Either go to: the final frame (normally) or, add a small fraction of the total duration (30ms for a .5 second duration) to
     // the current time for cancelOnAbort. That makes aborted animations show some progress, as happens when the mouse wheel rolls quickly.
-    this._tweens.update(this.options.cancelOnAbort ? Date.now() + (this._duration * .06) : Infinity);
-    if (this.options.animationFinishedCallback)
-      this.options.animationFinishedCallback(false);
+    this._tweens.update(this.options.cancelOnAbort ? Date.now() + this._duration * 0.06 : Infinity);
+    if (this.options.animationFinishedCallback) this.options.animationFinishedCallback(false);
   }
 }

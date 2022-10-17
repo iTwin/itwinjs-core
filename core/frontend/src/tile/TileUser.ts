@@ -40,9 +40,7 @@ export namespace TileUser {
   }
 
   /** Iterate the subset of `users` that are [[Viewport]]s. */
-  export function * viewportsFromUsers(users: Iterable<TileUser>): Iterable<Viewport> {
-    for (const user of users)
-      if (user instanceof Viewport)
-        yield user;
+  export function* viewportsFromUsers(users: Iterable<TileUser>): Iterable<Viewport> {
+    for (const user of users) if (user instanceof Viewport) yield user;
   }
 }

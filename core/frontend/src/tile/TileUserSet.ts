@@ -16,8 +16,7 @@ import { TileUser } from "./internal";
 export class ReadonlyTileUserSet extends ReadonlySortedArray<TileUser> {
   public constructor(user?: TileUser) {
     super((lhs, rhs) => lhs.tileUserId - rhs.tileUserId);
-    if (undefined !== user)
-      this._array.push(user);
+    if (undefined !== user) this._array.push(user);
   }
 }
 
@@ -25,8 +24,7 @@ class TileUserSet extends ReadonlyTileUserSet {
   public copyFrom(src: ReadonlyTileUserSet): void {
     this._array.length = src.length;
     let i = 0;
-    for (const user of src)
-      this._array[i++] = user;
+    for (const user of src) this._array[i++] = user;
   }
 
   public clone(): TileUserSet {
@@ -35,21 +33,25 @@ class TileUserSet extends ReadonlyTileUserSet {
     return clone;
   }
 
-  public insert(user: TileUser): number { return this._insert(user); }
-  public remove(user: TileUser): number { return this._remove(user); }
-  public clear(): void { this._clear(); }
+  public insert(user: TileUser): number {
+    return this._insert(user);
+  }
+  public remove(user: TileUser): number {
+    return this._remove(user);
+  }
+  public clear(): void {
+    this._clear();
+  }
 }
 
 function compareTileUserSets(lhs: TileUserSet, rhs: TileUserSet): number {
-  if (lhs === rhs)
-    return 0;
+  if (lhs === rhs) return 0;
 
   let diff = lhs.length - rhs.length;
   if (0 === diff) {
     for (let i = 0; i < lhs.length; i++) {
       diff = lhs.get(i)!.tileUserId - rhs.get(i)!.tileUserId;
-      if (0 !== diff)
-        break;
+      if (0 !== diff) break;
     }
   }
 
@@ -67,8 +69,7 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
   private getForUser(user: TileUser): TileUserSet {
     for (let i = 0; i < this.length; i++) {
       const set = this._array[i];
-      if (1 === set.length && set.get(0)! === user)
-        return set;
+      if (1 === set.length && set.get(0)! === user) return set;
     }
 
     const newSet = new TileUserSet(user);
@@ -77,8 +78,7 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
   }
 
   public getTileUserSet(user: TileUser, users?: ReadonlyTileUserSet): TileUserSet {
-    if (undefined === users || users.isEmpty)
-      return this.getForUser(user);
+    if (undefined === users || users.isEmpty) return this.getForUser(user);
 
     // Use the scratch set for equality comparison - only allocate if no equivalent set already exists.
     const toFind = scratchSet;
@@ -102,8 +102,7 @@ class TileUserSetSet extends SortedArray<TileUserSet> {
   }
 
   public forgetUser(user: TileUser): void {
-    for (const set of this)
-      set.remove(user);
+    for (const set of this) set.remove(user);
   }
 }
 

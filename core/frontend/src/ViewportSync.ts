@@ -51,16 +51,13 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (changedVi
 
   let echo = false;
   const synchronize = (source: Viewport) => {
-    if (echo)
-      return;
+    if (echo) return;
 
     // Ignore onViewChanged events resulting from synchronization.
     echo = true;
     try {
       const doSync = sync(source);
-      for (const vp of viewports)
-        if (vp !== source)
-          doSync(source, vp);
+      for (const vp of viewports) if (vp !== source) doSync(source, vp);
     } finally {
       echo = false;
     }
@@ -68,18 +65,15 @@ export function connectViewports(viewports: Iterable<Viewport>, sync: (changedVi
 
   let firstViewport: Viewport | undefined;
   for (const vp of viewports) {
-    if (!firstViewport)
-      firstViewport = vp;
+    if (!firstViewport) firstViewport = vp;
 
     disconnect.push(vp.onViewChanged.addListener(() => synchronize(vp)));
   }
 
-  if (firstViewport)
-    synchronize(firstViewport);
+  if (firstViewport) synchronize(firstViewport);
 
   return () => {
-    for (const f of disconnect)
-      f();
+    for (const f of disconnect) f();
 
     disconnect.length = 0;
   };

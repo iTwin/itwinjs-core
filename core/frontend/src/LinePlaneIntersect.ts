@@ -9,15 +9,20 @@
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
-export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void {
+export function linePlaneIntersect(
+  outP: Point3d,
+  linePt: Point3d,
+  lineNormal: Vector3d | undefined,
+  planePt: Point3d,
+  planeNormal: Vector3d,
+  perpendicular: boolean
+): void {
   let dot = 0;
-  if (lineNormal)
-    dot = lineNormal.dotProduct(planeNormal);
-  else
-    perpendicular = true;
+  if (lineNormal) dot = lineNormal.dotProduct(planeNormal);
+  else perpendicular = true;
 
   let temp: Vector3d;
-  if (perpendicular || Math.abs(dot) < .001) {
+  if (perpendicular || Math.abs(dot) < 0.001) {
     const t = linePt.vectorTo(planePt).dotProduct(planeNormal);
     temp = planeNormal.scale(t);
   } else {

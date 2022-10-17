@@ -36,8 +36,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   after(async () => {
-    if (iModel)
-      await iModel.close();
+    if (iModel) await iModel.close();
 
     await IModelApp.shutdown();
   });

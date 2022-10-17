@@ -21,7 +21,12 @@ import { Matrix4 } from "./Matrix";
 
 /** @internal */
 export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
-  return typeof params === "object" && typeof params.count === "number" && params.transforms instanceof Float32Array && params.transformCenter instanceof Point3d;
+  return (
+    typeof params === "object" &&
+    typeof params.count === "number" &&
+    params.transforms instanceof Float32Array &&
+    params.transformCenter instanceof Point3d
+  );
 }
 
 class InstanceData {
@@ -80,7 +85,14 @@ export class InstanceBuffers extends InstanceData {
   public readonly patternTransforms = undefined;
   public readonly viewIndependentOrigin = undefined;
 
-  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, range: Range3d, symbology?: BufferHandle, featureIds?: BufferHandle) {
+  private constructor(
+    count: number,
+    transforms: BufferHandle,
+    rtcCenter: Point3d,
+    range: Range3d,
+    symbology?: BufferHandle,
+    featureIds?: BufferHandle
+  ) {
     super(count, rtcCenter, range);
     this.transforms = transforms;
     this.featureIds = featureIds;
@@ -125,21 +137,21 @@ export class InstanceBuffers extends InstanceData {
     assert(undefined === symbologyOverrides || count * 8 === symbologyOverrides.length);
 
     let idBuf: BufferHandle | undefined;
-    if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds)))
-      return undefined;
+    if (undefined !== featureIds && undefined === (idBuf = BufferHandle.createArrayBuffer(featureIds))) return undefined;
 
     let symBuf: BufferHandle | undefined;
-    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides)))
-      return undefined;
+    if (undefined !== symbologyOverrides && undefined === (symBuf = BufferHandle.createArrayBuffer(symbologyOverrides))) return undefined;
 
     const tfBuf = BufferHandle.createArrayBuffer(transforms);
     return undefined !== tfBuf ? new InstanceBuffers(count, tfBuf, params.transformCenter, range, symBuf, idBuf) : undefined;
   }
 
   public get isDisposed(): boolean {
-    return this.transforms.isDisposed
-      && (undefined === this.featureIds || this.featureIds.isDisposed)
-      && (undefined === this.symbology || this.symbology.isDisposed);
+    return (
+      this.transforms.isDisposed &&
+      (undefined === this.featureIds || this.featureIds.isDisposed) &&
+      (undefined === this.symbology || this.symbology.isDisposed)
+    );
   }
 
   public dispose() {
@@ -157,9 +169,11 @@ export class InstanceBuffers extends InstanceData {
   }
 
   private static extendTransformedRange(tfs: Float32Array, i: number, range: Range3d, x: number, y: number, z: number) {
-    range.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
+    range.extendXYZ(
+      tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
       tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
-      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
+      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z
+    );
   }
 
   public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: Point3d, out?: Range3d): Range3d {
@@ -206,11 +220,7 @@ export class PatternBuffers extends InstanceData {
     super(count, rtcCenter, range);
     this.patternTransforms = this;
     if (undefined !== featureId) {
-      this._featureId = new Float32Array([
-        (featureId & 0x0000ff) >>> 0,
-        (featureId & 0x00ff00) >>> 8,
-        (featureId & 0xff0000) >>> 16,
-      ]);
+      this._featureId = new Float32Array([(featureId & 0x0000ff) >>> 0, (featureId & 0x00ff00) >>> 8, (featureId & 0xff0000) >>> 16]);
     }
   }
 
@@ -219,8 +229,7 @@ export class PatternBuffers extends InstanceData {
     assert(Math.floor(count) === count);
 
     const offsets = BufferHandle.createArrayBuffer(params.xyOffsets);
-    if (!offsets)
-      return undefined;
+    if (!offsets) return undefined;
 
     return new PatternBuffers(
       count,
@@ -233,7 +242,7 @@ export class PatternBuffers extends InstanceData {
       Matrix4.fromTransform(Transform.createTranslation(params.symbolTranslation)),
       offsets,
       params.featureId,
-      params.viewIndependentOrigin,
+      params.viewIndependentOrigin
     );
   }
 
@@ -267,38 +276,94 @@ export class InstancedGeometry extends CachedGeometry {
   private readonly _repr: LUTGeometry;
   private readonly _ownsBuffers: boolean;
 
-  public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
-  public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
+  public getRtcModelTransform(modelMatrix: Transform) {
+    return this._buffers.getRtcModelTransform(modelMatrix);
+  }
+  public getRtcOnlyTransform() {
+    return this._buffers.getRtcOnlyTransform();
+  }
 
-  public override get viewIndependentOrigin(): Point3d | undefined { return this._buffers.viewIndependentOrigin; }
+  public override get viewIndependentOrigin(): Point3d | undefined {
+    return this._buffers.viewIndependentOrigin;
+  }
 
-  public override get asInstanced() { return this; }
-  public override get asLUT() { return this._repr.asLUT; }
-  public override get asMesh() { return this._repr.asMesh; }
-  public override get asSurface() { return this._repr.asSurface; }
-  public override get asEdge() { return this._repr.asEdge; }
-  public override get asSilhouette() { return this._repr.asSilhouette; }
-  public override get asIndexedEdge() { return this._repr.asIndexedEdge; }
+  public override get asInstanced() {
+    return this;
+  }
+  public override get asLUT() {
+    return this._repr.asLUT;
+  }
+  public override get asMesh() {
+    return this._repr.asMesh;
+  }
+  public override get asSurface() {
+    return this._repr.asSurface;
+  }
+  public override get asEdge() {
+    return this._repr.asEdge;
+  }
+  public override get asSilhouette() {
+    return this._repr.asSilhouette;
+  }
+  public override get asIndexedEdge() {
+    return this._repr.asIndexedEdge;
+  }
 
-  public get renderOrder() { return this._repr.renderOrder; }
-  public override get isLitSurface() { return this._repr.isLitSurface; }
-  public override get hasBakedLighting() { return this._repr.hasBakedLighting; }
-  public override get hasAnimation() { return this._repr.hasAnimation; }
-  public get qOrigin() { return this._repr.qOrigin; }
-  public get qScale() { return this._repr.qScale; }
-  public override get materialInfo() { return this._repr.materialInfo; }
-  public override get polylineBuffers() { return this._repr.polylineBuffers; }
-  public override get isEdge() { return this._repr.isEdge; }
-  public override get hasFeatures() { return this._buffers.hasFeatures; }
-  public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
-  public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
+  public get renderOrder() {
+    return this._repr.renderOrder;
+  }
+  public override get isLitSurface() {
+    return this._repr.isLitSurface;
+  }
+  public override get hasBakedLighting() {
+    return this._repr.hasBakedLighting;
+  }
+  public override get hasAnimation() {
+    return this._repr.hasAnimation;
+  }
+  public get qOrigin() {
+    return this._repr.qOrigin;
+  }
+  public get qScale() {
+    return this._repr.qScale;
+  }
+  public override get materialInfo() {
+    return this._repr.materialInfo;
+  }
+  public override get polylineBuffers() {
+    return this._repr.polylineBuffers;
+  }
+  public override get isEdge() {
+    return this._repr.isEdge;
+  }
+  public override get hasFeatures() {
+    return this._buffers.hasFeatures;
+  }
+  public get techniqueId(): TechniqueId {
+    return this._repr.techniqueId;
+  }
+  public override get supportsThematicDisplay() {
+    return this._repr.supportsThematicDisplay;
+  }
 
-  public override getPass(target: Target) { return this._repr.getPass(target); }
-  public override wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
-  public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
-  public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
-  public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
-  public override wantMixMonochromeColor(target: Target): boolean { return this._repr.wantMixMonochromeColor(target); }
+  public override getPass(target: Target) {
+    return this._repr.getPass(target);
+  }
+  public override wantWoWReversal(params: ShaderProgramParams) {
+    return this._repr.wantWoWReversal(params);
+  }
+  public override getLineCode(params: ShaderProgramParams) {
+    return this._repr.getLineCode(params);
+  }
+  public override getLineWeight(params: ShaderProgramParams) {
+    return this._repr.getLineWeight(params);
+  }
+  public override wantMonochrome(target: Target) {
+    return this._repr.wantMonochrome(target);
+  }
+  public override wantMixMonochromeColor(target: Target): boolean {
+    return this._repr.wantMixMonochromeColor(target);
+  }
 
   public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
@@ -351,16 +416,14 @@ export class InstancedGeometry extends CachedGeometry {
   }
 
   public get isDisposed(): boolean {
-    if (!this._repr.isDisposed)
-      return false;
+    if (!this._repr.isDisposed) return false;
 
     return !this._ownsBuffers || this._buffers.isDisposed;
   }
 
   public dispose() {
     this._repr.dispose();
-    if (this._ownsBuffers)
-      dispose(this._buffers);
+    if (this._ownsBuffers) dispose(this._buffers);
   }
 
   protected _wantWoWReversal(_target: Target) {
@@ -378,11 +441,16 @@ export class InstancedGeometry extends CachedGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics) {
     this._repr.collectStatistics(stats);
-    if (this._ownsBuffers)
-      this._buffers.collectStatistics(stats);
+    if (this._ownsBuffers) this._buffers.collectStatistics(stats);
   }
 
-  public get patternParams(): Float32Array { return this._buffers.patternParams; }
-  public get patternTransforms(): PatternTransforms | undefined { return this._buffers.patternTransforms; }
-  public get patternFeatureId(): Float32Array { return this._buffers.patternFeatureId; }
+  public get patternParams(): Float32Array {
+    return this._buffers.patternParams;
+  }
+  public get patternTransforms(): PatternTransforms | undefined {
+    return this._buffers.patternTransforms;
+  }
+  public get patternFeatureId(): Float32Array {
+    return this._buffers.patternFeatureId;
+  }
 }

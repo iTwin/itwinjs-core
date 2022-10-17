@@ -13,7 +13,7 @@ import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-ge
 export class Matrix3 {
   public readonly data: Float32Array = new Float32Array(3 * 3);
 
-  public constructor() { }
+  public constructor() {}
 
   public initIdentity(): void {
     this.setValues(1, 0, 0, 0, 1, 0, 0, 0, 1);
@@ -46,17 +46,25 @@ export class Matrix3 {
     this.m21 = m21;
     this.m22 = m22;
   }
-  public static fromValues(m00: number, m01: number, m02: number, m10: number, m11: number, m12: number, m20: number, m21: number, m22: number, out?: Matrix3) {
+  public static fromValues(
+    m00: number,
+    m01: number,
+    m02: number,
+    m10: number,
+    m11: number,
+    m12: number,
+    m20: number,
+    m21: number,
+    m22: number,
+    out?: Matrix3
+  ) {
     const mat = undefined !== out ? out : new Matrix3();
     mat.setValues(m00, m01, m02, m10, m11, m12, m20, m21, m22);
     return mat;
   }
 
   public initFromMatrix3d(rot: Matrix3d): void {
-    this.setValues(
-      rot.at(0, 0), rot.at(0, 1), rot.at(0, 2),
-      rot.at(1, 0), rot.at(1, 1), rot.at(1, 2),
-      rot.at(2, 0), rot.at(2, 1), rot.at(2, 2));
+    this.setValues(rot.at(0, 0), rot.at(0, 1), rot.at(0, 2), rot.at(1, 0), rot.at(1, 1), rot.at(1, 2), rot.at(2, 0), rot.at(2, 1), rot.at(2, 2));
   }
   public static fromMatrix3d(rot: Matrix3d, out?: Matrix3): Matrix3 {
     const mat = undefined !== out ? out : new Matrix3();
@@ -98,34 +106,74 @@ export class Matrix3 {
     this.data[index] = value;
   }
 
-  public at(row: number, col: number) { return this.get(col * 3 + row); }
-  public setAt(row: number, col: number, value: number) { this.set(col * 3 + row, value); }
+  public at(row: number, col: number) {
+    return this.get(col * 3 + row);
+  }
+  public setAt(row: number, col: number, value: number) {
+    this.set(col * 3 + row, value);
+  }
 
-  public get m00() { return this.at(0, 0); }
-  public set m00(value: number) { this.setAt(0, 0, value); }
-  public get m01() { return this.at(0, 1); }
-  public set m01(value: number) { this.setAt(0, 1, value); }
-  public get m02() { return this.at(0, 2); }
-  public set m02(value: number) { this.setAt(0, 2, value); }
-  public get m10() { return this.at(1, 0); }
-  public set m10(value: number) { this.setAt(1, 0, value); }
-  public get m11() { return this.at(1, 1); }
-  public set m11(value: number) { this.setAt(1, 1, value); }
-  public get m12() { return this.at(1, 2); }
-  public set m12(value: number) { this.setAt(1, 2, value); }
-  public get m20() { return this.at(2, 0); }
-  public set m20(value: number) { this.setAt(2, 0, value); }
-  public get m21() { return this.at(2, 1); }
-  public set m21(value: number) { this.setAt(2, 1, value); }
-  public get m22() { return this.at(2, 2); }
-  public set m22(value: number) { this.setAt(2, 2, value); }
+  public get m00() {
+    return this.at(0, 0);
+  }
+  public set m00(value: number) {
+    this.setAt(0, 0, value);
+  }
+  public get m01() {
+    return this.at(0, 1);
+  }
+  public set m01(value: number) {
+    this.setAt(0, 1, value);
+  }
+  public get m02() {
+    return this.at(0, 2);
+  }
+  public set m02(value: number) {
+    this.setAt(0, 2, value);
+  }
+  public get m10() {
+    return this.at(1, 0);
+  }
+  public set m10(value: number) {
+    this.setAt(1, 0, value);
+  }
+  public get m11() {
+    return this.at(1, 1);
+  }
+  public set m11(value: number) {
+    this.setAt(1, 1, value);
+  }
+  public get m12() {
+    return this.at(1, 2);
+  }
+  public set m12(value: number) {
+    this.setAt(1, 2, value);
+  }
+  public get m20() {
+    return this.at(2, 0);
+  }
+  public set m20(value: number) {
+    this.setAt(2, 0, value);
+  }
+  public get m21() {
+    return this.at(2, 1);
+  }
+  public set m21(value: number) {
+    this.setAt(2, 1, value);
+  }
+  public get m22() {
+    return this.at(2, 2);
+  }
+  public set m22(value: number) {
+    this.setAt(2, 2, value);
+  }
 }
 
 /** @internal */
 export class Matrix4 {
   public readonly data: Float32Array = new Float32Array(4 * 4);
 
-  public constructor() { }
+  public constructor() {}
 
   public copyFrom(src: Matrix4): void {
     for (let i = 0; i < this.data.length; i++) {
@@ -139,11 +187,7 @@ export class Matrix4 {
   }
 
   public initIdentity(): void {
-    this.setValues(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1);
+    this.setValues(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
   }
   public static fromIdentity(out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
@@ -151,7 +195,24 @@ export class Matrix4 {
     return mat;
   }
 
-  public setValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number) {
+  public setValues(
+    m00: number,
+    m01: number,
+    m02: number,
+    m03: number,
+    m10: number,
+    m11: number,
+    m12: number,
+    m13: number,
+    m20: number,
+    m21: number,
+    m22: number,
+    m23: number,
+    m30: number,
+    m31: number,
+    m32: number,
+    m33: number
+  ) {
     this.m00 = m00;
     this.m01 = m01;
     this.m02 = m02;
@@ -170,7 +231,25 @@ export class Matrix4 {
     this.m33 = m33;
   }
 
-  public static fromValues(m00: number, m01: number, m02: number, m03: number, m10: number, m11: number, m12: number, m13: number, m20: number, m21: number, m22: number, m23: number, m30: number, m31: number, m32: number, m33: number, out?: Matrix4): Matrix4 {
+  public static fromValues(
+    m00: number,
+    m01: number,
+    m02: number,
+    m03: number,
+    m10: number,
+    m11: number,
+    m12: number,
+    m13: number,
+    m20: number,
+    m21: number,
+    m22: number,
+    m23: number,
+    m30: number,
+    m31: number,
+    m32: number,
+    m33: number,
+    out?: Matrix4
+  ): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
     mat.setValues(m00, m01, m02, m03, m10, m11, m12, m13, m20, m21, m22, m23, m30, m31, m32, m33);
     return mat;
@@ -186,10 +265,23 @@ export class Matrix4 {
     const mat = transform.matrix;
     const org = transform.origin;
     this.setValues(
-      mat.at(0, 0), mat.at(0, 1), mat.at(0, 2), org.x,
-      mat.at(1, 0), mat.at(1, 1), mat.at(1, 2), org.y,
-      mat.at(2, 0), mat.at(2, 1), mat.at(2, 2), org.z,
-      0, 0, 0, 1);
+      mat.at(0, 0),
+      mat.at(0, 1),
+      mat.at(0, 2),
+      org.x,
+      mat.at(1, 0),
+      mat.at(1, 1),
+      mat.at(1, 2),
+      org.y,
+      mat.at(2, 0),
+      mat.at(2, 1),
+      mat.at(2, 2),
+      org.z,
+      0,
+      0,
+      0,
+      1
+    );
   }
   public static fromTransform(transform: Transform, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
@@ -201,19 +293,30 @@ export class Matrix4 {
     assert(0.0 === data[3] && 0.0 === data[7] && 0.0 === data[11] && 1.0 === data[15]);
     const origin = new Point3d(data[12], data[13], data[14]);
     const rotMat = Matrix3d.createIdentity();
-    for (let i = 0; i < 3; i++)
-      for (let j = 0; j < 3; j++)
-        rotMat.setAt(i, j, data[i + j * 4]);
+    for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) rotMat.setAt(i, j, data[i + j * 4]);
 
     return Transform.createRefs(origin, rotMat);
   }
 
   public initFromMatrix4d(mat: Matrix4d): void {
     this.setValues(
-      mat.atIJ(0, 0), mat.atIJ(0, 1), mat.atIJ(0, 2), mat.atIJ(0, 3),
-      mat.atIJ(1, 0), mat.atIJ(1, 1), mat.atIJ(1, 2), mat.atIJ(1, 3),
-      mat.atIJ(2, 0), mat.atIJ(2, 1), mat.atIJ(2, 2), mat.atIJ(2, 3),
-      mat.atIJ(3, 0), mat.atIJ(3, 1), mat.atIJ(3, 2), mat.atIJ(3, 3));
+      mat.atIJ(0, 0),
+      mat.atIJ(0, 1),
+      mat.atIJ(0, 2),
+      mat.atIJ(0, 3),
+      mat.atIJ(1, 0),
+      mat.atIJ(1, 1),
+      mat.atIJ(1, 2),
+      mat.atIJ(1, 3),
+      mat.atIJ(2, 0),
+      mat.atIJ(2, 1),
+      mat.atIJ(2, 2),
+      mat.atIJ(2, 3),
+      mat.atIJ(3, 0),
+      mat.atIJ(3, 1),
+      mat.atIJ(3, 2),
+      mat.atIJ(3, 3)
+    );
   }
   public static fromMatrix4d(mat: Matrix4d, out?: Matrix4): Matrix4 {
     const result = undefined !== out ? out : new Matrix4();
@@ -222,11 +325,25 @@ export class Matrix4 {
   }
   public toMatrix4d(result?: Matrix4d): Matrix4d {
     const data = this.data;
-    return Matrix4d.createRowValues(data[0], data[4], data[8], data[12],
-      data[1], data[5], data[9], data[13],
-      data[2], data[6], data[10], data[14],
-      data[3], data[7], data[11], data[15],
-      result);
+    return Matrix4d.createRowValues(
+      data[0],
+      data[4],
+      data[8],
+      data[12],
+      data[1],
+      data[5],
+      data[9],
+      data[13],
+      data[2],
+      data[6],
+      data[10],
+      data[14],
+      data[3],
+      data[7],
+      data[11],
+      data[15],
+      result
+    );
   }
 
   public lookAt(eye: Point3d, center: Point3d, up: Vector3d): boolean {
@@ -241,11 +358,7 @@ export class Matrix4 {
     }
 
     const u = Vector3d.createCrossProduct(s.x, s.y, s.z, f.x, f.y, f.z);
-    this.setValues(
-      s.x, s.y, s.z, -s.dotProduct(eye),
-      u.x, u.y, u.z, -u.dotProduct(eye),
-      -f.x, -f.y, -f.z, f.dotProduct(eye),
-      0, 0, 0, 1);
+    this.setValues(s.x, s.y, s.z, -s.dotProduct(eye), u.x, u.y, u.z, -u.dotProduct(eye), -f.x, -f.y, -f.z, f.dotProduct(eye), 0, 0, 0, 1);
     return true;
   }
   public static fromLookAt(eye: Point3d, center: Point3d, up: Vector3d, out?: Matrix4): Matrix4 | undefined {
@@ -255,9 +368,24 @@ export class Matrix4 {
 
   // left, right, bottom, top, near, far
   public frustum(l: number, r: number, b: number, t: number, n: number, f: number): void {
-    this.setValues((2 * n) / (r - l), 0, (r + l) / (r - l), 0, 0, (2 * n) / (t - b),
-      (t + b) / (t - b), 0, 0, 0, -(f + n) / (f - n),
-      -(2 * f * n) / (f - n), 0, 0, -1, 0);
+    this.setValues(
+      (2 * n) / (r - l),
+      0,
+      (r + l) / (r - l),
+      0,
+      0,
+      (2 * n) / (t - b),
+      (t + b) / (t - b),
+      0,
+      0,
+      0,
+      -(f + n) / (f - n),
+      -(2 * f * n) / (f - n),
+      0,
+      0,
+      -1,
+      0
+    );
   }
   public static fromFrustum(l: number, r: number, b: number, t: number, n: number, f: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
@@ -266,7 +394,7 @@ export class Matrix4 {
   }
 
   public perspective(fovY: number, aspectRatio: number, nearZ: number, farZ: number): void {
-    const frustumHeight = Math.tan(fovY / 360 * Math.PI) * nearZ;
+    const frustumHeight = Math.tan((fovY / 360) * Math.PI) * nearZ;
     const frustumWidth = frustumHeight * aspectRatio;
     this.frustum(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, nearZ, farZ);
   }
@@ -277,11 +405,7 @@ export class Matrix4 {
   }
 
   public ortho(l: number, r: number, b: number, t: number, n: number, f: number): void {
-    this.setValues(
-      2 / (r - l), 0, 0, -(r + l) / (r - l),
-      0, 2 / (t - b), 0, -(t + b) / (t - b),
-      0, 0, -2 / (f - n), -(f + n) / (f - n),
-      0, 0, 0, 1);
+    this.setValues(2 / (r - l), 0, 0, -(r + l) / (r - l), 0, 2 / (t - b), 0, -(t + b) / (t - b), 0, 0, -2 / (f - n), -(f + n) / (f - n), 0, 0, 0, 1);
   }
   public static fromOrtho(l: number, r: number, b: number, t: number, n: number, f: number, out?: Matrix4): Matrix4 {
     const mat = undefined !== out ? out : new Matrix4();
@@ -312,7 +436,8 @@ export class Matrix4 {
       -d[1] * d[6] * d[11] + d[1] * d[7] * d[10] + d[5] * d[2] * d[11] - d[5] * d[3] * d[10] - d[9] * d[2] * d[7] + d[9] * d[3] * d[6],
       d[0] * d[6] * d[11] - d[0] * d[7] * d[10] - d[4] * d[2] * d[11] + d[4] * d[3] * d[10] + d[8] * d[2] * d[7] - d[8] * d[3] * d[6],
       -d[0] * d[5] * d[11] + d[0] * d[7] * d[9] + d[4] * d[1] * d[11] - d[4] * d[3] * d[9] - d[8] * d[1] * d[7] + d[8] * d[3] * d[5],
-      d[0] * d[5] * d[10] - d[0] * d[6] * d[9] - d[4] * d[1] * d[10] + d[4] * d[2] * d[9] + d[8] * d[1] * d[6] - d[8] * d[2] * d[5]);
+      d[0] * d[5] * d[10] - d[0] * d[6] * d[9] - d[4] * d[1] * d[10] + d[4] * d[2] * d[9] + d[8] * d[1] * d[6] - d[8] * d[2] * d[5]
+    );
 
     const determinant = d0 * d[0] + d1 * d[4] + d2 * d[8] + d3 * d[12];
     if (0 === determinant) {
@@ -370,7 +495,8 @@ export class Matrix4 {
       a[3] * b[0] + a[7] * b[1] + a[11] * b[2] + a[15] * b[3],
       a[3] * b[4] + a[7] * b[5] + a[11] * b[6] + a[15] * b[7],
       a[3] * b[8] + a[7] * b[9] + a[11] * b[10] + a[15] * b[11],
-      a[3] * b[12] + a[7] * b[13] + a[11] * b[14] + a[15] * b[15]);
+      a[3] * b[12] + a[7] * b[13] + a[11] * b[14] + a[15] * b[15]
+    );
   }
   public static fromProduct(a: Matrix4, b: Matrix4, out?: Matrix4): Matrix4 {
     const mat = a.clone(out);
@@ -394,42 +520,110 @@ export class Matrix4 {
     this.data[index] = value;
   }
 
-  public at(row: number, col: number) { return this.get(col * 4 + row); }
-  public setAt(row: number, col: number, value: number) { this.set(col * 4 + row, value); }
+  public at(row: number, col: number) {
+    return this.get(col * 4 + row);
+  }
+  public setAt(row: number, col: number, value: number) {
+    this.set(col * 4 + row, value);
+  }
 
-  public get m00() { return this.at(0, 0); }
-  public set m00(value: number) { this.setAt(0, 0, value); }
-  public get m01() { return this.at(0, 1); }
-  public set m01(value: number) { this.setAt(0, 1, value); }
-  public get m02() { return this.at(0, 2); }
-  public set m02(value: number) { this.setAt(0, 2, value); }
-  public get m03() { return this.at(0, 3); }
-  public set m03(value: number) { this.setAt(0, 3, value); }
-  public get m10() { return this.at(1, 0); }
-  public set m10(value: number) { this.setAt(1, 0, value); }
-  public get m11() { return this.at(1, 1); }
-  public set m11(value: number) { this.setAt(1, 1, value); }
-  public get m12() { return this.at(1, 2); }
-  public set m12(value: number) { this.setAt(1, 2, value); }
-  public get m13() { return this.at(1, 3); }
-  public set m13(value: number) { this.setAt(1, 3, value); }
-  public get m20() { return this.at(2, 0); }
-  public set m20(value: number) { this.setAt(2, 0, value); }
-  public get m21() { return this.at(2, 1); }
-  public set m21(value: number) { this.setAt(2, 1, value); }
-  public get m22() { return this.at(2, 2); }
-  public set m22(value: number) { this.setAt(2, 2, value); }
-  public get m23() { return this.at(2, 3); }
-  public set m23(value: number) { this.setAt(2, 3, value); }
+  public get m00() {
+    return this.at(0, 0);
+  }
+  public set m00(value: number) {
+    this.setAt(0, 0, value);
+  }
+  public get m01() {
+    return this.at(0, 1);
+  }
+  public set m01(value: number) {
+    this.setAt(0, 1, value);
+  }
+  public get m02() {
+    return this.at(0, 2);
+  }
+  public set m02(value: number) {
+    this.setAt(0, 2, value);
+  }
+  public get m03() {
+    return this.at(0, 3);
+  }
+  public set m03(value: number) {
+    this.setAt(0, 3, value);
+  }
+  public get m10() {
+    return this.at(1, 0);
+  }
+  public set m10(value: number) {
+    this.setAt(1, 0, value);
+  }
+  public get m11() {
+    return this.at(1, 1);
+  }
+  public set m11(value: number) {
+    this.setAt(1, 1, value);
+  }
+  public get m12() {
+    return this.at(1, 2);
+  }
+  public set m12(value: number) {
+    this.setAt(1, 2, value);
+  }
+  public get m13() {
+    return this.at(1, 3);
+  }
+  public set m13(value: number) {
+    this.setAt(1, 3, value);
+  }
+  public get m20() {
+    return this.at(2, 0);
+  }
+  public set m20(value: number) {
+    this.setAt(2, 0, value);
+  }
+  public get m21() {
+    return this.at(2, 1);
+  }
+  public set m21(value: number) {
+    this.setAt(2, 1, value);
+  }
+  public get m22() {
+    return this.at(2, 2);
+  }
+  public set m22(value: number) {
+    this.setAt(2, 2, value);
+  }
+  public get m23() {
+    return this.at(2, 3);
+  }
+  public set m23(value: number) {
+    this.setAt(2, 3, value);
+  }
 
-  public get m30() { return this.at(3, 0); }
-  public set m30(value: number) { this.setAt(3, 0, value); }
-  public get m31() { return this.at(3, 1); }
-  public set m31(value: number) { this.setAt(3, 1, value); }
-  public get m32() { return this.at(3, 2); }
-  public set m32(value: number) { this.setAt(3, 2, value); }
-  public get m33() { return this.at(3, 3); }
-  public set m33(value: number) { this.setAt(3, 3, value); }
+  public get m30() {
+    return this.at(3, 0);
+  }
+  public set m30(value: number) {
+    this.setAt(3, 0, value);
+  }
+  public get m31() {
+    return this.at(3, 1);
+  }
+  public set m31(value: number) {
+    this.setAt(3, 1, value);
+  }
+  public get m32() {
+    return this.at(3, 2);
+  }
+  public set m32(value: number) {
+    this.setAt(3, 2, value);
+  }
+  public get m33() {
+    return this.at(3, 3);
+  }
+  public set m33(value: number) {
+    this.setAt(3, 3, value);
+  }
 }
 
 // missing Vector3d functions

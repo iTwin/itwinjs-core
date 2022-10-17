@@ -66,37 +66,49 @@ export class FrustumUniforms {
     viewZ: new Vector3d(),
   };
 
-  public constructor() {
-  }
+  public constructor() {}
 
   public bindProjectionMatrix(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setMatrix4(this.projectionMatrix32);
+    if (!sync(this, uniform)) uniform.setMatrix4(this.projectionMatrix32);
   }
 
   public bindUpVector(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform3fv(this._viewUpVector32);
+    if (!sync(this, uniform)) uniform.setUniform3fv(this._viewUpVector32);
   }
 
   // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
-  public get planes(): Float32Array { return this._planeData; }
+  public get planes(): Float32Array {
+    return this._planeData;
+  }
 
   // uniform vec3 u_frustum; // { near, far, type }
-  public get frustum(): Float32Array { return this._frustumData; }
+  public get frustum(): Float32Array {
+    return this._frustumData;
+  }
 
-  public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
-  public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
-  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
-  public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
-  public get planFraction(): number { return this._planFraction; }
+  public get nearPlane(): number {
+    return this._frustumData[FrustumData.kNear];
+  }
+  public get farPlane(): number {
+    return this._frustumData[FrustumData.kFar];
+  }
+  public get type(): FrustumUniformType {
+    return this.frustum[FrustumData.kType] as FrustumUniformType;
+  }
+  public get is2d(): boolean {
+    return FrustumUniformType.TwoDee === this.type;
+  }
+  public get planFraction(): number {
+    return this._planFraction;
+  }
 
   // uniform vec2 u_logZ where x = 1/near and y = log(far/near)
-  public get logZ(): Float32Array { return this._logZData; }
+  public get logZ(): Float32Array {
+    return this._logZData;
+  }
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
-    if (newFraction === this._planFraction && is3d !== this.is2d && newFrustum.equals(this.planFrustum))
-      return;
+    if (newFraction === this._planFraction && is3d !== this.is2d && newFrustum.equals(this.planFrustum)) return;
 
     desync(this);
 
@@ -119,7 +131,8 @@ export class FrustumUniforms {
 
     this._planFraction = newFraction;
 
-    if (!is3d || newFraction > 0.999) { // ortho or 2d
+    if (!is3d || newFraction > 0.999) {
+      // ortho or 2d
       const halfWidth = Vector3d.createStartEnd(farLowerRight, farLowerLeft, this._scratch.vec3d).magnitude() * 0.5;
       const halfHeight = Vector3d.createStartEnd(farLowerRight, farUpperRight).magnitude() * 0.5;
       const depth = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d).magnitude();
@@ -132,7 +145,8 @@ export class FrustumUniforms {
 
       this.setPlanes(halfHeight, -halfHeight, -halfWidth, halfWidth);
       this.setFrustum(0, depth, is3d ? FrustumUniformType.Orthographic : FrustumUniformType.TwoDee);
-    } else { // perspective
+    } else {
+      // perspective
       const scale = 1.0 / (1.0 - newFraction);
       const zVec = Vector3d.createStartEnd(farLowerLeft, nearLowerLeft, this._scratch.vec3d);
       const cameraPosition = fromSumOf(farLowerLeft, zVec, scale, this._scratch.point3d);
@@ -246,18 +260,44 @@ function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d,
 
 function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
   Matrix4d.createRowValues(
-    2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
-    0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
-    0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
-    0.0, 0.0, 0.0, 1.0,
-    result);
+    2.0 / (right - left),
+    0.0,
+    0.0,
+    -(right + left) / (right - left),
+    0.0,
+    2.0 / (top - bottom),
+    0.0,
+    -(top + bottom) / (top - bottom),
+    0.0,
+    0.0,
+    -2.0 / (far - near),
+    -(far + near) / (far - near),
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    result
+  );
 }
 
 function frustum(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
   Matrix4d.createRowValues(
-    (2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0,
-    0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0,
-    0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
-    0.0, 0.0, -1.0, 0.0,
-    result);
+    (2.0 * near) / (right - left),
+    0.0,
+    (right + left) / (right - left),
+    0.0,
+    0.0,
+    (2.0 * near) / (top - bottom),
+    (top + bottom) / (top - bottom),
+    0.0,
+    0.0,
+    0.0,
+    -(far + near) / (far - near),
+    -(2.0 * far * near) / (far - near),
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    result
+  );
 }

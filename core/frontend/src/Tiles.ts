@@ -19,9 +19,15 @@ class TreeOwner implements TileTreeOwner {
 
   public readonly id: any;
 
-  public get tileTree(): TileTree | undefined { return this._tileTree; }
-  public get loadStatus(): TileTreeLoadStatus { return this._loadStatus; }
-  public get iModel(): IModelConnection { return this._iModel; }
+  public get tileTree(): TileTree | undefined {
+    return this._tileTree;
+  }
+  public get loadStatus(): TileTreeLoadStatus {
+    return this._loadStatus;
+  }
+  public get iModel(): IModelConnection {
+    return this._iModel;
+  }
 
   public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
     this.id = id;
@@ -45,8 +51,7 @@ class TreeOwner implements TileTreeOwner {
   }
 
   private async _load(): Promise<void> {
-    if (TileTreeLoadStatus.NotLoaded !== this.loadStatus)
-      return;
+    if (TileTreeLoadStatus.NotLoaded !== this.loadStatus) return;
 
     this._loadStatus = TileTreeLoadStatus.Loading;
     let tree: TileTree | undefined;
@@ -55,7 +60,7 @@ class TreeOwner implements TileTreeOwner {
       tree = await this._supplier.createTileTree(this.id, this._iModel);
       newStatus = undefined !== tree && !tree.rootTile.contentRange.isNull ? TileTreeLoadStatus.Loaded : TileTreeLoadStatus.NotFound;
     } catch (err: any) {
-      newStatus = (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
+      newStatus = err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.NotFound;
     }
 
     if (TileTreeLoadStatus.Loading === this._loadStatus) {
@@ -74,13 +79,15 @@ class TreeOwner implements TileTreeOwner {
  * @public
  * @extensions
  */
-export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+export class Tiles implements Iterable<{ supplier: TileTreeSupplier; id: any; owner: TileTreeOwner }> {
   private _iModel: IModelConnection;
   private readonly _treesBySupplier = new Map<TileTreeSupplier, Dictionary<any, TreeOwner>>();
   private _disposed = false;
 
   /** @internal */
-  public get isDisposed() { return this._disposed; }
+  public get isDisposed() {
+    return this._disposed;
+  }
 
   /** @internal */
   constructor(iModel: IModelConnection) {
@@ -88,15 +95,13 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
 
     iModel.onEcefLocationChanged.addListener(() => {
       for (const supplier of this._treesBySupplier.keys()) {
-        if (supplier.isEcefDependent)
-          this.dropSupplier(supplier);
+        if (supplier.isEcefDependent) this.dropSupplier(supplier);
       }
     });
 
     // When project extents change, purge tile trees for spatial models.
     iModel.onProjectExtentsChanged.addListener(async () => {
-      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
-        await this.purgeModelTrees(this.getSpatialModels());
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope) await this.purgeModelTrees(this.getSpatialModels());
     });
   }
 
@@ -110,8 +115,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
    * @internal
    */
   public reset(): void {
-    for (const supplier of this._treesBySupplier)
-      supplier[1].forEach((_key, value) => value.dispose());
+    for (const supplier of this._treesBySupplier) supplier[1].forEach((_key, value) => value.dispose());
 
     this._treesBySupplier.clear();
   }
@@ -142,8 +146,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   }
 
   private async purgeModelTrees(modelIds: Set<Id64String>): Promise<void> {
-    if (0 === modelIds.size)
-      return;
+    if (0 === modelIds.size) return;
 
     const ids = Array.from(modelIds);
     await this.purgeTileTrees(ids);
@@ -153,8 +156,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   private getSpatialModels(): Set<Id64String> {
     const modelIds = new Set<Id64String>();
     for (const supplier of this._treesBySupplier.keys())
-      if (supplier.addSpatialModels)
-        supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
+      if (supplier.addSpatialModels) supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
 
     return modelIds;
   }
@@ -182,8 +184,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   /** Disposes of all [[TileTree]]s belonging to `supplier` and removes `supplier` from the set of known tile tree suppliers. */
   public dropSupplier(supplier: TileTreeSupplier): void {
     const trees = this._treesBySupplier.get(supplier);
-    if (undefined === trees)
-      return;
+    if (undefined === trees) return;
 
     trees.forEach((_key, value) => value.dispose());
     this._treesBySupplier.delete(supplier);
@@ -191,24 +192,20 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
 
   /** Invokes a function on each extant TileTreeOwner. */
   public forEachTreeOwner(func: (owner: TileTreeOwner) => void): void {
-    for (const dict of this._treesBySupplier.values())
-      dict.forEach((_key, value) => func(value));
+    for (const dict of this._treesBySupplier.values()) dict.forEach((_key, value) => func(value));
   }
 
   /** Iterate over all of the TileTreeOwners. */
-  public * [Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+  public *[Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier; id: any; owner: TileTreeOwner }> {
     for (const [supplier, dict] of this._treesBySupplier) {
-      for (const entry of dict)
-        yield { supplier, id: entry.key, owner: entry.value };
+      for (const entry of dict) yield { supplier, id: entry.key, owner: entry.value };
     }
   }
 
   /** Obtain the TileTreeOwners supplied by the specified supplier. */
-  public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any, owner: TileTreeOwner }> {
+  public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any; owner: TileTreeOwner }> {
     function* iterator(trees: Dictionary<any, TreeOwner> | undefined) {
-      if (trees)
-        for (const entry of trees)
-          yield { id: entry.key, owner: entry.value };
+      if (trees) for (const entry of trees) yield { id: entry.key, owner: entry.value };
     }
 
     return {
@@ -226,8 +223,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
       dict.forEach((_treeId, owner) => {
         const tree = owner.tileTree;
         if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
-          if (undefined === exclude || !exclude.has(tree))
-            owner.dispose();
+          if (undefined === exclude || !exclude.has(tree)) owner.dispose();
       });
     }
   }

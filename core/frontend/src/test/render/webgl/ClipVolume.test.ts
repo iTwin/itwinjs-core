@@ -28,17 +28,12 @@ describe("ClipVolume", async () => {
   });
 
   it("should support single-primitive ClipVectors", () => {
-    const points = [
-      Point3d.create(1.0, 1.0, 0.0),
-      Point3d.create(2.0, 1.0, 0.0),
-      Point3d.create(2.0, 2.0, 0.0),
-      Point3d.create(1.0, 2.0, 0.0),
-    ];
+    const points = [Point3d.create(1.0, 1.0, 0.0), Point3d.create(2.0, 1.0, 0.0), Point3d.create(2.0, 2.0, 0.0), Point3d.create(1.0, 2.0, 0.0)];
 
     const shape = ClipShape.createShape(points, 1.0, 2.0)!;
     expect(shape).not.to.be.undefined;
 
-    const clipVector = ClipVector.create([ shape ])!;
+    const clipVector = ClipVector.create([shape])!;
     expect(clipVector).not.to.be.undefined;
 
     const clipVolume = ClipVolume.create(clipVector)!;
@@ -47,13 +42,12 @@ describe("ClipVolume", async () => {
     const data = new Float32Array(clipVolume.getData(Transform.createIdentity()).buffer);
     const expectedData = [0, 1, 0, -1, -1, 0, 0, 2, 0, -1, 0, 2, 1, 0, 0, -1, 0, 0, 1, -1, 0, 0, -1, 2, 2, 2, 2, 0];
     expect(data.length).to.equal(expectedData.length);
-    for (let i = 0; i < data.length; i++)
-      expect(data[i]).to.equal(expectedData[i]);
+    for (let i = 0; i < data.length; i++) expect(data[i]).to.equal(expectedData[i]);
   });
 
   it("should support compound ClipVectors", () => {
     const vec = ClipVector.createEmpty();
-    expect(vec.appendShape([ Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0) ], 1, 2)).to.be.true;
+    expect(vec.appendShape([Point3d.create(1, 1, 0), Point3d.create(2, 1, 0), Point3d.create(2, 2, 0), Point3d.create(1, 2, 0)], 1, 2)).to.be.true;
     let vol = ClipVolume.create(vec)!;
     expect(vol).not.to.be.undefined;
     expect(vol.clipVector).to.equal(vec);
@@ -73,7 +67,6 @@ describe("ClipVolume", async () => {
 
     const data = new Float32Array(vol.getData(Transform.createIdentity()).buffer);
     expect(data.length).to.equal(expectedData.length);
-    for (let i = 0; i < data.length; i++)
-      expect(data[i]).to.equal(expectedData[i]);
+    for (let i = 0; i < data.length; i++) expect(data[i]).to.equal(expectedData[i]);
   });
 });

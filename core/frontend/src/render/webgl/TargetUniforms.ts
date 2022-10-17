@@ -35,11 +35,10 @@ class PixelWidthFactor {
     if (!sync(uniforms.frustum, this._frustumSync) || !sync(uniforms.viewRect, this._rectSync) || !sync(uniforms.branch, this._branchSync))
       this.compute(uniforms.frustum, uniforms.viewRect.width, uniforms.viewRect.height, uniforms.branch.top.frustumScale);
 
-    if (!sync(this, uniform))
-      uniform.setUniform1f(this._factor);
+    if (!sync(this, uniform)) uniform.setUniform1f(this._factor);
   }
 
-  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number, y: number }): void {
+  private compute(frustumUniforms: FrustumUniforms, width: number, height: number, scale: { x: number; y: number }): void {
     desync(this);
 
     const frustumPlanes = frustumUniforms.planes;
@@ -56,11 +55,11 @@ class PixelWidthFactor {
     if (FrustumUniformType.Perspective === frustumUniforms.type) {
       const inverseNear = 1.0 / frustum[0];
       const tanTheta = top * inverseNear;
-      halfPixelHeight = scale.x * tanTheta / height;
-      halfPixelWidth = scale.y * tanTheta / width;
+      halfPixelHeight = (scale.x * tanTheta) / height;
+      halfPixelWidth = (scale.y * tanTheta) / width;
     } else {
-      halfPixelWidth = scale.x * 0.5 * (right - left) / width;
-      halfPixelHeight = scale.y * 0.5 * (top - bottom) / height;
+      halfPixelWidth = (scale.x * 0.5 * (right - left)) / width;
+      halfPixelHeight = (scale.y * 0.5 * (top - bottom)) / height;
     }
 
     this._factor = Math.sqrt(halfPixelWidth * halfPixelWidth + halfPixelHeight * halfPixelHeight);
@@ -112,8 +111,7 @@ class SunDirection {
       this._updated = false;
     }
 
-    if (!sync(this, uniform))
-      uniform.setUniform3fv(this._viewDir32);
+    if (!sync(this, uniform)) uniform.setUniform3fv(this._viewDir32);
   }
 }
 
@@ -152,10 +150,8 @@ export class TargetUniforms {
   }
 
   public bindProjectionMatrix(uniform: UniformHandle, forViewCoords: boolean): void {
-    if (forViewCoords)
-      this.viewRect.bindProjectionMatrix(uniform);
-    else
-      this.frustum.bindProjectionMatrix(uniform);
+    if (forViewCoords) this.viewRect.bindProjectionMatrix(uniform);
+    else this.frustum.bindProjectionMatrix(uniform);
   }
 
   public bindPixelWidthFactor(uniform: UniformHandle): void {
@@ -175,8 +171,7 @@ export class TargetUniforms {
       this.lights.update(plan.lights);
 
       const useSunDir = plan.viewFlags.shadows || plan.lights.solar.alwaysEnabled;
-      if (useSunDir)
-        sunDir = plan.lights.solar.direction;
+      if (useSunDir) sunDir = plan.lights.solar.direction;
     }
 
     this._sunDirection.update(sunDir);

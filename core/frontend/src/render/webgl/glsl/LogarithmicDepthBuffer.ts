@@ -29,7 +29,6 @@ export function addLogDepth(builder: ProgramBuilder): void {
     });
   });
 
-  if (!System.instance.capabilities.isWebGL2)
-    frag.addExtension("GL_EXT_frag_depth");
+  if (!System.instance.capabilities.isWebGL2) frag.addExtension("GL_EXT_frag_depth");
   frag.set(FragmentShaderComponent.FinalizeDepth, finalizeDepth);
 }

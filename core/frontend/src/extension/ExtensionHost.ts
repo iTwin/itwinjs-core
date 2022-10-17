@@ -19,12 +19,24 @@ import type { RenderSystem } from "../render/RenderSystem";
  * @alpha
  */
 export class ExtensionHost {
-  protected constructor() { }
+  protected constructor() {}
 
-  public static get toolAdmin(): ToolAdmin { return IModelApp.toolAdmin; }
-  public static get notifications(): NotificationManager { return IModelApp.notifications; }
-  public static get viewManager(): ViewManager { return IModelApp.viewManager; }
-  public static get locateManager(): ElementLocateManager { return IModelApp.locateManager; } // internal ?
-  public static get accuSnap(): AccuSnap { return IModelApp.accuSnap; }
-  public static get renderSystem(): RenderSystem { return IModelApp.renderSystem; } // re think this, should be smaller interface
+  public static get toolAdmin(): ToolAdmin {
+    return IModelApp.toolAdmin;
+  }
+  public static get notifications(): NotificationManager {
+    return IModelApp.notifications;
+  }
+  public static get viewManager(): ViewManager {
+    return IModelApp.viewManager;
+  }
+  public static get locateManager(): ElementLocateManager {
+    return IModelApp.locateManager;
+  } // internal ?
+  public static get accuSnap(): AccuSnap {
+    return IModelApp.accuSnap;
+  }
+  public static get renderSystem(): RenderSystem {
+    return IModelApp.renderSystem;
+  } // re think this, should be smaller interface
 }

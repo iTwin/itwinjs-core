@@ -6,7 +6,15 @@
  * @module Tiles
  */
 import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
-import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
+import {
+  Cartographic,
+  EcefLocation,
+  OrbitGtBlobProps,
+  RealityData,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
@@ -116,7 +124,7 @@ export namespace RealityDataSource {
     let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
-      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id:  CesiumIonAssetProvider.osmBuildingId }; // default OSM building
+      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId }; // default OSM building
       // Parse URL to extract possible asset id and key if provided
       const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(tilesetUrl);
       if (cesiumAsset) {
@@ -148,7 +156,11 @@ export namespace RealityDataSource {
     return contextShareKey;
   }
   /** @alpha - OrbitGtBlobProps is alpha */
-  export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+  export function createKeyFromOrbitGtBlobProps(
+    orbitGtBlob: OrbitGtBlobProps,
+    inputProvider?: RealityDataProvider,
+    inputFormat?: RealityDataFormat
+  ): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
     if (orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
       return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, inputProvider, format);
@@ -161,8 +173,7 @@ export namespace RealityDataSource {
   }
   /** @alpha - OrbitGtBlobProps is alpha */
   export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined {
-    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob)
-      return undefined;
+    if (rdSourceKey.provider !== RealityDataProvider.OrbitGtBlob) return undefined;
     const splitIds = rdSourceKey.id.split(":");
     const sasTokenIndex = rdSourceKey.id.indexOf(":?");
     const sasToken = rdSourceKey.id.substr(sasTokenIndex + 2);
@@ -176,15 +187,15 @@ export namespace RealityDataSource {
   }
   /** @internal - Is used by "fdt attach cesium asset" keyin*/
   export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
-    const id = getCesiumAssetUrl(osmAssetId,requestKey);
-    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
+    const id = getCesiumAssetUrl(osmAssetId, requestKey);
+    return { provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id };
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
    * @alpha
    */
   export async function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    switch(rdSourceKey.provider) {
+    switch (rdSourceKey.provider) {
       case RealityDataProvider.CesiumIonAsset:
         return RealityDataSourceCesiumIonAssetImpl.createFromKey(rdSourceKey, iTwinId);
       case RealityDataProvider.TilesetUrl:
@@ -199,4 +210,3 @@ export namespace RealityDataSource {
     return undefined;
   }
 }
-

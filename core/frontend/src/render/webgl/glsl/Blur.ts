@@ -92,25 +92,29 @@ export function createBlurProgram(context: WebGLContext, type: BlurType): Shader
     });
   });
 
-  frag.addUniform("u_blurSettings", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_blurSettings", (uniform, params) => {
-      const hbaoSettings = new Float32Array([
-        // ###TODO: If we want to apply this blur shader to situations other than AO, we should move these settings away from the ambient occlusion params.
-        params.target.ambientOcclusionSettings.blurDelta,
-        params.target.ambientOcclusionSettings.blurSigma,
-        params.target.ambientOcclusionSettings.blurTexelStepSize]);
-      uniform.setUniform3fv(hbaoSettings);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_blurSettings",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_blurSettings", (uniform, params) => {
+        const hbaoSettings = new Float32Array([
+          // ###TODO: If we want to apply this blur shader to situations other than AO, we should move these settings away from the ambient occlusion params.
+          params.target.ambientOcclusionSettings.blurDelta,
+          params.target.ambientOcclusionSettings.blurSigma,
+          params.target.ambientOcclusionSettings.blurTexelStepSize,
+        ]);
+        uniform.setUniform3fv(hbaoSettings);
+      });
+    },
+    VariablePrecision.High
+  );
 
   if (BlurType.TestOrder === type) {
     frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
         const geom = params.geometry as BlurGeometry;
-        if (params.target.compositor.needHiddenEdges)
-          Texture2DHandle.bindSampler(uniform, geom.depthAndOrderHidden, TextureUnit.One);
-        else
-          Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.One);
+        if (params.target.compositor.needHiddenEdges) Texture2DHandle.bindSampler(uniform, geom.depthAndOrderHidden, TextureUnit.One);
+        else Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.One);
       });
     });
     builder.vert.headerComment = "//!V! BlurTestOrder";

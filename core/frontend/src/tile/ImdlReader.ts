@@ -7,11 +7,49 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { ClipVector, ClipVectorProps, Point2d, Point3d, Range2d, Range3d, Range3dProps, Transform, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, ColorDefProps, ComputeNodeId, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient,
-  ImageSource, ImageSourceFormat, ImdlHeader, LinePixels, PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial,
-  RenderSchedule, RenderTexture, TextureMapping, TextureTransparency, TileFormat, TileHeader, TileReadError, TileReadStatus,
+  ClipVector,
+  ClipVectorProps,
+  Point2d,
+  Point3d,
+  Range2d,
+  Range3d,
+  Range3dProps,
+  Transform,
+  TransformProps,
+  XYProps,
+  XYZProps,
+} from "@itwin/core-geometry";
+import {
+  BatchType,
+  ColorDef,
+  ColorDefProps,
+  ComputeNodeId,
+  ElementAlignedBox3d,
+  FeatureIndexType,
+  FeatureTableHeader,
+  FillFlags,
+  GltfV2ChunkTypes,
+  GltfVersions,
+  Gradient,
+  ImageSource,
+  ImageSourceFormat,
+  ImdlHeader,
+  LinePixels,
+  PackedFeatureTable,
+  PolylineTypeFlags,
+  QParams2d,
+  QParams3d,
+  readTileContentDescription,
+  RenderMaterial,
+  RenderSchedule,
+  RenderTexture,
+  TextureMapping,
+  TextureTransparency,
+  TileFormat,
+  TileHeader,
+  TileReadError,
+  TileReadStatus,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -49,7 +87,9 @@ export class GltfHeader extends TileHeader {
   public readonly scenePosition: number = 0;
   public readonly sceneStrLength: number = 0;
   public readonly binaryPosition: number = 0;
-  public get isValid(): boolean { return TileFormat.Gltf === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.Gltf === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);
@@ -60,8 +100,7 @@ export class GltfHeader extends TileHeader {
 
     // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
     // validating the chunk type.
-    if (this.version === GltfVersions.Version2 && value5 === GltfVersions.Gltf1SceneFormat)
-      this.version = GltfVersions.Version1;
+    if (this.version === GltfVersions.Version2 && value5 === GltfVersions.Gltf1SceneFormat) this.version = GltfVersions.Version1;
 
     if (this.version === GltfVersions.Version1) {
       const gltfSceneFormat = value5;
@@ -99,15 +138,24 @@ export class GltfHeader extends TileHeader {
  * @public
  * @extensions
  */
-export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
+export async function readElementGraphics(
+  bytes: Uint8Array,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  is3d: boolean,
+  options?: BatchOptions | false
+): Promise<RenderGraphic | undefined> {
   const stream = ByteStream.fromUint8Array(bytes);
   const reader = ImdlReader.create({
-    stream, iModel, modelId, is3d, options,
+    stream,
+    iModel,
+    modelId,
+    is3d,
+    options,
     system: IModelApp.renderSystem,
   });
 
-  if (!reader)
-    return undefined;
+  if (!reader) return undefined;
 
   const result = await reader.read();
   return result.graphic;
@@ -117,8 +165,7 @@ const nodeIdRegex = /Node_(.*)/;
 function extractNodeId(nodeName: string): number {
   const match = nodeName.match(nodeIdRegex);
   assert(!!match && match.length === 2);
-  if (!match || match.length !== 2)
-    return 0;
+  if (!match || match.length !== 2) return 0;
 
   const nodeId = Number.parseInt(match[1], 10);
   assert(!Number.isNaN(nodeId));
@@ -475,19 +522,22 @@ export interface ImdlReaderCreateArgs {
   timeline?: RenderSchedule.ModelTimeline;
 }
 
-type PrimitiveParams = {
-  params: MeshParams;
-  viOrigin?: Point3d;
-  type: "mesh";
-} | {
-  params: PointStringParams;
-  viOrigin?: Point3d;
-  type: "point";
-} | {
-  params: PolylineParams;
-  viOrigin?: Point3d;
-  type: "polyline";
-};
+type PrimitiveParams =
+  | {
+      params: MeshParams;
+      viOrigin?: Point3d;
+      type: "mesh";
+    }
+  | {
+      params: PointStringParams;
+      viOrigin?: Point3d;
+      type: "point";
+    }
+  | {
+      params: PolylineParams;
+      viOrigin?: Point3d;
+      type: "polyline";
+    };
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
@@ -516,29 +566,29 @@ export class ImdlReader {
   private readonly _containsTransformNodes: boolean;
   private readonly _timeline?: RenderSchedule.ModelTimeline;
 
-  private get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
-  private get _isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this._type; }
+  private get _isCanceled(): boolean {
+    return undefined !== this._canceled && this._canceled(this);
+  }
+  private get _isVolumeClassifier(): boolean {
+    return BatchType.VolumeClassifier === this._type;
+  }
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(args: ImdlReaderCreateArgs): ImdlReader | undefined {
     const imdlHeader = new ImdlHeader(args.stream);
-    if (!imdlHeader.isValid || !imdlHeader.isReadableVersion)
-      return undefined;
+    if (!imdlHeader.isValid || !imdlHeader.isReadableVersion) return undefined;
 
     // The feature table follows the iMdl header
-    if (!this.skipFeatureTable(args.stream))
-      return undefined;
+    if (!this.skipFeatureTable(args.stream)) return undefined;
 
     // A glTF header follows the feature table
     const gltfHeader = new GltfHeader(args.stream);
-    if (!gltfHeader.isValid)
-      return undefined;
+    if (!gltfHeader.isValid) return undefined;
 
     args.stream.curPos = gltfHeader.scenePosition;
     const sceneStrData = args.stream.nextBytes(gltfHeader.sceneStrLength);
     const sceneStr = utf8ToString(sceneStrData);
-    if (!sceneStr)
-      return undefined;
+    if (!sceneStr) return undefined;
 
     try {
       const sceneValue = JSON.parse(sceneStr);
@@ -569,9 +619,9 @@ export class ImdlReader {
     this._bufferViews = imdl.bufferViews;
     this._meshes = imdl.meshes;
     this._nodes = imdl.nodes;
-    this._materialValues = imdl.materials ?? { };
-    this._renderMaterials = imdl.renderMaterials ?? { };
-    this._namedTextures = imdl.namedTextures ?? { };
+    this._materialValues = imdl.materials ?? {};
+    this._renderMaterials = imdl.renderMaterials ?? {};
+    this._namedTextures = imdl.namedTextures ?? {};
     this._patternSymbols = imdl.patternSymbols ?? {};
 
     this._iModel = args.iModel;
@@ -594,20 +644,16 @@ export class ImdlReader {
     try {
       content = readTileContentDescription(this._buffer, this._sizeMultiplier, !this._is3d, IModelApp.tileAdmin, this._isVolumeClassifier);
     } catch (e) {
-      if (e instanceof TileReadError)
-        return { isLeaf: true, readStatus: e.errorNumber };
-      else
-        throw e;
+      if (e instanceof TileReadError) return { isLeaf: true, readStatus: e.errorNumber };
+      else throw e;
     }
 
     const featureTable = this.readFeatureTable(content.featureTableStartPos);
-    if (undefined === featureTable)
-      return { readStatus: TileReadStatus.InvalidFeatureTable, isLeaf: true };
+    if (undefined === featureTable) return { readStatus: TileReadStatus.InvalidFeatureTable, isLeaf: true };
 
     // Textures must be loaded asynchronously first...
     await this.loadNamedTextures();
-    if (this._isCanceled)
-      return { readStatus: TileReadStatus.Canceled, isLeaf: true };
+    if (this._isCanceled) return { readStatus: TileReadStatus.Canceled, isLeaf: true };
 
     return this.finishRead(content.isLeaf, featureTable, content.contentRange, content.emptySubRangeMask, content.sizeMultiplier);
   }
@@ -657,50 +703,40 @@ export class ImdlReader {
   /** @internal */
   protected materialFromJson(key: string): RenderMaterial | undefined {
     const material = this._system.findMaterial(key, this._iModel);
-    if (material)
-      return material;
+    if (material) return material;
 
-    if (!this._renderMaterials)
-      return undefined;
+    if (!this._renderMaterials) return undefined;
 
     const materialJson = this._renderMaterials[key];
-    if (!materialJson)
-      return undefined;
+    if (!materialJson) return undefined;
 
     // eslint-disable-next-line deprecation/deprecation
     const materialParams = new RenderMaterial.Params(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
-    if (materialJson.diffuse !== undefined)
-      materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
+    if (materialJson.diffuse !== undefined) materialParams.diffuse = JsonUtils.asDouble(materialJson.diffuse);
 
     materialParams.specularColor = this.colorDefFromMaterialJson(materialJson.specularColor);
-    if (materialJson.specular !== undefined)
-      materialParams.specular = JsonUtils.asDouble(materialJson.specular);
+    if (materialJson.specular !== undefined) materialParams.specular = JsonUtils.asDouble(materialJson.specular);
 
     materialParams.reflectColor = this.colorDefFromMaterialJson(materialJson.reflectColor);
-    if (materialJson.reflect !== undefined)
-      materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
+    if (materialJson.reflect !== undefined) materialParams.reflect = JsonUtils.asDouble(materialJson.reflect);
 
-    if (materialJson.specularExponent !== undefined)
-      materialParams.specularExponent = materialJson.specularExponent;
+    if (materialJson.specularExponent !== undefined) materialParams.specularExponent = materialJson.specularExponent;
 
-    if (undefined !== materialJson.transparency)
-      materialParams.alpha = 1.0 - materialJson.transparency;
+    if (undefined !== materialJson.transparency) materialParams.alpha = 1.0 - materialJson.transparency;
 
     materialParams.refract = JsonUtils.asDouble(materialJson.refract);
     materialParams.shadows = JsonUtils.asBool(materialJson.shadows);
     materialParams.ambient = JsonUtils.asDouble(materialJson.ambient);
 
-    if (undefined !== materialJson.textureMapping)
-      materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
+    if (undefined !== materialJson.textureMapping) materialParams.textureMapping = this.textureMappingFromJson(materialJson.textureMapping.texture);
 
     // eslint-disable-next-line deprecation/deprecation
     return this._system.createMaterial(materialParams, this._iModel);
   }
 
   private textureMappingFromJson(json: ImdlTextureMapping | undefined): TextureMapping | undefined {
-    if (undefined === json)
-      return undefined;
+    if (undefined === json) return undefined;
 
     const name = JsonUtils.asString(json.name);
     const namedTex = 0 !== name.length ? this._namedTextures[name] : undefined;
@@ -723,25 +759,20 @@ export class ImdlReader {
   }
 
   private async loadNamedTextures(): Promise<void> {
-    if (undefined === this._namedTextures)
-      return;
+    if (undefined === this._namedTextures) return;
 
     const promises = new Array<Promise<void>>();
-    for (const name of Object.keys(this._namedTextures))
-      promises.push(this.loadNamedTexture(name));
+    for (const name of Object.keys(this._namedTextures)) promises.push(this.loadNamedTexture(name));
 
-    if (promises.length > 0)
-      await Promise.all(promises);
+    if (promises.length > 0) await Promise.all(promises);
   }
 
   private async loadNamedTexture(name: string): Promise<void> {
-    if (this._isCanceled)
-      return;
+    if (this._isCanceled) return;
 
     const namedTex = this._namedTextures[name];
     assert(undefined !== namedTex); // we got here by iterating the keys of this.namedTextures...
-    if (undefined === namedTex)
-      return;
+    if (undefined === namedTex) return;
 
     const texture = this._system.findTexture(name, this._iModel);
     if (undefined !== texture) {
@@ -764,10 +795,8 @@ export class ImdlReader {
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
     const isTileSection = !isGlyph && JsonUtils.asBool(namedTex.isTileSection);
-    if (isGlyph)
-      textureType = RenderTexture.Type.Glyph;
-    else if (isTileSection)
-      textureType = RenderTexture.Type.TileSection;
+    if (isGlyph) textureType = RenderTexture.Type.Glyph;
+    else if (isTileSection) textureType = RenderTexture.Type.TileSection;
 
     // We produce unique tile sections for very large (> 8 megapixel) textures, and unique glyph atlases for raster text.
     // Neither should be cached.
@@ -777,11 +806,11 @@ export class ImdlReader {
     const bufferViewId = JsonUtils.asString(namedTex.bufferView);
     const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
 
-    if (undefined !== bufferViewJson) { // presence of bufferViewJson signifies we should read the texture from the tile content
+    if (undefined !== bufferViewJson) {
+      // presence of bufferViewJson signifies we should read the texture from the tile content
       const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
       const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-      if (0 === byteLength)
-        return undefined;
+      if (0 === byteLength) return undefined;
 
       const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
       const format = namedTex.format;
@@ -799,14 +828,12 @@ export class ImdlReader {
   protected readFeatureTable(startPos: number): PackedFeatureTable | undefined {
     this._buffer.curPos = startPos;
     const header = FeatureTableHeader.readFrom(this._buffer);
-    if (undefined === header || 0 !== header.length % 4)
-      return undefined;
+    if (undefined === header || 0 !== header.length % 4) return undefined;
 
     // NB: We make a copy of the sub-array because we don't want to pin the entire data array in memory.
     const numUint32s = (header.length - FeatureTableHeader.sizeInBytes) / 4;
     const packedFeatureArray = new Uint32Array(this._buffer.nextUint32s(numUint32s));
-    if (this._buffer.isPastTheEnd)
-      return undefined;
+    if (this._buffer.isPastTheEnd) return undefined;
 
     let animNodesArray: Uint8Array | Uint16Array | Uint32Array | undefined;
     const animationNodes = this._animationNodes;
@@ -842,25 +869,21 @@ export class ImdlReader {
   private static skipFeatureTable(stream: ByteStream): boolean {
     const startPos = stream.curPos;
     const header = FeatureTableHeader.readFrom(stream);
-    if (undefined !== header)
-      stream.curPos = startPos + header.length;
+    if (undefined !== header) stream.curPos = startPos + header.length;
 
     return undefined !== header;
   }
 
   private readAreaPattern(json: ImdlAreaPattern): RenderGraphic | undefined {
     const geometry = this.getPatternGeometry(json.symbolName);
-    if (!geometry || geometry.length === 0)
-      return undefined;
+    if (!geometry || geometry.length === 0) return undefined;
 
     const xyOffsets = this.findBuffer(json.xyOffsets);
-    if (!xyOffsets)
-      return undefined;
+    if (!xyOffsets) return undefined;
 
     const clip = ClipVector.fromJSON(json.clip);
     const clipVolume = clip && clip.isValid ? this._system.createClipVolume(clip) : undefined;
-    if (!clipVolume)
-      return undefined;
+    if (!clipVolume) return undefined;
 
     const viewIndependentOrigin = json.viewIndependentOrigin ? Point3d.fromJSON(json.viewIndependentOrigin) : undefined;
     const pattern = this._system.createAreaPattern({
@@ -876,72 +899,63 @@ export class ImdlReader {
       viewIndependentOrigin,
     });
 
-    if (!pattern)
-      return undefined;
+    if (!pattern) return undefined;
 
     const branch = new GraphicBranch(true);
     for (const geom of geometry) {
       const graphic = this._system.createRenderGraphic(geom, pattern);
-      if (graphic)
-        branch.add(graphic);
+      if (graphic) branch.add(graphic);
     }
 
-    if (branch.isEmpty)
-      return undefined;
+    if (branch.isEmpty) return undefined;
 
     return this._system.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
   }
 
-  private readMeshGeometry(primitive: AnyImdlPrimitive): { geometry: RenderGeometry, instances?: InstancedGraphicParams } | undefined {
+  private readMeshGeometry(primitive: AnyImdlPrimitive): { geometry: RenderGeometry; instances?: InstancedGraphicParams } | undefined {
     const geometry = this.readPrimitiveGeometry(primitive);
-    if (!geometry)
-      return undefined;
+    if (!geometry) return undefined;
 
     const instances = this.readInstances(primitive);
     return { geometry, instances };
   }
 
   private readMeshGraphic(primitive: AnyImdlPrimitive | ImdlAreaPattern): RenderGraphic | undefined {
-    if (primitive.type === "areaPattern")
-      return this.readAreaPattern(primitive);
+    if (primitive.type === "areaPattern") return this.readAreaPattern(primitive);
 
     const geom = this.readMeshGeometry(primitive);
     return geom ? this._system.createRenderGraphic(geom.geometry, geom.instances) : undefined;
   }
 
   private findBuffer(bufferViewId: string): Uint8Array | undefined {
-    if (typeof bufferViewId !== "string" || 0 === bufferViewId.length)
-      return undefined;
+    if (typeof bufferViewId !== "string" || 0 === bufferViewId.length) return undefined;
 
     const bufferViewJson = this._bufferViews[bufferViewId];
-    if (undefined === bufferViewJson)
-      return undefined;
+    if (undefined === bufferViewJson) return undefined;
 
     const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
     const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-    if (0 === byteLength)
-      return undefined;
+    if (0 === byteLength) return undefined;
 
     return this._binaryData.subarray(byteOffset, byteOffset + byteLength);
   }
 
   private readVertexTable(primitive: AnyImdlPrimitive): VertexTable | undefined {
     const json = primitive.vertices;
-    if (undefined === json)
-      return undefined;
+    if (undefined === json) return undefined;
 
     const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
-    if (undefined === bytes)
-      return undefined;
+    if (undefined === bytes) return undefined;
 
     const uniformFeatureID = undefined !== json.featureID ? JsonUtils.asInt(json.featureID) : undefined;
 
     const rangeMin = JsonUtils.asArray(json.params.decodedMin);
     const rangeMax = JsonUtils.asArray(json.params.decodedMax);
-    if (undefined === rangeMin || undefined === rangeMax)
-      return undefined;
+    if (undefined === rangeMin || undefined === rangeMax) return undefined;
 
-    const qparams = QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2])));
+    const qparams = QParams3d.fromRange(
+      Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))
+    );
 
     const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
     let uvParams: QParams2d | undefined;
@@ -970,12 +984,10 @@ export class ImdlReader {
 
   private readAuxChannelTable(primitive: ImdlMeshPrimitive): AuxChannelTable | undefined {
     const json = primitive.auxChannels;
-    if (undefined === json)
-      return undefined;
+    if (undefined === json) return undefined;
 
     const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
-    if (undefined === bytes)
-      return undefined;
+    if (undefined === bytes) return undefined;
 
     const props: AuxChannelTableProps = {
       data: bytes,
@@ -993,26 +1005,21 @@ export class ImdlReader {
 
   private readInstances(primitive: ImdlPrimitive): InstancedGraphicParams | undefined {
     const json = primitive.instances;
-    if (undefined === json)
-      return undefined;
+    if (undefined === json) return undefined;
 
     const count = JsonUtils.asInt(json.count, 0);
-    if (count <= 0)
-      return undefined;
+    if (count <= 0) return undefined;
 
     const centerComponents = JsonUtils.asArray(json.transformCenter);
-    if (undefined === centerComponents || 3 !== centerComponents.length)
-      return undefined;
+    if (undefined === centerComponents || 3 !== centerComponents.length) return undefined;
 
     const transformCenter = Point3d.create(centerComponents[0], centerComponents[1], centerComponents[2]);
 
     const featureIds = this.findBuffer(JsonUtils.asString(json.featureIds));
-    if (undefined === featureIds)
-      return undefined;
+    if (undefined === featureIds) return undefined;
 
     const transformBytes = this.findBuffer(JsonUtils.asString(json.transforms));
-    if (undefined === transformBytes)
-      return undefined;
+    if (undefined === transformBytes) return undefined;
 
     // 1 transform = 3 rows of 4 floats = 12 floats per instance
     const numFloats = transformBytes.byteLength / 4;
@@ -1022,8 +1029,7 @@ export class ImdlReader {
     const transforms = new Float32Array(transformBytes.buffer, transformBytes.byteOffset, numFloats);
 
     let symbologyOverrides: Uint8Array | undefined;
-    if (undefined !== json.symbologyOverrides)
-      symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
+    if (undefined !== json.symbologyOverrides) symbologyOverrides = this.findBuffer(JsonUtils.asString(json.symbologyOverrides));
 
     return { count, transforms, transformCenter, featureIds, symbologyOverrides };
   }
@@ -1038,24 +1044,20 @@ export class ImdlReader {
     const prevIndices = this.readVertexIndices(json.prevIndices);
     const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
 
-    if (!indices || !prevIndices || !nextIndicesAndParams)
-      return undefined;
+    if (!indices || !prevIndices || !nextIndicesAndParams) return undefined;
 
     return { indices, prevIndices, nextIndicesAndParams };
   }
 
   private readSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): SurfaceParams | undefined {
     const surf = mesh.surface;
-    if (undefined === surf)
-      return undefined;
+    if (undefined === surf) return undefined;
 
     const indices = this.readVertexIndices(surf.indices);
-    if (undefined === indices)
-      return undefined;
+    if (undefined === indices) return undefined;
 
     const type = surf.type;
-    if (!isValidSurfaceType(type))
-      return undefined;
+    if (!isValidSurfaceType(type)) return undefined;
 
     const texture = undefined !== displayParams.textureMapping ? displayParams.textureMapping.texture : undefined;
     let material: SurfaceMaterial | undefined;
@@ -1094,14 +1096,15 @@ export class ImdlReader {
   private readSilhouettes(json: ImdlSilhouetteEdges): SilhouetteParams | undefined {
     const segments = this.readSegmentEdges(json);
     const normalPairs = this.findBuffer(json.normalPairs);
-    return undefined !== segments && undefined !== normalPairs ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices } : undefined;
+    return undefined !== segments && undefined !== normalPairs
+      ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices }
+      : undefined;
   }
 
   private readIndexedEdges(json: ImdlIndexedEdges): IndexedEdgeParams | undefined {
     const indices = this.readVertexIndices(json.indices);
     const edgeTable = this.findBuffer(json.edges);
-    if (!indices || !edgeTable)
-      return undefined;
+    if (!indices || !edgeTable) return undefined;
 
     return {
       indices,
@@ -1115,24 +1118,20 @@ export class ImdlReader {
     };
   }
 
-  private readEdges(json: ImdlMeshEdges, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
+  private readEdges(json: ImdlMeshEdges, displayParams: DisplayParams): { succeeded: boolean; params?: EdgeParams } {
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let polylines: TesselatedPolyline | undefined;
     let indexed: IndexedEdgeParams | undefined;
 
     let succeeded = false;
-    if (undefined !== json.segments && undefined === (segments = this.readSegmentEdges(json.segments)))
-      return { succeeded };
+    if (undefined !== json.segments && undefined === (segments = this.readSegmentEdges(json.segments))) return { succeeded };
 
-    if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
-      return { succeeded };
+    if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes))) return { succeeded };
 
-    if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
-      return { succeeded };
+    if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines))) return { succeeded };
 
-    if (undefined !== json.indexed && undefined === (indexed = this.readIndexedEdges(json.indexed)))
-      return { succeeded };
+    if (undefined !== json.indexed && undefined === (indexed = this.readIndexedEdges(json.indexed))) return { succeeded };
 
     succeeded = true;
     let params: EdgeParams | undefined;
@@ -1154,8 +1153,7 @@ export class ImdlReader {
     const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
-    if (undefined === displayParams)
-      return undefined;
+    if (undefined === displayParams) return undefined;
 
     const vertices = this.readVertexTable(primitive);
     if (undefined === vertices) {
@@ -1169,17 +1167,14 @@ export class ImdlReader {
     switch (primitive.type) {
       case Mesh.PrimitiveType.Mesh: {
         const surface = this.readSurface(primitive, displayParams);
-        if (!surface)
-          return undefined;
+        if (!surface) return undefined;
 
         // ###TODO: Tile generator shouldn't bother producing edges for classification meshes in the first place...
         let edgeParams: EdgeParams | undefined;
         if (this._loadEdges && undefined !== primitive.edges && SurfaceType.VolumeClassifier !== surface.type) {
           const edgeResult = this.readEdges(primitive.edges, displayParams);
-          if (!edgeResult.succeeded)
-            return undefined;
-          else
-            edgeParams = edgeResult.params;
+          if (!edgeResult.succeeded) return undefined;
+          else edgeParams = edgeResult.params;
         }
 
         return {
@@ -1190,12 +1185,11 @@ export class ImdlReader {
       }
       case Mesh.PrimitiveType.Polyline: {
         const polyline = this.readTesselatedPolyline(primitive);
-        if (!polyline)
-          return undefined;
+        if (!polyline) return undefined;
 
         let flags = PolylineTypeFlags.Normal;
         if (DisplayParams.RegionEdgeType.Outline === displayParams.regionEdgeType)
-          flags = (undefined === displayParams.gradient || displayParams.gradient.isOutlined) ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
+          flags = undefined === displayParams.gradient || displayParams.gradient.isOutlined ? PolylineTypeFlags.Edge : PolylineTypeFlags.Outline;
 
         return {
           params: new PolylineParams(vertices, polyline, displayParams.width, displayParams.linePixels, isPlanar, flags),
@@ -1205,8 +1199,7 @@ export class ImdlReader {
       }
       case Mesh.PrimitiveType.Point: {
         const indices = this.readVertexIndices(primitive.indices);
-        if (undefined === indices)
-          return undefined;
+        if (undefined === indices) return undefined;
 
         return {
           params: new PointStringParams(vertices, indices, displayParams.width),
@@ -1238,18 +1231,15 @@ export class ImdlReader {
 
   private getPatternGeometry(patternName: string): RenderGeometry[] | undefined {
     let geometry = this._patternGeometry.get(patternName);
-    if (geometry)
-      return geometry;
+    if (geometry) return geometry;
 
     const symbol = this._patternSymbols[patternName];
-    if (!symbol)
-      return undefined;
+    if (!symbol) return undefined;
 
     geometry = [];
     for (const primitive of symbol.primitives) {
       const geom = this.readPrimitiveGeometry(primitive);
-      if (geom)
-        geometry.push(geom);
+      if (geom) geometry.push(geom);
     }
 
     this._patternGeometry.set(patternName, geometry);
@@ -1261,16 +1251,15 @@ export class ImdlReader {
     assert(undefined !== timeline);
 
     const primitives = mesh.primitives;
-    if (!primitives)
-      return;
+    if (!primitives) return;
 
     const branchesByNodeId = new Map<number, GraphicBranch>();
     const getBranch = (nodeId: number): GraphicBranch => {
       let branch = branchesByNodeId.get(nodeId);
       if (!branch) {
-        branchesByNodeId.set(nodeId, branch = new GraphicBranch(true));
+        branchesByNodeId.set(nodeId, (branch = new GraphicBranch(true)));
         branch.animationNodeId = nodeId;
-        branch.animationId =  `${this._modelId}_Node_${nodeId}`;
+        branch.animationId = `${this._modelId}_Node_${nodeId}`;
       }
 
       return branch;
@@ -1297,12 +1286,10 @@ export class ImdlReader {
       if (primitive.type === "areaPattern") {
         // ###TODO animated area patterns.
         const gf = this.readAreaPattern(primitive);
-        if (gf)
-          getBranch(AnimationNodeId.Untransformed).add(gf);
+        if (gf) getBranch(AnimationNodeId.Untransformed).add(gf);
       } else {
         const prim = this.readPrimitiveParams(primitive);
-        if (!prim)
-          continue;
+        if (!prim) continue;
 
         const viOrigin = prim.viOrigin;
         switch (prim.type) {
@@ -1312,8 +1299,7 @@ export class ImdlReader {
               const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "mesh" });
               const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
               const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
-              if (graphic)
-                getBranch(nodeId).add(graphic);
+              if (graphic) getBranch(nodeId).add(graphic);
             }
 
             break;
@@ -1324,8 +1310,7 @@ export class ImdlReader {
               const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "point" });
               const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
               const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
-              if (graphic)
-                getBranch(nodeId).add(graphic);
+              if (graphic) getBranch(nodeId).add(graphic);
             }
 
             break;
@@ -1336,8 +1321,7 @@ export class ImdlReader {
               const geometry = this.createPrimitiveGeometry({ params, viOrigin, type: "polyline" });
               const instances = undefined; // ###TODO support splitting instances (currently animation tile trees do not permit instancing).
               const graphic = geometry ? this._system.createRenderGraphic(geometry, instances) : undefined;
-              if (graphic)
-                getBranch(nodeId).add(graphic);
+              if (graphic) getBranch(nodeId).add(graphic);
             }
             break;
           }
@@ -1351,22 +1335,31 @@ export class ImdlReader {
     }
   }
 
-  private readBranch(output: RenderGraphic[], primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>, nodeId: number, animationId: string | undefined): void {
+  private readBranch(
+    output: RenderGraphic[],
+    primitives: Array<AnyImdlPrimitive | ImdlAreaPattern>,
+    nodeId: number,
+    animationId: string | undefined
+  ): void {
     const branch = new GraphicBranch(true);
     branch.animationId = animationId;
     branch.animationNodeId = nodeId;
 
     for (const primitive of primitives) {
       const graphic = this.readMeshGraphic(primitive);
-      if (graphic)
-        branch.add(graphic);
+      if (graphic) branch.add(graphic);
     }
 
-    if (!branch.isEmpty)
-      output.push(this._system.createBranch(branch, Transform.createIdentity()));
+    if (!branch.isEmpty) output.push(this._system.createBranch(branch, Transform.createIdentity()));
   }
 
-  private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, emptySubRangeMask: number, sizeMultiplier?: number): ImdlReaderResult {
+  private finishRead(
+    isLeaf: boolean,
+    featureTable: PackedFeatureTable,
+    contentRange: ElementAlignedBox3d,
+    emptySubRangeMask: number,
+    sizeMultiplier?: number
+  ): ImdlReaderResult {
     const graphics: RenderGraphic[] = [];
 
     if (undefined === this._nodes.Node_Root) {
@@ -1374,13 +1367,11 @@ export class ImdlReader {
       for (const meshKey of Object.keys(this._meshes)) {
         const meshValue = this._meshes[meshKey];
         const primitives = meshValue?.primitives;
-        if (!primitives || !meshValue)
-          continue;
+        if (!primitives || !meshValue) continue;
 
         for (const primitive of primitives) {
           const graphic = this.readMeshGraphic(primitive);
-          if (undefined !== graphic)
-            graphics.push(graphic);
+          if (undefined !== graphic) graphics.push(graphic);
         }
       }
     } else {
@@ -1388,8 +1379,7 @@ export class ImdlReader {
         const nodeValue = this._nodes[nodeKey];
         const meshValue = undefined !== nodeValue ? this._meshes[nodeValue] : undefined;
         const primitives = meshValue?.primitives;
-        if (!primitives || !meshValue)
-          continue;
+        if (!primitives || !meshValue) continue;
 
         const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
@@ -1403,8 +1393,7 @@ export class ImdlReader {
           } else {
             for (const primitive of primitives) {
               const graphic = this.readMeshGraphic(primitive);
-              if (undefined !== graphic)
-                graphics.push(graphic);
+              if (undefined !== graphic) graphics.push(graphic);
             }
           }
         } else if (undefined === layerId) {
@@ -1413,8 +1402,7 @@ export class ImdlReader {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {
             const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              layerGraphics.push(graphic);
+            if (undefined !== graphic) layerGraphics.push(graphic);
           }
 
           if (layerGraphics.length > 0) {

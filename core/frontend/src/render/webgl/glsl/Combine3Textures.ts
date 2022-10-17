@@ -32,23 +32,38 @@ export function createCombine3TexturesProgram(context: WebGLContext): ShaderProg
 
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBaseColor);
 
-  frag.addUniform("u_texture0", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_texture0", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture0, TextureUnit.Zero);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_texture0",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addGraphicUniform("u_texture0", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture0, TextureUnit.Zero);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_texture1", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_texture1", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture1, TextureUnit.One);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_texture1",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addGraphicUniform("u_texture1", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture1, TextureUnit.One);
+      });
+    },
+    VariablePrecision.High
+  );
 
-  frag.addUniform("u_texture2", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_texture2", (uniform, params) => {
-      Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture2, TextureUnit.Two);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_texture2",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addGraphicUniform("u_texture2", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as Combine3TexturesGeometry).texture2, TextureUnit.Two);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.set(FragmentShaderComponent.AssignFragData, assignFragData);
 

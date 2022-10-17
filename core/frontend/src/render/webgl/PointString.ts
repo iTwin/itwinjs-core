@@ -32,9 +32,19 @@ export class PointStringGeometry extends LUTGeometry {
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  public get lutBuffers() { return this.buffers; }
+  public get lutBuffers() {
+    return this.buffers;
+  }
 
-  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean, viOrigin: Point3d | undefined) {
+  private constructor(
+    indices: BufferHandle,
+    numIndices: number,
+    lut: VertexLUT,
+    qparams: QParams3d,
+    weight: number,
+    hasFeatures: boolean,
+    viOrigin: Point3d | undefined
+  ) {
     super(viOrigin);
     this.buffers = BuffersContainer.create();
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointString, false);
@@ -48,13 +58,25 @@ export class PointStringGeometry extends LUTGeometry {
     this._hasFeatures = hasFeatures;
   }
 
-  protected _wantWoWReversal(_target: Target): boolean { return true; }
+  protected _wantWoWReversal(_target: Target): boolean {
+    return true;
+  }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.PointString; }
-  public override getPass(): Pass { return "opaque-linear"; }
-  public override get hasFeatures() { return this._hasFeatures; }
-  public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  protected override _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.PointString;
+  }
+  public override getPass(): Pass {
+    return "opaque-linear";
+  }
+  public override get hasFeatures() {
+    return this._hasFeatures;
+  }
+  public get renderOrder(): RenderOrder {
+    return RenderOrder.PlanarLinear;
+  }
+  protected override _getLineWeight(_params: ShaderProgramParams): number {
+    return this.weight;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;
@@ -67,21 +89,17 @@ export class PointStringGeometry extends LUTGeometry {
 
   public static create(params: PointStringParams, viOrigin: Point3d | undefined): PointStringGeometry | undefined {
     const indices = BufferHandle.createArrayBuffer(params.indices.data);
-    if (undefined === indices)
-      return undefined;
+    if (undefined === indices) return undefined;
 
     const lut = VertexLUT.createFromVertexTable(params.vertices);
-    if (undefined === lut)
-      return undefined;
+    if (undefined === lut) return undefined;
 
     const hasFeatures = FeatureIndexType.Empty !== params.vertices.featureIndexType;
     return new PointStringGeometry(indices, params.indices.length, lut, params.vertices.qparams, params.weight, hasFeatures, viOrigin);
   }
 
   public get isDisposed(): boolean {
-    return this.buffers.isDisposed
-      && this.lut.isDisposed
-      && this.indices.isDisposed;
+    return this.buffers.isDisposed && this.lut.isDisposed && this.indices.isDisposed;
   }
 
   public dispose() {

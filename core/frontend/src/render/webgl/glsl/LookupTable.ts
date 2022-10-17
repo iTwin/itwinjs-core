@@ -52,8 +52,7 @@ export function addLookupTable(sb: VertexShaderBuilder, lutName: string, mult: s
   initializerSpecific = initializerSpecific.replace(/{LUTSTEPY}/g, lutStepY);
   initializerSpecific = initializerSpecific.replace(/{LUTCENTER}/g, lutCenter);
   initializerSpecific = initializerSpecific.replace(/{LUTPARAMS}/g, lutParams);
-  if (addInitializer)
-    sb.addInitializer(initializerSpecific);
+  if (addInitializer) sb.addInitializer(initializerSpecific);
 
   let computeCoordsSpecific = computeCoordsTemplate;
   computeCoordsSpecific = computeCoordsSpecific.replace(/{LUTNAME}/g, lutName);

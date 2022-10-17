@@ -29,8 +29,7 @@ interface ClipInfo {
 
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
-  if (undefined !== info.noViewClip)
-    branch.viewFlagOverrides.clipVolume = !info.noViewClip;
+  if (undefined !== info.noViewClip) branch.viewFlagOverrides.clipVolume = !info.noViewClip;
 
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
   expect(graphic instanceof Branch).to.be.true;
@@ -51,11 +50,9 @@ function expectClipStack(target: Target, expected: Array<{ numRows: number }>): 
   const expectedView = expected[0];
   expect(actualView.numRows).to.equal(expectedView.numRows);
   expect(actualView instanceof ClipVolume).to.equal(expectedView instanceof ClipVolume);
-  if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume)
-    expect(actualView.clipVector).to.equal(expectedView.clipVector);
+  if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume) expect(actualView.clipVector).to.equal(expectedView.clipVector);
 
-  for (let i = 1; i < actual.length; i++)
-    expect(actual[i]).to.equal(expected[i]);
+  for (let i = 1; i < actual.length; i++) expect(actual[i]).to.equal(expected[i]);
 }
 
 /** Inputs:
@@ -78,15 +75,13 @@ function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: 
   const hadClip = uniforms.clipStack.hasClip;
   const hadViewClip = uniforms.clipStack.hasViewClip;
 
-  for (const branch of branches)
-    target.pushBranch(makeBranch(branch));
+  for (const branch of branches) target.pushBranch(makeBranch(branch));
 
   expect(uniforms.clipStack.hasViewClip).to.equal(expectViewClip);
   expect(uniforms.clipStack.hasClip).to.equal(expectViewClip || expectedClips.length > 1);
   expectClipStack(target, expectedClips);
 
-  for (const _branch of branches)
-    target.popBranch();
+  for (const _branch of branches) target.popBranch();
 
   expect(uniforms.clipStack.hasViewClip).to.equal(hadViewClip);
   expect(uniforms.clipStack.hasClip).to.equal(hadClip);

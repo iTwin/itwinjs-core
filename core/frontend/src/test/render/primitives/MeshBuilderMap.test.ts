@@ -32,7 +32,8 @@ describe("MeshBuilderMap Tests", () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => {
+    // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
     spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
@@ -44,8 +45,7 @@ describe("MeshBuilderMap Tests", () => {
   });
 
   after(async () => {
-    if (imodel)
-      await imodel.close();
+    if (imodel) await imodel.close();
 
     await MockRender.App.shutdown();
   });
@@ -75,17 +75,15 @@ describe("MeshBuilderMap Tests", () => {
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -125,17 +123,15 @@ describe("MeshBuilderMap Tests", () => {
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -178,17 +174,15 @@ describe("MeshBuilderMap Tests", () => {
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);
@@ -284,8 +278,7 @@ describe("MeshBuilderMap Tests", () => {
     assert(pfPrimList !== undefined);
     const emptyPfPrimList = emptyloopGeom.getPolyfaces(0);
     assert(emptyPfPrimList !== undefined);
-    if (emptyPfPrimList === undefined)
-      return;
+    if (emptyPfPrimList === undefined) return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim = pfPrimList[0];
@@ -322,17 +315,15 @@ describe("MeshBuilderMap Tests", () => {
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);
@@ -359,17 +350,15 @@ describe("MeshBuilderMap Tests", () => {
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
     assert(arc !== undefined && arc instanceof Arc3d);
-    if (arc === undefined || !(arc instanceof Arc3d))
-      return;
+    if (arc === undefined || !(arc instanceof Arc3d)) return;
 
     primBuilder.addArc(arc, false, false);
 
-    assert(!(primBuilder.accum.geometries.isEmpty));
+    assert(!primBuilder.accum.geometries.isEmpty);
 
     const arcGeom: Geometry | undefined = primBuilder.accum.geometries.first;
     assert(arcGeom !== undefined);
-    if (arcGeom === undefined)
-      return;
+    if (arcGeom === undefined) return;
 
     const strokesPrimList = arcGeom.getStrokes(0.22)!;
     assert(strokesPrimList !== undefined);

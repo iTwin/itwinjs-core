@@ -36,8 +36,7 @@ export class EdgeSettings {
 
   public init(hline: HiddenLine.Settings | undefined): void {
     this.clear();
-    if (!hline)
-      return;
+    if (!hline) return;
 
     // The threshold is HiddenLine.Settings is a transparency value. Convert it to an alpha value and clamp to [0..1].
     let threshold = hline.transparencyThreshold;
@@ -50,7 +49,7 @@ export class EdgeSettings {
       this._color.setColorDef(vis.color);
     }
 
-    this._visibleLineCode = (undefined !== vis.pattern ? LineCode.valueFromLinePixels(vis.pattern) : undefined);
+    this._visibleLineCode = undefined !== vis.pattern ? LineCode.valueFromLinePixels(vis.pattern) : undefined;
     this._visibleWeight = vis.width;
 
     // Hidden edge settings default to matching visible edge settings.
@@ -66,17 +65,14 @@ export class EdgeSettings {
 
   public computeOvrFlags(pass: RenderPass, vf: ViewFlags): OvrFlags {
     // Edge overrides never apply in wireframe mode
-    if (!this.isOverridden(vf))
-      return OvrFlags.None;
+    if (!this.isOverridden(vf)) return OvrFlags.None;
 
     // Alpha always overridden - transparent edges only supported in wireframe mode.
     let flags = this.getColor(vf) ? OvrFlags.Rgba : OvrFlags.Alpha;
 
-    if (undefined !== this.getLineCode(pass, vf))
-      flags |= OvrFlags.LineCode;
+    if (undefined !== this.getLineCode(pass, vf)) flags |= OvrFlags.LineCode;
 
-    if (undefined !== this.getWeight(pass, vf))
-      flags |= OvrFlags.Weight;
+    if (undefined !== this.getWeight(pass, vf)) flags |= OvrFlags.Weight;
 
     return flags;
   }
@@ -90,15 +86,13 @@ export class EdgeSettings {
   }
 
   public getLineCode(pass: RenderPass, vf: ViewFlags): number | undefined {
-    if (!this.isOverridden(vf))
-      return undefined;
+    if (!this.isOverridden(vf)) return undefined;
 
     return RenderPass.HiddenEdge === pass ? this._hiddenLineCode : this._visibleLineCode;
   }
 
   public getWeight(pass: RenderPass, vf: ViewFlags): number | undefined {
-    if (!this.isOverridden(vf))
-      return undefined;
+    if (!this.isOverridden(vf)) return undefined;
 
     return RenderPass.HiddenEdge === pass ? this._hiddenWeight : this._visibleWeight;
   }

@@ -8,11 +8,38 @@
 import { assert, BeEvent, Id64, Id64String } from "@itwin/core-bentley";
 import { Angle, Range1d, Vector3d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, CartographicRange, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, ModelMapLayerSettings, RenderSchedule, RenderTimelineProps,
-  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  BackgroundMapProps,
+  BackgroundMapProvider,
+  BackgroundMapProviderProps,
+  BackgroundMapSettings,
+  BaseLayerSettings,
+  BaseMapLayerSettings,
+  CartographicRange,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dSettings,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  Environment,
+  FeatureAppearance,
+  GlobeMode,
+  ImageMapLayerSettings,
+  LightSettings,
+  MapLayerProps,
+  MapLayerSettings,
+  MapSubLayerProps,
+  ModelMapLayerSettings,
+  RenderSchedule,
+  RenderTimelineProps,
+  SolarShadowSettings,
+  SubCategoryOverride,
+  SubLayerId,
+  TerrainHeightOriginMode,
+  ThematicDisplay,
+  ThematicDisplayMode,
+  ThematicGradientMode,
+  ViewFlags,
 } from "@itwin/core-common";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -51,7 +78,9 @@ export interface OsmBuildingDisplayOptions {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   /** @internal */
-  public static override get className() { return "DisplayStyle"; }
+  public static override get className() {
+    return "DisplayStyle";
+  }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
@@ -83,8 +112,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     super(props, iModel);
     const styles = this.jsonProperties.styles;
 
-    if (source)
-      this._scriptReference = source._scriptReference;
+    if (source) this._scriptReference = source._scriptReference;
 
     if (styles) {
       // ###TODO Use DisplayStyleSettings.planarClipMasks
@@ -109,24 +137,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
       if (undefined === this.settings.renderTimeline) {
         // The script came from a display style's JSON properties. Keep it if (1) this style is not persistent or (2) this style has the same Id
-        if (this.id === this._scriptReference.sourceId || !Id64.isValidId64(this.id))
-          return;
+        if (this.id === this._scriptReference.sourceId || !Id64.isValidId64(this.id)) return;
       }
     }
 
     // The schedule script stored in JSON properties takes precedence over the RenderTimeline if both are defined.
-    if (this.settings.scheduleScriptProps)
-      this.loadScriptReferenceFromScript(this.settings.scheduleScriptProps);
-    else
-      await this.loadScriptReferenceFromTimeline(this.settings.renderTimeline);
+    if (this.settings.scheduleScriptProps) this.loadScriptReferenceFromScript(this.settings.scheduleScriptProps);
+    else await this.loadScriptReferenceFromTimeline(this.settings.renderTimeline);
   }
 
   private loadScriptReferenceFromScript(scriptProps: Readonly<RenderSchedule.ScriptProps>): void {
     let newState;
     try {
       const script = RenderSchedule.Script.fromJSON(scriptProps);
-      if (script)
-        newState = new RenderSchedule.ScriptReference(this.id, script);
+      if (script) newState = new RenderSchedule.ScriptReference(this.id, script);
     } catch (_) {
       // schedule state is undefined.
     }
@@ -143,16 +167,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (timelineId && Id64.isValidId64(timelineId)) {
       try {
         // If a subsequent call to loadScriptReferenceFromTimeline is made while we're awaiting this one, we'll abort this one.
-        const promise = this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId);
+        const promise = (this._queryRenderTimelinePropsPromise = this.queryRenderTimelineProps(timelineId));
         const timeline = await promise;
-        if (promise !== this._queryRenderTimelinePropsPromise)
-          return;
+        if (promise !== this._queryRenderTimelinePropsPromise) return;
 
         if (timeline) {
           const scriptProps = JSON.parse(timeline.script);
           const script = RenderSchedule.Script.fromJSON(scriptProps);
-          if (script)
-            newState = new RenderSchedule.ScriptReference(timelineId, script);
+          if (script) newState = new RenderSchedule.ScriptReference(timelineId, script);
         }
       } catch (_) {
         // schedule state is undefined.
@@ -170,7 +192,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected async queryRenderTimelineProps(timelineId: Id64String): Promise<RenderTimelineProps | undefined> {
     try {
-      return await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } }) as RenderTimelineProps;
+      return (await this.iModel.elements.loadProps(timelineId, { renderTimeline: { omitScriptElementIds: true } })) as RenderTimelineProps;
     } catch (_) {
       return undefined;
     }
@@ -182,7 +204,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
+  public get globeMode(): GlobeMode {
+    return this.settings.backgroundMap.globeMode;
+  }
 
   /** Settings controlling how the base map is displayed within a view.
    *  The base map can be provided by any map imagery source or set to be a single color.
@@ -196,15 +220,21 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public get backgroundMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.backgroundLayers; }
+  public get backgroundMapLayers(): MapLayerSettings[] {
+    return this.settings.mapImagery.backgroundLayers;
+  }
 
   /** @internal */
-  public get overlayMapLayers(): MapLayerSettings[] { return this.settings.mapImagery.overlayLayers; }
+  public get overlayMapLayers(): MapLayerSettings[] {
+    return this.settings.mapImagery.overlayLayers;
+  }
 
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    */
-  public get backgroundMapSettings(): BackgroundMapSettings { return this.settings.backgroundMap; }
+  public get backgroundMapSettings(): BackgroundMapSettings {
+    return this.settings.backgroundMap;
+  }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.settings.backgroundMap = settings;
   }
@@ -266,14 +296,14 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @returns true if the specified display style is logically equivalent to this display style - i.e., both styles have the same values for all of their settings.
    */
   public equalState(other: DisplayStyleState): boolean {
-    if (this.name !== other.name || this.id !== other.id)
-      return false;
-    else
-      return JSON.stringify(this.settings) === JSON.stringify(other.settings);
+    if (this.name !== other.name || this.id !== other.id) return false;
+    else return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
 
   /** The name of this DisplayStyle */
-  public get name(): string { return this.code.value; }
+  public get name(): string {
+    return this.code.value;
+  }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
    * animating the contents of the view, and update [[scheduleScript]] using the script associated with the [RenderTimeline]($backend) element.
@@ -285,8 +315,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     // Await async loading if necessary.
     // Note the `await` in loadScriptReferenceFromTimeline will resolve before this one [per the spec](https://262.ecma-international.org/6.0/#sec-triggerpromisereactions).
-    if (this._queryRenderTimelinePropsPromise)
-      await this._queryRenderTimelinePropsPromise;
+    if (this._queryRenderTimelinePropsPromise) await this._queryRenderTimelinePropsPromise;
   }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
@@ -297,8 +326,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   public set scheduleScript(script: RenderSchedule.Script | undefined) {
-    if (script === this.scheduleScript)
-      return;
+    if (script === this.scheduleScript) return;
 
     try {
       const scriptRef = script ? new RenderSchedule.ScriptReference(script) : undefined;
@@ -309,8 +337,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this._assigningScript = true;
       this.settings.scheduleScriptProps = script?.toJSON();
 
-      if (!script)
-        this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+      if (!script) this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
     } finally {
       this._assigningScript = false;
     }
@@ -347,12 +374,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[setOSMBuildingDisplay]]
    */
   public getOSMBuildingRealityModel(): ContextRealityModelState | undefined {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
+      // The OSM tile tree is ellipsoidal.
       return undefined;
 
     const url = getCesiumOSMBuildingsUrl();
-    if (undefined === url)
-      return undefined;
+    if (undefined === url) return undefined;
 
     return this.contextRealityModelStates.find((x) => x.url === url);
   }
@@ -362,18 +389,17 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)
+      // The OSM tile tree is ellipsoidal.
       return false;
 
     const url = getCesiumOSMBuildingsUrl();
-    if (undefined === url)
-      return false;
+    if (undefined === url) return false;
 
     let model = this.settings.contextRealityModels.models.find((x) => x.url === url);
     if (options.onOff === false) {
       const turnedOff = undefined !== model && this.settings.contextRealityModels.delete(model);
-      if (turnedOff)
-        this.onOSMBuildingDisplayChanged.raiseEvent(false);
+      if (turnedOff) this.onOSMBuildingDisplayChanged.raiseEvent(false);
 
       return turnedOff;
     }
@@ -384,8 +410,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.onOSMBuildingDisplayChanged.raiseEvent(true);
     }
 
-    if (options.appearanceOverrides)
-      model.appearanceOverrides = options.appearanceOverrides;
+    if (options.appearanceOverrides) model.appearanceOverrides = options.appearanceOverrides;
 
     return true;
   }
@@ -399,7 +424,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getMapLayers(isOverlay: boolean) { return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers; }
+  public getMapLayers(isOverlay: boolean) {
+    return isOverlay ? this.overlayMapLayers : this.backgroundMapLayers;
+  }
 
   /**
    * Attach a map layer to display style.
@@ -409,16 +436,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @public
    *
    */
-  public attachMapLayer(options: { settings: MapLayerSettings, isOverlay?: boolean, insertIndex?: number}): void {
+  public attachMapLayer(options: { settings: MapLayerSettings; isOverlay?: boolean; insertIndex?: number }): void {
     const layerSettings = options.settings.clone({});
-    if (undefined === layerSettings)
-      return;
+    if (undefined === layerSettings) return;
 
     const isOverlay = options.isOverlay ?? false;
     const insertIndex = options.insertIndex ?? -1;
     const layers = this.getMapLayers(isOverlay);
 
-    if (insertIndex < 0 || insertIndex > (layers.length - 1)) {
+    if (insertIndex < 0 || insertIndex > layers.length - 1) {
       this.getMapLayers(isOverlay).push(layerSettings);
     } else {
       layers.splice(insertIndex, 0, layerSettings);
@@ -428,12 +454,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public attachMapLayerProps(options: { props: MapLayerProps, isOverlay?: boolean, insertIndex?: number}): void {
+  public attachMapLayerProps(options: { props: MapLayerProps; isOverlay?: boolean; insertIndex?: number }): void {
     const settings = MapLayerSettings.fromJSON(options.props);
-    if (undefined === settings)
-      return;
+    if (undefined === settings) return;
 
-    this.attachMapLayer({settings, isOverlay: options.isOverlay, insertIndex:options.insertIndex});
+    this.attachMapLayer({ settings, isOverlay: options.isOverlay, insertIndex: options.insertIndex });
   }
 
   /** @internal */
@@ -444,8 +469,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
     const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
-    if (- 1 !== index)
-      this.detachMapLayerByIndex(index, isOverlay);
+    if (-1 !== index) this.detachMapLayerByIndex(index, isOverlay);
   }
 
   /** Detach map layer at index (-1 to remove all layers)
@@ -453,10 +477,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public detachMapLayerByIndex(index: number, isOverlay: boolean): void {
     const layers = this.getMapLayers(isOverlay);
-    if (index < 0)
-      layers.length = 0;
-    else
-      layers.splice(index, 1);
+    if (index < 0) layers.length = 0;
+    else layers.splice(index, 1);
 
     this._synchBackgroundMapImagery();
   }
@@ -476,7 +498,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @public */
   public mapLayerAtIndex(index: number, isOverlay: boolean): MapLayerSettings | undefined {
     const layers = this.getMapLayers(isOverlay);
-    return (index < 0 || index >= layers.length) ? undefined : layers[index];
+    return index < 0 || index >= layers.length ? undefined : layers[index];
   }
 
   /** Return map base transparency as a number between 0 and 1.
@@ -493,7 +515,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     if (this.settings.mapImagery.backgroundBase instanceof ColorDef) {
       this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.withTransparency(transparency * 255);
     } else {
-      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({transparency});
+      this.settings.mapImagery.backgroundBase = this.settings.mapImagery.backgroundBase.clone({ transparency });
     }
     this._synchBackgroundMapImagery();
   }
@@ -511,17 +533,15 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public changeMapLayerProps(props: Partial<MapLayerProps>, index: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
-    if (index < 0 || index >= layers.length)
-      return;
+    if (index < 0 || index >= layers.length) return;
     layers[index] = layers[index].clone(props);
     this._synchBackgroundMapImagery();
   }
 
   /** @public */
-  public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string,) {
+  public changeMapLayerCredentials(index: number, isOverlay: boolean, userName?: string, password?: string) {
     const layers = this.getMapLayers(isOverlay);
-    if (index < 0 || index >= layers.length)
-      return;
+    if (index < 0 || index >= layers.length) return;
     const layer = layers[index];
     if (layer instanceof ImageMapLayerSettings) {
       layer.setCredentials(userName, password);
@@ -539,17 +559,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public changeMapSubLayerProps(props: Partial<MapSubLayerProps>, subLayerId: SubLayerId, layerIndex: number, isOverlay: boolean) {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
-    if (undefined === mapLayerSettings)
-      return;
+    if (undefined === mapLayerSettings) return;
 
     if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
-      assert (false);
+      assert(false);
       return;
     }
 
     const subLayers = new Array<MapSubLayerProps>();
     for (const subLayer of mapLayerSettings.subLayers) {
-      subLayers.push((subLayerId === -1 || subLayer.id === subLayerId) ? subLayer.clone(props).toJSON() : subLayer.toJSON());
+      subLayers.push(subLayerId === -1 || subLayer.id === subLayerId ? subLayer.clone(props).toJSON() : subLayer.toJSON());
     }
 
     this.changeMapLayerProps({ subLayers }, layerIndex, isOverlay);
@@ -563,35 +582,30 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public async getMapLayerRange(layerIndex: number, isOverlay: boolean): Promise<MapCartoRectangle | undefined> {
     const mapLayerSettings = this.mapLayerAtIndex(layerIndex, isOverlay);
-    if (undefined === mapLayerSettings)
-      return undefined;
+    if (undefined === mapLayerSettings) return undefined;
 
     if (mapLayerSettings instanceof ModelMapLayerSettings) {
       const ecefTransform = this.iModel.ecefLocation?.getTransform();
-      if (!ecefTransform)
-        return undefined;
+      if (!ecefTransform) return undefined;
       const model = this.iModel.models.getLoaded(mapLayerSettings.modelId);
-      if (!model || !(model instanceof GeometricModelState))
-        return undefined;
+      if (!model || !(model instanceof GeometricModelState)) return undefined;
 
       const modelRange = await model.queryModelRange();
       const cartoRange = new CartographicRange(modelRange, ecefTransform).getLongitudeLatitudeBoundingBox();
 
       return MapCartoRectangle.fromRadians(cartoRange.low.x, cartoRange.low.y, cartoRange.high.x, cartoRange.high.y);
     }
-    if (! (mapLayerSettings instanceof ImageMapLayerSettings)) {
+    if (!(mapLayerSettings instanceof ImageMapLayerSettings)) {
       assert(false);
       return undefined;
     }
 
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(mapLayerSettings);
-    if (undefined === imageryProvider)
-      return undefined;
+    if (undefined === imageryProvider) return undefined;
 
     try {
       await imageryProvider.initialize();
       return imageryProvider.cartoRange;
-
     } catch (_error) {
       return undefined;
     }
@@ -603,13 +617,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public async viewMapLayerRange(layerIndex: number, isOverlay: boolean, vp: ScreenViewport): Promise<boolean> {
     const range = await this.getMapLayerRange(layerIndex, isOverlay);
-    if (!range)
-      return false;
+    if (!range) return false;
 
     if (range.xLength() > 1.5 * Angle.piRadians)
       viewGlobalLocation(vp, true, ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters, undefined, undefined);
-    else
-      viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
+    else viewGlobalLocation(vp, true, undefined, undefined, range.globalLocation);
 
     return true;
   }
@@ -658,11 +670,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    */
   public moveMapLayerToIndex(fromIndex: number, toIndex: number, isOverlay: boolean) {
     const layers = this.getMapLayers(isOverlay);
-    if (fromIndex === toIndex)
-      return;
+    if (fromIndex === toIndex) return;
 
-    if (fromIndex < 0 || fromIndex >= layers.length || toIndex > layers.length)
-      return;
+    if (fromIndex < 0 || fromIndex >= layers.length || toIndex > layers.length) return;
 
     const layer = layers.splice(fromIndex, 1);
     layers.splice(toIndex, 0, layer[0]); // note: if toIndex === settings.mapImagery.backgroundLayers.length item is appended
@@ -672,18 +682,30 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Flags controlling various aspects of the display style.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
-  public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
-  public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
+  public get viewFlags(): ViewFlags {
+    return this.settings.viewFlags;
+  }
+  public set viewFlags(flags: ViewFlags) {
+    this.settings.viewFlags = flags;
+  }
 
   /** The background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this.settings.backgroundColor; }
-  public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }
+  public get backgroundColor(): ColorDef {
+    return this.settings.backgroundColor;
+  }
+  public set backgroundColor(val: ColorDef) {
+    this.settings.backgroundColor = val;
+  }
 
   /** The color used to draw geometry in monochrome mode.
    * @see [ViewFlags.monochrome]($common) for enabling monochrome mode.
    */
-  public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
-  public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
+  public get monochromeColor(): ColorDef {
+    return this.settings.monochromeColor;
+  }
+  public set monochromeColor(val: ColorDef) {
+    this.settings.monochromeColor = val;
+  }
 
   private _backgroundMapGeometry?: {
     bimElevationBias: number;
@@ -695,9 +717,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public anyMapLayersVisible(overlay: boolean): boolean {
     const layers = this.getMapLayers(overlay);
 
-    for (const mapLayer of layers)
-      if (mapLayer.visible)
-        return true;
+    for (const mapLayer of layers) if (mapLayer.visible) return true;
 
     return false;
   }
@@ -712,32 +732,35 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
+          return undefined === this.iModel.projectCenterAltitude
+            ? undefined
+            : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
 
         case TerrainHeightOriginMode.Geoid:
-          return (undefined === this.iModel.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
+          return undefined === this.iModel.geodeticToSeaLevel ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
       }
     } else {
       return this.backgroundMapSettings.groundBias;
     }
-
   }
 
   /** @internal */
   public getBackgroundMapGeometry(): BackgroundMapGeometry | undefined {
-    if (undefined === this.iModel.ecefLocation)
-      return undefined;
+    if (undefined === this.iModel.ecefLocation) return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
 
-    if (undefined === bimElevationBias)
-      return undefined;
+    if (undefined === bimElevationBias) return undefined;
 
     const globeMode = this.globeMode;
-    if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
+    if (
+      undefined === this._backgroundMapGeometry ||
+      this._backgroundMapGeometry.globeMode !== globeMode ||
+      this._backgroundMapGeometry.bimElevationBias !== bimElevationBias
+    ) {
       const geometry = new BackgroundMapGeometry(bimElevationBias, globeMode, this.iModel);
       this._backgroundMapGeometry = { bimElevationBias, geometry, globeMode };
     }
@@ -752,14 +775,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getGlobalGeometryAndHeightRange(): { geometry: BackgroundMapGeometry, heightRange: Range1d } | undefined {
+  public getGlobalGeometryAndHeightRange(): { geometry: BackgroundMapGeometry; heightRange: Range1d } | undefined {
     let geometry = this.getIsBackgroundMapVisible() ? this.getBackgroundMapGeometry() : undefined;
     const terrainRange = ApproximateTerrainHeights.instance.globalHeightRange;
     let heightRange = this.displayTerrain ? terrainRange : Range1d.createXX(-1, 1);
     if (this.globeMode === GlobeMode.Ellipsoid && this.contextRealityModelStates.find((model) => model.isGlobal)) {
       if (!geometry) {
-        if (!this._ellipsoidMapGeometry)
-          this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
+        if (!this._ellipsoidMapGeometry) this._ellipsoidMapGeometry = new BackgroundMapGeometry(0, GlobeMode.Ellipsoid, this.iModel);
 
         geometry = this._ellipsoidMapGeometry;
       }
@@ -771,30 +793,40 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Returns true if this is a 3d display style. */
-  public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
+  public is3d(): this is DisplayStyle3dState {
+    return this instanceof DisplayStyle3dState;
+  }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
    * @see [[dropSubCategoryOverride]]
    */
-  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) { this.settings.overrideSubCategory(id, ovr); }
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
+    this.settings.overrideSubCategory(id, ovr);
+  }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @see [[overrideSubCategory]]
    */
-  public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
+  public dropSubCategoryOverride(id: Id64String) {
+    this.settings.dropSubCategoryOverride(id);
+  }
 
   /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
-  public get hasSubCategoryOverride() { return this.settings.hasSubCategoryOverride; }
+  public get hasSubCategoryOverride() {
+    return this.settings.hasSubCategoryOverride;
+  }
 
   /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
-  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
+    return this.settings.getSubCategoryOverride(id);
+  }
 
   /** @internal */
   public get wantShadows(): boolean {
@@ -804,15 +836,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   protected registerSettingsEventListeners(): void {
     this.settings.onScheduleScriptPropsChanged.addListener((scriptProps) => {
-      if (this._assigningScript)
-        return;
+      if (this._assigningScript) return;
 
       try {
         this._assigningScript = true;
-        if (scriptProps)
-          this.loadScriptReferenceFromScript(scriptProps);
-        else
-          this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+        if (scriptProps) this.loadScriptReferenceFromScript(scriptProps);
+        else this.loadScriptReferenceFromTimeline(this.settings.renderTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
       } finally {
         this._assigningScript = false;
       }
@@ -822,15 +851,12 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       // Cancel any in-progress loading of script from timeline.
       this._queryRenderTimelinePropsPromise = undefined;
 
-      if (!this.settings.scheduleScriptProps)
-        this.loadScriptReferenceFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
+      if (!this.settings.scheduleScriptProps) this.loadScriptReferenceFromTimeline(newTimeline); // eslint-disable-line @typescript-eslint/no-floating-promises
     });
 
     this.settings.onPlanarClipMaskChanged.addListener((id, newSettings) => {
-      if (newSettings)
-        this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
-      else
-        this._attachedRealityModelPlanarClipMasks.delete(id);
+      if (newSettings) this._attachedRealityModelPlanarClipMasks.set(id, PlanarClipMaskState.create(newSettings));
+      else this._attachedRealityModelPlanarClipMasks.delete(id);
     });
   }
 
@@ -842,7 +868,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public getPlanarClipMaskState(modelId: Id64String): PlanarClipMaskState | undefined {
     const model = this.iModel.models.getLoaded(modelId)?.asSpatialModel;
-    return (model && model.isRealityModel) ? this._attachedRealityModelPlanarClipMasks.get(modelId) : undefined;
+    return model && model.isRealityModel ? this._attachedRealityModelPlanarClipMasks.get(modelId) : undefined;
   }
 }
 
@@ -852,17 +878,25 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  */
 export class DisplayStyle2dState extends DisplayStyleState {
   /** @internal */
-  public static override get className() { return "DisplayStyle2d"; }
+  public static override get className() {
+    return "DisplayStyle2d";
+  }
   private readonly _settings: DisplayStyleSettings;
 
-  public get settings(): DisplayStyleSettings { return this._settings; }
+  public get settings(): DisplayStyleSettings {
+    return this._settings;
+  }
 
   /** @internal */
-  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined { return undefined; }
+  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined {
+    return undefined;
+  }
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._settings = new DisplayStyleSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyleSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+    });
     this.registerSettingsEventListeners();
   }
 }
@@ -873,14 +907,20 @@ export class DisplayStyle2dState extends DisplayStyleState {
  */
 export class DisplayStyle3dState extends DisplayStyleState {
   /** @internal */
-  public static override get className() { return "DisplayStyle3d"; }
+  public static override get className() {
+    return "DisplayStyle3d";
+  }
   private _settings: DisplayStyle3dSettings;
 
-  public get settings(): DisplayStyle3dSettings { return this._settings; }
+  public get settings(): DisplayStyle3dSettings {
+    return this._settings;
+  }
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
-    this._settings = new DisplayStyle3dSettings(this.jsonProperties, { createContextRealityModel: (modelProps) => this.createRealityModel(modelProps) });
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties, {
+      createContextRealityModel: (modelProps) => this.createRealityModel(modelProps),
+    });
     this.registerSettingsEventListeners();
   }
 
@@ -891,8 +931,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.settings.environment = env;
   }
 
-  public get lights(): LightSettings { return this.settings.lights; }
-  public set lights(lights: LightSettings) { this.settings.lights = lights; }
+  public get lights(): LightSettings {
+    return this.settings.lights;
+  }
+  public set lights(lights: LightSettings) {
+    this.settings.lights = lights;
+  }
 
   /** The direction of the solar light. */
   public get sunDirection(): Readonly<Vector3d> {
@@ -936,9 +980,11 @@ export class DisplayStyle3dState extends DisplayStyleState {
   public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined {
     if (undefined !== this.settings.thematic) {
       const ovr = new TerrainDisplayOverrides();
-      if (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode)
-        ovr.wantSkirts = false;
-      if (this.viewFlags.thematicDisplay && (ThematicDisplayMode.Slope === this.settings.thematic.displayMode || ThematicDisplayMode.HillShade === this.settings.thematic.displayMode))
+      if (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode) ovr.wantSkirts = false;
+      if (
+        this.viewFlags.thematicDisplay &&
+        (ThematicDisplayMode.Slope === this.settings.thematic.displayMode || ThematicDisplayMode.HillShade === this.settings.thematic.displayMode)
+      )
         ovr.wantNormals = true;
       return ovr;
     }

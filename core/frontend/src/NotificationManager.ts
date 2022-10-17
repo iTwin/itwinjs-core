@@ -81,11 +81,11 @@ export enum MessageBoxType {
  * @extensions
  */
 export enum MessageBoxIconType {
-  NoSymbol = 0,   // Means Don't draw Symbol
-  Information = 1,   // Lower Case i
-  Question = 2,   // Question Mark
-  Warning = 3,   // Exclamation Point
-  Critical = 4,   // Stop Sign
+  NoSymbol = 0, // Means Don't draw Symbol
+  Information = 1, // Lower Case i
+  Question = 2, // Question Mark
+  Warning = 3, // Exclamation Point
+  Critical = 4, // Stop Sign
   Success = 5, // check mark
 }
 
@@ -135,8 +135,13 @@ export class NotifyMessageDetails {
    * @param msgType           The type of message. Defaults to Toast.
    * @param openAlert         Whether an alert box should be displayed or not, and if so what kind.
    */
-  public constructor(public priority: OutputMessagePriority, public briefMessage: HTMLElement | string,
-    public detailedMessage?: HTMLElement | string, public msgType = OutputMessageType.Toast, public openAlert = OutputMessageAlert.None) { }
+  public constructor(
+    public priority: OutputMessagePriority,
+    public briefMessage: HTMLElement | string,
+    public detailedMessage?: HTMLElement | string,
+    public msgType = OutputMessageType.Toast,
+    public openAlert = OutputMessageAlert.None
+  ) {}
 
   /** Set OutputMessageType.Pointer message details.
    * @param viewport          Viewport over which to display the Pointer type message.
@@ -172,13 +177,22 @@ export class ActivityMessageDetails {
    * @param supportsCancellation    Indicates whether to show the Cancel button, giving the user the ability to cancel the operation.
    * @param showDialogInitially     Indicates whether to show the activity message dialog initially. User can click status bar to open it.
    */
-  public constructor(public showProgressBar: boolean, public showPercentInMessage: boolean, public supportsCancellation: boolean, public showDialogInitially: boolean = true) { }
+  public constructor(
+    public showProgressBar: boolean,
+    public showPercentInMessage: boolean,
+    public supportsCancellation: boolean,
+    public showDialogInitially: boolean = true
+  ) {}
 
   /** Called from NotificationAdmin when the user cancels the activity. */
-  public onActivityCancelled() { this.wasCancelled = true; }
+  public onActivityCancelled() {
+    this.wasCancelled = true;
+  }
 
   /** Called from NotificationAdmin when the activity completes successfully. */
-  public onActivityCompleted() { this.wasCancelled = false; }
+  public onActivityCompleted() {
+    this.wasCancelled = false;
+  }
 }
 
 /** The NotificationManager controls the interaction with the user for prompts, error messages, and alert dialogs.
@@ -193,15 +207,17 @@ export class NotificationManager implements MessagePresenter {
   /** Output a prompt, given a localization key.
    * @param key The key of the localized string with the prompt message.
    */
-  public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.localization.getLocalizedString(key)); }
+  public outputPromptByKey(key: string) {
+    this.outputPrompt(IModelApp.localization.getLocalizedString(key));
+  }
 
   /** Output a localized prompt to the user. A 'prompt' indicates an action the user should take to proceed.
    * @param _prompt The localized string with the prompt message.
    */
-  public outputPrompt(_prompt: string) { }
+  public outputPrompt(_prompt: string) {}
 
   /** Output a message and/or alert to the user.  */
-  public outputMessage(_message: NotifyMessageDetails) { }
+  public outputMessage(_message: NotifyMessageDetails) {}
 
   /** Output a MessageBox and wait for response from the user.
    * @param _mbType       The MessageBox type.
@@ -209,14 +225,18 @@ export class NotificationManager implements MessagePresenter {
    * @param _icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> { return MessageBoxValue.Ok; }
+  public async openMessageBox(_mbType: MessageBoxType, _message: HTMLElement | string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+    return MessageBoxValue.Ok;
+  }
 
   /**
    * Set up for activity messages.
    * @param _details  The activity message details.
    * @return true if the message was displayed, false if an invalid priority is specified.
    */
-  public setupActivityMessage(_details: ActivityMessageDetails) { return true; }
+  public setupActivityMessage(_details: ActivityMessageDetails) {
+    return true;
+  }
 
   /**
    * Output an activity message to the user.
@@ -224,23 +244,31 @@ export class NotificationManager implements MessagePresenter {
    * @param _percentComplete The percentage of completion.
    * @return true if the message was displayed, false if the message could not be displayed.
    */
-  public outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number) { return true; }
+  public outputActivityMessage(_messageText: HTMLElement | string, _percentComplete: number) {
+    return true;
+  }
 
   /**
    * End an activity message.
    * @param _reason The reason for the end of the Activity Message.
    * @return true if the message was ended successfully, false if the activityMessage could not be ended.
    */
-  public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }
+  public endActivityMessage(_reason: ActivityMessageEndReason) {
+    return true;
+  }
 
   /** Return true if _showTooltip has an implementation and will display a tooltip. */
-  public get isToolTipSupported(): boolean { return false; }
+  public get isToolTipSupported(): boolean {
+    return false;
+  }
 
   /** Return true if the tooltip is currently open. */
-  public get isToolTipOpen(): boolean { return false; }
+  public get isToolTipOpen(): boolean {
+    return false;
+  }
 
   /** Implement to display a tooltip message at the specified location. */
-  protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void { }
+  protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void {}
 
   /** Show a tooltip window. Saves tooltip location for AccuSnap to test if cursor has moved far enough away to close tooltip.
    * @param htmlElement The HTMLElement that anchors the toolTip.
@@ -257,19 +285,19 @@ export class NotificationManager implements MessagePresenter {
   }
 
   /** Clear the tooltip if it is currently open. */
-  public clearToolTip(): void { }
+  public clearToolTip(): void {}
 
   /** Update message position created with [[OutputMessageType.Pointer]].
    * @param displayPoint        Point at which to display the Pointer type message.
    * @param relativePosition    Position relative to displayPoint at which to display the Pointer type message.
    */
-  public updatePointerMessage(_displayPoint: XAndY, _relativePosition = RelativePosition.TopRight): void { }
+  public updatePointerMessage(_displayPoint: XAndY, _relativePosition = RelativePosition.TopRight): void {}
 
   /** Close message created with [[OutputMessageType.Pointer]]. */
-  public closePointerMessage(): void { }
+  public closePointerMessage(): void {}
 
   /** Close message created with [[OutputMessageType.InputField]]. */
-  public closeInputFieldMessage(): void { }
+  public closeInputFieldMessage(): void {}
 
   /** Setup tool assistance instructions for a tool. The instructions include the main instruction, which includes the current prompt.
    * @param instructions The tool assistance instructions.
@@ -285,8 +313,18 @@ export class NotificationManager implements MessagePresenter {
    * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
    * @param messageType       The type of message. Defaults to Toast.
    */
-  public displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void {
-    const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage, this.convertMessageType(messageType));
+  public displayMessage(
+    severity: MessageSeverity,
+    briefMessage: HTMLElement | string,
+    detailedMessage?: HTMLElement | string,
+    messageType?: DisplayMessageType
+  ): void {
+    const details = new NotifyMessageDetails(
+      this.convertSeverityToPriority(severity),
+      briefMessage,
+      detailedMessage,
+      this.convertMessageType(messageType)
+    );
     this.outputMessage(details);
   }
 
@@ -297,7 +335,12 @@ export class NotificationManager implements MessagePresenter {
    * @param briefMessage      A short message that conveys the simplest explanation of the issue.
    * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
    */
-  public displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void {
+  public displayInputFieldMessage(
+    inputField: HTMLElement,
+    severity: MessageSeverity,
+    briefMessage: HTMLElement | string,
+    detailedMessage?: HTMLElement | string
+  ): void {
     const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage);
     details.setInputFieldTypeDetails(inputField);
     this.outputMessage(details);
@@ -333,5 +376,4 @@ export class NotificationManager implements MessagePresenter {
         return undefined;
     }
   }
-
 }

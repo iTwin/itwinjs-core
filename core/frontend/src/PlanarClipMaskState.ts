@@ -34,8 +34,7 @@ export class PlanarClipMaskState {
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    if (this._tileTreeRefs)
-      this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
+    if (this._tileTreeRefs) this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
   public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
@@ -44,8 +43,7 @@ export class PlanarClipMaskState {
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
       view.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority)
-          viewTrees.push(ref);
+        if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority) viewTrees.push(ref);
       });
 
       return viewTrees;
@@ -56,22 +54,19 @@ export class PlanarClipMaskState {
       if (this.settings.modelIds) {
         for (const modelId of this.settings.modelIds) {
           const model = view.iModel.models.getLoaded(modelId);
-          assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-          if (model?.asGeometricModel)
-            this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
+          assert(model !== undefined); // Models should be loaded by RealityModelTileTree
+          if (model?.asGeometricModel) this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
         }
       }
     }
 
-    if (!this._allLoaded)
-      this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
+    if (!this._allLoaded) this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
   public getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (!this.settings.subCategoryOrElementIds)
-      return undefined;
+    if (!this.settings.subCategoryOrElementIds) return undefined;
 
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
@@ -89,8 +84,7 @@ export class PlanarClipMaskState {
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
         const overrides = new FeatureSymbology.Overrides();
-        for (const subCategoryId of this.settings.subCategoryOrElementIds)
-          overrides.setVisibleSubCategory(subCategoryId);
+        for (const subCategoryId of this.settings.subCategoryOrElementIds) overrides.setVisibleSubCategory(subCategoryId);
 
         return overrides;
       }

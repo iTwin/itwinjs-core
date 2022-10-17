@@ -47,7 +47,12 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
  * @public
  * @extensions
  */
-export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
+export function canvasToResizedCanvasWithBars(
+  canvasIn: HTMLCanvasElement,
+  targetSize: Point2d,
+  barSize = new Point2d(0, 0),
+  barStyle = "#C0C0C0"
+): HTMLCanvasElement {
   const canvasOut = document.createElement("canvas");
   canvasOut.width = targetSize.x + barSize.x;
   canvasOut.height = targetSize.y + barSize.y;
@@ -78,18 +83,17 @@ export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targe
  */
 export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean = true): HTMLCanvasElement | undefined {
   const canvas = document.createElement("canvas");
-  if (null === canvas)
-    return undefined;
+  if (null === canvas) return undefined;
 
   canvas.width = buffer.width;
   canvas.height = buffer.height;
 
   const context = canvas.getContext("2d");
-  if (null === context)
-    return undefined;
+  if (null === context) return undefined;
 
   const imageData = context.createImageData(buffer.width, buffer.height);
-  const extractRgba = ImageBufferFormat.Alpha === buffer.format ? rgbaFromAlpha : (ImageBufferFormat.Rgb === buffer.format ? rgbaFromRgb : rgbaFromRgba);
+  const extractRgba =
+    ImageBufferFormat.Alpha === buffer.format ? rgbaFromAlpha : ImageBufferFormat.Rgb === buffer.format ? rgbaFromRgb : rgbaFromRgba;
 
   const bufferData = buffer.data;
   let i = 0;
@@ -117,8 +121,7 @@ export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean 
  */
 export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBufferFormat.Rgba): ImageBuffer | undefined {
   const context = canvas.getContext("2d");
-  if (null === context)
-    return undefined;
+  if (null === context) return undefined;
 
   const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -132,8 +135,7 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
     imageBufferData = new Uint8Array(imageData.data.length / 4);
   }
 
-  if (undefined === imageBufferData)
-    return undefined;
+  if (undefined === imageBufferData) return undefined;
 
   let i = 0;
   let j = 0;
@@ -164,7 +166,6 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
  * @extensions
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-
   switch (format) {
     case ImageSourceFormat.Jpeg:
       return "image/jpeg";
@@ -182,10 +183,14 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
  */
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
-    case "image/jpeg": return ImageSourceFormat.Jpeg;
-    case "image/png": return ImageSourceFormat.Png;
-    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
-    default: return undefined;
+    case "image/jpeg":
+      return ImageSourceFormat.Jpeg;
+    case "image/png":
+      return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8":
+      return ImageSourceFormat.Svg;
+    default:
+      return undefined;
   }
 }
 
@@ -288,8 +293,7 @@ export function imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha = tru
 export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha = true): string | undefined {
   const urlPrefix = "data:image/png;base64,";
   const url = imageBufferToPngDataUrl(buffer, preserveAlpha);
-  if (undefined === url || !url.startsWith(urlPrefix))
-    return undefined;
+  if (undefined === url || !url.startsWith(urlPrefix)) return undefined;
 
   return url.substring(urlPrefix.length);
 }
@@ -301,14 +305,12 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
   const win = window.open();
-  if (null === win)
-    return;
+  if (null === win) return;
 
   const div = win.document.createElement("div");
   div.innerHTML = `<img src='${url}'/>`;
   win.document.body.append(div);
-  if (undefined !== title)
-    win.document.title = title;
+  if (undefined !== title) win.document.title = title;
 }
 
 /** Determine the maximum [[ViewRect]] that can be fitted and centered in specified ViewRect given a required aspect ratio.
@@ -345,8 +347,7 @@ export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes 
   while (quality > minCompressionQuality) {
     const data = canvas.toDataURL("image/jpeg", quality);
     // If we are less than 60 Kb, we are good
-    if (data.length * bytesPerCharacter < maxBytes)
-      return data;
+    if (data.length * bytesPerCharacter < maxBytes) return data;
 
     quality -= decrements;
   }

@@ -10,7 +10,12 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent,
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  VariableType,
+  VertexShaderBuilder,
+  VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
 import { IsInstanced, PositionType } from "../TechniqueFlags";
@@ -21,9 +26,7 @@ import { addFrustum, addShaderFlags } from "./Common";
 import { unquantize2d } from "./Decode";
 import { addHiliter } from "./FeatureSymbology";
 import { addWhiteOnWhiteReversal } from "./Fragment";
-import {
-  addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition,
-} from "./Vertex";
+import { addLineCode as addLineCodeUniform, addLineWeight, addModelViewMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
 
 const checkForDiscard = "return discardByLineCode;";
@@ -151,8 +154,7 @@ export function addLineCodeTexture(frag: FragmentShaderBuilder) {
     prog.addProgramUniform("u_lineCodeTexture", (uniform) => {
       const lct = System.instance.lineCodeTexture;
       assert(undefined !== lct);
-      if (undefined !== lct)
-        lct.bindSampler(uniform, TextureUnit.LineCode);
+      if (undefined !== lct) lct.bindSampler(uniform, TextureUnit.LineCode);
     });
   });
 }

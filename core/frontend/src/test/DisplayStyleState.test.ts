@@ -24,17 +24,27 @@ describe("DisplayStyleState", () => {
       await IModelApp.shutdown();
     });
 
-    const script1: RenderSchedule.ScriptProps = [{
-      modelId: "0x1",
-      visibilityTimeline: [{ time: 1234, value: 0 }, { time: 5678, value: 50 }],
-      elementTimelines: [],
-    }];
+    const script1: RenderSchedule.ScriptProps = [
+      {
+        modelId: "0x1",
+        visibilityTimeline: [
+          { time: 1234, value: 0 },
+          { time: 5678, value: 50 },
+        ],
+        elementTimelines: [],
+      },
+    ];
 
-    const script2: RenderSchedule.ScriptProps = [{
-      modelId: "0x2",
-      visibilityTimeline: [{ time: 1234, value: 0 }, { time: 5678, value: 50 }],
-      elementTimelines: [],
-    }];
+    const script2: RenderSchedule.ScriptProps = [
+      {
+        modelId: "0x2",
+        visibilityTimeline: [
+          { time: 1234, value: 0 },
+          { time: 5678, value: 50 },
+        ],
+        elementTimelines: [],
+      },
+    ];
 
     class Style extends DisplayStyle3dState {
       public readonly eventPayloads: Array<RenderSchedule.ScriptReference | undefined>;
@@ -59,23 +69,20 @@ describe("DisplayStyleState", () => {
         expect(this.scheduleScript!.modelTimelines[0].modelId).to.equal(props[0].modelId);
       }
 
-      public get isLoading() { return undefined !== this._queryRenderTimelinePropsPromise; }
+      public get isLoading() {
+        return undefined !== this._queryRenderTimelinePropsPromise;
+      }
       public async finishLoading() {
-        while (this._queryRenderTimelinePropsPromise)
-          await this._queryRenderTimelinePropsPromise;
+        while (this._queryRenderTimelinePropsPromise) await this._queryRenderTimelinePropsPromise;
       }
 
       protected override async queryRenderTimelineProps(timelineId: string): Promise<RenderTimelineProps | undefined> {
         let script;
-        if (timelineId === "0x1")
-          script = JSON.stringify(script1);
-        else if (timelineId === "0x2")
-          script = JSON.stringify(script2);
-        else if (timelineId === "0x3")
-          script = "invalid JSON }";
+        if (timelineId === "0x1") script = JSON.stringify(script1);
+        else if (timelineId === "0x2") script = JSON.stringify(script2);
+        else if (timelineId === "0x3") script = "invalid JSON }";
 
-        if (!script)
-          return Promise.resolve(undefined);
+        if (!script) return Promise.resolve(undefined);
 
         return Promise.resolve({
           script,

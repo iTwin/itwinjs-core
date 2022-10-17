@@ -41,8 +41,7 @@ describe("Visible feature query", () => {
     document.body.appendChild(div);
 
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-    if (view.viewFlags.acsTriad || view.viewFlags.grid)
-      view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
+    if (view.viewFlags.acsTriad || view.viewFlags.grid) view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
     const vp = ScreenViewport.create(div, view);
     IModelApp.viewManager.addViewport(vp);

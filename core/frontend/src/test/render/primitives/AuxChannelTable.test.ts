@@ -26,7 +26,7 @@ describe("AuxChannelTable", () => {
     await MockRender.App.shutdown();
   });
 
-  afterEach(() => System.maxTextureSize = 1024);
+  afterEach(() => (System.maxTextureSize = 1024));
 
   it("lays out a single scalar channel", () => {
     const data = new AuxChannelData(3, [0, 1000, 100, 0x7fff]);

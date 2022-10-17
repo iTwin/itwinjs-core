@@ -7,9 +7,7 @@
  */
 
 import { assert, Mutable } from "@itwin/core-bentley";
-import {
-  AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
-} from "@itwin/core-geometry";
+import { AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
 import { computeDimensions } from "./VertexTable";
 
@@ -127,23 +125,22 @@ export class AuxChannelTable {
 
     if (undefined !== props.displacements && 0 < props.displacements.length) {
       displacements = [];
-      for (const displacement of props.displacements)
-        displacements.push(new AuxDisplacementChannel(displacement));
+      for (const displacement of props.displacements) displacements.push(new AuxDisplacementChannel(displacement));
     }
 
     if (undefined !== props.normals && 0 < props.normals.length) {
       normals = [];
-      for (const normal of props.normals)
-        normals.push(new AuxChannel(normal));
+      for (const normal of props.normals) normals.push(new AuxChannel(normal));
     }
 
     if (undefined !== props.params && 0 < props.params.length) {
       params = [];
-      for (const param of props.params)
-        params.push(new AuxParamChannel(param));
+      for (const param of props.params) params.push(new AuxParamChannel(param));
     }
 
-    return undefined !== displacements || undefined !== normals || undefined !== params ? new AuxChannelTable(props, displacements, normals, params) : undefined;
+    return undefined !== displacements || undefined !== normals || undefined !== params
+      ? new AuxChannelTable(props, displacements, normals, params)
+      : undefined;
   }
 
   public static fromChannels(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
@@ -152,8 +149,7 @@ export class AuxChannelTable {
 }
 
 function invert(num: number): number {
-  if (0 !== num)
-    num = 1 / num;
+  if (0 !== num) num = 1 / num;
 
   return num;
 }
@@ -171,8 +167,7 @@ class AuxChannelTableBuilder {
 
   public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number): AuxChannelTable | undefined {
     const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
-    if (!numBytesPerVertex)
-      return undefined;
+    if (!numBytesPerVertex) return undefined;
 
     const nRgbaPerVertex = Math.floor((numBytesPerVertex + 3) / 4);
     const nUnusedBytesPerVertex = nRgbaPerVertex * 4 - numBytesPerVertex;
@@ -182,8 +177,7 @@ class AuxChannelTableBuilder {
     let dimensions;
     if (0 !== nUnusedBytesPerVertex)
       dimensions = computeDimensions(Math.floor((numVertices + 1) / 2), numBytesPerVertex / 2, 0); // twice as many RGBA for half as many vertices.
-    else
-      dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
+    else dimensions = computeDimensions(numVertices, nRgbaPerVertex, 0);
 
     const data = new Uint8Array(dimensions.width * dimensions.height * 4);
     const props: Mutable<AuxChannelTableProps> = {
@@ -202,12 +196,9 @@ class AuxChannelTableBuilder {
   private build(channels: ReadonlyArray<PolyfaceAuxChannel>): void {
     let byteOffset = 0;
     for (const channel of channels) {
-      if (AuxChannelDataType.Normal === channel.dataType)
-        this.addNormals(channel, byteOffset);
-      else if (AuxChannelDataType.Vector === channel.dataType)
-        this.addDisplacements(channel, byteOffset);
-      else
-        this.addParams(channel, byteOffset);
+      if (AuxChannelDataType.Normal === channel.dataType) this.addNormals(channel, byteOffset);
+      else if (AuxChannelDataType.Vector === channel.dataType) this.addDisplacements(channel, byteOffset);
+      else this.addParams(channel, byteOffset);
 
       byteOffset += computeNumBytesPerVertex(channel);
     }

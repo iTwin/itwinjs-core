@@ -119,11 +119,16 @@ export function addLighting(builder: ProgramBuilder) {
   frag.addFunction(computeDirectionalLighting);
   frag.set(FragmentShaderComponent.ApplyLighting, applyLighting);
 
-  frag.addUniform("u_sunDir", VariableType.Vec3, (prog) => {
-    prog.addProgramUniform("u_sunDir", (uniform, params) => {
-      params.target.uniforms.bindSunDirection(uniform);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_sunDir",
+    VariableType.Vec3,
+    (prog) => {
+      prog.addProgramUniform("u_sunDir", (uniform, params) => {
+        params.target.uniforms.bindSunDirection(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 
   frag.addUniform("u_lightSettings[16]", VariableType.Float, (prog) => {
     prog.addProgramUniform("u_lightSettings[0]", (uniform, params) => {

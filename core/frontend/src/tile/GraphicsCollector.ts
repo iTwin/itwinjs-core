@@ -32,21 +32,29 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     this._collector = collector;
   }
 
-  public override get frustumPlanes(): FrustumPlanes { return this._planes; }
-  public override get worldToViewMap(): Map4d { return this._worldToViewMap; }
+  public override get frustumPlanes(): FrustumPlanes {
+    return this._planes;
+  }
+  public override get worldToViewMap(): Map4d {
+    return this._worldToViewMap;
+  }
   public override drawGraphicsWithType(_graphicType: TileGraphicType, graphics: GraphicBranch) {
     this._collector.addGraphic(this.context.createBranch(graphics, this.location));
   }
 
   public override drawGraphics(): void {
-    if (!this.graphics.isEmpty)
-      this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
+    if (!this.graphics.isEmpty) this._collector.addGraphic(this.context.createBranch(this.graphics, this.location));
   }
 
-  public static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined {
+  public static create(
+    context: SceneContext,
+    collector: GraphicsCollector,
+    ref: TileTreeReference,
+    planes: FrustumPlanes,
+    worldToViewMap: Map4d
+  ): TileDrawArgs | undefined {
     const args = ref.createDrawArgs(context);
-    if (undefined === args)
-      return undefined;
+    if (undefined === args) return undefined;
 
     return new GraphicsCollectorDrawArgs(planes, worldToViewMap, collector, args);
   }

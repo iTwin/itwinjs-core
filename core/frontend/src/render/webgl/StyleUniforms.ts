@@ -50,8 +50,7 @@ export class StyleUniforms {
   }
 
   public changeBackgroundColor(bgColor: ColorDef): void {
-    if (bgColor.equals(this._bgColor))
-      return;
+    if (bgColor.equals(this._bgColor)) return;
 
     desync(this);
     this.updateBackgroundColor(bgColor);
@@ -59,20 +58,17 @@ export class StyleUniforms {
 
   // vec4
   public bindBackgroundRgba(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._bgRgba.bind(uniform);
+    if (!sync(this, uniform)) this._bgRgba.bind(uniform);
   }
 
   //  vec3
   public bindBackgroundRgb(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._bgRgb.bind(uniform);
+    if (!sync(this, uniform)) this._bgRgb.bind(uniform);
   }
 
   // vec3
   public bindMonochromeRgb(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._monoRgb.bind(uniform);
+    if (!sync(this, uniform)) this._monoRgb.bind(uniform);
   }
 
   public get backgroundIntensity(): number {

@@ -23,12 +23,14 @@ describe("ExtensionAdmin", () => {
       manifestUrl: "https://anotherdomain.com/package.json",
     }),
   ];
-  const stubManifest: Promise<ExtensionManifest> = new Promise((res) => res({
-    name: "mock-extension",
-    version: "1.0.0",
-    main: "index.js",
-    activationEvents: [],
-  }));
+  const stubManifest: Promise<ExtensionManifest> = new Promise((res) =>
+    res({
+      name: "mock-extension",
+      version: "1.0.0",
+      main: "index.js",
+      activationEvents: [],
+    })
+  );
 
   before(async () => {
     chai.use(chaiAsPromised);

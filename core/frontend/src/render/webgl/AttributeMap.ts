@@ -95,9 +95,7 @@ export class AttributeMap {
       ["a_uvParam", 1, VariableType.Vec2],
     ]);
 
-    const screenPoints = new AttributeMapEntry([
-      ["a_pos", 0, VariableType.Vec2],
-    ]);
+    const screenPoints = new AttributeMapEntry([["a_pos", 0, VariableType.Vec2]]);
 
     this._attrMaps = new Map<TechniqueId | undefined, AttributeMapEntry>([
       [undefined, posOnly],

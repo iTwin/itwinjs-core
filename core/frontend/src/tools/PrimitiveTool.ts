@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {BriefcaseConnection} from "../BriefcaseConnection";
+import { BriefcaseConnection } from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -26,8 +26,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public targetView?: Viewport;
   private _targetModelId?: string;
-  public get targetModelId() { return this._targetModelId; }
-  public set targetModelId(v: string | undefined) { this._targetModelId = v; }
+  public get targetModelId() {
+    return this._targetModelId;
+  }
+  public set targetModelId(v: string | undefined) {
+    this._targetModelId = v;
+  }
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel on which this tool operates.
@@ -51,8 +55,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public override async run(..._args: any[]): Promise<boolean> {
     const { toolAdmin, viewManager } = IModelApp;
-    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !await toolAdmin.onInstallTool(this))
-      return false;
+    if (!this.isCompatibleViewport(viewManager.selectedView, false) || !(await toolAdmin.onInstallTool(this))) return false;
 
     await toolAdmin.startPrimitiveTool(this);
     await toolAdmin.onPostInstallTool(this);
@@ -63,34 +66,26 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param vp the Viewport to check
    */
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
-    if (undefined === vp)
-      return false; // No views are open...
+    if (undefined === vp) return false; // No views are open...
 
     const view = vp.view;
     const iModel = view.iModel;
 
-    if (this.requireWriteableTarget() && iModel.isReadonly)
-      return false; // this Tool can't be used when iModel is read only.
+    if (this.requireWriteableTarget() && iModel.isReadonly) return false; // this Tool can't be used when iModel is read only.
 
-    if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange))
-      this.targetView = vp; // Update target to new view if undefined or still free to change.
+    if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange)) this.targetView = vp; // Update target to new view if undefined or still free to change.
 
-    if (undefined === this.targetModelId && (!this.targetIsLocked || vp === this.targetView))
-      return true; // Accept if this view is current target or any type of model/view is still ok as target is still free to change.
+    if (undefined === this.targetModelId && (!this.targetIsLocked || vp === this.targetView)) return true; // Accept if this view is current target or any type of model/view is still ok as target is still free to change.
 
-    if (iModel !== this.iModel)
-      return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
+    if (iModel !== this.iModel) return false; // Once a ViewState has been established, only accept viewport showing the same iModel.
 
-    if (this.targetModelId)
-      return view.viewsModel(this.targetModelId); // If a specific target model is specified, only allow view that shows it.
+    if (this.targetModelId) return view.viewsModel(this.targetModelId); // If a specific target model is specified, only allow view that shows it.
 
-    if (view.isSpatialView() && this.targetView.view.isSpatialView())
-      return true; // No specific target, two spatial views are considered compatible.
+    if (view.isSpatialView() && this.targetView.view.isSpatialView()) return true; // No specific target, two spatial views are considered compatible.
 
     let allowView = false;
     view.forEachModel((model) => {
-      if (!allowView && this.targetView!.view.viewsModel(model.id))
-        allowView = true;
+      if (!allowView && this.targetView!.view.viewsModel(model.id)) allowView = true;
     });
 
     return allowView; // Accept if this view shares a model in common with target.
@@ -104,47 +99,46 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public override isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
-    if (undefined === vp)
-      return false;
+    if (undefined === vp) return false;
 
-    if (isButtonEvent && BeButton.Data !== ev.button)
-      return true;
+    if (isButtonEvent && BeButton.Data !== ev.button) return true;
 
     const view = vp.view;
-    if (!view.isSpatialView())
-      return true;
+    if (!view.isSpatialView()) return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
-    if (0 !== (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS))
-      return true;
+    if (0 !== (IModelApp.toolAdmin.toolState.coordLockOvr & CoordinateLockOverrides.ACS)) return true;
 
     // We know the tool isn't doing a locate, we don't know what it will do with this point. Minimize erroneous filtering by restricting the check to when AccuSnap is tool enable (not user enabled)...
-    if (!IModelApp.accuSnap.isSnapEnabled)
-      return true;
+    if (!IModelApp.accuSnap.isSnapEnabled) return true;
 
     const extents = view.iModel.projectExtents;
-    if (extents.containsPoint(ev.point))
-      return true;
+    if (extents.containsPoint(ev.point)) return true;
 
     if (isButtonEvent && ev.isDown)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents")));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents"))
+      );
 
     return false;
   }
 
   /** Called on data button down event to lock the tool to its current target model. */
   public autoLockTarget(): void {
-    if (undefined === this.targetView)
-      return;
+    if (undefined === this.targetView) return;
 
     this.targetIsLocked = true;
   }
 
   /**  Returns the prompt based on the tool's current state. */
-  public getPrompt(): string { return ""; }
+  public getPrompt(): string {
+    return "";
+  }
 
   /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
-  public requireWriteableTarget(): boolean { return true; }
+  public requireWriteableTarget(): boolean {
+    return true;
+  }
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.
@@ -152,8 +146,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param current The new active view.
    */
   public override async onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): Promise<void> {
-    if (this.isCompatibleViewport(current, true))
-      return;
+    if (this.isCompatibleViewport(current, true)) return;
     return this.onRestartTool();
   }
 
@@ -172,20 +165,25 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
-  public override async onReinitialize(): Promise<void> { return this.onRestartTool(); }
+  public override async onReinitialize(): Promise<void> {
+    return this.onRestartTool();
+  }
 
-  public async exitTool() { return IModelApp.toolAdmin.startDefaultTool(); }
+  public async exitTool() {
+    return IModelApp.toolAdmin.startDefaultTool();
+  }
 
   /**
    * Called to reverse to a previous tool state (ex. undo last data button).
    * @return false to instead reverse the most recent transaction.
    */
-  public async onUndoPreviousStep(): Promise<boolean> { return false; }
+  public async onUndoPreviousStep(): Promise<boolean> {
+    return false;
+  }
 
   /** @internal */
   public async undoPreviousStep(): Promise<boolean> {
-    if (!await this.onUndoPreviousStep())
-      return false;
+    if (!(await this.onUndoPreviousStep())) return false;
 
     AccuDrawShortcuts.processPendingHints(); // Process pending hints from onUndoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -198,12 +196,13 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called to reinstate to a previous tool state (ex. redo last data button).
    * @return false to instead reinstate the most recent transaction.
    */
-  public async onRedoPreviousStep(): Promise<boolean> { return false; }
+  public async onRedoPreviousStep(): Promise<boolean> {
+    return false;
+  }
 
   /** @internal */
   public async redoPreviousStep(): Promise<boolean> {
-    if (!await this.onRedoPreviousStep())
-      return false;
+    if (!(await this.onRedoPreviousStep())) return false;
 
     AccuDrawShortcuts.processPendingHints(); // Process pending hints from onRedoPreviousStep before calling updateDynamics...
     IModelApp.viewManager.invalidateDecorationsAllViews();
@@ -214,7 +213,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
   public async saveChanges(): Promise<void> {
-    if (this.iModel.isBriefcaseConnection())
-      return this.iModel.saveChanges(this.toolId);
+    if (this.iModel.isBriefcaseConnection()) return this.iModel.saveChanges(this.toolId);
   }
 }

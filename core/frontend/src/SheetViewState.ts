@@ -7,10 +7,39 @@
  */
 
 import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
-  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  Angle,
+  ClipShape,
+  ClipVector,
+  Constant,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  PolyfaceBuilder,
+  Range2d,
+  Range3d,
+  StrokeOptions,
+  Transform,
+} from "@itwin/core-geometry";
+import {
+  AxisAlignedBox3d,
+  ColorDef,
+  Feature,
+  FeatureTable,
+  Frustum,
+  Gradient,
+  GraphicParams,
+  HiddenLine,
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  PackedFeatureTable,
+  Placement2d,
+  SheetProps,
+  TextureTransparency,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewFlagOverrides,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -59,13 +88,14 @@ class SheetBorder {
       Point3d.create(0, 0),
       Point3d.create(width, 0),
       Point3d.create(width, height),
-      Point3d.create(0, height)];
+      Point3d.create(0, height),
+    ];
     if (context) {
       context.viewport.worldToViewArray(rect);
     }
 
     // Shadow
-    const shadowWidth = .01 * Math.sqrt(width * width + height * height);
+    const shadowWidth = 0.01 * Math.sqrt(width * width + height * height);
     const shadow: Point3d[] = [
       Point3d.create(shadowWidth, 0),
       Point3d.create(shadowWidth, -shadowWidth),
@@ -83,15 +113,16 @@ class SheetBorder {
     const gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Linear;
     gradient.angle = Angle.createDegrees(-45);
-    gradient.keys = [{ value: 0, color: ColorDef.from(25, 25, 25) }, { value: 0.5, color: ColorDef.from(150, 150, 150) }];
+    gradient.keys = [
+      { value: 0, color: ColorDef.from(25, 25, 25) },
+      { value: 0.5, color: ColorDef.from(150, 150, 150) },
+    ];
 
     // Copy over points
     const rect2d: Point2d[] = [];
-    for (const point of rect)
-      rect2d.push(Point2d.createFrom(point));
+    for (const point of rect) rect2d.push(Point2d.createFrom(point));
     const shadow2d: Point2d[] = [];
-    for (const point of shadow)
-      shadow2d.push(Point2d.createFrom(point));
+    for (const point of shadow) shadow2d.push(Point2d.createFrom(point));
 
     return new SheetBorder(rect2d, shadow2d, gradient);
   }
@@ -168,8 +199,7 @@ class ViewAttachmentsInfo {
   }
 
   public preload(options: HydrateViewStateRequestProps) {
-    if (this.isLoaded)
-      return;
+    if (this.isLoaded) return;
     options.sheetViewAttachmentIds = CompressedId64Set.sortAndCompress(this._ids);
     options.viewStateLoadProps = {
       displayStyle: {
@@ -180,18 +210,15 @@ class ViewAttachmentsInfo {
   }
 
   public async postload(options: HydrateViewStateResponseProps, iModel: IModelConnection) {
-    if (options.sheetViewViews === undefined)
-      return;
-    if (options.sheetViewAttachmentProps === undefined)
-      return;
+    if (options.sheetViewViews === undefined) return;
+    if (options.sheetViewAttachmentProps === undefined) return;
 
     const viewStateProps = options.sheetViewViews; // This is viewstateProps, need to turn this into ViewState
     const promises = [];
     for (const viewProps of viewStateProps) {
       const loadView = async () => {
         try {
-          if (viewProps === undefined)
-            return undefined;
+          if (viewProps === undefined) return undefined;
           const view = await iModel.views.convertViewStatePropsToViewState(viewProps);
           return view;
         } catch {
@@ -203,7 +230,7 @@ class ViewAttachmentsInfo {
     const views = await Promise.all(promises);
 
     const attachmentProps = options.sheetViewAttachmentProps as ViewAttachmentInfo[];
-    assert (views.length === attachmentProps.length);
+    assert(views.length === attachmentProps.length);
     const attachments = [];
     for (let i = 0; i < views.length; i++) {
       const view = views[i];
@@ -218,10 +245,9 @@ class ViewAttachmentsInfo {
   }
 
   public async load(iModel: IModelConnection): Promise<void> {
-    if (this.isLoaded)
-      return;
+    if (this.isLoaded) return;
 
-    const attachmentProps = await iModel.elements.getProps(this._ids) as ViewAttachmentInfo[];
+    const attachmentProps = (await iModel.elements.getProps(this._ids)) as ViewAttachmentInfo[];
     const promises = [];
     for (const attachment of attachmentProps) {
       const loadView = async () => {
@@ -275,8 +301,7 @@ class ViewAttachments {
   }
 
   public dispose(): void {
-    for (const attachment of this._attachments)
-      attachment.dispose();
+    for (const attachment of this._attachments) attachment.dispose();
 
     this._attachments.length = 0;
   }
@@ -299,18 +324,15 @@ class ViewAttachments {
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
-    for (const attachment of this._attachments)
-      trees.disclose(attachment);
+    for (const attachment of this._attachments) trees.disclose(attachment);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    for (const attachment of this._attachments)
-      attachment.collectStatistics(stats);
+    for (const attachment of this._attachments) attachment.collectStatistics(stats);
   }
 
   public addToScene(context: SceneContext): void {
-    for (const attachment of this._attachments)
-      attachment.addToScene(context);
+    for (const attachment of this._attachments) attachment.addToScene(context);
   }
 }
 
@@ -330,14 +352,23 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public static override get className() { return "SheetViewDefinition"; }
+  public static override get className() {
+    return "SheetViewDefinition";
+  }
 
   public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
+    return new this(
+      viewStateData.viewDefinitionProps as ViewDefinition2dProps,
+      iModel,
+      cat,
+      displayStyleState,
+      viewStateData.sheetProps!,
+      viewStateData.sheetAttachments!
+    );
   }
 
   public override toProps(): ViewStateProps {
@@ -370,11 +401,22 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override isDrawingView(): this is DrawingViewState { return false; }
+  public override isDrawingView(): this is DrawingViewState {
+    return false;
+  }
   /** @internal */
-  public override isSheetView(): this is SheetViewState { return true; }
+  public override isSheetView(): this is SheetViewState {
+    return true;
+  }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
+  public constructor(
+    props: ViewDefinition2dProps,
+    iModel: IModelConnection,
+    categories: CategorySelectorState,
+    displayStyle: DisplayStyle2dState,
+    sheetProps: SheetProps,
+    attachments: Id64Array
+  ) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof SheetViewState) {
       // we are coming from clone...
@@ -394,16 +436,14 @@ export class SheetViewState extends ViewState2d {
 
   public override getOrigin() {
     const origin = super.getOrigin();
-    if (this._attachments)
-      origin.z = -this._attachments.maxDepth;
+    if (this._attachments) origin.z = -this._attachments.maxDepth;
 
     return origin;
   }
 
   public override getExtents() {
     const extents = super.getExtents();
-    if (this._attachments)
-      extents.z = this._attachments.maxDepth + Frustum2d.minimumZDistance;
+    if (this._attachments) extents.z = this._attachments.maxDepth + Frustum2d.minimumZDistance;
 
     return extents;
   }
@@ -413,15 +453,13 @@ export class SheetViewState extends ViewState2d {
    */
   public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
-    if (this._attachments)
-      trees.disclose(this._attachments);
+    if (this._attachments) trees.disclose(this._attachments);
   }
 
   /** @internal */
   public override collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
     super.collectNonTileTreeStatistics(stats);
-    if (this._attachments)
-      this._attachments.collectStatistics(stats);
+    if (this._attachments) this._attachments.collectStatistics(stats);
   }
 
   /** @internal */
@@ -451,21 +489,18 @@ export class SheetViewState extends ViewState2d {
   /** @internal */
   public override createScene(context: SceneContext): void {
     super.createScene(context);
-    if (this._attachments)
-      this._attachments.addToScene(context);
+    if (this._attachments) this._attachments.addToScene(context);
   }
 
   /** @internal */
   public override get secondaryViewports(): Iterable<Viewport> {
     const attachments = this._attachments;
-    if (!attachments)
-      return super.secondaryViewports;
+    if (!attachments) return super.secondaryViewports;
 
     function* iterator() {
       for (const attachment of attachments!) {
         const vp = attachment.viewport;
-        if (vp)
-          yield vp;
+        if (vp) yield vp;
       }
     }
 
@@ -478,8 +513,7 @@ export class SheetViewState extends ViewState2d {
   private async queryAttachmentIds(): Promise<Id64Array> {
     const ecsql = `SELECT ECInstanceId as attachmentId FROM bis.ViewAttachment WHERE model.Id=${this.baseModelId}`;
     const ids: string[] = [];
-    for await (const row of this.iModel.query(ecsql))
-      ids.push(row[0]);
+    for await (const row of this.iModel.query(ecsql)) ids.push(row[0]);
 
     return ids;
   }
@@ -531,8 +565,7 @@ export class SheetViewState extends ViewState2d {
   /** @internal */
   public override computeFitRange(): Range3d {
     const size = this.sheetSize;
-    if (0 >= size.x || 0 >= size.y)
-      return super.computeFitRange();
+    if (0 >= size.x || 0 >= size.y) return super.computeFitRange();
     return new Range3d(0, 0, -1, size.x, size.y, 1);
   }
 }
@@ -588,7 +621,7 @@ class OrthographicAttachment {
   private readonly _originalFrustum = new Frustum();
   private readonly _clipVolume?: RenderClipVolume;
   private readonly _hiddenLineSettings?: HiddenLine.Settings;
-  private readonly _scale: { x: number, y: number };
+  private readonly _scale: { x: number; y: number };
   private _debugFeatureTable?: PackedFeatureTable;
   public scene?: Scene;
   public symbologyOverrides: FeatureSymbology.Overrides;
@@ -634,7 +667,7 @@ class OrthographicAttachment {
     const extents = this._viewport.viewingSpace.viewDelta.clone();
     const zDepth = Math.abs(extents.z);
     const scaleX = this._sizeInMeters.x / Math.abs(extents.x);
-    const scaleY = skew * this._sizeInMeters.y / Math.abs(extents.y);
+    const scaleY = (skew * this._sizeInMeters.y) / Math.abs(extents.y);
     this._scale = { x: 1 / scaleX, y: 1 / scaleY };
 
     const zBias = Frustum2d.depthFromDisplayPriority(props.jsonProperties?.displayPriority ?? 0);
@@ -658,8 +691,7 @@ class OrthographicAttachment {
 
     // If the attached view is a section drawing, it may itself have an attached spatial view with a clip.
     // The clip needs to be transformed into sheet space.
-    if (view.isDrawingView())
-      this._viewport.drawingToSheetTransform = this._toSheet;
+    if (view.isDrawingView()) this._viewport.drawingToSheetTransform = this._toSheet;
 
     // ###TODO? If we also apply the attachment's clip to the attached view, we may get additional culling during tile selection.
     // However the attached view's frustum is already clipped by intersection with sheet view's frustum, and additional clipping planes
@@ -667,19 +699,15 @@ class OrthographicAttachment {
 
     // Transform the view's clip (if any) to sheet space
     let viewClip = view.viewFlags.clipVolume ? view.getViewClip()?.clone() : undefined;
-    if (viewClip)
-      viewClip.transformInPlace(this._toSheet);
-    else
-      viewClip = ClipVector.createEmpty();
+    if (viewClip) viewClip.transformInPlace(this._toSheet);
+    else viewClip = ClipVector.createEmpty();
 
     let sheetClip;
-    if (undefined !== props.jsonProperties?.clip)
-      sheetClip = ClipVector.fromJSON(props.jsonProperties?.clip);
+    if (undefined !== props.jsonProperties?.clip) sheetClip = ClipVector.fromJSON(props.jsonProperties?.clip);
 
     if (sheetClip && sheetClip.isValid) {
       // Clip to view attachment's clip. NB: clip is in sheet coordinate space.
-      for (const clip of sheetClip.clips)
-        viewClip.clips.push(clip);
+      for (const clip of sheetClip.clips) viewClip.clips.push(clip);
     } else {
       // Clip to view attachment's bounding box
       viewClip.appendShape([
@@ -698,8 +726,7 @@ class OrthographicAttachment {
 
     const applyHiddenLineSettings = true; // for debugging edge display, set to false...
     const style = view.displayStyle;
-    if (style.is3d() && applyHiddenLineSettings)
-      this._hiddenLineSettings = style.settings.hiddenLineSettings;
+    if (style.is3d() && applyHiddenLineSettings) this._hiddenLineSettings = style.settings.hiddenLineSettings;
   }
 
   public dispose(): void {
@@ -711,11 +738,9 @@ class OrthographicAttachment {
   }
 
   public addToScene(context: SceneContext): void {
-    if (context.viewport.freezeScene)
-      return;
+    if (context.viewport.freezeScene) return;
 
-    if (!context.viewport.view.viewsCategory(this._props.category))
-      return;
+    if (!context.viewport.view.viewsCategory(this._props.category)) return;
 
     const wantBounds = context.viewport.wantViewAttachmentBoundaries;
     const wantClipShapes = context.viewport.wantViewAttachmentClipShapes;
@@ -729,8 +754,7 @@ class OrthographicAttachment {
       if (wantClipShapes && this._clipVolume) {
         builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
         for (const prim of this._clipVolume.clipVector.clips) {
-          if (!(prim instanceof ClipShape))
-            continue; // ###TODO handle non-shape primitives, if any such ever encountered
+          if (!(prim instanceof ClipShape)) continue; // ###TODO handle non-shape primitives, if any such ever encountered
 
           const pts = [];
           const tf = prim.transformFromClip;
@@ -748,13 +772,11 @@ class OrthographicAttachment {
       context.outputGraphic(batch);
     }
 
-    if (!context.viewport.wantViewAttachments)
-      return;
+    if (!context.viewport.wantViewAttachments) return;
 
     // Pixel size used to compute size of ViewRect so that tiles of appropriate LOD are selected.
     const pixelSize = context.viewport.getPixelSizeAtPoint();
-    if (0 === pixelSize)
-      return;
+    if (0 === pixelSize) return;
 
     // Adjust attached view frustum based on intersection with sheet view frustum.
     const attachFrustum = this._originalFrustum.transformBy(this._toSheet);
@@ -762,16 +784,15 @@ class OrthographicAttachment {
     const sheetFrustum = context.viewport.getWorldFrustum();
     const sheetFrustumRange = sheetFrustum.toRange();
     const intersect = attachFrustumRange.intersect(sheetFrustumRange);
-    if (intersect.isNull)
-      return;
+    if (intersect.isNull) return;
 
     attachFrustum.initFromRange(intersect);
     attachFrustum.transformBy(this._fromSheet, attachFrustum);
     this._viewport.setupViewFromFrustum(attachFrustum);
 
     // Adjust view rect based on size of attachment on screen so that tiles of appropriate LOD are selected.
-    const width = this._sizeInMeters.x * intersect.xLength() / attachFrustumRange.xLength();
-    const height = this._sizeInMeters.y * intersect.yLength() / attachFrustumRange.yLength();
+    const width = (this._sizeInMeters.x * intersect.xLength()) / attachFrustumRange.xLength();
+    const height = (this._sizeInMeters.y * intersect.yLength()) / attachFrustumRange.yLength();
     this._viewRect.width = Math.max(1, Math.round(width / pixelSize));
     this._viewRect.height = Math.max(1, Math.round(height / pixelSize));
     this._viewport.setRect(this._viewRect);
@@ -784,8 +805,7 @@ class OrthographicAttachment {
     this._viewport.renderFrame();
 
     const scene = this.scene;
-    if (!scene)
-      return;
+    if (!scene) return;
 
     // Extract scene graphics and insert into on-screen scene context.
     const options = {
@@ -798,15 +818,13 @@ class OrthographicAttachment {
     };
 
     const outputGraphics = (source: RenderGraphic[]) => {
-      if (0 === source.length)
-        return;
+      if (0 === source.length) return;
 
       const graphics = new GraphicBranch();
       graphics.setViewFlagOverrides(this._viewFlagOverrides);
       graphics.symbologyOverrides = this.symbologyOverrides;
 
-      for (const graphic of source)
-        graphics.entries.push(graphic);
+      for (const graphic of source) graphics.entries.push(graphic);
 
       const branch = context.createGraphicBranch(graphics, this._toSheet, options);
       context.outputGraphic(branch);
@@ -828,8 +846,7 @@ class OrthographicAttachment {
   }
 
   private getDebugFeatureTable(): PackedFeatureTable {
-    if (this._debugFeatureTable)
-      return this._debugFeatureTable;
+    if (this._debugFeatureTable) return this._debugFeatureTable;
 
     const featureTable = new FeatureTable(1, this._sheetModelId);
     featureTable.insert(new Feature(this._props.id));
@@ -874,8 +891,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
 
       if (undefined !== this._sceneContext) {
         this._isSceneReady = !this._sceneContext.hasMissingTiles && this.view.areAllTileTreesLoaded;
-        if (this._isSceneReady)
-          this._attachment.produceGraphics(this._sceneContext);
+        if (this._isSceneReady) this._attachment.produceGraphics(this._sceneContext);
 
         this._sceneContext = undefined;
       }
@@ -941,8 +957,7 @@ class RasterAttachment {
 
   public addToScene(context: SceneContext): void {
     // ###TODO: check viewport.wantViewAttachmentClipShapes
-    if (!context.viewport.view.viewsCategory(this._props.category))
-      return;
+    if (!context.viewport.view.viewsCategory(this._props.category)) return;
 
     if (context.viewport.wantViewAttachmentBoundaries) {
       const builder = context.createSceneGraphicBuilder(this._transform);
@@ -951,28 +966,24 @@ class RasterAttachment {
       context.outputGraphic(builder.finish());
     }
 
-    if (!context.viewport.wantViewAttachments)
-      return;
+    if (!context.viewport.wantViewAttachments) return;
 
     if (this._graphics) {
       context.outputGraphic(this._graphics);
       return;
     }
 
-    if (undefined === this._viewport)
-      return;
+    if (undefined === this._viewport) return;
 
     this._viewport.debugBoundingBoxes = context.viewport.debugBoundingBoxes;
     this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
 
     this._viewport.renderFrame();
-    if (this._graphics)
-      context.outputGraphic(this._graphics);
+    if (this._graphics) context.outputGraphic(this._graphics);
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet) {
-    if (this._viewport)
-      trees.disclose(this._viewport);
+    if (this._viewport) trees.disclose(this._viewport);
   }
 
   public produceGraphics(context: SceneContext): void {
@@ -980,28 +991,24 @@ class RasterAttachment {
     this._graphics = this.createGraphics(this._viewport);
     this._viewport = dispose(this._viewport);
 
-    if (undefined !== this._graphics)
-      context.outputGraphic(this._graphics);
+    if (undefined !== this._graphics) context.outputGraphic(this._graphics);
   }
 
   private createGraphics(vp: Viewport): RenderGraphic | undefined {
     // Create a texture from the contents of the view.
     const image = vp.readImageBuffer({ upsideDown: true });
-    if (undefined === image)
-      return undefined;
+    if (undefined === image) return undefined;
 
     const debugImage = false; // set to true to open a window displaying the captured image.
     if (debugImage) {
       const url = imageBufferToPngDataUrl(image, false);
-      if (url)
-        openImageDataUrlInNewWindow(url, "Attachment");
+      if (url) openImageDataUrlInNewWindow(url, "Attachment");
     }
 
     const texture = IModelApp.renderSystem.createTexture({
       image: { source: image, transparency: TextureTransparency.Opaque },
     });
-    if (!texture)
-      return undefined;
+    if (!texture) return undefined;
 
     // Create a material for the texture
     const graphicParams = new GraphicParams();
@@ -1019,12 +1026,7 @@ class RasterAttachment {
       Point3d.create(west, south, depth),
       Point3d.create(east, south, depth),
     ];
-    const params = [
-      Point2d.create(0, 0),
-      Point2d.create(1, 0),
-      Point2d.create(1, 1),
-      Point2d.create(0, 1),
-    ];
+    const params = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
 
     const strokeOptions = new StrokeOptions();
     strokeOptions.needParams = strokeOptions.shouldTriangulate = true;
@@ -1051,15 +1053,13 @@ class RasterAttachment {
     let clipVolume;
     if (this._props.jsonProperties?.clip) {
       const clipVector = ClipVector.fromJSON(this._props.jsonProperties?.clip);
-      if (clipVector.isValid)
-        clipVolume = IModelApp.renderSystem.createClipVolume(clipVector);
+      if (clipVector.isValid) clipVolume = IModelApp.renderSystem.createClipVolume(clipVector);
     }
 
     return IModelApp.renderSystem.createGraphicBranch(branch, this._transform, { clipVolume });
   }
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (this._graphics)
-      this._graphics.collectStatistics(stats);
+    if (this._graphics) this._graphics.collectStatistics(stats);
   }
 }

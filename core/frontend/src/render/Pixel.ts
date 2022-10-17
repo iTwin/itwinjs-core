@@ -33,10 +33,20 @@ export namespace Pixel {
     /** @internal */
     public readonly tileId?: string;
     /** @internal */
-    public get isClassifier(): boolean { return undefined !== this.featureTable && BatchType.Primary !== this.featureTable.type; }
+    public get isClassifier(): boolean {
+      return undefined !== this.featureTable && BatchType.Primary !== this.featureTable.type;
+    }
 
     /** @internal */
-    public constructor(feature?: Feature, distanceFraction = -1.0, type = GeometryType.Unknown, planarity = Planarity.Unknown, featureTable?: PackedFeatureTable, iModel?: IModelConnection, tileId?: string) {
+    public constructor(
+      feature?: Feature,
+      distanceFraction = -1.0,
+      type = GeometryType.Unknown,
+      planarity = Planarity.Unknown,
+      featureTable?: PackedFeatureTable,
+      iModel?: IModelConnection,
+      tileId?: string
+    ) {
       this.feature = feature;
       this.distanceFraction = distanceFraction;
       this.type = type;

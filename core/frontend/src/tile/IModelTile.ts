@@ -9,14 +9,32 @@
 import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
+  ColorDef,
+  computeChildTileProps,
+  computeChildTileRanges,
+  computeTileChordTolerance,
+  ElementAlignedBox3d,
+  LinePixels,
+  TileFormat,
+  TileProps,
 } from "@itwin/core-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  addRangeGraphic,
+  ImdlReader,
+  IModelTileTree,
+  Tile,
+  TileBoundingBoxes,
+  TileContent,
+  TileDrawArgs,
+  TileLoadStatus,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTreeLoadStatus,
+  TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].
@@ -32,8 +50,7 @@ export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | 
   const range = Range3d.fromJSON(props.range);
 
   let contentRange;
-  if (undefined !== props.contentRange)
-    contentRange = Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange);
+  if (undefined !== props.contentRange) contentRange = Range3d.fromJSON<ElementAlignedBox3d>(props.contentRange);
 
   return { contentId, range, maximumSize, isLeaf, parent, contentRange, sizeMultiplier };
 }
@@ -70,20 +87,30 @@ export class IModelTile extends Tile {
     super(params, tree);
     this._sizeMultiplier = params.sizeMultiplier;
 
-    if (!this.isLeaf && this.tree.is3d && !this.isReady) { // ###TODO: Want to know specifically if tree is *spatial*.
+    if (!this.isLeaf && this.tree.is3d && !this.isReady) {
+      // ###TODO: Want to know specifically if tree is *spatial*.
       // Do not sub-divide such that chord tolerance would be below specified minimum, if minimum defined.
       const minTolerance = IModelApp.tileAdmin.minimumSpatialTolerance;
-      if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d, this.iModelTree.tileScreenSize) <= minTolerance)
-        this.setLeaf();
+      if (minTolerance > 0 && computeTileChordTolerance(this, this.tree.is3d, this.iModelTree.tileScreenSize) <= minTolerance) this.setLeaf();
     }
   }
 
-  public get iModelTree(): IModelTileTree { return this.tree as IModelTileTree; }
-  public get iModelChildren(): IModelTile[] | undefined { return this.children as IModelTile[] | undefined; }
-  public get emptySubRangeMask(): number { return this._emptySubRangeMask ?? 0; }
+  public get iModelTree(): IModelTileTree {
+    return this.tree as IModelTileTree;
+  }
+  public get iModelChildren(): IModelTile[] | undefined {
+    return this.children as IModelTile[] | undefined;
+  }
+  public get emptySubRangeMask(): number {
+    return this._emptySubRangeMask ?? 0;
+  }
 
-  public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
-  public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
+  public get sizeMultiplier(): number | undefined {
+    return this._sizeMultiplier;
+  }
+  public get hasSizeMultiplier() {
+    return undefined !== this.sizeMultiplier;
+  }
   public override get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
@@ -97,8 +124,7 @@ export class IModelTile extends Tile {
   }
 
   public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent> {
-    if (undefined === isCanceled)
-      isCanceled = () => !this.isLoading;
+    if (undefined === isCanceled) isCanceled = () => !this.isLoading;
 
     assert(data instanceof Uint8Array);
     const streamBuffer = ByteStream.fromUint8Array(data);
@@ -109,8 +135,7 @@ export class IModelTile extends Tile {
 
     let content: IModelTileContent = { isLeaf: true };
     assert(TileFormat.IModel === format);
-    if (format !== TileFormat.IModel)
-      return content;
+    if (format !== TileFormat.IModel) return content;
 
     const tree = this.iModelTree;
     const sizeMultiplier = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
@@ -121,7 +146,13 @@ export class IModelTile extends Tile {
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },
       timeline: tree.timeline,
-      iModel, modelId, is3d, system, isCanceled, sizeMultiplier, containsTransformNodes,
+      iModel,
+      modelId,
+      is3d,
+      system,
+      isCanceled,
+      sizeMultiplier,
+      containsTransformNodes,
     });
 
     if (undefined !== reader) {
@@ -143,15 +174,13 @@ export class IModelTile extends Tile {
     // NB: If this tile has no graphics, it may or may not have children - but we don't want to load the children until
     // this tile is too coarse for view based on its size in pixels.
     // That is different than an "undisplayable" tile (maximumSize=0) whose children should be loaded immediately.
-    if (undefined !== content.graphic && 0 === this.maximumSize)
-      this._maximumSize = this.iModelTree.tileScreenSize;
+    if (undefined !== content.graphic && 0 === this.maximumSize) this._maximumSize = this.iModelTree.tileScreenSize;
 
     const sizeMult = content.sizeMultiplier;
     if (undefined !== sizeMult && (undefined === this._sizeMultiplier || sizeMult > this._sizeMultiplier)) {
       this._sizeMultiplier = sizeMult;
       this._contentId = this.iModelTree.contentIdProvider.idFromParentAndMultiplier(this.contentId, sizeMult);
-      if (undefined !== this.children && this.children.length > 1)
-        this.disposeChildren();
+      if (undefined !== this.children && this.children.length > 1) this.disposeChildren();
     }
   }
 
@@ -202,24 +231,19 @@ export class IModelTile extends Tile {
 
     // this node has been used recently. Keep it, but potentially unload its grandchildren.
     const children = this.iModelChildren;
-    if (undefined !== children)
-      for (const child of children)
-        child.pruneChildren(olderThan);
+    if (undefined !== children) for (const child of children) child.pruneChildren(olderThan);
   }
 
   public selectTiles(selected: Tile[], args: TileDrawArgs, numSkipped: number): SelectParent {
     let vis = this.computeVisibility(args);
-    if (TileVisibility.OutsideFrustum === vis)
-      return SelectParent.No;
+    if (TileVisibility.OutsideFrustum === vis) return SelectParent.No;
 
     const maxDepth = this.iModelTree.debugMaxDepth;
-    if (undefined !== maxDepth && this.depth >= maxDepth)
-      vis = TileVisibility.Visible;
+    if (undefined !== maxDepth && this.depth >= maxDepth) vis = TileVisibility.Visible;
 
     if (TileVisibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
-      if (!this.isReady)
-        args.insertMissing(this);
+      if (!this.isReady) args.insertMissing(this);
 
       if (this.hasGraphics) {
         // It can be drawn - select it
@@ -230,8 +254,7 @@ export class IModelTile extends Tile {
         // Do not load/request the children for this purpose.
         const initialSize = selected.length;
         const kids = this.iModelChildren;
-        if (undefined === kids)
-          return SelectParent.Yes;
+        if (undefined === kids) return SelectParent.Yes;
 
         // Find any descendant to draw, until we exceed max initial tiles to skip.
         if (this.depth < this.iModelTree.maxInitialTilesToSkip) {
@@ -272,14 +295,13 @@ export class IModelTile extends Tile {
       numSkipped = 1;
     } else {
       canSkipThisTile = this.isReady || this.isParentDisplayable || this.depth < this.iModelTree.maxInitialTilesToSkip;
-      if (canSkipThisTile && this.isDisplayable) { // skipping an undisplayable tile doesn't count toward the maximum
+      if (canSkipThisTile && this.isDisplayable) {
+        // skipping an undisplayable tile doesn't count toward the maximum
         // Some tiles do not sub-divide - they only facet the same geometry to a higher resolution. We can skip directly to the correct resolution.
         const isNotReady = !this.isReady && !this.hasGraphics && !this.hasSizeMultiplier;
         if (isNotReady) {
-          if (numSkipped >= this.iModelTree.maxTilesToSkip)
-            canSkipThisTile = false;
-          else
-            numSkipped += 1;
+          if (numSkipped >= this.iModelTree.maxTilesToSkip) canSkipThisTile = false;
+          else numSkipped += 1;
         }
       }
     }
@@ -311,12 +333,10 @@ export class IModelTile extends Tile {
         }
       }
 
-      if (drawChildren)
-        return SelectParent.No;
+      if (drawChildren) return SelectParent.No;
 
       // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
-      if (args.parentsAndChildrenExclusive)
-        selected.length = initialSize;
+      if (args.parentsAndChildrenExclusive) selected.length = initialSize;
     }
 
     if (this.isReady) {
@@ -332,8 +352,7 @@ export class IModelTile extends Tile {
     }
 
     // This tile is not ready to be drawn. Request it *only* if we cannot skip it.
-    if (!canSkipThisTile)
-      args.insertMissing(this);
+    if (!canSkipThisTile) args.insertMissing(this);
 
     return this.isParentDisplayable ? SelectParent.Yes : SelectParent.No;
   }

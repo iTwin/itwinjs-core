@@ -102,8 +102,7 @@ export function createPointCloudBuilder(classified: IsClassified, featureMode: F
     addColorPlanarClassifier(builder, false, thematic);
     builder.frag.set(FragmentShaderComponent.CheckForDiscard, checkForClassifiedDiscard);
 
-    if (FeatureMode.None !== featureMode)
-      addFeaturePlanarClassifier(builder);
+    if (FeatureMode.None !== featureMode) addFeaturePlanarClassifier(builder);
   }
 
   if (IsThematic.Yes === thematic) {

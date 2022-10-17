@@ -45,7 +45,9 @@ export function addSurfaceMonochrome(frag: FragmentShaderBuilder): void {
   addMonoRgb(frag);
   frag.addUniform("u_mixMonoColor", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_mixMonoColor", (uniform, params) => {
-      uniform.setUniform1f(MonochromeMode.Scaled === params.target.plan.monochromeMode && params.geometry.wantMixMonochromeColor(params.target) ? 1.0 : 0.0);
+      uniform.setUniform1f(
+        MonochromeMode.Scaled === params.target.plan.monochromeMode && params.geometry.wantMixMonochromeColor(params.target) ? 1.0 : 0.0
+      );
     });
   });
 

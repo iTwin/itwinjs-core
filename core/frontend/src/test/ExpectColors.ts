@@ -27,7 +27,9 @@ export function expectColors(viewport: ScreenViewport, expected: ColorDef[], rec
   }
 
   const expectedTbgr = expected.map((x) => x.tbgr.toString(16)).sort();
-  const actualTbgr = Array.from(actualColors).map((x) => x.tbgr.toString(16)).sort();
+  const actualTbgr = Array.from(actualColors)
+    .map((x) => x.tbgr.toString(16))
+    .sort();
   expect(actualTbgr).to.deep.equal(expectedTbgr);
 }
 
@@ -41,8 +43,7 @@ export function expectNotTheseColors(viewport: ScreenViewport, expected: ColorDe
 
   const u32 = new Uint32Array(buf.data.buffer);
   const values = new Set<number>();
-  for (const rgba of u32)
-    values.add(rgba);
+  for (const rgba of u32) values.add(rgba);
 
   expect(values.size).to.equal(expected.length);
 

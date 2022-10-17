@@ -23,8 +23,7 @@ function comparePositions(p0: Point3d, p1: Point3d, tolerance: XYAndZ): number {
   let diff = compareWithTolerance(p0.x, p1.x, tolerance.x);
   if (0 === diff) {
     diff = compareWithTolerance(p0.y, p1.y, tolerance.y);
-    if (0 === diff)
-      diff = compareWithTolerance(p0.z, p1.z, tolerance.z);
+    if (0 === diff) diff = compareWithTolerance(p0.z, p1.z, tolerance.z);
   }
 
   return diff;
@@ -55,20 +54,16 @@ export class VertexKey {
   }
 
   public equals(rhs: VertexKey, tolerance: XYAndZ): boolean {
-    if (this.fillColor !== rhs.fillColor)
-      return false;
+    if (this.fillColor !== rhs.fillColor) return false;
 
-    if (0 !== compareFeatures(this.feature, rhs.feature))
-      return false;
+    if (0 !== compareFeatures(this.feature, rhs.feature)) return false;
 
     if (undefined !== this.normal) {
       assert(undefined !== rhs.normal);
-      if (this.normal.value !== rhs.normal.value)
-        return false;
+      if (this.normal.value !== rhs.normal.value) return false;
     }
 
-    if (0 !== comparePositions(this.position, rhs.position, tolerance))
-      return false;
+    if (0 !== comparePositions(this.position, rhs.position, tolerance)) return false;
 
     if (undefined !== this.uvParam) {
       assert(undefined !== rhs.uvParam);
@@ -79,8 +74,7 @@ export class VertexKey {
   }
 
   public compare(rhs: VertexKey, tolerance: XYAndZ): number {
-    if (this === rhs)
-      return 0;
+    if (this === rhs) return 0;
 
     let diff = this.fillColor - rhs.fillColor;
     if (0 === diff) {
@@ -96,8 +90,7 @@ export class VertexKey {
           if (0 === diff && undefined !== this.uvParam) {
             assert(undefined !== rhs.uvParam);
             diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.x);
-            if (0 === diff)
-              diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.y);
+            if (0 === diff) diff = compareWithTolerance(this.uvParam.x, rhs.uvParam.y);
           }
         }
       }

@@ -38,23 +38,27 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     this.is2d = is2d;
     this.options = options;
 
-    if (pickable)
-      this.features = new FeatureTable(2048 * 1024, pickable.modelId);
+    if (pickable) this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { modelId?: Id64String} | undefined): MeshBuilderMap {
+  public static createFromGeometries(
+    geometries: GeometryList,
+    tolerance: number,
+    range: Range3d,
+    is2d: boolean,
+    options: GeometryOptions,
+    pickable: { modelId?: Id64String } | undefined
+  ): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, options, pickable);
 
-    for (const geom of geometries)
-      map.loadGeometry(geom);
+    for (const geom of geometries) map.loadGeometry(geom);
 
     return map;
   }
 
   public toMeshes(): MeshList {
     const meshes = new MeshList(this.features, this.range);
-    for (const builder of this._values)
-      meshes.push(builder.mesh);
+    for (const builder of this._values) meshes.push(builder.mesh);
 
     return meshes;
   }
@@ -67,8 +71,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadGeometry(geom: Geometry): void {
     this.loadPolyfacePrimitiveList(geom);
 
-    if (!this.options.wantSurfacesOnly)
-      this.loadStrokePrimitiveList(geom);
+    if (!this.options.wantSurfacesOnly) this.loadStrokePrimitiveList(geom);
   }
 
   /**
@@ -78,9 +81,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadPolyfacePrimitiveList(geom: Geometry): void {
     const polyfaces = geom.getPolyfaces(this.tolerance);
 
-    if (polyfaces !== undefined)
-      for (const polyface of polyfaces)
-        this.loadIndexedPolyface(polyface, geom.feature);
+    if (polyfaces !== undefined) for (const polyface of polyfaces) this.loadIndexedPolyface(polyface, geom.feature);
   }
 
   /**
@@ -93,12 +94,17 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
     const { fillColor, isTextured } = displayParams;
     const textureMapping = displayParams.textureMapping;
 
-    if (pointCount === 0)
-      return;
+    if (pointCount === 0) return;
 
     const builder = this.getBuilder(displayParams, Mesh.PrimitiveType.Mesh, normalCount > 0, isPlanar);
-    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
-    builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
+    const edgeOptions = new MeshEdgeCreationOptions(
+      polyface.displayEdges && this.options.edges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges
+    );
+    builder.addFromPolyface(
+      indexedPolyface,
+      { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping },
+      feature
+    );
   }
 
   /**
@@ -108,9 +114,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadStrokePrimitiveList(geom: Geometry): void {
     const strokes = geom.getStrokes(this.tolerance);
 
-    if (undefined !== strokes)
-      for (const stroke of strokes)
-        this.loadStrokesPrimitive(stroke, geom.feature);
+    if (undefined !== strokes) for (const stroke of strokes) this.loadStrokesPrimitive(stroke, geom.feature);
   }
 
   /**
@@ -146,8 +150,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public getKey(displayParams: DisplayParams, type: Mesh.PrimitiveType, hasNormals: boolean, isPlanar: boolean): MeshBuilderMap.Key {
     const key = new MeshBuilderMap.Key(displayParams, type, hasNormals, isPlanar);
 
-    if (this.options.preserveOrder)
-      key.order = ++this._keyOrder;
+    if (this.options.preserveOrder) key.order = ++this._keyOrder;
 
     return key;
   }
@@ -169,7 +172,8 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 }
 
 /** @internal */
-export namespace MeshBuilderMap { // eslint-disable-line no-redeclare
+export namespace MeshBuilderMap {
+  // eslint-disable-line no-redeclare
   export class Key {
     public order: number = 0;
     public readonly params: DisplayParams;
@@ -206,6 +210,8 @@ export namespace MeshBuilderMap { // eslint-disable-line no-redeclare
       return diff;
     }
 
-    public equals(rhs: Key): boolean { return 0 === this.compare(rhs); }
+    public equals(rhs: Key): boolean {
+      return 0 === this.compare(rhs);
+    }
   }
 }

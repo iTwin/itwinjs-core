@@ -8,7 +8,9 @@ import { ColorByName, ColorDef, GraphicParams, LinePixels } from "@itwin/core-co
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 
 export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
 describe("DisplayParams creation tests", () => {
@@ -48,8 +50,7 @@ describe("DisplayParams equality tests", () => {
 
   it("two DisplayParams created with different colors should be non-equal", () => {
     const gf0: GraphicParams = new GraphicParams();
-    gf0.lineColor = ColorDef.white
-    ;
+    gf0.lineColor = ColorDef.white;
     const gf1: GraphicParams = new GraphicParams();
     gf1.lineColor = ColorDef.black;
     const dpMesh0: DisplayParams = DisplayParams.createForMesh(gf0, false);

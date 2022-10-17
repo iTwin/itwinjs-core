@@ -5,7 +5,18 @@
 
 import { Cartographic, EcefLocation } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
-import { ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
+import {
+  ALong,
+  CRSManager,
+  Downloader,
+  DownloaderXhr,
+  OnlineEngine,
+  OPCReader,
+  OrbitGtBounds,
+  PageCachedFile,
+  PointCloudReader,
+  UrlFS,
+} from "@itwin/core-orbitgt";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { BentleyError, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
 import { RealityDataError, SpatialLocationAndExtents } from "../RealityDataSource";
@@ -16,17 +27,15 @@ const loggerCategory: string = FrontendLoggerCategory.RealityData;
  * This class provide methods used to interpret Orbit Point Cloud (OPC) format
  * @internal
  */
-export class OPCFormatInterpreter  {
+export class OPCFormatInterpreter {
   /** Gets an OPC file reader from a blobFileUrl
    * @param blobFileURL the name of the file.
    * @returns return a file reader open to read provided blob file
    * @internal
    */
   public static async getFileReaderFromBlobFileURL(blobFileURL: string): Promise<PointCloudReader> {
-    if (Downloader.INSTANCE == null)
-      Downloader.INSTANCE = new DownloaderXhr();
-    if (CRSManager.ENGINE == null)
-      CRSManager.ENGINE = await OnlineEngine.create();
+    if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
+    if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
 
     // let blobFileURL: string = rdUrl;
     // if (accountName.length > 0) blobFileURL = UrlFS.getAzureBlobSasUrl(opcConfig.accountName, opcConfig.containerName, opcConfig.blobFileName, opcConfig.sasToken);
@@ -35,7 +44,7 @@ export class OPCFormatInterpreter  {
     const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
     Logger.logTrace(loggerCategory, `OPC File Size is ${blobFileSize}`);
     const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024 /* pageSize */, 128 /* maxPageCount */);
-    const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/* lazyLoading */);
+    const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true /* lazyLoading */);
     return fileReader;
   }
 
@@ -61,8 +70,15 @@ export class OPCFormatInterpreter  {
         await CRSManager.ENGINE.prepareForArea(wgs84ECEFCrs, new OrbitGtBounds());
 
         const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84ECEFCrs);
-        const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
-        const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
+        const ecefRange = Range3d.createXYZXYZ(
+          ecefBounds.getMinX(),
+          ecefBounds.getMinY(),
+          ecefBounds.getMinZ(),
+          ecefBounds.getMaxX(),
+          ecefBounds.getMaxY(),
+          ecefBounds.getMaxZ()
+        );
+        const ecefCenter = ecefRange.localXYZToWorld(0.5, 0.5, 0.5)!;
         const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
         cartoCenter.height = 0;
         const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
@@ -91,4 +107,3 @@ export class OPCFormatInterpreter  {
     return spatialLocation;
   }
 }
-

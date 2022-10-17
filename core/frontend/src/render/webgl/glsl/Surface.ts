@@ -10,13 +10,9 @@ import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
 import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
-} from "../ShaderBuilder";
+import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { System } from "../System";
-import {
-  FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags,
-} from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
@@ -25,10 +21,20 @@ import { addColor } from "./Color";
 import { addChooseWithBitFlagFunctions, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
 import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
+  addFeatureSymbology,
+  addMaxAlpha,
+  addRenderOrder,
+  addRenderOrderConstants,
+  addSurfaceDiscard,
+  addSurfaceHiliter,
+  FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
-  addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
+  addAltPickBufferOutputs,
+  addFragColorWithPreMultipliedAlpha,
+  addPickBufferOutputs,
+  addWhiteOnWhiteReversal,
+  assignFragColor,
 } from "./Fragment";
 import { addLighting } from "./Lighting";
 import { addSurfaceMonochrome } from "./Monochrome";
@@ -159,10 +165,8 @@ function addMaterial(builder: ProgramBuilder, instanced: boolean): void {
   vert.addGlobal("mat_rgb", VariableType.Vec4); // a = 0 if not overridden, else 1
   vert.addGlobal("mat_alpha", VariableType.Vec2); // a = 0 if not overridden, else 1
   vert.addGlobal("use_material", VariableType.Boolean);
-  if (System.instance.capabilities.isWebGL2)
-    vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
-  else
-    vert.addInitializer("use_material = !nthBitSet(surfaceFlags, kSurfaceBit_IgnoreMaterial);");
+  if (System.instance.capabilities.isWebGL2) vert.addInitializer("use_material = (0u == (surfaceFlags & kSurfaceBit_IgnoreMaterial));");
+  else vert.addInitializer("use_material = !nthBitSet(surfaceFlags, kSurfaceBit_IgnoreMaterial);");
 
   // Uniform material
   vert.addFunction(decodeMaterialColor);
@@ -220,17 +224,22 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isThematic: IsThematic, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
+function createCommon(
+  isInstanced: IsInstanced,
+  animated: IsAnimated,
+  shadowable: IsShadowable,
+  isThematic: IsThematic,
+  isHiliter: boolean,
+  positionType: PositionType
+): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
   const vert = builder.vert;
 
-  if (animated)
-    addAnimation(vert, true, isThematic);
+  if (animated) addAnimation(vert, true, isThematic);
 
-  if (shadowable)
-    addSolarShadowMap(builder);
+  if (shadowable) addSolarShadowMap(builder);
 
   addProjectionMatrix(vert);
   addModelViewMatrix(vert);
@@ -435,16 +444,13 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   addSurfaceFlagsLookup(builder.vert);
   addSurfaceFlagsLookup(builder.frag);
 
-  let compute = (System.instance.capabilities.isWebGL2 ? initSurfaceFlags2 : initSurfaceFlags);
-  if (withFeatureOverrides)
-    compute += `${withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags}\n`;
-  compute += (System.instance.capabilities.isWebGL2 ? returnSurfaceFlags2 : returnSurfaceFlags);
+  let compute = System.instance.capabilities.isWebGL2 ? initSurfaceFlags2 : initSurfaceFlags;
+  if (withFeatureOverrides) compute += `${withFeatureColor ? computeSurfaceFlagsWithColor : computeSurfaceFlags}\n`;
+  compute += System.instance.capabilities.isWebGL2 ? returnSurfaceFlags2 : returnSurfaceFlags;
   builder.addFunctionComputedVarying("v_surfaceFlags", VariableType.Float, "computeSurfaceFlags", compute);
 
-  if (System.instance.capabilities.isWebGL2)
-    builder.frag.addInitializer("surfaceFlags = uint(floor(v_surfaceFlags + 0.5));");
-  else
-    builder.frag.addInitializer("surfaceFlags = floor(v_surfaceFlags + 0.5);");
+  if (System.instance.capabilities.isWebGL2) builder.frag.addInitializer("surfaceFlags = uint(floor(v_surfaceFlags + 0.5));");
+  else builder.frag.addInitializer("surfaceFlags = floor(v_surfaceFlags + 0.5);");
 
   builder.addUniformArray("u_surfaceFlags", VariableType.Boolean, SurfaceBitIndex.Count, (prog) => {
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
@@ -463,7 +469,12 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
   builder.vert.addFunction("vec3 computeSurfaceNormal()", getComputeNormal(quantized));
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();");
+  builder.addFunctionComputedVarying(
+    "v_n",
+    VariableType.Vec3,
+    "computeLightingNormal",
+    animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();"
+  );
 
   // Set to true to colorize surfaces based on normals (in world space).
   // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
@@ -477,12 +488,21 @@ function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: Is
 /** @internal */
 export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud = false) {
   if (isThematic) {
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true));
+    builder.addInlineComputedVarying(
+      "v_thematicIndex",
+      VariableType.Float,
+      getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true)
+    );
   } else {
     builder.vert.addFunction(unquantize2d);
     addChooseWithBitFlagFunctions(builder.vert);
     const quantized = "quantized" === builder.vert.positionType;
-    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized));
+    builder.addFunctionComputedVarying(
+      "v_texCoord",
+      VariableType.Vec2,
+      "computeTexCoord",
+      animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized)
+    );
     builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;
@@ -500,10 +520,11 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry.asSurface!;
-      if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) { // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
+      if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) {
+        // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
         params.target.uniforms.thematic.bindTexture(uniform, TextureUnit.SurfaceTexture);
       } else if (surfGeom.useTexture(params.programParams)) {
-        const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
+        const texture = params.geometry.hasAnimation && params.target.analysisTexture ? (params.target.analysisTexture as Texture) : surfGeom.texture;
         assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
@@ -544,7 +565,10 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
       // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
       // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
       const pass = params.geometry.getPass(params.target);
-      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
+      const cutoff =
+        !Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency
+          ? -1 / 255
+          : 241 / 255;
       uniform.setUniform1f(cutoff);
     });
   });
@@ -564,8 +588,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     addColorPlanarClassifier(builder, flags.isTranslucent, flags.isThematic);
   }
 
-  if (flags.isThematic)
-    addThematicDisplay(builder);
+  if (flags.isThematic) addThematicDisplay(builder);
 
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
@@ -604,32 +627,25 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
     if (FeatureMode.None === feat) {
       addFragColorWithPreMultipliedAlpha(builder.frag);
     } else {
-      if (!flags.isClassified)
-        addOverrideClassifierColor(builder, flags.isThematic);
-      else
-        addFeaturePlanarClassifier(builder);
+      if (!flags.isClassified) addOverrideClassifierColor(builder, flags.isThematic);
+      else addFeaturePlanarClassifier(builder);
 
       builder.frag.addFunction(decodeDepthRgb);
-      if (flags.isEdgeTestNeeded || flags.isClassified)
-        addPickBufferOutputs(builder.frag);
-      else
-        addAltPickBufferOutputs(builder.frag);
+      if (flags.isEdgeTestNeeded || flags.isClassified) addPickBufferOutputs(builder.frag);
+      else addAltPickBufferOutputs(builder.frag);
     }
   }
 
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
-  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, flags.isThematic === IsThematic.No ? computeBaseColor : "return getSurfaceColor();");
 
-  if (flags.isClassified)
-    addClassificationTranslucencyDiscard(builder);
-  else
-    addTransparencyDiscard(builder.frag);
+  if (flags.isClassified) addClassificationTranslucencyDiscard(builder);
+  else addTransparencyDiscard(builder.frag);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder, flags.isInstanced === IsInstanced.Yes);
 
-  if (flags.isWiremesh)
-    addWiremesh(builder);
+  if (flags.isWiremesh) addWiremesh(builder);
 
   return builder;
 }

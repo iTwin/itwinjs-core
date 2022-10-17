@@ -34,8 +34,7 @@ export class PointCloudUniforms {
   }
 
   public update(settings: PointCloudDisplaySettings): void {
-    if (this._settings.equals(settings))
-      return;
+    if (this._settings.equals(settings)) return;
 
     this._settings = settings;
     desync(this);
@@ -43,8 +42,7 @@ export class PointCloudUniforms {
   }
 
   public bind(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      uniform.setUniform4fv(this._vec4);
+    if (!sync(this, uniform)) uniform.setUniform4fv(this._vec4);
   }
 
   private initialize(settings: PointCloudDisplaySettings): void {

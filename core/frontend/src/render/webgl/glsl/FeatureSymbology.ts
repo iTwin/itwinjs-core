@@ -9,7 +9,13 @@
 import { assert } from "@itwin/core-bentley";
 import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  ShaderBuilder,
+  VariablePrecision,
+  VariableType,
+  VertexShaderBuilder,
   VertexShaderComponent,
 } from "../ShaderBuilder";
 import { System } from "../System";
@@ -63,8 +69,7 @@ function computeFeatureIndex(vertex: VertexShaderBuilder): string {
       prog.addGraphicUniform("u_patternFeatureId", (uniform, params) => {
         const id = params.geometry.asInstanced?.patternFeatureId;
         assert(undefined !== id);
-        if (id)
-          uniform.setUniform3fv(id);
+        if (id) uniform.setUniform3fv(id);
       });
     });
 
@@ -191,11 +196,9 @@ function addTransparencyDiscardFlags(vert: VertexShaderBuilder) {
       const pass = params.geometry.getPass(params.target);
       if (!Pass.rendersOpaqueAndTranslucent(pass)) {
         // During readPixels() we force transparency off. Make sure to ignore a Branch that turns it back on.
-        if (!params.target.isReadPixelsInProgress)
-          flags = params.target.currentViewFlags.transparency ? 1 : 4;
+        if (!params.target.isReadPixelsInProgress) flags = params.target.currentViewFlags.transparency ? 1 : 4;
 
-        if (!params.geometry.alwaysRenderTranslucent)
-          flags += 2;
+        if (!params.geometry.alwaysRenderTranslucent) flags += 2;
       }
 
       uniform.setUniform1i(flags);
@@ -204,8 +207,7 @@ function addTransparencyDiscardFlags(vert: VertexShaderBuilder) {
 }
 
 function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymbologyOptions, wantGlobalOvrFlags = true): boolean {
-  if (FeatureMode.None === mode)
-    return false;
+  if (FeatureMode.None === mode) return false;
 
   const vert = builder.vert;
   addFeatureIndex(vert);
@@ -213,8 +215,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
   if (!haveOverrides) {
     // For pick output we must compute g_featureIndex...
-    if (FeatureMode.Pick === mode)
-      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert));
+    if (FeatureMode.Pick === mode) vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert));
 
     return true;
   }
@@ -232,8 +233,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   vert.addGlobal("feature_ignore_material", VariableType.Boolean, "false");
 
   if (wantWeight || wantLineCode) {
-    if (wantLineCode)
-      replaceLineCode(vert, computeLineCode);
+    if (wantLineCode) replaceLineCode(vert, computeLineCode);
 
     if (wantWeight) {
       replaceLineWeight(vert, computeLineWeight);
@@ -259,8 +259,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
           flags = settings.computeOvrFlags(params.renderPass, params.target.currentViewFlags);
         }
 
-        if (!params.geometry.allowColorOverride)
-          flags |= OvrFlags.Rgba;
+        if (!params.geometry.allowColorOverride) flags |= OvrFlags.Rgba;
 
         uniform.setUniformBitflags(flags);
       });
@@ -372,11 +371,9 @@ export function addSurfaceHiliter(builder: ProgramBuilder, wantWeight: boolean =
 /** @internal */
 export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false): void {
   let opts = FeatureSymbologyOptions.HasOverrides;
-  if (wantWeight)
-    opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
+  if (wantWeight) opts |= FeatureSymbologyOptions.Weight; // hiliter never needs line code or color...
 
-  if (!addCommon(builder, FeatureMode.Overrides, opts, wantWeight))
-    return;
+  if (!addCommon(builder, FeatureMode.Overrides, opts, wantWeight)) return;
 
   builder.addVarying("v_feature_hilited", VariableType.Float);
 
@@ -392,18 +389,28 @@ export function addHiliter(builder: ProgramBuilder, wantWeight: boolean = false)
 
 function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
   if (testFeatureId) {
-    frag.addUniform("u_pickFeatureId", VariableType.Sampler2D, (prog) => {
-      prog.addProgramUniform("u_pickFeatureId", (uniform, params) => {
-        params.target.compositor.featureIds.bindSampler(uniform, TextureUnit.PickFeatureId);
-      });
-    }, VariablePrecision.High);
+    frag.addUniform(
+      "u_pickFeatureId",
+      VariableType.Sampler2D,
+      (prog) => {
+        prog.addProgramUniform("u_pickFeatureId", (uniform, params) => {
+          params.target.compositor.featureIds.bindSampler(uniform, TextureUnit.PickFeatureId);
+        });
+      },
+      VariablePrecision.High
+    );
   }
 
-  frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
-    prog.addProgramUniform("u_pickDepthAndOrder", (uniform, params) => {
-      params.target.compositor.depthAndOrder.bindSampler(uniform, TextureUnit.PickDepthAndOrder);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_pickDepthAndOrder",
+    VariableType.Sampler2D,
+    (prog) => {
+      prog.addProgramUniform("u_pickDepthAndOrder", (uniform, params) => {
+        params.target.compositor.depthAndOrder.bindSampler(uniform, TextureUnit.PickDepthAndOrder);
+      });
+    },
+    VariablePrecision.High
+  );
 }
 
 /** @internal */
@@ -518,11 +525,16 @@ function addPixelWidthFactor(builder: ShaderBuilder) {
 }
 
 function addBatchId(builder: ShaderBuilder) {
-  builder.addUniform("u_batch_id", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_batch_id", (uniform, params) => {
-      params.target.uniforms.batch.bindBatchId(uniform);
-    });
-  }, VariablePrecision.High);
+  builder.addUniform(
+    "u_batch_id",
+    VariableType.Vec4,
+    (prog) => {
+      prog.addGraphicUniform("u_batch_id", (uniform, params) => {
+        params.target.uniforms.batch.bindBatchId(uniform);
+      });
+    },
+    VariablePrecision.High
+  );
 }
 
 const computeIdVert = `v_feature_id = addUInt32s(u_batch_id, vec4(g_featureIndex, 0.0)) / 255.0;`;
@@ -578,8 +590,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
   if (isEdgeTestNeeded) {
     addWindowToTexCoords(frag);
 
-    if (!flags.isHilite)
-      addEyeSpace(builder);
+    if (!flags.isHilite) addEyeSpace(builder);
 
     if (FeatureMode.None === feat) {
       addSamplers(frag, false);
@@ -616,8 +627,7 @@ export function addSurfaceDiscard(builder: ProgramBuilder, flags: TechniqueFlags
     addFeatureIndex(vert);
     addFeatureId(builder, computeIdInFrag);
 
-    if (!flags.isTranslucent)
-      addRenderOrder(frag);
+    if (!flags.isTranslucent) addRenderOrder(frag);
   }
 }
 
@@ -750,10 +760,12 @@ function addApplyFlash(frag: FragmentShaderBuilder) {
 
 /** @internal */
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
-  if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
-    return;
+  if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts) return;
 
-  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+  assert(
+    (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) ===
+      (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color))
+  );
 
   builder.addGlobal("feature_rgb", VariableType.Vec3);
   builder.addGlobal("feature_alpha", VariableType.Float);

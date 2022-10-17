@@ -15,8 +15,7 @@ describe("ScreenViewport", () => {
     await IModelApp.startup();
   });
   afterEach(async () => {
-    if (IModelApp.initialized)
-      await IModelApp.shutdown();
+    if (IModelApp.initialized) await IModelApp.shutdown();
   });
 
   function makeMarker(vp: ScreenViewport) {

@@ -81,8 +81,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
   if (isGradient) {
     builder.addFunctionComputedVarying("v_gradientValue", VariableType.Vec4, "computeGradientValue", computeGradientValue);
     builder.addGlobal("horizonSize", VariableType.Float, ShaderType.Both, "0.0015", true);
-  } else
-    builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
+  } else builder.addInlineComputedVarying("v_eyeToVert", VariableType.Vec3, computeEyeToVert);
 
   const vert = builder.vert;
   vert.addUniform("u_worldEye", VariableType.Vec3, (shader) => {
@@ -105,9 +104,16 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
         const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
         let zScale = focalLength / delta.magnitude();
-        if (zScale < 1.000001)
-          zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
-        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3);
+        if (zScale < 1.000001) zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
+        const worldEye = Point3d.createAdd3Scaled(
+          frustum.getCorner(Npc.LeftBottomRear),
+          0.5,
+          frustum.getCorner(Npc.RightTopRear),
+          0.5,
+          delta,
+          zScale,
+          scratchPoint3
+        );
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;
         scratch3Floats[2] = worldEye.z;
@@ -145,8 +151,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         if (plan.backgroundMapOn && plan.isGlobeMode3D) {
           modulateColor(geom.zenithColor, plan.globalViewTransition, scratch3Floats);
           uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(geom.zenithColor);
+        } else uniform.setUniform3fv(geom.zenithColor);
       });
     });
     frag.addUniform("u_skyColor", VariableType.Vec3, (shader) => {
@@ -156,8 +161,7 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         if (plan.backgroundMapOn && plan.isGlobeMode3D) {
           modulateColor(geom.skyColor, plan.globalViewTransition, scratch3Floats);
           uniform.setUniform3fv(scratch3Floats);
-        } else
-          uniform.setUniform3fv(geom.skyColor);
+        } else uniform.setUniform3fv(geom.skyColor);
       });
     });
     frag.addUniform("u_groundColor", VariableType.Vec3, (shader) => {
@@ -166,13 +170,13 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         const plan = params.target.plan;
         if (plan.backgroundMapOn) {
           let clr = geom.skyColor;
-          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
+          if (-1 === geom.typeAndExponents[0])
+            // 2-color gradient
             clr = geom.zenithColor;
           if (plan.isGlobeMode3D) {
             modulateColor(clr, plan.globalViewTransition, scratch3Floats);
             uniform.setUniform3fv(scratch3Floats);
-          } else
-            uniform.setUniform3fv(clr);
+          } else uniform.setUniform3fv(clr);
         } else {
           uniform.setUniform3fv(geom.groundColor);
         }
@@ -184,13 +188,13 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
         const plan = params.target.plan;
         if (plan.backgroundMapOn) {
           let clr = geom.skyColor;
-          if (-1 === geom.typeAndExponents[0]) // 2-color gradient
-            clr =  geom.nadirColor;
+          if (-1 === geom.typeAndExponents[0])
+            // 2-color gradient
+            clr = geom.nadirColor;
           if (plan.isGlobeMode3D) {
             modulateColor(clr, plan.globalViewTransition, scratch3Floats);
             uniform.setUniform3fv(scratch3Floats);
-          } else
-            uniform.setUniform3fv(clr);
+          } else uniform.setUniform3fv(clr);
         } else {
           uniform.setUniform3fv(geom.nadirColor);
         }
@@ -201,10 +205,8 @@ export function createSkySphereProgram(context: WebGLContext, isGradient: boolea
     frag.addUniform("s_skyTxtr", VariableType.Sampler2D, (shader) => {
       shader.addGraphicUniform("s_skyTxtr", (uniform, params) => {
         const geom = params.geometry as SkySphereViewportQuadGeometry;
-        if (undefined !== geom.skyTexture)
-          (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
-        else
-          System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
+        if (undefined !== geom.skyTexture) (geom.skyTexture as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
+        else System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
       });
     });
     frag.addUniform("u_zOffset", VariableType.Float, (shader) => {

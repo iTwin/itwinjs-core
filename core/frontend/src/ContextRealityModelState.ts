@@ -40,26 +40,26 @@ export class ContextRealityModelState extends ContextRealityModel {
       this.rdSourceKey = props.rdSourceKey ? props.rdSourceKey : RealityDataSource.createKeyFromOrbitGtBlobProps(props.orbitGtBlob);
     }
     const useOrbitGtTileTreeReference = this.rdSourceKey.format === RealityDataFormat.OPC;
-    this._treeRef = (!useOrbitGtTileTreeReference) ?
-      createRealityTileTreeReference({
-        iModel,
-        source: displayStyle,
-        rdSourceKey: this.rdSourceKey,
-        url: props.tilesetUrl,
-        name: props.name,
-        classifiers: this.classifiers,
-        planarClipMask: this.planarClipMaskSettings,
-        getDisplaySettings: () => this.displaySettings,
-      }) :
-      createOrbitGtTileTreeReference({
-        iModel,
-        orbitGtBlob: props.orbitGtBlob!,
-        rdSourceKey: this.rdSourceKey,
-        name: props.name,
-        classifiers: this.classifiers,
-        source: displayStyle,
-        getDisplaySettings: () => this.displaySettings,
-      });
+    this._treeRef = !useOrbitGtTileTreeReference
+      ? createRealityTileTreeReference({
+          iModel,
+          source: displayStyle,
+          rdSourceKey: this.rdSourceKey,
+          url: props.tilesetUrl,
+          name: props.name,
+          classifiers: this.classifiers,
+          planarClipMask: this.planarClipMaskSettings,
+          getDisplaySettings: () => this.displaySettings,
+        })
+      : createOrbitGtTileTreeReference({
+          iModel,
+          orbitGtBlob: props.orbitGtBlob!,
+          rdSourceKey: this.rdSourceKey,
+          name: props.name,
+          classifiers: this.classifiers,
+          source: displayStyle,
+          getDisplaySettings: () => this.displaySettings,
+        });
 
     this.onPlanarClipMaskChanged.addListener((newSettings) => {
       this._treeRef.planarClipMask = newSettings ? PlanarClipMaskState.create(newSettings) : undefined;
@@ -67,11 +67,13 @@ export class ContextRealityModelState extends ContextRealityModel {
   }
 
   /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
-  public get treeRef(): TileTreeReference { return this._treeRef; }
+  public get treeRef(): TileTreeReference {
+    return this._treeRef;
+  }
 
   /** The transient Id assigned to this reality model at run-time. */
   public get modelId(): Id64String | undefined {
-    return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
+    return this._treeRef instanceof RealityModelTileTree.Reference ? this._treeRef.modelId : undefined;
   }
 
   /** Whether the reality model spans the entire globe ellipsoid. */

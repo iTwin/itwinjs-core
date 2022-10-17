@@ -82,12 +82,9 @@ export class LayerContainer extends GraphicWrapper {
     super(graphic);
     this.elevation = elevation;
 
-    if (drawAsOverlay)
-      this.renderPass = RenderPass.OverlayLayers;
-    else if (transparency > 0)
-      this.renderPass = RenderPass.TranslucentLayers;
-    else
-      this.renderPass = RenderPass.OpaqueLayers; // ###TODO: What about layers containing naturally-transparent geometry?
+    if (drawAsOverlay) this.renderPass = RenderPass.OverlayLayers;
+    else if (transparency > 0) this.renderPass = RenderPass.TranslucentLayers;
+    else this.renderPass = RenderPass.OpaqueLayers; // ###TODO: What about layers containing naturally-transparent geometry?
   }
 
   public addCommands(commands: RenderCommands): void {

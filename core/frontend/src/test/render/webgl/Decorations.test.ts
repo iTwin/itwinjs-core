@@ -23,13 +23,7 @@ describe("Decorations", () => {
   let boxDecLocRect: ViewRect;
   let sphereDecBgLocRect: ViewRect;
 
-  const shapePoints = [
-    new Point3d(0, 0, 0),
-    new Point3d(0.5, 0, 0),
-    new Point3d(0.5, 0.5, 0),
-    new Point3d(0, 0.5, 0),
-    new Point3d(0, 0, 0),
-  ];
+  const shapePoints = [new Point3d(0, 0, 0), new Point3d(0.5, 0, 0), new Point3d(0.5, 0.5, 0), new Point3d(0, 0.5, 0), new Point3d(0, 0, 0)];
 
   const div = document.createElement("div");
   div.style.width = div.style.height = "20px";

@@ -18,7 +18,17 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
+  LRUTileListNode,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
+  TileTreeLoadStatus,
+  TileUsageMarker,
+  TileUser,
+  TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -94,9 +104,13 @@ export abstract class Tile {
   /** The bounding sphere for this tile. */
   public readonly boundingSphere: BoundingSphere;
   /** The point at the center of this tile's volume. */
-  public get center(): Point3d { return this.boundingSphere.center; }
+  public get center(): Point3d {
+    return this.boundingSphere.center;
+  }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
-  public get radius(): number { return this.boundingSphere.radius; }
+  public get radius(): number {
+    return this.boundingSphere.radius;
+  }
   /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
@@ -140,11 +154,10 @@ export abstract class Tile {
     const radius = 0.5 * this.range.low.distance(this.range.high);
     this.boundingSphere = new BoundingSphere(center, radius);
 
-    if (params.maximumSize <= 0)
-      this.setIsReady();
+    if (params.maximumSize <= 0) this.setIsReady();
 
     this._isLeaf = true === params.isLeaf;
-    this._childrenLoadStatus = (undefined !== tree.maxDepth && this.depth < tree.maxDepth) ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
+    this._childrenLoadStatus = undefined !== tree.maxDepth && this.depth < tree.maxDepth ? TileTreeLoadStatus.NotLoaded : TileTreeLoadStatus.Loaded;
   }
 
   /** Free memory-consuming resources owned by this tile to reduce memory pressure.
@@ -175,20 +188,34 @@ export abstract class Tile {
   /** This tile's child tiles, if they exist and are loaded. The children are fully contained within this tile's volume and provide higher-resolution graphics than this tile.
    * @see [[loadChildren]]
    */
-  public get children(): Tile[] | undefined { return this._children; }
+  public get children(): Tile[] | undefined {
+    return this._children;
+  }
   /** The [[IModelConnection]] to which this tile belongs. */
-  public get iModel(): IModelConnection { return this.tree.iModel; }
+  public get iModel(): IModelConnection {
+    return this.tree.iModel;
+  }
   /** Uniquely identifies this tile's content. */
-  public get contentId(): string { return this._contentId; }
+  public get contentId(): string {
+    return this._contentId;
+  }
 
   /** True if this tile's content is currently being loaded. */
-  public get isLoading(): boolean { return TileLoadStatus.Loading === this.loadStatus; }
+  public get isLoading(): boolean {
+    return TileLoadStatus.Loading === this.loadStatus;
+  }
   /** True if a request for this tile's content has been enqueued. */
-  public get isQueued(): boolean { return TileLoadStatus.Queued === this.loadStatus; }
+  public get isQueued(): boolean {
+    return TileLoadStatus.Queued === this.loadStatus;
+  }
   /** True if an attempt to load this tile's content failed. */
-  public get isNotFound(): boolean { return TileLoadStatus.NotFound === this.loadStatus; }
+  public get isNotFound(): boolean {
+    return TileLoadStatus.NotFound === this.loadStatus;
+  }
   /** True if this tile's content has been loaded and is ready to be drawn. */
-  public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
+  public get isReady(): boolean {
+    return TileLoadStatus.Ready === this.loadStatus;
+  }
 
   /** @public */
   public setNotFound(): void {
@@ -197,8 +224,7 @@ export abstract class Tile {
 
   /** @public */
   public setIsReady(): void {
-    if (this.hasGraphics)
-      this._hadGraphics = true;
+    if (this.hasGraphics) this._hadGraphics = true;
 
     this._state = TileState.Ready;
     IModelApp.tileAdmin.onTileContentLoaded(this);
@@ -213,20 +239,34 @@ export abstract class Tile {
   }
 
   /** True if this tile has no child tiles. */
-  public get isLeaf(): boolean { return this._isLeaf; }
+  public get isLeaf(): boolean {
+    return this._isLeaf;
+  }
   /** @internal */
-  public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && this.isLeaf; }
+  public get isEmpty(): boolean {
+    return this.isReady && !this.hasGraphics && this.isLeaf;
+  }
   /** @internal */
-  public get isDisplayable(): boolean { return 0 < this.maximumSize; }
+  public get isDisplayable(): boolean {
+    return 0 < this.maximumSize;
+  }
   /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
-  public get maximumSize(): number { return this._maximumSize; }
+  public get maximumSize(): number {
+    return this._maximumSize;
+  }
   /** @internal */
-  public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  public get isParentDisplayable(): boolean {
+    return undefined !== this.parent && this.parent.isDisplayable;
+  }
   /** @internal */
-  public get isUndisplayableRootTile(): boolean { return undefined === this.parent && !this.isDisplayable; }
+  public get isUndisplayableRootTile(): boolean {
+    return undefined === this.parent && !this.isDisplayable;
+  }
 
   /** @internal */
-  public get request(): TileRequest | undefined { return this._request; }
+  public get request(): TileRequest | undefined {
+    return this._request;
+  }
   public set request(request: TileRequest | undefined) {
     assert(undefined === request || undefined === this.request);
     this._request = request;
@@ -243,27 +283,26 @@ export abstract class Tile {
   }
 
   /** True if this tile has graphics ready to draw. */
-  public get hasGraphics(): boolean { return undefined !== this._graphic; }
+  public get hasGraphics(): boolean {
+    return undefined !== this._graphic;
+  }
   /** True if this tile has a known volume tightly encompassing its graphics. */
-  public get hasContentRange(): boolean { return undefined !== this._contentRange; }
+  public get hasContentRange(): boolean {
+    return undefined !== this._contentRange;
+  }
   /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents, used for more accurate culling. */
   public get contentRange(): ElementAlignedBox3d {
-    if (undefined !== this._contentRange)
-      return this._contentRange;
-    else if (undefined === this.parent && undefined !== this.tree.contentRange)
-      return this.tree.contentRange;
-    else
-      return this.range;
+    if (undefined !== this._contentRange) return this._contentRange;
+    else if (undefined === this.parent && undefined !== this.tree.contentRange) return this.tree.contentRange;
+    else return this.range;
   }
 
   /** Tile contents are loaded asynchronously on demand. This member tracks the current loading status of this tile's contents. */
   public get loadStatus(): TileLoadStatus {
     switch (this._state) {
       case TileState.NotReady: {
-        if (undefined === this.request)
-          return TileLoadStatus.NotLoaded;
-        else if (TileRequest.State.Loading === this.request.state)
-          return TileLoadStatus.Loading;
+        if (undefined === this.request) return TileLoadStatus.NotLoaded;
+        else if (TileRequest.State.Loading === this.request.state) return TileLoadStatus.Loading;
 
         assert(TileRequest.State.Completed !== this.request.state && TileRequest.State.Failed !== this.request.state); // this.request should be undefined in these cases...
         return TileLoadStatus.Queued;
@@ -300,14 +339,11 @@ export abstract class Tile {
     this.setGraphic(graphic);
 
     if (undefined !== isLeaf && isLeaf !== this._isLeaf) {
-      if (isLeaf)
-        this.setLeaf();
-      else
-        this._isLeaf = false;
+      if (isLeaf) this.setLeaf();
+      else this._isLeaf = false;
     }
 
-    if (undefined !== contentRange)
-      this._contentRange = contentRange;
+    if (undefined !== contentRange) this._contentRange = contentRange;
 
     this.setIsReady();
   }
@@ -315,24 +351,20 @@ export abstract class Tile {
   /** Disclose any resources owned by this tile, other than its [[RenderGraphic]].
    * @internal
    */
-  protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
+  protected _collectStatistics(_stats: RenderMemory.Statistics): void {}
 
   /** Disclose resources owned by this tile and (by default) all of its child tiles.
    * @note Do not override this method! Override `_collectStatistics` instead.
    * @internal
    */
   public collectStatistics(stats: RenderMemory.Statistics, includeChildren = true): void {
-    if (undefined !== this._graphic)
-      this._graphic.collectStatistics(stats);
+    if (undefined !== this._graphic) this._graphic.collectStatistics(stats);
 
     this._collectStatistics(stats);
-    if (!includeChildren)
-      return;
+    if (!includeChildren) return;
 
     const children = this.children;
-    if (undefined !== children)
-      for (const child of children)
-        child.collectStatistics(stats);
+    if (undefined !== children) for (const child of children) child.collectStatistics(stats);
   }
 
   /** If this tile's child tiles have not yet been requested, enqueue an asynchronous request to load them.
@@ -340,25 +372,26 @@ export abstract class Tile {
    * @note Do not override this method - implement [[_loadChildren]].
    */
   protected loadChildren(): TileTreeLoadStatus {
-    if (this._childrenLoadStatus !== TileTreeLoadStatus.NotLoaded)
-      return this._childrenLoadStatus;
+    if (this._childrenLoadStatus !== TileTreeLoadStatus.NotLoaded) return this._childrenLoadStatus;
 
     this._childrenLoadStatus = TileTreeLoadStatus.Loading;
 
-    this._loadChildren((children: Tile[] | undefined) => {
-      this._children = children;
-      this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
+    this._loadChildren(
+      (children: Tile[] | undefined) => {
+        this._children = children;
+        this._childrenLoadStatus = TileTreeLoadStatus.Loaded;
 
-      if (undefined === children || 0 === children.length)
+        if (undefined === children || 0 === children.length) this._isLeaf = true;
+
+        IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
+      },
+      (_error: Error) => {
         this._isLeaf = true;
+        this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
 
-      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
-    }, (_error: Error) => {
-      this._isLeaf = true;
-      this._childrenLoadStatus = TileTreeLoadStatus.NotFound;
-
-      IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
-    });
+        IModelApp.tileAdmin.onTileChildrenLoad.raiseEvent(this);
+      }
+    );
 
     return this._childrenLoadStatus;
   }
@@ -366,11 +399,9 @@ export abstract class Tile {
   /** Dispose of this tile's child tiles and mark them as "not loaded". */
   protected disposeChildren(): void {
     const children = this.children;
-    if (undefined === children)
-      return;
+    if (undefined === children) return;
 
-    for (const child of children)
-      child.dispose();
+    for (const child of children) child.dispose();
 
     this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
     this._children = undefined;
@@ -396,19 +427,20 @@ export abstract class Tile {
     const worldSphere = sphere?.transformBy(args.location, scratchWorldSphere);
 
     // Test against frustum.
-    if (FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere))
-      return true;
+    if (FrustumPlanes.Containment.Outside === args.frustumPlanes.computeFrustumContainment(worldBox, worldSphere)) return true;
 
     // Test against TileTree's own clip volume, if any.
-    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(worldBox.points))
-      return true;
+    if (undefined !== args.clip && ClipPlaneContainment.StronglyOutside === args.clip.classifyPointContainment(worldBox.points)) return true;
 
     // Test against view clip, if any (will be undefined if TileTree does not want view clip applied to it).
-    if (undefined !== args.viewClip && ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points))
-      return true;
+    if (undefined !== args.viewClip && ClipPlaneContainment.StronglyOutside === args.viewClip.classifyPointContainment(worldBox.points)) return true;
 
     // Test against intersection clip - reject if tile doesn't intersect (used for section-cut graphics).
-    if (testClipIntersection && undefined !== args.intersectionClip && ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points))
+    if (
+      testClipIntersection &&
+      undefined !== args.intersectionClip &&
+      ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points)
+    )
       return true;
 
     return false;
@@ -416,26 +448,20 @@ export abstract class Tile {
 
   /** Determine the visibility of this tile according to the specified args. */
   public computeVisibility(args: TileDrawArgs): TileVisibility {
-    if (this.isEmpty)
-      return TileVisibility.OutsideFrustum;
+    if (this.isEmpty) return TileVisibility.OutsideFrustum;
 
-    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range))
-      return TileVisibility.OutsideFrustum;
+    if (args.boundingRange && !args.boundingRange.intersectsRange(this.range)) return TileVisibility.OutsideFrustum;
 
     // NB: We test for region culling before isDisplayable - otherwise we will never unload children of undisplayed tiles when
     // they are outside frustum
-    if (this.isRegionCulled(args))
-      return TileVisibility.OutsideFrustum;
+    if (this.isRegionCulled(args)) return TileVisibility.OutsideFrustum;
 
     // some nodes are merely for structure and don't have any geometry
-    if (!this.isDisplayable)
-      return TileVisibility.TooCoarse;
+    if (!this.isDisplayable) return TileVisibility.TooCoarse;
 
     if (this.isLeaf) {
-      if (this.hasContentRange && this.isContentCulled(args))
-        return TileVisibility.OutsideFrustum;
-      else
-        return TileVisibility.Visible;
+      if (this.hasContentRange && this.isContentCulled(args)) return TileVisibility.OutsideFrustum;
+      else return TileVisibility.Visible;
     }
 
     const pixelSize = args.getPixelSize(this) * args.pixelSizeScaleFactor;
@@ -446,37 +472,30 @@ export abstract class Tile {
 
   /** @internal */
   public extendRangeForContent(range: Range3d, matrix: Matrix4d, treeTransform: Transform, frustumPlanes?: FrustumPlanes): void {
-    if (this.isEmpty || this.contentRange.isNull)
-      return;
+    if (this.isEmpty || this.contentRange.isNull) return;
 
     const box = Frustum.fromRange(this.contentRange, scratchFrustum);
     box.transformBy(treeTransform, box);
-    if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box))
-      return;
+    if (frustumPlanes !== undefined && FrustumPlanes.Containment.Outside === frustumPlanes.computeFrustumContainment(box)) return;
 
     if (this.children === undefined) {
       for (const boxPoint of box.points) {
         const pt = matrix.multiplyPoint3d(boxPoint, 1, scratchPoint4d);
-        if (pt.w > .0001)
-          range.extendXYZW(pt.x, pt.y, pt.z, pt.w);
-        else
-          range.high.z = Math.max(1.0, range.high.z);   // behind eye plane...
+        if (pt.w > 0.0001) range.extendXYZW(pt.x, pt.y, pt.z, pt.w);
+        else range.high.z = Math.max(1.0, range.high.z); // behind eye plane...
       }
     } else {
-      for (const child of this.children)
-        child.extendRangeForContent(range, matrix, treeTransform, frustumPlanes);
+      for (const child of this.children) child.extendRangeForContent(range, matrix, treeTransform, frustumPlanes);
     }
   }
 
   /** Primarily for debugging purposes, compute the number of tiles below this one in the [[TileTree]]. */
   public countDescendants(): number {
     const children = this.children;
-    if (undefined === children || 0 === children.length)
-      return 0;
+    if (undefined === children || 0 === children.length) return 0;
 
     let count = 0;
-    for (const child of children)
-      count += child.countDescendants();
+    for (const child of children) count += child.countDescendants();
 
     return count;
   }
@@ -484,13 +503,11 @@ export abstract class Tile {
   /** Output this tile's graphics. */
   public drawGraphics(args: TileDrawArgs): void {
     const gfx = this.produceGraphics();
-    if (undefined === gfx)
-      return;
+    if (undefined === gfx) return;
 
     args.graphics.add(gfx);
     const rangeGfx = this.getRangeGraphic(args.context);
-    if (undefined !== rangeGfx)
-      args.graphics.add(rangeGfx);
+    if (undefined !== rangeGfx) args.graphics.add(rangeGfx);
   }
 
   /** @internal */
@@ -501,8 +518,7 @@ export abstract class Tile {
   /** @internal */
   public getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     const type = context.viewport.debugBoundingBoxes;
-    if (type === this._rangeGraphicType)
-      return this._rangeGraphic;
+    if (type === this._rangeGraphicType) return this._rangeGraphic;
 
     this._rangeGraphic = dispose(this._rangeGraphic);
     this._rangeGraphicType = type;
@@ -546,7 +562,9 @@ export abstract class Tile {
   /** Optional corners used to compute the screen size of the tile. These are used, e.g., by reality tiles with oriented bounding boxes to
    * produce more accurate size calculation.
    */
-  public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
+  public getSizeProjectionCorners(): Point3d[] | undefined {
+    return undefined;
+  }
 }
 
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
@@ -631,7 +649,7 @@ export enum TileBoundingBoxes {
 }
 
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
-const enum TileState {// eslint-disable-line no-restricted-syntax
+const enum TileState { // eslint-disable-line no-restricted-syntax
   NotReady = TileLoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.
   Ready = TileLoadStatus.Ready, // request completed successfully, or no loading was required.
   NotFound = TileLoadStatus.NotFound, // request failed.

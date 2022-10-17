@@ -22,7 +22,8 @@ const loggerCategory: string = FrontendLoggerCategory.Request;
 export const requestIdHeaderName = "X-Correlation-Id";
 
 /** @internal */
-export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
+export interface RequestBasicCredentials {
+  // axios: AxiosBasicCredentials
   user: string; // axios: username
   password: string; // axios: password
 }
@@ -138,7 +139,8 @@ export class RequestGlobalOptions {
   /** Creates an agent for any user defined proxy using the supplied additional options. Returns undefined if user hasn't defined a proxy.
    * @internal
    */
-  public static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined = (_additionalOptions?: https.AgentOptions) => undefined;
+  public static createHttpsProxy: (additionalOptions?: https.AgentOptions) => https.Agent | undefined = (_additionalOptions?: https.AgentOptions) =>
+    undefined;
   public static maxRetries: number = 4;
   public static timeout: RequestTimeoutOptions = {
     deadline: 25000,
@@ -192,8 +194,7 @@ export class ResponseError extends BentleyError {
     error.name = response.code || response.name || error.name;
     error.message = error.message || response.message || response.statusMessage;
 
-    if (log)
-      error.log();
+    if (log) error.log();
 
     return error;
   }
@@ -210,7 +211,7 @@ export class ResponseError extends BentleyError {
         return true;
       }
     }
-    return (response !== undefined && response.statusType === HttpStatus.ServerError);
+    return response !== undefined && response.statusType === HttpStatus.ServerError;
   }
 
   /**
@@ -280,11 +281,9 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
   sareq = sareq.retry(retries, options.retryCallback);
 
-  if (Logger.isEnabled(loggerCategory, LogLevel.Trace))
-    sareq = sareq.use(logRequest);
+  if (Logger.isEnabled(loggerCategory, LogLevel.Trace)) sareq = sareq.use(logRequest);
 
-  if (options.headers)
-    sareq = sareq.set(options.headers);
+  if (options.headers) sareq = sareq.set(options.headers);
 
   let queryStr: string = "";
   let fullUrl: string = "";
@@ -299,39 +298,27 @@ export async function request(url: string, options: RequestOptions): Promise<Res
 
   Logger.logInfo(loggerCategory, fullUrl);
 
-  if (options.auth)
-    sareq = sareq.auth(options.auth.user, options.auth.password);
+  if (options.auth) sareq = sareq.auth(options.auth.user, options.auth.password);
 
-  if (options.accept)
-    sareq = sareq.accept(options.accept);
+  if (options.accept) sareq = sareq.accept(options.accept);
 
-  if (options.body)
-    sareq = sareq.send(options.body);
+  if (options.body) sareq = sareq.send(options.body);
 
-  if (options.timeout)
-    sareq = sareq.timeout(options.timeout);
-  else
-    sareq = sareq.timeout(RequestGlobalOptions.timeout);
+  if (options.timeout) sareq = sareq.timeout(options.timeout);
+  else sareq = sareq.timeout(RequestGlobalOptions.timeout);
 
-  if (options.responseType)
-    sareq = sareq.responseType(options.responseType);
+  if (options.responseType) sareq = sareq.responseType(options.responseType);
 
-  if (options.redirects)
-    sareq = sareq.redirects(options.redirects);
-  else
-    sareq = sareq.redirects(0);
+  if (options.redirects) sareq = sareq.redirects(options.redirects);
+  else sareq = sareq.redirects(0);
 
-  if (options.buffer)
-    sareq = sareq.buffer(options.buffer);
+  if (options.buffer) sareq = sareq.buffer(options.buffer);
 
-  if (options.parser)
-    sareq = sareq.parse(options.parser);
+  if (options.parser) sareq = sareq.parse(options.parser);
 
   /** Default to any globally supplied proxy, unless an agent is specified in this call */
-  if (options.agent)
-    sareq = sareq.agent(options.agent);
-  else if (RequestGlobalOptions.httpsProxy)
-    sareq = sareq.agent(RequestGlobalOptions.httpsProxy);
+  if (options.agent) sareq = sareq.agent(options.agent);
+  else if (RequestGlobalOptions.httpsProxy) sareq = sareq.agent(RequestGlobalOptions.httpsProxy);
 
   if (options.progressCallback) {
     sareq = sareq.on("progress", (event: sarequest.ProgressEvent) => {
@@ -348,13 +335,11 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   const errorCallback = options.errorCallback ? options.errorCallback : ResponseError.parse;
 
   if (options.readStream) {
-    if (typeof window !== "undefined")
-      throw new Error("This option is not supported on browsers");
+    if (typeof window !== "undefined") throw new Error("This option is not supported on browsers");
 
     return new Promise<Response>((resolve, reject) => {
       sareq = sareq.type("blob");
-      options
-        .readStream
+      options.readStream
         .pipe(sareq)
         .on("error", (error: any) => {
           const parsedError = errorCallback(error);
@@ -373,8 +358,7 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   }
 
   if (options.stream) {
-    if (typeof window !== "undefined")
-      throw new Error("This option is not supported on browsers");
+    if (typeof window !== "undefined") throw new Error("This option is not supported on browsers");
 
     return new Promise<Response>((resolve, reject) => {
       sareq
@@ -405,12 +389,12 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   // console.log("%s %s %s", url, options.method, queryStr);
 
   /**
-  * Note:
-  * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
-  * Fetch only rejects if there's some network issue (permissions issue or similar)
-  * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
-  * superagent, but may eventually switch to JavaScript's fetch library.
-  */
+   * Note:
+   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
+   * Fetch only rejects if there's some network issue (permissions issue or similar)
+   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
+   * superagent, but may eventually switch to JavaScript's fetch library.
+   */
   try {
     const response = await sareq;
     const retResponse: Response = {

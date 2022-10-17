@@ -115,8 +115,7 @@ class HilitedIds extends Id64.Uint32Set {
   }
 
   protected onChanged() {
-    if (!this._changing)
-      IModelApp.viewManager.onSelectionSetChanged(this._iModel);
+    if (!this._changing) IModelApp.viewManager.onSelectionSetChanged(this._iModel);
   }
 
   protected change(func: () => void) {
@@ -139,10 +138,11 @@ class HilitedElementIds extends HilitedIds {
     this.wantSyncWithSelectionSet = syncWithSelectionSet;
   }
 
-  public get wantSyncWithSelectionSet(): boolean { return undefined !== this._removeListener; }
+  public get wantSyncWithSelectionSet(): boolean {
+    return undefined !== this._removeListener;
+  }
   public set wantSyncWithSelectionSet(want: boolean) {
-    if (want === this.wantSyncWithSelectionSet)
-      return;
+    if (want === this.wantSyncWithSelectionSet) return;
 
     if (want) {
       const set = this._iModel.selectionSet;
@@ -159,11 +159,9 @@ class HilitedElementIds extends HilitedIds {
   }
 
   private processSelectionSetEvent(ev: SelectionSetEvent): void {
-    if (SelectionSetEventType.Add !== ev.type)
-      this.deleteIds(ev.removed);
+    if (SelectionSetEventType.Add !== ev.type) this.deleteIds(ev.removed);
 
-    if (ev.type === SelectionSetEventType.Add || ev.type === SelectionSetEventType.Replace)
-      this.addIds(ev.added);
+    if (ev.type === SelectionSetEventType.Add || ev.type === SelectionSetEventType.Replace) this.addIds(ev.added);
   }
 }
 
@@ -210,7 +208,9 @@ export class HiliteSet {
   public readonly models: Id64.Uint32Set;
 
   /** The set of hilited elements. */
-  public get elements(): Id64.Uint32Set { return this._elements; }
+  public get elements(): Id64.Uint32Set {
+    return this._elements;
+  }
 
   /** Controls how the sets of hilited [[models]] and [[subcategories]] interact with one another.
    * By default they are treated as a union: a [Feature]($common) is hilited if either its model **or** its subcategory is hilited.
@@ -222,8 +222,7 @@ export class HiliteSet {
     return this._mode;
   }
   public set modelSubCategoryMode(mode: ModelSubCategoryHiliteMode) {
-    if (mode === this._mode)
-      return;
+    if (mode === this._mode) return;
 
     this.onModelSubCategoryModeChanged.raiseEvent(mode);
     this._mode = mode;
@@ -248,8 +247,12 @@ export class HiliteSet {
    * When turning synchronization off, the contents of the HiliteSet will remain unchanged.
    * When turning synchronization on, the current contents of the HiliteSet will be preserved, and the contents of the selection set will be added to them.
    */
-  public get wantSyncWithSelectionSet(): boolean { return this._elements.wantSyncWithSelectionSet; }
-  public set wantSyncWithSelectionSet(want: boolean) { this._elements.wantSyncWithSelectionSet = want; }
+  public get wantSyncWithSelectionSet(): boolean {
+    return this._elements.wantSyncWithSelectionSet;
+  }
+  public set wantSyncWithSelectionSet(want: boolean) {
+    this._elements.wantSyncWithSelectionSet = want;
+  }
 
   /** Remove all elements from the hilited set. */
   public clear() {
@@ -259,7 +262,9 @@ export class HiliteSet {
   }
 
   /** Returns true if nothing is hilited. */
-  public get isEmpty(): boolean { return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty; }
+  public get isEmpty(): boolean {
+    return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty;
+  }
 
   /** Toggle the hilited state of one or more elements.
    * @param arg the ID(s) of the elements whose state is to be toggled.
@@ -267,10 +272,8 @@ export class HiliteSet {
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
     for (const id of Id64.iterable(arg)) {
-      if (onOff)
-        this.elements.addId(id);
-      else
-        this.elements.deleteId(id);
+      if (onOff) this.elements.addId(id);
+      else this.elements.deleteId(id);
     }
 
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
@@ -289,12 +292,14 @@ export class SelectionSet {
   /** The IDs of the selected elements.
    * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
    */
-  public get elements(): Set<string> { return this._elements; }
+  public get elements(): Set<string> {
+    return this._elements;
+  }
 
   /** Called whenever elements are added or removed from this SelectionSet */
   public readonly onChanged = new BeEvent<(ev: SelectionSetEvent) => void>();
 
-  public constructor(public iModel: IModelConnection) { }
+  public constructor(public iModel: IModelConnection) {}
 
   private sendChangedEvent(ev: SelectionSetEvent) {
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
@@ -302,27 +307,34 @@ export class SelectionSet {
   }
 
   /** Get the number of entries in this selection set. */
-  public get size() { return this.elements.size; }
+  public get size() {
+    return this.elements.size;
+  }
 
   /** Check whether there are any selected elements. */
-  public get isActive() { return this.size !== 0; }
+  public get isActive() {
+    return this.size !== 0;
+  }
 
   /** Return true if elemId is in this SelectionSet.
    * @see [[isSelected]]
    */
-  public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
+  public has(elemId?: string) {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Query whether an Id is in the selection set.
    * @see [[has]]
    */
-  public isSelected(elemId?: Id64String): boolean { return !!elemId && this.elements.has(elemId); }
+  public isSelected(elemId?: Id64String): boolean {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Clear current selection set.
    * @note raises the [[onChanged]] event with [[SelectionSetEventType.Clear]].
    */
   public emptyAll(): void {
-    if (!this.isActive)
-      return;
+    if (!this.isActive) return;
 
     const removed = this._elements;
     this._elements = new Set<string>();
@@ -340,12 +352,10 @@ export class SelectionSet {
 
   private _add(elem: Id64Arg, sendEvent = true): boolean {
     const oldSize = this.elements.size;
-    for (const id of Id64.iterable(elem))
-      this.elements.add(id);
+    for (const id of Id64.iterable(elem)) this.elements.add(id);
 
     const changed = oldSize !== this.elements.size;
-    if (sendEvent && changed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: elem });
+    if (sendEvent && changed) this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: elem });
 
     return changed;
   }
@@ -361,12 +371,10 @@ export class SelectionSet {
 
   private _remove(elem: Id64Arg, sendEvent = true): boolean {
     const oldSize = this.elements.size;
-    for (const id of Id64.iterable(elem))
-      this.elements.delete(id);
+    for (const id of Id64.iterable(elem)) this.elements.delete(id);
 
     const changed = oldSize !== this.elements.size;
-    if (sendEvent && changed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: elem });
+    if (sendEvent && changed) this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: elem });
 
     return changed;
   }
@@ -379,14 +387,11 @@ export class SelectionSet {
     const added = this._add(adds, false);
     const removed = this._remove(removes, false);
 
-    if (added && removed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Replace, set: this, added: adds, removed: removes });
-    else if (added)
-      this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: adds });
-    else if (removed)
-      this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: removes });
+    if (added && removed) this.sendChangedEvent({ type: SelectionSetEventType.Replace, set: this, added: adds, removed: removes });
+    else if (added) this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: adds });
+    else if (removed) this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: removes });
 
-    return (added || removed);
+    return added || removed;
   }
 
   /** Invert the state of a set of Ids in the SelectionSet */
@@ -394,10 +399,8 @@ export class SelectionSet {
     const elementsToAdd = new Set<string>();
     const elementsToRemove = new Set<string>();
     for (const id of Id64.iterable(elem)) {
-      if (this.elements.has(id))
-        elementsToRemove.add(id);
-      else
-        elementsToAdd.add(id);
+      if (this.elements.has(id)) elementsToRemove.add(id);
+      else elementsToAdd.add(id);
     }
 
     return this.addAndRemove(elementsToAdd, elementsToRemove);
@@ -405,8 +408,7 @@ export class SelectionSet {
 
   /** Change selection set to be the supplied set of Ids. */
   public replace(elem: Id64Arg): void {
-    if (areEqual(this.elements, elem))
-      return;
+    if (areEqual(this.elements, elem)) return;
 
     const removed = this._elements;
     this._elements = new Set<string>();
@@ -414,8 +416,7 @@ export class SelectionSet {
 
     if (0 < removed.size) {
       for (const id of Id64.iterable(elem)) {
-        if (removed.has(id))
-          removed.delete(id);
+        if (removed.has(id)) removed.delete(id);
       }
     }
 
@@ -425,15 +426,11 @@ export class SelectionSet {
 
 function areEqual(lhs: Set<string>, rhs: Id64Arg): boolean {
   // Size is unreliable if input can contain duplicates...
-  if (Array.isArray(rhs))
-    rhs = Id64.toIdSet(rhs);
+  if (Array.isArray(rhs)) rhs = Id64.toIdSet(rhs);
 
-  if (lhs.size !== Id64.sizeOf(rhs))
-    return false;
+  if (lhs.size !== Id64.sizeOf(rhs)) return false;
 
-  for (const id of Id64.iterable(rhs))
-    if (!lhs.has(id))
-      return false;
+  for (const id of Id64.iterable(rhs)) if (!lhs.has(id)) return false;
 
   return true;
 }

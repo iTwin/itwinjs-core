@@ -33,8 +33,7 @@ export class Primitive extends Graphic {
   }
 
   public static create(geom: CachedGeometry | undefined, instances?: InstancedGraphicParams | RenderAreaPattern): Primitive | undefined {
-    if (!geom)
-      return undefined;
+    if (!geom) return undefined;
 
     if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
@@ -44,8 +43,7 @@ export class Primitive extends Graphic {
         assert(isInstancedGraphicParams(instances));
         const range = InstanceBuffers.computeRange(geom.computeRange(), instances.transforms, instances.transformCenter);
         const instanceBuffers = InstanceBuffers.create(instances, range);
-        if (!instanceBuffers)
-          return undefined;
+        if (!instanceBuffers) return undefined;
 
         geom = InstancedGeometry.create(geom, true, instanceBuffers);
       }
@@ -55,22 +53,23 @@ export class Primitive extends Graphic {
   }
 
   public static createShared(geom: CachedGeometry | undefined, instances?: InstanceBuffers | PatternBuffers): Primitive | undefined {
-    if (!geom)
-      return undefined;
+    if (!geom) return undefined;
 
     if (instances) {
       assert(geom instanceof LUTGeometry, "Invalid geometry type for instancing");
-      if (instances instanceof InstanceBuffers)
-        geom = InstancedGeometry.create(geom, false, instances);
-      else
-        geom = InstancedGeometry.createPattern(geom, false, instances);
+      if (instances instanceof InstanceBuffers) geom = InstancedGeometry.create(geom, false, instances);
+      else geom = InstancedGeometry.createPattern(geom, false, instances);
     }
 
     return new this(geom);
   }
 
-  public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
-  public get isPickable() { return false; }
+  public get isDisposed(): boolean {
+    return this.cachedGeometry.isDisposed;
+  }
+  public get isPickable() {
+    return false;
+  }
 
   public dispose() {
     dispose(this.cachedGeometry);
@@ -81,72 +80,89 @@ export class Primitive extends Graphic {
   }
 
   public getPass(target: Target): Pass {
-    if (this.isPixelMode)
-      return "view-overlay";
+    if (this.isPixelMode) return "view-overlay";
 
     switch (target.primitiveVisibility) {
       case PrimitiveVisibility.Uninstanced:
-        if (this.cachedGeometry.isInstanced)
-          return "none";
+        if (this.cachedGeometry.isInstanced) return "none";
         break;
       case PrimitiveVisibility.Instanced:
-        if (!this.cachedGeometry.isInstanced)
-          return "none";
+        if (!this.cachedGeometry.isInstanced) return "none";
         break;
     }
 
     return this.cachedGeometry.getPass(target);
   }
 
-  public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
+  public get hasFeatures(): boolean {
+    return this.cachedGeometry.hasFeatures;
+  }
 
-  public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
+  public addCommands(commands: RenderCommands): void {
+    commands.addPrimitive(this);
+  }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
     // Note that IsEdge() does not imply geom->ToEdge() => true...polylines can be edges too...
-    if (!this.isEdge)
-      commands.getCommands(pass).push(new PrimitiveCommand(this));
+    if (!this.isEdge) commands.getCommands(pass).push(new PrimitiveCommand(this));
   }
 
-  public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
-  public get isInstanced(): boolean { return this.cachedGeometry.isInstanced; }
-  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
-  public get isEdge(): boolean { return this.cachedGeometry.isEdge; }
-  public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
-  public get hasMaterialAtlas(): boolean { return this.cachedGeometry.hasMaterialAtlas; }
+  public get hasAnimation(): boolean {
+    return this.cachedGeometry.hasAnimation;
+  }
+  public get isInstanced(): boolean {
+    return this.cachedGeometry.isInstanced;
+  }
+  public get isLit(): boolean {
+    return this.cachedGeometry.isLitSurface;
+  }
+  public get isEdge(): boolean {
+    return this.cachedGeometry.isEdge;
+  }
+  public get renderOrder(): RenderOrder {
+    return this.cachedGeometry.renderOrder;
+  }
+  public get hasMaterialAtlas(): boolean {
+    return this.cachedGeometry.hasMaterialAtlas;
+  }
 
-  public override toPrimitive(): Primitive { return this; }
+  public override toPrimitive(): Primitive {
+    return this;
+  }
 
   private static _drawParams?: DrawParams;
 
-  public static freeParams(): void { Primitive._drawParams = undefined; }
+  public static freeParams(): void {
+    Primitive._drawParams = undefined;
+  }
 
   public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
-    if (undefined === Primitive._drawParams)
-      Primitive._drawParams = new DrawParams();
+    if (undefined === Primitive._drawParams) Primitive._drawParams = new DrawParams();
 
     const drawParams = Primitive._drawParams;
     drawParams.init(shader.params, this.cachedGeometry);
     shader.draw(drawParams);
   }
 
-  public get techniqueId(): TechniqueId { return this.cachedGeometry.techniqueId; }
+  public get techniqueId(): TechniqueId {
+    return this.cachedGeometry.techniqueId;
+  }
 }
 
 /** @internal */
 export class SkyCubePrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public constructor(cachedGeom: CachedGeometry) {
+    super(cachedGeom);
+  }
 
   public override draw(shader: ShaderProgramExecutor): void {
     // Alter viewport to maintain square aspect ratio of skybox images even as viewRect resizes
     const vh = shader.target.viewRect.height;
     const vw = shader.target.viewRect.width;
-    if (vw > vh)
-      System.instance.context.viewport(0, -(vw - vh) / 2, vw, vw);
-    else
-      System.instance.context.viewport(-(vh - vw) / 2, 0, vh, vh);
+    if (vw > vh) System.instance.context.viewport(0, -(vw - vh) / 2, vw, vw);
+    else System.instance.context.viewport(-(vh - vw) / 2, 0, vh, vh);
 
     super.draw(shader); // Draw the skybox cubemap
 

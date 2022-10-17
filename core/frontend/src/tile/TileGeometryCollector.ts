@@ -8,9 +8,7 @@
 
 import { Polyface, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
-import {
-  Tile, TileTreeReference, TileUser,
-} from "./internal";
+import { Tile, TileTreeReference, TileUser } from "./internal";
 
 /** Enumerates the statuses returned by [[TileGeometryCollector.collectTile]].
  * - "accept": The tile's geometry should be collected.
@@ -92,11 +90,9 @@ export class TileGeometryCollector {
    */
   public collectTile(tile: Tile): CollectTileStatus {
     const range = this._options.transform ? this._options.transform.multiplyRange(tile.range) : tile.range;
-    if (!range.intersectsRange(this._options.range))
-      return "reject";
+    if (!range.intersectsRange(this._options.range)) return "reject";
 
-    if (tile.maximumSize === 0 || !tile.isDisplayable)
-      return "continue";
+    if (tile.maximumSize === 0 || !tile.isDisplayable) return "continue";
 
     const tolerance = tile.radius / tile.maximumSize;
     return tolerance < this._options.chordTolerance ? "accept" : "continue";

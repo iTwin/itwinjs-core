@@ -219,7 +219,7 @@ function createBase(type: EdgeBuilderType, instanced: IsInstanced, isAnimated: I
   const isInstanced = IsInstanced.Yes === instanced;
   const isSilhouette = "Silhouette" === type;
   const isIndexed = "IndexedEdge" === type;
-  const techId = isSilhouette ? TechniqueId.SilhouetteEdge : (isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge);
+  const techId = isSilhouette ? TechniqueId.SilhouetteEdge : isIndexed ? TechniqueId.IndexedEdge : TechniqueId.Edge;
   const attrMap = AttributeMap.findAttributeMap(techId, isInstanced);
 
   const builder = new ProgramBuilder(attrMap, { positionType, instanced: isInstanced });

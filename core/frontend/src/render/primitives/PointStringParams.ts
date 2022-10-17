@@ -25,21 +25,17 @@ export class PointStringParams {
   }
 
   public static create(args: PolylineArgs): PointStringParams | undefined {
-    if (!args.flags.isDisjoint)
-      return undefined;
+    if (!args.flags.isDisjoint) return undefined;
 
     const vertices = VertexTable.createForPolylines(args);
-    if (undefined === vertices)
-      return undefined;
+    if (undefined === vertices) return undefined;
 
     const polylines = args.polylines;
     let vertIndices = polylines[0].vertIndices;
     if (1 < polylines.length) {
       // We used to assert this wouldn't happen - apparently it does...
       vertIndices = [];
-      for (const polyline of polylines)
-        for (const vertIndex of polyline.vertIndices)
-          vertIndices.push(vertIndex);
+      for (const polyline of polylines) for (const vertIndex of polyline.vertIndices) vertIndices.push(vertIndex);
     }
 
     const vertexIndices = VertexIndices.fromArray(vertIndices);

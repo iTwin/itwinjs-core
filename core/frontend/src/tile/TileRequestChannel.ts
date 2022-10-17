@@ -56,7 +56,8 @@ export class TileRequestChannelStatistics {
 
   /** @internal */
   public addTo(stats: TileRequestChannelStatistics): void {
-    for (const propName in this) { // eslint-disable-line guard-for-in
+    for (const propName in this) {
+      // eslint-disable-line guard-for-in
       const key = propName as keyof TileRequestChannelStatistics;
       const val = this[key];
       if (typeof val === "number") {
@@ -158,13 +159,10 @@ export class TileRequestChannel {
    */
   public recordCompletion(tile: Tile, content: TileContent): void {
     ++this._statistics.totalCompletedRequests;
-    if (tile.isEmpty)
-      ++this._statistics.totalEmptyTiles;
-    else if (!tile.isDisplayable)
-      ++this._statistics.totalUndisplayableTiles;
+    if (tile.isEmpty) ++this._statistics.totalEmptyTiles;
+    else if (!tile.isDisplayable) ++this._statistics.totalUndisplayableTiles;
 
-    if (this.contentCallback)
-      this.contentCallback(tile, content);
+    if (this.contentCallback) this.contentCallback(tile, content);
   }
 
   /** Invoked by [[TileRequestChannels.swapPending]] when [[TileAdmin]] is about to start enqueuing new requests.
@@ -191,24 +189,19 @@ export class TileRequestChannel {
     this._statistics.numCanceled = 0;
 
     // Recompute priority of each request.
-    for (const pending of this._pending)
-      pending.priority = pending.tile.computeLoadPriority(pending.viewports, pending.users);
+    for (const pending of this._pending) pending.priority = pending.tile.computeLoadPriority(pending.viewports, pending.users);
 
     // Sort pending requests by priority.
     this._pending.sort();
 
     // Cancel any previously pending requests that are no longer needed.
-    for (const queued of this._previouslyPending)
-      if (queued.users.isEmpty)
-        this.cancel(queued);
+    for (const queued of this._previouslyPending) if (queued.users.isEmpty) this.cancel(queued);
 
     this._previouslyPending.clear();
 
     // Cancel any active requests that are no longer needed.
     // NB: Do NOT remove them from the active set until their http activity has completed.
-    for (const active of this._active)
-      if (active.users.isEmpty)
-        this.cancel(active);
+    for (const active of this._active) if (active.users.isEmpty) this.cancel(active);
 
     // Batch-cancel running requests.
     this.processCancellations();
@@ -216,8 +209,7 @@ export class TileRequestChannel {
     // Dispatch requests from the queue up to our maximum.
     while (this._active.size < this._concurrency) {
       const request = this._pending.pop();
-      if (!request)
-        break;
+      if (!request) break;
 
       this.dispatch(request);
     }
@@ -227,11 +219,9 @@ export class TileRequestChannel {
    * @internal
    */
   public cancelAndClearAll(): void {
-    for (const active of this._active)
-      active.cancel();
+    for (const active of this._active) active.cancel();
 
-    for (const queued of this._pending)
-      queued.cancel();
+    for (const queued of this._pending) queued.cancel();
 
     this._active.clear();
     this._pending.clear();
@@ -249,15 +239,15 @@ export class TileRequestChannel {
   /** Invoked when a request that was previously dispatched is canceled before a response is received.
    * Some channels accumulate such requests for later cancellation in [[processCancellations]].
    */
-  public onActiveRequestCanceled(_request: TileRequest): void { }
+  public onActiveRequestCanceled(_request: TileRequest): void {}
 
   /** Invoked to do any additional work to cancel tiles accumulated by [[onActiveRequestCanceled]]. For example, a channel that requests tile content
    * over IPC may signal to the tile generation process that it should cease generating content for those tiles.
    */
-  public processCancellations(): void { }
+  public processCancellations(): void {}
 
   /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
-  public onIModelClosed(_iModel: IModelConnection): void { }
+  public onIModelClosed(_iModel: IModelConnection): void {}
 
   /** Request content for the specified tile. The default implementation simply forwards to [[Tile.requestContent]]. */
   public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -270,11 +260,13 @@ export class TileRequestChannel {
   protected dispatch(request: TileRequest): void {
     ++this._statistics.totalDispatchedRequests;
     this._active.add(request);
-    request.dispatch(() => {
-      this.dropActiveRequest(request);
-    }).catch((_) => {
-      //
-    });
+    request
+      .dispatch(() => {
+        this.dropActiveRequest(request);
+      })
+      .catch((_) => {
+        //
+      });
   }
 
   /** Protected only for tests - do not override.

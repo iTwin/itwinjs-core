@@ -8,7 +8,13 @@
 
 import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
+import {
+  AxisAlignedBox3d,
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  SpatialViewDefinitionProps,
+  ViewStateProps,
+} from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -26,7 +32,9 @@ import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
  */
 export class SpatialViewState extends ViewState3d {
   /** @internal */
-  public static override get className() { return "SpatialViewDefinition"; }
+  public static override get className() {
+    return "SpatialViewDefinition";
+  }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
   private _modelSelector: ModelSelectorState;
@@ -42,8 +50,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   public set modelSelector(selector: ModelSelectorState) {
-    if (selector === this.modelSelector)
-      return;
+    if (selector === this.modelSelector) return;
 
     const isAttached = this.isAttachedToViewport;
     this.unregisterModelSelectorListeners();
@@ -73,8 +80,7 @@ export class SpatialViewState extends ViewState3d {
     const view = new this(blank, iModel, cat, displayStyleState, modelSelectorState);
     view.setOrigin(origin);
     view.setExtents(extents);
-    if (undefined !== rotation)
-      view.setRotation(rotation);
+    if (undefined !== rotation) view.setRotation(rotation);
     return view;
   }
 
@@ -91,22 +97,37 @@ export class SpatialViewState extends ViewState3d {
     return props;
   }
 
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
+  constructor(
+    props: SpatialViewDefinitionProps,
+    iModel: IModelConnection,
+    arg3: CategorySelectorState,
+    displayStyle: DisplayStyle3dState,
+    modelSelector: ModelSelectorState
+  ) {
     super(props, iModel, arg3, displayStyle);
     this._modelSelector = modelSelector;
-    if (arg3 instanceof SpatialViewState) // from clone
+    if (arg3 instanceof SpatialViewState)
+      // from clone
       this._modelSelector = arg3.modelSelector.clone();
 
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
   /** @internal */
-  public override isSpatialView(): this is SpatialViewState { return true; }
+  public override isSpatialView(): this is SpatialViewState {
+    return true;
+  }
 
-  public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public override equals(other: this): boolean {
+    return super.equals(other) && this.modelSelector.equals(other.modelSelector);
+  }
 
-  public override createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
+  public override createAuxCoordSystem(acsName: string): AuxCoordSystemState {
+    return AuxCoordSystemSpatialState.createNew(acsName, this.iModel);
+  }
+  public get defaultExtentLimits() {
+    return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth };
+  } // Increased max by 3X to support globe mode.
 
   /** @internal */
   public markModelSelectorChanged(): void {
@@ -129,8 +150,7 @@ export class SpatialViewState extends ViewState3d {
       ref.unionFitRange(range);
     });
 
-    if (range.isNull)
-      range.setFrom(this.getDisplayedExtents());
+    if (range.isNull) range.setFrom(this.getDisplayedExtents());
 
     range.ensureMinLengths(1.0);
 
@@ -156,8 +176,7 @@ export class SpatialViewState extends ViewState3d {
   protected override preload(hydrateRequest: HydrateViewStateRequestProps): void {
     super.preload(hydrateRequest);
     const notLoaded = this.iModel.models.filterLoaded(this.modelSelector.models);
-    if (undefined === notLoaded)
-      return; // all requested models are already loaded
+    if (undefined === notLoaded) return; // all requested models are already loaded
     hydrateRequest.notLoadedModelSelectorStateModels = CompressedId64Set.sortAndCompress(notLoaded);
   }
 
@@ -170,23 +189,29 @@ export class SpatialViewState extends ViewState3d {
     await Promise.all(promises);
   }
 
-  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
-  public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
+  public viewsModel(modelId: Id64String): boolean {
+    return this.modelSelector.containsModel(modelId);
+  }
+  public clearViewedModels() {
+    this.modelSelector.models.clear();
+  }
+  public addViewedModel(id: Id64String) {
+    this.modelSelector.addModels(id);
+  }
+  public removeViewedModel(id: Id64String) {
+    this.modelSelector.dropModels(id);
+  }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
       const model = this.iModel.models.getLoaded(modelId);
-      if (undefined !== model && undefined !== model.asGeometricModel3d)
-        func(model as GeometricModel3dState);
+      if (undefined !== model && undefined !== model.asGeometricModel3d) func(model as GeometricModel3dState);
     }
   }
 
   /** @internal */
   public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
-    for (const ref of this._treeRefs)
-      func(ref);
+    for (const ref of this._treeRefs) func(ref);
   }
 
   /** @internal */
@@ -215,7 +240,11 @@ export class SpatialViewState extends ViewState3d {
    * @param which The references to be affected as either a broad category or one or more indices of animated references.
    * @internal
    */
-  public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+  public setTileTreeReferencesDeactivated(
+    modelIds: Id64String | Id64String[] | undefined,
+    deactivated: boolean | undefined,
+    which: "all" | "animated" | "primary" | "section" | number[]
+  ): void {
     this._treeRefs.setDeactivated(modelIds, deactivated, which);
   }
 
@@ -242,9 +271,21 @@ export class SpatialViewState extends ViewState3d {
  */
 export class OrthographicViewState extends SpatialViewState {
   /** @internal */
-  public static override get className() { return "OrthographicViewDefinition"; }
+  public static override get className() {
+    return "OrthographicViewDefinition";
+  }
 
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
+  constructor(
+    props: SpatialViewDefinitionProps,
+    iModel: IModelConnection,
+    categories: CategorySelectorState,
+    displayStyle: DisplayStyle3dState,
+    modelSelector: ModelSelectorState
+  ) {
+    super(props, iModel, categories, displayStyle, modelSelector);
+  }
 
-  public override supportsCamera(): boolean { return false; }
+  public override supportsCamera(): boolean {
+    return false;
+  }
 }

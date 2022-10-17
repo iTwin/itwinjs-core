@@ -184,8 +184,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLCont
       });
     });
 
-    if (!wantHilite && !wantTranslucent)
-      frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
+    if (!wantHilite && !wantTranslucent) frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
   }
 
   const flagString = (wantHilite ? "-Hilite" : "") + (wantTranslucent ? "-Translucent" : "") + (wantOcclusion ? "-Occlusion" : "");

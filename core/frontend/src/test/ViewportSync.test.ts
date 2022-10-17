@@ -9,7 +9,11 @@ import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
 import { Viewport } from "../Viewport";
 import {
-  connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
+  connectViewports,
+  synchronizeViewportFrusta,
+  synchronizeViewportViews,
+  TwoWayViewportFrustumSync,
+  TwoWayViewportSync,
 } from "../ViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
@@ -112,7 +116,6 @@ describe("TwoWayViewportSync", () => {
 
     test(TwoWayViewportSync, true);
     test(TwoWayViewportFrustumSync, false);
-
   });
 
   it("synchronizes selectors", () => {
@@ -129,10 +132,8 @@ describe("TwoWayViewportSync", () => {
 
       const sync = new type();
       sync.connect(vp1, vp2);
-      if (expectSync)
-        expect(categories(vp1)).to.deep.equal(categories(vp2));
-      else
-        expect(categories(vp1)).not.to.deep.equal(categories(vp2));
+      if (expectSync) expect(categories(vp1)).to.deep.equal(categories(vp2));
+      else expect(categories(vp1)).not.to.deep.equal(categories(vp2));
 
       vp2.view.categorySelector.categories.delete("0x1");
       vp2.view.categorySelector.categories.add("0x2");
@@ -183,13 +184,11 @@ describe("connectViewports", () => {
   after(async () => IModelApp.shutdown());
 
   beforeEach(() => {
-    for (let i = 0; i < nVps; i++)
-      vps.push(openBlankViewport());
+    for (let i = 0; i < nVps; i++) vps.push(openBlankViewport());
   });
 
   afterEach(() => {
-    for (const vp of vps)
-      vp.dispose();
+    for (const vp of vps) vp.dispose();
 
     vps.length = 0;
   });

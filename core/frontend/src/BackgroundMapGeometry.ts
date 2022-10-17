@@ -7,7 +7,28 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, XYAndZ } from "@itwin/core-geometry";
+import {
+  Angle,
+  Arc3d,
+  ClipPlane,
+  ClipPlaneContainment,
+  Constant,
+  CurvePrimitive,
+  Ellipsoid,
+  GrowableXYZArray,
+  LongitudeLatitudeNumber,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point2d,
+  Point3d,
+  Point4d,
+  Range1d,
+  Range3d,
+  Ray3d,
+  Transform,
+  Vector3d,
+  XYAndZ,
+} from "@itwin/core-geometry";
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode } from "@itwin/core-common";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
@@ -30,21 +51,24 @@ function accumulateDepthRange(point: Point3d, viewRotation: Matrix3d, range: Ran
   range.extend(scratchPoint);
 }
 
-function accumulateFrustumPlaneDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal, viewRotation: Matrix3d, range: Range3d, eyePoint?: Point3d) {
+function accumulateFrustumPlaneDepthRange(
+  frustum: Frustum,
+  plane: Plane3dByOriginAndUnitNormal,
+  viewRotation: Matrix3d,
+  range: Range3d,
+  eyePoint?: Point3d
+) {
   let includeHorizon = false;
   for (let i = 0; i < 4; i++) {
     const frustumRay = Ray3d.createStartEnd(eyePoint ? eyePoint : frustum.points[i + 4], frustum.points[i]);
     const thisFraction = frustumRay.intersectionWithPlane(plane, scratchPoint);
-    if (undefined !== thisFraction && (!eyePoint || thisFraction > 0))
-      accumulateDepthRange(scratchPoint, viewRotation, range);
-    else
-      includeHorizon = true;
+    if (undefined !== thisFraction && (!eyePoint || thisFraction > 0)) accumulateDepthRange(scratchPoint, viewRotation, range);
+    else includeHorizon = true;
   }
   if (includeHorizon) {
     if (eyePoint !== undefined) {
       const eyeHeight = plane.altitude(eyePoint);
-      if (eyeHeight < 0)
-        accumulateDepthRange(eyePoint, viewRotation, range);
+      if (eyeHeight < 0) accumulateDepthRange(eyePoint, viewRotation, range);
       else {
         const viewZ = viewRotation.getRow(2);
         const horizonDistance = Math.sqrt(eyeHeight * eyeHeight + 2 * eyeHeight * Constant.earthRadiusWGS84.equator);
@@ -81,8 +105,8 @@ export class BackgroundMapGeometry {
   private _mercatorFractionToDb: Transform;
   private _mercatorTilingScheme: WebMercatorTilingScheme;
   private _ecefToDb: Transform;
-  public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
-  private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
+  public static maxCartesianDistance = 1e4; // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
+  private static _transitionDistanceMultiplier = 0.25; // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
 
   private static _scratchRayFractions = new Array<number>();
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
@@ -102,7 +126,7 @@ export class BackgroundMapGeometry {
     const halfChordAngle = Angle.piOver2Radians / 10;
     this.maxGeometryChordHeight = (1 - Math.cos(halfChordAngle)) * earthRadius;
     this.cartesianPlane = this.getPlane();
-    this.geometry = (globeMode === GlobeMode.Ellipsoid) ? this.getEarthEllipsoid() : this.cartesianPlane;
+    this.geometry = globeMode === GlobeMode.Ellipsoid ? this.getEarthEllipsoid() : this.cartesianPlane;
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(this._ecefToDb, _bimElevationBias, _iModel, false);
   }
@@ -112,16 +136,19 @@ export class BackgroundMapGeometry {
     return cartesianRange;
   }
   public static getCartesianTransitionDistance(iModel: IModelConnection): number {
-    return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier;
+    return (
+      BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier
+    );
   }
 
   public async dbToCartographicFromGcs(db: XYAndZ, result?: Cartographic): Promise<Cartographic> {
-    return this.cartesianRange.containsPoint(Point3d.createFrom(db)) ? this._iModel.spatialToCartographic(db, result) : this.dbToCartographic(db, result);
+    return this.cartesianRange.containsPoint(Point3d.createFrom(db))
+      ? this._iModel.spatialToCartographic(db, result)
+      : this.dbToCartographic(db, result);
   }
 
   public dbToCartographic(db: XYAndZ, result?: Cartographic): Cartographic {
-    if (undefined === result)
-      result = Cartographic.createZero();
+    if (undefined === result) result = Cartographic.createZero();
 
     if (this.globeMode === GlobeMode.Plane) {
       const mercatorFraction = this._mercatorFractionToDb.multiplyInversePoint3d(db)!;
@@ -141,7 +168,7 @@ export class BackgroundMapGeometry {
     } else {
       db = this._ecefToDb.multiplyPoint3d(cartographic.toEcef())!;
     }
-    return (!this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db)) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
+    return !this._iModel.noGcsDefined && this.cartesianRange.containsPoint(db) ? this._iModel.cartographicToSpatialFromGcs(cartographic) : db;
   }
   public cartographicToDb(cartographic: Cartographic, result?: Point3d): Point3d {
     if (this.globeMode === GlobeMode.Plane) {
@@ -154,7 +181,8 @@ export class BackgroundMapGeometry {
   }
 
   public getEarthEllipsoid(radiusOffset = 0): Ellipsoid {
-    const equatorRadius = Constant.earthRadiusWGS84.equator + radiusOffset, polarRadius = Constant.earthRadiusWGS84.polar + radiusOffset;
+    const equatorRadius = Constant.earthRadiusWGS84.equator + radiusOffset,
+      polarRadius = Constant.earthRadiusWGS84.polar + radiusOffset;
     return Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.globeMatrix, equatorRadius, equatorRadius, polarRadius);
   }
   public getPlane(offset = 0) {
@@ -175,9 +203,14 @@ export class BackgroundMapGeometry {
         if ((!positiveOnly || thisFraction > 0) && (undefined === intersectDistance || thisFraction < intersectDistance)) {
           intersectDistance = thisFraction;
           intersect = scratchIntersectRay;
-          ellipsoid.radiansToUnitNormalRay(BackgroundMapGeometry._scratchRayAngles[i].longitudeRadians, BackgroundMapGeometry._scratchRayAngles[i].latitudeRadians, intersect);
+          ellipsoid.radiansToUnitNormalRay(
+            BackgroundMapGeometry._scratchRayAngles[i].longitudeRadians,
+            BackgroundMapGeometry._scratchRayAngles[i].latitudeRadians,
+            intersect
+          );
           if (intersect.direction.dotProduct(ray.direction) < 0) {
-            if (this.cartesianRange.containsPoint(intersect.origin)) {    // If we're in the cartesian range, correct to planar intersection.
+            if (this.cartesianRange.containsPoint(intersect.origin)) {
+              // If we're in the cartesian range, correct to planar intersection.
               const planeFraction = ray.intersectionWithPlane(this.cartesianPlane, scratchIntersectRay.origin);
               if (undefined !== planeFraction && (!positiveOnly || planeFraction > 0)) {
                 intersect.direction.setFromVector3d(this.cartesianPlane.getNormalRef());
@@ -200,8 +233,7 @@ export class BackgroundMapGeometry {
     if (this.globeMode === GlobeMode.Ellipsoid) {
       const ellipsoid = this.geometry as Ellipsoid;
       const projected = ellipsoid.projectPointToSurface(point);
-      if (undefined === projected)
-        return undefined;
+      if (undefined === projected) return undefined;
 
       const distance = ellipsoid.radiansToPoint(projected.longitudeRadians, projected.latitudeRadians).distance(point);
       const ellipsePoint = ellipsoid.transformRef.multiplyInversePoint3d(point, BackgroundMapGeometry._scratchPoint)!;
@@ -213,19 +245,23 @@ export class BackgroundMapGeometry {
   }
 
   /** @internal */
-  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(
+    frustum: Frustum,
+    bimRange: Range3d,
+    heightRange?: Range1d,
+    gridPlane?: Plane3dByOriginAndUnitNormal,
+    doGlobalScope?: boolean
+  ): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation);
-    if (undefined === viewRotation)
-      return Range1d.createNull();      // Degenerate frustum...
+    if (undefined === viewRotation) return Range1d.createNull(); // Degenerate frustum...
     const viewZ = viewRotation.getRow(2);
     const cartoRange = this.cartesianTransitionRange;
     const intersectRange = Range3d.createNull();
-    const doAccumulate = ((point: Point3d) => accumulateDepthRange(point, viewRotation, intersectRange));
+    const doAccumulate = (point: Point3d) => accumulateDepthRange(point, viewRotation, intersectRange);
 
-    if (gridPlane)
-      accumulateFrustumPlaneDepthRange(frustum, gridPlane, viewRotation, intersectRange, eyePoint);
+    if (gridPlane) accumulateFrustumPlaneDepthRange(frustum, gridPlane, viewRotation, intersectRange, eyePoint);
     if (this.geometry instanceof Plane3dByOriginAndUnitNormal) {
       // Intersection with a planar background projection...
       const heights = heightRange ? [heightRange.low, heightRange.high] : [0];
@@ -233,13 +269,13 @@ export class BackgroundMapGeometry {
         accumulateFrustumPlaneDepthRange(frustum, this.getPlane(height), viewRotation, intersectRange, eyePoint);
       }
     } else {
-      const minOffset = heightRange ? heightRange.low : 0, maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
+      const minOffset = heightRange ? heightRange.low : 0,
+        maxOffset = (heightRange ? heightRange.high : 0) + this.cartesianChordHeight;
       const radiusOffsets = [minOffset, maxOffset];
 
       // If we are doing global scope then include minimum ellipsoid that represents the chordal approximation of the low level tiles.
       // this substantially expands the frustum so don't do it for non-global views, but this clipping out the low level tiles.
-      if (doGlobalScope)
-        radiusOffsets.push(minOffset - this.maxGeometryChordHeight);
+      if (doGlobalScope) radiusOffsets.push(minOffset - this.maxGeometryChordHeight);
 
       const toView = Transform.createRefs(Point3d.createZero(), viewRotation);
       const eyePoint4d = eyePoint ? Point4d.createFromPointAndWeight(eyePoint, 1) : Point4d.createFromPointAndWeight(viewZ, 0);
@@ -252,15 +288,16 @@ export class BackgroundMapGeometry {
 
         // Extrema...
         let angles, extremaPoint;
-        if (undefined !== (angles = ellipsoid.surfaceNormalToAngles(viewZ)) &&
+        if (
+          undefined !== (angles = ellipsoid.surfaceNormalToAngles(viewZ)) &&
           undefined !== (extremaPoint = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)) &&
           (eyePoint === undefined || viewZ.dotProductStartEnd(extremaPoint, eyePoint) > 0) &&
-          clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside)
+          clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside
+        )
           doAccumulate(extremaPoint);
 
         if (isInside) {
-          if (eyePoint)
-            doAccumulate(eyePoint);
+          if (eyePoint) doAccumulate(eyePoint);
         } else {
           const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
           if (silhouette !== undefined) {
@@ -269,14 +306,15 @@ export class BackgroundMapGeometry {
             // First make sure that it is pointing in the right direction.
             if (eyePoint) {
               // Clip toward eye.
-              if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
-                scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+              if (scratchSilhouetteNormal.dotProduct(viewZ) < 0) scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             } else {
               /* If parallel projection - clip toward side of ellipsoid with BIM geometry */
               if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
-            clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+            clipPlanes.planes.push(
+              ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!
+            );
           } else {
             clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
           }
@@ -290,13 +328,11 @@ export class BackgroundMapGeometry {
               const arc = ellipsoid.createPlaneSection(plane);
               if (undefined !== arc) {
                 arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
-                  if (Math.abs(a1 - a0) < 1.0E-8) {
-                    doAccumulate(cp.fractionToPoint(a0));   // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
+                  if (Math.abs(a1 - a0) < 1.0e-8) {
+                    doAccumulate(cp.fractionToPoint(a0)); // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
                   } else {
                     const segment = cp.clonePartialCurve(a0, a1);
-                    if (segment !== undefined)
-                      segment.extendRange(intersectRange, toView);
-
+                    if (segment !== undefined) segment.extendRange(intersectRange, toView);
                   }
                 });
               }
@@ -311,9 +347,9 @@ export class BackgroundMapGeometry {
           scratchCartoRectangle.push({ x: cartoRange.low.x, y: cartoRange.low.y, z: radiusOffset });
 
           clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
-          for (let i = 0; i < scratchCartoRectangle.length; i++)
-            doAccumulate(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i));
-          while (clipPlanes.planes.length > clipPlaneCount)   // Remove pushed silhouette plane.
+          for (let i = 0; i < scratchCartoRectangle.length; i++) doAccumulate(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i));
+          while (clipPlanes.planes.length > clipPlaneCount)
+            // Remove pushed silhouette plane.
             clipPlanes.planes.pop();
         }
       }
@@ -328,7 +364,7 @@ export class BackgroundMapGeometry {
       return Range1d.createXX(zCenter - zExpand, zCenter + zExpand);
     } else {
       const diagonal = intersectRange.diagonal(scratchVector).magnitudeXY();
-      const expansion = diagonal * .01;
+      const expansion = diagonal * 0.01;
       return Range1d.createXX(intersectRange.low.z - expansion, intersectRange.high.z + expansion);
     }
   }
@@ -349,8 +385,7 @@ export class BackgroundMapGeometry {
         const silhouette = ellipsoid.silhouetteArc(eyePoint4d);
         if (silhouette !== undefined) {
           silhouette.perpendicularVector.clone(scratchSilhouetteNormal);
-          if (scratchSilhouetteNormal.dotProduct(viewZ) < 0)
-            scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
+          if (scratchSilhouetteNormal.dotProduct(viewZ) < 0) scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
           clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
         } else {
           clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
@@ -364,8 +399,7 @@ export class BackgroundMapGeometry {
           if (undefined !== arc) {
             arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
               const segment = cp.clonePartialCurve(a0, a1);
-              if (segment !== undefined)
-                builder.addArc(segment as Arc3d, false, false);
+              if (segment !== undefined) builder.addArc(segment as Arc3d, false, false);
             });
           }
 
@@ -393,15 +427,18 @@ export class BackgroundMapGeometry {
  */
 export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iModel: IModelConnection): Promise<Transform | undefined> {
   const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
-  if (geoConverter === undefined)
-    return undefined;
+  if (geoConverter === undefined) return undefined;
 
-  const origin = Point3d.create(originIn.x, originIn.y, 0);   // Always Test at zero.
+  const origin = Point3d.create(originIn.x, originIn.y, 0); // Always Test at zero.
   const eastPoint = origin.plusXYZ(1, 0, 0);
   const northPoint = origin.plusXYZ(0, 1, 0);
 
   const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
-  if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success)
+  if (
+    response.geoCoords[0].s !== GeoCoordStatus.Success ||
+    response.geoCoords[1].s !== GeoCoordStatus.Success ||
+    response.geoCoords[2].s !== GeoCoordStatus.Success
+  )
     return undefined;
 
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
@@ -415,19 +452,17 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
   const zVector = xVector.unitCrossProduct(yVector);
   if (undefined === zVector) {
-    assert(false);            // Should never occur.
+    assert(false); // Should never occur.
     return undefined;
   }
   const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
-  if (matrix === undefined)
-    return undefined;
+  if (matrix === undefined) return undefined;
 
   const inverse = matrix.inverse();
   if (inverse === undefined) {
-    assert(false);               // Should never occur.
+    assert(false); // Should never occur.
     return undefined;
   }
 
   return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
 }
-

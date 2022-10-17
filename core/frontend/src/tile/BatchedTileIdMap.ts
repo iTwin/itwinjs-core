@@ -16,7 +16,7 @@ import { IModelConnection } from "../IModelConnection";
  */
 export class BatchedTileIdMap {
   private readonly _iModel: IModelConnection;
-  private _featureMap?: Map<string, { id: Id64String, properties: any }>;
+  private _featureMap?: Map<string, { id: Id64String; properties: any }>;
   private _idMap?: Map<Id64String, any>;
 
   public constructor(iModel: IModelConnection) {
@@ -27,7 +27,7 @@ export class BatchedTileIdMap {
   public getBatchId(properties: any): Id64String {
     if (undefined === this._featureMap || undefined === this._idMap) {
       assert(undefined === this._featureMap && undefined === this._idMap);
-      this._featureMap = new Map<string, { id: Id64String, properties: any }>();
+      this._featureMap = new Map<string, { id: Id64String; properties: any }>();
       this._idMap = new Map<Id64String, any>();
     }
 

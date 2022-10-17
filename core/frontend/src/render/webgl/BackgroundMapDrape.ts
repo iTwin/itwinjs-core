@@ -36,11 +36,7 @@ export class BackgroundMapDrape extends TextureDrape {
   private _height = 0;
   private _mapTree: MapTileTreeReference;
   private _drapedTree: TileTreeReference;
-  private static _postProjectionMatrix = Matrix4d.createRowValues(
-    0, 1, 0, 0,
-    0, 0, -1, 0,
-    1, 0, 0, 0,
-    0, 0, 0, 1);
+  private static _postProjectionMatrix = Matrix4d.createRowValues(0, 1, 0, 0, 0, 0, -1, 0, 1, 0, 0, 0, 0, 0, 0, 1);
   private _debugFrustum?: Frustum;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
@@ -53,7 +49,9 @@ export class BackgroundMapDrape extends TextureDrape {
     this._mapTree = mapTree;
   }
 
-  public override get isDisposed(): boolean { return super.isDisposed && undefined === this._fbo; }
+  public override get isDisposed(): boolean {
+    return super.isDisposed && undefined === this._fbo;
+  }
 
   public override dispose() {
     super.dispose();
@@ -70,44 +68,45 @@ export class BackgroundMapDrape extends TextureDrape {
 
   public collectGraphics(context: SceneContext) {
     this._graphics.length = 0;
-    if (undefined === context.viewingSpace)
-      return;
+    if (undefined === context.viewingSpace) return;
 
     const viewState = context.viewingSpace.view as ViewState3d;
-    if (undefined === viewState)
-      return;
+    if (undefined === viewState) return;
 
     const tileTree = this._mapTree.treeOwner.load();
-    if (undefined === tileTree || !this._mapTree.initializeLayers(context))
-      return;
+    if (undefined === tileTree || !this._mapTree.initializeLayers(context)) return;
 
-    const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);     // TBD - Size to textured area.
+    const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height); // TBD - Size to textured area.
     const requiredHeight = requiredWidth;
 
-    if (requiredWidth !== this._width || requiredHeight !== this._height)
-      this.dispose();
+    if (requiredWidth !== this._width || requiredHeight !== this._height) this.dispose();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
 
     const targetTree = this._drapedTree.treeOwner.tileTree;
     const args = this._drapedTree.createDrawArgs(context);
-    if (!targetTree || !args)
-      return;
+    if (!targetTree || !args) return;
 
     const targetTiles = targetTree.selectTiles(args);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, { tiles: targetTiles, location: args.location }, [this._mapTree], viewState, this._width, this._height);
-    if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
-      return;
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(
+      this._plane,
+      context,
+      { tiles: targetTiles, location: args.location },
+      [this._mapTree],
+      viewState,
+      this._width,
+      this._height
+    );
+    if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap) return;
 
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
     const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, new FrustumPlanes(this._frustum), projection.worldToViewMap);
-    if (undefined !== drawArgs)
-      tileTree.draw(drawArgs);
+    if (undefined !== drawArgs) tileTree.draw(drawArgs);
 
     if (context.target.debugControl && context.target.debugControl.displayDrapeFrustum) {
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
@@ -123,20 +122,28 @@ export class BackgroundMapDrape extends TextureDrape {
   }
 
   public draw(target: Target) {
-    if (undefined !== this._debugFrustumGraphic)
-      target.graphics.foreground.push(this._debugFrustumGraphic);
+    if (undefined !== this._debugFrustumGraphic) target.graphics.foreground.push(this._debugFrustumGraphic);
 
-    if (undefined === this._frustum || this._graphics.length === 0)
-      return;
+    if (undefined === this._frustum || this._graphics.length === 0) return;
 
     if (undefined === this._fbo) {
-      const colorTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      const colorTextureHandle = TextureHandle.createForAttachment(
+        this._width,
+        this._height,
+        GL.Texture.Format.Rgba,
+        GL.Texture.DataType.UnsignedByte
+      );
       if (undefined === colorTextureHandle) {
         assert(false, "Failed to create planar texture");
         return;
       }
 
-      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle, transparency: TextureTransparency.Opaque });
+      this._texture = new Texture({
+        ownership: "external",
+        type: RenderTexture.Type.TileSection,
+        handle: colorTextureHandle,
+        transparency: TextureTransparency.Opaque,
+      });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {
@@ -176,15 +183,14 @@ export class BackgroundMapDrape extends TextureDrape {
     system.frameBufferStack.execute(this._fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      if (!useMRT)
-        target.compositor.currentRenderTargetIndex = 0;
+      if (!useMRT) target.compositor.currentRenderTargetIndex = 0;
 
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification); // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
     target.uniforms.branch.pop();
 
-    batchState.reset();   // Reset the batch Ids...
+    batchState.reset(); // Reset the batch Ids...
     target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);

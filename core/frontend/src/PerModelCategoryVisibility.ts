@@ -64,7 +64,7 @@ export namespace PerModelCategoryVisibility {
   /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
    * @see [[PerModelCategoryVisibility.Overrides.setOverrides]].
    * @beta
-  */
+   */
   export interface Props {
     /** The id of the model to which the overrides apply. */
     modelId: string;
@@ -115,10 +115,8 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
   public getOverride(modelId: Id64String, categoryId: Id64String): PerModelCategoryVisibility.Override {
     this._scratch.reset(modelId, categoryId, false);
     const ovr = this.findEqual(this._scratch);
-    if (undefined !== ovr)
-      return ovr.visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
-    else
-      return PerModelCategoryVisibility.Override.None;
+    if (undefined !== ovr) return ovr.visible ? PerModelCategoryVisibility.Override.Show : PerModelCategoryVisibility.Override.Hide;
+    else return PerModelCategoryVisibility.Override.None;
   }
 
   /**
@@ -175,7 +173,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         this._array.splice(index, 1);
         changed = true;
       } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
-        this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+        this._array[index].visible = PerModelCategoryVisibility.Override.Show === override;
         changed = true;
       }
     }
@@ -186,8 +184,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
     let changed = false;
     for (const modelId of Id64.iterable(modelIds)) {
       for (const categoryId of Id64.iterable(categoryIds)) {
-        if (this.findAndUpdateOverrideInArray(modelId, categoryId, override))
-          changed = true;
+        if (this.findAndUpdateOverrideInArray(modelId, categoryId, override)) changed = true;
       }
     }
 
@@ -211,7 +208,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
       return;
     }
 
-    for (let i = 0; i < this.length;) {
+    for (let i = 0; i < this.length; ) {
       const ovr = this._array[i];
       let removed = false;
       for (const modelId of Id64.iterable(modelIds)) {
@@ -223,8 +220,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         }
       }
 
-      if (!removed)
-        ++i;
+      if (!removed) ++i;
     }
   }
 
@@ -233,8 +229,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
 
     for (const ovr of this._array) {
       const subcats = cache.getSubCategories(ovr.categoryId);
-      if (undefined === subcats)
-        continue;
+      if (undefined === subcats) continue;
 
       // It's pointless to override for models which aren't displayed...except if we do this, and then someone enables that model,
       // we would need to regenerate our symbology overrides in response. Preferably people wouldn't bother overriding models that

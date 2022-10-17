@@ -48,8 +48,8 @@ const drawGridLine = `
    }
 `;
 
-const fwidth2dWhenAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
-const fwidth2dWhenNotAvailable =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(0.25, 0.25); }\n`;
+const fwidth2dWhenAvailable = `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
+const fwidth2dWhenNotAvailable = `\nvec2 screenSpaceDeriv(vec2 screenXY) { return vec2(0.25, 0.25); }\n`;
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
@@ -71,8 +71,7 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
     frag.addFunction(fwidth2dWhenNotAvailable);
   }
 
-  if (System.instance.supportsLogZBuffer)
-    addLogDepth(builder);
+  if (System.instance.supportsLogZBuffer) addLogDepth(builder);
 
   frag.addFunction(drawGridLine);
 
@@ -100,10 +99,14 @@ export default function createPlanarGridProgram(context: WebGLContext): ShaderPr
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
       const planarGridProps = params.geometry.asPlanarGrid!.props;
       const transparency = planarGridProps.transparency ? planarGridProps.transparency : defaultTransparency;
-      uniform.setUniform4fv([planarGridProps.gridsPerRef,  1.0 - transparency.planeTransparency, 1.0 - transparency.lineTransparency, 1.0 - transparency.refTransparency]);
+      uniform.setUniform4fv([
+        planarGridProps.gridsPerRef,
+        1.0 - transparency.planeTransparency,
+        1.0 - transparency.lineTransparency,
+        1.0 - transparency.refTransparency,
+      ]);
     });
   });
 
   return builder.buildProgram(context);
 }
-

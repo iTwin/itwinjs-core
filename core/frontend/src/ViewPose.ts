@@ -30,9 +30,13 @@ export abstract class ViewPose {
     return this.origin.plusScaled(delta, 0.5);
   }
 
-  public get target() { return this.center; }
-  public get zVec() { return this.rotation.getRow(2); }
-  public constructor(public cameraOn: boolean) { }
+  public get target() {
+    return this.center;
+  }
+  public get zVec() {
+    return this.rotation.getRow(2);
+  }
+  public constructor(public cameraOn: boolean) {}
 }
 
 /** @internal */
@@ -55,19 +59,23 @@ export class ViewPose3d extends ViewPose {
   }
 
   public equal(other: ViewPose3d) {
-    return this.cameraOn === other.cameraOn &&
+    return (
+      this.cameraOn === other.cameraOn &&
       this.origin.isAlmostEqual(other.origin) &&
       this.extents.isAlmostEqual(other.extents) &&
       this.rotation.isAlmostEqual(other.rotation) &&
-      (!this.cameraOn || this.camera.equals(other.camera));
+      (!this.cameraOn || this.camera.equals(other.camera))
+    );
   }
 
   public equalState(view: ViewState3d): boolean {
-    return this.cameraOn === view.isCameraOn &&
+    return (
+      this.cameraOn === view.isCameraOn &&
       this.origin.isAlmostEqual(view.origin) &&
       this.extents.isAlmostEqual(view.extents) &&
       this.rotation.isAlmostEqual(view.rotation) &&
-      (!this.cameraOn || this.camera.equals(view.camera));
+      (!this.cameraOn || this.camera.equals(view.camera))
+    );
   }
 }
 
@@ -85,18 +93,20 @@ export class ViewPose2d extends ViewPose {
   }
 
   public equal(other: ViewPose2d) {
-    return this.origin2.isAlmostEqual(other.origin) &&
-      this.delta.isAlmostEqual(other.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(other.angle);
+    return this.origin2.isAlmostEqual(other.origin) && this.delta.isAlmostEqual(other.delta) && this.angle.isAlmostEqualNoPeriodShift(other.angle);
   }
 
   public equalState(view: ViewState2d): boolean {
-    return this.origin2.isAlmostEqual(view.origin) &&
-      this.delta.isAlmostEqual(view.delta) &&
-      this.angle.isAlmostEqualNoPeriodShift(view.angle);
+    return this.origin2.isAlmostEqual(view.origin) && this.delta.isAlmostEqual(view.delta) && this.angle.isAlmostEqualNoPeriodShift(view.angle);
   }
 
-  public get origin() { return new Point3d(this.origin2.x, this.origin2.y); }
-  public get extents() { return new Vector3d(this.delta.x, this.delta.y); }
-  public get rotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public get origin() {
+    return new Point3d(this.origin2.x, this.origin2.y);
+  }
+  public get extents() {
+    return new Vector3d(this.delta.x, this.delta.y);
+  }
+  public get rotation() {
+    return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!;
+  }
 }

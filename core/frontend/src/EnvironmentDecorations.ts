@@ -6,10 +6,18 @@
  * @module Views
  */
 
-import { assert, Id64} from "@itwin/core-bentley";
+import { assert, Id64 } from "@itwin/core-bentley";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef,
+  Environment,
+  Gradient,
+  GraphicParams,
+  RenderTexture,
+  SkyCube,
+  SkySphere,
+  TextureImageSpec,
+  TextureMapping,
 } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { ViewState3d } from "./ViewState";
@@ -45,10 +53,9 @@ export class EnvironmentDecorations {
     this._onLoaded = onLoaded;
     this._onDispose = onDispose;
 
-    this._sky = { };
+    this._sky = {};
     this.loadSky();
-    if (this._environment.displayGround)
-      this.loadGround();
+    if (this._environment.displayGround) this.loadGround();
   }
 
   public dispose(): void {
@@ -61,37 +68,30 @@ export class EnvironmentDecorations {
 
   public setEnvironment(env: Environment): void {
     const prev = this._environment;
-    if (prev === env)
-      return;
+    if (prev === env) return;
 
     this._environment = env;
 
     // Update ground plane
-    if (!env.displayGround || env.ground !== prev.ground)
-      this._ground = undefined;
+    if (!env.displayGround || env.ground !== prev.ground) this._ground = undefined;
 
-    if (env.displayGround && !this._ground)
-      this.loadGround();
+    if (env.displayGround && !this._ground) this.loadGround();
 
     // Update sky box
-    if (env.sky !== prev.sky)
-      this.loadSky();
+    if (env.sky !== prev.sky) this.loadSky();
   }
 
   public decorate(context: DecorateContext): void {
     const env = this._environment;
     if (env.displaySky && this._sky.params) {
       const sky = IModelApp.renderSystem.createSkyBox(this._sky.params);
-      if (sky)
-        context.setSkyBox(sky);
+      if (sky) context.setSkyBox(sky);
     }
 
-    if (!env.displayGround || !this._ground)
-      return;
+    if (!env.displayGround || !this._ground) return;
 
     const extents = this._view.getGroundExtents(context.viewport);
-    if (extents.isNull)
-      return;
+    if (extents.isNull) return;
 
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
@@ -118,14 +118,13 @@ export class EnvironmentDecorations {
     assert(undefined === this._ground);
     const aboveParams = this.createGroundParams(true);
     const belowParams = this.createGroundParams(false);
-    if (aboveParams && belowParams)
-      this._ground = { aboveParams, belowParams };
+    if (aboveParams && belowParams) this._ground = { aboveParams, belowParams };
   }
 
   private createGroundParams(above: boolean): GraphicParams | undefined {
     // Create a gradient texture.
     const ground = this._environment.ground;
-    const values = [0, 0.25, 0.5 ];
+    const values = [0, 0.25, 0.5];
     const color = above ? ground.aboveColor : ground.belowColor;
     const alpha = above ? 0x80 : 0x85;
     const groundColors = [color.withTransparency(0xff), color, color];
@@ -133,10 +132,13 @@ export class EnvironmentDecorations {
 
     const gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
+    gradient.keys = [
+      { color: groundColors[0], value: values[0] },
+      { color: groundColors[1], value: values[1] },
+      { color: groundColors[2], value: values[2] },
+    ];
     const texture = IModelApp.renderSystem.getGradientTexture(gradient, this._view.iModel);
-    if (!texture)
-      return undefined;
+    if (!texture) return undefined;
 
     // Create a material using the gradient texture
     const material = IModelApp.renderSystem.createRenderMaterial({
@@ -147,13 +149,12 @@ export class EnvironmentDecorations {
       },
     });
 
-    if (!material)
-      return undefined;
+    if (!material) return undefined;
 
     // Create GraphicParams using the material.
     const params = new GraphicParams();
     params.lineColor = gradient.keys[0].color;
-    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
+    params.fillColor = ColorDef.white; // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
     return params;
@@ -165,13 +166,11 @@ export class EnvironmentDecorations {
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     promise.then((params) => {
-      if (promise === this._sky.promise)
-        this.setSky(params ?? this.createSkyGradientParams());
+      if (promise === this._sky.promise) this.setSky(params ?? this.createSkyGradientParams());
     });
 
     promise.catch(() => {
-      if (this._sky.promise === promise)
-        this.setSky(this.createSkyGradientParams());
+      if (this._sky.promise === promise) this.setSky(this.createSkyGradientParams());
     });
   }
 
@@ -186,34 +185,43 @@ export class EnvironmentDecorations {
     if (sky instanceof SkyCube) {
       const key = this.createCubeImageKey(sky);
       const existingTexture = IModelApp.renderSystem.findTexture(key, this._view.iModel);
-      if (existingTexture)
-        return { type: "cube", texture: existingTexture };
+      if (existingTexture) return { type: "cube", texture: existingTexture };
 
       // Some faces may use the same image. Only request each image once.
       const specs = new Set<string>([sky.images.front, sky.images.back, sky.images.left, sky.images.right, sky.images.top, sky.images.bottom]);
       const promises = [];
-      for (const spec of specs)
-        promises.push(this.imageFromSpec(spec));
+      for (const spec of specs) promises.push(this.imageFromSpec(spec));
 
       return Promise.all(promises).then((images) => {
         const idToImage = new Map<TextureImageSpec, HTMLImageElement>();
         let index = 0;
         for (const spec of specs) {
           const image = images[index++];
-          if (!image)
-            return undefined;
-          else
-            idToImage.set(spec, image);
+          if (!image) return undefined;
+          else idToImage.set(spec, image);
         }
 
         // eslint-disable-next-line deprecation/deprecation
         const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
         const txImgs = [
-          idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
-          idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
+          idToImage.get(sky.images.front)!,
+          idToImage.get(sky.images.back)!,
+          idToImage.get(sky.images.top)!,
+          idToImage.get(sky.images.bottom)!,
+          idToImage.get(sky.images.right)!,
+          idToImage.get(sky.images.left)!,
         ];
 
-        const texture = IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
+        const texture = IModelApp.renderSystem.createTextureFromCubeImages(
+          txImgs[0],
+          txImgs[1],
+          txImgs[2],
+          txImgs[3],
+          txImgs[4],
+          txImgs[5],
+          this._view.iModel,
+          params
+        );
         return texture ? { type: "cube", texture } : undefined;
       });
     } else if (sky instanceof SkySphere) {
@@ -229,8 +237,7 @@ export class EnvironmentDecorations {
         }
       }
 
-      if (!texture)
-        return undefined;
+      if (!texture) return undefined;
 
       return { type: "sphere", texture, rotation, zOffset: this._view.iModel.globalOrigin.z };
     } else {
@@ -248,8 +255,7 @@ export class EnvironmentDecorations {
   }
 
   private async imageFromSpec(spec: TextureImageSpec): Promise<HTMLImageElement | undefined> {
-    if (Id64.isValidId64(spec))
-      return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
+    if (Id64.isValidId64(spec)) return (await IModelApp.renderSystem.loadTextureImage(spec, this._view.iModel))?.image;
 
     return tryImageElementFromUrl(spec);
   }

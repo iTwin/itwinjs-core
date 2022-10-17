@@ -7,9 +7,7 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
-} from "@itwin/core-geometry";
+import { AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, GeometryClass, GraphicParams, LinePixels, Npc } from "@itwin/core-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -300,8 +298,7 @@ export abstract class GraphicBuilder {
 
         // Aspect ratio skew > 1.0 stretches the view in Y. In that case use the smaller vertical pixel distance for our stroke tolerance.
         const skew = options.applyAspectRatioSkew ? options.viewport.view.getAspectRatioSkew() : 0;
-        if (skew > 1)
-          pixelSize /= skew;
+        if (skew > 1) pixelSize /= skew;
       }
 
       return pixelSize * 0.25;
@@ -360,7 +357,7 @@ export abstract class GraphicBuilder {
   /** Called by [[activateFeature]] after validation to change the [Feature]($common) to be associated with subsequently-added geometry.
    * This default implementation does nothing.
    */
-  protected _activateFeature(_feature: Feature): void { }
+  protected _activateFeature(_feature: Feature): void {}
 
   /** Change the [Feature]($common) to be associated with subsequently-added geometry. This permits multiple features to be batched together into a single graphic
    * for more efficient rendering.
@@ -368,8 +365,7 @@ export abstract class GraphicBuilder {
    */
   public activateFeature(feature: Feature): void {
     assert(undefined !== this._options.pickable, "GraphicBuilder.activateFeature has no effect if PickableGraphicOptions were not supplied");
-    if (this._options.pickable)
-      this._activateFeature(feature);
+    if (this._options.pickable) this._activateFeature(feature);
   }
 
   /** Change the pickable Id to be associated with subsequently-added geometry. This permits multiple pickable objects to be batched  together into a single graphic
@@ -458,8 +454,7 @@ export abstract class GraphicBuilder {
         break;
       default:
         const path = new Path();
-        if (path.tryAddChild(curve))
-          this.addPath(path);
+        if (path.tryAddChild(curve)) this.addPath(path);
 
         break;
     }
@@ -565,5 +560,7 @@ export abstract class GraphicBuilder {
    * An example would be to add a line to a graphic containing a shape with blanking fill so that the line is always shown in front of the fill.
    * @param fillColor The color in which to draw filled regions.
    */
-  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
+  public setBlankingFill(fillColor: ColorDef) {
+    this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor));
+  }
 }

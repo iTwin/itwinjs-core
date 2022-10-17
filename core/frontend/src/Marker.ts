@@ -53,11 +53,9 @@ function getMinScaleViewW(vp: Viewport): number {
   for (const corner of corners) {
     Vector3d.createStartEnd(origin, corner, delta);
     const projection = delta.dotProduct(direction);
-    if (undefined === zHigh || projection > zHigh)
-      zHigh = projection;
+    if (undefined === zHigh || projection > zHigh) zHigh = projection;
   }
-  if (undefined === zHigh)
-    return 0.0;
+  if (undefined === zHigh) return 0.0;
   origin.plusScaled(direction, zHigh, origin);
   return vp.worldToView4d(origin).w;
 }
@@ -121,7 +119,9 @@ export class Marker implements CanvasDecoration {
   public htmlElement?: HTMLElement;
 
   /** Return true to display [[image]], if present. */
-  public get wantImage() { return true; }
+  public get wantImage() {
+    return true;
+  }
 
   /** Implement this function to draw onto the CanvasRenderingContext2D when this Marker is displayed. The [0,0] point will be the center of the Marker. */
   public drawFunc?(ctx: CanvasRenderingContext2D): void;
@@ -134,18 +134,21 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Called when the mouse pointer leaves this Marker. */
-  public onMouseLeave() { this._isHilited = false; }
+  public onMouseLeave() {
+    this._isHilited = false;
+  }
 
   /** Called when the mouse pointer moves over this Marker */
   public onMouseMove(ev: BeButtonEvent): void {
-    if (this.title)
-      ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
+    if (this.title) ev.viewport!.openToolTip(this.title, ev.viewPoint, this.tooltipOptions);
   }
   /** Called when a mouse button is pressed over this Marker. */
   public onMouseButton?(_ev: BeButtonEvent): boolean;
 
   /** Determine whether the point is within this Marker.  */
-  public pick(pt: XAndY): boolean { return this.rect.containsPoint(pt); }
+  public pick(pt: XAndY): boolean {
+    return this.rect.containsPoint(pt);
+  }
 
   /** Establish a range of scale factors to increases and decrease the size of this Marker based on its distance from the camera.
    * @param range The minimum and maximum scale factors to be applied to the size of this Marker based on its distance from the camera. `range.Low` is the scale factor
@@ -173,8 +176,7 @@ export class Marker implements CanvasDecoration {
     const out = new (this as any)(other.worldLocation, other.size, ...args) as T;
     out.rect.setFrom(other.rect);
     out.position.setFrom(other.position);
-    if (other._scaleFactor)
-      out._scaleFactor = Point2d.createFrom(other._scaleFactor);
+    if (other._scaleFactor) out._scaleFactor = Point2d.createFrom(other._scaleFactor);
     out._scaleFactorRange = other._scaleFactorRange;
     return out;
   }
@@ -193,22 +195,18 @@ export class Marker implements CanvasDecoration {
 
   /** Called during frame rendering to display this Marker onto the supplied context. */
   public drawDecoration(ctx: CanvasRenderingContext2D): void {
-    if (this._isHilited && this.drawHilited(ctx))
-      return;
+    if (this._isHilited && this.drawHilited(ctx)) return;
 
-    if (this._scaleFactor !== undefined)
-      ctx.scale(this._scaleFactor.x, this._scaleFactor.y);
+    if (this._scaleFactor !== undefined) ctx.scale(this._scaleFactor.x, this._scaleFactor.y);
 
     // first call the "drawFunc" if defined. This means it will be below the image and label if they overlap
-    if (undefined !== this.drawFunc)
-      this.drawFunc(ctx);
+    if (undefined !== this.drawFunc) this.drawFunc(ctx);
 
     // next draw the image, if defined and desired
     if (this.wantImage && this.image !== undefined) {
       const size = this.imageSize ? this.imageSize : this.size;
       const offset = new Point2d(size.x / 2, size.y / 2);
-      if (this.imageOffset)
-        offset.plus(this.imageOffset, offset);
+      if (this.imageOffset) offset.plus(this.imageOffset, offset);
       ctx.drawImage(this.image, -offset.x, -offset.y, size.x, size.y);
     }
 
@@ -228,36 +226,38 @@ export class Marker implements CanvasDecoration {
    */
   public setImage(image: MarkerImage | Promise<MarkerImage>) {
     if (image instanceof Promise) {
-      image.then((resolvedImage) =>
-        this.image = resolvedImage,
-      ).catch((err: Event) => {
-        const target = err.target as any;
-        const msg = `Could not load image ${target && target.src ? target.src : "unknown"}`;
-        Logger.logError(`${FrontendLoggerCategory.Package}.markers`, msg);
-        console.log(msg); // eslint-disable-line no-console
-      });
-    } else
-      this.image = image;
+      image
+        .then((resolvedImage) => (this.image = resolvedImage))
+        .catch((err: Event) => {
+          const target = err.target as any;
+          const msg = `Could not load image ${target && target.src ? target.src : "unknown"}`;
+          Logger.logError(`${FrontendLoggerCategory.Package}.markers`, msg);
+          console.log(msg); // eslint-disable-line no-console
+        });
+    } else this.image = image;
   }
 
   /** Set the image for this Marker from a URL. */
-  public setImageUrl(url: string) { this.setImage(imageElementFromUrl(url)); }
+  public setImageUrl(url: string) {
+    this.setImage(imageElementFromUrl(url));
+  }
 
   /** Set the position (in pixels) for this Marker in the supplied Viewport, based on its worldLocation.
    * @param markerSet The MarkerSet if this Marker is included in a set.
    * @return true if the Marker is visible and its new position is inside the Viewport.
    */
   public setPosition(vp: Viewport, markerSet?: MarkerSet<Marker>): boolean {
-    if (!this.visible) // if we're turned off, skip
+    if (!this.visible)
+      // if we're turned off, skip
       return false;
 
     const pt4 = vp.worldToView4d(this.worldLocation);
-    if (pt4.w > 1.0 || pt4.w < 1.0e-6) // outside of frustum or too close to eye.
+    if (pt4.w > 1.0 || pt4.w < 1.0e-6)
+      // outside of frustum or too close to eye.
       return false;
 
     pt4.realPoint(this.position);
-    if (!vp.viewRect.containsPoint(this.position))
-      return false; // outside this viewport rect
+    if (!vp.viewRect.containsPoint(this.position)) return false; // outside this viewport rect
 
     const origin = this.position;
     const sizeX = this.size.x / 2;
@@ -269,11 +269,9 @@ export class Marker implements CanvasDecoration {
       let scale = 1.0;
       if (vp.isCameraOn) {
         const range = this._scaleFactorRange;
-        const minScaleViewW = (undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp));
-        if (minScaleViewW > 0.0)
-          scale = Geometry.clamp(range.high - (pt4.w / minScaleViewW) * range.length(), .4, 2.0);
-        else
-          scale = Geometry.clamp(range.low + ((1 - pt4.w) * range.length()), .4, 2.0);
+        const minScaleViewW = undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp);
+        if (minScaleViewW > 0.0) scale = Geometry.clamp(range.high - (pt4.w / minScaleViewW) * range.length(), 0.4, 2.0);
+        else scale = Geometry.clamp(range.low + (1 - pt4.w) * range.length(), 0.4, 2.0);
         this.rect.scaleAboutCenter(scale, scale);
       }
       this._scaleFactor.set(scale, scale);
@@ -292,8 +290,8 @@ export class Marker implements CanvasDecoration {
     style.position = "absolute";
     const size = html.getBoundingClientRect(); // Note: only call this *after* setting position = absolute
     const markerPos = this.position;
-    style.left = `${markerPos.x - (size.width / 2)}px`;
-    style.top = `${markerPos.y - (size.height / 2)}px`;
+    style.left = `${markerPos.x - size.width / 2}px`;
+    style.top = `${markerPos.y - size.height / 2}px`;
   }
 
   /** Add this Marker to the supplied DecorateContext. */
@@ -312,8 +310,7 @@ export class Marker implements CanvasDecoration {
    * @param context The DecorateContext for the Marker
    */
   public addDecoration(context: DecorateContext) {
-    if (this.setPosition(context.viewport))
-      this.addMarker(context);
+    if (this.setPosition(context.viewport)) this.addMarker(context);
   }
 }
 
@@ -368,7 +365,9 @@ export abstract class MarkerSet<T extends Marker> {
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
-  public get markers(): Set<T> { return this._markers; }
+  public get markers(): Set<T> {
+    return this._markers;
+  }
   /** The radius (in pixels) representing the distance between the screen X,Y positions of two Markers to be clustered. When less than or equal to 0 (the default), the radius is calculated based on the first visible marker imageSize/size. */
   protected clusterRadius = 0;
 
@@ -384,7 +383,9 @@ export abstract class MarkerSet<T extends Marker> {
   }
 
   /** The ScreenViewport of this MarkerSet. */
-  public get viewport(): ScreenViewport | undefined { return this._viewport; }
+  public get viewport(): ScreenViewport | undefined {
+    return this._viewport;
+  }
 
   /** Change the ScreenViewport for this MarkerSet.
    * After this call, the markers from this MarkerSet will only appear in the supplied ScreenViewport.
@@ -415,8 +416,7 @@ export abstract class MarkerSet<T extends Marker> {
 
   /** Get weight value limit establishing the distance from camera for the back of view scale factor. */
   public getMinScaleViewW(vp: Viewport): number {
-    if (undefined === this._minScaleViewW)
-      this._minScaleViewW = getMinScaleViewW(vp);
+    if (undefined === this._minScaleViewW) this._minScaleViewW = getMinScaleViewW(vp);
     return this._minScaleViewW;
   }
 
@@ -426,8 +426,7 @@ export abstract class MarkerSet<T extends Marker> {
    */
   public addDecoration(context: DecorateContext): void {
     const vp = context.viewport;
-    if (vp !== this._viewport)
-      return; // not viewport of this MarkerSet, ignore it
+    if (vp !== this._viewport) return; // not viewport of this MarkerSet, ignore it
 
     const entries = this._entries;
 
@@ -443,8 +442,7 @@ export abstract class MarkerSet<T extends Marker> {
       // loop through all of the Markers in the MarkerSet.
       for (const marker of this.markers) {
         // establish the screen position for this marker. If it's not in view, setPosition returns false
-        if (!marker.setPosition(vp, this))
-          continue;
+        if (!marker.setPosition(vp, this)) continue;
 
         if (distSquared <= 0) {
           const size = marker.imageSize ? marker.imageSize : marker.size;
@@ -453,11 +451,13 @@ export abstract class MarkerSet<T extends Marker> {
         }
 
         let added = false;
-        for (let i = 0; i < entries.length; ++i) { // loop through all of the currently visible markers/clusters
+        for (let i = 0; i < entries.length; ++i) {
+          // loop through all of the currently visible markers/clusters
           const entry = entries[i];
           if (marker.position.distanceSquaredXY(entry.position) <= distSquared) {
             added = true; // yes, we're going to save it as a Cluster
-            if (entry instanceof Cluster) { // is the entry already a Cluster?
+            if (entry instanceof Cluster) {
+              // is the entry already a Cluster?
               entry.markers.push(marker); // yes, just add this to the existing cluster
             } else {
               entries[i] = new Cluster([entry, marker]); // no, make a new Cluster holding both
@@ -465,23 +465,24 @@ export abstract class MarkerSet<T extends Marker> {
             break; // this Marker has been handled, we can stop looking for overlaps
           }
         }
-        if (!added)
-          entries.push(marker); // there was no overlap, save this Marker to be drawn
+        if (!added) entries.push(marker); // there was no overlap, save this Marker to be drawn
       }
     }
 
     // we now have an array of Markers and Clusters, add them to context
     for (const entry of entries) {
-      if (entry instanceof Cluster) { // is this entry a Cluster?
-        if (entry.markers.length <= this.minimumClusterSize) { // yes, does it have more than the minimum number of entries?
+      if (entry instanceof Cluster) {
+        // is this entry a Cluster?
+        if (entry.markers.length <= this.minimumClusterSize) {
+          // yes, does it have more than the minimum number of entries?
           entry.markers.forEach((marker) => marker.addMarker(context)); // no, just draw all of its Markers
         } else {
           // yes, get and draw the Marker for this Cluster
-          if (undefined === entry.clusterMarker) { // have we already created this cluster marker?
+          if (undefined === entry.clusterMarker) {
+            // have we already created this cluster marker?
             const clusterMarker = this.getClusterMarker(entry); // no, get it now.
             // set the marker's position as getClusterMarker may not set it.
-            if (clusterMarker.rect.isNull)
-              clusterMarker.setPosition(vp, this);
+            if (clusterMarker.rect.isNull) clusterMarker.setPosition(vp, this);
             entry.clusterMarker = clusterMarker;
           }
           entry.clusterMarker.addMarker(context);

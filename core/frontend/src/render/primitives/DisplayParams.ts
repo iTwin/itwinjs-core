@@ -10,7 +10,11 @@ import { assert, compareBooleans, compareNumbers, comparePossiblyUndefined, comp
 import { ColorDef, FillFlags, Gradient, GraphicParams, LinePixels, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
 
 function compareMaterials(lhs?: RenderMaterial, rhs?: RenderMaterial): number {
-  return comparePossiblyUndefined((lhMat: RenderMaterial, rhMat: RenderMaterial) => lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key), lhs, rhs);
+  return comparePossiblyUndefined(
+    (lhMat: RenderMaterial, rhMat: RenderMaterial) => (lhMat === rhMat ? 0 : compareStringsOrUndefined(lhMat.key, rhMat.key)),
+    lhs,
+    rhs
+  );
 }
 function compareTextureMappings(_lhs?: TextureMapping, _rhs?: TextureMapping): number {
   // ###TODO
@@ -22,7 +26,7 @@ function compareTextureMappings(_lhs?: TextureMapping, _rhs?: TextureMapping): n
  * @internal
  */
 export class DisplayParams {
-  public static readonly minTransparency: number = 15;  // Threshold below which we consider a color fully opaque
+  public static readonly minTransparency: number = 15; // Threshold below which we consider a color fully opaque
   public readonly type: DisplayParams.Type = DisplayParams.Type.Mesh;
   public readonly material?: RenderMaterial; // meshes only
   public readonly gradient?: Gradient.Symb;
@@ -34,8 +38,18 @@ export class DisplayParams {
   public readonly fillFlags: FillFlags; // meshes only
   public readonly ignoreLighting: boolean; // always true for text and linear geometry; true for meshes only if normals not desired
 
-  public constructor(type: DisplayParams.Type, lineColor: ColorDef, fillColor: ColorDef, width: number = 0, linePixels: LinePixels = LinePixels.Solid,
-    fillFlags: FillFlags = FillFlags.None, material?: RenderMaterial, gradient?: Gradient.Symb, ignoreLighting: boolean = false, textureMapping?: TextureMapping) {
+  public constructor(
+    type: DisplayParams.Type,
+    lineColor: ColorDef,
+    fillColor: ColorDef,
+    width: number = 0,
+    linePixels: LinePixels = LinePixels.Solid,
+    fillFlags: FillFlags = FillFlags.None,
+    material?: RenderMaterial,
+    gradient?: Gradient.Symb,
+    ignoreLighting: boolean = false,
+    textureMapping?: TextureMapping
+  ) {
     this.type = type;
     this.material = material;
     this.gradient = gradient;
@@ -51,17 +65,32 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object for a particular type (mesh, linear, text) based on the specified GraphicParams. */
-  public static createForType(type: DisplayParams.Type, gf: GraphicParams, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined, ignoreLighting = false): DisplayParams {
+  public static createForType(
+    type: DisplayParams.Type,
+    gf: GraphicParams,
+    resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined,
+    ignoreLighting = false
+  ): DisplayParams {
     const lineColor = DisplayParams.adjustTransparency(gf.lineColor);
     switch (type) {
       case DisplayParams.Type.Mesh: {
         let gradientMapping: TextureMapping | undefined;
         if (undefined !== gf.gradient && undefined !== resolveGradient) {
           const gradientTexture = resolveGradient(gf.gradient);
-          if (undefined !== gradientTexture)
-            gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
+          if (undefined !== gradientTexture) gradientMapping = new TextureMapping(gradientTexture, new TextureMapping.Params());
         }
-        return new DisplayParams(type, lineColor, DisplayParams.adjustTransparency(gf.fillColor), gf.rasterWidth, gf.linePixels, gf.fillFlags, gf.material, gf.gradient, ignoreLighting, gradientMapping);
+        return new DisplayParams(
+          type,
+          lineColor,
+          DisplayParams.adjustTransparency(gf.fillColor),
+          gf.rasterWidth,
+          gf.linePixels,
+          gf.fillFlags,
+          gf.material,
+          gf.gradient,
+          ignoreLighting,
+          gradientMapping
+        );
       }
       case DisplayParams.Type.Linear:
         return new DisplayParams(type, lineColor, lineColor, gf.rasterWidth, gf.linePixels);
@@ -71,7 +100,11 @@ export class DisplayParams {
   }
 
   /** Creates a DisplayParams object that describes mesh geometry based on the specified GraphicParams. */
-  public static createForMesh(gf: GraphicParams, ignoreLighting: boolean, resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined): DisplayParams {
+  public static createForMesh(
+    gf: GraphicParams,
+    ignoreLighting: boolean,
+    resolveGradient?: (grad: Gradient.Symb) => RenderTexture | undefined
+  ): DisplayParams {
     return DisplayParams.createForType(DisplayParams.Type.Mesh, gf, resolveGradient, ignoreLighting);
   }
 
@@ -86,8 +119,7 @@ export class DisplayParams {
   }
 
   public get regionEdgeType(): DisplayParams.RegionEdgeType {
-    if (this.hasBlankingFill)
-      return DisplayParams.RegionEdgeType.None;
+    if (this.hasBlankingFill) return DisplayParams.RegionEdgeType.None;
 
     if (this.gradient !== undefined && undefined !== this.gradient.flags) {
       // Even if the gradient is not outlined, produce an outline to be displayed as the region's edges when fill ViewFlag is off.
@@ -96,54 +128,51 @@ export class DisplayParams {
         return DisplayParams.RegionEdgeType.Outline;
       return DisplayParams.RegionEdgeType.None;
     }
-    return (!this.fillColor.equals(this.lineColor)) ? DisplayParams.RegionEdgeType.Outline : DisplayParams.RegionEdgeType.Default;
+    return !this.fillColor.equals(this.lineColor) ? DisplayParams.RegionEdgeType.Outline : DisplayParams.RegionEdgeType.Default;
   }
 
   public get wantRegionOutline(): boolean {
     return DisplayParams.RegionEdgeType.Outline === this.regionEdgeType;
   }
 
-  public get hasBlankingFill(): boolean { return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking); }
-  public get hasFillTransparency(): boolean { return 255 !== this.fillColor.getAlpha(); }
-  public get hasLineTransparency(): boolean { return 255 !== this.lineColor.getAlpha(); }
-  public get textureMapping(): TextureMapping | undefined { return undefined !== this.material ? this.material.textureMapping : this._textureMapping; }
-  public get isTextured(): boolean { return undefined !== this.textureMapping; }
+  public get hasBlankingFill(): boolean {
+    return FillFlags.Blanking === (this.fillFlags & FillFlags.Blanking);
+  }
+  public get hasFillTransparency(): boolean {
+    return 255 !== this.fillColor.getAlpha();
+  }
+  public get hasLineTransparency(): boolean {
+    return 255 !== this.lineColor.getAlpha();
+  }
+  public get textureMapping(): TextureMapping | undefined {
+    return undefined !== this.material ? this.material.textureMapping : this._textureMapping;
+  }
+  public get isTextured(): boolean {
+    return undefined !== this.textureMapping;
+  }
 
   /** Determines if the properties of this DisplayParams object are equal to those of another DisplayParams object.  */
   public equals(rhs: DisplayParams, purpose: DisplayParams.ComparePurpose = DisplayParams.ComparePurpose.Strict): boolean {
-    if (DisplayParams.ComparePurpose.Merge === purpose)
-      return 0 === this.compareForMerge(rhs);
-    else if (rhs === this)
-      return true;
+    if (DisplayParams.ComparePurpose.Merge === purpose) return 0 === this.compareForMerge(rhs);
+    else if (rhs === this) return true;
 
-    if (this.type !== rhs.type)
-      return false;
-    if (this.ignoreLighting !== rhs.ignoreLighting)
-      return false;
-    if (this.width !== rhs.width)
-      return false;
-    if (this.linePixels !== rhs.linePixels)
-      return false;
-    if (this.fillFlags !== rhs.fillFlags)
-      return false;
-    if (this.wantRegionOutline !== rhs.wantRegionOutline)
-      return false;
-    if (this.material !== rhs.material)
-      return false;
-    if (this.textureMapping !== rhs.textureMapping)
-      return false;
+    if (this.type !== rhs.type) return false;
+    if (this.ignoreLighting !== rhs.ignoreLighting) return false;
+    if (this.width !== rhs.width) return false;
+    if (this.linePixels !== rhs.linePixels) return false;
+    if (this.fillFlags !== rhs.fillFlags) return false;
+    if (this.wantRegionOutline !== rhs.wantRegionOutline) return false;
+    if (this.material !== rhs.material) return false;
+    if (this.textureMapping !== rhs.textureMapping) return false;
 
-    if (!this.fillColor.equals(rhs.fillColor))
-      return false;
-    if (!this.lineColor.equals(rhs.lineColor))
-      return false;
+    if (!this.fillColor.equals(rhs.fillColor)) return false;
+    if (!this.lineColor.equals(rhs.lineColor)) return false;
 
     return true;
   }
 
   public compareForMerge(rhs: DisplayParams): number {
-    if (rhs === this)
-      return 0;
+    if (rhs === this) return 0;
 
     let diff = compareNumbers(this.type, rhs.type);
     if (0 === diff) {
@@ -182,12 +211,13 @@ export class DisplayParams {
    * @return The original reference to the color provided, which has possibly been modified.
    */
   public static adjustTransparency(color: ColorDef): ColorDef {
-    return (color.colors.t < DisplayParams.minTransparency) ? color.withTransparency(0) : color;
+    return color.colors.t < DisplayParams.minTransparency ? color.withTransparency(0) : color;
   }
 }
 
 /** @internal */
-export namespace DisplayParams { // eslint-disable-line no-redeclare
+export namespace DisplayParams {
+  // eslint-disable-line no-redeclare
   export enum Type {
     Mesh,
     Linear,
@@ -201,7 +231,7 @@ export namespace DisplayParams { // eslint-disable-line no-redeclare
   }
 
   export enum ComparePurpose {
-    Merge,  // considers colors equivalent if both have or both lack transparency
+    Merge, // considers colors equivalent if both have or both lack transparency
     Strict, // compares all members
   }
 }

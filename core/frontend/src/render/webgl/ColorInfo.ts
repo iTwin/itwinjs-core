@@ -23,9 +23,15 @@ export class ColorInfo {
     this._uniform = uniform;
   }
 
-  public static createUniform(color: FloatRgba) { return new ColorInfo(color.hasTranslucency, color); }
-  public static createNonUniform(hasTranslucency: boolean) { return hasTranslucency ? this._nonUniformTranslucent : this._nonUniformOpaque; }
-  public static createFromColorDef(color: ColorDef) { return this.createUniform(FloatRgba.fromColorDef(color)); }
+  public static createUniform(color: FloatRgba) {
+    return new ColorInfo(color.hasTranslucency, color);
+  }
+  public static createNonUniform(hasTranslucency: boolean) {
+    return hasTranslucency ? this._nonUniformTranslucent : this._nonUniformOpaque;
+  }
+  public static createFromColorDef(color: ColorDef) {
+    return this.createUniform(FloatRgba.fromColorDef(color));
+  }
 
   public static createFromColorIndex(colorIndex: ColorIndex) {
     return undefined !== colorIndex.uniform ? this.createFromColorDef(colorIndex.uniform) : this.createNonUniform(colorIndex.hasAlpha);
@@ -35,8 +41,12 @@ export class ColorInfo {
     return undefined !== vt.uniformColor ? this.createFromColorDef(vt.uniformColor) : this.createNonUniform(vt.hasTranslucency);
   }
 
-  public get isUniform() { return undefined !== this._uniform; }
-  public get isNonUniform() { return !this.isUniform; }
+  public get isUniform() {
+    return undefined !== this._uniform;
+  }
+  public get isNonUniform() {
+    return !this.isUniform;
+  }
   public get uniform(): FloatRgba {
     assert(this.isUniform);
     return this._uniform!;

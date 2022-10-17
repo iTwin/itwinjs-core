@@ -87,7 +87,6 @@ describe("Quantity formatter", async () => {
         precision: 4,
         type: "Decimal",
       },
-
     };
 
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
@@ -191,9 +190,13 @@ describe("Quantity formatter", async () => {
     assert(Parser.isParsedQuantity(overrideValueInMeters3));
     assert(Parser.isParsedQuantity(overrideValueInMeters4));
     assert(Parser.isParsedQuantity(overrideValueInMeters5));
-    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
-      Parser.isParsedQuantity(overrideValueInMeters3) && Parser.isParsedQuantity(overrideValueInMeters4)
-      && Parser.isParsedQuantity(overrideValueInMeters5)) {
+    if (
+      Parser.isParsedQuantity(overrideValueInMeters1) &&
+      Parser.isParsedQuantity(overrideValueInMeters2) &&
+      Parser.isParsedQuantity(overrideValueInMeters3) &&
+      Parser.isParsedQuantity(overrideValueInMeters4) &&
+      Parser.isParsedQuantity(overrideValueInMeters5)
+    ) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
       assert(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value));
@@ -439,8 +442,11 @@ describe("Quantity formatter", async () => {
       const fromUnit = await quantityFormatter.findUnitByName(fromUnitName);
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
       const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
-      const convertedValue = (magnitude * unitConversion.factor) + unitConversion.offset;
-      assert(withinTolerance(convertedValue, expectedValue, tolerance), `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`);
+      const convertedValue = magnitude * unitConversion.factor + unitConversion.offset;
+      assert(
+        withinTolerance(convertedValue, expectedValue, tolerance),
+        `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`
+      );
     }
 
     it("UnitConversionTests, USCustomaryLengths", async () => {
@@ -465,7 +471,7 @@ describe("Quantity formatter", async () => {
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1.0 / 0.999998, "Units.FT");
       await testUnitConversion(1.0, "Units.US_SURVEY_FT", 1200.0 / 3937.0, "Units.M");
       await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0, "Units.US_SURVEY_FT");
-      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 5280.0 * 1200.0 / 3937.0, "Units.M");
+      await testUnitConversion(1.0, "Units.US_SURVEY_MILE", (5280.0 * 1200.0) / 3937.0, "Units.M");
       await testUnitConversion(1.0, "Units.US_SURVEY_MILE", 1.0 / 0.999998, "Units.MILE");
       await testUnitConversion(1.0, "Units.MILE", 0.999998, "Units.US_SURVEY_MILE");
       await testUnitConversion(1.0, "Units.M", 3937.0 / 1200.0 / 5280.0, "Units.US_SURVEY_MILE");
@@ -517,8 +523,7 @@ describe("Test Custom QuantityType", async () => {
 
     const parsedRadians = parserSpec!.parseToQuantityValue("n45e");
     assert(Parser.isParsedQuantity(parsedRadians));
-    if (Parser.isParsedQuantity(parsedRadians))
-      assert.equal(parsedRadians.value, rad45);
+    if (Parser.isParsedQuantity(parsedRadians)) assert.equal(parsedRadians.value, rad45);
   });
 });
 

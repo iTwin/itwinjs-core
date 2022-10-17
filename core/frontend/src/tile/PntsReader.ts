@@ -8,7 +8,17 @@
 
 import { ByteStream, Id64String, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
-import { BatchType, ElementAlignedBox3d, Feature, FeatureTable, PackedFeatureTable, PntsHeader, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import {
+  BatchType,
+  ElementAlignedBox3d,
+  Feature,
+  FeatureTable,
+  PackedFeatureTable,
+  PntsHeader,
+  QParams3d,
+  QPoint3d,
+  Quantization,
+} from "@itwin/core-common";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -84,8 +94,7 @@ type PntsProps = QuantizedPntsProps | UnquantizedPntsProps;
 function readPntsColors(stream: ByteStream, dataOffset: number, pnts: PntsProps): Uint8Array | undefined {
   const nPts = pnts.POINTS_LENGTH;
   const nComponents = 3 * nPts;
-  if (pnts.RGB)
-    return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
+  if (pnts.RGB) return new Uint8Array(stream.arrayBuffer, dataOffset + pnts.RGB.byteOffset, nComponents);
 
   if (pnts.RGBA) {
     // ###TODO support point cloud transparency.
@@ -134,8 +143,7 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
     const nCoords = nPts * 3;
     const fpts = new Float32Array(stream.arrayBuffer, dataOffset + pnts.POSITION.byteOffset, 3 * nPts);
     const range = Range3d.createNull();
-    for (let i = 0; i < nCoords; i += 3)
-      range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
+    for (let i = 0; i < nCoords; i += 3) range.extendXYZ(fpts[i], fpts[i + 1], fpts[i + 2]);
 
     params = QParams3d.fromRange(range);
     const qpt = new QPoint3d();
@@ -157,21 +165,19 @@ function readPnts(stream: ByteStream, dataOffset: number, pnts: PntsProps): Poin
 async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps | undefined> {
   try {
     const dracoLoader = (await import("@loaders.gl/draco")).DracoLoader;
-    const mesh = await dracoLoader.parse(buf, { });
-    if (mesh.topology !== "point-list")
-      return undefined;
+    const mesh = await dracoLoader.parse(buf, {});
+    if (mesh.topology !== "point-list") return undefined;
 
     const pos = mesh.attributes.POSITION?.value;
-    if (!pos || (pos.length % 3) !== 0)
-      return undefined;
+    if (!pos || pos.length % 3 !== 0) return undefined;
 
     let colors = mesh.attributes.RGB?.value ?? mesh.attributes.COLOR_0?.value;
     if (!colors) {
       // ###TODO support point cloud transparency.
       const rgba = mesh.attributes.RGBA?.value;
-      if (rgba && (rgba.length % 4) === 0) {
+      if (rgba && rgba.length % 4 === 0) {
         // We currently don't support alpha channel for point clouds - strip it.
-        colors = new Uint8Array(3 * rgba.length / 4);
+        colors = new Uint8Array((3 * rgba.length) / 4);
         let j = 0;
         for (let i = 0; i < rgba.length; i += 4) {
           colors[j++] = rgba[i];
@@ -187,8 +193,7 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
       posRange = Range3d.createXYZXYZ(bbox[0][0], bbox[0][1], bbox[0][2], bbox[1][0], bbox[1][1], bbox[1][2]);
     } else {
       posRange = Range3d.createNull();
-      for (let i = 0; i < pos.length; i += 3)
-        posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
+      for (let i = 0; i < pos.length; i += 3) posRange.extendXYZ(pos[i], pos[i + 1], pos[i + 2]);
     }
 
     const params = QParams3d.fromRange(posRange);
@@ -214,18 +219,23 @@ async function decodeDracoPointCloud(buf: Uint8Array): Promise<PointCloudProps |
 /** Deserialize a point cloud tile and return it as a RenderGraphic.
  * @internal
  */
-export async function readPointCloudTileContent(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem): Promise<RenderGraphic | undefined> {
+export async function readPointCloudTileContent(
+  stream: ByteStream,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  _is3d: boolean,
+  range: ElementAlignedBox3d,
+  system: RenderSystem
+): Promise<RenderGraphic | undefined> {
   const header = new PntsHeader(stream);
-  if (!header.isValid)
-    return undefined;
+  if (!header.isValid) return undefined;
 
   const featureTableJsonOffset = stream.curPos;
   const featureStrData = stream.nextBytes(header.featureTableJsonLength);
   const featureStr = utf8ToString(featureStrData);
   const featureValue = JSON.parse(featureStr as string) as PntsProps;
 
-  if (undefined === featureValue)
-    return undefined;
+  if (undefined === featureValue) return undefined;
 
   let props: PointCloudProps | undefined;
   const dataOffset = featureTableJsonOffset + header.featureTableJsonLength;
@@ -241,8 +251,7 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
     props = readPnts(stream, dataOffset, featureValue);
   }
 
-  if (!props)
-    return undefined;
+  if (!props) return undefined;
 
   if (featureValue.RTC_CENTER)
     props.params = QParams3d.fromOriginAndScale(props.params.origin.plus(Vector3d.fromJSON(featureValue.RTC_CENTER)), props.params.scale);
@@ -269,14 +278,17 @@ export async function readPointCloudTileContent(stream: ByteStream, iModel: IMod
   features.add(new Feature(modelId), 1);
   const voxelSize = props.params.rangeDiagonal.maxAbs() / 256;
 
-  let renderGraphic = system.createPointCloud({
-    positions: props.points,
-    qparams: props.params,
-    colors: props.colors,
-    features: features.toFeatureIndex(),
-    voxelSize,
-    colorFormat: "rgb",
-  }, iModel);
+  let renderGraphic = system.createPointCloud(
+    {
+      positions: props.points,
+      qparams: props.params,
+      colors: props.colors,
+      features: features.toFeatureIndex(),
+      voxelSize,
+      colorFormat: "rgb",
+    },
+    iModel
+  );
 
   renderGraphic = system.createBatch(renderGraphic!, PackedFeatureTable.pack(featureTable), range);
   return renderGraphic;

@@ -15,8 +15,26 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
-  RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  MapCartoRectangle,
+  MapLayerFeatureInfo,
+  MapLayerImageryProvider,
+  MapLayerTileTreeReference,
+  MapTile,
+  MapTilingScheme,
+  QuadId,
+  RealityTile,
+  RealityTileLoader,
+  RealityTileTree,
+  RealityTileTreeParams,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileParams,
+  TileRequest,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
 
@@ -32,23 +50,32 @@ export class ImageryMapTile extends RealityTile {
   constructor(params: TileParams, public imageryTree: ImageryMapTileTree, public quadId: QuadId, public rectangle: MapCartoRectangle) {
     super(params, imageryTree);
   }
-  public get texture() { return this._texture; }
-  public get tilingScheme() { return this.imageryTree.tilingScheme; }
-  public override get isDisplayable() { return (this.depth > 1) && super.isDisplayable; }
+  public get texture() {
+    return this._texture;
+  }
+  public get tilingScheme() {
+    return this.imageryTree.tilingScheme;
+  }
+  public override get isDisplayable() {
+    return this.depth > 1 && super.isDisplayable;
+  }
 
   public override setContent(content: ImageryTileContent): void {
-    this._texture = content.imageryTexture;        // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
-    if (undefined === content.imageryTexture)
-      (this.parent! as ImageryMapTile).setLeaf();   // Avoid traversing bing branches after no graphics is found.
+    this._texture = content.imageryTexture; // No dispose - textures may be shared by terrain tiles so let garbage collector dispose them.
+    if (undefined === content.imageryTexture) (this.parent! as ImageryMapTile).setLeaf(); // Avoid traversing bing branches after no graphics is found.
 
     this.setIsReady();
   }
 
-  public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], rectangleToDrape: MapCartoRectangle, drapePixelSize: number, args: TileDrawArgs): TileTreeLoadStatus {
+  public selectCartoDrapeTiles(
+    drapeTiles: ImageryMapTile[],
+    rectangleToDrape: MapCartoRectangle,
+    drapePixelSize: number,
+    args: TileDrawArgs
+  ): TileTreeLoadStatus {
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
-    if (this.isLeaf || (this.rectangle.xLength() / this.maximumSize) < drapePixelSize || this._anyChildNotFound) {
-      if (this.isDisplayable && !this.isNotFound)
-        drapeTiles.push(this);
+    if (this.isLeaf || this.rectangle.xLength() / this.maximumSize < drapePixelSize || this._anyChildNotFound) {
+      if (this.isDisplayable && !this.isNotFound) drapeTiles.push(this);
       return TileTreeLoadStatus.Loaded;
     }
 
@@ -61,8 +88,7 @@ export class ImageryMapTile extends RealityTile {
           const mapChild = child as ImageryMapTile;
           if (mapChild.rectangle.intersectsRange(rectangleToDrape))
             status = mapChild.selectCartoDrapeTiles(drapeTiles, rectangleToDrape, drapePixelSize, args);
-          if (TileTreeLoadStatus.Loaded !== status)
-            break;
+          if (TileTreeLoadStatus.Loaded !== status) break;
         }
       }
     }
@@ -73,8 +99,7 @@ export class ImageryMapTile extends RealityTile {
   }
   public releaseMapTileUsage() {
     assert(!this._texture || this._mapTileUsageCount > 0);
-    if (this._mapTileUsageCount)
-      this._mapTileUsageCount--;
+    if (this._mapTileUsageCount) this._mapTileUsageCount--;
   }
 
   /** @internal */
@@ -86,21 +111,27 @@ export class ImageryMapTile extends RealityTile {
   }
 
   protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
-
     const imageryTree = this.imageryTree;
     const resolveChildren = (childIds: QuadId[]) => {
       const children = new Array<Tile>();
-      const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth;
+      const childrenAreLeaves = this.depth + 1 === imageryTree.maxDepth;
       // If children depth is lower than min LOD, mark them as disabled.
       // This is important: if those tiles are requested and the server refuse to serve them,
       // they will be marked as not found and their descendant will never be displayed.
-      const childrenAreDisabled = (this.depth + 1) < imageryTree.minDepth;
+      const childrenAreDisabled = this.depth + 1 < imageryTree.minDepth;
 
       childIds.forEach((quadId) => {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-        const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
-        children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+        const maximumSize = childrenAreDisabled ? 0 : imageryTree.imageryLoader.maximumScreenSize;
+        children.push(
+          new ImageryMapTile(
+            { parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize },
+            imageryTree,
+            quadId,
+            rectangle
+          )
+        );
       });
 
       resolve(children);
@@ -111,8 +142,7 @@ export class ImageryMapTile extends RealityTile {
 
   protected override _collectStatistics(stats: RenderMemory.Statistics): void {
     super._collectStatistics(stats);
-    if (this._texture)
-      stats.addTexture(this._texture.bytesUsed);
+    if (this._texture) stats.addTexture(this._texture.bytesUsed);
   }
 
   public override freeMemory(): void {
@@ -142,7 +172,9 @@ export class ImageryMapTileTree extends RealityTileTree {
     const rootQuadId = new QuadId(_imageryLoader.imageryProvider.tilingScheme.rootLevel, 0, 0);
     this._rootTile = new ImageryMapTile(params.rootTile, this, rootQuadId, this.getTileRectangle(rootQuadId));
   }
-  public get tilingScheme(): MapTilingScheme { return this._imageryLoader.imageryProvider.tilingScheme; }
+  public get tilingScheme(): MapTilingScheme {
+    return this._imageryLoader.imageryProvider.tilingScheme;
+  }
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     this._imageryLoader.addLogoCards(cards, vp);
   }
@@ -150,7 +182,9 @@ export class ImageryMapTileTree extends RealityTileTree {
   public getTileRectangle(quadId: QuadId): MapCartoRectangle {
     return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
   }
-  public get imageryLoader(): ImageryTileLoader { return this._imageryLoader; }
+  public get imageryLoader(): ImageryTileLoader {
+    return this._imageryLoader;
+  }
   public override get is3d(): boolean {
     assert(false);
     return false;
@@ -167,19 +201,23 @@ export class ImageryMapTileTree extends RealityTileTree {
     assert(false);
     return [];
   }
-  public override draw(_args: TileDrawArgs): void { assert(false); }
+  public override draw(_args: TileDrawArgs): void {
+    assert(false);
+  }
 
   private static _scratchDrapeRectangle = MapCartoRectangle.createZero();
-  private static _drapeIntersectionScale = 1.0 - 1.0E-5;
+  private static _drapeIntersectionScale = 1.0 - 1.0e-5;
 
   public selectCartoDrapeTiles(drapeTiles: ImageryMapTile[], tileToDrape: MapTile, args: TileDrawArgs): TileTreeLoadStatus {
     const drapeRectangle = tileToDrape.rectangle.clone(ImageryMapTileTree._scratchDrapeRectangle);
     // Base draping overlap on width rather than height so that tiling schemes with multiple root nodes overlay correctly.
-    const drapePixelSize = 1.05 * tileToDrape.rectangle.xLength() / tileToDrape.maximumSize;
-    drapeRectangle.scaleAboutCenterInPlace(ImageryMapTileTree._drapeIntersectionScale);    // Contract slightly to avoid draping adjacent or slivers.
+    const drapePixelSize = (1.05 * tileToDrape.rectangle.xLength()) / tileToDrape.maximumSize;
+    drapeRectangle.scaleAboutCenterInPlace(ImageryMapTileTree._drapeIntersectionScale); // Contract slightly to avoid draping adjacent or slivers.
     return (this.rootTile as ImageryMapTile).selectCartoDrapeTiles(drapeTiles, drapeRectangle, drapePixelSize, args);
   }
-  public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle { return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level); }
+  public cartoRectangleFromQuadId(quadId: QuadId): MapCartoRectangle {
+    return this.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
+  }
 }
 
 class ImageryTileLoader extends RealityTileLoader {
@@ -187,25 +225,39 @@ class ImageryTileLoader extends RealityTileLoader {
     super();
   }
   public override computeTilePriority(tile: Tile): number {
-    return 25 * (this._imageryProvider.usesCachedTiles ? 2 : 1) - tile.depth;     // Always cached first then descending by depth (high resolution/front first)
-  }  // Prioritized fast, cached tiles first.
+    return 25 * (this._imageryProvider.usesCachedTiles ? 2 : 1) - tile.depth; // Always cached first then descending by depth (high resolution/front first)
+  } // Prioritized fast, cached tiles first.
 
-  public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
-  public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
-  public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
+  public get maxDepth(): number {
+    return this._imageryProvider.maximumZoomLevel;
+  }
+  public get minDepth(): number {
+    return this._imageryProvider.minimumZoomLevel;
+  }
+  public get priority(): TileLoadPriority {
+    return TileLoadPriority.Map;
+  }
   public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     this._imageryProvider.addLogoCards(cards, vp);
   }
 
-  public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }
-  public get imageryProvider(): MapLayerImageryProvider { return this._imageryProvider; }
-  public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> { await this._imageryProvider.getToolTip(strings, quadId, carto, tree); }
+  public get maximumScreenSize(): number {
+    return this._imageryProvider.maximumScreenSize;
+  }
+  public get imageryProvider(): MapLayerImageryProvider {
+    return this._imageryProvider;
+  }
+  public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+    await this._imageryProvider.getToolTip(strings, quadId, carto, tree);
+  }
 
   public async getMapFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     await this._imageryProvider.getFeatureInfo(featureInfos, quadId, carto, tree);
   }
 
-  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) { return this._imageryProvider.generateChildIds(tile, resolveChildren); }
+  public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
+    return this._imageryProvider.generateChildIds(tile, resolveChildren);
+  }
 
   /** Load this tile's children, possibly asynchronously. Pass them to `resolve`, or an error to `reject`. */
   public async loadChildren(_tile: RealityTile): Promise<Tile[] | undefined> {
@@ -227,8 +279,7 @@ class ImageryTileLoader extends RealityTileLoader {
     assert(tile instanceof ImageryMapTile);
     const content: ImageryTileContent = {};
     const texture = await this.loadTextureImage(data, system);
-    if (undefined === texture)
-      return content;
+    if (undefined === texture) return content;
 
     content.imageryTexture = texture;
     return content;
@@ -282,18 +333,26 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
   /** The first time a tree of a particular imagery type is requested, this function creates it. */
   public async createTileTree(id: ImageryMapLayerTreeId, iModel: IModelConnection): Promise<TileTree | undefined> {
     const imageryProvider = IModelApp.mapLayerFormatRegistry.createImageryProvider(id.settings);
-    if (undefined === imageryProvider)
-      return undefined;
+    if (undefined === imageryProvider) return undefined;
 
     await imageryProvider.initialize();
     const modelId = iModel.transientIds.next;
     const tilingScheme = imageryProvider.tilingScheme;
-    const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
+    const rootLevel = 1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY ? 0 : -1;
     const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
-    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
+    const treeProps = {
+      rootTile: rootTileProps,
+      id: modelId,
+      modelId,
+      iModel,
+      location: Transform.createIdentity(),
+      priority: TileLoadPriority.Map,
+      loader,
+      gcsConverterAvailable: false,
+    };
     return new ImageryMapTileTree(treeProps, loader);
   }
 }
@@ -308,7 +367,9 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
     super(layerSettings, layerIndex, iModel);
   }
 
-  public override get castsShadows() { return false; }
+  public override get castsShadows() {
+    return false;
+  }
 
   /** Return the owner of the TileTree to draw. */
   public get treeOwner(): TileTreeOwner {
@@ -316,8 +377,7 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
   }
   public override get imageryProvider(): MapLayerImageryProvider | undefined {
     const tree = this.treeOwner.load();
-    if (!tree || !(tree instanceof ImageryMapTileTree))
-      return undefined;
+    if (!tree || !(tree instanceof ImageryMapTileTree)) return undefined;
 
     return tree.imageryLoader.imageryProvider;
   }

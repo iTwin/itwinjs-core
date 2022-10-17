@@ -65,12 +65,17 @@ export function createEVSMProgram(context: WebGLContext): ShaderProgram {
     });
   });
 
-  frag.addUniform("u_stepSize", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_stepSize", (uniform, params) => {
-      const geom = params.geometry as EVSMGeometry;
-      uniform.setUniform2fv(geom.stepSize);
-    });
-  }, VariablePrecision.High);
+  frag.addUniform(
+    "u_stepSize",
+    VariableType.Vec2,
+    (prog) => {
+      prog.addGraphicUniform("u_stepSize", (uniform, params) => {
+        const geom = params.geometry as EVSMGeometry;
+        uniform.setUniform2fv(geom.stepSize);
+      });
+    },
+    VariablePrecision.High
+  );
 
   addEvsmExponent(frag);
 

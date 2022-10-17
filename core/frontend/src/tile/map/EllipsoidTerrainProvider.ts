@@ -10,7 +10,15 @@ import { assert } from "@itwin/core-bentley";
 import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
+  MapCartoRectangle,
+  MapTile,
+  MapTilingScheme,
+  QuadId,
+  ReadMeshArgs,
+  TerrainMeshProvider,
+  TerrainMeshProviderOptions,
+  TileRequest,
+  WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
@@ -33,9 +41,15 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     this._wantSkirts = opts.wantSkirts;
   }
 
-  public get maxDepth(): number { return 22; }
-  public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined { return scratchZeroRange; }
-  public get tilingScheme(): MapTilingScheme { return this._tilingScheme; }
+  public get maxDepth(): number {
+    return 22;
+  }
+  public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined {
+    return scratchZeroRange;
+  }
+  public get tilingScheme(): MapTilingScheme {
+    return this._tilingScheme;
+  }
 
   private createSkirtlessPlanarMesh(tile: MapTile): RealityMeshParams {
     const projection = tile.getProjection();
@@ -52,7 +66,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
         Point2d.create(u, 1 - v, uv);
         builder.addUnquantizedVertex(projection.getPoint(u, v, 0, pos), uv);
       }
-
     }
 
     builder.addQuad(0, 1, 2, 3);
@@ -81,13 +94,13 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
       positionRange: Range3d.createArray(positions),
     });
 
-    for (let i = 0; i < 8; i++)
-      builder.addUnquantizedVertex(positions[i], uvs[i]);
+    for (let i = 0; i < 8; i++) builder.addUnquantizedVertex(positions[i], uvs[i]);
 
     builder.addQuad(0, 2, 4, 6);
-    const  reorder = [0, 2, 6, 4, 0];
+    const reorder = [0, 2, 6, 4, 0];
     for (let i = 0; i < 4; i++) {
-      const iThis = reorder[i], iNext = reorder[i + 1];
+      const iThis = reorder[i],
+        iNext = reorder[i + 1];
       builder.addQuad(iThis, iNext, iThis + 1, iNext + 1);
     }
 
@@ -96,8 +109,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
 
   public override async readMesh(args: ReadMeshArgs): Promise<RealityMeshParams | undefined> {
     const tile = args.tile;
-    if (tile.isPlanar)
-      return this._wantSkirts ? this.createSkirtedPlanarMesh(tile) : this.createSkirtlessPlanarMesh(tile);
+    if (tile.isPlanar) return this._wantSkirts ? this.createSkirtedPlanarMesh(tile) : this.createSkirtlessPlanarMesh(tile);
 
     return this.createGlobeMesh(tile);
   }
@@ -107,8 +119,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     const projection = tile.getProjection();
     const ellipsoidPatch = projection.ellipsoidPatch;
     assert(undefined !== ellipsoidPatch);
-    if (!ellipsoidPatch)
-      return undefined;
+    if (!ellipsoidPatch) return undefined;
 
     const bordersSouthPole = tile.quadId.bordersSouthPole(this._tilingScheme);
     const bordersNorthPole = tile.quadId.bordersNorthPole(this._tilingScheme);
@@ -126,8 +137,8 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
     skirtPatch.ellipsoid.transformRef.matrix.scaleColumnsInPlace(scaleFactor, scaleFactor, scaleFactor);
 
     const pointCount = globeMeshDimension * globeMeshDimension;
-    const rowMin = (bordersNorthPole || this._wantSkirts) ? 0 : 1;
-    const rowMax = (bordersSouthPole || this._wantSkirts) ? dimensionM1 : dimensionM2;
+    const rowMin = bordersNorthPole || this._wantSkirts ? 0 : 1;
+    const rowMax = bordersSouthPole || this._wantSkirts ? dimensionM1 : dimensionM2;
     const colMin = this._wantSkirts ? 0 : 1;
     const colMax = this._wantSkirts ? dimensionM1 : dimensionM2;
     const indexCount = 6 * (rowMax - rowMin) * (colMax - colMin);
@@ -140,18 +151,16 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
 
     for (let iRow = 0, index = 0; iRow < globeMeshDimension; iRow++) {
       for (let iColumn = 0; iColumn < globeMeshDimension; iColumn++, index++) {
-        let u = (iColumn ? (Math.min(dimensionM2, iColumn) - 1) : 0) * delta;
-        let v = (iRow ? (Math.min(dimensionM2, iRow) - 1) : 0) * delta;
+        let u = (iColumn ? Math.min(dimensionM2, iColumn) - 1 : 0) * delta;
+        let v = (iRow ? Math.min(dimensionM2, iRow) - 1 : 0) * delta;
         scratchPoint2d.set(u, 1 - v);
 
         if (iRow === 0 || iRow === dimensionM1 || iColumn === 0 || iColumn === dimensionM1) {
-          if (bordersSouthPole && iRow === dimensionM1)
-            skirtPatch.ellipsoid.radiansToPoint(0, -Angle.piOver2Radians, scratchPoint);
-          else if (bordersNorthPole && iRow === 0)
-            skirtPatch.ellipsoid.radiansToPoint(0, Angle.piOver2Radians, scratchPoint);
+          if (bordersSouthPole && iRow === dimensionM1) skirtPatch.ellipsoid.radiansToPoint(0, -Angle.piOver2Radians, scratchPoint);
+          else if (bordersNorthPole && iRow === 0) skirtPatch.ellipsoid.radiansToPoint(0, Angle.piOver2Radians, scratchPoint);
           else {
-            u += (iColumn === 0) ? -skirtFraction : (iColumn === dimensionM1 ? skirtFraction : 0);
-            v += (iRow === 0) ? -skirtFraction : (iRow === dimensionM1 ? skirtFraction : 0);
+            u += iColumn === 0 ? -skirtFraction : iColumn === dimensionM1 ? skirtFraction : 0;
+            v += iRow === 0 ? -skirtFraction : iRow === dimensionM1 ? skirtFraction : 0;
             skirtPatch.uvFractionToPoint(u, v, scratchPoint);
           }
         } else {

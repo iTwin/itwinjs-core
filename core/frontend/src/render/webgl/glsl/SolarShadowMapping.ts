@@ -87,7 +87,7 @@ const applySolarShadowMapTerrain = `
 export function addEvsmExponent(frag: FragmentShaderBuilder): void {
   frag.addUniform("u_evsmExponent", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_evsmExponent", (uniform) => {
-      uniform.setUniform1f((RenderType.TextureFloat === System.instance.capabilities.maxRenderType) ? evsm32Exp : evsm16Exp);
+      uniform.setUniform1f(RenderType.TextureFloat === System.instance.capabilities.maxRenderType ? evsm32Exp : evsm16Exp);
     });
   });
 }
@@ -127,8 +127,7 @@ export function addSolarShadowMap(builder: ProgramBuilder, toTerrain = false) {
 
   addEvsmExponent(frag);
 
-  if (vert.usesInstancedGeometry)
-    addInstancedRtcMatrix(vert);
+  if (vert.usesInstancedGeometry) addInstancedRtcMatrix(vert);
   builder.addInlineComputedVarying("v_shadowPos", VariableType.Vec3, vert.usesInstancedGeometry ? computeInstancedShadowPos : computeShadowPos);
   /* This is the EVSM bias value, which makes tradeoffs in shadow quality.  Normally it should be set to 0.1.
      Lower values can introduce shadows where they should not be, including shadow acne. Higher values can cause Peter

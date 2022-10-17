@@ -48,8 +48,7 @@ export class ShadowUniforms {
       this._enabled = map.isEnabled;
     }
 
-    if (!map.isEnabled)
-      return;
+    if (!map.isEnabled) return;
 
     const settings = map.settings!;
 
@@ -75,8 +74,7 @@ export class ShadowUniforms {
 
   private computeProjection(): void {
     const branch = this._target.uniforms.branch;
-    if (sync(branch, this))
-      return;
+    if (sync(branch, this)) return;
 
     // NB: We could decouple from the other uniforms so they don't get invalidated when frustum changes but meh.
     desync(this);
@@ -88,13 +86,11 @@ export class ShadowUniforms {
   }
 
   public bindColorAndBias(uniform: UniformHandle): void {
-    if (!sync(this, uniform))
-      this._colorAndBias.bind(uniform);
+    if (!sync(this, uniform)) this._colorAndBias.bind(uniform);
   }
 
   public bindProjectionMatrix(uniform: UniformHandle): void {
     this.computeProjection();
-    if (!sync(this, uniform))
-      uniform.setMatrix4(this._projection32);
+    if (!sync(this, uniform)) uniform.setMatrix4(this._projection32);
   }
 }

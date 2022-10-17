@@ -29,17 +29,27 @@ class DisjointTimerExtensionWebGL1 extends DisjointTimerExtension {
     this._context = system.context;
   }
 
-  public get isSupported(): boolean { return this._e !== undefined; }
+  public get isSupported(): boolean {
+    return this._e !== undefined;
+  }
 
   public didDisjointEventHappen(): boolean {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery(): WebGLQuery { return this._e.createQueryEXT() as WebGLQuery; }
-  public deleteQuery(q: WebGLQuery) { this._e.deleteQueryEXT(q); }
+  public createQuery(): WebGLQuery {
+    return this._e.createQueryEXT() as WebGLQuery;
+  }
+  public deleteQuery(q: WebGLQuery) {
+    this._e.deleteQueryEXT(q);
+  }
 
-  public beginQuery(q: WebGLQuery) { this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q); }
-  public endQuery() { this._e.endQueryEXT(this._e.TIME_ELAPSED_EXT); }
+  public beginQuery(q: WebGLQuery) {
+    this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q);
+  }
+  public endQuery() {
+    this._e.endQueryEXT(this._e.TIME_ELAPSED_EXT);
+  }
 
   public isResultAvailable(q: WebGLQuery): boolean {
     return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_AVAILABLE_EXT);
@@ -56,24 +66,34 @@ class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
     super();
     if (system.capabilities.isWebGL2) {
       this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
-      if (this._e === undefined) // If webgl2 timer doesn't work, attempt to use the older disjoint timer
+      if (this._e === undefined)
+        // If webgl2 timer doesn't work, attempt to use the older disjoint timer
         this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
-    } else
-      this._e = undefined;
+    } else this._e = undefined;
     this._context = system.context as WebGL2RenderingContext;
   }
 
-  public get isSupported(): boolean { return this._e !== undefined; }
+  public get isSupported(): boolean {
+    return this._e !== undefined;
+  }
 
   public didDisjointEventHappen(): boolean {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery(): WebGLQuery { return this._context.createQuery() as WebGLQuery; }
-  public deleteQuery(q: WebGLQuery) { this._context.deleteQuery(q); }
+  public createQuery(): WebGLQuery {
+    return this._context.createQuery() as WebGLQuery;
+  }
+  public deleteQuery(q: WebGLQuery) {
+    this._context.deleteQuery(q);
+  }
 
-  public beginQuery(q: WebGLQuery) { this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q); }
-  public endQuery() { this._context.endQuery(this._e.TIME_ELAPSED_EXT); }
+  public beginQuery(q: WebGLQuery) {
+    this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q);
+  }
+  public endQuery() {
+    this._context.endQuery(this._e.TIME_ELAPSED_EXT);
+  }
 
   public isResultAvailable(q: WebGLQuery): boolean {
     return this._context.getQueryParameter(q, this._context.QUERY_RESULT_AVAILABLE);
@@ -109,10 +129,8 @@ export class GLTimer {
   private _resultsCallback?: GLTimerResultCallback;
 
   private constructor(system: System) {
-    if (system.capabilities.isWebGL2)
-      this._extension = new DisjointTimerExtensionWebGL2(system);
-    else
-      this._extension = new DisjointTimerExtensionWebGL1(system);
+    if (system.capabilities.isWebGL2) this._extension = new DisjointTimerExtensionWebGL2(system);
+    else this._extension = new DisjointTimerExtensionWebGL1(system);
     this._queryStack = [];
     this._resultsCallback = undefined;
   }
@@ -123,36 +141,32 @@ export class GLTimer {
     return new GLTimer(system);
   }
 
-  public get isSupported(): boolean { return this._extension.isSupported; }
+  public get isSupported(): boolean {
+    return this._extension.isSupported;
+  }
 
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
-    if (this._queryStack.length !== 0)
-      throw new IModelError(BentleyStatus.ERROR, "Do not set resultsCallback when a frame is already being drawn");
+    if (this._queryStack.length !== 0) throw new IModelError(BentleyStatus.ERROR, "Do not set resultsCallback when a frame is already being drawn");
 
     this._resultsCallback = callback;
   }
 
   public beginOperation(label: string) {
-    if (!this._resultsCallback)
-      return;
+    if (!this._resultsCallback) return;
 
     this.pushQuery(label);
   }
 
   public endOperation() {
-    if (!this._resultsCallback)
-      return;
-    if (this._queryStack.length === 0)
-      throw new IModelError(BentleyStatus.ERROR, "Mismatched calls to beginOperation/endOperation");
+    if (!this._resultsCallback) return;
+    if (this._queryStack.length === 0) throw new IModelError(BentleyStatus.ERROR, "Mismatched calls to beginOperation/endOperation");
 
     this.popQuery();
   }
 
   public beginFrame() {
-    if (!this._resultsCallback)
-      return;
-    if (this._queryStack.length !== 0)
-      throw new IModelError(BentleyStatus.ERROR, "Already recording timing for a frame");
+    if (!this._resultsCallback) return;
+    if (this._queryStack.length !== 0) throw new IModelError(BentleyStatus.ERROR, "Already recording timing for a frame");
 
     const query = this._extension.createQuery();
     this._extension.beginQuery(query);
@@ -160,10 +174,8 @@ export class GLTimer {
   }
 
   public endFrame() {
-    if (!this._resultsCallback)
-      return;
-    if (this._queryStack.length !== 1)
-      throw new IModelError(BentleyStatus.ERROR, "Missing at least one endOperation call");
+    if (!this._resultsCallback) return;
+    if (this._queryStack.length !== 1) throw new IModelError(BentleyStatus.ERROR, "Missing at least one endOperation call");
 
     this._extension.endQuery();
     const root = this._queryStack.pop()!;
@@ -188,8 +200,7 @@ export class GLTimer {
         this._extension.deleteQuery(queryEntry.query);
 
         const result: GLTimerResult = { label: queryEntry.label, nanoseconds: time };
-        if (queryEntry.children === undefined)
-          return result;
+        if (queryEntry.children === undefined) return result;
 
         result.children = [];
         for (const child of queryEntry.children) {
@@ -207,10 +218,8 @@ export class GLTimer {
 
   private cleanupAfterDisjointEvent(queryEntry: QueryEntry) {
     this._extension.deleteQuery(queryEntry.query);
-    if (!queryEntry.children)
-      return;
-    for (const child of queryEntry.children)
-      this.cleanupAfterDisjointEvent(child);
+    if (!queryEntry.children) return;
+    for (const child of queryEntry.children) this.cleanupAfterDisjointEvent(child);
   }
 
   private pushQuery(label: string) {
@@ -223,10 +232,8 @@ export class GLTimer {
     const queryEntry: QueryEntry = { label, query };
     this._queryStack.push(queryEntry);
 
-    if (activeQuery.children === undefined)
-      activeQuery.children = [queryEntry];
-    else
-      activeQuery.children.push(queryEntry);
+    if (activeQuery.children === undefined) activeQuery.children = [queryEntry];
+    else activeQuery.children.push(queryEntry);
   }
 
   private popQuery() {

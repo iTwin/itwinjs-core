@@ -7,11 +7,16 @@
  */
 
 import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
+import { IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
-  IndexedPolyface, Point2d, Point3d, Polyface, Range2d, Range3d, Transform, Vector3d, XAndY, XYAndZ,
-} from "@itwin/core-geometry";
-import {
-  OctEncodedNormal, QPoint2d, QPoint2dBuffer, QPoint2dBufferBuilder, QPoint3d, QPoint3dBuffer, QPoint3dBufferBuilder, RenderTexture,
+  OctEncodedNormal,
+  QPoint2d,
+  QPoint2dBuffer,
+  QPoint2dBufferBuilder,
+  QPoint3d,
+  QPoint3dBuffer,
+  QPoint3dBufferBuilder,
+  RenderTexture,
 } from "@itwin/core-common";
 import { GltfMeshData } from "../tile/internal";
 import { Mesh } from "./primitives/mesh/MeshPrimitives";
@@ -44,7 +49,16 @@ export namespace RealityMeshParams {
   /** @internal */
   export function fromGltfMesh(mesh: GltfMeshData): RealityMeshParams | undefined {
     // The specialized reality mesh shaders expect a mesh with 16-bit indices, uvs, and no edges.
-    if (mesh.primitive.type !== Mesh.PrimitiveType.Mesh || mesh.primitive.edges || !mesh.pointQParams || !mesh.uvQParams || !mesh.points || !mesh.uvs || !mesh.indices || !(mesh.indices instanceof Uint16Array))
+    if (
+      mesh.primitive.type !== Mesh.PrimitiveType.Mesh ||
+      mesh.primitive.edges ||
+      !mesh.pointQParams ||
+      !mesh.uvQParams ||
+      !mesh.points ||
+      !mesh.uvs ||
+      !mesh.indices ||
+      !(mesh.indices instanceof Uint16Array)
+    )
       return undefined;
 
     return {
@@ -64,7 +78,10 @@ export namespace RealityMeshParams {
   }
 
   /** @alpha */
-  export function toPolyface(params: RealityMeshParams, options?: { transform?: Transform, wantNormals?: boolean, wantParams?: boolean }): Polyface | undefined {
+  export function toPolyface(
+    params: RealityMeshParams,
+    options?: { transform?: Transform; wantNormals?: boolean; wantParams?: boolean }
+  ): Polyface | undefined {
     const { positions, normals, uvs, indices } = params;
     const includeNormals = options?.wantNormals && undefined !== normals;
     const includeParams = options?.wantParams;
@@ -81,27 +98,22 @@ export namespace RealityMeshParams {
 
     if (includeNormals) {
       const normal = new Vector3d();
-      for (const oen of normals)
-        polyface.addNormal(OctEncodedNormal.decodeValue(oen, normal));
+      for (const oen of normals) polyface.addNormal(OctEncodedNormal.decodeValue(oen, normal));
     }
 
     if (includeParams) {
       const uv = new Point2d();
-      for (let i = 0; i < uvs.points.length; i += 2)
-        polyface.addParam(uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv));
+      for (let i = 0; i < uvs.points.length; i += 2) polyface.addParam(uvs.params.unquantize(uvs.points[i], uvs.points[i + 1], uv));
     }
 
     let j = 0;
     indices.forEach((index: number) => {
       polyface.addPointIndex(index);
-      if (includeNormals)
-        polyface.addNormalIndex(index);
+      if (includeNormals) polyface.addNormalIndex(index);
 
-      if (includeParams)
-        polyface.addParamIndex(index);
+      if (includeParams) polyface.addParamIndex(index);
 
-      if (0 === (++j % 3))
-        polyface.terminateFacet();
+      if (0 === ++j % 3) polyface.terminateFacet();
     });
 
     return polyface;
@@ -171,8 +183,7 @@ export class RealityMeshParamsBuilder {
   /** Construct a builder from the specified options. */
   public constructor(options: RealityMeshParamsBuilderOptions) {
     this.indices = new Uint16ArrayBuilder({ initialCapacity: options.initialIndexCapacity });
-    if (options.wantNormals)
-      this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
+    if (options.wantNormals) this.normals = new Uint16ArrayBuilder({ initialCapacity: options.initialVertexCapacity });
 
     this.positions = new QPoint3dBufferBuilder({
       range: options.positionRange,
@@ -244,8 +255,7 @@ export class RealityMeshParamsBuilder {
 
   /** Add all of the indices in `indices` to the index buffer. */
   public addIndices(indices: Iterable<number>): void {
-    for (const index of indices)
-      this.addIndex(index);
+    for (const index of indices) this.addIndex(index);
   }
 
   private addIndex(index: number): void {

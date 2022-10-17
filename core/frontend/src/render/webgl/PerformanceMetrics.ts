@@ -36,8 +36,7 @@ export class PerformanceMetrics {
   public constructor(gatherGlFinish = false, gatherCurPerformanceMetrics = false, gpuResults?: GLTimerResultCallback) {
     this.gatherGlFinish = gatherGlFinish;
     this.gatherCurPerformanceMetrics = gatherCurPerformanceMetrics;
-    if (gpuResults)
-      System.instance.debugControl.resultsCallback = gpuResults;
+    if (gpuResults) System.instance.debugControl.resultsCallback = gpuResults;
   }
 
   public beginFrame(sceneTime: number = 0) {
@@ -61,11 +60,12 @@ export class PerformanceMetrics {
     const endTimePoint = BeTimePoint.now();
     const beginTimePoint = this._beginTimePoints.length > 0 ? this._beginTimePoints.pop()! : endTimePoint;
     const operationName = this._operationNames.pop();
-    if (operationName) { // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
-      if (this._updateallTimePoints1) // Push to currently active allTimePoints buffer
+    if (operationName) {
+      // Add data to queue now, calculate time later; helps eliminate time spent timing things in 'Total Time'
+      if (this._updateallTimePoints1)
+        // Push to currently active allTimePoints buffer
         this._allTimePoints1.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
-      else
-        this._allTimePoints2.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
+      else this._allTimePoints2.push({ begin: beginTimePoint, end: endTimePoint, name: operationName });
     }
   }
 
@@ -74,11 +74,16 @@ export class PerformanceMetrics {
 
     // Use double buffering here to ensure that we grab a COMPLETE set of timings from a SINGLE run when grabbing timing data while continuously rendering
     this._updateallTimePoints1 = !this._updateallTimePoints1; // Switch to other allTimePoints buffer
-    if (this._updateallTimePoints1) { // Get data from the old buffer that was just completed
-      this._allTimePoints2.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
+    if (this._updateallTimePoints1) {
+      // Get data from the old buffer that was just completed
+      this._allTimePoints2.forEach((record: AllTimePoints) =>
+        this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds)
+      );
       this._allTimePoints2 = []; // Reset to empty
     } else {
-      this._allTimePoints1.forEach((record: AllTimePoints) => this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds));
+      this._allTimePoints1.forEach((record: AllTimePoints) =>
+        this.frameTimings.set(record.name, record.end.milliseconds - record.begin.milliseconds)
+      );
       this._allTimePoints1 = []; // Reset to empty
     }
     this._beginTimePoints = []; // This should be back to [] at this point
@@ -88,15 +93,13 @@ export class PerformanceMetrics {
   public completeFrameTimings(fbo: FrameBuffer): void {
     if (this.gatherCurPerformanceMetrics) {
       const fpsTimerElapsed = this.fpsTimer.currentSeconds - this.fpsTimerStart;
-      if (this.spfTimes[this.curSpfTimeIndex])
-        this.spfSum -= this.spfTimes[this.curSpfTimeIndex];
+      if (this.spfTimes[this.curSpfTimeIndex]) this.spfSum -= this.spfTimes[this.curSpfTimeIndex];
 
       this.spfSum += fpsTimerElapsed;
       this.spfTimes[this.curSpfTimeIndex] = fpsTimerElapsed;
 
       this.curSpfTimeIndex++;
-      if (this.curSpfTimeIndex >= 50)
-        this.curSpfTimeIndex = 0;
+      if (this.curSpfTimeIndex >= 50) this.curSpfTimeIndex = 0;
 
       this.fpsTimerStart = this.fpsTimer.currentSeconds;
     }

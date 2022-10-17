@@ -32,10 +32,18 @@ export class GeometryAccumulator {
   public readonly system: RenderSystem;
   public currentFeature?: Feature;
 
-  public get surfacesOnly(): boolean { return this._surfacesOnly; }
-  public get transform(): Transform { return this._transform; }
-  public get isEmpty(): boolean { return this.geometries.isEmpty; }
-  public get haveTransform(): boolean { return !this._transform.isIdentity; }
+  public get surfacesOnly(): boolean {
+    return this._surfacesOnly;
+  }
+  public get transform(): Transform {
+    return this._transform;
+  }
+  public get isEmpty(): boolean {
+    return this.geometries.isEmpty;
+  }
+  public get haveTransform(): boolean {
+    return !this._transform.isIdentity;
+  }
 
   public constructor(options?: {
     system?: RenderSystem;
@@ -62,8 +70,7 @@ export class GeometryAccumulator {
   }
 
   private calculateTransform(transform: Transform, range: Range3d): Transform {
-    if (this.haveTransform)
-      transform = this._transform.multiplyTransformTransform(transform);
+    if (this.haveTransform) transform = this._transform.multiplyTransformTransform(transform);
 
     transform.multiplyRange(range, range);
     return transform;
@@ -71,8 +78,7 @@ export class GeometryAccumulator {
 
   public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range = this.getPrimitiveRange(loop);
-    if (!range)
-      return false;
+    if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint, this.currentFeature));
@@ -82,8 +88,7 @@ export class GeometryAccumulator {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
-    if (range.isNull)
-      return false;
+    if (range.isNull) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams, this.currentFeature));
@@ -93,8 +98,7 @@ export class GeometryAccumulator {
     // Do this.getPrimitiveRange() manually, so there is no need to create a PointString3d object just to find the range
     const range = Range3d.createNull();
     range.extendArray(pts, undefined);
-    if (range.isNull)
-      return false;
+    if (range.isNull) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams, this.currentFeature));
@@ -102,8 +106,7 @@ export class GeometryAccumulator {
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
     const range = this.getPrimitiveRange(path);
-    if (!range)
-      return false;
+    if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint, this.currentFeature));
@@ -126,8 +129,7 @@ export class GeometryAccumulator {
       }
     }
 
-    if (!range && !(range = this.getPrimitiveRange(pf)))
-      return false;
+    if (!range && !(range = this.getPrimitiveRange(pf))) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams, this.currentFeature));
@@ -135,8 +137,7 @@ export class GeometryAccumulator {
 
   public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
     const range = this.getPrimitiveRange(primitive);
-    if (!range)
-      return false;
+    if (!range) return false;
 
     const xform = this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams, this.currentFeature));
@@ -147,7 +148,9 @@ export class GeometryAccumulator {
     return true;
   }
 
-  public clear(): void { this.geometries.clear(); }
+  public clear(): void {
+    this.geometries.clear();
+  }
 
   /**
    * Generates a MeshBuilderMap
@@ -165,8 +168,7 @@ export class GeometryAccumulator {
   }
 
   public toMeshes(options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList {
-    if (this.geometries.isEmpty)
-      return new MeshList();
+    if (this.geometries.isEmpty) return new MeshList();
 
     const builderMap = this.toMeshBuilderMap(options, tolerance, pickable);
     return builderMap.toMeshes();
@@ -176,10 +178,14 @@ export class GeometryAccumulator {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { modelId?: string } | undefined): MeshList | undefined {
+  public saveToGraphicList(
+    graphics: RenderGraphic[],
+    options: GeometryOptions,
+    tolerance: number,
+    pickable: { modelId?: string } | undefined
+  ): MeshList | undefined {
     const meshes = this.toMeshes(options, tolerance, pickable);
-    if (0 === meshes.length)
-      return undefined;
+    if (0 === meshes.length) return undefined;
 
     // If the meshes contain quantized positions, they are all quantized to the same range. If that range is small relative to the distance
     // from the origin, quantization errors can produce display artifacts. Remove the translation from the quantization parameters and apply
@@ -210,8 +216,7 @@ export class GeometryAccumulator {
       }
 
       const graphic = mesh.getGraphics(this.system, this._viewIndependentOrigin);
-      if (undefined !== graphic)
-        branch.add(graphic);
+      if (undefined !== graphic) branch.add(graphic);
     }
 
     if (!branch.isEmpty) {

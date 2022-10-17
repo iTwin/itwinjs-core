@@ -17,18 +17,25 @@ import { Texture } from "./Texture";
 export abstract class TextureDrape implements RenderTextureDrape, RenderMemory.Consumer, WebGLDisposable {
   protected _texture?: Texture;
   protected _projectionMatrix = Matrix4d.createIdentity();
-  public get texture(): Texture | undefined { return this._texture; }
-  public get projectionMatrix(): Matrix4d { return this._projectionMatrix; }
+  public get texture(): Texture | undefined {
+    return this._texture;
+  }
+  public get projectionMatrix(): Matrix4d {
+    return this._projectionMatrix;
+  }
   public abstract collectGraphics(context: SceneContext): void;
   public abstract draw(target: Target): void;
-  public get isReady(): boolean { return this._texture !== undefined; }
-
-  public collectStatistics(stats: RenderMemory.Statistics): void {
-    if (undefined !== this._texture)
-      stats.addPlanarClassifier(this._texture.bytesUsed);
+  public get isReady(): boolean {
+    return this._texture !== undefined;
   }
 
-  public get isDisposed(): boolean { return undefined === this.texture; }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (undefined !== this._texture) stats.addPlanarClassifier(this._texture.bytesUsed);
+  }
+
+  public get isDisposed(): boolean {
+    return undefined === this.texture;
+  }
 
   public dispose() {
     this._texture = dispose(this._texture);

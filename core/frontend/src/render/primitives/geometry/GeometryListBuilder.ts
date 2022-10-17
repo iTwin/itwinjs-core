@@ -7,7 +7,19 @@
  */
 
 import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+  Arc3d,
+  CurvePrimitive,
+  IndexedPolyface,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Path,
+  Point2d,
+  Point3d,
+  Polyface,
+  Range3d,
+  SolidPrimitive,
+  Transform,
 } from "@itwin/core-geometry";
 import { Feature, FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@itwin/core-common";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../GraphicBuilder";
@@ -21,8 +33,7 @@ import { MeshList } from "../mesh/MeshPrimitives";
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
   const pts3d: Point3d[] = [];
-  for (const point of pts2d)
-    pts3d.push(Point3d.create(point.x, point.y, depth));
+  for (const point of pts2d) pts3d.push(Point3d.create(point.x, point.y, depth));
   return pts3d;
 }
 
@@ -33,7 +44,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+  public constructor(
+    system: RenderSystem,
+    options: ViewportGraphicBuilderOptions | CustomGraphicBuilderOptions,
+    accumulatorTransform = Transform.identity
+  ) {
     super(options);
     this.accum = new GeometryAccumulator({
       system,
@@ -42,8 +57,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       viewIndependentOrigin: options.viewIndependentOrigin,
     });
 
-    if (this.pickable)
-      this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
+    if (this.pickable) this.activateFeature(new Feature(this.pickable.id, this.pickable.subCategoryId, this.pickable.geometryClass));
   }
 
   public finish(): RenderGraphic {
@@ -84,18 +98,14 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
       curve.children.push(gapSegment);
     }
     const displayParams = curve.isAnyRegionType ? this.getMeshDisplayParams() : this.getLinearDisplayParams();
-    if (curve instanceof Loop)
-      this.accum.addLoop(curve, displayParams, this.placement, false);
-    else
-      this.accum.addPath(curve, displayParams, this.placement, false);
+    if (curve instanceof Loop) this.accum.addLoop(curve, displayParams, this.placement, false);
+    else this.accum.addPath(curve, displayParams, this.placement, false);
   }
 
   /** take ownership of input points and add as a line string to this builder */
   public addLineString(points: Point3d[]): void {
-    if (2 === points.length && points[0].isAlmostEqual(points[1]))
-      this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
-    else
-      this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
+    if (2 === points.length && points[0].isAlmostEqual(points[1])) this.accum.addPointString(points, this.getLinearDisplayParams(), this.placement);
+    else this.accum.addLineString(points, this.getLinearDisplayParams(), this.placement);
   }
 
   public addLineString2d(points: Point2d[], zDepth: number): void {
@@ -139,16 +149,30 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
   }
 
-  public getGraphicParams(): GraphicParams { return this.graphicParams; }
+  public getGraphicParams(): GraphicParams {
+    return this.graphicParams;
+  }
 
-  public getDisplayParams(type: DisplayParams.Type): DisplayParams { return DisplayParams.createForType(type, this.graphicParams); }
-  public getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this.graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad)); }
-  public getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this.graphicParams); }
-  public get textDisplayParams(): DisplayParams { return DisplayParams.createForText(this.graphicParams); }
+  public getDisplayParams(type: DisplayParams.Type): DisplayParams {
+    return DisplayParams.createForType(type, this.graphicParams);
+  }
+  public getMeshDisplayParams(): DisplayParams {
+    return DisplayParams.createForMesh(this.graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad));
+  }
+  public getLinearDisplayParams(): DisplayParams {
+    return DisplayParams.createForLinear(this.graphicParams);
+  }
+  public get textDisplayParams(): DisplayParams {
+    return DisplayParams.createForText(this.graphicParams);
+  }
 
-  public get system(): RenderSystem { return this.accum.system; }
+  public get system(): RenderSystem {
+    return this.accum.system;
+  }
 
-  public add(geom: Geometry): void { this.accum.addGeometry(geom); }
+  public add(geom: Geometry): void {
+    this.accum.addGeometry(geom);
+  }
 
   private resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined {
     return this.system.getGradientTexture(gradient, this.iModel);
@@ -174,14 +198,13 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const tolerance = this.computeTolerance(accum);
       meshes = accum.saveToGraphicList(this.primitives, options, tolerance, this.pickable);
       if (undefined !== meshes) {
-        if (meshes.features?.anyDefined)
-          featureTable = meshes.features;
+        if (meshes.features?.anyDefined) featureTable = meshes.features;
 
         range = meshes.range;
       }
     }
 
-    let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
+    let graphic = this.primitives.length !== 1 ? this.accum.system.createGraphicList(this.primitives) : (this.primitives.pop() as RenderGraphic);
     if (undefined !== featureTable) {
       const batchRange = range ?? new Range3d();
       const batchOptions = this._options.pickable;

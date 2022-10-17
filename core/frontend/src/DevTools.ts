@@ -23,7 +23,6 @@ export interface PingTestResult {
  * @internal
  */
 export class DevTools {
-
   /** Create a new connection with a specific backend instance.
    * @param tokenProps The iModelToken that identifies that backend instance.
    * Supply a dummy token if contacting the backend without the Orchestrator.
@@ -33,9 +32,7 @@ export class DevTools {
   }
 
   /** Constructor */
-  private constructor(
-    private readonly _tokenProps: IModelRpcProps) {
-  }
+  private constructor(private readonly _tokenProps: IModelRpcProps) {}
 
   /** Measures the round trip times for one or more pings to the backend
    * @param count Number of pings to send to the backend
@@ -50,36 +47,29 @@ export class DevTools {
       return Date.now() - start;
     };
 
-    for (let ii = 0; ii < count; ii++)
-      pings[ii] = pingFn().catch(async () => undefined);
+    for (let ii = 0; ii < count; ii++) pings[ii] = pingFn().catch(async () => undefined);
 
     const pingTimes: Array<number | undefined> = await Promise.all(pings);
 
     const min: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (!acc)
-        return curr;
+      if (!acc) return curr;
 
-      if (!curr)
-        return acc;
+      if (!curr) return acc;
 
       return Math.min(acc, curr);
     }, undefined);
 
     const max: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined")
-        return undefined;
+      if (typeof acc === "undefined") return undefined;
 
-      if (!curr)
-        return curr;
+      if (!curr) return curr;
 
       return Math.max(acc, curr);
     }, 0);
 
     const total: number | undefined = pingTimes.reduce((acc: number | undefined, curr: number | undefined) => {
-      if (typeof acc === "undefined")
-        return undefined;
-      if (!curr)
-        return undefined;
+      if (typeof acc === "undefined") return undefined;
+      if (!curr) return undefined;
 
       return acc + curr;
     }, 0);

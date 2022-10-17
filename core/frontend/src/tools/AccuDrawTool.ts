@@ -35,31 +35,24 @@ function normalizedCrossProduct(vec1: Vector3d, vec2: Vector3d, out: Vector3d): 
 export class AccuDrawShortcuts {
   public static rotateAxesByPoint(isSnapped: boolean, aboutCurrentZ: boolean): boolean {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return false;
+    if (!accudraw.isEnabled) return false;
 
     const vp = accudraw.currentView;
-    if (!vp)
-      return false;
+    if (!vp) return false;
 
     const point = accudraw.point;
-    if (!vp.view.is3d())
-      point.z = 0.0;
+    if (!vp.view.is3d()) point.z = 0.0;
 
-    if (aboutCurrentZ)
-      accudraw.hardConstructionPlane(point, point, accudraw.planePt, accudraw.axes.z, vp, isSnapped);
-    else
-      accudraw.softConstructionPlane(point, point, accudraw.planePt, accudraw.axes.z, vp, isSnapped);
+    if (aboutCurrentZ) accudraw.hardConstructionPlane(point, point, accudraw.planePt, accudraw.axes.z, vp, isSnapped);
+    else accudraw.softConstructionPlane(point, point, accudraw.planePt, accudraw.axes.z, vp, isSnapped);
 
     // Snap point and compass origin coincide...
     const xVec = new Vector3d();
-    if (normalizedDifference(point, accudraw.planePt, xVec) < Geometry.smallAngleRadians)
-      return false;
+    if (normalizedDifference(point, accudraw.planePt, xVec) < Geometry.smallAngleRadians) return false;
 
     accudraw.axes.x.setFrom(xVec);
 
-    if (RotationMode.Context !== accudraw.rotationMode)
-      accudraw.setRotationMode(RotationMode.Context);
+    if (RotationMode.Context !== accudraw.rotationMode) accudraw.setRotationMode(RotationMode.Context);
 
     accudraw.flags.contextRotMode = ContextMode.XAxis;
     accudraw.flags.lockedRotation = false;
@@ -73,8 +66,7 @@ export class AccuDrawShortcuts {
 
   public static updateACSByPoints(acs: AuxCoordSystemState, vp: Viewport, points: Point3d[], isDynamics: boolean): boolean {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return false;
+    if (!accudraw.isEnabled) return false;
 
     let accept = false;
     const vec = [new Vector3d(), new Vector3d(), new Vector3d()];
@@ -123,9 +115,11 @@ export class AccuDrawShortcuts {
         break;
 
       case 3:
-        if (normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
+        if (
+          normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
           normalizedDifference(points[2], points[0], vec[1]) < 0.00001 ||
-          normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001) {
+          normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001
+        ) {
           accept = true;
           break;
         }
@@ -139,12 +133,13 @@ export class AccuDrawShortcuts {
     return accept;
   }
 
-  public static processPendingHints() { IModelApp.accuDraw.processHints(); }
+  public static processPendingHints() {
+    IModelApp.accuDraw.processHints();
+  }
 
   public static requestInputFocus() {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     accudraw.grabInputFocus();
     accudraw.refreshDecorationsAndDynamics();
@@ -153,11 +148,9 @@ export class AccuDrawShortcuts {
   // Helper method for GUI implementation...
   public static async itemFieldNavigate(index: ItemField, str: string, forward: boolean): Promise<void> {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
-    if (accudraw.getFieldLock(index))
-      accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
+    if (accudraw.getFieldLock(index)) accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
 
     if (!accudraw.isActive && KeyinStatus.Partial === accudraw.getKeyinStatus(index)) {
       await accudraw.processFieldInput(index, str, true);
@@ -168,26 +161,26 @@ export class AccuDrawShortcuts {
 
     const vp = accudraw.currentView;
     const is3d = vp ? vp.view.is3d() : false;
-    const isPolar = (CompassMode.Polar === accudraw.compassMode);
+    const isPolar = CompassMode.Polar === accudraw.compassMode;
     switch (index) {
       case ItemField.DIST_Item:
-        index = ((is3d && !forward) ? ItemField.Z_Item : ItemField.ANGLE_Item);
+        index = is3d && !forward ? ItemField.Z_Item : ItemField.ANGLE_Item;
         break;
 
       case ItemField.ANGLE_Item:
-        index = ((is3d && forward) ? ItemField.Z_Item : ItemField.DIST_Item);
+        index = is3d && forward ? ItemField.Z_Item : ItemField.DIST_Item;
         break;
 
       case ItemField.X_Item:
-        index = ((is3d && !forward) ? ItemField.Z_Item : ItemField.Y_Item);
+        index = is3d && !forward ? ItemField.Z_Item : ItemField.Y_Item;
         break;
 
       case ItemField.Y_Item:
-        index = ((is3d && forward) ? ItemField.Z_Item : ItemField.X_Item);
+        index = is3d && forward ? ItemField.Z_Item : ItemField.X_Item;
         break;
 
       case ItemField.Z_Item:
-        index = (forward ? (isPolar ? ItemField.DIST_Item : ItemField.X_Item) : (isPolar ? ItemField.ANGLE_Item : ItemField.Y_Item));
+        index = forward ? (isPolar ? ItemField.DIST_Item : ItemField.X_Item) : isPolar ? ItemField.ANGLE_Item : ItemField.Y_Item;
         break;
     }
 
@@ -196,39 +189,37 @@ export class AccuDrawShortcuts {
     accudraw.dontMoveFocus = true;
   }
 
-  public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
+  public static itemFieldNewInput(index: ItemField): void {
+    IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial);
+  }
 
   public static async itemFieldAcceptInput(index: ItemField, str: string): Promise<void> {
     const accudraw = IModelApp.accuDraw;
     await accudraw.processFieldInput(index, str, true);
     accudraw.setKeyinStatus(index, KeyinStatus.Dynamic);
 
-    if (accudraw.getFieldLock(index))
-      accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
+    if (accudraw.getFieldLock(index)) accudraw.saveCoordinate(index, accudraw.getValueByIndex(index));
 
     const vp = accudraw.currentView;
     if (accudraw.isActive) {
-      if (!vp)
-        return;
+      if (!vp) return;
 
-      if (CompassMode.Polar === accudraw.compassMode)
-        accudraw.fixPointPolar(vp);
-      else
-        accudraw.fixPointRectangular(vp);
+      if (CompassMode.Polar === accudraw.compassMode) accudraw.fixPointPolar(vp);
+      else accudraw.fixPointRectangular(vp);
 
       accudraw.flags.dialogNeedsUpdate = true;
       return;
     }
 
     const is3d = vp ? vp.view.is3d() : false;
-    const isPolar = (CompassMode.Polar === accudraw.compassMode);
+    const isPolar = CompassMode.Polar === accudraw.compassMode;
     switch (index) {
       case ItemField.DIST_Item:
         index = ItemField.ANGLE_Item;
         break;
 
       case ItemField.ANGLE_Item:
-        index = (is3d ? ItemField.Z_Item : ItemField.DIST_Item);
+        index = is3d ? ItemField.Z_Item : ItemField.DIST_Item;
         break;
 
       case ItemField.X_Item:
@@ -236,11 +227,11 @@ export class AccuDrawShortcuts {
         break;
 
       case ItemField.Y_Item:
-        index = (is3d ? ItemField.Z_Item : ItemField.X_Item);
+        index = is3d ? ItemField.Z_Item : ItemField.X_Item;
         break;
 
       case ItemField.Z_Item:
-        index = (isPolar ? ItemField.DIST_Item : ItemField.X_Item);
+        index = isPolar ? ItemField.DIST_Item : ItemField.X_Item;
         break;
     }
     accudraw.setFocusItem(index);
@@ -248,8 +239,7 @@ export class AccuDrawShortcuts {
 
   public static itemFieldLockToggle(index: ItemField): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     if (accudraw.getFieldLock(index)) {
       switch (index) {
@@ -309,8 +299,7 @@ export class AccuDrawShortcuts {
     const vp = accudraw.currentView;
     const is3d = vp ? vp.view.is3d() : true;
 
-    if (!is3d && (RotationMode.Front === rotation || RotationMode.Side === rotation))
-      accudraw.setRotationMode(RotationMode.Top);
+    if (!is3d && (RotationMode.Front === rotation || RotationMode.Side === rotation)) accudraw.setRotationMode(RotationMode.Top);
 
     accudraw.flags.baseRotation = rotation;
     accudraw.updateRotation(true);
@@ -319,8 +308,7 @@ export class AccuDrawShortcuts {
   // Shortcut implementations for GUI entry points...
   public static setOrigin(explicitOrigin?: Point3d): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     if (explicitOrigin) {
       accudraw.published.origin.setFrom(explicitOrigin);
@@ -353,8 +341,7 @@ export class AccuDrawShortcuts {
     const vp = accudraw.currentView;
 
     // NOTE: _AdjustPoint should have been called to have setup currentView...
-    if (vp && !vp.view.is3d())
-      accudraw.published.origin.z = 0.0;
+    if (vp && !vp.view.is3d()) accudraw.published.origin.z = 0.0;
 
     accudraw.origin.setFrom(accudraw.published.origin);
     accudraw.point.setFrom(accudraw.published.origin);
@@ -366,18 +353,15 @@ export class AccuDrawShortcuts {
 
   public static changeCompassMode(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     let axisLockStatus = accudraw.locked & LockedStates.XY_BM;
 
     if (axisLockStatus) {
       if (CompassMode.Rectangular === accudraw.compassMode) {
-        if (axisLockStatus & LockedStates.X_BM && accudraw.delta.x !== 0.0)
-          axisLockStatus &= ~LockedStates.X_BM;
+        if (axisLockStatus & LockedStates.X_BM && accudraw.delta.x !== 0.0) axisLockStatus &= ~LockedStates.X_BM;
 
-        if (axisLockStatus & LockedStates.Y_BM && accudraw.delta.y !== 0.0)
-          axisLockStatus &= ~LockedStates.Y_BM;
+        if (axisLockStatus & LockedStates.Y_BM && accudraw.delta.y !== 0.0) axisLockStatus &= ~LockedStates.Y_BM;
       }
     }
 
@@ -386,10 +370,8 @@ export class AccuDrawShortcuts {
       if (CompassMode.Rectangular === accudraw.compassMode) {
         accudraw.delta.x = accudraw.delta.y = 0.0;
 
-        if (axisLockStatus & LockedStates.X_BM)
-          accudraw.setFieldLock(ItemField.X_Item, true);
-        else if (axisLockStatus & LockedStates.Y_BM)
-          accudraw.setFieldLock(ItemField.Y_Item, true);
+        if (axisLockStatus & LockedStates.X_BM) accudraw.setFieldLock(ItemField.X_Item, true);
+        else if (axisLockStatus & LockedStates.Y_BM) accudraw.setFieldLock(ItemField.Y_Item, true);
       } else {
         accudraw.setFieldLock(ItemField.ANGLE_Item, true);
       }
@@ -401,8 +383,7 @@ export class AccuDrawShortcuts {
 
   public static lockSmart(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const accuSnap = IModelApp.accuSnap;
 
@@ -412,44 +393,46 @@ export class AccuDrawShortcuts {
 
       const vp = accudraw.currentView;
       if (vp) {
-        if (CompassMode.Polar === accudraw.compassMode)
-          accudraw.fixPointPolar(vp);
-        else
-          accudraw.fixPointRectangular(vp);
+        if (CompassMode.Polar === accudraw.compassMode) accudraw.fixPointPolar(vp);
+        else accudraw.fixPointRectangular(vp);
       }
     }
 
     if (CompassMode.Polar === accudraw.compassMode) {
       const isSnapped = accudraw.clearTentative();
-      if (accudraw.locked & LockedStates.ANGLE_BM) { // angle locked (unlock it)
+      if (accudraw.locked & LockedStates.ANGLE_BM) {
+        // angle locked (unlock it)
         accudraw.setFieldLock(ItemField.ANGLE_Item, false);
         accudraw.locked &= ~LockedStates.ANGLE_BM;
-      } else if (accudraw.getFieldLock(ItemField.DIST_Item)) { // distance locked (unlock it)
+      } else if (accudraw.getFieldLock(ItemField.DIST_Item)) {
+        // distance locked (unlock it)
         accudraw.setFieldLock(ItemField.DIST_Item, false);
         accudraw.locked &= ~LockedStates.DIST_BM;
       } else if (isSnapped) {
         accudraw.doLockAngle(isSnapped);
-      } else if (accudraw.indexed & LockedStates.ANGLE_BM) { // angle indexed (lock it)
+      } else if (accudraw.indexed & LockedStates.ANGLE_BM) {
+        // angle indexed (lock it)
         accudraw.angleLock();
       } else {
         if (Math.abs(accudraw.vector.dotProduct(accudraw.axes.x)) > Math.abs(accudraw.vector.dotProduct(accudraw.axes.y)))
           accudraw.indexed |= LockedStates.Y_BM;
-        else
-          accudraw.indexed |= LockedStates.X_BM;
+        else accudraw.indexed |= LockedStates.X_BM;
         accudraw.angleLock();
       }
       accudraw.refreshDecorationsAndDynamics();
       return;
     }
 
-    if (accudraw.locked) { // if locked, unlock
+    if (accudraw.locked) {
+      // if locked, unlock
       accudraw.clearTentative();
       accudraw.locked &= ~LockedStates.XY_BM;
       accudraw.setFieldLock(ItemField.X_Item, false);
       accudraw.setFieldLock(ItemField.Y_Item, false);
       if (accudraw.getFieldLock(ItemField.Z_Item) && accudraw.delta.z === 0.0 && !accudraw.stickyZLock)
         accudraw.setFieldLock(ItemField.Z_Item, false);
-    } else { // lock to nearest axis
+    } else {
+      // lock to nearest axis
       if (accudraw.clearTentative()) {
         if (Math.abs(accudraw.delta.x) >= Geometry.smallAngleRadians && Math.abs(accudraw.delta.y) >= Geometry.smallAngleRadians) {
           accudraw.doLockAngle(false);
@@ -487,15 +470,13 @@ export class AccuDrawShortcuts {
 
   public static lockX(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     accudraw.clearTentative();
 
     if (CompassMode.Rectangular !== accudraw.compassMode) {
       const vp = accudraw.currentView;
-      if (!vp)
-        return;
+      if (!vp) return;
 
       accudraw.fixPointRectangular(vp);
       accudraw.changeCompassMode(true);
@@ -514,15 +495,13 @@ export class AccuDrawShortcuts {
 
   public static lockY(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     accudraw.clearTentative();
 
     if (CompassMode.Rectangular !== accudraw.compassMode) {
       const vp = accudraw.currentView;
-      if (!vp)
-        return;
+      if (!vp) return;
 
       accudraw.fixPointRectangular(vp);
       accudraw.changeCompassMode(true);
@@ -541,12 +520,10 @@ export class AccuDrawShortcuts {
 
   public static lockZ(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const vp = accudraw.currentView;
-    if (!vp || !vp.view.is3d())
-      return;
+    if (!vp || !vp.view.is3d()) return;
 
     const isSnapped = accudraw.clearTentative();
 
@@ -565,15 +542,13 @@ export class AccuDrawShortcuts {
 
   public static lockDistance(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const isSnapped = accudraw.clearTentative();
 
     if (CompassMode.Polar !== accudraw.compassMode) {
       const vp = accudraw.currentView;
-      if (!vp)
-        return;
+      if (!vp) return;
 
       accudraw.locked = 0;
       accudraw.fixPointPolar(vp);
@@ -587,8 +562,7 @@ export class AccuDrawShortcuts {
       accudraw.setKeyinStatus(ItemField.DIST_Item, KeyinStatus.Dynamic); // Need to clear partial status if locked by entering distance since focus stays in distance field...
     } else {
       // Move focus to distance field...
-      if (!isSnapped && accudraw.autoFocusFields)
-        accudraw.setFocusItem(ItemField.DIST_Item);
+      if (!isSnapped && accudraw.autoFocusFields) accudraw.setFocusItem(ItemField.DIST_Item);
       accudraw.distanceLock(true, true);
     }
     accudraw.refreshDecorationsAndDynamics();
@@ -596,20 +570,17 @@ export class AccuDrawShortcuts {
 
   public static lockAngle(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
     accudraw.doLockAngle(accudraw.clearTentative());
     accudraw.refreshDecorationsAndDynamics();
   }
 
   public lockIndex(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     if (accudraw.flags.indexLocked) {
-      if (accudraw.locked)
-        AccuDrawShortcuts.lockSmart();
+      if (accudraw.locked) AccuDrawShortcuts.lockSmart();
 
       accudraw.flags.indexLocked = false;
     } else {
@@ -619,28 +590,23 @@ export class AccuDrawShortcuts {
           accudraw.angleLock();
         }
 
-        if (accudraw.indexed & LockedStates.DIST_BM)
-          AccuDrawShortcuts.lockDistance();
+        if (accudraw.indexed & LockedStates.DIST_BM) AccuDrawShortcuts.lockDistance();
       } else {
         if (accudraw.indexed & LockedStates.X_BM) {
           AccuDrawShortcuts.lockX();
 
-          if (accudraw.indexed & LockedStates.DIST_BM)
-            AccuDrawShortcuts.lockY();
+          if (accudraw.indexed & LockedStates.DIST_BM) AccuDrawShortcuts.lockY();
         }
 
         if (accudraw.indexed & LockedStates.Y_BM) {
           AccuDrawShortcuts.lockY();
 
-          if (accudraw.indexed & LockedStates.DIST_BM)
-            AccuDrawShortcuts.lockX();
+          if (accudraw.indexed & LockedStates.DIST_BM) AccuDrawShortcuts.lockX();
         }
 
         if (accudraw.indexed & LockedStates.DIST_BM && !(accudraw.indexed & LockedStates.XY_BM)) {
-          if (accudraw.locked & LockedStates.X_BM)
-            AccuDrawShortcuts.lockY();
-          else
-            AccuDrawShortcuts.lockX();
+          if (accudraw.locked & LockedStates.X_BM) AccuDrawShortcuts.lockY();
+          else AccuDrawShortcuts.lockX();
         }
       }
 
@@ -652,8 +618,7 @@ export class AccuDrawShortcuts {
 
   public static setStandardRotation(rotation: RotationMode): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     if (RotationMode.Context === rotation) {
       const axes = accudraw.baseAxes.clone();
@@ -671,16 +636,13 @@ export class AccuDrawShortcuts {
 
   public static alignView(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const vp = accudraw.currentView;
-    if (!vp)
-      return;
+    if (!vp) return;
 
     const newMatrix = accudraw.getRotation();
-    if (newMatrix.isExactEqual(vp.rotation))
-      return;
+    if (newMatrix.isExactEqual(vp.rotation)) return;
 
     const targetMatrix = newMatrix.multiplyMatrixMatrix(vp.rotation);
     const rotateTransform = Transform.createFixedPointAndMatrix(vp.view.getTargetPoint(), targetMatrix);
@@ -694,12 +656,13 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public static rotateToBase(): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation); }
+  public static rotateToBase(): void {
+    this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation);
+  }
 
   public static rotateToACS(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
     // NOTE: Match current ACS orientation..reset auxRotationPlane to top!
     accudraw.flags.auxRotationPlane = RotationMode.Top;
     this.setStandardRotation(RotationMode.ACS);
@@ -707,12 +670,10 @@ export class AccuDrawShortcuts {
 
   public static rotateCycle(): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const vp = accudraw.currentView;
-    if (!vp || !vp.view.is3d())
-      return;
+    if (!vp || !vp.view.is3d()) return;
 
     let rotation: RotationMode;
     switch (accudraw.rotationMode) {
@@ -739,8 +700,7 @@ export class AccuDrawShortcuts {
         } else {
           const axes = accudraw.baseAxes.clone();
           accudraw.accountForAuxRotationPlane(axes, accudraw.flags.auxRotationPlane);
-          if (!accudraw.axes.equals(axes))
-            accudraw.changeBaseRotationMode(rotation);
+          if (!accudraw.axes.equals(axes)) accudraw.changeBaseRotationMode(rotation);
         }
 
         switch (accudraw.flags.auxRotationPlane) {
@@ -782,8 +742,7 @@ export class AccuDrawShortcuts {
 
   public static rotate90(axis: number): void {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return;
+    if (!accudraw.isEnabled) return;
 
     const newRotation = new ThreeAxes();
 
@@ -832,14 +791,13 @@ export class AccuDrawShortcuts {
 
   public static getACS(acsName: string | undefined, useOrigin: boolean, useRotation: boolean): BentleyStatus {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return BentleyStatus.ERROR;
+    if (!accudraw.isEnabled) return BentleyStatus.ERROR;
 
     const vp = accudraw.currentView;
-    if (!vp)
-      return BentleyStatus.ERROR;
+    if (!vp) return BentleyStatus.ERROR;
 
-    let currRotation = 0, currBaseRotation = 0;
+    let currRotation = 0,
+      currBaseRotation = 0;
     const axes = new ThreeAxes();
 
     if (!useRotation) {
@@ -853,28 +811,19 @@ export class AccuDrawShortcuts {
       //   // See if this ACS already exists...
       //   DgnCode acsCode = AuxCoordSystem:: CreateCode(vp -> GetViewControllerR().GetViewDefinition(), acsName);
       //   DgnElementId acsId = vp -> GetViewController().GetDgnDb().Elements().QueryElementIdByCode(acsCode);
-
       //   if (!acsId.IsValid())
       //     return ERROR;
-
       //   AuxCoordSystemCPtr auxElm = vp -> GetViewController().GetDgnDb().Elements().Get<AuxCoordSystem>(acsId);
-
       //   if (!auxElm.IsValid())
       //     return ERROR;
-
       //   AuxCoordSystemPtr acsPtr = auxElm -> MakeCopy<AuxCoordSystem>();
-
       //   if (!acsPtr.IsValid())
       //     return ERROR;
-
       //   AuxCoordSystemCR oldACS = vp -> GetViewController().GetAuxCoordinateSystem();
-
       //   if (!useOrigin)
       //     acsPtr -> SetOrigin(oldACS.GetOrigin());
-
       //   if (!useRotation)
       //     acsPtr -> SetRotation(oldACS.GetRotation());
-
       //   AccuDraw:: UpdateAuxCoordinateSystem(* acsPtr, * vp);
     }
 
@@ -913,12 +862,10 @@ export class AccuDrawShortcuts {
 
   public static writeACS(_acsName: string): BentleyStatus {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isEnabled)
-      return BentleyStatus.ERROR;
+    if (!accudraw.isEnabled) return BentleyStatus.ERROR;
 
     const vp = accudraw.currentView;
-    if (!vp)
-      return BentleyStatus.ERROR;
+    if (!vp) return BentleyStatus.ERROR;
 
     // const origin = accudraw.origin;
     // const rMatrix = accudraw.getRotation();
@@ -947,8 +894,7 @@ export class AccuDrawShortcuts {
 
   public static itemFieldUnlockAll(): void {
     const accudraw = IModelApp.accuDraw;
-    if (accudraw.isEnabled)
-      accudraw.unlockAllFields();
+    if (accudraw.isEnabled) accudraw.unlockAllFields();
   }
 
   /** @internal Temporary keyboard shortcuts. */
@@ -1136,7 +1082,9 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
     this.doManipulationStart();
   } // NOTE: InputCollector inherits suspended primitive's state, set everything...
 
-  public override async onCleanup() { this.doManipulationStop(this._cancel); }
+  public override async onCleanup() {
+    this.doManipulationStop(this._cancel);
+  }
   public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     if (this.doManipulation(ev, false)) {
       this._cancel = false;
@@ -1146,47 +1094,56 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
     return EventHandled.No;
   }
 
-  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> { this.doManipulation(ev, true); }
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+    this.doManipulation(ev, true);
+  }
   public override async exitTool() {
     await super.exitTool();
     AccuDrawShortcuts.requestInputFocus();
   } // re-grab focus when auto-focus tool setting set...
 
-  public activateAccuDrawOnStart() { return true; }
+  public activateAccuDrawOnStart() {
+    return true;
+  }
   public doManipulationStart() {
-    if (this.activateAccuDrawOnStart())
-      IModelApp.accuDraw.activate();
+    if (this.activateAccuDrawOnStart()) IModelApp.accuDraw.activate();
 
     this.doManipulation(undefined, true);
   }
 
   public doManipulationStop(cancel: boolean) {
-    if (!cancel)
-      IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete();
+    if (!cancel) IModelApp.accuDraw.savedStateInputCollector.ignoreFlags = this.onManipulationComplete();
   }
 
-  public onManipulationComplete(): AccuDrawFlags { return 0; }
+  public onManipulationComplete(): AccuDrawFlags {
+    return 0;
+  }
   public abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
 }
 
 /** @internal */
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
   public static override toolId = "AccuDraw.RotateAxes";
-  public static override get maxArgs(): number { return 1; }
+  public static override get maxArgs(): number {
+    return 1;
+  }
   protected _immediateMode: boolean = false;
-  public constructor(public aboutCurrentZ: boolean = true) { super(); }
+  public constructor(public aboutCurrentZ: boolean = true) {
+    super();
+  }
 
   public override async onInstall(): Promise<boolean> {
     const accudraw = IModelApp.accuDraw;
-    if (!accudraw.isActive)
-      return false; // Require compass to already be active for this shortcut...
+    if (!accudraw.isActive) return false; // Require compass to already be active for this shortcut...
 
-    if (this.aboutCurrentZ)
-      accudraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base; base Z is used when defining compass rotation by x axis...
+    if (this.aboutCurrentZ) accudraw.changeBaseRotationMode(RotationMode.Context); // Establish current orientation as base; base Z is used when defining compass rotation by x axis...
 
-    if (accudraw.clearTentative() || IModelApp.accuSnap.isHot ||
+    if (
+      accudraw.clearTentative() ||
+      IModelApp.accuSnap.isHot ||
       (CompassMode.Polar === accudraw.compassMode && accudraw.getFieldLock(ItemField.ANGLE_Item)) ||
-      (CompassMode.Polar !== accudraw.compassMode && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))) {
+      (CompassMode.Polar !== accudraw.compassMode && accudraw.getFieldLock(ItemField.X_Item) && accudraw.getFieldLock(ItemField.Y_Item))
+    ) {
       if (AccuDrawShortcuts.rotateAxesByPoint(true, this.aboutCurrentZ)) {
         AccuDrawShortcuts.itemFieldUnlockAll();
         accudraw.refreshDecorationsAndDynamics();
@@ -1204,7 +1161,9 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
     return super.onPostInstall();
   }
 
-  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override onManipulationComplete(): AccuDrawFlags {
+    return AccuDrawFlags.SetRMatrix;
+  }
   public override doManipulationStart(): void {
     super.doManipulationStart();
     CoreTools.outputPromptByKey("AccuDraw.RotateAxes.Prompts.FirstPoint");
@@ -1212,19 +1171,16 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
-    if (!vp)
-      return true;
+    if (!vp) return true;
     AccuDrawShortcuts.rotateAxesByPoint(TentativeOrAccuSnap.isHot, this.aboutCurrentZ);
     vp.invalidateDecorations();
-    if (!isMotion)
-      AccuDrawShortcuts.itemFieldUnlockAll();
+    if (!isMotion) AccuDrawShortcuts.itemFieldUnlockAll();
     return true;
   }
 
   public override async parseAndRun(...args: any[]): Promise<boolean> {
     for (const arg of args) {
-      if (arg.toLowerCase() === "unlockedz")
-        this.aboutCurrentZ = false;
+      if (arg.toLowerCase() === "unlockedz") this.aboutCurrentZ = false;
     }
     return this.run(args);
   }
@@ -1234,12 +1190,13 @@ export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
 export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
   public static override toolId = "AccuDraw.RotateElement";
   public moveOrigin: boolean = !IModelApp.accuDraw.isActive; // By default use current origin if AccuDraw is already enabled...
-  public override async onInstall(): Promise<boolean> { return IModelApp.accuDraw.isEnabled; } // Require compass to be enabled for this session...
+  public override async onInstall(): Promise<boolean> {
+    return IModelApp.accuDraw.isEnabled;
+  } // Require compass to be enabled for this session...
 
   public override onManipulationComplete(): AccuDrawFlags {
     let ignoreFlags = AccuDrawFlags.SetRMatrix | AccuDrawFlags.Disable; // If AccuDraw wasn't active when the shortcut started, let it remain active for suspended tool when shortcut completes...
-    if (this.moveOrigin)
-      ignoreFlags |= AccuDrawFlags.SetOrigin;
+    if (this.moveOrigin) ignoreFlags |= AccuDrawFlags.SetOrigin;
     return ignoreFlags;
   }
 
@@ -1251,8 +1208,7 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
   public updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
     const accudraw = IModelApp.accuDraw;
     const rMatrix = AccuDraw.getSnapRotation(snap, vp);
-    if (undefined === rMatrix)
-      return false;
+    if (undefined === rMatrix) return false;
     const origin = this.moveOrigin ? snap.snapPoint : accudraw.origin;
     accudraw.setContext(AccuDrawFlags.AlwaysSetOrigin | AccuDrawFlags.SetRMatrix, origin, rMatrix);
     return true;
@@ -1260,17 +1216,13 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : IModelApp.accuDraw.currentView;
-    if (!vp)
-      return true;
+    if (!vp) return true;
 
     const snapDetail = TentativeOrAccuSnap.getCurrentSnap(false);
-    if (undefined === snapDetail || !this.updateOrientation(snapDetail, vp))
-      return true;
+    if (undefined === snapDetail || !this.updateOrientation(snapDetail, vp)) return true;
 
-    if (undefined === ev)
-      AccuDrawShortcuts.processPendingHints();
-    if (!isMotion)
-      IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Hold temporary rotation for tool duration when not updating ACS...
+    if (undefined === ev) AccuDrawShortcuts.processPendingHints();
+    if (!isMotion) IModelApp.accuDraw.changeBaseRotationMode(RotationMode.Context); // Hold temporary rotation for tool duration when not updating ACS...
     return true;
   }
 }
@@ -1282,8 +1234,12 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
   private _rMatrix = Matrix3d.createIdentity();
   private _acs?: AuxCoordSystemState;
 
-  public override activateAccuDrawOnStart(): boolean { return false; }
-  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override activateAccuDrawOnStart(): boolean {
+    return false;
+  }
+  public override onManipulationComplete(): AccuDrawFlags {
+    return AccuDrawFlags.SetRMatrix;
+  }
 
   public override doManipulationStart(): void {
     super.doManipulationStart();
@@ -1292,8 +1248,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 
   public updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
     const rMatrix = AccuDraw.getSnapRotation(snap, vp);
-    if (undefined === rMatrix)
-      return false;
+    if (undefined === rMatrix) return false;
     this._origin = snap.snapPoint;
     this._rMatrix = rMatrix;
     return true;
@@ -1301,18 +1256,14 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
     const vp = ev ? ev.viewport : undefined;
-    if (!vp)
-      return true;
+    if (!vp) return true;
 
     const snapDetail = TentativeOrAccuSnap.getCurrentSnap(false);
-    if (undefined === snapDetail || !this.updateOrientation(snapDetail, vp))
-      return true;
+    if (undefined === snapDetail || !this.updateOrientation(snapDetail, vp)) return true;
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    if (isMotion)
-      return true;
+    if (isMotion) return true;
 
-    if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
+    if (!this._acs) this._acs = vp.view.auxiliaryCoordinateSystem.clone();
     this._acs.setOrigin(this._origin);
     this._acs.setRotation(this._rMatrix);
     AccuDraw.updateAuxCoordinateSystem(this._acs, vp);
@@ -1322,8 +1273,7 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
 
   public override decorate(context: DecorateContext): void {
     const vp = context.viewport;
-    if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
+    if (!this._acs) this._acs = vp.view.auxiliaryCoordinateSystem.clone();
     this._acs.setOrigin(this._origin);
     this._acs.setRotation(this._rMatrix);
     this._acs.display(context, ACSDisplayOptions.Active | ACSDisplayOptions.Dynamics);
@@ -1336,8 +1286,12 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
   private readonly _points: Point3d[] = [];
   private _acs?: AuxCoordSystemState;
 
-  public override activateAccuDrawOnStart(): boolean { return false; }
-  public override onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public override activateAccuDrawOnStart(): boolean {
+    return false;
+  }
+  public override onManipulationComplete(): AccuDrawFlags {
+    return AccuDrawFlags.SetRMatrix;
+  }
 
   public override doManipulationStart(): void {
     super.doManipulationStart();
@@ -1355,19 +1309,16 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
   }
 
   public doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean {
-    if (!ev || !ev.viewport)
-      return true;
+    if (!ev || !ev.viewport) return true;
 
     IModelApp.viewManager.invalidateDecorationsAllViews();
-    if (isMotion)
-      return false;
+    if (isMotion) return false;
 
     IModelApp.accuDraw.activate();
     this._points.push(ev.point.clone());
 
     const vp = ev.viewport;
-    if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
+    if (!this._acs) this._acs = vp.view.auxiliaryCoordinateSystem.clone();
 
     if (AccuDrawShortcuts.updateACSByPoints(this._acs, vp, this._points, false)) {
       AccuDraw.updateAuxCoordinateSystem(this._acs, vp);
@@ -1388,8 +1339,7 @@ export class DefineACSByPointsTool extends AccuDrawShortcutsTool {
     tmpPoints.push(ev.point);
 
     const vp = context.viewport;
-    if (!this._acs)
-      this._acs = vp.view.auxiliaryCoordinateSystem.clone();
+    if (!this._acs) this._acs = vp.view.auxiliaryCoordinateSystem.clone();
 
     AccuDrawShortcuts.updateACSByPoints(this._acs, vp, tmpPoints, true);
     this._acs.display(context, ACSDisplayOptions.Active | ACSDisplayOptions.Dynamics);

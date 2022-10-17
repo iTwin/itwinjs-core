@@ -7,7 +7,7 @@ import { getTileObjectReference, IModelRpcProps, IModelTileRpcInterface } from "
 
 /** @beta */
 export class TileStorage {
-  public constructor(public readonly storage: FrontendStorage) { }
+  public constructor(public readonly storage: FrontendStorage) {}
 
   private _transferConfigs: Map<string, TransferConfig | undefined> = new Map();
   private _pendingTransferConfigRequests: Map<string, Promise<TransferConfig | undefined>> = new Map();
@@ -21,35 +21,29 @@ export class TileStorage {
     guid?: string
   ): Promise<Uint8Array | undefined> {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
-    if(transferConfig === undefined)
-      return undefined;
-    const buffer = await this.storage.download(
-      {
-        reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
-        transferConfig,
-        transferType: "buffer",
-      }
-    );
+    if (transferConfig === undefined) return undefined;
+    const buffer = await this.storage.download({
+      reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
+      transferConfig,
+      transferType: "buffer",
+    });
     return new Uint8Array(buffer); // should always be Buffer because transferType === "buffer"
   }
 
   private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
-    if(this._transferConfigs.has(iModelId)) {
+    if (this._transferConfigs.has(iModelId)) {
       const transferConfig = this._transferConfigs.get(iModelId);
-      if(transferConfig === undefined)
-        return undefined;
-      if(transferConfig.expiration > new Date())
-        return transferConfig;
-      else // Refresh expired transferConfig
-        return this.sendTransferConfigRequest(tokenProps, iModelId);
+      if (transferConfig === undefined) return undefined;
+      if (transferConfig.expiration > new Date()) return transferConfig;
+      // Refresh expired transferConfig
+      else return this.sendTransferConfigRequest(tokenProps, iModelId);
     }
     return this.sendTransferConfigRequest(tokenProps, iModelId);
   }
 
   private async sendTransferConfigRequest(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
     const pendingRequest = this._pendingTransferConfigRequests.get(iModelId);
-    if(pendingRequest !== undefined)
-      return pendingRequest;
+    if (pendingRequest !== undefined) return pendingRequest;
 
     const request = (async () => {
       const config = await IModelTileRpcInterface.getClient().getTileCacheConfig(tokenProps);

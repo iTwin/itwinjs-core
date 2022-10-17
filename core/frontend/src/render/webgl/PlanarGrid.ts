@@ -22,10 +22,15 @@ import { Pass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {
-
   public readonly uvParams: QBufferHandle2d;
 
-  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, public readonly props: PlanarGridProps) {
+  public constructor(
+    positions: QBufferHandle3d,
+    uvParams: QBufferHandle2d,
+    indices: BufferHandle,
+    numIndices: number,
+    public readonly props: PlanarGridProps
+  ) {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
@@ -35,13 +40,21 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 }
 
 export class PlanarGridGeometry extends IndexedGeometry {
-  public get techniqueId(): TechniqueId { return TechniqueId.PlanarGrid; }
-  public override getPass(): Pass { return "translucent"; }
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
-  public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.PlanarGrid;
+  }
+  public override getPass(): Pass {
+    return "translucent";
+  }
+  public collectStatistics(_stats: RenderMemory.Statistics): void {}
+  public get renderOrder(): RenderOrder {
+    return RenderOrder.UnlitSurface;
+  }
   public readonly uvParams: QBufferHandle2d;
   public readonly props: PlanarGridProps;
-  public override get asPlanarGrid(): PlanarGridGeometry | undefined { return this; }
+  public override get asPlanarGrid(): PlanarGridGeometry | undefined {
+    return this;
+  }
 
   private constructor(params: PlanarGridGeometryParams) {
     super(params);
@@ -53,8 +66,7 @@ export class PlanarGridGeometry extends IndexedGeometry {
     const plane = Plane3dByOriginAndUnitNormal.create(grid.origin, grid.rMatrix.rowZ())!;
     const polygon = frustum.getIntersectionWithPlane(plane);
 
-    if (!polygon || polygon.length < 3)
-      return undefined;
+    if (!polygon || polygon.length < 3) return undefined;
 
     const xVector = grid.rMatrix.rowX();
     const yVector = grid.rMatrix.rowY();
@@ -76,7 +88,7 @@ export class PlanarGridGeometry extends IndexedGeometry {
 
     let transform;
     // If the grid is far from the origin, create a branch to avoid large coordinate accuracy issues. (Reality models).
-    if (qPoints.params.origin.magnitude() > 1.0E4) {
+    if (qPoints.params.origin.magnitude() > 1.0e4) {
       transform = Transform.createTranslationXYZ(qPoints.params.origin.x, qPoints.params.origin.y, qPoints.params.origin.z);
       qPoints.params.origin.setZero();
     }
@@ -91,12 +103,10 @@ export class PlanarGridGeometry extends IndexedGeometry {
     const pointBuffer = QBufferHandle3d.create(qPoints.params, qPoints.toTypedArray());
     const paramBuffer = QBufferHandle2d.create(qParams.params, qParams.toTypedArray());
     const indBuffer = BufferHandle.createBuffer(GL.Buffer.Target.ElementArrayBuffer, indices);
-    if (!pointBuffer || !paramBuffer || !indBuffer)
-      return undefined;
+    if (!pointBuffer || !paramBuffer || !indBuffer) return undefined;
 
     const geomParams = new PlanarGridGeometryParams(pointBuffer, paramBuffer, indBuffer, indices.length, grid);
-    if (!geomParams)
-      return undefined;
+    if (!geomParams) return undefined;
 
     const geom = new PlanarGridGeometry(geomParams);
     let graphic: RenderGraphic | undefined = Primitive.create(geom);
@@ -110,4 +120,3 @@ export class PlanarGridGeometry extends IndexedGeometry {
     return graphic;
   }
 }
-

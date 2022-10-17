@@ -8,8 +8,21 @@
 
 import { ClipVector, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
-  ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
+  AmbientOcclusion,
+  AnalysisStyle,
+  ClipStyle,
+  ColorDef,
+  Frustum,
+  GlobeMode,
+  HiddenLine,
+  Hilite,
+  LightSettings,
+  MonochromeMode,
+  Npc,
+  RenderTexture,
+  ThematicDisplay,
+  ViewFlags,
+  WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
@@ -99,10 +112,10 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
-  const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
+  const thematic = style.is3d() && view.displayStyle.viewFlags.thematicDisplay ? style.settings.thematic : undefined;
 
   let upVector;
-  const isGlobeMode3D = (GlobeMode.Ellipsoid === view.globeMode);
+  const isGlobeMode3D = GlobeMode.Ellipsoid === view.globeMode;
   if (isGlobeMode3D) {
     const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
@@ -113,8 +126,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   }
 
   let analysisTexture;
-  if (analysisStyle?.thematic)
-    analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
+  if (analysisStyle?.thematic) analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
   return {
     is3d,

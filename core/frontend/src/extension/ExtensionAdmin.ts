@@ -77,8 +77,7 @@ export class ExtensionAdmin {
         provider,
       });
       // TODO - temporary fix to execute the missed startup event
-      if (manifest.activationEvents.includes("onStartup"))
-        provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      if (manifest.activationEvents.includes("onStartup")) provider.execute(); // eslint-disable-line @typescript-eslint/no-floating-promises
     } catch (e) {
       throw new Error(`Failed to get extension manifest ${provider.hostname ? `at ${provider.hostname}` : ""}: ${e}`);
     }
@@ -90,9 +89,7 @@ export class ExtensionAdmin {
    * @alpha
    */
   public async addExtensions(providers: ExtensionProvider[]): Promise<void[]> {
-    return Promise.all(
-      providers.map(async (provider) => this.addExtension(provider))
-    );
+    return Promise.all(providers.map(async (provider) => this.addExtension(provider)));
   }
 
   /**
@@ -110,9 +107,7 @@ export class ExtensionAdmin {
   /** Returns the hostname of an input string. Throws an error if input is not a valid hostname (or URL). */
   private getHostName(inputUrl: string): string {
     // inputs without a protocol (e.g., http://) will throw an error in URL constructor
-    const inputWithProtocol = /(http|https):\/\//.test(inputUrl) ?
-      inputUrl :
-      `https://${inputUrl}`;
+    const inputWithProtocol = /(http|https):\/\//.test(inputUrl) ? inputUrl : `https://${inputUrl}`;
     try {
       const hostname = new URL(inputWithProtocol).hostname.replace("www.", "");
       return hostname;
@@ -127,8 +122,7 @@ export class ExtensionAdmin {
   /** Loops over all enabled Extensions and triggers each one if the provided event is defined. */
   private async activateExtensionEvents(event: string) {
     for (const extension of this._extensions.values()) {
-      if (!extension.manifest.activationEvents)
-        continue;
+      if (!extension.manifest.activationEvents) continue;
 
       for (const activationEvent of extension.manifest.activationEvents) {
         if (activationEvent === event) {

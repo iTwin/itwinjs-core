@@ -4,7 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, MeshEdge, QParams3d, QPoint3dList, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import {
+  ColorDef,
+  ColorIndex,
+  FeatureIndex,
+  FillFlags,
+  ImageBuffer,
+  ImageBufferFormat,
+  MeshEdge,
+  QParams3d,
+  QPoint3dList,
+  RenderTexture,
+  TextureTransparency,
+} from "@itwin/core-common";
 import { IModelApp } from "../../../IModelApp";
 import { IModelConnection } from "../../../IModelConnection";
 import { RenderMemory } from "../../../render/RenderMemory";
@@ -22,7 +34,7 @@ function expectMemory(consumer: RenderMemory.Consumers, total: number, max: numb
   expect(consumer.count).to.equal(count);
 }
 
-function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boolean }): RenderGeometry {
+function createMeshGeometry(opts?: { texture?: RenderTexture; includeEdges?: boolean }): RenderGeometry {
   const colors = new ColorIndex();
   colors.initUniform(ColorDef.from(255, 0, 0));
 
@@ -30,20 +42,24 @@ function createMeshGeometry(opts?: { texture?: RenderTexture, includeEdges?: boo
   if (opts?.texture) {
     textureMapping = {
       texture: opts.texture,
-      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0) ],
+      uvParams: [new Point2d(0, 1), new Point2d(1, 1), new Point2d(0, 0), new Point2d(1, 0)],
     };
   }
 
-  const points = [ new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0) ];
+  const points = [new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0)];
   const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1)));
-  for (const point of points)
-    qpoints.add(point);
+  for (const point of points) qpoints.add(point);
 
   let edges;
   if (opts?.includeEdges) {
     edges = new MeshArgsEdges();
     edges.edges.edges = [];
-    for (const indexPair of [[0, 1], [1, 3], [3, 2], [2, 0]])
+    for (const indexPair of [
+      [0, 1],
+      [1, 3],
+      [3, 2],
+      [2, 0],
+    ])
       edges.edges.edges.push(new MeshEdge(indexPair[0], indexPair[1]));
   }
 

@@ -8,7 +8,13 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
+  ScreenSpaceEffectBuilder,
+  ScreenSpaceEffectBuilderParams,
+  ScreenSpaceEffectContext,
+  UniformArrayParams,
+  UniformParams,
+  UniformType,
+  VaryingType,
 } from "../ScreenSpaceEffectBuilder";
 import { TechniqueId } from "./TechniqueId";
 import { ProgramBuilder, VariableType } from "./ShaderBuilder";
@@ -26,21 +32,31 @@ type ShouldApply = (context: ScreenSpaceEffectContext) => boolean;
 
 function getUniformVariableType(type: UniformType): VariableType {
   switch (type) {
-    case UniformType.Bool: return VariableType.Boolean;
-    case UniformType.Int: return VariableType.Int;
-    case UniformType.Float: return VariableType.Float;
-    case UniformType.Vec2: return VariableType.Vec2;
-    case UniformType.Vec3: return VariableType.Vec3;
-    case UniformType.Vec4: return VariableType.Vec4;
+    case UniformType.Bool:
+      return VariableType.Boolean;
+    case UniformType.Int:
+      return VariableType.Int;
+    case UniformType.Float:
+      return VariableType.Float;
+    case UniformType.Vec2:
+      return VariableType.Vec2;
+    case UniformType.Vec3:
+      return VariableType.Vec3;
+    case UniformType.Vec4:
+      return VariableType.Vec4;
   }
 }
 
 function getVaryingVariableType(type: VaryingType): VariableType {
   switch (type) {
-    case VaryingType.Float: return VariableType.Float;
-    case VaryingType.Vec2: return VariableType.Vec2;
-    case VaryingType.Vec3: return VariableType.Vec3;
-    case VaryingType.Vec4: return VariableType.Vec4;
+    case VaryingType.Float:
+      return VariableType.Float;
+    case VaryingType.Vec2:
+      return VariableType.Vec2;
+    case VaryingType.Vec3:
+      return VariableType.Vec3;
+    case VaryingType.Vec4:
+      return VariableType.Vec4;
   }
 }
 
@@ -91,8 +107,7 @@ class Builder {
     const program = this._builder.buildProgram(System.instance.context);
 
     // NB: compile() will throw with WebGL error log if compile/link fails.
-    if (CompileStatus.Success !== program.compile())
-      throw new Error(`Failed to produce shader program for screen-space effect "${this._name}"`);
+    if (CompileStatus.Success !== program.compile()) throw new Error(`Failed to produce shader program for screen-space effect "${this._name}"`);
 
     const technique = new SingularTechnique(program);
     const techniqueId = System.instance.techniques.addDynamicTechnique(technique, this._name);
@@ -117,8 +132,7 @@ class ScreenSpaceEffect {
 
   public shouldApply(target: Target): boolean {
     // Effects only apply during readPixels() if they move pixels around (we need to move pixels in the pick buffers correspondingly).
-    if (target.isReadPixelsInProgress && !this._shiftsPixels)
-      return false;
+    if (target.isReadPixelsInProgress && !this._shiftsPixels) return false;
 
     return undefined === this._shouldApply || this._shouldApply(target.screenSpaceEffectContext);
   }
@@ -155,8 +169,7 @@ export class ScreenSpaceEffects {
   }
 
   public add(effect: ScreenSpaceEffect): void {
-    if (undefined !== this._effects.get(effect.name))
-      throw new Error(`Screen-space effect "${effect.name}" is already registered.`);
+    if (undefined !== this._effects.get(effect.name)) throw new Error(`Screen-space effect "${effect.name}" is already registered.`);
 
     this._effects.set(effect.name, effect);
   }
@@ -173,8 +186,7 @@ export class ScreenSpaceEffects {
     const names = target.screenSpaceEffects;
     for (const name of names) {
       const effect = this._effects.get(name);
-      if (effect && effect.shouldApply(target))
-        effects.push(effect);
+      if (effect && effect.shouldApply(target)) effects.push(effect);
     }
 
     return effects;
@@ -182,12 +194,10 @@ export class ScreenSpaceEffects {
 
   /** Apply screen-space effects to the Target's rendered image. */
   public apply(target: Target): void {
-    if (0 === this._effects.size)
-      return;
+    if (0 === this._effects.size) return;
 
     const effects = this.getApplicableEffects(target);
-    if (0 === effects.length)
-      return;
+    if (0 === effects.length) return;
 
     if (target.isReadPixelsInProgress) {
       this.applyForReadPixels(effects, target);

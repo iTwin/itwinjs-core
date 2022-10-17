@@ -58,8 +58,7 @@ export class DisclosedTileTreeSet implements Iterable<TileTree> {
 
   /** Add all tile trees referenced by `discloser` to the set. */
   public disclose(discloser: TileTreeDiscloser): void {
-    if (this._processed.has(discloser))
-      return;
+    if (this._processed.has(discloser)) return;
 
     this._processed.add(discloser);
     discloser.discloseTileTrees(this);

@@ -6,7 +6,14 @@
  * @module IModelApp
  */
 
-import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@itwin/core-common";
+import {
+  InterceptedRpcRequest,
+  IpcSession,
+  IpcWebSocket,
+  IpcWebSocketFrontend,
+  IpcWebSocketMessage,
+  IpcWebSocketTransport,
+} from "@itwin/core-common";
 import { IpcApp } from "./IpcApp";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
 
@@ -51,8 +58,7 @@ class LocalTransport extends IpcWebSocketTransport {
         return;
       }
 
-      for (const listener of IpcWebSocket.receivers)
-        listener({} as Event, message);
+      for (const listener of IpcWebSocket.receivers) listener({} as Event, message);
     });
   }
 

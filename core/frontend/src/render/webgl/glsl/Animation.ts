@@ -134,17 +134,14 @@ const scratchAnimParams = [
 
 function getAnimParams(size: 2 | 3, initialValue?: number): Float32Array {
   const array = scratchAnimParams[size]!;
-  if (undefined !== initialValue)
-    for (let i = 0; i < array.length; i++)
-      array[i] = initialValue;
+  if (undefined !== initialValue) for (let i = 0; i < array.length; i++) array[i] = initialValue;
 
   return array;
 }
 
-function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementChannel, displacement: AnalysisStyleDisplacement } | undefined {
+function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementChannel; displacement: AnalysisStyleDisplacement } | undefined {
   const displacement = params.target.analysisStyle?.displacement;
-  if (!displacement)
-    return undefined;
+  if (!displacement) return undefined;
 
   const channel = params.geometry.asLUT?.lut.auxChannels?.displacements?.get(displacement.channelName);
   return channel ? { channel, displacement } : undefined;
@@ -152,16 +149,14 @@ function getDisplacementChannel(params: DrawParams): { channel: AuxDisplacementC
 
 function getNormalChannel(params: DrawParams): AuxChannel | undefined {
   const channelName = params.target.analysisStyle?.normalChannelName;
-  if (undefined === channelName)
-    return undefined;
+  if (undefined === channelName) return undefined;
 
   return params.geometry.asLUT?.lut.auxChannels?.normals?.get(channelName);
 }
 
-function getScalarChannel(params: DrawParams): { channel: AuxParamChannel, scalar: AnalysisStyleThematic } | undefined {
+function getScalarChannel(params: DrawParams): { channel: AuxParamChannel; scalar: AnalysisStyleThematic } | undefined {
   const scalar = params.target.analysisStyle?.thematic;
-  if (!scalar)
-    return undefined;
+  if (!scalar) return undefined;
 
   const channel = params.geometry.asMesh?.lut.auxChannels?.params?.get(scalar.channelName);
   return channel ? { channel, scalar } : undefined;
@@ -192,7 +187,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
 
   vert.addUniform("u_animLUT", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_animLUT", (uniform, params) => {
-      const channels = (params.geometry.asLUT!).lut.auxChannels!;
+      const channels = params.geometry.asLUT!.lut.auxChannels!;
       assert(undefined !== channels);
       channels.texture.bindSampler(uniform, TextureUnit.AuxChannelLUT);
     });
@@ -223,8 +218,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
-        computeAnimParams(animParams, disp.channel, params.target.analysisFraction);
+      if (undefined !== disp) computeAnimParams(animParams, disp.channel, params.target.analysisFraction);
 
       uniform.setUniform3fv(animParams);
     });
@@ -233,9 +227,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
-        for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
+      if (undefined !== disp) for (let i = 0; i < 3; i++) animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -244,9 +236,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
-        for (let i = 0; i < 3; i++)
-          animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
+      if (undefined !== disp) for (let i = 0; i < 3; i++) animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
 
       uniform.setUniform3fv(animParams);
     });
@@ -265,8 +255,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
       prog.addGraphicUniform("u_animNormalParams", (uniform, params) => {
         const animParams = getAnimParams(3, -1.0);
         const channel = getNormalChannel(params);
-        if (undefined !== channel)
-          computeAnimParams(animParams, channel, params.target.analysisFraction);
+        if (undefined !== channel) computeAnimParams(animParams, channel, params.target.analysisFraction);
 
         uniform.setUniform3fv(animParams);
       });
@@ -277,8 +266,7 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
         prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
           const scalars = getScalarChannel(params);
           const animParams = getAnimParams(3, -1.0);
-          if (scalars)
-            computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
+          if (scalars) computeAnimParams(animParams, scalars.channel, params.target.analysisFraction);
 
           uniform.setUniform3fv(animParams);
         });
@@ -291,11 +279,10 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean, isTh
           if (scalars) {
             const range = scalars.scalar.range;
             let rangeScale = range.high - range.low;
-            if (rangeScale === 0)
-              rangeScale = 1;
+            if (rangeScale === 0) rangeScale = 1;
 
             animParams[0] = ThematicGradientSettings.margin + (scalars.channel.qOrigin - range.low) / rangeScale;
-            animParams[1] = ThematicGradientSettings.contentRange * scalars.channel.qScale / rangeScale;
+            animParams[1] = (ThematicGradientSettings.contentRange * scalars.channel.qScale) / rangeScale;
           }
 
           uniform.setUniform2fv(animParams);

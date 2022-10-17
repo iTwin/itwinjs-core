@@ -69,16 +69,22 @@ describe("GeometryList", () => {
     assert.isTrue(glist0.isEmpty);
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
-    const g0 = Geometry.createFromLineString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
+    const g0 = Geometry.createFromLineString(
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
-      dp, undefined);
+      dp,
+      undefined
+    );
     assert.isUndefined(g0.getPolyfaces(0.001));
 
-    const g1 = Geometry.createFromPointString([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
+    const g1 = Geometry.createFromPointString(
+      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0)],
       Transform.createIdentity(),
       Range3d.createXYZXYZ(0, 0, 0, 1, 1, 1),
-      dp, undefined);
+      dp,
+      undefined
+    );
 
     glist0.push(g0);
     assert.equal(g0, glist0.first);
@@ -88,10 +94,15 @@ describe("GeometryList", () => {
 
     const glist1 = new GeometryList();
     for (const y0 of [1, 2, 3]) {
-      glist1.push(Geometry.createFromLineString([Point3d.create(0, y0, 0), Point3d.create(1, y0, 0)],
-        Transform.createIdentity(),
-        Range3d.createXYZXYZ(0, y0, 0, 1, y0, 0),
-        dp, undefined));
+      glist1.push(
+        Geometry.createFromLineString(
+          [Point3d.create(0, y0, 0), Point3d.create(1, y0, 0)],
+          Transform.createIdentity(),
+          Range3d.createXYZXYZ(0, y0, 0, 1, y0, 0),
+          dp,
+          undefined
+        )
+      );
     }
     const length00 = glist0.length;
     const length1 = glist1.length;
@@ -112,7 +123,6 @@ describe("GeometryList", () => {
 
     glist0.clear();
     assert.isTrue(glist0.isEmpty);
-
   });
   it("Polyface", () => {
     const glist0 = new GeometryList();
@@ -120,8 +130,7 @@ describe("GeometryList", () => {
     const gp = new GraphicParams();
     const dp = DisplayParams.createForLinear(gp);
     const origin = Point3d.create(1, 2, 3);
-    const polyface = Sample.createTriangularUnitGridPolyface(origin,
-      Vector3d.create(1, 0, 0), Vector3d.create(0, 2, 0), 4, 5, true, true, false);
+    const polyface = Sample.createTriangularUnitGridPolyface(origin, Vector3d.create(1, 0, 0), Vector3d.create(0, 2, 0), 4, 5, true, true, false);
     const polyfaceG0 = Geometry.createFromPolyface(polyface, Transform.createIdentity(), polyface.range(), dp, undefined);
     glist0.push(polyfaceG0);
     verifyGeometryQueries(polyfaceG0, false, true, false); // maybe this has to change someday?
@@ -140,8 +149,7 @@ describe("GeometryList", () => {
     glist0.push(loopG0);
     verifyGeometryQueries(loopG0, false, true, false); // maybe this has to change someday?
     const strokes = loopG0.getStrokes(0.001);
-    if (strokes)
-      assert.isDefined(strokes);
+    if (strokes) assert.isDefined(strokes);
     assert.isDefined(loopG0.getPolyfaces(0.001));
   });
 });

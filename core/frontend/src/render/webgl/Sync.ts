@@ -58,8 +58,7 @@ export function sync(target: SyncTarget, observer: SyncObserver): boolean {
     return false;
   }
 
-  if (token.syncKey === syncKey && token.target === target)
-    return true;
+  if (token.syncKey === syncKey && token.target === target) return true;
 
   token.syncKey = syncKey;
   token.target = target;
@@ -72,8 +71,6 @@ export function sync(target: SyncTarget, observer: SyncObserver): boolean {
  */
 export function desync(target: SyncTarget): void {
   // Let's make the relatively safe assumption that we will never roll over, and the even safer assumption that if we do, no outstanding SyncTokens holding a very small value will exist at that time.
-  if (target.syncKey < Number.MAX_SAFE_INTEGER)
-    ++target.syncKey;
-  else
-    target.syncKey = Number.MIN_SAFE_INTEGER;
+  if (target.syncKey < Number.MAX_SAFE_INTEGER) ++target.syncKey;
+  else target.syncKey = Number.MIN_SAFE_INTEGER;
 }

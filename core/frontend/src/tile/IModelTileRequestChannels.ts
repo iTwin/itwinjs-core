@@ -37,12 +37,10 @@ class IModelTileChannel extends TileRequestChannel {
   public override onActiveRequestCanceled(request: TileRequest): void {
     const tree = request.tile.tree;
     let entry = this._canceled.get(tree.iModel);
-    if (!entry)
-      this._canceled.set(tree.iModel, entry = new Map<string, Set<string>>());
+    if (!entry) this._canceled.set(tree.iModel, (entry = new Map<string, Set<string>>()));
 
     let ids = entry.get(tree.id);
-    if (!ids)
-      entry.set(tree.id, ids = new Set<string>());
+    if (!ids) entry.set(tree.id, (ids = new Set<string>()));
 
     ids.add(request.tile.contentId);
   }
@@ -100,9 +98,11 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   }
 
   public getCachedContent(tile: IModelTile): IModelTileContent | undefined {
-    const cached = this._cacheByIModel.get(tile.iModel)?.get(tile.tree)?.findEquivalent((x) => compareStrings(x.contentId, tile.contentId));
-    if (!cached)
-      return undefined;
+    const cached = this._cacheByIModel
+      .get(tile.iModel)
+      ?.get(tile.tree)
+      ?.findEquivalent((x) => compareStrings(x.contentId, tile.contentId));
+    if (!cached) return undefined;
 
     const content: IModelTileContent = {
       ...cached,
@@ -124,12 +124,10 @@ class IModelTileMetadataCacheChannel extends TileRequestChannel {
   private cache(tile: Tile, content: IModelTileContent): void {
     assert(tile instanceof IModelTile);
     let trees = this._cacheByIModel.get(tile.iModel);
-    if (!trees)
-      this._cacheByIModel.set(tile.iModel, trees = new Map<TileTree, SortedArray<CachedContent>>());
+    if (!trees) this._cacheByIModel.set(tile.iModel, (trees = new Map<TileTree, SortedArray<CachedContent>>()));
 
     let list = trees.get(tile.tree);
-    if (!list)
-      trees.set(tile.tree, list = new SortedArray<CachedContent>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId)));
+    if (!list) trees.set(tile.tree, (list = new SortedArray<CachedContent>((lhs, rhs) => compareStrings(lhs.contentId, rhs.contentId))));
 
     assert(undefined === list.findEquivalent((x) => compareStrings(x.contentId, tile.contentId)));
     list.insert({
@@ -151,12 +149,7 @@ export class IModelTileRequestChannels {
   private readonly _contentCache?: IModelTileMetadataCacheChannel;
   public readonly rpc: TileRequestChannel;
 
-  public constructor(args: {
-    concurrency: number;
-    usesHttp: boolean;
-    cacheMetadata: boolean;
-    cacheConcurrency: number;
-  }) {
+  public constructor(args: { concurrency: number; usesHttp: boolean; cacheMetadata: boolean; cacheConcurrency: number }) {
     const channelName = "itwinjs-tile-rpc";
     this.rpc = args.usesHttp ? new TileRequestChannel(channelName, args.concurrency) : new IModelTileChannel(channelName, args.concurrency);
 
@@ -175,11 +168,9 @@ export class IModelTileRequestChannels {
 
   public [Symbol.iterator](): Iterator<TileRequestChannel> {
     const channels = [this.rpc];
-    if (this._cloudStorage)
-      channels.push(this._cloudStorage);
+    if (this._cloudStorage) channels.push(this._cloudStorage);
 
-    if (this._contentCache)
-      channels.push(this._contentCache);
+    if (this._contentCache) channels.push(this._contentCache);
 
     return channels[Symbol.iterator]();
   }

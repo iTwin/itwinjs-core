@@ -12,36 +12,29 @@ import { ImageMapLayerSettings, ImageSource } from "@itwin/core-common";
 import { request, RequestOptions, Response } from "../../../request/Request";
 import { IModelApp } from "../../../IModelApp";
 import { ScreenViewport } from "../../../Viewport";
-import {
-  MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId,
-  Tile, WebMercatorTilingScheme,
-} from "../../internal";
+import { MapLayerImageryProvider, MapTile, MapTilingScheme, QuadId, Tile, WebMercatorTilingScheme } from "../../internal";
 
 /** Represents one range of geography and tile zoom levels for a bing data provider
  * @internal
  */
 class Coverage {
-  constructor(private _lowerLeftLatitude: number,
+  constructor(
+    private _lowerLeftLatitude: number,
     private _lowerLeftLongitude: number,
     private _upperRightLatitude: number,
     private _upperRightLongitude: number,
     private _minimumZoomLevel: number,
-    private _maximumZoomLevel: number) { }
+    private _maximumZoomLevel: number
+  ) {}
 
   public overlaps(quadId: QuadId, tilingScheme: MapTilingScheme): boolean {
     const range: Range2d = quadId.getLatLongRangeDegrees(tilingScheme);
-    if (quadId.level < this._minimumZoomLevel)
-      return false;
-    if (quadId.level > this._maximumZoomLevel)
-      return false;
-    if (range.low.x > this._upperRightLongitude)
-      return false;
-    if (range.low.y > this._upperRightLatitude)
-      return false;
-    if (range.high.x < this._lowerLeftLongitude)
-      return false;
-    if (range.high.y < this._lowerLeftLatitude)
-      return false;
+    if (quadId.level < this._minimumZoomLevel) return false;
+    if (quadId.level > this._maximumZoomLevel) return false;
+    if (range.low.x > this._upperRightLongitude) return false;
+    if (range.low.y > this._upperRightLatitude) return false;
+    if (range.high.x < this._lowerLeftLongitude) return false;
+    if (range.high.y < this._lowerLeftLatitude) return false;
 
     return true;
   }
@@ -51,13 +44,12 @@ class Coverage {
  * @internal
  */
 class BingAttribution {
-  constructor(public copyrightMessage: string, private _coverages: Coverage[]) { }
+  constructor(public copyrightMessage: string, private _coverages: Coverage[]) {}
 
   public matchesTile(tile: Tile, tilingScheme: MapTilingScheme): boolean {
     const quadId = QuadId.createFromContentId(tile.contentId);
     for (const coverage of this._coverages) {
-      if (coverage.overlaps(quadId, tilingScheme))
-        return true;
+      if (coverage.overlaps(quadId, tilingScheme)) return true;
     }
     return false;
   }
@@ -88,8 +80,12 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     this._mapTilingScheme = new WebMercatorTilingScheme();
   }
 
-  public get tileWidth(): number { return this._tileWidth; }
-  public get tileHeight(): number { return this._tileHeight; }
+  public get tileWidth(): number {
+    return this._tileWidth;
+  }
+  public get tileHeight(): number {
+    return this._tileHeight;
+  }
 
   private tileXYToQuadKey(tileX: number, tileY: number, zoomLevel: number) {
     // from C# example in bing documentation https://msdn.microsoft.com/en-us/library/bb259689.aspx
@@ -129,8 +125,7 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
   // gets the attributions that match the tile set.
   private getMatchingAttributions(tiles: Set<Tile> | undefined): BingAttribution[] {
     const matchingAttributions: BingAttribution[] = new Array<BingAttribution>();
-    if (!this._attributions || !tiles)
-      return matchingAttributions;
+    if (!this._attributions || !tiles) return matchingAttributions;
 
     const unmatchedSet: BingAttribution[] = this._attributions.slice();
     for (const tile of tiles) {
@@ -151,13 +146,11 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
     const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
     const matchingAttributions = this.getMatchingAttributions(tiles);
     const copyrights: string[] = [];
-    for (const match of matchingAttributions)
-      copyrights.push(match.copyrightMessage);
+    for (const match of matchingAttributions) copyrights.push(match.copyrightMessage);
 
     let copyrightMsg = "";
     for (let i = 0; i < copyrights.length; ++i) {
-      if (i > 0)
-        copyrightMsg += "<br>";
+      if (i > 0) copyrightMsg += "<br>";
       copyrightMsg += copyrights[i];
     }
 
@@ -188,9 +181,9 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
-      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-        if (tileData !== undefined)
-          this._missingTileData = tileData.data as Uint8Array;
+      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => {
+        // eslint-disable-line @typescript-eslint/no-floating-promises
+        if (tileData !== undefined) this._missingTileData = tileData.data as Uint8Array;
       });
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
@@ -203,13 +196,18 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
       const copyrightMessage: string = thisAttributionProps.attribution;
       const coverages: Coverage[] = new Array<Coverage>();
       for (const thisCoverageProps of thisAttributionProps.coverageAreas) {
-        const thisCoverage = new Coverage(thisCoverageProps.bbox[0], thisCoverageProps.bbox[1], thisCoverageProps.bbox[2], thisCoverageProps.bbox[3],
-          thisCoverageProps.zoomMin, thisCoverageProps.zoomMax);
+        const thisCoverage = new Coverage(
+          thisCoverageProps.bbox[0],
+          thisCoverageProps.bbox[1],
+          thisCoverageProps.bbox[2],
+          thisCoverageProps.bbox[3],
+          thisCoverageProps.zoomMin,
+          thisCoverageProps.zoomMax
+        );
         coverages.push(thisCoverage);
       }
       const thisAttribution: BingAttribution = new BingAttribution(copyrightMessage, coverages);
-      if (!this._attributions)
-        this._attributions = new Array<BingAttribution>();
+      if (!this._attributions) this._attributions = new Array<BingAttribution>();
       this._attributions.push(thisAttribution);
     }
   }

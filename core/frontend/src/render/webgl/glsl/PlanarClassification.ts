@@ -106,12 +106,11 @@ if (doMask) {
     discard;
     return vec4(0);
 }
-`
-  ;
-
+`;
 // Currently we discard if classifier is pure black (acts as clipping mask).
 // These could be more efficiently handled with masks.
-const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
+const applyPlanarClassificationColor =
+  applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   float colorMix = u_pClassPointCloud ? .65 : .35;
   vec4 classColor;
@@ -145,7 +144,8 @@ const applyPlanarClassificationColor = applyPlanarClassificationPrelude + // esl
   return classColor;
 `;
 
-const applyPlanarClassificationColorForThematic = applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
+const applyPlanarClassificationColorForThematic =
+  applyPlanarClassificationPrelude + // eslint-disable-line prefer-template
   `
   vec4 classColor = baseColor;
 
@@ -196,7 +196,7 @@ const computeClassifierPosW = "v_pClassPosW = classProj.w;";
 const scratchBytes = new Uint8Array(4);
 const scratchBatchBaseId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchBaseComponents = [0, 0, 0, 0];
-const scratchColorParams = new Float32Array(4);      // Unclassified scale, classified base scale, classified classifier scale, content/image count...  MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3
+const scratchColorParams = new Float32Array(4); // Unclassified scale, classified base scale, classified classifier scale, content/image count...  MaskOnly = 1, ClassifierOnly = 2, ClassifierAndMask = 3
 const scratchModel = Matrix4d.createIdentity();
 const scratchModelProjection = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
@@ -210,16 +210,18 @@ function addPlanarClassifierCommon(builder: ProgramBuilder) {
       if (undefined !== params.target.currentPlanarClassifierOrDrape) {
         source.projectionMatrix.multiplyMatrixMatrix(Matrix4d.createTransform(params.target.currentTransform, scratchModel), scratchModelProjection);
         scratchMatrix.initFromMatrix4d(scratchModelProjection);
-      } else
-        scratchMatrix.initIdentity(); // needs to be identity for volume classifiers
+      } else scratchMatrix.initIdentity(); // needs to be identity for volume classifiers
       uniform.setMatrix4(scratchMatrix);
     });
   });
 
-  if (vert.usesInstancedGeometry)
-    addInstancedRtcMatrix(vert);
+  if (vert.usesInstancedGeometry) addInstancedRtcMatrix(vert);
 
-  builder.addInlineComputedVarying("v_pClassPos", VariableType.Vec2, vert.usesInstancedGeometry ? computeInstancedClassifierPos : computeClassifierPos);
+  builder.addInlineComputedVarying(
+    "v_pClassPos",
+    VariableType.Vec2,
+    vert.usesInstancedGeometry ? computeInstancedClassifierPos : computeClassifierPos
+  );
   builder.addInlineComputedVarying("v_pClassPosW", VariableType.Float, computeClassifierPosW);
 
   addPlanarClassifierConstants(builder.frag);
@@ -250,8 +252,7 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
       if (source) {
         assert(undefined !== source.texture);
         source.texture.texture.bindSampler(uniform, TextureUnit.PlanarClassification);
-      } else
-        Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
+      } else Texture2DHandle.bindSampler(uniform, volClass!, TextureUnit.PlanarClassification);
     });
   });
 
@@ -263,10 +264,10 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
       if (undefined !== source) {
         source.getParams(scratchColorParams);
       } else {
-        scratchColorParams[0] = 6.0;      // Volume classifier, by element color.
-        scratchColorParams[1] = 0.5;      // used for alpha value
-        scratchColorParams[2] = 0.0;      // Not used for volume.
-        scratchColorParams[3] = 0.0;      // Not used for volume.
+        scratchColorParams[0] = 6.0; // Volume classifier, by element color.
+        scratchColorParams[1] = 0.5; // used for alpha value
+        scratchColorParams[2] = 0.0; // Not used for volume.
+        scratchColorParams[3] = 0.0; // Not used for volume.
       }
       uniform.setUniform4fv(scratchColorParams);
     });
@@ -295,13 +296,17 @@ export function addColorPlanarClassifier(builder: ProgramBuilder, translucent: b
 
   addShaderFlags(builder);
 
-  frag.set(FragmentShaderComponent.ApplyPlanarClassifier, (isThematic === IsThematic.No) ? applyPlanarClassificationColor : applyPlanarClassificationColorForThematic);
+  frag.set(
+    FragmentShaderComponent.ApplyPlanarClassifier,
+    isThematic === IsThematic.No ? applyPlanarClassificationColor : applyPlanarClassificationColorForThematic
+  );
 }
 
 /** @internal */
 export function addFeaturePlanarClassifier(builder: ProgramBuilder) {
   const frag = builder.frag;
-  frag.addUniform("u_batchBase", VariableType.Vec4, (prog) => {     // TBD.  Instancing.
+  frag.addUniform("u_batchBase", VariableType.Vec4, (prog) => {
+    // TBD.  Instancing.
     prog.addGraphicUniform("u_batchBase", (uniform, params) => {
       const classifier = params.target.currentPlanarClassifier;
       if (classifier !== undefined) {
@@ -394,7 +399,8 @@ const overrideClassifierColorPostludeClipForThematic = `
   return encodeNonLocatable(isElem ? vec4(0.0, 0.0, 1.0, 1.0) : currentColor);
 `;
 
-const overrideClassifierWithFeaturesForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
+const overrideClassifierWithFeaturesForThematic =
+  overrideClassifierColorPreludeForThematic + overrideClassifierEmphasisForThematic + overrideClassifierColorPostlude;
 const overrideClassifierForClipForThematic = overrideClassifierColorPreludeForThematic + overrideClassifierColorPostludeClipForThematic;
 
 /** The classified geometry needs some information about the classifier geometry. The classified fragment shader outputs special values that do not represent valid RGB+A combinations when using
@@ -419,5 +425,8 @@ export function addOverrideClassifierColor(builder: ProgramBuilder, isThematic: 
   if (isThematic === IsThematic.No)
     builder.frag.set(FragmentShaderComponent.OverrideColor, haveOverrides ? overrideClassifierWithFeatures : overrideClassifierForClip);
   else
-    builder.frag.set(FragmentShaderComponent.OverrideColor, haveOverrides ? overrideClassifierWithFeaturesForThematic : overrideClassifierForClipForThematic);
+    builder.frag.set(
+      FragmentShaderComponent.OverrideColor,
+      haveOverrides ? overrideClassifierWithFeaturesForThematic : overrideClassifierForClipForThematic
+    );
 }

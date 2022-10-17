@@ -72,10 +72,8 @@ export namespace FeatureSymbology {
     public constructor(view?: ViewState | Viewport) {
       super();
       if (undefined !== view) {
-        if (view instanceof Viewport)
-          this.initFromViewport(view);
-        else
-          this.initFromView(view);
+        if (view instanceof Viewport) this.initFromViewport(view);
+        else this.initFromView(view);
       }
     }
 
@@ -103,11 +101,9 @@ export namespace FeatureSymbology {
       const view = viewport.view;
       this._initFromView(view);
 
-      if (undefined !== viewport.neverDrawn)
-        this.setNeverDrawnSet(viewport.neverDrawn);
+      if (undefined !== viewport.neverDrawn) this.setNeverDrawnSet(viewport.neverDrawn);
 
-      if (undefined !== viewport.alwaysDrawn)
-        this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
+      if (undefined !== viewport.alwaysDrawn) this.setAlwaysDrawnSet(viewport.alwaysDrawn, viewport.isAlwaysDrawnExclusive);
 
       viewport.addFeatureOverrides(this);
       viewport.addModelSubCategoryVisibilityOverrides(this, this._modelSubCategoryOverrides);
@@ -123,8 +119,7 @@ export namespace FeatureSymbology {
       this.neverDrawnAnimationNodes.clear();
       this.animationNodeOverrides.clear();
 
-      for (const excluded of view.displayStyle.settings.excludedElementIds)
-        this.setNeverDrawn(excluded);
+      for (const excluded of view.displayStyle.settings.excludedElementIds) this.setNeverDrawn(excluded);
 
       this._constructions = constructions;
       this._dimensions = dimensions;
@@ -133,8 +128,7 @@ export namespace FeatureSymbology {
 
       for (const categoryId of view.categorySelector.categories) {
         const subCategoryIds = view.iModel.subcategories.getSubCategories(categoryId);
-        if (undefined === subCategoryIds)
-          continue;
+        if (undefined === subCategoryIds) continue;
 
         for (const subCategoryId of subCategoryIds) {
           if (view.isSubCategoryVisible(subCategoryId)) {
@@ -143,8 +137,7 @@ export namespace FeatureSymbology {
             this._visibleSubCategories.add(idLo, idHi);
 
             const app = view.iModel.subcategories.getSubCategoryAppearance(subCategoryId);
-            if (undefined !== app)
-              this._subCategoryPriorities.set(idLo, idHi, app.priority);
+            if (undefined !== app) this._subCategoryPriorities.set(idLo, idHi, app.priority);
           }
         }
       }
@@ -157,15 +150,12 @@ export namespace FeatureSymbology {
       });
 
       const script = style.scheduleScript;
-      if (script)
-        script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
+      if (script) script.addSymbologyOverrides(this, style.settings.timePoint ?? 0);
 
-      if (!view.is3d())
-        return;
+      if (!view.is3d()) return;
 
       const planProjectionSettings = view.getDisplayStyle3d().settings.planProjectionSettings;
-      if (undefined === planProjectionSettings)
-        return;
+      if (undefined === planProjectionSettings) return;
 
       for (const [modelId, projSettings] of planProjectionSettings) {
         if (undefined !== projSettings.transparency)
@@ -179,11 +169,9 @@ export namespace FeatureSymbology {
         const ovr = view.getSubCategoryOverride(subCategoryId);
         if (undefined !== ovr) {
           const app = FeatureAppearance.fromSubCategoryOverride(ovr);
-          if (app.overridesSymbology)
-            this._subCategoryOverrides.set(idLo, idHi, app);
+          if (app.overridesSymbology) this._subCategoryOverrides.set(idLo, idHi, app);
 
-          if (undefined !== ovr.priority)
-            this._subCategoryPriorities.set(idLo, idHi, ovr.priority);
+          if (undefined !== ovr.priority) this._subCategoryPriorities.set(idLo, idHi, ovr.priority);
         }
       };
 
