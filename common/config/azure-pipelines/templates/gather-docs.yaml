@@ -25,10 +25,10 @@ steps:
       robocopy /E generated-docs\extract\ ${{ parameters.stagingDir }}\extract\
       echo Copying all files from \docs folder
       robocopy /E docs\ ${{ parameters.stagingDir }}\
+      if %errorlevel% GEQ 8 exit 1
+      exit 0
     workingDirectory: ${{ parameters.workingDir }}
     displayName: Copy Reference files to Staging
-    failOnStderr: false
-    continueOnError: true
 
   - script: dir /S
     workingDirectory: ${{ parameters.stagingDir }}
