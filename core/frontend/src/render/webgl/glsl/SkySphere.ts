@@ -20,7 +20,7 @@ import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { addAtmosphericScatteringEffect } from "./AthmosphericScattering";
+import { addAtmosphericScatteringEffect } from "./Atmosphere";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.

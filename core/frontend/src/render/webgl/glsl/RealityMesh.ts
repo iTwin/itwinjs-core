@@ -17,7 +17,7 @@ import { System } from "../System";
 import { FeatureMode, IsInstanced, IsShadowable, IsThematic, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
-import { addAtmosphericScatteringEffect } from "./AthmosphericScattering";
+import { addAtmosphericScatteringEffect } from "./Atmosphere";
 import { addVaryingColor } from "./Color";
 import { addEyeSpace, addShaderFlags, addUInt32s } from "./Common";
 import { decodeDepthRgb, unquantize2d } from "./Decode";
