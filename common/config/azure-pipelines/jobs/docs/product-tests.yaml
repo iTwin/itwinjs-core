@@ -26,7 +26,7 @@ jobs:
       artifact: DocsSeleniumTests
       displayName: Download Selenium Tests
 
-    - powershell: '((Get-Item "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe").VersionInfo)'
+    - powershell: ((Get-Item "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe").VersionInfo)
       displayName: PowerShell Script
 
     - task: qetza.replacetokens.replacetokens-task.replacetokens@3

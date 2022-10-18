@@ -10,7 +10,8 @@
 trigger: none
 pr: none
 
-name: $(Date:yyyyMMdd).$(Rev:r)
+# Octopus requires release be of format 'x.y.z' or 'w.x.y.z'
+name: $(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
 # Pull in artifacts
 
@@ -31,7 +32,7 @@ resources:
     #   tags:
     #   - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
-    source: Bemetalsmith - Selenium Tests
+    source: Bemetalsmith - Selenium Testss
 
 variables:
   octopusProjectName: iModel.js Documentation

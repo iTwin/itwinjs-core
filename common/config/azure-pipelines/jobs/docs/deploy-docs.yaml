@@ -30,10 +30,10 @@ jobs:
     - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-deploy.OctopusDeployRelease@5
       displayName: Deploy Octopus Release to ${{ parameters.env }}
       inputs:
-        OctoConnectedServiceName: 'Prod Octopus'
-        Space: 'Spaces-1'
-        Project: '$(octopusProjectName)'
-        ReleaseNumber: '$(Build.BuildNumber)'
+        OctoConnectedServiceName: Prod Octopus
+        Space: Spaces-1
+        Project: $(octopusProjectName)
+        ReleaseNumber: $(Build.BuildNumber)
         Environments: ${{ parameters.env }}
         ShowProgress: true
-        AdditionalArguments: '--deploymenttimeout=04:00:00'
+        AdditionalArguments: --deploymenttimeout=04:00:00
