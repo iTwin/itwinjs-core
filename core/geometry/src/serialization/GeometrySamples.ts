@@ -1265,8 +1265,8 @@ export class Sample {
    */
   public static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined {
     const points = [];
-    const numUPole = numU + orderU - 1;
-    const numVPole = numV + orderV - 1;
+    const numUPole = numU + orderU - 1;   // degreeU wrap-around poles
+    const numVPole = numV + orderV - 1;   // degreeV wrap-around poles
     const uKnots = KnotVector.createUniformWrapped(numU, orderU - 1, 0, 1);
     const vKnots = KnotVector.createUniformWrapped(numV, orderV - 1, 0, 1);
     const dURadians = 2.0 * Math.PI / numU;

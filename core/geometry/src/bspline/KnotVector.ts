@@ -77,7 +77,7 @@ export class KnotVector {
   private constructor(knots: number[] | Float64Array | number, degree: number, wrapMode?: BSplineWrapMode) {
     this.degree = degree;
     this._wrapMode = wrapMode;
-    // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
+    // default values to satisfy compiler -- real values happen in setupFixedValues, or final else defers to user
     this._knot0 = 0.0;
     this._knot1 = 1.0;
     // satisfy the initialize checker ..

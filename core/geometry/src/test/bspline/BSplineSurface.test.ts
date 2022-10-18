@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
+import { BSpline2dNd, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -198,21 +198,30 @@ describe("BSplineSurface", () => {
   it("PseudoTorusExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const orderU = 4;
-    const orderV = 4;
     const surfaceA = Sample.createPseudoTorusBsplineSurface(
       4.0, 1.0, // radii
-      12, 6, orderU, orderV)!;
-      const surfaceB = Sample.createPseudoTorusBsplineSurface(
-        4.0, 1.0, // radii
-        12, 6, orderU, orderV)!;
+      12, 6, 4, 4)!;  // bicubic
+    const surfaceB = Sample.createPseudoTorusBsplineSurface(
+      4.0, 1.0, // radii
+      12, 6, 5, 3)!;
     surfaceB.tryTranslateInPlace(10, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceA, 0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceB, 0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
+
+    const mode = {value: BSplineWrapMode.None};
+    for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
+      for (const surf of [surfaceA, surfaceB]) {
+        surf.isClosable(uvDir, mode);
+        ck.testExactNumber(mode.value, surf.getWrappable(uvDir), "WrapMode is as expected");
+        ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints, "WrapMode is OpenByAddingControlPoints");
+      }
+    }
+
     ck.checkpoint("BSplineSurface.Wrapped");
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("Cones", () => {
     const ck = new Checker();
     const allGeometry = [];
@@ -244,8 +253,17 @@ describe("BSplineSurface", () => {
                             "./src/test/testInputs/BSplineSurface/torus6_legacy.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-      for (const input of inputs)
+      for (const input of inputs) {
+        if (input instanceof BSpline2dNd) {
+          const mode = {value: BSplineWrapMode.None};
+          for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
+            input.isClosable(uvDir, mode);
+            ck.testExactNumber(mode.value, input.getWrappable(uvDir), "WrapMode is as expected");
+            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByRemovingKnots, "WrapMode is OpenByRemovingKnots");
+          }
+        }
         testGeometryQueryRoundTrip(ck, input);
+      }
     }
     expect(ck.getNumErrors()).equals(0);
   });
