@@ -459,7 +459,8 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassCopyZ
       && undefined === this.volClassSetBlend
       && undefined === this.volClassBlend
-      && undefined === this.volClassCopyZWithPoints;
+      && undefined === this.volClassCopyZWithPoints
+      && undefined === this.edlSimple;
   }
 
   public dispose() {
@@ -468,6 +469,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.occlusionXBlur = dispose(this.occlusionXBlur);
     this.occlusionYBlur = dispose(this.occlusionYBlur);
     this.disableVolumeClassifier();
+    this.edlSimple = dispose(this.edlSimple); // TODO: decide where this should go
   }
 }
 
@@ -1856,7 +1858,6 @@ class MRTFrameBuffers extends FrameBuffers {
   public edlDrawPoints?: FrameBuffer;
   public edlFinal?: FrameBuffer;
   public edlFinalComp?: FrameBuffer;
-  public edlScreenEffect?: FrameBuffer;
   public opaqueAll?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
   public opaqueAndCompositeAllHidden?: FrameBuffer;
@@ -1883,7 +1884,7 @@ class MRTFrameBuffers extends FrameBuffers {
     this.translucent = FrameBuffer.create(colors, depth);
     this.clearTranslucent = FrameBuffer.create(colors);
 
-    // ###TODO where should these happen?
+    // ###TODO decide where these should go
     assert(undefined !== textures.hilite);
     this.edlDrawPoints = FrameBuffer.create([textures.hilite], depth);
     assert(undefined !== System.instance.frameBufferStack.currentColorBuffer);
@@ -2024,7 +2025,10 @@ class MRTFrameBuffers extends FrameBuffers {
       && undefined === this.idsAndZ
       && undefined === this.idsAndAltZ
       && undefined === this.idsAndZComposite
-      && undefined === this.idsAndAltZComposite;
+      && undefined === this.idsAndAltZComposite
+      && undefined === this.edlDrawPoints
+      && undefined === this.edlFinal
+      && undefined === this.edlFinalComp;
   }
 
   public override dispose(): void {
@@ -2040,6 +2044,10 @@ class MRTFrameBuffers extends FrameBuffers {
     this.idsAndAltZ = dispose(this.idsAndAltZ);
     this.idsAndZComposite = dispose(this.idsAndZComposite);
     this.idsAndAltZComposite = dispose(this.idsAndAltZComposite);
+    // TODO: decide where these go
+    this.edlDrawPoints = dispose (this.edlDrawPoints);
+    this.edlFinal = dispose (this.edlFinal);
+    this.edlFinalComp = dispose (this.edlFinalComp);
   }
 }
 
@@ -2176,7 +2184,6 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.PointClouds);
       });
 
-      // ###TODO recreate fbo textures (and fbos?) when window size changes?
       fbStack.execute(edlFin, true, useMsBuffers, () => {
       // this.drawPass(commands, RenderPass.PointClouds);
         if (this._geom.edlSimple === undefined)
