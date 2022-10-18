@@ -49,7 +49,7 @@ stages:
     jobs:
     - template: ./jobs/docs/deploy-docs.yaml
       parameters:
-        env: Development
+        variableGroup: iTwin.js Docs - DEV
 
   - stage: ProductTestsDEV
     displayName: Product Tests (DEV)
@@ -59,15 +59,21 @@ stages:
       parameters:
         env: Development
 
-  # - stage: QA
-  #   displayName: Deployment (QA)
-  #   dependsOn: ProductTestsDEV
-  #   jobs:
+  - stage: QA
+    displayName: Deployment (QA)
+    dependsOn: ProductTestsDEV
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - QA
 
-  # - stage: ProductTestsQA
-  #   displayName: Product Tests (QA)
-  #   dependsOn: QA
-  #   jobs:
+  - stage: ProductTestsQA
+    displayName: Product Tests (QA)
+    dependsOn: QA
+    jobs:
+    - template: ./jobs/docs/product-tests.yaml
+      parameters:
+        env: QA
 
   # - stage: LinkValidatorQA
   #   displayName: Link Validator (QA)
