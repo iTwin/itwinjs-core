@@ -11,8 +11,6 @@ jobs:
     variables:
       tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs\DocsBuild
     steps:
-
-
       - task: NodeTool@0
         displayName: Use Node 14
         inputs:
@@ -24,7 +22,7 @@ jobs:
         displayName: "Download itwinjs-docs artifacts"
 
       - script: |
-          SET /p version=<$(Pipeline.Workspace)\itwinjs-core\public_build\version.txt
+          SET /p version=<$(Pipeline.Workspace)\itwinjs-core\version.txt
           ECHO Releasing docs for %version%
           ECHO ##vso[task.setvariable variable=itwinjs_version]%version%
         displayName: Set build number
