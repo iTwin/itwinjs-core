@@ -2,7 +2,7 @@ parameters:
 - name: variableGroup
 
 jobs:
-- job: Deploy_${{ parameters.env }}
+- job: Deploy_$(env)
   variables:
     - group: ${{ parameters.variableGroup }}
   pool:
@@ -14,7 +14,7 @@ jobs:
         echo * * * * * * * * * * Definition: $(Build.DefinitionName)($(System.DefinitionId))
         echo * * * * * * * * * * Current Release: $(Build.BuildNumber)
         echo * * * * * * * * * * Requested For: $(Build.RequestedFor)
-        echo * * * * * * * * * * Deployment To ${{ parameters.env }}
+        echo * * * * * * * * * * Deployment To $(env)
         echo * * * * * * * * * * Build: $(Build.BuildNumber)
         echo * * * * * * * * * *
       displayName: Release Header
@@ -25,7 +25,7 @@ jobs:
         version: 8.0.1
 
     - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-deploy.OctopusDeployRelease@5
-      displayName: Deploy Octopus Release to ${{ parameters.env }}
+      displayName: Deploy Octopus Release to $(env)
       inputs:
         OctoConnectedServiceName: Prod Octopus
         Space: Spaces-1
