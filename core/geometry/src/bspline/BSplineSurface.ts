@@ -464,7 +464,13 @@ export abstract class BSpline2dNd extends GeometryQuery {
     this.knots[select].reflectKnots();
   }
   /**
-   * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
+   * Get the flag indicating the surface might be suitable for having wrapped "closed" interpretation.
+   */
+  public getWrappable(select: UVSelect): BSplineWrapMode {
+    return this.knots[select].wrappable;
+  }
+  /**
+   * Set the flag indicating the surface might be suitable for having wrapped "closed" interpretation.
    */
   public setWrappable(select: UVSelect, value: BSplineWrapMode) {
     this.knots[select].wrappable = value;

@@ -25,7 +25,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BSplineCurve3dBase } from "./BSplineCurve";
-import { KnotVector } from "./KnotVector";
+import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
  * Weighted (Homogeneous) BSplineCurve in 3d
@@ -353,31 +353,11 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     }
     CurvePrimitive.installStrokeCountMap(this, myData, parentStrokeMap);
   }
-  /**
-   * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
-   * (b) (degree-1) wrapped points,
-   * (c) marked wrappable from construction time.
+  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+   * @return whether the curve can be wrapped.
    */
   public get isClosable(): boolean {
-    if (!this._bcurve.knots.wrappable)
-      return false;
-    const degree = this.degree;
-    const leftKnotIndex = this._bcurve.knots.leftKnotIndex;
-    const rightKnotIndex = this._bcurve.knots.rightKnotIndex;
-    const period = this._bcurve.knots.rightKnot - this._bcurve.knots.leftKnot;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(this._bcurve.knots.knots[k0] + period, this._bcurve.knots.knots[k1]))
-        return false;
-    }
-    const poleIndexDelta = this.numPoles - this.degree;
-    for (let p0 = 0; p0 < degree; p0++) {
-      const p1 = p0 + poleIndexDelta;
-      if (!Geometry.isSamePoint3d(this.getPolePoint3d(p0) as Point3d, this.getPolePoint3d(p1) as Point3d))
-        return false;
-    }
-    return true;
+    return BSplineWrapMode.None !== this.isClosableCurve;
   }
   /**
    * Return a CurvePrimitive (which is a BezierCurve3dH) for a specified span of this curve.

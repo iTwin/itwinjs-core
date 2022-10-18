@@ -6,9 +6,10 @@ import { expect } from "chai";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineWrapMode, KnotVector } from "../../bspline/KnotVector";
+import { CurveChain } from "../../curve/CurveCollection";
 import { CurveLocationDetail } from "../../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -694,8 +695,17 @@ describe("BsplineCurve", () => {
     const ck = new Checker();
     const json = fs.readFileSync("./src/test/testInputs/curve/openAndClosedCurves.imjs", "utf8");
     const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-    for (const input of inputs)
+    for (const input of inputs) {
+      if (input instanceof CurveChain) {
+        if (input.children.length === 1) {
+          const curve = input.children[0];
+          if (curve instanceof BSplineCurve3dBase) {
+            ck.testExactNumber(curve.isClosableCurve, curve.getWrappable(), "WrapMode is as expected");
+          }
+        }
+      }
       testGeometryQueryRoundTrip(ck, input);
+    }
     expect(ck.getNumErrors()).equals(0);
   });
 });

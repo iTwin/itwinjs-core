@@ -741,6 +741,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
     getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined;
     getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined;
     getPoint4dPole(i: number, j: number, result?: Point4d): Point4d | undefined;
+    getWrappable(select: UVSelect): BSplineWrapMode;
     isClosable(select: UVSelect, wrapMode?: {
         value: BSplineWrapMode;
     }): boolean;
@@ -801,7 +802,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     knotToPointAnd2Derivatives(u: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     knotToPointAndDerivative(u: number, result?: Ray3d): Ray3d;
     quickLength(): number;
-    setWrappable(value: BSplineWrapMode): void;
     spanFractionToKnot(span: number, localFraction: number): number;
     tryTransformInPlace(transform: Transform): boolean;
 }
@@ -832,6 +832,8 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     abstract getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined;
     abstract getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
     abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
+    getWrappable(): BSplineWrapMode;
+    get isClosableCurve(): BSplineWrapMode;
     abstract knotToPoint(knot: number, result?: Point3d): Point3d;
     abstract knotToPointAnd2Derivatives(knot: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     abstract knotToPointAndDerivative(knot: number, result?: Ray3d): Ray3d;

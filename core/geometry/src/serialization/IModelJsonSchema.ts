@@ -1948,7 +1948,7 @@ export namespace IModelJson {
       let myKnots: number[];
       let myClosed = false;
 
-      const wrapMode = curve.isClosable;
+      const wrapMode = curve.isClosableCurve;
       if (wrapMode === BSplineWrapMode.OpenByAddingControlPoints) {
         // re-close the true periodic case
         for (let i = 0; i < curve.degree; i++)

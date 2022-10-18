@@ -110,12 +110,30 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /**
- * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
- */
+   * Get the flag indicating the curve might be suitable for having wrapped "closed" interpretation.
+   */
+  public getWrappable(): BSplineWrapMode {
+    return this._bcurve.knots.wrappable;
+  }
+  /**
+   * Set the flag indicating the curve might be suitable for having wrapped "closed" interpretation.
+   */
   public setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
-
+  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+   * @returns the manner in which it is possible to close the curve. See `BSplineWrapMode` for particulars of each mode.
+   */
+  public get isClosableCurve(): BSplineWrapMode {
+    const mode = this._bcurve.knots.wrappable;
+    if (mode === BSplineWrapMode.None)
+      return BSplineWrapMode.None;
+    if (!this._bcurve.knots.testClosable(mode))
+      return BSplineWrapMode.None;
+    if (!this._bcurve.testClosablePolygon(mode))
+      return BSplineWrapMode.None;
+    return mode;
+  }
   /** Evaluate at a position given by fractional position within a span. */
   public abstract evaluatePointInSpan(spanIndex: number, spanFraction: number, result?: Point3d): Point3d;
   /** Evaluate at a position given by fractional position within a span. */
@@ -640,19 +658,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         bezier.emitStrokes(dest, options);
     }
   }
-  /**
-   * Test knots, control points, and wrappable flag to see if all agree for a possible wrapping.
-   * @returns the manner of closing. See `BSplineWrapMode` for particulars of each mode.
+  /** Test knots and control points to determine if it is possible to close (aka "wrap") the curve.
+   * @returns the manner in which it is possible to close the curve. See `BSplineWrapMode` for particulars of each mode.
    */
-  public get isClosable(): BSplineWrapMode {
-    const mode = this._bcurve.knots.wrappable;
-    if (mode === BSplineWrapMode.None)
-      return BSplineWrapMode.None;
-    if (!this._bcurve.knots.testClosable(mode))
-      return BSplineWrapMode.None;
-    if (!this._bcurve.testClosablePolygon(mode))
-      return BSplineWrapMode.None;
-    return mode;
+   public get isClosable(): BSplineWrapMode {
+    return this.isClosableCurve;
   }
   /**
    * Return a BezierCurveBase for this curve.  The concrete return type may be BezierCurve3d or BezierCurve3dH according to this type.
@@ -702,12 +712,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return undefined;
   }
 
-  /**
-   * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
-   */
-  public override setWrappable(value: BSplineWrapMode) {
-    this._bcurve.knots.wrappable = value;
-  }
   /** Second step of double dispatch:  call `handler.handleBSplineCurve3d(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineCurve3d(this);
