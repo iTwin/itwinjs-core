@@ -31,10 +31,12 @@ jobs:
         displayName: Get docs version
 
       - script: |
-          SET buildNumber=$(DocsVersion)_$[counter($(DocsVersion), 0)]
+          SET buildNumber=$(DocsVersion)_%rev%
           ECHO Setting build number to %buildNumber%
           REM ECHO ##vso[build.updatebuildnumber]%buildNumber%
         displayName: Set build number
+        env:
+          rev: $[counter($(DocsVersion), 0)]
 
       # - task: DeleteFiles@1
       #   displayName: Delete version.txt
