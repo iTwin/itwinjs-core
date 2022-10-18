@@ -20,12 +20,6 @@ describe("ArcGisUtilities tests", () => {
   let fakeAccessClient: ArcGisAccessClient | undefined;
 
   beforeEach(async () => {
-    /*
-    global.fetch = async (_input: RequestInfo | URL, _init?: RequestInit) => {
-      return Promise.resolve((({
-      } as unknown) as Response));
-    };*/
-
     fakeAccessClient = new ArcGisAccessClient();
     fakeAccessClient.initialize({
       redirectUri: "https://test.com/oauth-redirect",
@@ -55,15 +49,16 @@ describe("ArcGisUtilities tests", () => {
   it("should find the matching enterprise client id ", async () => {
 
     let clientId = (fakeAccessClient as any)!.getMatchingEnterpriseClientId(sampleOnPremiseHostName);
+    expect(clientId).to.not.undefined;
     expect(clientId === fakeAccessClient?.arcGisEnterpriseClientIds![0].clientId);
 
     // Check it returns undefined if no match (and not default value set)
-    clientId = (fakeAccessClient as any)!.getMatchingEnterpriseClientId("https://yyz.com");
+    clientId = (fakeAccessClient as any).getMatchingEnterpriseClientId("https://yyz.com");
     expect(clientId === undefined);
 
     // Check it uses the default value, if specified
     fakeAccessClient?.setEnterpriseClientId("", "dummy_clientId1");
-    clientId = (fakeAccessClient as any)!.getMatchingEnterpriseClientId("https://yyz.com");
+    clientId = (fakeAccessClient as any).getMatchingEnterpriseClientId("https://yyz.com");
     expect(clientId === undefined);
 
   });
