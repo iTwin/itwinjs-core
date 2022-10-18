@@ -42,21 +42,21 @@ stages:
     jobs:
     - template: ./jobs/docs/package-docs.yaml
 
-  - stage: DEV
-    displayName: Deployment (DEV)
-    dependsOn: CreateRelease
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        env: Development
+  # - stage: DEV
+  #   displayName: Deployment (DEV)
+  #   dependsOn: CreateRelease
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       env: Development
 
-  - stage: ProductTestsDEV
-    displayName: Product Tests (DEV)
-    dependsOn: DEV
-    jobs:
-    - template: ./jobs/docs/product-tests.yaml
-      parameters:
-        env: Development
+  # - stage: ProductTestsDEV
+  #   displayName: Product Tests (DEV)
+  #   dependsOn: DEV
+  #   jobs:
+  #   - template: ./jobs/docs/product-tests.yaml
+  #     parameters:
+  #       env: Development
 
   # - stage: QA
   #   displayName: Deployment (QA)

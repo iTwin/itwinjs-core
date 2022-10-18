@@ -118,6 +118,7 @@ jobs:
               f.write(package_version)
               f.close()
 
+              print("##vso[build.addbuildtag]" + package_version)
               print("##vso[build.addbuildtag]iTwinJsDocsRelease")
                 # else:
                 #   print(err)

@@ -19,69 +19,77 @@ jobs:
 
       - download: itwinjs-docs
         artifact: DocsBuild
-        displayName: "Download itwinjs-docs artifacts"
+        displayName: Download itwinjs-docs artifact
 
       - script: |
-          SET /p version=<$(tempDocsLocation)\version.txt
+          REM SET /p version=<$(tempDocsLocation)\version.txt
+          SET version=3.0.0-dev.0
           ECHO Releasing docs for %version%
-          ECHO ##vso[task.setvariable variable=itwinjs_version]%version%
+          ECHO ##vso[build.addbuildtag]%version%
+          ECHO ##vso[task.setvariable variable=DocsVersion]%version%
+        name: GetVersion
+        displayName: Get docs version
+
+      - script: |
+          SET buildNumber=$(DocsVersion)_$[counter($(DocsVersion), 0)]
+          ECHO Setting build number to %buildNumber%
+          REM ECHO ##vso[build.updatebuildnumber]%buildNumber%
         displayName: Set build number
 
-      - task: DeleteFiles@1
-        displayName: "Delete version.txt"
-        inputs:
-          SourceFolder: '$(tempDocsLocation)\public_build'
-          Contents: version.txt
+      # - task: DeleteFiles@1
+      #   displayName: Delete version.txt
+      #   inputs:
+      #     SourceFolder: $(tempDocsLocation)
+      #     Contents: version.txt
 
-      - task: DownloadPipelineArtifact@2
-        displayName: "Download Pipeline Artifact - Nuget Spec"
-        inputs:
-          buildType: specific
-          project: "2c48216e-e72f-48b4-a4eb-40ff1c04e8e4"
-          definition: 1830
-          buildVersionToDownload: specific
-          pipelineId: 1234689
+      # - task: DownloadPipelineArtifact@2
+      #   displayName: Download Pipeline Artifact - Nuget Spec
+      #   inputs:
+      #     buildType: specific
+      #     project: 2c48216e-e72f-48b4-a4eb-40ff1c04e8e4
+      #     definition: 1830
+      #     buildVersionToDownload: specific
+      #     pipelineId: 1234689
 
+      # - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+      #   displayName: Replace tokens in NugetPackage.nuspec
+      #   inputs:
+      #     targetFiles: $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
 
-      - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-        displayName: "Replace tokens in NugetPackage.nuspec"
-        inputs:
-          targetFiles: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
+      # - script: type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
+      #   displayName: Debug nuspec
 
-      - script: 'type $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
-        displayName: Debug nuspec
+      # - task: DeleteFiles@1
+      #   displayName: Delete landing page
+      #   inputs:
+      #     SourceFolder: $(tempDocsLocation)\public_build
+      #     Contents: index.html
 
-      - task: DeleteFiles@1
-        displayName: "Delete landing page"
-        inputs:
-          SourceFolder: '$(tempDocsLocation)\public_build'
-          Contents: index.html
+      # - task: NuGetToolInstaller@1
+      #   inputs:
+      #     versionSpec: 4.9.2
 
-      - task: NuGetToolInstaller@1
-        inputs:
-          versionSpec: 4.9.2
-
-      - task: NuGetCommand@2
-        displayName: "NuGet pack"
-        inputs:
-          command: pack
-          packagesToPack: '$(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec'
-          versioningScheme: byEnvVar
-          versionEnvVar: itwinjs_version
-          configuration: Release
-          packDestination: '$(Build.ArtifactStagingDirectory)'
+      # - task: NuGetCommand@2
+      #   displayName: NuGet pack
+      #   inputs:
+      #     command: pack
+      #     packagesToPack: $(Pipeline.Workspace)\DocsNugetSpecFile\NugetPackage.nuspec
+      #     versioningScheme: byEnvVar
+      #     versionEnvVar: Build.BuildNumber
+      #     configuration: Release
+      #     packDestination: $(Build.ArtifactStagingDirectory)
 
       # - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-push.OctopusPush@3
-      #   displayName: 'Push package to Octopus'
+      #   displayName: Push package to Octopus
       #   inputs:
-      #     OctoConnectedServiceName: 'Prod Octopus'
-      #     Package: '$(Build.ArtifactStagingDirectory)\iModeljs.Documentation.$(Build.BuildNumber).nupkg'
+      #     OctoConnectedServiceName: Prod Octopus
+      #     Package: $(Build.ArtifactStagingDirectory)\iModeljs.Documentation.$(Build.BuildNumber).nupkg
       #     Replace: false
 
       # - task: octopusdeploy.octopus-deploy-build-release-tasks.octopus-create-release.OctopusCreateRelease@3
-      #   displayName: '[DEPRECATED] Create Octopus Release: $(octopusProjectName)'
+      #   displayName: Create Octopus Release
       #   inputs:
-      #     OctoConnectedServiceName: 'Prod Octopus'
-      #     ProjectName: '$(octopusProjectName)'
-      #     ReleaseNumber: '$(Build.BuildNumber)'
-      #     AdditionalArguments: '--deploymenttimeout=01:00:00 --packageversion $(Build.BuildNumber)'
+      #     OctoConnectedServiceName: Prod Octopus
+      #     ProjectName: $(octopusProjectName)
+      #     ReleaseNumber: $(Build.BuildNumber)
+      #     AdditionalArguments: --deploymenttimeout=01:00:00 --packageversion $(Build.BuildNumber)
