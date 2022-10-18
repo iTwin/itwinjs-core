@@ -25,7 +25,7 @@ jobs:
           SET /p version=<$(tempDocsLocation)\version.txt
           ECHO Releasing docs for %version%
           ECHO ##vso[build.addbuildtag]%version%
-          ECHO ##vso[build.updatebuildnumber]%buildNumber%_$(Build.BuildId)
+          ECHO ##vso[build.updatebuildnumber]%version%_$(Build.BuildId)
         displayName: Update build number
 
       - task: DeleteFiles@1
