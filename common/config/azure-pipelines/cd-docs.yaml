@@ -32,7 +32,7 @@ resources:
     #   tags:
     #   - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
-    source: Bemetalsmith - Selenium Testss
+    source: Bemetalsmith - Selenium Tests
 
 variables:
   octopusProjectName: iModel.js Documentation
