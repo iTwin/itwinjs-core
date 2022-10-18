@@ -22,7 +22,7 @@ jobs:
         displayName: "Download itwinjs-docs artifacts"
 
       - script: |
-          SET /p version=<$(Pipeline.Workspace)\itwinjs-core\version.txt
+          SET /p version=<$(tempDocsLocation)\version.txt
           ECHO Releasing docs for %version%
           ECHO ##vso[task.setvariable variable=itwinjs_version]%version%
         displayName: Set build number
