@@ -1545,7 +1545,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      return this._iModel.nativeDb.getElement(props) as T;
+      try {
+        return this._iModel.nativeDb.getElement(props) as T;
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code

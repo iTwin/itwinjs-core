@@ -6,6 +6,7 @@ public;CacheInvalidationProps
 public;ContentDataProvider 
 public;ContentDataProviderProps 
 public;ControlledPresentationTreeFilteringProps
+alpha;convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise
 alpha;createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined
 internal;createFieldInfo(field: Field, namePrefix?: string):
 alpha;createInstanceFilterPropertyInfos(descriptor: Descriptor): InstanceFilterPropertyInfo[]
@@ -87,7 +88,7 @@ internal;useFilterBuilderNavigationPropertyEditorContext(imodel: IModelConnectio
 internal;useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProvider
 alpha;useNavigationPropertyEditingContext(imodel: IModelConnection, dataProvider: IContentDataProvider): NavigationPropertyEditorContext
 internal;useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider
-alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean):
+alpha;usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider):
 public;usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult
 public;usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult
 public;UsePropertyDataProviderWithUnifiedSelectionResult
