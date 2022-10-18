@@ -86,7 +86,7 @@ describe("TxnManager", () => {
     return makeEntity(IModel.getDefaultSubCategoryId(categoryId), "BisCore:SubCategory");
   }
 
-  it.only("TxnManager", async () => {
+  it("TxnManager", async () => {
     const models = imodel.models;
     const elements = imodel.elements;
     const modelId = props.model;
