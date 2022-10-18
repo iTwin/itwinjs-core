@@ -2,7 +2,7 @@ parameters:
 - name: variableGroup
 
 jobs:
-- job: Deploy_$(env)
+- job: Deploy
   variables:
     - group: ${{ parameters.variableGroup }}
   pool:
