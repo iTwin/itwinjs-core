@@ -376,7 +376,7 @@ export class SampleAppIModelApp {
         redirectUri: "http://localhost:3000/esri-oauth2-callback",
         clientIds: {
           arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
-          enterpriseClientIds,
+          enterpriseClientIds: [{serviceBaseUrl: "", clientId: "Bentley_TestApp"}],
         },
       });
 
