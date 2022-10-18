@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add \"maybe\" binding methods to SqliteStatement",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

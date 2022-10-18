@@ -4759,11 +4759,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
+    bindBoolean(parameter: BindParameter, val: boolean): void;
     bindDouble(parameter: BindParameter, val: number): void;
     bindGuid(parameter: BindParameter, guid: GuidString): void;
     bindId(parameter: BindParameter, id: Id64String): void;
     bindInteger(parameter: BindParameter, val: number): void;
     bindNull(parameter: BindParameter): void;
+    // @internal
+    bindProps<T>(colIndex: number, val: T): void;
     bindString(parameter: BindParameter, val: string): void;
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
@@ -4771,17 +4774,35 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     dispose(): void;
     getColumnBytes(colIndex: number): number;
     getColumnCount(): number;
+    // @internal
+    getProps<T>(colIndex: number): T;
+    // @internal
+    getPropsMaybe<T>(colIndex: number): T | undefined;
     getRow(): any;
     getValue(columnIx: number): SqliteValue;
     getValueBlob(colIndex: number): Uint8Array;
+    getValueBlobMaybe(colIndex: number): Uint8Array | undefined;
+    getValueBoolean(colIndex: number): boolean;
+    // @beta
+    getValueDate(colIndex: number): Date;
     getValueDouble(colIndex: number): number;
+    getValueDoubleMaybe(colIndex: number): number | undefined;
     getValueGuid(colIndex: number): GuidString;
     getValueId(colIndex: number): Id64String;
     getValueInteger(colIndex: number): number;
+    getValueIntegerMaybe(colIndex: number): number | undefined;
     getValueString(colIndex: number): string;
+    getValueStringMaybe(colIndex: number): string | undefined;
     get isPrepared(): boolean;
     get isReadonly(): boolean;
     isValueNull(colIndex: number): boolean;
+    maybeBindBlob(parameter: BindParameter, val?: Uint8Array): void;
+    maybeBindBoolean(parameter: BindParameter, val?: boolean): void;
+    maybeBindDouble(parameter: BindParameter, val?: number): void;
+    maybeBindInteger(parameter: BindParameter, val?: number): void;
+    // @internal
+    maybeBindProps<T>(colIndex: number, val?: T): void;
+    maybeBindString(parameter: BindParameter, val?: string): void;
     next(): IteratorResult<any>;
     nextRow(): boolean;
     prepare(db: IModelJsNative.AnyDb, logErrors?: boolean): void;
