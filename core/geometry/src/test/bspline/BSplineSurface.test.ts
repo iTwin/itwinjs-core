@@ -207,9 +207,14 @@ describe("BSplineSurface", () => {
       4.0, 1.0, // radii
       12, 6, 5, 3)!;
     surfaceB.tryTranslateInPlace(10, 0, 0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceA, 0, 0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, surfaceB, 0, 0);
-    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
+
+    const options = StrokeOptions.createForFacets();
+    options.needNormals = options.needParams = options.shouldTriangulate = true;
+    for (const surf of [surfaceA, surfaceB]) {
+      const builder = PolyfaceBuilder.create(options);
+      builder.addUVGridBody(surf, 20, 20);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [surf, builder.claimPolyface()]);
+    }
 
     const mode = {value: BSplineWrapMode.None};
     for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
@@ -220,6 +225,7 @@ describe("BSplineSurface", () => {
       }
     }
 
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "PseudoTorusExample");
     ck.checkpoint("BSplineSurface.Wrapped");
     expect(ck.getNumErrors()).equals(0);
   });
