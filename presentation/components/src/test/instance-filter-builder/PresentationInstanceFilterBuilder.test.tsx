@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 import { expect } from "chai";
 import * as React from "react";
 import sinon from "sinon";
@@ -28,7 +29,7 @@ import { INSTANCE_FILTER_FIELD_SEPARATOR } from "../../presentation-components/i
 import { stubRaf } from "./Common";
 
 export const createTestInstanceFilterPropertyInfo = (props?: Partial<InstanceFilterPropertyInfo>) => ({
-  sourceClassIds: ["0x1"],
+  sourceClassId: "0x1",
   field: createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo() }], category: createTestCategoryDescription() }),
   propertyDescription: {
     name: "TestName",
@@ -119,7 +120,6 @@ describe("usePresentationInstanceFilteringProps", () => {
   interface HookProps {
     descriptor: Descriptor;
     classHierarchyProvider?: ECClassHierarchyProvider;
-    enableClassFiltering?: boolean;
   }
 
   const category = createTestCategoryDescription({ name: "root", label: "Root" });
@@ -166,7 +166,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("initializes class list from descriptor", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
       { initialProps });
     expect(result.current.classes).to.have.lengthOf(2).and.to.containSubset([
       concreteClass1,
@@ -176,7 +176,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("updates selected classes when 'onClassSelected' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -186,7 +186,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("updates selected classes when 'onClassDeselected' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -198,7 +198,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("does not change selected classes when 'onClassDeselected' is called with not selected class", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -212,7 +212,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
   it("clears selected classes when 'onClearClasses' is called", () => {
     const { result } = renderHook(
-      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+      (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
       { initialProps });
     result.current.onClassSelected(concreteClass1);
     expect(result.current.selectedClasses).to.have.lengthOf(1).and.to.containSubset([
@@ -238,7 +238,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
     it("returns properties only of selected class", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
         { initialProps: { ...initialProps, classHierarchyProvider } });
 
       result.current.onClassSelected(concreteClass2);
@@ -247,27 +247,8 @@ describe("usePresentationInstanceFilteringProps", () => {
 
     it("selects classes that have selected property", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
-
-      const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
-      result.current.onPropertySelected(property!);
-      expect(result.current.selectedClasses).to.have.lengthOf(1).and.containSubset([
-        concreteClass2,
-      ]);
-    });
-
-    it("removes selected class that does not have selected property", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
-
-      result.current.onClassSelected(concreteClass1);
-      result.current.onClassSelected(concreteClass2);
-      expect(result.current.selectedClasses).to.have.lengthOf(2).and.containSubset([
-        concreteClass1,
-        concreteClass2,
-      ]);
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
+        { initialProps: { ...initialProps, classHierarchyProvider } });
 
       const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
       result.current.onPropertySelected(property!);
@@ -278,7 +259,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
     it("selects all derived classes that have selected property", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
         { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
 
       const property = result.current.properties.find((prop) => prop.displayLabel === basePropertiesField.label);
@@ -291,7 +272,7 @@ describe("usePresentationInstanceFilteringProps", () => {
 
     it("does not change selected classes when selected property class is already selected", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
         { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
 
       result.current.onClassSelected(concreteClass2);
@@ -305,19 +286,9 @@ describe("usePresentationInstanceFilteringProps", () => {
       ]);
     });
 
-    it("does not change selected classes when filtering by properties is disabled", () => {
-      const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
-        { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: false } });
-
-      const property = result.current.properties.find((prop) => prop.displayLabel === concretePropertiesField2.label);
-      result.current.onPropertySelected(property!);
-      expect(result.current.selectedClasses).to.be.empty;
-    });
-
     it("does not change selected classes when 'onPropertySelected' is invoked with invalid property", () => {
       const { result } = renderHook(
-        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider, props.enableClassFiltering),
+        (props: HookProps) => usePresentationInstanceFilteringProps(props.descriptor, props.classHierarchyProvider),
         { initialProps: { ...initialProps, classHierarchyProvider, enableClassFiltering: true } });
 
       result.current.onPropertySelected({ name: "invalidProp", displayLabel: "InvalidProp", typename: "string" });

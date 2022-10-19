@@ -190,6 +190,10 @@ const dtaFrontendMain = async () => {
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
       iModel = await openFile({ fileName: iModelName, writable });
+      if (ProcessDetector.isMobileAppFrontend) {
+        // attempt to send message to iOS code that the model was opened
+        (window as any).webkit?.messageHandlers?.modelOpened?.postMessage(iModelName);
+      }
       setTitle(iModel);
     } else {
       const origStandalone = configuration.standalone;

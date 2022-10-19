@@ -113,6 +113,7 @@ export * from "./presentation-components/instance-filter-builder/InstanceFilterB
 export * from "./presentation-components/instance-filter-builder/PresentationInstanceFilterBuilder";
 export * from "./presentation-components/instance-filter-builder/Types";
 export * from "./presentation-components/instance-filter-builder/Utils";
+export * from "./presentation-components/instance-filter-builder/InstanceFilterConverter";
 
 Presentation.registerInitializationHandler(initializeLocalization);
 Presentation.registerInitializationHandler(initializePropertyValueRenderers);
