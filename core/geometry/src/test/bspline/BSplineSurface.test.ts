@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { BSpline2dNd, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
+import { BSpline2dNd, BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
@@ -17,6 +17,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 
 /* eslint-disable no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
@@ -247,14 +249,21 @@ describe("BSplineSurface", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("LegacyClosureRoundtrip", () => {
+  it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
     for (const filename of ["./src/test/testInputs/BSplineSurface/torus3_legacy.imjs",
                             "./src/test/testInputs/BSplineSurface/torus6_legacy.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
+      const options = StrokeOptions.createForFacets();
+      options.needNormals = options.needParams = options.shouldTriangulate = true;
       for (const input of inputs) {
-        if (input instanceof BSpline2dNd) {
+        if (input instanceof BSplineSurface3d || input instanceof BSplineSurface3dH) {
+          const builder = PolyfaceBuilder.create(options);
+          builder.addUVGridBody(input, 20, 20);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, builder.claimPolyface()]);
+
           const mode = {value: BSplineWrapMode.None};
           for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
             input.isClosable(uvDir, mode);
@@ -265,6 +274,7 @@ describe("BSplineSurface", () => {
         testGeometryQueryRoundTrip(ck, input);
       }
     }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "LegacyClosureRoundTrip");
     expect(ck.getNumErrors()).equals(0);
   });
 });

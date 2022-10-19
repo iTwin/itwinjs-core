@@ -691,7 +691,7 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("LegacyClosureRoundtrip", () => {
+  it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const json = fs.readFileSync("./src/test/testInputs/curve/openAndClosedCurves.imjs", "utf8");
@@ -712,7 +712,7 @@ describe("BsplineCurve", () => {
       }
       testGeometryQueryRoundTrip(ck, input);
     }
-    GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundtrip");
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSpline", "LegacyClosureRoundTrip");
     expect(ck.getNumErrors()).equals(0);
   });
 });

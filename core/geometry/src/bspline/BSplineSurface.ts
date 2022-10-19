@@ -10,7 +10,7 @@
 import { GeometryQuery } from "../curve/GeometryQuery";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
 import { AxisOrder, Geometry } from "../Geometry";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, UVSurface } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -550,7 +550,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
  * | createGrid | array of array of [x,y,z ] | There are no `numPolesU` or `numPolesV` args. The counts are conveyed by the deep arrays |
  * @public
  */
-export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
   /** Test if `other` is an instance of `BSplineSurface3d */
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3d; }
   /** Apply the transform to the poles */
@@ -755,11 +755,21 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
    * @param result optional pre-allocated object for return values.
    * @returns Returns point and derivative directions.
    */
-  public fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public override fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const knotU = this.knots[0].fractionToKnot(fractionU);
     const knotV = this.knots[1].fractionToKnot(fractionV);
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
+
+  /** Implementation of the UVSurface interface; allows `PolyfaceBuilder.addUVGridBody` to facet this B-spline surface. */
+  public uvFractionToPoint(u: number, v: number): Point3d {
+    return this.fractionToPoint(u, v);
+  }
+  /** Implementation of the UVSurface interface; allows `PolyfaceBuilder.addUVGridBody` to facet this B-spline surface. */
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    return this.fractionToPointAndDerivatives(u, v, result);
+  }
+
   /** test for identical counts and near-equal coordinates */
   public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3d) {
@@ -789,7 +799,7 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
 /**  BSpline Surface in xyzw homogeneous space
  * @public
  */
-export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
   /** Test if `other` is an instance of `BSplineSurface3dH */
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineSurface3dH; }
   /** Apply the transform to the poles */
@@ -1038,11 +1048,21 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
    * @param result optional pre-allocated object for return values.
    * @returns Returns point and derivative directions.
    */
-  public fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public override fractionToPointAndDerivatives(fractionU: number, fractionV: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const knotU = this.knots[0].fractionToKnot(fractionU);
     const knotV = this.knots[1].fractionToKnot(fractionV);
     return this.knotToPointAndDerivatives(knotU, knotV, result);
   }
+
+  /** Implementation of the UVSurface interface; allows `PolyfaceBuilder.addUVGridBody` to facet this B-spline surface. */
+  public uvFractionToPoint(u: number, v: number): Point3d {
+    return this.fractionToPoint(u, v);
+  }
+  /** Implementation of the UVSurface interface; allows `PolyfaceBuilder.addUVGridBody` to facet this B-spline surface. */
+  public uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    return this.fractionToPointAndDerivatives(u, v, result);
+  }
+
   /** test for identical counts and near-equal coordinates */
   public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineSurface3dH) {
