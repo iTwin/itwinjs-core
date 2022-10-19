@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Rename RestoreFrontstagesLayoutTool to RestoreAllFrontstagesTool.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

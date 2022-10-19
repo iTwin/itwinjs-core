@@ -55,9 +55,15 @@ export class DumpSelectionSetTool extends Tool {
 
     let output;
     switch (this._format) {
-      case "compressed": output = CompressedId64Set.compressArray(elems); break;
-      case "json": output = JSON.stringify(elems); break;
-      default: output = elems.join(" "); break;
+      case "compressed":
+        output = CompressedId64Set.compressArray(elems);
+        break;
+      case "json":
+        output = JSON.stringify(elems);
+        break;
+      default:
+        output = elems.join(" ");
+        break;
     }
 
     if (this._copy)
@@ -75,8 +81,12 @@ export class DumpSelectionSetTool extends Tool {
     const formatArg = args.get("f");
     if (formatArg) {
       switch (formatArg[0].toLowerCase()) {
-        case "j": this._format = "json"; break;
-        case "c": this._format = "compressed"; break;
+        case "j":
+          this._format = "json";
+          break;
+        case "c":
+          this._format = "compressed";
+          break;
       }
     }
 

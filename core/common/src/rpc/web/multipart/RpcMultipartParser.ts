@@ -87,7 +87,9 @@ export class RpcMultipartParser {
     let boundary = "";
     CONTENT_TYPE_PARAM_RE.lastIndex = m.index + m[0].length - 1;
     while ((m = CONTENT_TYPE_PARAM_RE.exec(contentType))) {
-      if (m[1].toLowerCase() !== "boundary") continue;
+      if (m[1].toLowerCase() !== "boundary")
+        continue;
+
       boundary = m[2] || m[3];
       break;
     }
@@ -151,19 +153,27 @@ export class RpcMultipartParser {
             state = CLOSE_BOUNDARY;
             break;
           } else if (index === boundaryLength - 2) {
-            if (c !== CR) throw new Error(`Expected CR Received ${c}`);
+            if (c !== CR)
+              throw new Error(`Expected CR Received ${c}`);
+
             index++;
             break;
           } else if (index === boundaryLength - 1) {
-            if (c !== LF) throw new Error(`Expected LF Received ${c}`);
+            if (c !== LF)
+              throw new Error(`Expected LF Received ${c}`);
+
             index = 0;
             this._onParsePartBegin();
             state = HEADER_FIELD_START;
             break;
           }
 
-          if (c !== boundary[index + 2]) index = -2;
-          if (c === boundary[index + 2]) index++;
+          if (c !== boundary[index + 2])
+            index = -2;
+
+          if (c === boundary[index + 2])
+            index++;
+
           break;
         case HEADER_FIELD_START:
           state = HEADER_FIELD;
@@ -178,7 +188,8 @@ export class RpcMultipartParser {
           }
 
           index++;
-          if (c === HYPHEN) break;
+          if (c === HYPHEN)
+            break;
 
           if (c === COLON) {
             if (index === 1) {
@@ -197,7 +208,8 @@ export class RpcMultipartParser {
           }
           break;
         case HEADER_VALUE_START:
-          if (c === SPACE) break;
+          if (c === SPACE)
+            break;
 
           this._headerValueMark = i;
           state = HEADER_VALUE;
@@ -211,13 +223,19 @@ export class RpcMultipartParser {
           }
           break;
         case HEADER_VALUE_ALMOST_DONE:
-          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
+          if (c !== LF)
+            throw new Error(`Expected LF Received ${c}`);
+
           state = HEADER_FIELD_START;
           break;
         case HEADERS_ALMOST_DONE:
-          if (c !== LF) throw new Error(`Expected LF Received ${c}`);
+          if (c !== LF)
+            throw new Error(`Expected LF Received ${c}`);
+
           const err: any = this._onParseHeadersEnd(i + 1);
-          if (err) throw err;
+          if (err)
+            throw err;
+
           state = PART_DATA_START;
           break;
         case PART_DATA_START:
@@ -292,7 +310,9 @@ export class RpcMultipartParser {
 
           break;
         case CLOSE_BOUNDARY:
-          if (c !== HYPHEN) throw new Error(`Expected HYPHEN Received ${c}`);
+          if (c !== HYPHEN)
+            throw new Error(`Expected HYPHEN Received ${c}`);
+
           if (index === 1) {
             this._onParsePartEnd();
             state = END;

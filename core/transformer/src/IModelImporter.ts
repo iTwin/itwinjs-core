@@ -11,7 +11,7 @@ import {
   PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import { deleteElementTree, ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
 import type { IModelTransformOptions } from "./IModelTransformer";
 
 const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
@@ -254,12 +254,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
-  /** Delete the specified Element from the target iModel.
+  /** Delete the specified Element (and all its children) from the target iModel.
+   * Will delete special elements like definition elements and subjects.
    * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteElement`.
    */
   protected onDeleteElement(elementId: Id64String): void {
-    this.targetDb.elements.deleteElement(elementId);
-    Logger.logInfo(loggerCategory, `Deleted element ${elementId}`);
+    deleteElementTree(this.targetDb, elementId);
+    Logger.logInfo(loggerCategory, `Deleted element ${elementId} and its descendants`);
     this.trackProgress();
   }
 
@@ -641,7 +642,9 @@ function isSubCategory(props: ElementProps): props is SubCategoryProps {
 
 /** check if element props are a subcategory without loading the element */
 function isDefaultSubCategory(props: SubCategoryProps): boolean {
-  if (props.id === undefined) return false;
+  if (props.id === undefined)
+    return false;
+
   if (!Id64.isId64(props.id))
     throw new IModelError(IModelStatus.BadElement, `subcategory had invalid id`);
   if (props.parent?.id === undefined)

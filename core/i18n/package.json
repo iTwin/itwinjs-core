@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "3.4.0-dev.47",
+  "version": "3.5.0-dev.20",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npm run -s build:cjs",
-    "build:ci": "npm run -s build && npm run -s build:esm",
+    "build:ci": "npm run -s build && npm run -s build:esm && npm run -s webpack:test",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.4.0-dev.47"
+    "@itwin/core-bentley": "workspace:^3.5.0-dev.20"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

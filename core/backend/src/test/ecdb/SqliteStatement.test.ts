@@ -14,7 +14,7 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 describe("SqliteStatement", () => {
   const outDir = KnownTestLocations.outputDir;
   const stringVal: string = "Hello world";
-  const intVal = 12345;
+  const intVal = 0;
   const doubleVal = -2.5;
   const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
@@ -28,7 +28,7 @@ describe("SqliteStatement", () => {
       });
 
       const stmt1 = "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)";
-      ecdb.withPreparedSqliteStatement(stmt1, (stmt: SqliteStatement) => {
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
         assert.isFalse(stmt.isReadonly);
         stmt.bindValue(1, stringVal);
         stmt.bindValue(2, intVal);
@@ -37,7 +37,15 @@ describe("SqliteStatement", () => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
-      ecdb.withPreparedSqliteStatement(stmt1, (stmt: SqliteStatement) => {
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
+        stmt.maybeBindString(1, stringVal);
+        stmt.maybeBindInteger(2, intVal);
+        stmt.maybeBindDouble(3, doubleVal);
+        stmt.maybeBindBlob(4, blobVal);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
+      ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
         assert.isFalse(stmt.isReadonly);
         stmt.bindValues([stringVal, intVal, doubleVal, blobVal]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
@@ -107,7 +115,7 @@ describe("SqliteStatement", () => {
           assert.equal(blobSqlVal.getBlob().byteLength, blobVal.byteLength);
           assert.equal(blobSqlVal.columnName, "blobcol");
         }
-        assert.equal(rowCount, 4);
+        assert.equal(rowCount, 5);
       });
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
@@ -131,7 +139,7 @@ describe("SqliteStatement", () => {
           assert.isDefined(row.blobcol);
           assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
-        assert.equal(rowCount, 4);
+        assert.equal(rowCount, 5);
       });
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
@@ -154,7 +162,7 @@ describe("SqliteStatement", () => {
           assert.isDefined(row.blobcol);
           assert.equal((row.blobcol as Uint8Array).byteLength, blobVal.byteLength);
         }
-        assert.equal(rowCount, 4);
+        assert.equal(rowCount, 5);
       });
     });
   });
@@ -210,6 +218,14 @@ describe("SqliteStatement", () => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
+      ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
+        stmt.maybeBindString(1, undefined);
+        stmt.maybeBindInteger(2, undefined);
+        stmt.maybeBindDouble(3, undefined);
+        stmt.maybeBindBlob(4, undefined);
+        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+      });
+
       ecdb.saveChanges();
 
       ecdb.withPreparedSqliteStatement("SELECT id,stringcol,intcol,doublecol,blobcol FROM MyTable", (stmt: SqliteStatement) => {
@@ -230,7 +246,7 @@ describe("SqliteStatement", () => {
           }
         }
 
-        assert.equal(rowCount, 6);
+        assert.equal(rowCount, 7);
       });
     });
   });

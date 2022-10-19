@@ -200,6 +200,19 @@ export async function imageElementFromImageSource(source: ImageSource): Promise<
   return imageElementFromUrl(URL.createObjectURL(blob));
 }
 
+/** Extract a bitmap from a binary jpeg or png.
+ * @param source The ImageSource containing the binary jpeg or png data.
+ * @returns a Promise which resolves to an ImageBitmap containing the uncompressed bitmap image in RGBA format.
+ * @public
+ */
+export async function imageBitmapFromImageSource(source: ImageSource): Promise<ImageBitmap> {
+  const blob = new Blob([source.data], { type: getImageSourceMimeType(source.format) });
+  return createImageBitmap(blob, {
+    premultiplyAlpha: "none",
+    colorSpaceConversion: "none",
+  });
+}
+
 /** Create an html Image element from a URL.
  * @param url The URL pointing to the image data.
  * @param skipCrossOriginCheck Set this to true to allow an image from a different origin than the web app to load. Default is false.

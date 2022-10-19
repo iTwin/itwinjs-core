@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@itwin/appui-abstract";
+import { BadgeType, ConditionalBooleanValue, ConditionalStringValue, SpecialKey } from "@itwin/appui-abstract";
 import { render, screen } from "@testing-library/react";
 import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../core-react";
 import { TildeFinder } from "../../core-react/contextmenu/TildeFinder";
@@ -553,6 +553,26 @@ describe("ContextMenu", () => {
         </ContextMenu>);
       expect(component.container.querySelector(".core-context-menu-disabled")).not.to.be.null;
       expect(component.container.querySelector(".core-context-menu-item[aria-disabled]")).not.to.be.null;
+    });
+    it("renders Icon by condition correctly", () => {
+      const conditionalIcon = new ConditionalStringValue(() => "conditional-icon", ["Test:CustomId"]);
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" icon={conditionalIcon}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      expect(component.container.querySelector(".conditional-icon")).not.to.be.null;
+    });
+    it("renders Icon by string correctly", () => {
+      const stringIcon = "string-icon";
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" icon={stringIcon}>
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      expect(component.container.querySelector(".string-icon")).not.to.be.null;
     });
     it("renders hidden correctly", () => {
       const component = render(

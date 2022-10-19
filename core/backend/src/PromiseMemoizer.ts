@@ -23,9 +23,13 @@ export class QueryablePromise<T> {
   public get isFulfilled(): boolean { return this._fulfilled; }
   public get isRejected(): boolean { return this._rejected; }
   public constructor(public readonly promise: Promise<T>) {
-    this.promise
-      .then((res: T) => { this.result = res; this._fulfilled = true; })
-      .catch((err: any) => { this.error = err; this._rejected = true; });
+    this.promise.then((res: T) => {
+      this.result = res;
+      this._fulfilled = true;
+    }).catch((err: any) => {
+      this.error = err;
+      this._rejected = true;
+    });
   }
 }
 
@@ -84,7 +88,10 @@ export class PromiseMemoizer<T> implements IDisposable {
       return v;
     };
 
-    const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => { throw removeCachedPromise(e); });
+    const p = this._memoizeFn(...args).then(removeCachedPromise, (e) => {
+      throw removeCachedPromise(e);
+    });
+
     qp = new QueryablePromise<T>(p);
     this._cachedPromises.set(key, qp);
     return qp;

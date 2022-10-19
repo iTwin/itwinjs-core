@@ -104,11 +104,17 @@ public;ClipStyle
 public;ClipStyleProps
 beta;CloudContainerUri
 beta;class CloudStorageCache
+deprecated;class CloudStorageCache
 beta;CloudStorageContainerDescriptor
+deprecated;CloudStorageContainerDescriptor
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageContainerUrl
+deprecated;CloudStorageContainerUrl
 beta;CloudStorageProvider
+deprecated;CloudStorageProvider
 beta;CloudStorageTileCache 
+deprecated;CloudStorageTileCache 
 public;Code 
 public;CodeProps
 public;CodeScopeProps = Id64String | GuidString
@@ -175,6 +181,7 @@ public;DisplayStyleModelAppearanceProps
 public;DisplayStyleOverridesOptions
 public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
+beta;DisplayStyleRealityModelDisplayProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
@@ -306,6 +313,7 @@ public;GeometrySummaryOptions
 public;GeometrySummaryRequestProps
 public;GeometrySummaryVerbosity
 internal;getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number
+internal;getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference
 internal;GlbHeader 
 public;GlobeMode
 internal;GltfChunk
@@ -517,6 +525,10 @@ public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
 public;Point2dProps = number[]
+beta;PointCloudDisplayProps
+beta;PointCloudDisplaySettings
+beta;PointCloudShape = "square" | "round"
+beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -539,8 +551,14 @@ beta;PropertyMetaDataProps
 public;QParams2d
 public;QParams3d
 public;QPoint2d
+public;QPoint2dBuffer
+public;QPoint2dBuffer
+public;QPoint2dBufferBuilder
 public;QPoint2dList
 public;QPoint3d
+public;QPoint3dBuffer
+public;QPoint3dBuffer
+public;QPoint3dBufferBuilder
 public;QPoint3dList
 public;Quantization
 internal;isInRange(qpos: number, rangeScale?: number): boolean
@@ -567,6 +585,8 @@ beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
 beta;RealityDataSourceProps
+beta;RealityModelDisplayProps
+beta;RealityModelDisplaySettings
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
@@ -708,7 +728,8 @@ beta;SynchronizationConfigLinkProps
 public;SyncMode
 public;TerrainHeightOriginMode
 public;TerrainProps
-public;TerrainProviderName = "CesiumWorldTerrain"
+public;TerrainProviderName = string
+deprecated;TerrainProviderName = string
 public;TerrainSettings
 internal;TestRpcManager
 public;TextString

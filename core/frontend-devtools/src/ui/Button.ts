@@ -44,9 +44,12 @@ export function createButton(props: ButtonProps): Button {
   button.addEventListener("click", () => props.handler(button));
   div.appendChild(button);
 
-  if (undefined !== props.id) button.id = props.id;
-  if (undefined !== props.tooltip) div.title = props.tooltip;
-  if (undefined !== props.parent) props.parent.appendChild(div);
+  if (undefined !== props.id)
+    button.id = props.id;
+  if (undefined !== props.tooltip)
+    div.title = props.tooltip;
+  if (undefined !== props.parent)
+    props.parent.appendChild(div);
 
   return { button, div };
 }

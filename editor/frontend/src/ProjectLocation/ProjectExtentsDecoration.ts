@@ -21,9 +21,15 @@ import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-
 import { EditTools } from "../EditTool";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
-function translateMessage(key: string) { return EditTools.translate(`ProjectLocation:Message.${key}`); }
-function translateMessageBold(key: string) { return `<b>${translateMessage(key)}:</b> `; }
-function translateCoreMeasureBold(key: string) { return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `; }
+function translateMessage(key: string) {
+  return EditTools.translate(`ProjectLocation:Message.${key}`);
+}
+function translateMessageBold(key: string) {
+  return `<b>${translateMessage(key)}:</b> `;
+}
+function translateCoreMeasureBold(key: string) {
+  return `<b>${CoreTools.translate(`Measure.Labels.${key}`)}:</b> `;
+}
 
 function clearViewClip(vp: ScreenViewport): boolean {
   if (!ViewClipTool.doClipClear(vp))
@@ -210,7 +216,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const midPtHi = shapePtsHi[i].interpolate(0.5, shapePtsHi[i + 1]);
       const faceCenter = midPtLo.interpolate(0.5, midPtHi);
       const edgeTangent = Vector3d.createStartEnd(shapePtsLo[i], shapePtsLo[i + 1]);
-      const faceNormal = edgeTangent.crossProduct(shapeArea.direction); faceNormal.normalizeInPlace();
+      const faceNormal = edgeTangent.crossProduct(shapeArea.direction);
+      faceNormal.normalizeInPlace();
       this._controls[i] = new ProjectExtentsControlArrow(faceCenter, faceNormal, 0.75);
       this._controls[i].extentValid = (faceNormal.isParallelTo(Vector3d.unitX(), true) ? this._extentsLengthValid : this._extentsWidthValid);
     }
@@ -570,7 +577,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   protected drawExtentTooLargeIndicator(context: DecorateContext, worldPoint: Point3d, sizePixels: number): void {
-    const position = context.viewport.worldToView(worldPoint); position.x = Math.floor(position.x) + 0.5; position.y = Math.floor(position.y) + 0.5;
+    const position = context.viewport.worldToView(worldPoint);
+    position.x = Math.floor(position.x) + 0.5;
+    position.y = Math.floor(position.y) + 0.5;
     const drawDecoration = (ctx: CanvasRenderingContext2D) => {
       ctx.lineWidth = 4;
       ctx.lineCap = "round";
@@ -652,8 +661,10 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       if (undefined === transform)
         continue;
 
-      const visPts: Point3d[] = []; for (const pt of shapePts) visPts.push(pt.clone()); // deep copy because we're using a builder transform w/addLineString...
-      const hidPts: Point3d[] = []; for (const pt of shapePts) hidPts.push(pt.clone());
+      // deep copies because we're using a builder transform w/addLineString...
+      const visPts = shapePts.map((pt) => pt.clone());
+      const hidPts = shapePts.map((pt) => pt.clone());
+
       const arrowVisBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
       const arrowHidBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, transform);
       const isSelected = this.iModel.selectionSet.has(this._controlIds[iFace]);
