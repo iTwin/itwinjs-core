@@ -156,11 +156,11 @@ export interface DisplayStyleSettingsProps {
  * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  /** See [[DisplayStyle3dSettings.environment. */
+  /** See [[DisplayStyle3dSettings.environment]]. */
   environment?: EnvironmentProps;
-  /** See [[DisplayStyle3dSettings.thematic. */
+  /** See [[DisplayStyle3dSettings.thematic]]. */
   thematic?: ThematicDisplayProps;
-  /** See [[DisplayStyle3dSettings.hiddenLineSettings. */
+  /** See [[DisplayStyle3dSettings.hiddenLineSettings]]. */
   hline?: HiddenLine.SettingsProps;
   /** See [[DisplayStyle3dSettings.ambientOcclusionSettings]]. */
   ao?: AmbientOcclusion.Props;
@@ -168,7 +168,7 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   solarShadows?: SolarShadowSettingsProps;
   /** See [[DisplayStyle3dSettings.lights]]. */
   lights?: LightSettingsProps;
-  /** See [[DisplayStyle3dSettings.planProjections. */
+  /** See [[DisplayStyle3dSettings.planProjections]]. */
   planProjections?: { [modelId: string]: PlanProjectionSettingsProps };
   /** Old lighting settings - only `sunDir` was ever used; it is now part of [[lights]].
    * DisplayStyle3dSettings will construct a LightSettings from sceneLights.sunDir IFF [[lights]] is not present.
