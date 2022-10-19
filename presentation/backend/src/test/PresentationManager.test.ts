@@ -12,14 +12,14 @@ import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@itwi
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import {
   ArrayTypeDescription, CategoryDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions,
-  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, Diagnostics, DiagnosticsOptions,
+  ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorJSON, DescriptorOverrides, DiagnosticsLoggerSeverity,
   DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions, ElementProperties, FieldDescriptor, FieldDescriptorType,
   FieldJSON, FilterByInstancePathsHierarchyRequestOptions, FilterByTextHierarchyRequestOptions, HierarchyCompareInfo, HierarchyCompareInfoJSON,
   HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition,
-  LabelDefinitionJSON,
-  MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PrimitiveTypeDescription,
-  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  LabelDefinitionJSON, MultiElementPropertiesRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError,
+  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RelatedClassInfo, Ruleset, SelectClassInfo,
+  SelectClassInfoJSON, SelectionInfo, SelectionScope, SingleElementPropertiesRequestOptions, StandardNodeTypes, StructTypeDescription,
+  VariableValueTypes,
 } from "@itwin/presentation-common";
 import {
   createRandomECClassInfoJSON, createRandomECInstanceKey, createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON,
@@ -95,6 +95,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -131,6 +132,7 @@ describe("PresentationManager", () => {
             content: {
               size: 999,
             },
+            workerConnectionCacheSize: 123,
           },
           useMmap: 666,
           defaultFormats: {
@@ -149,6 +151,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            workerConnectionCacheSize: 123,
             defaultFormats: {
               length: { unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) },
             },
@@ -168,6 +171,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -176,6 +180,7 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
           directory: faker.random.word(),
+          memoryCacheSize: 123,
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
         using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
@@ -187,6 +192,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -204,6 +210,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -214,6 +221,7 @@ describe("PresentationManager", () => {
           disk: {
             mode: HierarchyCacheMode.Disk,
             directory: faker.random.word(),
+            memoryCacheSize: 456,
           },
         };
         const expectedConfig = {
@@ -228,6 +236,7 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            workerConnectionCacheSize: undefined,
             useMmap: undefined,
             defaultFormats: {},
           });
@@ -254,14 +263,18 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => {
+          pm;
+        });
         addon.verifyAll();
       });
 
       it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
         const addonDirs = [path.join("/test", "primary-presentation-rules")];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => { pm; });
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => {
+          pm;
+        });
         addon.verifyAll();
       });
 
@@ -546,35 +559,49 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
-      const diagnosticOptions: DiagnosticsOptions = {
-        perf: true,
-        editor: "info",
-        dev: "warning",
-      };
-      const diagnosticsResult: Diagnostics = {
+    it("invokes request's diagnostics handler with diagnostic results", async () => {
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           duration: 123,
         }],
       };
+      const diagnosticsContext = {};
       const diagnosticsListener = sinon.spy();
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: "ruleset",
+        diagnostics: {
+          perf: true,
+          handler: diagnosticsListener,
+          requestContextSupplier: () => diagnosticsContext,
+        },
+      });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsListener).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
     });
 
-    it("invokes diagnostics callback with diagnostic results", async () => {
-      const diagnosticsCallback = sinon.spy();
+    it("invokes manager's diagnostics callback with diagnostic results", async () => {
       addonMock.reset();
-      manager = new PresentationManager({ addon: addonMock.object, diagnosticsCallback });
 
-      const diagnosticOptions: DiagnosticsOptions = { perf: true };
-      const diagnosticsResult: Diagnostics = {
+      const diagnosticsCallback = sinon.spy();
+      const diagnosticsContext = {};
+      manager = new PresentationManager({
+        addon: addonMock.object,
+        diagnostics: {
+          perf: true,
+          handler: diagnosticsCallback,
+          requestContextSupplier: () => diagnosticsContext,
+        },
+      });
+      const diagnosticsResult = {
         logs: [{
           scope: "test",
           scopeCreateTimestamp: 1000,
@@ -582,12 +609,68 @@ describe("PresentationManager", () => {
         }],
       };
       addonMock
-        .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics)), undefined))
-        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs![0] }))
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: () => {} } });
+      await manager.getNodesCount({ imodel: imodelMock.object, rulesetOrId: "ruleset" });
       addonMock.verifyAll();
-      expect(diagnosticsCallback).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsCallback).to.be.calledOnceWithExactly(diagnosticsResult, diagnosticsContext);
+    });
+
+    it("invokes manager and request diagnostics callbacks", async () => {
+      addonMock.reset();
+
+      const requestDiagnosticsCallback = sinon.spy();
+      const requestDiagnosticsContext = {};
+
+      const managerDiagnosticsCallback = sinon.spy();
+      const managerDiagnosticsContext = {};
+      manager = new PresentationManager({
+        addon: addonMock.object,
+        diagnostics: {
+          perf: true,
+          handler: managerDiagnosticsCallback,
+          requestContextSupplier: () => managerDiagnosticsContext,
+        },
+      });
+      const diagnosticsResult = {
+        scope: "req",
+        logs: [{
+          scope: "perf scope",
+          scopeCreateTimestamp: 1000,
+          duration: 123,
+        }, {
+          scope: "log scope",
+          logs: [{
+            message: "msg",
+            category: "cat",
+            severity: { dev: "debug" as DiagnosticsLoggerSeverity },
+            timestamp: 123,
+          }],
+        }],
+      };
+      addonMock
+        .setup(async (x) => x.handleRequest(
+          moq.It.isAny(),
+          moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true, dev: "debug" })),
+          undefined))
+        .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
+        .verifiable(moq.Times.once());
+      await manager.getNodesCount({
+        imodel: imodelMock.object,
+        rulesetOrId: "ruleset",
+        diagnostics: {
+          dev: "debug",
+          handler: requestDiagnosticsCallback,
+          requestContextSupplier: () => requestDiagnosticsContext,
+        },
+      });
+      addonMock.verifyAll();
+      expect(managerDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[0]] }] }, managerDiagnosticsContext);
+      expect(requestDiagnosticsCallback).to.be.calledOnceWithExactly({ logs: [{ scope: "req", logs: [diagnosticsResult.logs[1]] }] }, requestDiagnosticsContext);
     });
 
   });

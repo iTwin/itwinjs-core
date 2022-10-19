@@ -169,7 +169,11 @@ export class MarkupApp {
     return (undefined !== matrix ? matrix : new Matrix());
   }
   /** @internal */
-  public static getVpToScreenMtx(): Matrix { const rect = this.markup!.markupDiv.getBoundingClientRect(); return (new Matrix()).translateO(rect.left, rect.top); }
+  public static getVpToScreenMtx(): Matrix {
+    const rect = this.markup!.markupDiv.getBoundingClientRect();
+    return (new Matrix()).translateO(rect.left, rect.top);
+  }
+
   /** @internal */
   public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
   /** @internal */
@@ -366,7 +370,11 @@ export class MarkupApp {
   public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
 }
 
-const removeSvgNamespace = (svg: Svg) => { svg.node.removeAttribute("xmlns:svgjs"); return svg; };
+const removeSvgNamespace = (svg: Svg) => {
+  svg.node.removeAttribute("xmlns:svgjs");
+  return svg;
+};
+
 const newSvgElement = (name: string) => adopt(create(name));
 
 /**
@@ -393,7 +401,8 @@ export class Markup {
   /** create the drop-shadow filter in the Defs section of the supplied svg element */
   private createDropShadow(svg: Svg) {
     const filter = SVG(`#${MarkupApp.dropShadowId}`); // see if we already have one?
-    if (filter) filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
+    if (filter)
+      filter.remove(); // yes, remove it. This must be someone modifying the drop shadow properties
 
     // create a new filter, and add it to the Defs of the supplied svg
     svg.defs()
@@ -467,7 +476,14 @@ export class Markup {
   /** Send all the entries in the selection set to the back. */
   public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
   /** Group all the entries in the selection set, then select the group. */
-  public groupSelected() { if (undefined !== this.svgMarkup) this.selected.groupAll(this.undo); }
+  public groupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.groupAll(this.undo);
+  }
+
   /** Ungroup all the group entries in the selection set. */
-  public ungroupSelected() { if (undefined !== this.svgMarkup) this.selected.ungroupAll(this.undo); }
+  public ungroupSelected() {
+    if (undefined !== this.svgMarkup)
+      this.selected.ungroupAll(this.undo);
+  }
 }

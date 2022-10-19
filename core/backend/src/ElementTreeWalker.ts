@@ -264,7 +264,9 @@ class SpecialElements {
     // children and others are parents. deleteDefinitionElements does not preserve the order that you specify,
     // and it does not process children before parents.
     for (const definitions of sortChildrenBeforeParents(iModel, this.definitions)) {
-      if (isTraceEnabled()) definitions.forEach((e) => logElement("try delete", iModel, e));
+      if (isTraceEnabled())
+        definitions.forEach((e) => logElement("try delete", iModel, e));
+
       iModel.elements.deleteDefinitionElements(definitions); // will not delete definitions that are still in use.
     }
 

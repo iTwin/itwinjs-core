@@ -33,6 +33,7 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
           return <ViewAttributesWidgetComponent />;
         },
         canPopout: true,
+        allowedPanelTargets: ["left", "right"],
       });
 
       widgets.push({
@@ -57,6 +58,7 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
         getWidgetContent: () => { // eslint-disable-line react/display-name
           return <div>Floating widget 2</div>;
         },
+        allowedPanelTargets: [],
       });
       widgets.push({
         id: "FW-3",
@@ -67,6 +69,18 @@ export class FloatingWidgetsUiItemsProvider implements UiItemsProvider {
         isFloatingStateSupported: true,
         getWidgetContent: () => { // eslint-disable-line react/display-name
           return <div>Floating widget 3</div>;
+        },
+      });
+
+      widgets.push({
+        id: "FW-H1",
+        label: "FW-H1",
+        icon: "icon-visibility-hide",
+        defaultState: WidgetState.Hidden,
+        floatingContainerId: "appui-test-providers:hidden-floating-widget",
+        isFloatingStateSupported: true,
+        getWidgetContent: () => { // eslint-disable-line react/display-name
+          return <div>Hidden floating widget 1</div>;
         },
       });
     }

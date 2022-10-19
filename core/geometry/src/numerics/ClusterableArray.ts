@@ -131,7 +131,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    *
    * ** simple coordinate blocks (x,y) or (x,y,z) would work fine but have occasional performance problems because points with same x would generate big blocks of
    * candidates for clusters.
-   * ** The usual solution is to u value which is a dot product along some skew direction and have the blocks contain (u,x,y) or (u,x,y,z) for 2d versus 3d.
+   * ** The usual solution is to sort by u value, which is a dot product along some skew direction, and have the blocks contain (u,x,y) or (u,x,y,z) for 2d versus 3d.
    * ** apply setupPrimaryClusterSort to prepare that!!!
    * * After a simple lexical sort, consecutive blocks that are within tolerance in the 0 component
    * are inspected.  Within that candidate set, all blocks that are within tolerance for ALL components are clustered.
@@ -282,9 +282,9 @@ export class ClusterableArray extends GrowableBlockedArray {
   }
 
   /**
-   * Sort terminator-delimited subsets of an array of indices into the table, using a single extraData index as sort key.
-   * @param blockedIndices [in] indices, organized as blocks of good indices terminated by the clusterTerminator.
-   * @param extraDataIndex index of the extra data key.
+   * Sort terminator-delimited subsets of an array of indices into the table, using a single data value as sort key.
+   * @param blockedIndices indices, organized as blocks of good indices terminated by the clusterTerminator. Each block is individually sorted on return.
+   * @param dataIndex index of the data key, e.g., if the sort key is the first extraData (angle) after x and y coordinate data, pass dataIndex = 2.
    */
   public sortSubsetsBySingleKey(blockedIndices: Uint32Array, dataIndex: number) {
     const dataOffset = 1 + dataIndex;
@@ -294,7 +294,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     const numK = blockedIndices.length;
     for (let kEnd = 0; kEnd < numK; kEnd++) {
       if (blockedIndices[kEnd] === ClusterableArray.clusterTerminator) {
-        // sort blockedIndices[kBegin ,= k < kEnd].
+        // bubble sort blockedIndices[kBegin <= k < kEnd].
         //  (search for minimum remaining, swap  . . )
         for (let k0 = kBegin; k0 + 1 < kEnd; k0++) {
           key0 = this.getWithinBlock(blockedIndices[k0], dataOffset);

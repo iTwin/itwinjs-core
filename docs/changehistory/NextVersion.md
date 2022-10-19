@@ -1,157 +1,135 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
 
-- [Electron 17 support](#electron-17-support)
-- [IModelSchemaLoader replaced](#imodelschemaloader-replaced)
-- [Display](#display)
-  - [Ambient occlusion improvements](#ambient-occlusion-improvements)
-  - [Improved display transform support](#improved-display-transform-support)
+- [@itwin/core-backend](#itwincore-backend)
+  - [Element aspect ids](#element-aspect-ids)
+- [@itwin/core-geometry](#itwincore-geometry)
+  - [B-Splines](#b-splines)
+- [Display system](#display-system)
+  - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
-  - [Restoring presentation tree state](#restoring-presentation-tree-state)
-  - [OpenTelemetry](#opentelemetry)
-  - [Localization changes](#localization-changes)
-- [Geometry](#geometry)
-  - [Coplanar facet consolidation](#coplanar-facet-consolidation)
-  - [Filling mesh holes](#filling-mesh-holes)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [AppUi](#appui)
 - [Deprecations](#deprecations)
-  - [@itwin/core-transformer](#itwincore-transformer)
-- [Geometry](#geometry)
-  - [B-Spline](#b-spline)
+  - [Transformer API](#transformer-api)
+  - [IModelCloneContext split out with new base IModelElementCloneContext](#imodelclonecontext-split-out-with-new-base-imodelelementclonecontext)
+  - [Geometry](#geometry)
 
-## Electron 17 support
+## @itwin/core-backend
 
-In addition to the already supported Electron 14, iTwin.js now supports Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), and [17](https://www.electronjs.org/blog/electron-17-0). At the moment, support for Electron 18 and 19 is blocked due to a [bug in the V8 javascript engine](https://github.com/electron/electron/issues/35043).
+### Element aspect ids
 
-## IModelSchemaLoader replaced
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
 
-The `IModelSchemaLoader` class has been replaced with [SchemaLoader]($ecschema-metadata) for obtaining schemas from an iModel. This allows us to remove the @itwin/ecschema-metadata dependency from @itwin/core-backend.
+## @itwin/core-geometry
 
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
+### B-Splines
 
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
+[BSplineSurface3dQuery.isClosable]($core-geometry) and [BSpline2dNd.isClosable]($core-geometry) have a new optional argument to return a [BSplineWrapMode]($core-geometry) enum value classifying the manner in which the surface can be closed (if at all) in the given parametric direction.
 
-[SchemaLoader]($ecschema-metadata) can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
+## Display system
 
-## Display
+### Reality model display customization
 
-### Ambient occlusion improvements
+You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
 
-The ambient occlusion effect has undergone some quality improvements.
+For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
 
-Changes:
+Point clouds provide the following additional customizations:
 
-- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
-- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
-- The effect will now fade as it approaches the maximum distance.
-
-Old effect, as shown below:
-
-![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
-
-New effect, shown below:
-
-![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
-
-For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
-
-### Improved display transform support
-
-In some cases, geometry is displayed within a [Viewport]($frontend) at a different location, orientation, and/or scale than that with which it is persisted in the iModel. For example:
-
-- A [DisplayStyle]($backend) may use [PlanProjectionSettings.elevation]($common) to adjust a plan projection model's position on the Z axis.
-- A [ModelDisplayTransformProvider]($frontend) may supply [Transform]($core-geometry)s to be applied to specific models.
-- A [RenderSchedule.Script]($common) may apply [Transform]($core-geometry)s to groups of elements belonging to a [RenderSchedule.ElementTimeline]($common).
-
-Tools that interact both with a [Viewport]($frontend) and with persistent geometry sometimes need to account for such display transforms. Such tools can now use [ViewState.computeDisplayTransform]($frontend) to compute the transform applied to a model or element for display. For example, [AccuSnap]($frontend) applies the display transform to the snap points and curves received from the backend to display them correctly in the viewport; and [ViewClipByElementTool]($frontend) applies it to the element's bounding box to orient the clip with the element as displayed in the viewport.
+- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
+- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
+- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
 
 ## Presentation
 
-### Restoring presentation tree state
+### Controlling in-memory cache sizes
 
-It is now possible to restore previously saved Presentation tree state on component mount.
+The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
 
-```ts
-// Save current tree state
-const { nodeLoader } = usePresentationTreeNodeLoader(args);
-useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
-
-// Restore tree state on component mount
-const seedTreeModel = exampleRetrieveStoredTreeModel();
-const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
-```
-### OpenTelemetry
-
-It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
-
-Example usage:
+The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
 
 ```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
-
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
+Presentation.initialize({
+  caching: {
+    // use 8 megabytes page cache for worker connections to iModels
+    workerConnectionCacheSize: 8 * 1024 * 1024,
+    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
+    hierarchies: {
+      mode: HierarchyCacheMode.Disk,
+      memoryCacheSize: 4 * 1024 * 1024,
+    },
+  },
 });
-
-Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
-  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
-  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-  traceExporter.export(spans, () => {});
-} });
 ```
 
-### Localization Changes
+See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
 
-Previously, some of the data produced by the Presentation library was being localized both on the backend. This behavior was dropped in favor of localizing everything on the frontend. As a result, the requirement to supply localization assets with the backend is also removed.
+### Changes to infinite hierarchy prevention
 
-In case of a backend-only application, localization may be setup by providing a [localization function when initializing the Presentation backend](../presentation/advanced/Localization.md).  By default the library localizes known strings to English.
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
 
-**Deprecated APIs:**
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
 
-- PresentationManagerProps.localeDirectories
-- PresentationManagerProps.defaultLocale
-- PresentationManager.activeLocale
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
 
-## Geometry
+#### Example
 
-### Coplanar facet consolidation
+Say, we have two instances A and B and they point to each other through a relationship:
 
-A new method, [PolyfaceQuery.cloneWithMaximalPlanarFacets]($core-geometry), can identify groups of adjacent coplanar facets in a mesh and produce a new mesh in which each group is consolidated into a single facet. The consolidated facets are necessarily not triangular and various bridge edges will be present in non-convex facets.
+```
+A -> refers to -> B
+B -> refers to -> A
+```
 
-![maximalPlanarFacets](assets/Geometry-maximalPlanarFacets.png "Mesh with many coplanar facets; new mesh with consolidation of coplanar facets")
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
 
-### Filling mesh holes
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
 
-A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify holes in a mesh and produce a new mesh in which some or all of the holes are replaced with facets. Which holes are filled can be controlled using [HoleFillOptions]($core-geometry) to specify constraints such as maximum hole perimeter, number of edges, and/or loop direction.
+```
++ A
++--+ B
+```
 
-![fillHoles](assets/Geometry-fillHoles.png "Mesh with holes; All boundaries extracted from surface, including outer boundary; Mesh with holes filled")
+With the new approach we "break" at the duplicate A node:
+
+```
++ A
++--+ B
+   +--+ A
+```
+
+## AppUi
+
+### Setting allowed panel zones for widgets
+
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
 ## Deprecations
 
-### @itwin/core-transformer
+### Transformer API
 
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
+The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it.
+If you are not using a `process*` function to run the transformer, then you do need to replace it with [IModelTransformer.initialize]($transformer).
 
-## Geometry
+The transformer now handles referencing properties on out-of-order non-element entities like aspects, models, or relationships, previously
+traversal might invalidate references on, for example,  `ExternalSourceAspects`.
 
-### B-spline
+### IModelCloneContext split out with new base IModelElementCloneContext
 
-The B-spline API has the following name changes for consistency:
+The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
+can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
+class, [IModelCloneContext]($transformer).
+
+### Geometry
+
+The B-spline API has several name changes for consistency:
 
 | Deprecated                                                    | Replacement                                                   |
 | ------------------------------------------------------------- | ------------------------------------------------------------- |
@@ -159,4 +137,3 @@ The B-spline API has the following name changes for consistency:
 | [BSpline2dNd.sumpoleBufferDerivativesForSpan]($core-geometry) | [BSpline2dNd.sumPoleBufferDerivativesForSpan]($core-geometry) |
 | [UVSelect.VDirection]($core-geometry)                         | [UVSelect.vDirection]($core-geometry)                         |
 
-In addition, [BSplineSurface3dQuery.isClosable]($core-geometry) and [BSpline2dNd.isClosable]($core-geometry) have a new optional argument to return a [BSplineWrapMode]($core-geometry) enum value classifying the manner in which the surface can be closed (if at all) in the given parametric direction.

@@ -30,7 +30,9 @@ beta;ClientDiagnostics
 public;ClientDiagnosticsAttribute
 beta;ClientDiagnosticsHandler = (logs: ClientDiagnostics) => void
 beta;ClientDiagnosticsOptions 
+internal;combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined
 internal;CommonIpcParams
+internal;compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1
 public;CompressedClassInfoJSON
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 alpha;ComputeSelectionRequestOptions
@@ -163,6 +165,11 @@ public;Id64sRulesetVariableJSON
 public;IdCategoryIdentifier
 public;ImageIdOverride 
 deprecated;ImageIdOverride 
+alpha;InstanceFilterDefinition
+alpha;InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias)
+alpha;InstanceFilterRelatedInstancePath
+alpha;InstanceFilterRelatedInstanceRelationshipAlias
+alpha;InstanceFilterRelatedInstanceTargetAlias
 public;InstanceId = Id64String
 public;InstanceKey
 public;InstanceKey

@@ -25,3 +25,11 @@ export * from "./presentation-testing/ContentBuilder";
  * Various test helpers.
  */
 export * from "./presentation-testing/Helpers";
+
+/**
+ * @module IModel
+ *
+ * @docs-group-description IModel
+ * Utilities for creating test iModels that can be used to exercise presentation rules.
+ */
+export * from "./presentation-testing/IModelUtilities";
