@@ -907,7 +907,7 @@ export namespace BSplineCurveOps {
 }
 
 // @public
-export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
     clone(): BSplineSurface3d;
     cloneTransformed(transform: Transform): BSplineSurface3d;
     copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[];
@@ -927,10 +927,12 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     knotToPoint(u: number, v: number): Point3d;
     knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     tryTransformInPlace(transform: Transform): boolean;
+    uvFractionToPoint(u: number, v: number): Point3d;
+    uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
 
 // @public
-export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery {
+export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQuery, UVSurface {
     clone(): BSplineSurface3dH;
     cloneTransformed(transform: Transform): BSplineSurface3dH;
     copyKnots(select: UVSelect, includeExtraEndKnot: boolean): number[];
@@ -954,6 +956,8 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     knotToPoint4d(u: number, v: number): Point4d;
     knotToPointAndDerivatives(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     tryTransformInPlace(transform: Transform): boolean;
+    uvFractionToPoint(u: number, v: number): Point3d;
+    uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
 }
 
 // @public
