@@ -2,7 +2,7 @@ parameters:
 - name: variableGroup
 
 jobs:
-- job: UpdateDocsIndex_${{ parameters.env }}
+- job: UpdateDocsIndex
   pool:
     name: ubuntu-latest
 
