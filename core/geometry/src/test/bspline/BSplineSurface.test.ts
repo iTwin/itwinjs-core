@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as fs from "fs";
-import { BSpline2dNd, BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
+import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
 import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
