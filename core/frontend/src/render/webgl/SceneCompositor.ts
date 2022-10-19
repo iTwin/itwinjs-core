@@ -21,7 +21,7 @@ import { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, EDLSimpleGeometry, ScreenPointsGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, EDLCalcGeometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
@@ -67,6 +67,11 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
   public occlusion?: TextureHandle;
   public occlusionBlur?: TextureHandle;
   public volClassBlend?: TextureHandle;
+  public edlCalc1?: TextureHandle;
+  public edlCalc2?: TextureHandle;
+  public edlCalc4?: TextureHandle;
+  public edlFilt2?: TextureHandle;
+  public edlFilt4?: TextureHandle;
   public colorMsBuff?: RenderBufferMultiSample;
   public featureIdMsBuff?: RenderBufferMultiSample;
   public featureIdMsBuffHidden?: RenderBufferMultiSample;
@@ -86,6 +91,11 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.occlusion
       && undefined === this.occlusionBlur
       && undefined === this.volClassBlend
+      && undefined === this.edlCalc1
+      && undefined === this.edlCalc2
+      && undefined === this.edlCalc4
+      && undefined === this.edlFilt2
+      && undefined === this.edlFilt4
       && undefined === this.colorMsBuff
       && undefined === this.featureIdMsBuff
       && undefined === this.featureIdMsBuffHidden
@@ -105,6 +115,12 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     this.hilite = dispose(this.hilite);
     this.occlusion = dispose(this.occlusion);
     this.occlusionBlur = dispose(this.occlusionBlur);
+    // ###TODO should these be handled here?
+    this.edlCalc1 = dispose(this.edlCalc1);
+    this.edlCalc2 = dispose(this.edlCalc2);
+    this.edlCalc4 = dispose(this.edlCalc4);
+    this.edlFilt2 = dispose(this.edlFilt2);
+    this.edlFilt4 = dispose(this.edlFilt4);
     this.colorMsBuff = dispose(this.colorMsBuff);
     this.featureIdMsBuff = dispose(this.featureIdMsBuff);
     this.featureIdMsBuffHidden = dispose(this.featureIdMsBuffHidden);
@@ -125,6 +141,11 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     collectTextureStatistics(this.hilite, stats);
     collectTextureStatistics(this.occlusion, stats);
     collectTextureStatistics(this.occlusionBlur, stats);
+    collectTextureStatistics(this.edlCalc1, stats);
+    collectTextureStatistics(this.edlCalc2, stats);
+    collectTextureStatistics(this.edlCalc4, stats);
+    collectTextureStatistics(this.edlFilt2, stats);
+    collectTextureStatistics(this.edlFilt4, stats);
     collectTextureStatistics(this.volClassBlend, stats);
     collectMsBufferStatistics(this.colorMsBuff, stats);
     collectMsBufferStatistics(this.featureIdMsBuff, stats);
@@ -184,6 +205,13 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
     if (rVal && numSamples > 1) {
       rVal = this.enableMultiSampling(width, height, numSamples);
     }
+
+    // ###TODO these should probably move? (if not, what about checking status?)
+    this.edlCalc1 = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlCalc2 = TextureHandle.createForAttachment(width * 0.5, height * 0.5, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlCalc4 = TextureHandle.createForAttachment(width * 0.25, height * 0.25, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlFilt2 = TextureHandle.createForAttachment(width * 0.5, height * 0.5, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlFilt4 = TextureHandle.createForAttachment(width * 0.25, height * 0.25, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     return rVal;
   }
@@ -389,6 +417,9 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
   public edlSimple?: EDLSimpleGeometry;
+  public edlCalc?: [EDLCalcGeometry | undefined, EDLCalcGeometry | undefined, EDLCalcGeometry | undefined];
+  public edlFilt?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined];
+  public edlMix?: EDLMixGeometry;
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     collectGeometryStatistics(this.composite, stats);
@@ -400,6 +431,13 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     collectGeometryStatistics(this.occlusion, stats);
     collectGeometryStatistics(this.occlusionXBlur, stats);
     collectGeometryStatistics(this.occlusionYBlur, stats);
+    collectGeometryStatistics(this.edlSimple, stats);
+    collectGeometryStatistics(this.edlCalc?.[0], stats);
+    collectGeometryStatistics(this.edlCalc?.[1], stats);
+    collectGeometryStatistics(this.edlCalc?.[2], stats);
+    collectGeometryStatistics(this.edlFilt?.[0], stats);
+    collectGeometryStatistics(this.edlFilt?.[1], stats);
+    collectGeometryStatistics(this.edlMix, stats);
   }
 
   public init(textures: Textures): boolean {
@@ -460,7 +498,13 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassSetBlend
       && undefined === this.volClassBlend
       && undefined === this.volClassCopyZWithPoints
-      && undefined === this.edlSimple;
+      && undefined === this.edlSimple
+      && undefined === this.edlCalc?.[0]
+      && undefined === this.edlCalc?.[1]
+      && undefined === this.edlCalc?.[2]
+      && undefined === this.edlFilt?.[0]
+      && undefined === this.edlFilt?.[1]
+      && undefined === this.edlMix;
   }
 
   public dispose() {
@@ -469,7 +513,14 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.occlusionXBlur = dispose(this.occlusionXBlur);
     this.occlusionYBlur = dispose(this.occlusionYBlur);
     this.disableVolumeClassifier();
-    this.edlSimple = dispose(this.edlSimple); // TODO: decide where this should go
+    // TODO: decide where these should be handled
+    this.edlSimple = dispose(this.edlSimple);
+    this.edlSimple = dispose(this.edlCalc?.[0]);
+    this.edlSimple = dispose(this.edlCalc?.[1]);
+    this.edlSimple = dispose(this.edlCalc?.[2]);
+    this.edlSimple = dispose(this.edlFilt?.[0]);
+    this.edlSimple = dispose(this.edlFilt?.[1]);
+    this.edlSimple = dispose(this.edlMix);
   }
 }
 
@@ -1855,9 +1906,6 @@ abstract class Compositor extends SceneCompositor {
 }
 
 class MRTFrameBuffers extends FrameBuffers {
-  public edlDrawPoints?: FrameBuffer;
-  public edlFinal?: FrameBuffer;
-  public edlFinalComp?: FrameBuffer;
   public opaqueAll?: FrameBuffer;
   public opaqueAndCompositeAll?: FrameBuffer;
   public opaqueAndCompositeAllHidden?: FrameBuffer;
@@ -1869,6 +1917,14 @@ class MRTFrameBuffers extends FrameBuffers {
   public idsAndAltZ?: FrameBuffer;
   public idsAndZComposite?: FrameBuffer;
   public idsAndAltZComposite?: FrameBuffer;
+  public edlDrawPoints?: FrameBuffer;
+  public edlFinal?: FrameBuffer;
+  public edlFinalComp?: FrameBuffer;
+  public edlCalc1?: FrameBuffer;
+  public edlCalc2?: FrameBuffer;
+  public edlCalc4?: FrameBuffer;
+  public edlFilt2?: FrameBuffer;
+  public edlFilt4?: FrameBuffer;
 
   public override init(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     if (!super.init(textures, depth, depthMs))
@@ -1885,12 +1941,23 @@ class MRTFrameBuffers extends FrameBuffers {
     this.clearTranslucent = FrameBuffer.create(colors);
 
     // ###TODO decide where these should go
+    // We borrow the hilite texture during EDL for point clouds
     assert(undefined !== textures.hilite);
     this.edlDrawPoints = FrameBuffer.create([textures.hilite], depth);
     assert(undefined !== System.instance.frameBufferStack.currentColorBuffer);
     this.edlFinal = FrameBuffer.create([System.instance.frameBufferStack.currentColorBuffer]);
     assert(undefined !== textures.color);
     this.edlFinalComp = FrameBuffer.create([textures.color]);
+    assert(undefined !== textures.edlCalc1);
+    this.edlCalc1 = FrameBuffer.create([textures.edlCalc1]);
+    assert(undefined !== textures.edlCalc2);
+    this.edlCalc2 = FrameBuffer.create([textures.edlCalc2]);
+    assert(undefined !== textures.edlCalc4);
+    this.edlCalc4 = FrameBuffer.create([textures.edlCalc4]);
+    assert(undefined !== textures.edlFilt2);
+    this.edlFilt2 = FrameBuffer.create([textures.edlFilt2]);
+    assert(undefined !== textures.edlFilt4);
+    this.edlFilt4 = FrameBuffer.create([textures.edlFilt4]);
 
     // We borrow the SceneCompositor's accum and revealage textures for the surface pass.
     // First we render edges, writing to our textures.
@@ -1929,12 +1996,12 @@ class MRTFrameBuffers extends FrameBuffers {
 
   public enableEDL() {
     // ###TODO
-    // create FBOs for EDL
+    // do we need these?
   }
 
   public disableEDL() {
     // ###TODO
-    // delete FBOs for EDL
+    // do we need these?
   }
 
   public override enableOcclusion(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
@@ -2150,14 +2217,15 @@ class MRTCompositor extends Compositor {
 
   protected renderPointClouds(commands: RenderCommands, compositeFlags: CompositeFlags) {
     // renderForReadPixels case is handled by renderOpaque
-    // ###TODO We need to call this pass once per point-cloud.
+    // ###TODO We need to call this pass once per point-cloud, using potentially different EDL options
     // const cmds = commands.getCommands(RenderPass.PointClouds);
 
     const needComposite = CompositeFlags.None !== compositeFlags; // ###TODO what about composite flags?
     const fbo = (needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!);
     const edlFin = (needComposite ? this._fbos.edlFinalComp! : this._fbos.edlFinal!);
-    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
     const fbStack = System.instance.frameBufferStack;
+    const useMsBuffers = fbo.isMultisampled && this.useMsBuffers;
+    // ###TODO figure out RenderState
     // System.instance.applyRenderState(RenderState.defaults);
 
     // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
@@ -2169,29 +2237,80 @@ class MRTCompositor extends Compositor {
     // const params = getDrawParams(this.target, this._geom.edlSimple!);
     // undefined !== this.primitive.cachedGeometry.asPointCloud
     // if (params.target.uniforms.branch.top.realityModelDisplaySettings?.pointCloud.edlStrength > 0) {
-    if (false) {
+
+    // ###TODO figure out how to get setting for these
+    const edlOff = false; // should be .pointCloud.edlStrength > 0
+    const useSimple = true;
+    const filter = true;
+    if (edlOff) {
+      // draw the regular way
       fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.PointClouds);
       });
     } else {
+      // draw pointcloud to hilite texture and regular depth buffer
       fbStack.execute(this._fbos.edlDrawPoints!, true, useMsBuffers, () => {
         // WIP
         const system = System.instance;
-        // system.frameBufferStack.execute(this._frameBuffers.hilite!, true, false, () => {
-        // Clear the hilite buffer.
         system.context.clearColor(0, 0, 0, 0);
         system.context.clear(GL.BufferBit.Color);
         this.drawPass(commands, RenderPass.PointClouds);
       });
 
-      fbStack.execute(edlFin, true, useMsBuffers, () => {
-      // this.drawPass(commands, RenderPass.PointClouds);
-        if (this._geom.edlSimple === undefined)
-          this._geom.edlSimple = EDLSimpleGeometry.createGeometry(this._textures.hilite!.getHandle()!,
-            this._depth!.getHandle()!);
-        const params = getDrawParams(this.target, this._geom.edlSimple!);
-        this.target.techniques.draw(params);
-      });
+      if (useSimple || this._fbos.edlFilt2 === undefined || this._fbos.edlFilt4 === undefined ||
+        this._fbos.edlCalc1 === undefined || this._fbos.edlCalc2 === undefined || this._fbos.edlCalc4 === undefined) {
+        // simple method
+        // TODO: should radius be (optionally?) voxel based instead of pixel here?
+        fbStack.execute(edlFin, true, useMsBuffers, () => {
+        // this.drawPass(commands, RenderPass.PointClouds);
+          if (this._geom.edlSimple === undefined)
+            this._geom.edlSimple = EDLSimpleGeometry.createGeometry(this._textures.hilite!.getHandle()!,
+              this._depth!.getHandle()!);
+          const params = getDrawParams(this.target, this._geom.edlSimple!);
+          this.target.techniques.draw(params);
+        });
+      } else {
+        // more advanced method based on original paper
+        // calculate the EDL result for full, 1/2, and 1/4 sizes
+        const edlCalc: FrameBuffer[] = [this._fbos.edlCalc1, this._fbos.edlCalc2, this._fbos.edlCalc4];
+        const edlFilt: FrameBuffer[] = [this._fbos.edlFilt2, this._fbos.edlFilt4];
+        if (this._geom.edlCalc === undefined) {
+          const ct1 = this._textures.hilite!.getHandle()!;
+          const ct2 = this._depth!.getHandle()!;
+          this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1, ct2, 1), EDLCalcGeometry.createGeometry(ct1, ct2, 2),
+            EDLCalcGeometry.createGeometry(ct1, ct2, 4)];
+        }
+        if (this._geom.edlFilt === undefined) {
+          const ft1 = this._textures.hilite!.getHandle()!;
+          const ft2 = this._depth!.getHandle()!;
+          this._geom.edlFilt = [EDLFilterGeometry.createGeometry(ft1, ft2, 2), EDLCalcGeometry.createGeometry(ft1, ft2, 4)];
+        }
+
+        // Loop through the 3 sizes calculating an edl buffer, and if not first size, then optionally filtering those
+        for (let i = 0; i < 3; ++i) {
+          fbStack.execute(edlCalc[i], true, useMsBuffers, () => {
+            const params = getDrawParams(this.target, this._geom.edlCalc![i]!);
+            this.target.techniques.draw(params);
+          });
+          if (filter && i > 0) {
+            fbStack.execute(edlFilt[i-1], true, useMsBuffers, () => {
+              const params = getDrawParams(this.target, this._geom.edlFilt![i-1]!);
+              this.target.techniques.draw(params);
+            });
+          }
+        }
+
+        // Now combine the 3 results and output
+        const tex1 = this._fbos.edlCalc1.getColor(0).getHandle();
+        const tex2 = filter ? this._fbos.edlFilt2.getColor(0).getHandle() : this._fbos.edlCalc2.getColor(0).getHandle();
+        const tex4 = filter ? this._fbos.edlFilt4.getColor(0).getHandle() : this._fbos.edlCalc4.getColor(0).getHandle();
+        fbStack.execute(edlFin, true, useMsBuffers, () => {
+          if (this._geom.edlMix === undefined)
+            this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!, this._depth!.getHandle()!);
+          const params = getDrawParams(this.target, this._geom.edlMix!);
+          this.target.techniques.draw(params);
+        });
+      }
     }
     this._readPickDataFromPingPong = false;
 

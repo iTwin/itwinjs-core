@@ -93,3 +93,138 @@ export function createEDLSimpleProgram(context: WebGLContext): ShaderProgram {
 
   return builder.buildProgram(context);
 }
+
+/** @internal */
+export function createEDLCalcProgram(context: WebGLContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+  const frag = builder.frag;
+
+  addWindowToTexCoords(frag);
+
+  addRenderOrderConstants(frag);
+  frag.addFunction(neighborContribution);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSimpleEDL);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
+      params.target.uniforms.viewRect.bindInverseDimensions(uniform);
+    });
+  });
+
+  frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
+    });
+  });
+
+  // Uniforms based on the PointCloudDisplaySettings.
+  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
+    });
+  });
+
+  builder.vert.headerComment = "//!V! EDLCalc";
+  builder.frag.headerComment = "//!F! EDLCalc";
+
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createEDLFilterProgram(context: WebGLContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+  const frag = builder.frag;
+
+  addWindowToTexCoords(frag);
+
+  addRenderOrderConstants(frag);
+  frag.addFunction(neighborContribution);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSimpleEDL);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
+      params.target.uniforms.viewRect.bindInverseDimensions(uniform);
+    });
+  });
+
+  frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
+    });
+  });
+
+  // Uniforms based on the PointCloudDisplaySettings.
+  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
+    });
+  });
+
+  builder.vert.headerComment = "//!V! EDLFilter";
+  builder.frag.headerComment = "//!F! EDLFilter";
+
+  return builder.buildProgram(context);
+}
+
+/** @internal */
+export function createEDLMixProgram(context: WebGLContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+  const frag = builder.frag;
+
+  addWindowToTexCoords(frag);
+
+  addRenderOrderConstants(frag);
+  frag.addFunction(neighborContribution);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, computeSimpleEDL);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
+      params.target.uniforms.viewRect.bindInverseDimensions(uniform);
+    });
+  });
+
+  frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as EDLSimpleGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
+    });
+  });
+
+  // Uniforms based on the PointCloudDisplaySettings.
+  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
+    });
+  });
+
+  builder.vert.headerComment = "//!V! EDLMix";
+  builder.frag.headerComment = "//!F! EDLMix";
+
+  return builder.buildProgram(context);
+}
