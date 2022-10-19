@@ -3,11 +3,13 @@ parameters:
 
 jobs:
 - job: Deploy
-  variables:
-    - group: ${{ parameters.variableGroup }}
   pool:
     name: PRG Octo Deploy Only
     # demands: DotNetFramework -exists
+
+  variables:
+    - group: ${{ parameters.variableGroup }}
+
   steps:
     - script: |
         echo * * * * * * * * * *
