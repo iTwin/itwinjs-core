@@ -37,8 +37,6 @@ import { calculateSolarDirection } from "./SolarCalculate";
 import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
 import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
-import { Atmosphere } from "./Atmosphere";
-import { SkySphere } from "./SkyBox";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -158,7 +156,6 @@ export interface DisplayStyleSettingsProps {
  * @extensions
  */
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
-  atmosphere?: Atmosphere.Props;
   /** See [[DisplayStyle3dSettings.environment. */
   environment?: EnvironmentProps;
   /** See [[DisplayStyle3dSettings.thematic. */
@@ -501,8 +498,6 @@ export class DisplayStyleSettings {
   public readonly onRealityModelDisplaySettingsChanged = new BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
-  /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.atmosphericScattering]] property. */
-  public readonly onAtmosphereChanged = new BeEvent<(newSettings: Atmosphere.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.hiddenLineSettings]] property. */
   public readonly onHiddenLineSettingsChanged = new BeEvent<(newSettings: HiddenLine.Settings) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.ambientOcclusionSettings]] property. */
@@ -1066,7 +1061,6 @@ export class DisplayStyleSettings {
  * @public
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
-  private _atmosphere: Atmosphere.Settings;
   private _thematic: ThematicDisplay;
   private _hline: HiddenLine.Settings;
   private _ao: AmbientOcclusion.Settings;
@@ -1083,7 +1077,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }, options?: DisplayStyleSettingsOptions) {
     super(jsonProperties, options);
-    this._atmosphere = Atmosphere.Settings.fromJSON(this._json3d.atmosphere);
     this._thematic = ThematicDisplay.fromJSON(this._json3d.thematic);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
     this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
@@ -1220,17 +1213,6 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     this._json3d.thematic = thematic.toJSON();
   }
 
-  /** The settings that control atmospheric scattering. */
-  public get atmosphere(): Atmosphere.Settings { return this._atmosphere; }
-  public set atmosphere(atmosphere: Atmosphere.Settings) {
-    if (atmosphere.equals(this.atmosphere))
-      return;
-
-    this.onAtmosphereChanged.raiseEvent(atmosphere);
-    this._atmosphere = atmosphere;
-    this._json3d.atmosphere = atmosphere.toJSON();
-  }
-
   /** The settings that control how visible and hidden edges are displayed.  */
   public get hiddenLineSettings(): HiddenLine.Settings { return this._hline; }
   public set hiddenLineSettings(hline: HiddenLine.Settings) {
@@ -1267,7 +1249,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
       this._json3d.solarShadows = json;
   }
 
-  /** Controls the display of a [[SkyBox]] and [[GroundPlane]].
+  /** Controls the display of a [[SkyBox]], [[GroundPlane]], and [[Atmosphere]].
    * @public
    */
   public get environment(): Environment {
@@ -1297,6 +1279,15 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     display = display ?? this.environment.displayGround;
     if (display !== this.environment.displayGround)
       this.environment = this.environment.withDisplay({ ground: display });
+  }
+
+  /** Toggle display of the [[environment]]'s [[Atmosphere]].
+   * @param display Whether to display the atmosphere, or `undefined` to toggle the current display.
+   */
+  public toggleAtmosphere(display?: boolean): void {
+    display = display ?? this.environment.displayAtmosphere;
+    if (display !== this.environment.displayAtmosphere)
+      this.environment = this.environment.withDisplay({ atmosphere: display });
   }
 
   public get lights(): LightSettings {

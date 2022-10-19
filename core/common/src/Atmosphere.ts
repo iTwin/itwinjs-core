@@ -58,6 +58,8 @@ export namespace Atmosphere {
 
   /** Describes the properties with which the atmospheric scattering effect should be drawn. Theses properties correspond to a physics-based approximation of atmospheric scattering phenomenons. */
   export interface Props {
+    /** Whether the ground plane should be displayed. Defaults to false. */
+    display?: boolean;
     /** See [[Settings.atmosphereHeightAboveEarth]] */
     atmosphereHeightAboveEarth?: number;
     /** See [[Settings.brightnessAdaptationStrength]] */
@@ -157,7 +159,7 @@ export namespace Atmosphere {
       return new Settings(json);
     }
 
-    public toJSON(): Props {
+    public toJSON(display?: boolean): Props {
       const json: Props = {
         atmosphereHeightAboveEarth: this.atmosphereHeightAboveEarth,
         brightnessAdaptationStrength: this.brightnessAdaptationStrength,
@@ -170,6 +172,10 @@ export namespace Atmosphere {
         scatteringStrength: this.scatteringStrength,
         wavelengths: this.wavelengths.toJSON(),
       };
+
+      if (undefined !== display)
+        json.display = display;
+
       return json;
     }
   }
