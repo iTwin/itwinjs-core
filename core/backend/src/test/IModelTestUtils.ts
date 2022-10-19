@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, BeEvent, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, omit, OpenMode } from "@itwin/core-bentley";
 import {
   AuxCoordSystem2dProps, Base64EncodedString, ChangesetIdWithIndex, Code, CodeProps, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
   ElementProps, Environment, ExternalSourceProps, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder,
@@ -903,7 +903,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
     assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
-    sourceDb.elements.insertAspect({
+    const aspectProps = {
       classFullName: "ExtensiveTestScenario:SourceUniqueAspect",
       element: new ElementOwnsUniqueAspect(physicalObjectId1),
       commonDouble: 1.1,
@@ -915,16 +915,10 @@ export class ExtensiveTestScenario {
       sourceLong: physicalObjectId1,
       sourceGuid: ExtensiveTestScenario.uniqueAspectGuid,
       extraString: "Extra",
-    } as ElementAspectProps);
+    } as const;
+    sourceDb.elements.insertAspect(aspectProps);
     const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
-    assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
-    assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
-    assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
-    assert.equal(sourceUniqueAspect.asAny.sourceDouble, 11.1);
-    assert.equal(sourceUniqueAspect.asAny.sourceString, "UniqueAspect");
-    assert.equal(sourceUniqueAspect.asAny.sourceLong, physicalObjectId1);
-    assert.equal(sourceUniqueAspect.asAny.sourceGuid, ExtensiveTestScenario.uniqueAspectGuid);
-    assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
+    expect(sourceUniqueAspect).to.deep.subsetEqual(omit(aspectProps, ["commonBinary"]), { normalizeClassNameProps: true });
     sourceDb.elements.insertAspect({
       classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
@@ -1161,12 +1155,24 @@ export class ExtensiveTestScenario {
     const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
     assert.equal(uniqueAspects.length, 1);
     const uniqueAspect = uniqueAspects[0].asAny;
-    assert.equal(uniqueAspect.commonDouble, 1.1);
-    assert.equal(uniqueAspect.commonString, "Unique-Updated");
-    assert.equal(uniqueAspect.commonLong, physicalObjectId1);
-    assert.equal(testTargetSchema ? uniqueAspect.targetDouble : uniqueAspect.sourceDouble, 11.1);
-    assert.equal(testTargetSchema ? uniqueAspect.targetString : uniqueAspect.sourceString, "UniqueAspect-Updated");
-    assert.equal(testTargetSchema ? uniqueAspect.targetLong : uniqueAspect.sourceLong, physicalObjectId1);
+    expect(uniqueAspect).to.deep.subsetEqual({
+      commonDouble: 1.1,
+      commonString: "Unique-Updated",
+      commonLong: physicalObjectId1,
+    });
+    if (testTargetSchema) {
+      expect(uniqueAspect).to.deep.subsetEqual({
+        targetDouble: 11.1,
+        targetString: "UniqueAspect-Updated",
+        targetLong: physicalObjectId1,
+      });
+    } else {
+      expect(uniqueAspect).to.deep.subsetEqual({
+        sourceDouble: 11.1,
+        sourceString: "UniqueAspect-Updated",
+        sourceLong: physicalObjectId1,
+      });
+    }
     const multiAspectClassFullName = testTargetSchema ? "ExtensiveTestScenarioTarget:TargetMultiAspect" : "ExtensiveTestScenario:SourceMultiAspect";
     const multiAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, multiAspectClassFullName);
     assert.equal(multiAspects.length, 2);

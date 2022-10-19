@@ -10,7 +10,7 @@
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d } from "@itwin/core-geometry";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
+  BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
 import { InformationReferenceElement, UrlLink } from "./Element";
@@ -57,6 +57,13 @@ export class ExternalSource extends InformationReferenceElement {
   public static createCode(iModelDb: IModelDb, codeValue: string): Code {
     const codeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.externalSource);
     return new Code({ spec: codeSpec.id, scope: IModel.rootSubjectId, value: codeValue });
+  }
+
+  /** @internal */
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    if (this.repository)
+      referenceIds.addElement(this.repository.id);
   }
 }
 
