@@ -9,7 +9,8 @@ parameters:
 jobs:
 - job: ValidateLinks_${{ parameters.env }}
   pool:
-    name: ubuntu-latest
+    name: iModelTechCI
+    demands: Agent.OS -equals Windows_NT
 
   variables:
     ${{ if eq(parameters.env, 'Development') }}:

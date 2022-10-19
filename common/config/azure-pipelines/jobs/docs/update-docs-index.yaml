@@ -4,7 +4,8 @@ parameters:
 jobs:
 - job: UpdateDocsIndex
   pool:
-    name: ubuntu-latest
+    name: iModelTechCI
+    demands: Agent.OS -equals Windows_NT
 
   variables:
     group: ${{ parameters.variableGroup }}
