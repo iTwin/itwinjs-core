@@ -19,20 +19,29 @@ resources:
   pipelines:
   - pipeline: itwinjs-docs
     source: iTwin.js Docs - YAML
-    version: 20221017.30
-    # trigger:
-    #   branches:
-    #     include:
-    #     - master
-    #     - release/*
-    #     - docs-release-pipeline
-    #     exclude:
-    #     - release/2*
-    #     - release/1*
-    #   tags:
-    #   - iTwinJsDocsRelease
+    # version: 20221017.30
+    trigger:
+      branches:
+        include:
+        - master
+        - release/*
+        - docs-release-pipeline
+        exclude:
+        - release/2*
+        - release/1*
+      tags:
+      - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
+  repositories:
+  - repository: build-pipeline-scripts
+    type: git
+    name: iModelTechnologies/imodeljs-build-pipeline-scripts
+    ref: refs/heads/docs-release-pipeline-templates
+  - repository: bemetalsmith
+    type: git
+    name: iModelTechnologies/BeMetalsmith
+    ref: refs/heads/master
 
 variables:
   octopusProjectName: iModel.js Documentation
@@ -75,15 +84,21 @@ stages:
       parameters:
         env: QA
 
-  # - stage: LinkValidatorQA
-  #   displayName: Link Validator (QA)
-  #   dependsOn: QA
-  #   jobs:
+  - stage: LinkValidatorQA
+    displayName: Link Validator (QA)
+    dependsOn: QA
+    jobs:
+    - template: ./jobs/docs/validate-links.yaml
+      parameters:
+        env: QA
 
-  # - stage: UpdateDocumentationIndexQA
-  #   displayName: Update Documentation Index (QA)
-  #   dependsOn: QA
-  #   jobs:
+  - stage: UpdateDocumentationIndexQA
+    displayName: Update Documentation Index (QA)
+    dependsOn: QA
+    jobs:
+    - template: ./jobs/docs/update-docs-index.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - Algolia - QA
 
   # - stage: ActiveScanQA
   #   displayName: Active Scan (QA)
@@ -96,13 +111,22 @@ stages:
   #     - LinkValidatorQA
   #     - ProductTestsQA
   #   jobs:
+  #   - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
+  #     parameters:
+  #       gprId: 2947
 
   # - stage: PROD
   #   displayName: Deployment (PROD)
   #   dependsOn: Scorecard
   #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - PROD
 
   # - stage: UpdateDocumentationIndexPROD
   #   displayName: Update Documentation Index (PROD)
   #   dependsOn: PROD
   #   jobs:
+  #   - template: ./jobs/docs/update-docs-index.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - Algolia - PROD

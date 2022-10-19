@@ -1,0 +1,47 @@
+parameters:
+- name: variableGroup
+
+jobs:
+- job: UpdateDocsIndex_${{ parameters.env }}
+  variables:
+  - group: ${{ parameters.variableGroup }}
+  - name: bemetalsmithAlgoliaDir
+    value: $(Pipeline.Workspace)/bemetalsmith/packages/bemetalsmith-algolia/
+  pool:
+    name: ubuntu-latest
+  steps:
+  - checkout: bemetalsmith
+    path: bemetalsmith
+
+  - task: colinsalmcorner.colinsalmcorner-buildtasks.replace-tokens-task.ReplaceTokens@1
+    displayName: Replace tokens in algolia.json
+    inputs:
+      sourcePath: $(bemetalsmithAlgoliaDir)
+      filePattern: algolia.json
+      secretTokens: AlgoliaApiKey:$(AlgoliaApiKey)
+
+  - task: NodeTool@0
+    displayName: Use node 12.15.x
+    inputs:
+      versionSpec: 12.15.x
+
+  - task: Npm@1
+    displayName: npm install
+    inputs:
+      command: install
+      workingDir: $(bemetalsmithAlgoliaDir)
+
+  - task: Npm@1
+    displayName: npm run deleteOldDocsIndex
+    inputs:
+      command: custom
+      customCommand: deleteOldDocsIndex
+      workingDir: $(bemetalsmithAlgoliaDir)
+
+
+  - task: Npm@1
+    displayName: npm run uploadNewDocsIndex
+    inputs:
+      command: custom
+      customCommand: uploadNewDocsIndex
+      workingDir: $(bemetalsmithAlgoliaDir)
