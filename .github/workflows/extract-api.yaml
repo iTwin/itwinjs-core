@@ -12,6 +12,9 @@ on:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   extract-api:
