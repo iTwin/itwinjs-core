@@ -225,7 +225,7 @@ export class BGFBWriter {
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagBsplineSurface, headerOffset, 0);
   }
 
-  public writeBsplineCurve3dAHsFBVariantGeometry(bcurve: BSplineCurve3dH): number | undefined {
+  public writeBsplineCurve3dHAsFBVariantGeometry(bcurve: BSplineCurve3dH): number | undefined {
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
     const polesOffset = this.writeDoubleArray(bcurve.copyXYZFloat64Array(false));
@@ -265,7 +265,7 @@ export class BGFBWriter {
     } else if (curvePrimitive instanceof BSplineCurve3d) {
       return this.writeBsplineCurve3dAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof BSplineCurve3dH) {
-      return this.writeBsplineCurve3dAHsFBVariantGeometry(curvePrimitive);
+      return this.writeBsplineCurve3dHAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof InterpolationCurve3d) {
       return this.writeInterpolationCurve3dAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof AkimaCurve3d) {

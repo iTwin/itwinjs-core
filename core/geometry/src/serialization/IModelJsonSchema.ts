@@ -818,11 +818,14 @@ export namespace IModelJson {
     }
     /** Copy from source to output, with requested inner dimension. If source inner dimension is smaller, fill excess with zeros. */
     private static copyBcurvePolesToDim(source: number[][], dim: number): Float64Array | undefined {
-      if (dim <= 0) return undefined;
+      if (dim <= 0)
+        return undefined;
       const nOuter = source.length;
-      if (0 === nOuter) return undefined;
+      if (0 === nOuter)
+        return undefined;
       const nInner = source[0].length;
-      if (0 === nInner) return undefined;
+      if (0 === nInner)
+        return undefined;
       const out = new Float64Array(dim * nOuter);
       let iOut = 0;
       for (let i = 0; i < nOuter; ++i)
@@ -835,11 +838,14 @@ export namespace IModelJson {
     }
     /** Copy from source to dest. NOOP if dest not empty. */
     private static copyBcurvePolesIfEmpty(dest: number[][], source: number[][]) {
-      if (dest.length > 0) return;
+      if (dest.length > 0)
+        return;
       const nOuter = source.length;
-      if (0 === nOuter) return;
+      if (0 === nOuter)
+        return;
       const nInner = source[0].length;
-      if (0 === nInner) return;
+      if (0 === nInner)
+        return;
       for (let i = 0; i < nOuter; ++i) {
         const newPt = [];
         for (let j = 0; j < nInner; ++j)
@@ -884,12 +890,12 @@ export namespace IModelJson {
           }
         }
 
-        const coffs = this.copyBcurvePolesToDim(poles, Math.max(3, dim)); // promote 2D to 3D
-        if (coffs) {
+        const newPoles = this.copyBcurvePolesToDim(poles, Math.max(3, dim)); // promote 2D to 3D
+        if (newPoles) {
           if (dim === 2 || dim === 3)
-            newCurve = BSplineCurve3d.create(coffs, knots, order);
+            newCurve = BSplineCurve3d.create(newPoles, knots, order);
           else if (dim === 4)
-            newCurve = BSplineCurve3dH.create(coffs, knots, order);
+            newCurve = BSplineCurve3dH.create(newPoles, knots, order);
           if (newCurve && closed)
             newCurve.setWrappable(wrapMode);
         }

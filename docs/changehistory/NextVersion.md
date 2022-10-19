@@ -21,6 +21,7 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
 - [Geometry](#geometry)
+  - [B-Spline](#b-spline)
 
 ## Electron 17 support
 
@@ -148,7 +149,9 @@ The synchronous `void`-returning overload of [IModelTransformer.initFromExternal
 
 ## Geometry
 
-The B-spline API has several name changes for consistency:
+### B-spline
+
+The B-spline API has the following name changes for consistency:
 
 | Deprecated                                                    | Replacement                                                   |
 | ------------------------------------------------------------- | ------------------------------------------------------------- |

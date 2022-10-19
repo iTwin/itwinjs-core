@@ -102,7 +102,7 @@ export class KnotVector {
   /** Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
   /**
-   * Returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
+   * Returns true if all numeric values have wraparound conditions that allow the knots to be closed with specified wrap mode.
    * @param mode optional test mode.  If undefined, use this.wrappable.
    */
   public testClosable(mode?: BSplineWrapMode): boolean {
@@ -246,7 +246,7 @@ export class KnotVector {
    * @param a1 right knot value for active interval
    */
   public static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector {
-    const knots = new KnotVector(numInterval + 2 * degree - 1, degree, BSplineWrapMode.OpenByAddingControlPoints);
+    const knots = new KnotVector(numInterval + 2 * degree - 1, degree);
     const du = 1.0 / numInterval;
     for (let i = 1 - degree, k = 0; i < numInterval + degree; i++, k++) {
       knots.knots[k] = Geometry.interpolate(a0, i * du, a1);
