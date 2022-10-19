@@ -8,7 +8,7 @@
 #
 # Note: When Azure Pipeline builds (triggered by Azure DevOps webhooks) skip running due to
 # path exclusions, their status checks are set neutral by Azure DevOps. This satisfies
-# GitHub's "required" check and thus these status checks do not need to be faked below. 
+# GitHub's "required" check and thus these status checks do not need to be faked below.
 
 name: Skip Check
 
@@ -17,10 +17,16 @@ on:
     branches:
       - master
       - release/*
+
+    # If adding a path, be sure to add it in the changed-files-specific step below
+    # You may also want to add it to extract-api.yaml
     paths:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   detect-if-skip:
@@ -38,6 +44,9 @@ jobs:
             **/*.md
             docs/**
             .github/CODEOWNERS
+            common/changes/**/*.json
+            "**/CHANGELOG.json"
+            "**/CHANGELOG.md"
 
       # Fake required checks if neccessary
       - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks
