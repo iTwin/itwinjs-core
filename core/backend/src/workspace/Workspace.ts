@@ -21,7 +21,7 @@ import { Settings, SettingsPriority } from "./Settings";
 import { SettingsSchemas } from "./SettingsSchemas";
 
 /* eslint-disable @typescript-eslint/naming-convention */
-// cspell:ignore rowid primarykey
+// cspell:ignore rowid primarykey julianday
 
 /** The Settings used by Workspace api
  * @beta

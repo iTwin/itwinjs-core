@@ -11,7 +11,7 @@ import {
   PropertyMetaData, RelatedElement, SubCategoryProps,
 } from "@itwin/core-common";
 import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
-import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
+import { deleteElementTree, ElementAspect, ElementMultiAspect, Entity, IModelDb, Relationship, RelationshipProps, SourceAndTarget, SubCategory } from "@itwin/core-backend";
 import type { IModelTransformOptions } from "./IModelTransformer";
 import * as assert from "assert";
 
@@ -259,12 +259,13 @@ export class IModelImporter implements Required<IModelImportOptions> {
     }
   }
 
-  /** Delete the specified Element from the target iModel.
+  /** Delete the specified Element (and all its children) from the target iModel.
+   * Will delete special elements like definition elements and subjects.
    * @note A subclass may override this method to customize delete behavior but should call `super.onDeleteElement`.
    */
   protected onDeleteElement(elementId: Id64String): void {
-    this.targetDb.elements.deleteElement(elementId);
-    Logger.logInfo(loggerCategory, `Deleted element ${elementId}`);
+    deleteElementTree(this.targetDb, elementId);
+    Logger.logInfo(loggerCategory, `Deleted element ${elementId} and its descendants`);
     this.trackProgress();
   }
 

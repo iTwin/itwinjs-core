@@ -33,6 +33,7 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelConnection } from '@itwin/core-frontend';
+import { InstanceFilterDefinition } from '@itwin/presentation-common';
 import { InstanceKey } from '@itwin/presentation-common';
 import { IPropertyDataProvider } from '@itwin/components-react';
 import { IPropertyValueRenderer } from '@itwin/components-react';
@@ -52,6 +53,7 @@ import { Paged } from '@itwin/presentation-common';
 import { PagedTreeNodeLoader } from '@itwin/components-react';
 import { PageOptions } from '@itwin/presentation-common';
 import { PageOptions as PageOptions_2 } from '@itwin/components-react';
+import { PrimitiveValue } from '@itwin/appui-abstract';
 import { ProcessFieldHierarchiesProps } from '@itwin/presentation-common';
 import { ProcessMergedValueProps } from '@itwin/presentation-common';
 import { ProcessPrimitiveValueProps } from '@itwin/presentation-common';
@@ -163,6 +165,9 @@ export interface ControlledPresentationTreeFilteringProps {
     // (undocumented)
     nodeLoader: AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>;
 }
+
+// @alpha (undocumented)
+export function convertToInstanceFilterDefinition(filter: PresentationInstanceFilter, imodel: IModelConnection): Promise<InstanceFilterDefinition>;
 
 // @alpha
 export function createDiagnosticsOptions(props: DiagnosticsProps): ClientDiagnosticsOptions | undefined;
@@ -397,7 +402,7 @@ export interface InstanceFilterPropertyInfo {
     // (undocumented)
     propertyDescription: PropertyDescription;
     // (undocumented)
-    sourceClassIds: ClassId[];
+    sourceClassId: ClassId;
 }
 
 // @beta
@@ -520,7 +525,7 @@ export interface PresentationInstanceFilterCondition {
     // (undocumented)
     operator: PropertyFilterRuleOperator;
     // (undocumented)
-    value?: PropertyValue;
+    value?: PrimitiveValue;
 }
 
 // @alpha (undocumented)
@@ -841,7 +846,7 @@ export function useNavigationPropertyEditingContext(imodel: IModelConnection, da
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @alpha (undocumented)
-export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider, enableClassFiltering?: boolean): {
+export function usePresentationInstanceFilteringProps(descriptor: Descriptor, classHierarchyProvider?: ECClassHierarchyProvider): {
     onPropertySelected: (property: PropertyDescription) => void;
     onClearClasses: () => void;
     onClassDeselected: (classInfo: ClassInfo) => void;
