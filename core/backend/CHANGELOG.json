@@ -2,6 +2,18 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "3.4.1",
+      "tag": "@itwin/core-backend_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add EntityReferences and associated utilities"
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.0",
       "tag": "@itwin/core-backend_v3.4.0",
       "date": "Thu, 13 Oct 2022 20:24:47 GMT",

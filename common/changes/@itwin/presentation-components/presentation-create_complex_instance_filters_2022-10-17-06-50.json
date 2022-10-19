@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-components",
+      "comment": "Added convertion from FilterBuilder output to InstanceFilterDefinition",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-components"
+}
