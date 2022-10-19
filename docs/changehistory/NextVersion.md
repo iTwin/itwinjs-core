@@ -20,7 +20,6 @@ Table of contents:
   - [Filling mesh holes](#filling-mesh-holes)
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
-  - [@itwin/core-geometry](#itwincore-geometry)
 - [Geometry](#geometry)
 
 ## Electron 17 support
