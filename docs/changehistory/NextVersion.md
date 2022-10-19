@@ -21,6 +21,7 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [@itwin/core-transformer](#itwincore-transformer)
   - [@itwin/core-geometry](#itwincore-geometry)
+- [Geometry](#geometry)
 
 ## Electron 17 support
 
@@ -146,7 +147,7 @@ A new method, [PolyfaceQuery.fillSimpleHoles]($core-geometry), can identify hole
 
 The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated. It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be `await`ed) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing changes instead of the full source contents.
 
-### @itwin/core-geometry
+## Geometry
 
 The B-spline API has several name changes for consistency:
 
