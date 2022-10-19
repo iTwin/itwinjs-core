@@ -3,12 +3,13 @@ parameters:
 
 jobs:
 - job: UpdateDocsIndex_${{ parameters.env }}
-  variables:
-  - group: ${{ parameters.variableGroup }}
-  - name: bemetalsmithAlgoliaDir
-    value: $(Pipeline.Workspace)/bemetalsmith/packages/bemetalsmith-algolia/
   pool:
     name: ubuntu-latest
+
+  variables:
+    group: ${{ parameters.variableGroup }}
+    bemetalsmithAlgoliaDir: $(Pipeline.Workspace)/bemetalsmith/packages/bemetalsmith-algolia/
+
   steps:
   - checkout: bemetalsmith
     path: bemetalsmith

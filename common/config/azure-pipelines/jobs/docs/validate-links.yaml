@@ -10,13 +10,15 @@ jobs:
 - job: ValidateLinks_${{ parameters.env }}
   pool:
     name: ubuntu-latest
+
   variables:
-  ${{ if eq(parameters.env, 'Development') }}:
-    DocsUrl: https://dev.imodeljs.org
-  ${{ if eq(parameters.env, 'QA') }}:
-    DocsUrl: https://qa.imodeljs.org
-  ${{ if eq(parameters.env, 'Production') }}:
-    DocsUrl: https://imodeljs.org
+    ${{ if eq(parameters.env, 'Development') }}:
+      DocsUrl: https://dev.imodeljs.org
+    ${{ if eq(parameters.env, 'QA') }}:
+      DocsUrl: https://qa.imodeljs.org
+    ${{ if eq(parameters.env, 'Production') }}:
+      DocsUrl: https://imodeljs.org
+
   steps:
   - task: Docker@2
     displayName: 'Link Validator'

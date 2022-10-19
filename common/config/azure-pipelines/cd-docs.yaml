@@ -1,11 +1,4 @@
-# trigger:
-#   branches:
-#     include:
-#       - master
-#       - release/*
-#     exclude:
-#       - release/2*
-#       - release/1*
+# Release pipeline for the iTwin.js Docs site
 
 trigger: none
 pr: none

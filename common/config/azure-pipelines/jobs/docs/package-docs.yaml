@@ -8,8 +8,10 @@ jobs:
     pool:
       name: iModelTechCI
       demands: Agent.OS -equals Windows_NT
+
     variables:
       tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs\DocsBuild
+
     steps:
       - task: NodeTool@0
         displayName: Use Node 14
