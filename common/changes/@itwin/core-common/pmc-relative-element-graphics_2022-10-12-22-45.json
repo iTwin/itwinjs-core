@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add GraphicsRequestProps.useAbsolutePositions to address precision issues with coordinates far from the origin.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

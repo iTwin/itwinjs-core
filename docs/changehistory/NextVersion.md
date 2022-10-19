@@ -5,12 +5,24 @@ publish: false
 
 Table of contents:
 
+- [@itwin/core-backend](#itwincore-backend)
+  - [Element aspect ids](#element-aspect-ids)
 - [Display system](#display-system)
   - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [AppUi](#appui)
+- [Deprecations](#deprecations)
+  - [Transformer API](#transformer-api)
+  - [IModelCloneContext split out with new base IModelElementCloneContext](#imodelclonecontext-split-out-with-new-base-imodelelementclonecontext)
+
+## @itwin/core-backend
+
+### Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
 
 ## Display system
 
@@ -90,3 +102,18 @@ With the new approach we "break" at the duplicate A node:
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
 
+## Deprecations
+
+### Transformer API
+
+The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it.
+If you are not using a `process*` function to run the transformer, then you do need to replace it with [IModelTransformer.initialize]($transformer).
+
+The transformer now handles referencing properties on out-of-order non-element entities like aspects, models, or relationships, previously
+traversal might invalidate references on, for example,  `ExternalSourceAspects`.
+
+### IModelCloneContext split out with new base IModelElementCloneContext
+
+The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
+can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
+class, [IModelCloneContext]($transformer).
