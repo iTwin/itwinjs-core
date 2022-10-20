@@ -8,7 +8,7 @@ import { NewYorkDataset } from "./NewYorkDataset";
 import { ArcGisSymbologyRenderer, EsriPMS, EsriSFS, EsriSLS } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
-describe("ArcGisFeatureProvider", () => {
+describe("ArcGisSymbologyRenderer", () => {
 
   const sandbox = sinon.createSandbox();
 

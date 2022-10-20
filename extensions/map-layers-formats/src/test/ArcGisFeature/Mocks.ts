@@ -3,6 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
+
 export const fakeContext = ({
   beginPath: () => {},
   closePath: () => {},
@@ -13,3 +15,5 @@ export const fakeContext = ({
   drawImage: (_image: CanvasImageSource, _dx: number, _dy: number) => {},
 
 } as CanvasRenderingContext2D);
+
+export const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId};

@@ -168,9 +168,7 @@ export class ArcGisFeatureQuery {
       customParams = ArcGisFeatureQuery.appendParam(customParams, "returnExceededLimitFeatures", this.returnExceededLimitFeatures?"true":"false");
     }
 
-    if ( this.outSR !== undefined) {
-      customParams = ArcGisFeatureQuery.appendParam(customParams, "outSR", `${this.outSR}`);
-    }
+    customParams = ArcGisFeatureQuery.appendParam(customParams, "outSR", `${this.outSR}`);
 
     if (this.geometry || this.spatialRel) {
 

@@ -153,6 +153,8 @@ describe("ArcGisFeatureRenderer", () => {
 
     renderer.renderPath([2], coords, false, 1, true);
     renderer.renderPath([2], coords, false, 4, true);
+    renderer.renderPoint([2], coords, 1, true);
+    renderer.renderPoint([2], coords, 4, true);
 
     expect(lineToSpy.calledOnce).to.be.false;
     expect(strokeSpy.calledOnce).to.be.false;
@@ -160,7 +162,7 @@ describe("ArcGisFeatureRenderer", () => {
     expect(closePathSpy.called).to.be.false;
   });
 
-  it("should render and apply transform, relativeCoords OFF", async () => {
+  it("should render Path and apply transform, relativeCoords OFF", async () => {
 
     const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
@@ -183,6 +185,92 @@ describe("ArcGisFeatureRenderer", () => {
 
   });
 
+  it("should render single Point, no transform, relativeCoords OFF", async () => {
+
+    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
+
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const coords = [1,2];
+    renderer.renderPoint([], coords, 2, false);
+
+    expect(drawPointStub.calledOnce).to.be.true;
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]);
+
+  });
+
+  it("should render single Point and apply transform, relativeCoords OFF", async () => {
+
+    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const fakeOffset = 10;
+    const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset,fakeOffset)));
+
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const coords = [1,2];
+    renderer.renderPoint([], coords, 2, false);
+
+    expect(drawPointStub.calledOnce).to.be.true;
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]+fakeOffset);
+
+  });
+
+  it("should render multi Point, transform, relativeCoords OFF", async () => {
+
+    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
+
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const coords = [1,2,3,4];
+    renderer.renderPoint([2], coords, 2, false);
+
+    expect(drawPointStub.getCalls().length).to.equals(2);
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]);
+    expect(drawPointStub.getCalls()[1].args[1]).to.equals(coords[2]);
+    expect(drawPointStub.getCalls()[1].args[2]).to.equals(coords[3]);
+  });
+
+  it("should render multi Point and apply transform, relativeCoords OFF", async () => {
+
+    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const fakeOffset = 10;
+    const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset,fakeOffset)));
+
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const coords = [1,2,3,4];
+    renderer.renderPoint([2], coords, 2, false);
+
+    expect(drawPointStub.getCalls().length).to.equals(2);
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]+fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[1]).to.equals(coords[2]+fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[2]).to.equals(coords[3]+fakeOffset);
+  });
+
+  it("should render multi Point and apply transform, relativeCoords ON", async () => {
+
+    const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const fakeOffset = 10;
+    const renderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset,fakeOffset)));
+
+    const drawPointStub = sandbox.stub(ArcGisSymbologyRenderer.prototype, "drawPoint");
+    const coords = [1,2,3,4];
+    renderer.renderPoint([2], coords, 2, true);
+
+    expect(drawPointStub.getCalls().length).to.equals(2);
+    expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]+fakeOffset);
+    expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]+fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[1]).to.equals(coords[0]+coords[2]+fakeOffset);
+    expect(drawPointStub.getCalls()[1].args[2]).to.equals(coords[1]+coords[3]+fakeOffset);
+  });
+
   it("should render and apply transform, relativeCoords ON", async () => {
 
     const symbolRenderer = new ArcGisSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
@@ -203,7 +291,6 @@ describe("ArcGisFeatureRenderer", () => {
     // IMPORTANT: Only first coord is absolute, following coords are expressed relative to previous coord.
     expect(lineToSpy.getCalls()[0].args[0]).to.equals(coords[0] + coords[2] + fakeOffset);
     expect(lineToSpy.getCalls()[0].args[1]).to.equals(coords[1] + coords[3] + fakeOffset);
-
   });
 
 });

@@ -48,8 +48,9 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       const msg = "Response was not in PBF format";
       assert(!msg);
       Logger.logError(loggerCategory, msg);
+      return;
     }
-    const collection = response.data as esriPBuffer.FeatureCollectionPBuffer;
+    const collection = response.data;
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
 

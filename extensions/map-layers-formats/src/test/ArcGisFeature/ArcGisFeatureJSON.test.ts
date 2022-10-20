@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { expect } from "chai";
@@ -174,5 +175,23 @@ describe("ArcGisFeatureJSON", () => {
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
     expect(firstCall.args[2]).to.eql(2);              // stride
+  });
+
+  it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
+    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const symbolRenderer = new ArcGisSymbologyRenderer(
+      "esriGeometryAny",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+
+    const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
+    const logErrorSpy = sandbox.spy(Logger, "logError");
+    featureJson.readAndRender({data: {test:"test"}, exceedTransferLimit: false}, featureRenderer);
+    expect(logErrorSpy.calledOnce);
+
+    logErrorSpy.resetHistory();
+    featureJson.readFeatureInfo({data: {test:"test"}, exceedTransferLimit: false}, []);
+    expect(logErrorSpy.calledOnce);
+
   });
 });

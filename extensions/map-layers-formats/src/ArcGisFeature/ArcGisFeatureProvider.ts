@@ -37,7 +37,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   private _querySupported = false;
   private _layerId = 0;
   private _layerMetadata: any;
-  private _format: ArcGisFeatureFormat = "JSON";
+  private _format: ArcGisFeatureFormat|undefined;
   public serviceJson: any;
   private _symbologyRenderer: ArcGisSymbologyRenderer|undefined;
   private static readonly _nbSubTiles = 2;
@@ -78,104 +78,103 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       }
     }
 
-    try {
-      if (json.capabilities) {
-        this._querySupported = json.capabilities.indexOf("Query") >= 0;
-        if (!this._querySupported)
-          throw new ServerError(IModelStatus.ValidationFailed, "");
-      }
+    if (json.capabilities) {
+      this._querySupported = json.capabilities.indexOf("Query") >= 0;
+      if (!this._querySupported)
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
 
-      this.serviceJson = json;
+    this.serviceJson = json;
 
-      let  foundVisibleSubLayer = false;
-      if (this._settings.subLayers.length >= 0) {
+    let  foundVisibleSubLayer = false;
+    if (this._settings.subLayers.length >= 0) {
       // There is more than sub-layer for this layer, pick the first visible one.
-        for (const layer of this._settings.subLayers) {
-          if (layer.visible && typeof layer.id === "number") {
-            this._layerId = layer.id;
-            foundVisibleSubLayer = true;
-            break;
-          }
+      for (const layer of this._settings.subLayers) {
+        if (layer.visible && typeof layer.id === "number") {
+          this._layerId = layer.id;
+          foundVisibleSubLayer = true;
+          break;
         }
       }
+    }
 
-      if (!foundVisibleSubLayer && json !== undefined) {
+    if (!foundVisibleSubLayer && json !== undefined) {
       // No suitable sublayer was specified on the layerSettings object, lets find a default one in the capabilities
 
-        // Check layer metadata
-        if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
+      // Check layer metadata
+      if (Array.isArray(this.serviceJson.layers) && this.serviceJson.layers.length >= 1) {
 
-          const hasDefaultVisibility = Object.keys(this.serviceJson.layers[0]).includes("defaultVisibility");
-          if (hasDefaultVisibility) {
-            for (const layer of this.serviceJson.layers) {
-              if (layer.defaultVisibility) {
-                this._layerId = layer.id;
-              }
-            }
-          } else {
-          // On some older servers, the default visiblity is on the layer capabilities (i.e. not the service capabilities)
-            for (const layer of this.serviceJson.layers) {
-              const layerJson = await this.getLayerMetadata(layer.id);
-              if (!layerJson) {
-                continue;
-              }
-
-              if (layerJson.defaultVisibility) {
-                this._layerId = layer.id;
-                this._layerMetadata = layerJson;
-                break;
-              }
+        const hasDefaultVisibility = Object.keys(this.serviceJson.layers[0]).includes("defaultVisibility");
+        if (hasDefaultVisibility) {
+          for (const layer of this.serviceJson.layers) {
+            if (layer.defaultVisibility) {
+              this._layerId = layer.id;
             }
           }
-
         } else {
+          // On some older servers, the default visiblity is on the layer capabilities (i.e. not the service capabilities)
+          for (const layer of this.serviceJson.layers) {
+            const layerJson = await this.getLayerMetadata(layer.id);
+            if (!layerJson) {
+              continue;
+            }
+
+            if (layerJson.defaultVisibility) {
+              this._layerId = layer.id;
+              this._layerMetadata = layerJson;
+              break;
+            }
+          }
+        }
+
+      } else {
         // There is no layer to publish? Something is off with this server..
-          throw new ServerError(IModelStatus.ValidationFailed, "");
-        }
+        throw new ServerError(IModelStatus.ValidationFailed, "");
       }
-
-      // Make sure we cache layer info (i.e. rendering info)
-      if (!this._layerMetadata) {
-        try {
-          this._layerMetadata = await this.getLayerMetadata(this._layerId);
-        } catch {
-          throw new ServerError(IModelStatus.ValidationFailed, "");
-        }
-      }
-
-      // Check supported query formats: JSON and PBF are currently implemented by this provider
-      // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
-      if (this._layerMetadata.supportedQueryFormats) {
-        const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
-        if (formats.includes("PBF")) {
-          this._format = "PBF";
-        } else if (formats.includes ("JSON"))  {
-          this._format = "JSON";
-        } else {
-          Logger.logError(loggerCategory, "Could not get service JSON");
-          throw new ServerError(IModelStatus.ValidationFailed, "");
-        }
-      }
-
-      // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
-      // If not supported, transformation will be applied client side.
-      if (this._layerMetadata.supportsCoordinatesQuantization) {
-        this._supportsCoordinatesQuantization = true;
-      }
-
-      // Check for minScale / max scale
-      const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
-      const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
-      const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
-      if (scales.minLod)
-        this._minDepthFromLod = scales.minLod;
-      if (scales.maxLod)
-        this._maxDepthFromLod = scales.maxLod;
-
-      this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
-    } catch (e) {
-      Logger.logError(loggerCategory, `Error occured while reading Feature Service metadata: '${e}'`);
     }
+
+    // Make sure we cache layer info (i.e. rendering info)
+    if (!this._layerMetadata) {
+
+      this._layerMetadata = await this.getLayerMetadata(this._layerId);
+      if (!this._layerMetadata) {
+        Logger.logError(loggerCategory, "Could not layer metadata");
+        throw new ServerError(IModelStatus.ValidationFailed, "");
+      }
+    }
+
+    // Check supported query formats: JSON and PBF are currently implemented by this provider
+    // Note: needs to be checked on the layer metadata, service metadata advertises a different set of formats
+    if (this._layerMetadata.supportedQueryFormats) {
+      const formats: string[] = this._layerMetadata.supportedQueryFormats.split(", ");
+      if (formats.includes("PBF")) {
+        this._format = "PBF";
+      } else if (formats.includes ("JSON"))  {
+        this._format = "JSON";
+      }
+    }
+
+    if (!this._format) {
+      Logger.logError(loggerCategory, "Could not get service JSON");
+      throw new ServerError(IModelStatus.ValidationFailed, "");
+    }
+
+    // Coordinates Quantization:  If supported, server will transform for us the coordinates in the Tile coordinate space (pixels, origin = upper left corner
+    // If not supported, transformation will be applied client side.
+    if (this._layerMetadata.supportsCoordinatesQuantization) {
+      this._supportsCoordinatesQuantization = true;
+    }
+
+    // Check for minScale / max scale
+    const minScale = this._layerMetadata?.minScale || undefined;  // undefined, 0 -> undefined
+    const maxScale = this._layerMetadata?.maxScale || undefined;  // undefined, 0 -> undefined
+    const scales = ArcGisUtilities.getZoomLevelsScales(this.defaultMaximumZoomLevel, this.tileSize, minScale, maxScale);
+    if (scales.minLod)
+      this._minDepthFromLod = scales.minLod;
+    if (scales.maxLod)
+      this._maxDepthFromLod = scales.maxLod;
+
+    this._symbologyRenderer = new ArcGisSymbologyRenderer(this._layerMetadata?.geometryType, this._layerMetadata?.drawingInfo?.renderer);
   }
 
   protected async getLayerMetadata(layerId: number) {
@@ -191,9 +190,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
   }
 
   public override get tileSize(): number { return 512; }
-  public get format(): ArcGisFeatureFormat { return this._format; }
+  public get format(): ArcGisFeatureFormat|undefined { return this._format; }
 
-  // We dont use this method inside this provider (see constructFeatureUrl), but since this is an anstract method, we need to define something
+  // We don't use this method inside this provider (see constructFeatureUrl), but since this is an abstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
     return "";
   }
@@ -210,7 +209,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     // Actual spatial filter.
     // By default, we request the tile extent.  If 'cartoPoint' is specified,
     // we restrict the spatial to specific point. (i.e. GetFeatureInfo requests)
-    // We a refine enveloppe is provided, it has the priority over 'cartoPoint'
+    // We a refine envelope is provided, it has the priority over 'cartoPoint'
     let geometry: ArcGisGeometry|undefined;
     if (geomOverride) {
       geometry = geomOverride;
@@ -256,7 +255,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
   public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
-    if (!this._querySupported)
+    if (!this._querySupported || this.format == undefined)
       return;
 
     const cartoPoint = {
@@ -295,7 +294,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     }
 
     try {
-      const responseData = await doFeatureInfoQuery(this._format, "*", false);
+      const responseData = await doFeatureInfoQuery(this.format, "*", false);
       if (!responseData) {
         Logger.logError(loggerCategory, `Could not get feature info data`);
         return;
@@ -321,9 +320,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       return undefined;
     }
 
-    // const tileRequestOptions: RequestOptions = { method: "GET", responseType: this.format === "JSON" ? "text" : "arraybuffer" };
-    // tileRequestOptions.auth = this.getRequestAuthorization();
-
     const geomOverride: ArcGisGeometry|undefined = (refineEnvelope ? {geom: refineEnvelope, type: "esriGeometryEnvelope"} : undefined);
     const tileUrl =  this.constructFeatureUrl(row, column, zoomLevel, this.format, geomOverride);
     if (!tileUrl || tileUrl.url.length === 0) {
@@ -331,11 +327,10 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       return undefined;
     }
 
-    // return {response: request(tileUrl.url, tileRequestOptions), envelope: tileUrl.envelope};
     const response = this.fetch(new URL(tileUrl.url), { method: "GET" });
-    if ((await response).status !== 200){
-      return undefined;
-    }
+    // if ((await response).status !== 200){
+    //   return undefined;
+    // }
     return new ArcGisFeatureResponse(this.format, response, tileUrl.envelope);
   }
 
@@ -345,6 +340,30 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
     context.font = "30px Arial";
     context.lineWidth = 5;
     context.fillText(`${zoomLevel}-${row}-${column}`, 10, 50);
+  }
+
+  // Compute transform that provides coordinates in the canvas coordinate system (pixels, origin = top-left)
+  // from coordinate in world (i.e EPSG:3857)
+  protected computeTileWorld2CanvasTransform(row: number, column: number, zoomLevel: number) {
+
+    const tileExtentWorld3857 = this.getEPSG3857Extent(row, column, zoomLevel);
+    const worldTileWidth = tileExtentWorld3857.right - tileExtentWorld3857.left;
+    const canvasTileWidth = this.tileSize;
+    const world2CanvasRatio = canvasTileWidth / worldTileWidth;
+    const worldTileOrigin = Point3d.create(tileExtentWorld3857.left, tileExtentWorld3857.bottom);
+    const worldTileExtent = Point3d.create(tileExtentWorld3857.right, tileExtentWorld3857.top);
+    const canvasTileOriginOffset = worldTileOrigin.clone();
+    const canvasTileExtentOffset = worldTileExtent.clone();
+    canvasTileOriginOffset.scaleInPlace(world2CanvasRatio);
+    canvasTileExtentOffset.scaleInPlace(world2CanvasRatio);
+    const xTranslate = -1*canvasTileOriginOffset.x;
+
+    // Canvas origin is uppler left corner, so we need to flip the y axsis
+    const yTranslate = canvasTileExtentOffset.y;     // y-axis flip
+    const yWorld2CanvasRatio = -1*world2CanvasRatio; // y-axis flip
+
+    const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
+    return  matrix.asTransform;
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
@@ -373,24 +392,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       // Compute transform if CoordinatesQuantization is not supported by service
       let transfo: Transform | undefined;
       if (!this._supportsCoordinatesQuantization) {
-        const tileExtentWorld3857 = this.getEPSG3857Extent(row, column, zoomLevel);
-        const worldTileWidth = tileExtentWorld3857.right - tileExtentWorld3857.left;
-        const canvasTileWidth = this.tileSize;
-        const world2CanvasRatio = canvasTileWidth / worldTileWidth;
-        const worldTileOrigin = Point3d.create(tileExtentWorld3857.left, tileExtentWorld3857.bottom);
-        const worldTileExtent = Point3d.create(tileExtentWorld3857.right, tileExtentWorld3857.top);
-        const canvasTileOriginOffset = worldTileOrigin.clone();
-        const canvasTileExtentOffset = worldTileExtent.clone();
-        canvasTileOriginOffset.scaleInPlace(world2CanvasRatio);
-        canvasTileExtentOffset.scaleInPlace(world2CanvasRatio);
-        const xTranslate = -1*canvasTileOriginOffset.x;
-
-        // Canvas origin is uppler left corner, so we need to flip the y axsis
-        const yTranslate = canvasTileExtentOffset.y;     // y-axis flip
-        const yWorld2CanvasRatio = -1*world2CanvasRatio; // y-axis flip
-
-        const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatio, yWorld2CanvasRatio, 1);
-        transfo = matrix.asTransform;
+        transfo = this.computeTileWorld2CanvasTransform(row, column, zoomLevel);
         if (!transfo)  {
           Logger.logError(loggerCategory, `Could not compute data transformation for tile (${zoomLevel}/${row}/${column})`);
           assert(!"Could not compute world to canvas transform");
@@ -416,9 +418,9 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         return subEnvelopes;
       };
 
-      // The stategy here is simple: we make a request for an area that represents the current tile (i.e envelope),
-      // the server will either return the requested data OR a 'exceedTransferLimit' message (too much data to transfert).
-      // In the latter case, we subdivise the previous request enveloppe in for 4 sub-envelopes,
+      // The strategy here is simple: we make a request for an area that represents the current tile (i.e envelope),
+      // the server will either return the requested data OR a 'exceedTransferLimit' message (too much data to transfers).
+      // In the latter case, we subdivide the previous request envelope in for 4 sub-envelopes,
       // and repeat again until we get data.
       const renderData = async (envelope?: ArcGisExtent) => {
         let response: ArcGisFeatureResponse | undefined;
@@ -426,7 +428,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
         try {
           response = await this.fetchTile(row, column, zoomLevel, envelope);
           if (!response) {
-            Logger.logError(loggerCategory, `Error occured while fetching tile (${zoomLevel}/${row}/${column})`);
+            Logger.logError(loggerCategory, `Error occurred while fetching tile (${zoomLevel}/${row}/${column})`);
             return ;
           }
 
@@ -436,7 +438,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
             return ;
           }
         } catch (e) {
-          Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+          Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
           return;
         }
 
@@ -449,7 +451,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
             }
             await Promise.all(renderPromises);
           } else {
-            Logger.logError(loggerCategory, `Request exceeded transfert limit, could not refine request`);
+            Logger.logError(loggerCategory, `Request exceeded transfer limit, could not refine request`);
           }
         } else {
           featureReader.readAndRender(responseData, renderer);
@@ -459,7 +461,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       if (this._drawDebugInfo)
         this.drawTileDebugInfo(row, column, zoomLevel, ctx);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occured while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
+      Logger.logError(loggerCategory, `Exception occurred while loading tile (${zoomLevel}/${row}/${column}) : ${e}`);
     }
 
     try {
@@ -468,7 +470,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
       const dataUrl2 = dataUrl.substring(header.length);
       return new ImageSource(base64StringToUint8Array(dataUrl2), ImageSourceFormat.Png);
     } catch (e) {
-      Logger.logError(loggerCategory, `Exception occured while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
+      Logger.logError(loggerCategory, `Exception occurred while rendering tile (${zoomLevel}/${row}/${column}) : ${e}.`);
     }
 
     return undefined;

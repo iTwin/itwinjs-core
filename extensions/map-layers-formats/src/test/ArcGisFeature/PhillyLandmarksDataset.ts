@@ -44,6 +44,9 @@ export class PhillyLandmarksDataset {
   public static phillySimplePointQueryPbf = {
     version:"",queryResult:{featureResult:{objectIdFieldName:"OBJECTID",uniqueIdField:{name:"OBJECTID",isSystemMaintained:true},globalIdFieldName:"GlobalID",geohashFieldName:"",serverGens:{minServerGen:617056,serverGen:701159},geometryType:0,spatialReference:{wkid:102100,lastestWkid:3857,vcsWkid:0,latestVcsWkid:0,wkt:""},exceededTransferLimit:false,hasZ:false,hasM:false,transform:{quantizeOriginPostion:0,scale:{xScale:4.777314267153997,yScale:4.777314267153997,mScale:0,zScale:0},translate:{xTranslate:-8365268.374365235,yTranslate:4860172.005808106,mTranslate:0,zTranslate:0}},fields:[],values:[],features:[{attributes:[],geometry:{lengths:[],coords:[88,488]}}]}}};
 
+  public static phillyExceededTransferLimitPbf = {
+    version:"",queryResult:{featureResult:{objectIdFieldName:"OBJECTID",uniqueIdField:{name:"OBJECTID",isSystemMaintained:true},globalIdFieldName:"GlobalID",geohashFieldName:"",serverGens:{minServerGen:617056,serverGen:701159},geometryType:0,spatialReference:{wkid:102100,lastestWkid:3857,vcsWkid:0,latestVcsWkid:0,wkt:""},exceededTransferLimit:true,hasZ:false,hasM:false,transform:{quantizeOriginPostion:0,scale:{xScale:4.777314267153997,yScale:4.777314267153997,mScale:0,zScale:0},translate:{xTranslate:-8365268.374365235,yTranslate:4860172.005808106,mTranslate:0,zTranslate:0}},fields:[],values:[],features:[{attributes:[],geometry:{lengths:[],coords:[88,488]}}]}}};
+
   public static phillySimplePointQueryJson = {
     objectIdFieldName:"OBJECTID",uniqueIdField:{name:"OBJECTID",isSystemMaintained:true},globalIdFieldName:"GlobalID",serverGens:{minServerGen:617056,serverGen:701159},geometryType:"esriGeometryPoint",spatialReference:{wkid:102100,latestWkid:3857},transform:{originPosition:"upperLeft",scale:[4.777314267153997,4.777314267153997],translate:[-8365268.374365235,4860172.005808106]},fields:[],features:[{attributes:{},geometry:{x:88,y:488}}]};
 

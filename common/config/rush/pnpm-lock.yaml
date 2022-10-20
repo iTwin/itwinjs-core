@@ -1544,11 +1544,13 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@types/chai': 4.3.1
+      '@types/chai-as-promised': ^7
       '@types/google-protobuf': ~3.15.6
       '@types/mocha': ^8.2.2
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
       chai: ^4.1.2
+      chai-as-promised: ^7
       eslint: ^7.11.0
       google-protobuf: ~3.20.1
       jsdom: ^19.0.0
@@ -1571,11 +1573,13 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.3.1
+      '@types/chai-as-promised': 7.1.5
       '@types/google-protobuf': 3.15.6
       '@types/mocha': 8.2.3
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.8
       chai: 4.3.6
+      chai-as-promised: 7.1.1_chai@4.3.6
       eslint: 7.32.0
       jsdom: 19.0.0
       jsdom-global: 3.0.2_jsdom@19.0.0

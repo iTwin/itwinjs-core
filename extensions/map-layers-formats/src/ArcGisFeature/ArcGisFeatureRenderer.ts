@@ -153,7 +153,7 @@ export class ArcGisFeatureRenderer  {
           }
 
           if (this._transform) {
-            const transformedPoint = this._transform.multiplyPoint2d({x: lastPtX, y:lastPtY});
+            const transformedPoint = this._transform.multiplyPoint2d({x: pX, y:pY});
             pX = transformedPoint.x;
             pY = transformedPoint.y;
           }

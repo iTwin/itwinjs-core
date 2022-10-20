@@ -67,11 +67,11 @@ export class ArcGisFeatureResponse {
         return {data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit};
 
       } else {
-        if (tileResponse.text === undefined)
+        data = await tileResponse.json();
+        if (data === undefined || data == null)
           return undefined;
 
-        data = await tileResponse.json();
-        return {data, exceedTransferLimit: data?.exceededTransferLimit};
+        return {data, exceedTransferLimit: data.exceededTransferLimit};
       }
 
     } catch(_e) {
