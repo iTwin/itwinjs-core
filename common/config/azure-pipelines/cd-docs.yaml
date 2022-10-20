@@ -12,18 +12,18 @@ resources:
   pipelines:
   - pipeline: itwinjs-docs
     source: iTwin.js Docs - YAML
-    version: 20221020.4
-    # trigger:
-    #   branches:
-    #     include:
-    #     - master
-    #     - release/*
-    #     - docs-release-pipeline
-    #     exclude:
-    #     - release/2*
-    #     - release/1*
-    #   tags:
-    #   - iTwinJsDocsRelease
+    # version: 20221020.4
+    trigger:
+      branches:
+        include:
+        - master
+        - release/*
+        - docs-release-pipeline
+        exclude:
+        - release/2*
+        - release/1*
+      tags:
+      - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
 
@@ -41,38 +41,38 @@ variables:
   octopusProjectName: iModel.js Documentation
 
 stages:
-  # - stage: CreateRelease
-  #   displayName: Create release
-  #   jobs:
-  #   - template: ./jobs/docs/package-docs.yaml
+  - stage: CreateRelease
+    displayName: Create release
+    jobs:
+    - template: ./jobs/docs/package-docs.yaml
 
-  # - stage: DEV
-  #   displayName: Deployment (DEV)
-  #   dependsOn: CreateRelease
-  #   jobs:
-  #   - template: ./jobs/docs/deploy-docs.yaml
-  #     parameters:
-  #       variableGroup: iTwin.js Docs - DEV
+  - stage: DEV
+    displayName: Deployment (DEV)
+    dependsOn: CreateRelease
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - DEV
 
-  # - stage: ProductTestsDEV
-  #   displayName: Product Tests (DEV)
-  #   dependsOn: DEV
-  #   jobs:
-  #   - template: ./jobs/docs/product-tests.yaml
-  #     parameters:
-  #       env: Development
+  - stage: ProductTestsDEV
+    displayName: Product Tests (DEV)
+    dependsOn: DEV
+    jobs:
+    - template: ./jobs/docs/product-tests.yaml
+      parameters:
+        env: Development
 
-  # - stage: QA
-  #   displayName: Deployment (QA)
-  #   dependsOn: ProductTestsDEV
-  #   jobs:
-  #   - template: ./jobs/docs/deploy-docs.yaml
-  #     parameters:
-  #       variableGroup: iTwin.js Docs - QA
+  - stage: QA
+    displayName: Deployment (QA)
+    dependsOn: ProductTestsDEV
+    jobs:
+    - template: ./jobs/docs/deploy-docs.yaml
+      parameters:
+        variableGroup: iTwin.js Docs - QA
 
   - stage: ProductTestsQA
     displayName: Product Tests (QA)
-    # dependsOn: QA
+    dependsOn: QA
     jobs:
     - template: ./jobs/docs/product-tests.yaml
       parameters:
@@ -80,7 +80,7 @@ stages:
 
   - stage: LinkValidatorQA
     displayName: Link Validator (QA)
-    # dependsOn: QA
+    dependsOn: QA
     jobs:
     - template: ./jobs/docs/validate-links.yaml
       parameters:
@@ -88,7 +88,7 @@ stages:
 
   - stage: UpdateDocumentationIndexQA
     displayName: Update Documentation Index (QA)
-    # dependsOn: QA
+    dependsOn: QA
     jobs:
     - template: ./jobs/docs/update-docs-index.yaml
       parameters:
@@ -101,9 +101,7 @@ stages:
 
   # - stage: Scorecard
   #   displayName: Scorecard
-  #   dependsOn:
-  #     - LinkValidatorQA
-  #     - ProductTestsQA
+  #   dependsOn: ProductTestsQA
   #   jobs:
   #   - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
   #     parameters:
