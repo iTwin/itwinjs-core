@@ -2021,19 +2021,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+    private loadViewStateProps(viewDefinitionElement: ViewDefinition, options?: ViewStateLoadProps, drawingExtents?: Range3d): ViewStateProps {
       const elements = this._iModel.elements;
-      const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      const displayStyleOptions: ElementLoadProps = {
+      const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
         id: viewDefinitionProps.displayStyleId,
         displayStyle: options?.displayStyle,
-      };
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
+      });
 
-      const viewStateData: ViewStateProps = { viewDefinitionProps, displayStyleProps, categorySelectorProps };
+      const viewStateData: ViewStateProps = {
+        viewDefinitionProps,
+        displayStyleProps,
+        categorySelectorProps,
+      };
 
       const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
       if (modelSelectorId !== undefined) {
@@ -2046,12 +2048,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }));
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
-        try {
-          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
-          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
-        } catch {
-          //
-        }
+        if (drawingExtents && !drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
 
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
@@ -2070,6 +2068,30 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
 
       return viewStateData;
+    }
+
+    /** @deprecated use [[getViewStateProps]]. */
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition) {
+        try {
+          drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents);
+        } catch {
+          //
+        }
+      }
+
+      return this.loadViewStateProps(view, options, drawingExtents);
+    }
+
+    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition)
+        drawingExtents = (await this._iModel.models.queryRange(view.baseModelId));
+
+      return this.loadViewStateProps(view, options, drawingExtents);
     }
 
     private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {
