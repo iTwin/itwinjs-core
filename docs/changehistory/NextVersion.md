@@ -110,4 +110,4 @@ The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renam
 
 ### @itwin/core-transformer
 
-[IModelTransformer.initFromExternalSourceAspects]($transform) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).
