@@ -17,6 +17,7 @@ import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./Transf
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
+import { AsyncFunction, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
@@ -44,8 +45,40 @@ export class EditTools {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
-  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
+  public static async callCommand(
+    methodName: string,
+    ...args: any[]
+  ): Promise<any> {
+    return IpcApp.callIpcChannel(
+      editorChannel,
+      "callMethod",
+      methodName,
+      ...args
+    );
+  }
+
+  /**
+   * Create a typed object that "connects" to the underlying backend IPC representation, but
+   * will just forward all typed calls through [IpcApp.callIpcChannel]($backend).
+   */
+  public static connect<IpcInterface>(): PickAsyncMethods<IpcInterface> {
+    type IpcConnector = PickAsyncMethods<IpcInterface>;
+
+    const makeIpcCall =
+      <K extends keyof IpcConnector>(methodName: K) =>
+        async (...args: Parameters<IpcConnector[K]>) =>
+          IpcApp.callIpcChannel(
+            editorChannel,
+            "callMethod",
+            methodName,
+            ...args
+          ) as PromiseReturnType<IpcConnector[K]>;
+
+    return new Proxy({} as IpcConnector, {
+      get(_target, key: string): AsyncFunction {
+        return makeIpcCall(key as keyof IpcConnector) as AsyncFunction;
+      },
+    });
   }
 
   /** @internal */

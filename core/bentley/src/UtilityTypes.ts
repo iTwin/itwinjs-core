@@ -86,12 +86,19 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
  * @see [[PromiseReturnType]] to extract the type to which the Promise resolves.
  * @public
  */
-export type AsyncFunction = (...args: any) => Promise<any>;
+export type AsyncFunction = (...args: any[]) => Promise<any>;
 
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
  */
 export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
+
+/** The subset of `T` including only functions that returna a promise, and no other properties
+ * @public
+ */
+export type PickAsyncMethods<T> = {
+  [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 /** Extracts the type to which the Promise returned by an async function resolves.
  * @public
