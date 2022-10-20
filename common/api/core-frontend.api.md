@@ -1644,7 +1644,7 @@ export class BriefcaseConnection extends IModelConnection {
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    pullChanges(toIndex?: ChangesetIndex): Promise<void>;
+    pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
@@ -3404,6 +3404,12 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     get length(): number;
     // (undocumented)
     results: any[];
+}
+
+// @alpha
+export interface GenericAbortSignal {
+    addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+    removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
 }
 
 // @internal
@@ -7813,6 +7819,14 @@ export interface PublisherProductInfo {
     engine: string;
     product: string;
     version: string;
+}
+
+// @public
+export interface PullChangesOptions {
+    // @alpha
+    abortSignal?: GenericAbortSignal;
+    progressCallback?: ProgressCallback;
+    progressInterval?: number;
 }
 
 // @beta
