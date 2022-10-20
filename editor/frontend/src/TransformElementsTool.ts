@@ -246,7 +246,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  protected static commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
+  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected async replaceAgenda(newIds: Id64Arg | undefined): Promise<void> {
     this.agenda.clear();
@@ -274,7 +274,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected async transformAgenda(transform: Transform): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await TransformElementsTool.commandConnection.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
+      if (IModelStatus.Success === await this.commandConnection.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
@@ -390,7 +390,7 @@ export class CopyElementsTool extends MoveElementsTool {
 
       for (let iCopy = 0; iCopy < numCopies; ++iCopy) {
         placement.multiplyTransform(transform);
-        newId = await CopyElementsTool.commandConnection.insertGeometricElement(newProps);
+        newId = await this.commandConnection.insertGeometricElement(newProps);
       }
 
       if (undefined !== newId)
@@ -630,7 +630,7 @@ export class RotateElementsTool extends TransformElementsTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await TransformElementsTool.commandConnection.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
+      if (IModelStatus.Success === await this.commandConnection.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

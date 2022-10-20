@@ -793,7 +793,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     // (undocumented)
     protected get allowSimplify(): boolean;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected continuationData?: {
         props: GeometricElementProps;
@@ -1140,7 +1140,7 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowSelectionSet(): boolean;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
@@ -1239,7 +1239,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected clearGraphic(): void;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<SolidModelingCommandIpc>;
+    protected commandConnection: PickAsyncMethods<SolidModelingCommandIpc>;
     // (undocumented)
     protected createElementGeometryCache(id: Id64String): Promise<boolean>;
     // (undocumented)
@@ -1655,7 +1655,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     // (undocumented)
     protected clearGraphics(): void;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -2163,7 +2163,7 @@ export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     run(): Promise<boolean>;
     // (undocumented)
@@ -2320,7 +2320,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected baseRotation?: Matrix3d;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
@@ -2517,7 +2517,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected clearAgendaGraphics(): Promise<void>;
     // (undocumented)
-    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)

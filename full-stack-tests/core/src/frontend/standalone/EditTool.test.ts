@@ -25,7 +25,7 @@ class TestEditTool1 extends PrimitiveTool {
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public async onRestartTool() { return this.exitTool(); }
 
-  public static commandConnection = EditTools.connect<TestCommandIpc>();
+  public commandConnection = EditTools.connect<TestCommandIpc>();
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
     cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);

@@ -189,7 +189,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdSolidModeling, this.iModel.key);
   }
 
-  protected static commandConnection = EditTools.connect<SolidModelingCommandIpc>();
+  protected commandConnection = EditTools.connect<SolidModelingCommandIpc>();
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
@@ -237,7 +237,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
     try {
       this._startedCmd = await this.startCommand();
-      return ElementGeometryCacheTool.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
+      return this.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
     } catch (err) {
       return false;
     }
@@ -347,7 +347,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected async clearElementGeometryCache(): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await ElementGeometryCacheTool.commandConnection.clearElementGeometryCache();
+      await this.commandConnection.clearElementGeometryCache();
     } catch (err) { }
   }
 
@@ -476,7 +476,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
       try {
         this._startedCmd = await this.startCommand();
-        if (undefined === (summary = await ElementGeometryCacheTool.commandConnection.summarizeElementGeometryCache(id)))
+        if (undefined === (summary = await this.commandConnection.summarizeElementGeometryCache(id)))
           return false;
       } catch (err) {
         return false;
@@ -591,7 +591,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
         hiddenEdgesVisible,
         filter,
       };
-      return ElementGeometryCacheTool.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
+      return this.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
@@ -814,7 +814,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       };
 
       data.chordTolerance = chordTolerance;
-      data.geometry = await ElementGeometryCacheTool.commandConnection.getSubEntityGeometry(id, data.props, opts);
+      data.geometry = await this.commandConnection.getSubEntityGeometry(id, data.props, opts);
 
       return await data.createGraphic(this.iModel);
     } catch (err) {

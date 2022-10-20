@@ -19,12 +19,12 @@ export class DeleteElementsTool extends ElementSetTool {
   protected override get controlKeyContinuesSelection(): boolean { return true; }
   protected override get requireAcceptForSelectionSetOperation(): boolean { return false; }
 
-  protected static commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
+  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   public override async processAgendaImmediate(): Promise<void> {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-      if (IModelStatus.Success === await DeleteElementsTool.commandConnection.deleteElements(this.agenda.compressIds()))
+      if (IModelStatus.Success === await this.commandConnection.deleteElements(this.agenda.compressIds()))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
