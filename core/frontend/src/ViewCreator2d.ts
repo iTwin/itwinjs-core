@@ -160,8 +160,8 @@ export class ViewCreator2d {
     const bgColor: ColorDef = options?.bgColor ? options.bgColor : ColorDef.white;
 
     // model extents
-    const modelProps = await this._imodel.models.queryModelRanges(modelId);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+    const modelProps = await this._imodel.models.queryModelExtents(modelId);
+    const modelExtents = Range3d.fromJSON(modelProps[0]?.extents);
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     let deltaX = modelExtents.xLength();

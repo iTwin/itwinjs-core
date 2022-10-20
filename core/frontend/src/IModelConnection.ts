@@ -772,7 +772,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       this._loaded.delete(modelId);
     }
 
-    /** Query for a set of model ranges by ModelIds. */
+    /** Query for a set of model ranges by ModelIds.
+     * @deprecated use [[queryModelExtents]].
+     */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryModelRanges(iModel.getRpcProps(), [...Id64.toIdSet(modelIds)]) : [];

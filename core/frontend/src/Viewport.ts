@@ -811,8 +811,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
-      const range = await this.iModel.models.queryModelRanges([baseModelId]);
-      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+      const range = await this.iModel.models.queryModelExtents([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]?.extents), options);
     }
   }
 
