@@ -26,7 +26,8 @@ class ElectronIpc implements IpcSocketBackend {
     ElectronHost.ipcMain.removeListener(channel, listener);
   }
   public send(channel: string, ...args: any[]): void {
-    ElectronHost.mainWindow?.webContents.send(channel, ...args);
+    const window = ElectronHost.mainWindow ?? ElectronHost.electron.BrowserWindow.getAllWindows()[0];
+    window?.webContents.send(channel, ...args);
   }
   public handle(channel: string, listener: (evt: any, ...args: any[]) => Promise<any>): RemoveFunction {
     ElectronHost.ipcMain.removeHandler(channel); // make sure there's not already a handler registered
