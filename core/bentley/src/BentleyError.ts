@@ -180,6 +180,8 @@ export enum ChangeSetStatus { // Note: Values must be kept in sync with ChangeSe
   CannotMergeIntoMaster = CHANGESET_ERROR_BASE + 24,
   /** Cannot merge changes into a DgnDb that has reversed change sets. */
   CannotMergeIntoReversed = CHANGESET_ERROR_BASE + 25,
+  /** ChangeSet(s) download was cancelled. */
+  DownloadCancelled = CHANGESET_ERROR_BASE + 26,
 }
 
 /** Return codes for methods which perform repository management operations
@@ -583,6 +585,7 @@ export class BentleyError extends Error {
       case ChangeSetStatus.CannotMergeIntoReadonly: return "Cannot merge changes into a Readonly DgnDb";
       case ChangeSetStatus.CannotMergeIntoMaster: return "Cannot merge changes into a Master DgnDb";
       case ChangeSetStatus.CannotMergeIntoReversed: return "Cannot merge changes into a DgnDb that has reversed change sets";
+      case ChangeSetStatus.DownloadCancelled: return "ChangeSet(s) download was cancelled.";
       case RepositoryStatus.ServerUnavailable: return "ServerUnavailable";
       case RepositoryStatus.LockAlreadyHeld: return "LockAlreadyHeld";
       case RepositoryStatus.SyncError: return "SyncError";
