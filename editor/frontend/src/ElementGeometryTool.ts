@@ -237,7 +237,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
     try {
       this._startedCmd = await this.startCommand();
-      return this.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
+      return await this.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
     } catch (err) {
       return false;
     }
@@ -591,7 +591,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
         hiddenEdgesVisible,
         filter,
       };
-      return this.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
+      return await this.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
