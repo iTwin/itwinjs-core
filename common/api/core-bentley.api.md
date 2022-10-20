@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1346,6 +1344,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
