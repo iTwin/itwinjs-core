@@ -53,7 +53,6 @@ import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
-import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -309,6 +308,7 @@ export class DisplayTestApp {
       MaximizeWindowTool,
       ModelClipTool,
       OpenIModelTool,
+      OpenRealityModelSettingsTool,
       OutputShadersTool,
       PlaceLineStringTool,
       PullChangesTool,

@@ -50,6 +50,7 @@ export function PropertyFilterBuilderRuleProperty(props: PropertyFilterBuilderRu
         placeholder: UiComponents.translate("filterBuilder.chooseProperty"),
       }}
       itemRenderer={itemRenderer}
+      enableVirtualization={true}
     />
   </div>;
 }

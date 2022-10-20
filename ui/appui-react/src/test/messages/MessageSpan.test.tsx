@@ -2,49 +2,41 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
 import * as React from "react";
 import { UnderlinedButton } from "@itwin/core-react";
 import { MessageDiv, MessageSpan } from "../../appui-react/messages/MessageSpan";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
+import { selectorMatches } from "../TestUtils";
 
 describe("MessageSpan & MessageDiv", () => {
 
-  describe("MessageSpan", () => {
-    it("with message text", () => {
-      shallow(<MessageSpan message="Test" />).should.matchSnapshot();
-    });
+  ([["span", MessageSpan],
+    ["div", MessageDiv]] as [string, typeof MessageSpan][])
+    .map(([selector, Component]) => {
+      describe(Component.name ?? selector, () => {
+        it("with message text", () => {
+          render(<Component message="Test" />);
 
-    it("with message HTMLElement", () => {
-      const newSpan = document.createElement("span");
-      const newContent = document.createTextNode("Test");
-      newSpan.appendChild(newContent);
-      shallow(<MessageSpan message={newSpan} />).should.matchSnapshot();
-    });
+          expect(screen.getByText("Test")).to.satisfy(selectorMatches(selector));
+        });
 
-    it("with React node", () => {
-      const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
-      const reactMessage = { reactNode };
-      shallow(<MessageSpan message={reactMessage} />).should.matchSnapshot();
-    });
-  });
+        it("with message HTMLElement", () => {
+          const newSpan = document.createElement("span");
+          const newContent = document.createTextNode("Test");
+          newSpan.appendChild(newContent);
+          render(<Component message={newSpan} />);
 
-  describe("MessageDiv", () => {
-    it("with message text", () => {
-      shallow(<MessageDiv message="Test" />).should.matchSnapshot();
-    });
+          expect(screen.getByText("Test")).to.satisfy(selectorMatches(`${selector} span`));
+        });
 
-    it("with message HTMLElement", () => {
-      const newSpan = document.createElement("span");
-      const newContent = document.createTextNode("Test");
-      newSpan.appendChild(newContent);
-      shallow(<MessageDiv message={newSpan} />).should.matchSnapshot();
-    });
+        it("with React node", () => {
+          const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
+          const reactMessage = { reactNode };
+          render(<Component message={reactMessage} />);
 
-    it("with React node", () => {
-      const reactNode = (<span>For more details, <UnderlinedButton>click here</UnderlinedButton>.</span>);
-      const reactMessage = { reactNode };
-      shallow(<MessageDiv message={reactMessage} />).should.matchSnapshot();
+          expect(screen.getByText(/For more details/)).to.satisfy(selectorMatches(`${selector} span`));
+        });
+      });
     });
-  });
-
 });

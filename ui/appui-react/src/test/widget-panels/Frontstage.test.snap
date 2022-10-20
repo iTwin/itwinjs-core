@@ -348,6 +348,7 @@ Object {
       "label": "Tool Settings",
     },
     "t1": Object {
+      "allowedPanelTargets": undefined,
       "canPopout": undefined,
       "hideWithUiWhenFloating": false,
       "iconSpec": undefined,

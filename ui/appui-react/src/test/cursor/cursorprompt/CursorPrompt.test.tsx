@@ -12,7 +12,8 @@ import { CursorInformation } from "../../../appui-react/cursor/CursorInformation
 import { CursorPopup } from "../../../appui-react/cursor/cursorpopup/CursorPopup";
 import { CursorPopupManager, CursorPopupRenderer } from "../../../appui-react/cursor/cursorpopup/CursorPopupManager";
 import { CursorPrompt } from "../../../appui-react/cursor/cursorprompt/CursorPrompt";
-import TestUtils, { mount } from "../../TestUtils";
+import { selectorMatches } from "../../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 describe("CursorPrompt", () => {
 
@@ -21,44 +22,41 @@ describe("CursorPrompt", () => {
   });
 
   it("should display", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const cursorPrompt = new CursorPrompt(20, false);
     cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"));
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
     expect(CursorPopupManager.popupCount).to.eq(1);
-    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(1);
+    expect(screen.getByText("Prompt string")).to.satisfy(selectorMatches(".uifw-cursor-prompt *"));
 
     cursorPrompt.close(false);
   });
 
   it("should display, update and close", () => {
+    const offset = new Point(20, 20);
     const fakeTimers = sinon.useFakeTimers();
-    const wrapper = mount(<CursorPopupRenderer />);
+    const { container } = render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
     CursorPopup.fadeOutTime = 50;
 
     const cursorPrompt = new CursorPrompt(20, true);
-    cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"), new Point(20, 20), RelativePosition.BottomRight);
-    wrapper.update();
+    cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"), offset, RelativePosition.BottomRight);
 
     expect(CursorPopupManager.popupCount).to.eq(1);
-    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(1);
+    expect(screen.getByText("Prompt string")).to.satisfy(selectorMatches(".uifw-cursor-prompt *"));
 
-    let pt: Point = wrapper.state("pt");
-    expect(pt.x).to.eq(CursorInformation.cursorX);
-    expect(pt.y).to.eq(CursorInformation.cursorY);
+    const styleForOffset = {top: `${offset.y + 6}px`, left: `${offset.x + 6}px`};
+    expect(container.querySelector<HTMLElement>(".uifw-cursorpopup")?.style).to.include(styleForOffset);
 
-    CursorInformation.handleMouseMove(new Point(50, 60));
+    const move = new Point(50, 60);
+    CursorInformation.handleMouseMove(move);
     fakeTimers.tick(0);
 
-    expect(CursorPopupManager.popupCount).to.eq(1);
-    pt = wrapper.state("pt");
-    expect(pt.x).to.eq(50);
-    expect(pt.y).to.eq(60);
+    const moved = move.offset(offset);
+    const styleForMoved = {top: `${moved.y}px`, left: `${moved.x}px`};
+    expect(container.querySelector<HTMLElement>(".uifw-cursorpopup")?.style).to.include(styleForMoved);
 
     fakeTimers.tick(40);
     expect(CursorPopupManager.popupCount).to.eq(1);
@@ -69,23 +67,18 @@ describe("CursorPrompt", () => {
   });
 
   it("should close if passed a blank instruction", async () => {
-    const wrapper = mount(<CursorPopupRenderer />);
+    render(<CursorPopupRenderer />);
     expect(CursorPopupManager.popupCount).to.eq(0);
 
     const cursorPrompt = new CursorPrompt(20, false);
     cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", "Prompt string"));
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
     expect(CursorPopupManager.popupCount).to.eq(1);
-    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(1);
+    expect(screen.getByText("Prompt string")).to.satisfy(selectorMatches(".uifw-cursor-prompt *"));
 
     cursorPrompt.display("icon-placeholder", ToolAssistance.createInstruction("icon-placeholder", ""));
-    await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
     expect(CursorPopupManager.popupCount).to.eq(0);
-    expect(wrapper.find("div.uifw-cursor-prompt").length).to.eq(0);
   });
 
 });

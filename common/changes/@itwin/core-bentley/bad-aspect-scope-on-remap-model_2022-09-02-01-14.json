@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "Add EntityReferences",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}

@@ -38,7 +38,8 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @beta
    */
   public async getTileCacheConfig(_tokenProps: IModelRpcProps): Promise<TransferConfig | undefined> {
-    return this.forward(arguments);
+    const response = await this.forward(arguments);
+    return response && { ...response, expiration: new Date(response.expiration) };
   }
 
   /**
