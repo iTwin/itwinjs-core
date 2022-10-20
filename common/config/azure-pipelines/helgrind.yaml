@@ -77,6 +77,7 @@ jobs:
           rootFolderOrFile: '$(HELGRIND_RESULTS)'
           archiveFolder: '$(Build.ArtifactStagingDirectory)'
           artifactName: 'HelgrindReport-$(Build.BuildId)'
+        condition: always()
 
       - task: PythonScript@0
         inputs:
