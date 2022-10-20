@@ -1206,8 +1206,6 @@ export interface EditorOptions {
 
 // @alpha
 export class EditTools {
-    // (undocumented)
-    static callCommand(methodName: string, ...args: any[]): Promise<any>;
     static connect<IpcInterface>(): PickAsyncMethods<IpcInterface>;
     static initialize(options?: EditorOptions): Promise<void>;
     // (undocumented)

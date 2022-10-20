@@ -45,10 +45,6 @@ export class EditTools {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
-  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
-  }
-
   /**
    * Create a typed object that "connects" to the underlying backend IPC representation, but
    * will just forward all typed calls through [IpcApp.callIpcChannel]($backend).
