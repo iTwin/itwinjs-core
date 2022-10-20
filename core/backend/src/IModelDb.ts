@@ -1501,7 +1501,19 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
 
     public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
       ids = typeof ids === "string" ? [ids] : ids;
+      if (ids.length === 0)
+        return [];
+
       return this._iModel.nativeDb.queryModelExtentsAsync(ids);
+    }
+
+    public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
+      const results = await this.queryExtents(ids);
+      const range = new Range3d();
+      for (const result of results)
+        range.union(Range3d.fromJSON(result.extents), range);
+
+      return range;
     }
   }
 

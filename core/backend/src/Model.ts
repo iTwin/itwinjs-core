@@ -242,10 +242,17 @@ export class GeometricModel extends Model {
   /** @internal */
   constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
 
-  /** Query for the union of the extents of the elements contained by this model. */
+  /** Query for the union of the extents of the elements contained by this model.
+   * @deprecated use [[queryRange]].
+   */
   public queryExtents(): AxisAlignedBox3d {
     const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;
     return Range3d.fromJSON(extents);
+  }
+
+  /** Query for the union of the extents of all elements contained within this model. */
+  public async queryRange(): Promise<AxisAlignedBox3d> {
+    return this.iModel.models.queryRange(this.id);
   }
 }
 

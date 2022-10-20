@@ -73,25 +73,12 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
   }
 
-  public async queryModelRanges(tokenProps: IModelRpcProps, modelIdsList: Id64String[]): Promise<Range3dProps[]> {
-    const modelIds = new Set(modelIdsList);
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const ranges: Range3dProps[] = [];
-    for (const id of modelIds) {
-      try {
-        ranges.push(iModelDb.nativeDb.queryModelExtents({ id }).modelExtents);
-      } catch (err: any) {
-        if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
-          ranges.push(new Range3d());
-          continue;
-        }
+  public async queryModelRanges(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<Range3dProps[]> {
+    const results = await this.queryModelExtents(tokenProps, modelIds);
+    if (results.length === 1 && results[0].status !== IModelStatus.Success)
+      throw new IModelError(results[0].status, "error querying model range");
 
-        if (modelIds.size === 1)
-          throw err; // if they're asking for more than one model, don't throw on error.
-        continue;
-      }
-    }
-    return ranges;
+    return results.filter((x) => x.status === IModelStatus.Success).map((x) => x.extents);
   }
 
   public async queryModelExtents(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<ModelExtentsProps[]> {
