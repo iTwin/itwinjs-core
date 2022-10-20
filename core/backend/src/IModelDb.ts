@@ -1545,7 +1545,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      return this._iModel.nativeDb.getElement(props) as T;
+      try {
+        return this._iModel.nativeDb.getElement(props) as T;
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1904,10 +1908,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
+     * @returns the id of the newly inserted aspect.
+     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
+     *       use [EntityReference]($common) for that instead.
      */
-    public insertAspect(aspectProps: ElementAspectProps): void {
+    public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
-        this._iModel.nativeDb.insertElementAspect(aspectProps);
+        return this._iModel.nativeDb.insertElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }

@@ -4610,6 +4610,7 @@ export interface Imdl {
     patternSymbols?: ImdlDictionary<ImdlAreaPatternSymbol>;
     // (undocumented)
     renderMaterials?: ImdlDictionary<ImdlRenderMaterial>;
+    rtcCenter?: number[];
     scene: string;
     scenes: ImdlDictionary<ImdlScene>;
 }

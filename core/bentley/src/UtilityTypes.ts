@@ -102,3 +102,17 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
  * @beta
  */
 export type ExtractLiterals<T, U extends T> = Extract<T, U>;
+
+/** A runtime property omitter, makes a shallow copy of the given object without the specified properties
+ * Compatible with the typescript `Omit` mapped type:
+ * ```js
+ * const testvar: Omit<{x: string, y: object}, "y"> = omit({x: "hello", y: {}}, ["y"]);
+ * ```
+ * @public
+ */
+export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]> {
+  const clone = { ...t };
+  for (const key of keys)
+    delete clone[key];
+  return clone;
+}
