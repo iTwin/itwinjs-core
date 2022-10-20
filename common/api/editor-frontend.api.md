@@ -2320,7 +2320,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected baseRotation?: Matrix3d;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
@@ -2515,9 +2515,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
     protected clearAgendaGraphics(): Promise<void>;
+    // (undocumented)
+    protected static commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
