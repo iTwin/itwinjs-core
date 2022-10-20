@@ -15,7 +15,7 @@ import {
   IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps,
   ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps,ViewStateProps,
 } from "@itwin/core-common";
-import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
 import { ConcurrentQuery } from "../ConcurrentQuery";
 import { generateGeometrySummaries } from "../GeometrySummary";
@@ -180,7 +180,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async getViewStateData(tokenProps: IModelRpcProps, viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
     const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    return iModelDb.views.getViewStateData(viewDefinitionId, options);
+    return iModelDb.views.getViewStateProps(viewDefinitionId, options);
   }
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {

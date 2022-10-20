@@ -108,7 +108,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
    */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
-      const ranges = await this.iModel.models.queryModelExtents(this.id);
+      const ranges = await this.iModel.models.queryExtents(this.id);
       this._modelRange = Range3d.fromJSON(ranges[0]?.extents);
     }
 

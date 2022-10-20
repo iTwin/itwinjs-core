@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CompressedId64Set, Id64Array, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
-import { CustomViewState3dCreatorOptions, CustomViewState3dProps, IModelError, IModelStatus, QueryRowFormat } from "@itwin/core-common";
+import { CustomViewState3dCreatorOptions, CustomViewState3dProps, QueryRowFormat } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";

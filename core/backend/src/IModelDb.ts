@@ -1500,10 +1500,10 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     }
 
     /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
-     * @ids The Id or Ids of the [[GeometricModel]]s for which to obtain the extents.
+     * @param ids The Id or Ids of the [[GeometricModel]]s for which to obtain the extents.
      * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
      * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry-core)) and its `status` will indicate
-     * why the extents could not be obtained.
+     * why the extents could not be obtained (e.g., because the Id did not identify a [[GeometricModel]]).
      * @see [[queryRange]] to obtain the union of all of the models' extents.
      */
     public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
