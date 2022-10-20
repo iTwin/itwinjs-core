@@ -53,14 +53,12 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
     super(memoizeFn, generateKeyFn);
   }
 
-  private _superMemoize = this.memoize;
   public override memoize = (props: Props): QueryablePromise<Result> => {
-    return this._superMemoize(props);
+    return super.memoize(props);
   };
 
-  private _superDeleteMemoized = this.deleteMemoized;
   public override deleteMemoized = (props: Props) => {
-    this._superDeleteMemoized(props);
+    super.deleteMemoized(props);
   };
 
   private log(status: string, props: Props): void {
