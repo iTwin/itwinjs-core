@@ -71,7 +71,7 @@ export class EditTools {
             editorChannel,
             "callMethod",
             methodName,
-            ...args
+            ...args as any[]
           ) as PromiseReturnType<IpcConnector[K]>;
 
     return new Proxy({} as IpcConnector, {
