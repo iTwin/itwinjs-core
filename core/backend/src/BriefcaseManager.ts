@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  AccessToken, BeDuration, BentleyError, BriefcaseStatus, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -67,7 +67,7 @@ export interface ToChangesetArgs extends TokenArg {
 /** Arguments for [[BriefcaseManager.pullAndApplyChangesets]]
  * @public
  */
-export type PullChangesArgs = ToChangesetArgs;
+export type PullChangesArgs = ToChangesetArgs & { onProgress?: ProgressFunction };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public
@@ -209,7 +209,18 @@ export class BriefcaseManager {
     const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ ...arg, version: IModelVersion.fromJSON(asOf) });
     const checkpoint: CheckpointProps = { ...arg, changeset };
 
-    await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
+    try {
+      await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
+    } catch (error: unknown) {
+      if (!arg.accessToken)
+        throw error;
+
+      if (error && (error as BentleyError).errorNumber === BriefcaseStatus.DownloadCancelled)
+        await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
+
+      throw error;
+    }
+
     const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
     const response: LocalBriefcaseProps = {
       fileName,
@@ -380,7 +391,7 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static async pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void> {
+  public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
     if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
@@ -396,6 +407,7 @@ export class BriefcaseManager {
       iModelId: db.iModelId,
       range: { first: reverse ? arg.toIndex! + 1 : currentIndex + 1, end: reverse ? currentIndex : arg.toIndex }, // eslint-disable-line @typescript-eslint/no-non-null-assertion
       targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
+      progressCallback: arg.onProgress,
     });
 
     if (changesets.length === 0)

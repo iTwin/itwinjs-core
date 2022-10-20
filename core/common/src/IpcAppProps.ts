@@ -119,7 +119,9 @@ export interface IpcAppFunctions {
   getRedoString: (key: string) => Promise<string>;
 
   /** see BriefcaseConnection.pullChanges */
-  pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
+  pullChanges: (key: string, toIndex?: ChangesetIndex, reportProgress?: boolean, progressInterval?: number) => Promise<ChangesetIndexAndId>;
+  /** Cancels pull of pending changes. */
+  cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
   /** Cancels currently pending or active generation of tile content.  */
