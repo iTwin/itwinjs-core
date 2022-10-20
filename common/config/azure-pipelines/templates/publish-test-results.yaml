@@ -9,220 +9,220 @@ steps:
   #-------
   # Core Tests
   #-------
+  # - task: PublishTestResults@2
+  #   displayName: "Publish junit Test Results"
+  #   inputs:
+  #     testResultsFiles: |
+  #       core/backend/lib/test/junit_results.xml
+  #       core/bentley/lib/test/junit_results.xml
+  #       core/common/lib/test/junit_results.xml
+  #       core/ecschema-locaters/lib/test/junit_results.xml
+  #       core/ecschema-metadata/lib/test/junit_results.xml
+  #       core/frontend/lib/test/junit_results.xml
+  #       core/geometry/lib/test/junit_results.xml
+  #       core/i18n/lib/test/junit_results.xml
+  #       core/quantity/lib/test/junit_results.xml
+  #       presentation/backend/lib/test/junit_results.xml
+  #       presentation/common/lib/test/junit_results.xml
+  #       presentation/components/lib/test/junit_results.xml
+  #       presentation/frontend/lib/test/junit_results.xml
+  #       presentation/testing/lib/test/junit_results.xml
+  #       ui/abstract/lib/test/junit_results.xml
+  #       ui/components/lib/test/junit_results.xml
+  #       ui/core/lib/test/junit_results.xml
+  #       ui/framework/lib/test/junit_results.xml
+  #       ui/ninezone/lib/test/junit_results.xml
+  #       full-stack-tests/core/lib/test/junit_results.xml
+  #       full-stack-tests/presentation/lib/test/junit_results.xml
+  #       full-stack-tests/rpc/lib/test/junit_results.xml
+  #       example-code/app/lib/test/junit_results.xml
+  #       example-code/snippets/lib/test/junit_results.xml
+  #     # testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+  #     searchFolder: ${{ parameters.workingDir }}
+  #   condition: succeededOrFailed()
   - task: PublishTestResults@2
-    displayName: "Publish junit Test Results"
+    displayName: "Publish Backend Test Results"
     inputs:
-      testResultsFiles: |
-        core/backend/lib/test/junit_results.xml
-        core/bentley/lib/test/junit_results.xml
-        core/common/lib/test/junit_results.xml
-        core/ecschema-locaters/lib/test/junit_results.xml
-        core/ecschema-metadata/lib/test/junit_results.xml
-        core/frontend/lib/test/junit_results.xml
-        core/geometry/lib/test/junit_results.xml
-        core/i18n/lib/test/junit_results.xml
-        core/quantity/lib/test/junit_results.xml
-        presentation/backend/lib/test/junit_results.xml
-        presentation/common/lib/test/junit_results.xml
-        presentation/components/lib/test/junit_results.xml
-        presentation/frontend/lib/test/junit_results.xml
-        presentation/testing/lib/test/junit_results.xml
-        ui/abstract/lib/test/junit_results.xml
-        ui/components/lib/test/junit_results.xml
-        ui/core/lib/test/junit_results.xml
-        ui/framework/lib/test/junit_results.xml
-        ui/ninezone/lib/test/junit_results.xml
-        full-stack-tests/core/lib/test/junit_results.xml
-        full-stack-tests/presentation/lib/test/junit_results.xml
-        full-stack-tests/rpc/lib/test/junit_results.xml
-        example-code/app/lib/test/junit_results.xml
-        example-code/snippets/lib/test/junit_results.xml
-      # testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      testResultsFiles: "core/backend/lib/test/junit_results.xml"
+      testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
       searchFolder: ${{ parameters.workingDir }}
     condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Backend Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/backend/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Bentley Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/bentley/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Bentley Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Common Backend Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/common/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish ECSchema Locaters Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/ecschema-locaters/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - ECSchema Locaters Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish ECSchema Metadata Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/ecschema-metadata/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - ECSchema Metadata Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Frontend Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/frontend/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Geometry Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/geometry/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Geometry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish i18n Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/i18n/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - i18n Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Quantity Test Results"
-  #   inputs:
-  #     testResultsFiles: "core/quantity/lib/test/junit_results.xml"
-  #     testRunTitle: "Core - Quantity Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # #-------
-  # # Presentation Tests
-  # #-------
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Backend Test Results"
-  #   inputs:
-  #     testResultsFiles: "presentation/backend/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Common Test Results"
-  #   inputs:
-  #     testResultsFiles: "presentation/common/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Components Test Results"
-  #   inputs:
-  #     testResultsFiles: "presentation/components/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Frontend Test Results"
-  #   inputs:
-  #     testResultsFiles: "presentation/frontend/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Testing Test Results"
-  #   inputs:
-  #     testResultsFiles: "presentation/testing/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation - Testing Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Bentley Test Results"
+    inputs:
+      testResultsFiles: "core/bentley/lib/test/junit_results.xml"
+      testRunTitle: "Core - Bentley Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Common Backend Test Results"
+    inputs:
+      testResultsFiles: "core/common/lib/test/junit_results.xml"
+      testRunTitle: "Core - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish ECSchema Locaters Test Results"
+    inputs:
+      testResultsFiles: "core/ecschema-locaters/lib/test/junit_results.xml"
+      testRunTitle: "Core - ECSchema Locaters Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish ECSchema Metadata Test Results"
+    inputs:
+      testResultsFiles: "core/ecschema-metadata/lib/test/junit_results.xml"
+      testRunTitle: "Core - ECSchema Metadata Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Frontend Test Results"
+    inputs:
+      testResultsFiles: "core/frontend/lib/test/junit_results.xml"
+      testRunTitle: "Core - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Geometry Test Results"
+    inputs:
+      testResultsFiles: "core/geometry/lib/test/junit_results.xml"
+      testRunTitle: "Core - Geometry Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish i18n Test Results"
+    inputs:
+      testResultsFiles: "core/i18n/lib/test/junit_results.xml"
+      testRunTitle: "Core - i18n Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Quantity Test Results"
+    inputs:
+      testResultsFiles: "core/quantity/lib/test/junit_results.xml"
+      testRunTitle: "Core - Quantity Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  #-------
+  # Presentation Tests
+  #-------
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Backend Test Results"
+    inputs:
+      testResultsFiles: "presentation/backend/lib/test/junit_results.xml"
+      testRunTitle: "Presentation - Backend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Common Test Results"
+    inputs:
+      testResultsFiles: "presentation/common/lib/test/junit_results.xml"
+      testRunTitle: "Presentation - Common Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Components Test Results"
+    inputs:
+      testResultsFiles: "presentation/components/lib/test/junit_results.xml"
+      testRunTitle: "Presentation - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Frontend Test Results"
+    inputs:
+      testResultsFiles: "presentation/frontend/lib/test/junit_results.xml"
+      testRunTitle: "Presentation - Frontend Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Testing Test Results"
+    inputs:
+      testResultsFiles: "presentation/testing/lib/test/junit_results.xml"
+      testRunTitle: "Presentation - Testing Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
 
-  # #-------
-  # # UI Tests
-  # #-------
-  # - task: PublishTestResults@2
-  #   displayName: "Publish UI Abstract Test Results"
-  #   inputs:
-  #     testResultsFiles: "ui/abstract/lib/test/junit_results.xml"
-  #     testRunTitle: "UI - Abstract Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish UI Components Test Results"
-  #   inputs:
-  #     testResultsFiles: "ui/components/lib/test/junit_results.xml"
-  #     testRunTitle: "UI - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish UI Core Test Results"
-  #   inputs:
-  #     testResultsFiles: "ui/core/lib/test/junit_results.xml"
-  #     testRunTitle: "UI - Core Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish UI Framework Test Results"
-  #   inputs:
-  #     testResultsFiles: "ui/framework/lib/test/junit_results.xml"
-  #     testRunTitle: "UI - Framework Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish UI Ninezone Test Results"
-  #   inputs:
-  #     testResultsFiles: "ui/ninezone/lib/test/junit_results.xml"
-  #     testRunTitle: "UI - Ninezone Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
+  #-------
+  # UI Tests
+  #-------
+  - task: PublishTestResults@2
+    displayName: "Publish UI Abstract Test Results"
+    inputs:
+      testResultsFiles: "ui/abstract/lib/test/junit_results.xml"
+      testRunTitle: "UI - Abstract Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish UI Components Test Results"
+    inputs:
+      testResultsFiles: "ui/components/lib/test/junit_results.xml"
+      testRunTitle: "UI - Components Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish UI Core Test Results"
+    inputs:
+      testResultsFiles: "ui/core/lib/test/junit_results.xml"
+      testRunTitle: "UI - Core Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish UI Framework Test Results"
+    inputs:
+      testResultsFiles: "ui/framework/lib/test/junit_results.xml"
+      testRunTitle: "UI - Framework Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish UI Ninezone Test Results"
+    inputs:
+      testResultsFiles: "ui/ninezone/lib/test/junit_results.xml"
+      testRunTitle: "UI - Ninezone Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
 
-  # #-------
-  # # Full Stack Tests
-  # #-------
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Core Full Stack Test Results"
-  #   inputs:
-  #     testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
-  #     testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Presentation Full Stack Test Results"
-  #   inputs:
-  #     testResultsFiles: "full-stack-tests/presentation/lib/test/junit_results.xml"
-  #     testRunTitle: "Presentation Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish RPC Full Stack Test Results"
-  #   inputs:
-  #     testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
-  #     testRunTitle: "RPC Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
+  #-------
+  # Full Stack Tests
+  #-------
+  - task: PublishTestResults@2
+    displayName: "Publish Core Full Stack Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/core/lib/test/junit_results.xml"
+      testRunTitle: "Core Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Presentation Full Stack Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/presentation/lib/test/junit_results.xml"
+      testRunTitle: "Presentation Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish RPC Full Stack Test Results"
+    inputs:
+      testResultsFiles: "full-stack-tests/rpc/lib/test/junit_results.xml"
+      testRunTitle: "RPC Full Stack - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
 
-  # #-------
-  # # Example Code Tests
-  # #-------
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Example App"
-  #   inputs:
-  #     testResultsFiles: "example-code/app/lib/test/junit_results.xml"
-  #     testRunTitle: "Example Apps - App Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
-  # - task: PublishTestResults@2
-  #   displayName: "Publish Example Snippets"
-  #   inputs:
-  #     testResultsFiles: "example-code/snippets/lib/test/junit_results.xml"
-  #     testRunTitle: "Example Apps - Snippets Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
-  #     searchFolder: ${{ parameters.workingDir }}
-  #   condition: succeededOrFailed()
+  #-------
+  # Example Code Tests
+  #-------
+  - task: PublishTestResults@2
+    displayName: "Publish Example App"
+    inputs:
+      testResultsFiles: "example-code/app/lib/test/junit_results.xml"
+      testRunTitle: "Example Apps - App Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
+  - task: PublishTestResults@2
+    displayName: "Publish Example Snippets"
+    inputs:
+      testResultsFiles: "example-code/snippets/lib/test/junit_results.xml"
+      testRunTitle: "Example Apps - Snippets Tests - $(Agent.OS) - ${{ parameters.NodeVersion }}"
+      searchFolder: ${{ parameters.workingDir }}
+    condition: succeededOrFailed()
   #-------
   # Code Coverage Tests
   #-------
