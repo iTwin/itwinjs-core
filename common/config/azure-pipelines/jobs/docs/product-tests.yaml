@@ -15,11 +15,14 @@ jobs:
   variables:
     group: Selenium Test Variables
     ${{ if eq(parameters.env, 'Development') }}:
-      SeleniumTestUrl: https://dev.imodeljs.org
+      - name: SeleniumTestUrl
+        value: https://dev.imodeljs.org
     ${{ if eq(parameters.env, 'QA') }}:
-      SeleniumTestUrl: https://qa.imodeljs.org
+      - name: SeleniumTestUrl
+        value: https://qa.imodeljs.org
     ${{ if eq(parameters.env, 'Production') }}:
-      SeleniumTestUrl: https://imodeljs.org
+      - name: SeleniumTestUrl
+        value: https://imodeljs.org
 
   steps:
     - download: bemetalsmith-tests
