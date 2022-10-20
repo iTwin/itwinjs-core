@@ -13,16 +13,14 @@ jobs:
     demands: Agent.OS -equals Windows_NT
 
   variables:
-    group: Selenium Test Variables
+  - group: Selenium Test Variables
+  - name: SeleniumTestUrl
     ${{ if eq(parameters.env, 'Development') }}:
-      - name: SeleniumTestUrl
-        value: https://dev.imodeljs.org
+      value: https://dev.imodeljs.org
     ${{ if eq(parameters.env, 'QA') }}:
-      - name: SeleniumTestUrl
-        value: https://qa.imodeljs.org
+      value: https://qa.imodeljs.org
     ${{ if eq(parameters.env, 'Production') }}:
-      - name: SeleniumTestUrl
-        value: https://imodeljs.org
+      value: https://imodeljs.org
 
   steps:
     - download: bemetalsmith-tests
