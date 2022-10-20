@@ -136,7 +136,7 @@ export class ImportIMJS {
             // console.log(g1);
             this.iModelDb.elements.insertElement(featureProps);
             const featureModel: SpatialModel = this.iModelDb.models.getModel(physicalModelId);
-            const featureModelExtents = featureModel.queryExtents();
+            const featureModelExtents = featureModel.queryExtents(); // eslint-disable-line deprecation/deprecation
             this.insertSpatialViewOneModel(`Spatial View${fileName}`, range, physicalModelId);
             this.iModelDb.updateProjectExtents(featureModelExtents);
 
