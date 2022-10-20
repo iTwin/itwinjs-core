@@ -53,7 +53,7 @@ jobs:
       # setup env to inject debug build during install
       - template: templates/install-node-addon-from-artifact.yaml@buildscripts
         parameters:
-          buildId: 1670417 # 3.4.12
+          buildId: 1748175 # 3.5 somethin
 
       - script: node common/scripts/install-run-rush.js install
         displayName: rush install
