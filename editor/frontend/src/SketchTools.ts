@@ -44,9 +44,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  protected static commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected get allowJoin(): boolean { return this.isControlDown; }
   protected get allowClosure(): boolean { return this.isControlDown; }
@@ -131,7 +129,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
 
     try {
       this._startedCmd = await this.startCommand();
-      const info = await CreateOrContinuePathTool.callCommand("requestElementGeometry", snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
+      const info = await CreateOrContinuePathTool.commandConnection.requestElementGeometry(snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
       if (undefined === info)
         return;
 
@@ -640,9 +638,9 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     try {
       this._startedCmd = await this.startCommand();
       if (undefined === props.id)
-        await CreateOrContinuePathTool.callCommand("insertGeometricElement", props, data);
+        await CreateOrContinuePathTool.commandConnection.insertGeometricElement(props, data);
       else
-        await CreateOrContinuePathTool.callCommand("updateGeometricElement", props, data);
+        await CreateOrContinuePathTool.commandConnection.updateGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

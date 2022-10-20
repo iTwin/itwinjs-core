@@ -944,9 +944,7 @@ export class ProjectLocationCancelTool extends Tool {
 export class ProjectLocationSaveTool extends Tool {
   public static override toolId = "ProjectLocation.Save";
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  protected static commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected async allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean> {
     if (!await iModel.txns.isUndoPossible())
@@ -970,10 +968,10 @@ export class ProjectLocationSaveTool extends Tool {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, deco.iModel.key);
 
       if (undefined !== extents)
-        await ProjectLocationSaveTool.callCommand("updateProjectExtents", extents);
+        await ProjectLocationSaveTool.commandConnection.updateProjectExtents(extents);
 
       if (undefined !== ecefLocation)
-        await ProjectLocationSaveTool.callCommand("updateEcefLocation", ecefLocation);
+        await ProjectLocationSaveTool.commandConnection.updateEcefLocation(ecefLocation);
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
