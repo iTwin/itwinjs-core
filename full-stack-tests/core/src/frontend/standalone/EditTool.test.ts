@@ -29,7 +29,7 @@ class TestEditTool1 extends PrimitiveTool {
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
     cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
-    testOut = await TestEditTool1.commandConnection.testMethod1(str1, str2, obj1);
+    testOut = await this.commandConnection.testMethod1(str1, str2, obj1);
   }
 }
 
