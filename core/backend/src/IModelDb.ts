@@ -1499,6 +1499,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       });
     }
 
+    /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @ids The Id or Ids of the [[GeometricModel]]s for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry-core)) and its `status` will indicate
+     * why the extents could not be obtained.
+     * @see [[queryRange]] to obtain the union of all of the models' extents.
+     */
     public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
       ids = typeof ids === "string" ? [ids] : ids;
       if (ids.length === 0)
@@ -1507,6 +1514,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this._iModel.nativeDb.queryModelExtentsAsync(ids);
     }
 
+    /** Computes the union of the volumes of all geoemtric elements within any number of [[GeometricModel]]s, specified by model Id.
+     * @see [[queryExtents]] to obtain discrete volumes for each model.
+     */
     public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
       const results = await this.queryExtents(ids);
       const range = new Range3d();
@@ -2085,6 +2095,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return this.loadViewStateProps(view, options, drawingExtents);
     }
 
+    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
     public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
       const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
       let drawingExtents;

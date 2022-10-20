@@ -62,7 +62,7 @@ export class CustomViewState3dCreator {
     return range;
   }
 
-  /** Get all PhysicalModel ids in the iModel */
+  /** Get the Ids of all spatially-located, non-template 3d models in the iModel. */
   private async _getAllModels(): Promise<Id64Array> {
     // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
     // If the iModel has an earlier version, the statement will throw because the property does not exist.
