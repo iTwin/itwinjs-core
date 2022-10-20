@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/eslint-plugin",
+      "comment": "do not recommend indentation for ternary expressions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/eslint-plugin"
+}
