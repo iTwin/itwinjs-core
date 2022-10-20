@@ -76,7 +76,7 @@ export class GeoJsonImporter {
       this.featureCategoryId = (foundCategoryId !== undefined) ? foundCategoryId : this.addCategoryToExistingDb(categoryName);
       this.convertFeatureCollection();
       const featureModel: SpatialModel = this.iModelDb.models.getModel<SpatialModel>(this.physicalModelId);
-      featureModelExtents = featureModel.queryExtents(); // eslint-disable-line deprecation/deprecation
+      featureModelExtents = featureModel.queryExtents();
       const projectExtents = Range3d.createFrom(this.iModelDb.projectExtents);
       projectExtents.extendRange(featureModelExtents);
       this.iModelDb.updateProjectExtents(projectExtents);
@@ -96,7 +96,7 @@ export class GeoJsonImporter {
       this.convertFeatureCollection();
 
       const featureModel: SpatialModel = this.iModelDb.models.getModel<SpatialModel>(this.physicalModelId);
-      featureModelExtents = featureModel.queryExtents(); // eslint-disable-line deprecation/deprecation
+      featureModelExtents = featureModel.queryExtents();
       if (!this._classifiedURL)
         this.insertSpatialView("Spatial View", featureModelExtents);
       this.iModelDb.updateProjectExtents(featureModelExtents);

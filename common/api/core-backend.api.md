@@ -2508,7 +2508,6 @@ export class GeometricModel extends Model {
     static get className(): string;
     // (undocumented)
     geometryGuid?: GuidString;
-    // @deprecated
     queryExtents(): AxisAlignedBox3d;
     queryRange(): Promise<AxisAlignedBox3d>;
 }

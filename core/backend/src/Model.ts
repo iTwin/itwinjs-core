@@ -243,7 +243,7 @@ export class GeometricModel extends Model {
   constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
 
   /** Query for the union of the extents of the elements contained by this model.
-   * @deprecated use [[queryRange]].
+   * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
    */
   public queryExtents(): AxisAlignedBox3d {
     const extents = this.iModel.nativeDb.queryModelExtents({ id: this.id }).modelExtents;

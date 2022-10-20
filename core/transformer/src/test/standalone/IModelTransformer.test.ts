@@ -440,7 +440,7 @@ describe("IModelTransformer", () => {
       }
     }
     const sourceModel: PhysicalModel = sourceDb.models.getModel<PhysicalModel>(sourceModelId);
-    const sourceModelExtents: AxisAlignedBox3d = sourceModel.queryExtents(); // eslint-disable-line deprecation/deprecation
+    const sourceModelExtents: AxisAlignedBox3d = sourceModel.queryExtents();
     assert.deepEqual(sourceModelExtents, new Range3d(1, 0, 0, 10, 9, 1));
     // create target iModel
     const targetDbFile: string = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "Transform3d-Target.bim");
@@ -451,7 +451,7 @@ describe("IModelTransformer", () => {
     await transformer.processAll();
     const targetModelId: Id64String = transformer.context.findTargetElementId(sourceModelId);
     const targetModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(targetModelId);
-    const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents(); // eslint-disable-line deprecation/deprecation
+    const targetModelExtents: AxisAlignedBox3d = targetModel.queryExtents();
     assert.deepEqual(targetModelExtents, new Range3d(101, 200, 0, 110, 209, 1));
     assert.deepEqual(targetModelExtents, transform3d.multiplyRange(sourceModelExtents));
     // clean up
