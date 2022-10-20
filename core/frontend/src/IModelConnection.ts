@@ -776,7 +776,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @param modelIds the Id or Ids of the [GeometricModel]($backend)s for which to query the ranges.
      * @returns An array containing the range of each model of each unique model Id, omitting the range for any Id which did no identify a GeometricModel.
      * @note The contents of the returned array do not follow a deterministic order.
-     * @throws [IModelError]($bentley) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
+     * @throws [IModelError]($common) if exactly one model Id is specified and that Id does not identify a GeoemtricModel.
      * @see [[queryExtents]] for a similar function that does not throw and produces a deterministically-ordered result.
      */
     public async queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]> {
@@ -787,7 +787,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** For each [GeometricModel]($backend) specified by Id, attempts to obtain the union of the volumes of all geometric elements within that model.
      * @param modelIds The Id or Ids of the geometric models for which to obtain the extents.
      * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
-     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry-core) and its `status` will indicate
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry) and its `status` will indicate
      * why the extents could not be obtained (e.g., because the Id did not identify a [GeometricModel]($backend)).
      */
     public async queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {

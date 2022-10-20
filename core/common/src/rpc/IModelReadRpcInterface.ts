@@ -48,7 +48,7 @@ export interface ModelExtentsProps {
   /** The Id of the model, or [Id64.invalid]($bentley) if the input model Id was not a well-formed [Id64String]($bentley). */
   id: Id64String;
   /** The volume of geometry contained within the model.
-   * This range will be null (@see [Range3d.isNull]($geometry-core)) if [[status]] is not [IModelStatus.Success]($bentley) or the model contains no geometry.
+   * This range will be null (@see [Range3d.isNull]($geometry)) if [[status]] is not [IModelStatus.Success]($bentley) or the model contains no geometry.
    */
   extents: Range3dProps;
   /** A status code indicating what if any error occurred obtaining the model's extents. For example:
