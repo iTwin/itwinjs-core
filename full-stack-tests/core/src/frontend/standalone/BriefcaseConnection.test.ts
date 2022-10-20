@@ -29,9 +29,9 @@ class MockAbortSignal implements GenericAbortSignal {
   }
 }
 
-if (ProcessDetector.isElectronAppFrontend){
+if (ProcessDetector.isElectronAppFrontend) {
 
-  describe.only("BriefcaseConnection", async () => {
+  describe("BriefcaseConnection (#integration)", async () => {
 
     beforeEach(async () => {
       await TestUtility.startFrontend();
@@ -42,7 +42,7 @@ if (ProcessDetector.isElectronAppFrontend){
       await TestUtility.shutdownFrontend();
     });
 
-    it("should report progress when pulling changes", async () => { // TODO: (#integration) ?
+    it("should report progress when pulling changes", async () => {
       const iTwinId = await TestUtility.getTestITwinId();
       const iModelId = await TestUtility.queryIModelIdByName(iTwinId, TestUtility.testIModelNames.stadium);
 
