@@ -67,7 +67,12 @@ export interface ToChangesetArgs extends TokenArg {
 /** Arguments for [[BriefcaseManager.pullAndApplyChangesets]]
  * @public
  */
-export type PullChangesArgs = ToChangesetArgs & { onProgress?: ProgressFunction };
+export type PullChangesArgs = ToChangesetArgs & {
+  /** If present, a function called periodically during the download to indicate progress.
+   * @note return non-zero from this function to abort the download.
+   */
+  onProgress?: ProgressFunction;
+};
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
  * @public

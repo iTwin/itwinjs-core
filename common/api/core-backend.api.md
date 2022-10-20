@@ -5102,7 +5102,7 @@ export interface TextureCreateProps extends Omit<TextureProps, "data"> {
     data: Base64EncodedString | Uint8Array;
 }
 
-// @internal (undocumented)
+// @internal
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction;
 
 // @public

@@ -120,7 +120,7 @@ export interface IpcAppFunctions {
 
   /** see BriefcaseConnection.pullChanges */
   pullChanges: (key: string, toIndex?: ChangesetIndex, reportProgress?: boolean, progressInterval?: number) => Promise<ChangesetIndexAndId>;
-  /** Cancels pull of pending changes. */
+  /** Cancels pull of changes. */
   cancelPullChangesRequest: (key: string) => Promise<void>;
   /** see BriefcaseConnection.pushChanges */
   pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;

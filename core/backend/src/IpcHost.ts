@@ -297,7 +297,10 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 }
 
-/** @internal */
+/**
+ * Prevents progress callback being called more frequently when provided interval.
+ * @internal
+ */
 export function throttleProgressCallback(func: ProgressFunction, checkAbort: () => ProgressStatus, progressInterval?: number): ProgressFunction {
   const interval = progressInterval ?? 250; // by default, only send progress events every 250 milliseconds
   let nextTime = Date.now() + interval;
