@@ -45,16 +45,8 @@ export class EditTools {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
   }
 
-  public static async callCommand(
-    methodName: string,
-    ...args: any[]
-  ): Promise<any> {
-    return IpcApp.callIpcChannel(
-      editorChannel,
-      "callMethod",
-      methodName,
-      ...args
-    );
+  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
+    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
   }
 
   /**
