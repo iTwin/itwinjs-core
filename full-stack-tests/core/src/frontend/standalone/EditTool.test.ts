@@ -24,13 +24,12 @@ class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public async onRestartTool() { return this.exitTool(); }
-  public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
-  }
+
+  public static commandConnection = EditTools.connect<TestCommandIpc>();
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
     cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
-    testOut = await TestEditTool1.callCommand("testMethod1", str1, str2, obj1);
+    testOut = await TestEditTool1.commandConnection.testMethod1(str1, str2, obj1);
   }
 }
 
