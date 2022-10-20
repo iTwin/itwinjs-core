@@ -71,6 +71,7 @@ jobs:
         displayName: "Run Valgrind's datarace detector (helgrind) on core-backend tests"
         failOnStderr: false
         workingDirectory: $(Agent.BuildDirectory)/s/core/backend
+        timeoutInMinutes: 160 # assume 20 minutes of time for everything else
 
       - task: archiveandpublishartifact@0
         inputs:
@@ -84,3 +85,4 @@ jobs:
           scriptSource: filepath
           scriptPath: common/config/azure-pipelines/utils/log_valgrind_errors.py
           arguments: '$(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
+        condition: always()
