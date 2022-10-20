@@ -2240,7 +2240,8 @@ class MRTCompositor extends Compositor {
 
     // ###TODO figure out how to get setting for these
     const edlOff = false; // should be .pointCloud.edlStrength > 0
-    const useSimple = true;
+    const useAdvSimple = true;
+    const useSimple = false;
     const filter = true;
     if (edlOff) {
       // draw the regular way
@@ -2269,21 +2270,30 @@ class MRTCompositor extends Compositor {
           const params = getDrawParams(this.target, this._geom.edlSimple!);
           this.target.techniques.draw(params);
         });
+      } else if (useAdvSimple) {
+        fbStack.execute(edlFin, true, useMsBuffers, () => {
+          // this.drawPass(commands, RenderPass.PointClouds);
+          if (this._geom.edlSimple === undefined)
+            this._geom.edlSimple = EDLCalcGeometry.createGeometry(this._textures.hilite!.getHandle()!, this._depth!.getHandle()!, 1);
+          const params = getDrawParams(this.target, this._geom.edlSimple!);
+          this.target.techniques.draw(params);
+        });
       } else {
         // more advanced method based on original paper
         // calculate the EDL result for full, 1/2, and 1/4 sizes
         const edlCalc: FrameBuffer[] = [this._fbos.edlCalc1, this._fbos.edlCalc2, this._fbos.edlCalc4];
-        const edlFilt: FrameBuffer[] = [this._fbos.edlFilt2, this._fbos.edlFilt4];
         if (this._geom.edlCalc === undefined) {
           const ct1 = this._textures.hilite!.getHandle()!;
           const ct2 = this._depth!.getHandle()!;
           this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1, ct2, 1), EDLCalcGeometry.createGeometry(ct1, ct2, 2),
             EDLCalcGeometry.createGeometry(ct1, ct2, 4)];
         }
+        const edlFilt: FrameBuffer[] = [this._fbos.edlFilt2, this._fbos.edlFilt4];
         if (this._geom.edlFilt === undefined) {
-          const ft1 = this._textures.hilite!.getHandle()!;
-          const ft2 = this._depth!.getHandle()!;
-          this._geom.edlFilt = [EDLFilterGeometry.createGeometry(ft1, ft2, 2), EDLCalcGeometry.createGeometry(ft1, ft2, 4)];
+          const ft2 = this._fbos.edlCalc2.getColor(0).getHandle()!;
+          const ft4 = this._fbos.edlCalc4.getColor(0).getHandle()!;
+          const ftd = this._depth!.getHandle()!;
+          this._geom.edlFilt = [EDLFilterGeometry.createGeometry(ft2, ftd, 2), EDLCalcGeometry.createGeometry(ft4, ftd, 4)];
         }
 
         // Loop through the 3 sizes calculating an edl buffer, and if not first size, then optionally filtering those
@@ -2305,26 +2315,20 @@ class MRTCompositor extends Compositor {
         const tex2 = filter ? this._fbos.edlFilt2.getColor(0).getHandle() : this._fbos.edlCalc2.getColor(0).getHandle();
         const tex4 = filter ? this._fbos.edlFilt4.getColor(0).getHandle() : this._fbos.edlCalc4.getColor(0).getHandle();
         fbStack.execute(edlFin, true, useMsBuffers, () => {
-          if (this._geom.edlMix === undefined)
+          if (this._geom.edlMix === undefined) {
             this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!, this._depth!.getHandle()!);
+          } else {
+            if (this._geom.edlMix.colorTexture1 !== tex1 || this._geom.edlMix.colorTexture2 !== tex2 || this._geom.edlMix.colorTexture4 !== tex4) {
+              dispose(this._geom.edlMix);
+              this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!, this._depth!.getHandle()!);
+            }
+          }
           const params = getDrawParams(this.target, this._geom.edlMix!);
           this.target.techniques.draw(params);
         });
       }
     }
     this._readPickDataFromPingPong = false;
-
-    // ###TODO
-    // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    // if (!renderForReadPixels) {
-    //   fbo = (needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!);
-    //   fbStack.execute(fbo, true, useMsBuffers, () => {
-    //     this.drawPass(commands, RenderPass.OpaqueGeneral, false);
-    //     this.drawPass(commands, RenderPass.HiddenEdge, false);
-    //   });
-    //   if (useMsBuffers)
-    //     fbo.blitMsBuffersToTextures(needComposite);
-    // }
   }
 
   protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
