@@ -41,38 +41,38 @@ variables:
   octopusProjectName: iModel.js Documentation
 
 stages:
-  - stage: CreateRelease
-    displayName: Create release
-    jobs:
-    - template: ./jobs/docs/package-docs.yaml
+  # - stage: CreateRelease
+  #   displayName: Create release
+  #   jobs:
+  #   - template: ./jobs/docs/package-docs.yaml
 
-  - stage: DEV
-    displayName: Deployment (DEV)
-    dependsOn: CreateRelease
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - DEV
+  # - stage: DEV
+  #   displayName: Deployment (DEV)
+  #   dependsOn: CreateRelease
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - DEV
 
-  - stage: ProductTestsDEV
-    displayName: Product Tests (DEV)
-    dependsOn: DEV
-    jobs:
-    - template: ./jobs/docs/product-tests.yaml
-      parameters:
-        env: Development
+  # - stage: ProductTestsDEV
+  #   displayName: Product Tests (DEV)
+  #   dependsOn: DEV
+  #   jobs:
+  #   - template: ./jobs/docs/product-tests.yaml
+  #     parameters:
+  #       env: Development
 
-  - stage: QA
-    displayName: Deployment (QA)
-    dependsOn: ProductTestsDEV
-    jobs:
-    - template: ./jobs/docs/deploy-docs.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - QA
+  # - stage: QA
+  #   displayName: Deployment (QA)
+  #   dependsOn: ProductTestsDEV
+  #   jobs:
+  #   - template: ./jobs/docs/deploy-docs.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - QA
 
   - stage: ProductTestsQA
     displayName: Product Tests (QA)
-    dependsOn: QA
+    # dependsOn: QA
     jobs:
     - template: ./jobs/docs/product-tests.yaml
       parameters:
@@ -80,7 +80,7 @@ stages:
 
   - stage: LinkValidatorQA
     displayName: Link Validator (QA)
-    dependsOn: QA
+    # dependsOn: QA
     jobs:
     - template: ./jobs/docs/validate-links.yaml
       parameters:
@@ -88,7 +88,7 @@ stages:
 
   - stage: UpdateDocumentationIndexQA
     displayName: Update Documentation Index (QA)
-    dependsOn: QA
+    # dependsOn: QA
     jobs:
     - template: ./jobs/docs/update-docs-index.yaml
       parameters:
