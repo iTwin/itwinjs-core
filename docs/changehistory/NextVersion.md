@@ -1,102 +1,113 @@
 ---
 publish: false
 ---
-
 # NextVersion
 
 Table of contents:
 
-- [Ambient Occlusion Improvements](#ambient-occlusion-improvements)
-- [Transformer API](#transformer-api)
+- [Display system](#display-system)
+  - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
-  - [Restoring Presentation tree state](#restoring-presentation-tree-state)
-  - [OpenTelemetry](#opentelemetry)
-- [Electron versions support](#electron-versions-support)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
+- [AppUi](#appui)
+- [Deprecations](#deprecations)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
-## Ambient Occlusion Improvements
+## Display system
 
-The ambient occlusion effect has undergone some quality improvements.
+### Reality model display customization
 
-Changes:
+You can now customize various aspects of how a reality model is displayed within a [Viewport]($frontend) by applying your own [RealityModelDisplaySettings]($common) to the model. For contextual reality models, use [ContextRealityModel.displaySettings]($common); for persistent reality [Model]($backend)s, use [DisplayStyleSettings.setRealityModelDisplaySettings]($common).
 
-- The shadows cast by ambient occlusion will decrease in size the more distant the geometry is.
-- The maximum distance for applying ambient occlusion now defaults to 10,000 meters instead of 100 meters.
-- The effect will now fade as it approaches the maximum distance.
+For all types of reality models, you can customize how the model's color is mixed with a color override applied by a [FeatureAppearance]($common) or a [SpatialClassifier]($common). [RealityModelDisplaySettings.overrideColorRatio]($common) defaults to 0.5, mixing the two colors equally, but you can adjust it to any value between 0.0 (use only the model's color) and 1.0 (use only the override color).
 
-Old effect, as shown below:
+Point clouds provide the following additional customizations:
 
-![AO effect is the same strength in the near distance and far distance](./assets/AOOldDistance.png)
-
-New effect, shown below:
-
-![AO effect fades in the distance; shadows decrease in size](./assets/AONewDistance.png)
-
-For more details, see the new descriptions of the `texelStepSize` and `maxDistance` properties of [AmbientOcclusion.Props]($common).
-
-## Transformer API
-
-The synchronous `void`-returning overload of [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated.
-It will still perform the old behavior synchronously until it is removed. It will now however return a `Promise` (which should be
-awaited) if invoked with the an [InitFromExternalSourceAspectsArgs]($transformer) argument, which is necessary when processing
-changes instead of the full source contents.
+- [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
+- When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
+- [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
 
 ## Presentation
 
-### Restoring Presentation tree state
+### Controlling in-memory cache sizes
 
-It is now possible to restore previously saved Presentation tree state on component mount.
+The presentation library uses a number of SQLite connections, each of which have an associated in-memory page cache. Ability to control the size of these caches on the backend has been added to allow consumers fine-tune their configuration based on their memory restrictions and use cases.
 
-```ts
-// Save current tree state
-const { nodeLoader } = usePresentationTreeNodeLoader(args);
-useEffect(() => exampleStoreTreeModel(nodeLoader.modelSource.getModel()), []);
-
-// Restore tree state on component mount
-const seedTreeModel = exampleRetrieveStoredTreeModel();
-const { nodeLoader } = usePresentationTreeNodeLoader({ ...args, seedTreeModel });
-```
-
-## IModelSchemaLoader replaced with SchemaLoader
-
-Replaced `IModelSchemaLoader` with `SchemaLoader` class and function to get schemas from an iModel. This allows us to remove the ecschema-metadata dependency in core-backend.
-
-```typescript
-// Old
-import { IModelSchemaLoader } from "@itwin/core-backend";
-const loader = new IModelSchemaLoader(iModel);
-const schema = loader.getSchema("BisCore");
-
-// New
-import { SchemaLoader } from "@itwin/ecschema-metadata";
-const loader = new SchemaLoader((name) => iModel.getSchemaProps(name); );
-const schema = loader.getSchema("BisCore");
-```
-
-The new `SchemaLoader` can be constructed with any function that returns [ECSchemaProps]($common) when passed a schema name string.
-
-### OpenTelemetry
-
-It is now possible to setup OpenTelemetry reporting using `PresentationManagerProps.diagnosticsCallback` attribute.
-
-Example usage:
+The configuration is done when initializing [Presentation]($presentation-backend) or creating a [PresentationManager]($presentation-backend):
 
 ```ts
-import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-grpc";
-import { context, trace } from "@opentelemetry/api";
-import { convertToReadableSpans } from "@itwin/presentation-opentelemetry";
-import { Presentation } from "@itwin/presentation-backend";
-
-const traceExporter = new OTLPTraceExporter({
-  url: "<OpenTelemetry collector's url>",
+Presentation.initialize({
+  caching: {
+    // use 8 megabytes page cache for worker connections to iModels
+    workerConnectionCacheSize: 8 * 1024 * 1024,
+    // use a disk-based hierarchy cache with a 4 megabytes in-memory page cache
+    hierarchies: {
+      mode: HierarchyCacheMode.Disk,
+      memoryCacheSize: 4 * 1024 * 1024,
+    },
+  },
 });
-
-Presentation.initialize({ diagnosticsCallback: (diagnostics) => {
-  const parentSpanContext = trace.getSpan(context.active())?.spanContext();
-  const spans = convertToReadableSpans(diagnostics, parentSpanContext);
-  traceExporter.export(spans, () => {});
-} });
 ```
 
-## Electron versions support
+See the [Caching documentation page](../presentation/advanced/Caching.md) for more details on various caches used by presentation system.
 
-In addition to the already supported Electron 14, Electron versions 15, 16, and 17 are now supported (blog posts for Electron versions [15](https://www.electronjs.org/blog/electron-15-0), [16](https://www.electronjs.org/blog/electron-16-0), [17](https://www.electronjs.org/blog/electron-17-0)). At the moment, support for Electron 18 and 19 is blocked due to a bug in the V8 javascript engine (for more information see [Issue #35043](https://github.com/electron/electron/issues/35043)).
+### Changes to infinite hierarchy prevention
+
+The idea of infinite hierarchy prevention is to stop producing hierarchy when we notice duplicate ancestor nodes. See more details about that in the [Infinite hierarchy prevention page](../presentation/hierarchies/InfiniteHierarchiesPrevention.md).
+
+Previously, when a duplicate node was detected, our approach to handle the situation was to just hide the duplicate node altogether. However, in some situations that turned out to be causing mismatches between what we get through a nodes count request and what we get through a nodes request (e.g. the count request returns `2`, but the nodes request returns only 1 node). There was no way to keep the count request efficient with this approach of handling infinite hierarchies.
+
+The new approach, instead of hiding the duplicate node, shows it, but without any children. This still "breaks" the hierarchy when we want that, but keeps the count and nodes in sync.
+
+#### Example
+
+Say, we have two instances A and B and they point to each other through a relationship:
+
+```
+A -> refers to -> B
+B -> refers to -> A
+```
+
+With presentation rules we can set up a hierarchy where root node is A, its child is B, whose child is again A, and so on.
+
+With previous approach the produced hierarchy "breaks" at the B node and looks like this:
+
+```
++ A
++--+ B
+```
+
+With the new approach we "break" at the duplicate A node:
+
+```
++ A
++--+ B
+   +--+ A
+```
+
+## Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
+
+## AppUi
+
+### Setting allowed panel zones for widgets
+
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+## Deprecations
+
+### @itwin/core-backend
+
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-transformer
+
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).

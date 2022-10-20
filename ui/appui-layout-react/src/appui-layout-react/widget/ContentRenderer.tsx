@@ -10,8 +10,9 @@ import "./ContentRenderer.scss";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { TabsStateContext, ToolSettingsNodeContext, WidgetContentNodeContext } from "../base/NineZone";
-import { TabState, toolSettingsTabId } from "../base/NineZoneState";
+import { TabState } from "../state/TabState";
 import { WidgetContentContainersContext, WidgetContentManagerContext } from "./ContentManager";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 /** @internal */
 export const WidgetContentRenderers = React.memo(function WidgetContentRenderers() { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow

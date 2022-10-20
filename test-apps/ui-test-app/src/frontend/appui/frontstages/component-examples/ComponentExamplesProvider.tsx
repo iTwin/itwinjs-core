@@ -1251,12 +1251,16 @@ export class ComponentExamplesProvider {
       examples: [
         createComponentExample("Normal Tile", undefined,
           <Tile title="Normal Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </Tile>),
         createComponentExample("Featured Tile", undefined,
           <FeaturedTile title="Featured Tile" icon="icon-placeholder">
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 1</a>
+            {/* eslint-disable-next-line jsx-a11y/anchor-is-valid */}
             <a>Link 2</a>
           </FeaturedTile>),
         createComponentExample("Minimal Tile", undefined, <MinimalTile title="Minimal Tile" icon="icon-placeholder" />),

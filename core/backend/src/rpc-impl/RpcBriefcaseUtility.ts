@@ -187,6 +187,8 @@ export class RpcBriefcaseUtility {
   }
 
   public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> {
+    if (tokenProps.iModelId)
+      await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
 

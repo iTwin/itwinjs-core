@@ -8,6 +8,10 @@ on:
     branches:
       - master
       - release/*
+    paths-ignore:
+      - "**.md"
+      - docs/**
+      - .github/CODEOWNERS
 
 jobs:
   extract-api:

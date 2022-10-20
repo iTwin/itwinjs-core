@@ -100,8 +100,8 @@ export class ElectronHost {
   public static appIconPath: string;
   public static frontendURL: string;
   public static rpcConfig: RpcConfiguration;
-  public static get ipcMain() { return this._electron.ipcMain; }
-  public static get app() { return this._electron.app; }
+  public static get ipcMain() { return this._electron?.ipcMain; }
+  public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
 
   private constructor() { }
@@ -182,6 +182,8 @@ export class ElectronHost {
       mainWindow.on("moved", () => saveWindowPosition());
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
+
+      saveMaximized(mainWindow.isMaximized());
     }
   }
 
@@ -259,7 +261,14 @@ export class ElectronHost {
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
-        this.electron.protocol.registerSchemesAsPrivileged([{ scheme: "electron", privileges: { standard: true, secure: true } }]);
+        this.electron.protocol.registerSchemesAsPrivileged([{
+          scheme: "electron",
+          privileges: {
+            standard: true,
+            secure: true,
+            supportFetchAPI: true,
+          },
+        }]);
       const eopt = opts?.electronHost;
       this._developmentServer = eopt?.developmentServer ?? false;
       const frontendPort = eopt?.frontendPort ?? 3000;

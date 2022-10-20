@@ -39,7 +39,10 @@ export class EnvironmentEditor {
       parent,
       // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
       expand: expandEnvironmentEditor,
-      handler: (expanded) => { expandEnvironmentEditor = expanded; envMenu.label.style.fontWeight = expanded ? "bold" : "500"; },
+      handler: (expanded) => {
+        expandEnvironmentEditor = expanded;
+        envMenu.label.style.fontWeight = expanded ? "bold" : "500";
+      },
     });
     (envMenu.div.firstElementChild!.lastElementChild! as HTMLElement).style.borderColor = "grey";
     const nestedMenu = envMenu.body;

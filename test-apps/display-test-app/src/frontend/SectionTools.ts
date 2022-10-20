@@ -47,7 +47,10 @@ export class SectionsPanel extends ToolBarDropDown {
     div.style.textAlign = "center";
     createButton({
       value: "Define",
-      handler: async () => { await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create()); setFocusToHome(); },
+      handler: async () => {
+        await IModelApp.tools.run(this._toolName, ViewClipDecorationProvider.create());
+        setFocusToHome();
+      },
       parent: div,
       inline: true,
       tooltip: "Define clip",
@@ -127,11 +130,14 @@ class ModelClipTool {
         (left ? this._leftModels : this._rightModels).push(id);
         left = !left;
       });
-    if (negate) normal = normal.negate();
+    if (negate)
+      normal = normal.negate();
+
     view.details.modelClipGroups = new ModelClipGroups([
       ModelClipGroup.create(createClip(normal, point), this._rightModels),
       ModelClipGroup.create(createClip(normal.negate(), point), this._leftModels),
     ]);
+
     vp.invalidateScene();
   }
 }
@@ -211,7 +217,8 @@ export class TwoPanelDivider {
 
   private _mouseMoveDraggable = (e: MouseEvent) => {
     e.preventDefault();
-    if (undefined === this.dividerElem) return;
+    if (undefined === this.dividerElem)
+      return;
 
     const newPosition = this.limitToBounds(this.dividerElem.offsetLeft - (this._oldPosition - e.clientX));
     this._oldPosition = this.limitToBounds(e.clientX);

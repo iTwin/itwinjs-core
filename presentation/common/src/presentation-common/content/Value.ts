@@ -18,16 +18,24 @@ export type Value = string | number | boolean | undefined | ValuesMap | ValuesAr
 /** @public */
 export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
-  export function isPrimitive(value: Value): value is string | number | boolean | undefined { return isPrimitiveValue(value); }
+  export function isPrimitive(value: Value): value is string | number | boolean | undefined {
+    return isPrimitiveValue(value);
+  }
 
   /** Is the value an array */
-  export function isArray(value: Value): value is ValuesArray { return isArrayValue(value); }
+  export function isArray(value: Value): value is ValuesArray {
+    return isArrayValue(value);
+  }
 
   /** Is the value a map / struct */
-  export function isMap(value: Value): value is ValuesMap { return isMapValue(value); }
+  export function isMap(value: Value): value is ValuesMap {
+    return isMapValue(value);
+  }
 
   /** Is the value a nested content value */
-  export function isNestedContent(value: Value): value is NestedContentValue[] { return isNestedContentValue(value); }
+  export function isNestedContent(value: Value): value is NestedContentValue[] {
+    return isNestedContentValue(value);
+  }
 
   /** Serialize [[Value]] to JSON */
   export function fromJSON(json: ValueJSON): Value {
@@ -77,13 +85,19 @@ export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValues
 /** @public */
 export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
-  export function isPrimitive(value: DisplayValue): value is string | undefined { return isPrimitiveValue(value); }
+  export function isPrimitive(value: DisplayValue): value is string | undefined {
+    return isPrimitiveValue(value);
+  }
 
   /** Is the value an array */
-  export function isArray(value: DisplayValue): value is DisplayValuesArray { return isArrayValue(value); }
+  export function isArray(value: DisplayValue): value is DisplayValuesArray {
+    return isArrayValue(value);
+  }
 
   /** Is the value a map / struct */
-  export function isMap(value: DisplayValue): value is DisplayValuesMap { return isMapValue(value); }
+  export function isMap(value: DisplayValue): value is DisplayValuesMap {
+    return isMapValue(value);
+  }
 
   /** Serialize [[DisplayValue]] to JSON */
   export function fromJSON(json: DisplayValueJSON): DisplayValue {

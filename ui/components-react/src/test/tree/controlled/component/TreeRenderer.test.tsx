@@ -20,7 +20,7 @@ import {
 import { ITreeNodeLoader } from "../../../../components-react/tree/controlled/TreeNodeLoader";
 import { HighlightableTreeProps, HighlightingEngine } from "../../../../components-react/tree/HighlightingEngine";
 import TestUtils from "../../../TestUtils";
-import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
+import { createRandomMutableTreeModelNode } from "../TreeHelpers";
 
 describe("TreeRenderer", () => {
   const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();

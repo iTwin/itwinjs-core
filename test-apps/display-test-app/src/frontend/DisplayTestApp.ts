@@ -3,20 +3,47 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@itwin/core-common";
+import { RpcConfiguration } from "@itwin/core-common";
 import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
-import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { DisplayTestApp } from "./App";
-import { openIModel, OpenIModelProps, setOpenIModelConfiguration } from "./openIModel";
-import { setSignInConfiguration, signIn } from "./signIn";
+import { openIModel, OpenIModelProps } from "./openIModel";
+import { signIn } from "./signIn";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
 import { Dock } from "./Window";
 
 const configuration: DtaConfiguration = {};
+
+/**
+ * Get the value for a string configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the string configuration param.
+ */
+export function getConfigurationString(key: keyof DtaStringConfiguration) {
+  return (configuration as DtaStringConfiguration)[key];
+}
+
+/**
+ * Get the value for a boolean configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the boolean configuration param, or false if the param is undefined.
+ */
+export function getConfigurationBoolean(key: keyof DtaBooleanConfiguration): boolean {
+  return (configuration as DtaBooleanConfiguration)[key] ?? false;
+}
+
+/**
+ * Get the value for a numeric configuration param.
+ * @param key The parameter name of the parameter to get.
+ * @returns The value of the numeric configuration param.
+ */
+export function getConfigurationNumber(key: keyof DtaNumberConfiguration) {
+  return (configuration as DtaNumberConfiguration)[key];
+}
 
 const getFrontendConfig = async (useRPC = false) => {
   if (ProcessDetector.isMobileAppFrontend) {
@@ -44,8 +71,6 @@ const getFrontendConfig = async (useRPC = false) => {
   Object.assign(configuration, configurationOverrides);
 
   console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
-  setSignInConfiguration(configuration);
-  setOpenIModelConfiguration(configuration);
 };
 
 async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
@@ -53,20 +78,6 @@ async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
   const iModelConnection = await openIModel(props);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
-}
-
-class FakeTileCache extends CloudStorageTileCache {
-  public constructor() { super(); }
-
-  protected override async requestResource(container: CloudStorageContainerUrl, id: TileContentIdentifier): Promise<Response> {
-    const init: RequestInit = {
-      headers: container.headers,
-      method: "GET",
-    };
-
-    const url = `${container.url}/${this.formResourceName(id)}`;
-    return fetch(url, init);
-  }
 }
 
 function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, tileAdminProps: TileAdmin.Props] {
@@ -122,9 +133,6 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   tileAdminProps.minimumSpatialTolerance = configuration.minimumSpatialTolerance;
   tileAdminProps.alwaysSubdivideIncompleteTiles = true === configuration.alwaysSubdivideIncompleteTiles;
   tileAdminProps.cesiumIonKey = configuration.cesiumIonKey;
-
-  if (configuration.useFakeCloudStorageTileCache)
-    (CloudStorageTileCache as any)._instance = new FakeTileCache();
 
   return [renderSystemOptions, tileAdminProps];
 }
@@ -182,6 +190,10 @@ const dtaFrontendMain = async () => {
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
       iModel = await openFile({ fileName: iModelName, writable });
+      if (ProcessDetector.isMobileAppFrontend) {
+        // attempt to send message to iOS code that the model was opened
+        (window as any).webkit?.messageHandlers?.modelOpened?.postMessage(iModelName);
+      }
       setTitle(iModel);
     } else {
       const origStandalone = configuration.standalone;

@@ -59,7 +59,8 @@ export class BackendDefaultsPlugin {
       value: any,
       options: Configuration
     ) => {
-      if (value) return value;
+      if (value)
+        return value;
 
       if (isProductionLikeMode(options))
         return (info: any) =>
@@ -111,7 +112,6 @@ export class BackendDefaultsPlugin {
         "@bentley/imodeljs-native",
         "@bentley/imodeljs-native/package.json",
         "dtrace-provider",
-        "node-report/api",
         "applicationinsights-native-metrics",
         "@opentelemetry/tracing",
         "keytar",

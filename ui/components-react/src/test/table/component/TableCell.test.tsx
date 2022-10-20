@@ -99,29 +99,6 @@ describe("TableCellContent", () => {
     expect((content.container.firstChild! as HTMLElement).innerHTML).to.be.empty;
   });
 
-  // Fails sporadically after React 17 upgrade
-  it.skip("rerenders when props update", async () => {
-    let record = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-    let cellItem: CellItem = { key, record };
-
-    const content = render(
-      <TableCellContent
-        cellItem={cellItem}
-        isSelected={false}
-        propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
-      />);
-
-    record = TestUtils.createPrimitiveStringProperty("Label", "Changed property");
-    cellItem = { key, record };
-    content.rerender(
-      <TableCellContent
-        cellItem={cellItem}
-        isSelected={false}
-        propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
-      />);
-
-    await waitFor(() => content.getByText("Changed property"));
-  });
 });
 
 describe("TableIconCellContent", () => {

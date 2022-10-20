@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import {
-  BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType, BackstageManager,
-  BackstageStageLauncher, FrontstageManager, UiFramework,
+  BackstageActionItem, BackstageComposerActionItem, BackstageComposerItem, BackstageComposerStageLauncher, BackstageItemType,
+  BackstageStageLauncher, FrontstageManager,
 } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { childStructure, selectorMatches, userEvent } from "../TestUtils";
 import { BadgeType } from "@itwin/appui-abstract";
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 
 /** @internal */
 export const getActionItem = (item?: Partial<BackstageActionItem>): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
@@ -36,6 +36,11 @@ export const getStageLauncherItem = (item?: Partial<BackstageStageLauncher>): Ba
 });
 
 describe("BackstageComposerItem", () => {
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
+
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -46,85 +51,86 @@ describe("BackstageComposerItem", () => {
 
   describe("BackstageComposerActionItem", () => {
     it("should render", () => {
-      shallow(<BackstageComposerActionItem item={getActionItem()} />).should.matchSnapshot();
+      render(<BackstageComposerActionItem item={getActionItem()} />);
+
+      expect(screen.getByRole("menuitem", {name: "Custom Label"})).to.satisfy(selectorMatches("li.nz-backstage-item"));
     });
 
-    it("should invoke execute", () => {
+    it("should invoke execute", async () => {
       const spyExecute = sinon.fake();
       const actionItem = getActionItem({ execute: spyExecute });
-      const sut = shallow(<BackstageComposerActionItem item={actionItem} />);
-      const backstageItem = sut.find(NZ_BackstageItem);
-      backstageItem.prop("onClick")!();
+      render(<BackstageComposerActionItem item={actionItem} />);
+
+      await theUserTo.click(screen.getByRole("menuitem"));
+
       spyExecute.calledOnce.should.true;
     });
   });
 
   describe("BackstageComposerStageLauncher", () => {
     it("should render", async () => {
-      sinon.stub(UiFramework, "backstageManager").get(() => new BackstageManager());
-      shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />).should.matchSnapshot();
+      render(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
+
+      expect(screen.getByRole("menuitem", {name: "Custom Label"})).to.satisfy(selectorMatches("li.nz-backstage-item"));
     });
 
     it("should activate frontstage", async () => {
-      const backstageManager = new BackstageManager();
-      sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
-      const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ stageId: "Frontstage-1" })} />);
-      const backstageItem = sut.find(NZ_BackstageItem);
-
       sinon.stub(FrontstageManager, "hasFrontstage").withArgs("Frontstage-1").returns(true);
       const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
-      backstageItem.prop("onClick")!();
-      await TestUtils.flushAsyncOperations();
+
+      render(<BackstageComposerStageLauncher item={getStageLauncherItem({ stageId: "Frontstage-1" })} />);
+
+      await theUserTo.click(screen.getByRole("menuitem"));
       spy.calledOnceWithExactly("Frontstage-1").should.true;
     });
 
     it("should not activate if frontstage is not found", async () => {
-      const backstageManager = new BackstageManager();
-      sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
-      const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
-      const backstageItem = sut.find(NZ_BackstageItem);
-      sinon.stub(FrontstageManager, "hasFrontstage").withArgs("stage-1").returns(false);
       const spy = sinon.stub(FrontstageManager, "setActiveFrontstage");
-      backstageItem.prop("onClick")!();
+
+      render(<BackstageComposerStageLauncher item={getStageLauncherItem()} />);
+      await theUserTo.click(screen.getByRole("menuitem"));
 
       spy.notCalled.should.true;
     });
 
     it("should honor isActive prop override", () => {
-      const backstageManager = new BackstageManager();
-      sinon.stub(UiFramework, "backstageManager").get(() => backstageManager);
-      const sut = shallow(<BackstageComposerStageLauncher item={getStageLauncherItem({ isActive: true })} />);
-      const backstageItem = sut.find(NZ_BackstageItem);
+      render(<BackstageComposerStageLauncher item={getStageLauncherItem({ isActive: true })} />);
 
-      backstageItem.prop("isActive")!.should.true;
+      expect(screen.getByRole("menuitem", {name: "Custom Label"})).to.satisfy(selectorMatches("li.nz-backstage-item.nz-active"));
     });
   });
 
   describe("BackstageComposerItem", () => {
     it("should render stage launcher", async () => {
-      shallow(<BackstageComposerItem item={getStageLauncherItem()} />).should.matchSnapshot();
+      const spy = sinon.spy(FrontstageManager, "setActiveFrontstage");
+      sinon.stub(FrontstageManager, "hasFrontstage").returns(true);
+      render(<BackstageComposerItem item={getStageLauncherItem()} />);
+
+      await theUserTo.click(screen.getByRole("menuitem"));
+
+      expect(spy).to.have.been.called;
     });
 
     it("should render action item", async () => {
-      shallow(<BackstageComposerItem item={getActionItem()} />).should.matchSnapshot();
+      const spy = sinon.spy();
+      render(<BackstageComposerItem item={getActionItem({execute: spy})} />);
+
+      await theUserTo.click(screen.getByRole("menuitem"));
+
+      expect(spy).to.have.been.called;
     });
 
-    it("should render with badgeType", async () => {
-      shallow(<BackstageComposerItem item={getActionItem({ badgeType: BadgeType.TechnicalPreview })} />).should.matchSnapshot();
+    it("should render with TP badgeType", async () => {
+      render(<BackstageComposerItem item={getActionItem({ badgeType: BadgeType.TechnicalPreview })} />);
+
+      expect(screen.getByRole("menuitem")).to.satisfy(childStructure(".nz-badge .core-badge-betaBadge"));
     });
 
-    it("renders stage launcher with badge correctly", () => {
-      const sut = mount(<BackstageComposerItem item={getStageLauncherItem({ badgeType: BadgeType.TechnicalPreview })} />);
-      const badge = sut.find("div.nz-badge");
-      badge.length.should.eq(1);
-    });
+    it("should render with New badgeType", async () => {
+      render(<BackstageComposerItem item={getStageLauncherItem({ badgeType: BadgeType.New })} />);
 
-    it("renders action item with badge correctly", () => {
-      const sut = mount(<BackstageComposerItem item={getActionItem({ badgeType: BadgeType.TechnicalPreview })} />);
-      const badge = sut.find("div.nz-badge");
-      badge.length.should.eq(1);
+      expect(screen.getByRole("menuitem")).to.satisfy(childStructure(".nz-badge .core-new-badge"));
     });
-
   });
 
 });

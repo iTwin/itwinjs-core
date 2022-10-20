@@ -87,7 +87,7 @@ export class ArcGISTileMap {
     const childLevel = childIds[0].level+1;
     if (this._callQueues && childLevel < this._callQueues.length ) {
       const res = this._callQueues[childLevel].then(async () => this.getChildrenAvailabilityFromServer(childIds));
-      this._callQueues[childLevel] = res.catch(() => {return nonVisibleChildren;});
+      this._callQueues[childLevel] = res.catch(() => nonVisibleChildren);
       return res;
     } else {
       // We should not be in this case, probably because server info is missing LODs in the capabilities?!

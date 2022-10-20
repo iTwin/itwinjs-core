@@ -3,6 +3,8 @@
 exports[`createInstanceFilterPropertyInfos creates property infos when fields are in different categories category 1`] = `
 Array [
   Object {
+    "categoryLabel": "Nested Category 1",
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "nested1",
       "editor": undefined,
@@ -30,15 +32,15 @@ Array [
       },
     },
     "propertyDescription": Object {
-      "displayLabel": "[Nested Category 1] Properties Field",
-      "name": "nested1/#PropertiesField",
+      "displayLabel": "Properties Field",
+      "name": "nested1#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
   Object {
+    "categoryLabel": "Nested Category 2 | Nested Category 2 1",
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "nested21",
       "editor": undefined,
@@ -66,13 +68,11 @@ Array [
       },
     },
     "propertyDescription": Object {
-      "displayLabel": "[Nested Category 2] [Nested Category 2 1] Properties Field",
-      "name": "nested2/nested21/#PropertiesField",
+      "displayLabel": "Properties Field",
+      "name": "nested2/nested21#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
 ]
 `;
@@ -80,6 +80,8 @@ Array [
 exports[`createInstanceFilterPropertyInfos creates property infos when fields are in root category 1`] = `
 Array [
   Object {
+    "categoryLabel": undefined,
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "root",
       "editor": undefined,
@@ -111,11 +113,11 @@ Array [
       "name": "#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
   Object {
+    "categoryLabel": undefined,
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "root",
       "editor": undefined,
@@ -147,9 +149,7 @@ Array [
       "name": "#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
 ]
 `;
@@ -157,6 +157,8 @@ Array [
 exports[`createInstanceFilterPropertyInfos creates property infos when property fields are in nested fields 1`] = `
 Array [
   Object {
+    "categoryLabel": undefined,
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "root",
       "editor": undefined,
@@ -188,9 +190,11 @@ Array [
       "name": "#NestedContentField$PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [],
+    "sourceClassId": "0x2",
   },
   Object {
+    "categoryLabel": undefined,
+    "className": "SchemaName:ClassName",
     "field": Object {
       "category": "root",
       "editor": undefined,
@@ -222,7 +226,7 @@ Array [
       "name": "#NestedContentField$PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [],
+    "sourceClassId": "0x2",
   },
 ]
 `;

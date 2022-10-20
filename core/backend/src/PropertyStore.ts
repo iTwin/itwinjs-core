@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CloudSqlite } from "@bentley/imodeljs-native";
 import { AccessToken } from "@itwin/core-bentley";
-import { SQLiteDb } from "./SQLiteDb";
+import { CloudSqlite } from "./CloudSqlite";
 import { SettingObject } from "./workspace/Settings";
 
 /**
@@ -21,8 +20,8 @@ export interface PropertyStore {
   /** The collection of property values in the PropertyStore as of the last time it was synchronized. */
   readonly values: PropertyStore.Values;
 
-  /** Application-supplied parameters for obtaining the write lock on the container for a PropertyStore.*/
-  readonly appParams: SQLiteDb.ObtainLockParams;
+  /** Parameters for obtaining the write lock on the container for a PropertyStore.*/
+  readonly lockParams: CloudSqlite.ObtainLockParams;
 
   /**
    * The token that grants access to the cloud container for this PropertyStore. If it does not grant write permissions, all
@@ -43,7 +42,7 @@ export interface PropertyStore {
   /** initiate a prefetch operation on this PropertyStore
    * @internal
    */
-  startPrefetch(): SQLiteDb.CloudPrefetch;
+  startPrefetch(): CloudSqlite.CloudPrefetch;
 
   /** Save a single property in this PropertyStore. If the property already exists, its value is overwritten.
    * @note This will obtain the write lock, save the value, and then release the write lock.

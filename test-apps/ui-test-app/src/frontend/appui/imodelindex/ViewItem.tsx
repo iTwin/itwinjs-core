@@ -87,6 +87,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
     return (
       <>
         {this.props.detailsView &&
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           <div className={classnames("view-list-item", this.props.isSelected && "selected", this.props.className)} style={this.props.style} onClick={this._onClick}>
             <div className="view-item-thumbnail-container thumbnail-container-small">
               {this.renderThumbnail()}
@@ -95,6 +96,7 @@ export default class ViewItem extends React.Component<ViewItemProps, ViewItemSta
           </div>
         }
         {!this.props.detailsView &&
+          // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
           <div className={classnames("view-list-item-thumbnail", this.props.isSelected && "selected", this.props.className)} style={this.props.style} onClick={this._onClick}>
             <div className="view-item-thumbnail-container">
               {this.renderThumbnail()}
