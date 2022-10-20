@@ -114,6 +114,7 @@ export class PromiseMemoizer<T> implements IDisposable {
   public dispose() {
     for (const timer of this._timers.values())
       clearTimeout(timer);
+
     this._timers.clear();
     this.clearCache();
   }
