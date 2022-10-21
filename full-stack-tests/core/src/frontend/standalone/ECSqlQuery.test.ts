@@ -35,11 +35,11 @@ describe("ECSql Query", () => {
   });
 
   after(async () => {
-    if (imodel1) await imodel1.close();
-    if (imodel2) await imodel2.close();
-    if (imodel3) await imodel3.close();
-    if (imodel4) await imodel4.close();
-    if (imodel5) await imodel5.close();
+    await imodel1?.close();
+    await imodel2?.close();
+    await imodel3?.close();
+    await imodel4?.close();
+    await imodel5?.close();
     await TestUtility.shutdownFrontend();
   });
 

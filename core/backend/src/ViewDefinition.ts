@@ -6,19 +6,20 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
+import { Id64, Id64Array, Id64String, IModelStatus, JsonUtils } from "@itwin/core-bentley";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@itwin/core-geometry";
 import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
-  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
+  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera, CategorySelectorProps, Code, CodeScopeProps,
+  CodeSpec, ConcreteEntityTypes, EntityReferenceSet, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
+  SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails,
+  ViewDetails3d,
 } from "@itwin/core-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
-import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
 import { DisplayStyle, DisplayStyle2d, DisplayStyle3d } from "./DisplayStyle";
+import { IModelElementCloneContext } from "./IModelElementCloneContext";
 
 /** Holds the list of Ids of GeometricModels displayed by a [[SpatialViewDefinition]]. Multiple SpatialViewDefinitions may point to the same ModelSelector.
  * @see [ModelSelectorState]($frontend)
@@ -32,18 +33,24 @@ export class ModelSelector extends DefinitionElement {
   /** The array of modelIds of the GeometricModels displayed by this ModelSelector */
   public models: Id64String[];
   /** @internal */
-  constructor(props: ModelSelectorProps, iModel: IModelDb) { super(props, iModel); this.models = props.models; }
+  constructor(props: ModelSelectorProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.models = props.models;
+  }
+
   /** @internal */
   public override toJSON(): ModelSelectorProps {
     const val = super.toJSON() as ModelSelectorProps;
     val.models = this.models;
     return val;
   }
+
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    this.models.forEach((modelId: Id64String) => referenceIds.add(modelId));
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    this.models.forEach((modelId: Id64String) => referenceIds.addModel(modelId));
   }
+
   /** Create a Code for a ModelSelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the ModelSelector and provides the scope for its name.
@@ -53,6 +60,7 @@ export class ModelSelector extends DefinitionElement {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
   /**
    * Create a ModelSelector to select which Models are displayed by a ViewDefinition.
    * @param iModelDb The iModel
@@ -98,18 +106,24 @@ export class CategorySelector extends DefinitionElement {
   /** The array of element Ids of the Categories selected by this CategorySelector */
   public categories: Id64String[];
   /** @internal */
-  constructor(props: CategorySelectorProps, iModel: IModelDb) { super(props, iModel); this.categories = props.categories; }
+  constructor(props: CategorySelectorProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.categories = props.categories;
+  }
+
   /** @internal */
   public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = this.categories;
     return val;
   }
+
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    this.categories.forEach((categoryId: Id64String) => referenceIds.add(categoryId));
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    this.categories.forEach((categoryId: Id64String) => referenceIds.addElement(categoryId));
   }
+
   /** Create a Code for a CategorySelector given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param scopeModelId The Id of the DefinitionModel that contains the CategorySelector and provides the scope for its name.
@@ -119,6 +133,7 @@ export class CategorySelector extends DefinitionElement {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
   /**
    * Create a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb The iModel
@@ -138,6 +153,7 @@ export class CategorySelector extends DefinitionElement {
     };
     return new CategorySelector(categorySelectorProps, iModelDb);
   }
+
   /**
    * Insert a CategorySelector to select which categories are displayed by a ViewDefinition.
    * @param iModelDb Insert into this iModel
@@ -197,21 +213,27 @@ export abstract class ViewDefinition extends DefinitionElement {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.categorySelectorId);
-    referenceIds.add(this.displayStyleId);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.categorySelectorId);
+    referenceIds.addElement(this.displayStyleId);
     const acsId: Id64String = this.getAuxiliaryCoordinateSystemId();
     if (Id64.isValidId64(acsId)) {
-      referenceIds.add(acsId);
+      referenceIds.addElement(acsId);
     }
   }
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "categorySelectorId", "displayStyleId"];
+  /** @alpha */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    categorySelectorId: ConcreteEntityTypes.Element,
+    displayStyleId: ConcreteEntityTypes.Element,
+  };
 
   /** @internal */
-  protected static override onCloned(context: IModelCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
+  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: ViewDefinitionProps, targetElementProps: ViewDefinitionProps): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels && targetElementProps.jsonProperties && targetElementProps.jsonProperties.viewDetails) {
       const acsId: Id64String = Id64.fromJSON(targetElementProps.jsonProperties.viewDetails.acs);
@@ -343,13 +365,18 @@ export class SpatialViewDefinition extends ViewDefinition3d {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.modelSelectorId);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.modelSelectorId);
   }
 
   /** @beta */
   public static override readonly requiredReferenceKeys: ReadonlyArray<string> = [...super.requiredReferenceKeys, "modelSelectorId"];
+  /** @alpha */
+  public static override readonly requiredReferenceKeyTypeMap: Record<string, ConcreteEntityTypes> = {
+    ...super.requiredReferenceKeyTypeMap,
+    modelSelectorId: ConcreteEntityTypes.Element,
+  };
 
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
@@ -518,9 +545,9 @@ export class ViewDefinition2d extends ViewDefinition {
   }
 
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.baseModelId);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.baseModelId);
   }
 
   /** Provides access to optional detail settings for this view. */
@@ -692,9 +719,9 @@ export class ViewAttachment extends GraphicalElement2d {
     // ###NOTE: scale, displayPriority, and clipping vectors are stored in ViewAttachmentProps.jsonProperties.
   }
   /** @internal */
-  protected override collectReferenceIds(referenceIds: Id64Set): void {
-    super.collectReferenceIds(referenceIds);
-    referenceIds.add(this.view.id);
+  protected override collectReferenceConcreteIds(referenceIds: EntityReferenceSet): void {
+    super.collectReferenceConcreteIds(referenceIds);
+    referenceIds.addElement(this.view.id);
   }
 }
 

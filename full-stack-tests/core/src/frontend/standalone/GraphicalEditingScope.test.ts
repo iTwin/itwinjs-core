@@ -18,9 +18,15 @@ const expect = chai.expect;
 chai.use(chaiAsPromised);
 
 const dummyRange = new Range3d();
-function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) }; }
-function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange { return { id, type: DbOpcode.Update, range: (range ?? dummyRange) }; }
-function makeDelete(id: Id64String): ElementGeometryChange { return { id, type: DbOpcode.Delete }; }
+function makeInsert(id: Id64String, range?: Range3d): ElementGeometryChange {
+  return { id, type: DbOpcode.Insert, range: (range ?? dummyRange) };
+}
+function makeUpdate(id: Id64String, range?: Range3d): ElementGeometryChange {
+  return { id, type: DbOpcode.Update, range: (range ?? dummyRange) };
+}
+function makeDelete(id: Id64String): ElementGeometryChange {
+  return { id, type: DbOpcode.Delete };
+}
 
 describe("GraphicalEditingScope", () => {
   if (!ProcessDetector.isMobileAppFrontend) {

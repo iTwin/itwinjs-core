@@ -29,8 +29,12 @@ describe("Example Code", () => {
     // This is an example of how to expand an iModel's project extents.
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
-    newExtents.low.x -= 50; newExtents.low.y -= 25; newExtents.low.z -= 189;
-    newExtents.high.x += 1087; newExtents.high.y += 19; newExtents.high.z += .001;
+    newExtents.low.x -= 50;
+    newExtents.low.y -= 25;
+    newExtents.low.z -= 189;
+    newExtents.high.x += 1087;
+    newExtents.high.y += 19;
+    newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
   });

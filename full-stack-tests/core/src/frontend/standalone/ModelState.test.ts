@@ -22,9 +22,9 @@ describe("ModelState", () => {
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
-    if (imodel2) await imodel2.close();
-    if (imodel3) await imodel3.close();
+    await imodel?.close();
+    await imodel2?.close();
+    await imodel3?.close();
     await TestUtility.shutdownFrontend();
   });
 

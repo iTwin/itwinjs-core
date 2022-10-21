@@ -98,7 +98,10 @@ export class SubEntityData {
   constructor(props: SubEntityProps) { this._props = props; }
 
   public get props(): SubEntityProps { return this._props; }
-  public set props(value: SubEntityProps) { this.cleanupGraphic(); this._props = value; }
+  public set props(value: SubEntityProps) {
+    this.cleanupGraphic();
+    this._props = value;
+  }
 
   public get geometry(): SubEntityGeometryProps | undefined { return this._geometry; }
   public set geometry(value: SubEntityGeometryProps | undefined) { this._geometry = value; }
@@ -186,9 +189,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdSolidModeling, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<SolidModelingCommandIpc[T]>;
-  }
+  protected commandConnection = EditTools.connect<SolidModelingCommandIpc>();
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
@@ -211,7 +212,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
       return;
 
     const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
+    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -236,7 +237,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
     try {
       this._startedCmd = await this.startCommand();
-      return await ElementGeometryCacheTool.callCommand("createElementGeometryCache", id, this.geometryCacheFilter);
+      return await this.commandConnection.createElementGeometryCache(id, this.geometryCacheFilter);
     } catch (err) {
       return false;
     }
@@ -346,7 +347,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected async clearElementGeometryCache(): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await ElementGeometryCacheTool.callCommand("clearElementGeometryCache");
+      await this.commandConnection.clearElementGeometryCache();
     } catch (err) { }
   }
 
@@ -475,7 +476,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
       try {
         this._startedCmd = await this.startCommand();
-        if (undefined === (summary = await ElementGeometryCacheTool.callCommand("summarizeElementGeometryCache", id)))
+        if (undefined === (summary = await this.commandConnection.summarizeElementGeometryCache(id)))
           return false;
       } catch (err) {
         return false;
@@ -504,7 +505,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
   protected getAcceptedSubEntities(): SubEntityProps[] {
     const accepted: SubEntityProps[] = [];
-    this._acceptedSubEntities.forEach((entry) => { accepted.push(entry.props); });
+    this._acceptedSubEntities.forEach((entry) => accepted.push(entry.props));
     return accepted;
   }
 
@@ -513,7 +514,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   }
 
   protected drawAcceptedSubEntities(context: DecorateContext): void {
-    this._acceptedSubEntities.forEach((entry) => { this.drawSubEntity(context, entry, true); });
+    this._acceptedSubEntities.forEach((entry) => this.drawSubEntity(context, entry, true));
   }
 
   public override decorate(context: DecorateContext): void {
@@ -551,7 +552,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
     const vec: Point3d[] = [];
 
     vec[0] = ev.viewport.worldToView(hit ? hit.hitPoint : ev.point);
-    vec[1] = vec[0].clone(); vec[1].x += 1;
+    vec[1] = vec[0].clone();
+    vec[1].x += 1;
     ev.viewport.viewToWorldArray(vec);
 
     // The edge and vertex hits get post-filtered on xy distance, so this is fine for perspective views...
@@ -589,7 +591,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
         hiddenEdgesVisible,
         filter,
       };
-      return await ElementGeometryCacheTool.callCommand("locateSubEntities", id, boresite.origin, boresite.direction, opts);
+      return await this.commandConnection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
@@ -812,7 +814,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       };
 
       data.chordTolerance = chordTolerance;
-      data.geometry = await ElementGeometryCacheTool.callCommand("getSubEntityGeometry", id, data.props, opts);
+      data.geometry = await this.commandConnection.getSubEntityGeometry(id, data.props, opts);
 
       return await data.createGraphic(this.iModel);
     } catch (err) {
@@ -887,7 +889,8 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
   protected clearSubEntityGraphics(): void {
     if (undefined !== this._currentSubEntity)
       this._currentSubEntity.cleanupGraphic();
-    this._acceptedSubEntities.forEach((entry) => { entry.cleanupGraphic(); });
+
+    this._acceptedSubEntities.forEach((entry) => entry.cleanupGraphic());
   }
 
   public override async onCleanup(): Promise<void> {

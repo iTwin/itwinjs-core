@@ -13,7 +13,8 @@ import { CommonProps, Rectangle, SizeProps } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { useDragWidget, UseDragWidgetArgs } from "../base/DragManager";
 import { getUniqueId, MeasureContext, NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
-import { TabState, WidgetState } from "../base/NineZoneState";
+import { WidgetState } from "../state/WidgetState";
+import { TabState } from "../state/TabState";
 import { PanelSideContext } from "../widget-panels/Panel";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 
@@ -39,6 +40,8 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
 /** @internal */
 export interface WidgetProps extends CommonProps {
   children?: React.ReactNode;
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
   onTransitionEnd?(): void;
   widgetId?: string;
 }
@@ -135,6 +138,8 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
         <WidgetContext.Provider value={widgetContextValue}>
           <div
             className={className}
+            onMouseEnter={props.onMouseEnter}
+            onMouseLeave={props.onMouseLeave}
             onTransitionEnd={props.onTransitionEnd}
             ref={elementRef}
             style={props.style}
@@ -156,7 +161,7 @@ export const WidgetStateContext = React.createContext<WidgetState | undefined>(u
 WidgetStateContext.displayName = "nz:WidgetStateContext";
 
 /** @internal */
-export const ActiveTabIdContext = React.createContext<WidgetState["activeTabId"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
+export const ActiveTabIdContext = React.createContext<TabState["id"]>(null!); // eslint-disable-line @typescript-eslint/naming-convention
 ActiveTabIdContext.displayName = "nz:ActiveTabIdContext";
 
 /** @internal */
@@ -183,9 +188,7 @@ export function restrainInitialWidgetSize(size: SizeProps, nzSize: SizeProps): S
 
 /** @internal */
 export function useActiveTab(): TabState | undefined {
-  const widget = React.useContext(WidgetStateContext);
+  const tabId = React.useContext(ActiveTabIdContext);
   const tabs = React.useContext(TabsStateContext);
-  assert(!!widget);
-  const tabId = widget.activeTabId;
   return tabs[tabId];
 }

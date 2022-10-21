@@ -32,7 +32,7 @@
                   "alias": "model"
                 }
               ],
-              "instanceFilter": "(NOT model.IsPrivate OR model.IsOfClass(\"DictionaryModel\", \"BisCore\")) AND this.HasRelatedInstance(\"BisCore:GeometricElement3dIsInCategory\", \"Backward\", \"BisCore:Element\")",
+              "instanceFilter": "NOT this.IsPrivate AND (NOT model.IsPrivate OR model.IsOfClass(\"DictionaryModel\", \"BisCore\")) AND this.HasRelatedInstance(\"BisCore:GeometricElement3dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }
@@ -65,7 +65,7 @@
                   "alias": "model"
                 }
               ],
-              "instanceFilter": "(NOT model.IsPrivate OR model.IsOfClass(\"DictionaryModel\", \"BisCore\")) AND this.HasRelatedInstance(\"BisCore:GeometricElement2dIsInCategory\", \"Backward\", \"BisCore:Element\")",
+              "instanceFilter": "NOT this.IsPrivate AND (NOT model.IsPrivate OR model.IsOfClass(\"DictionaryModel\", \"BisCore\")) AND this.HasRelatedInstance(\"BisCore:GeometricElement2dIsInCategory\", \"Backward\", \"BisCore:Element\")",
               "groupByClass": false,
               "groupByLabel": false
             }

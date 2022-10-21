@@ -8,7 +8,7 @@
 
 import * as React from "react";
 import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, UiEvent, UiSyncEventArgs, WidgetState } from "@itwin/appui-abstract";
-import { Direction, PanelSide } from "@itwin/appui-layout-react";
+import { Direction, FloatingWidgetState, PanelSide } from "@itwin/appui-layout-react";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
@@ -20,7 +20,7 @@ import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
 import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
-import { IconHelper, IconSpec, SizeProps } from "@itwin/core-react";
+import { IconHelper, IconSpec, Rectangle, SizeProps } from "@itwin/core-react";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -106,7 +106,7 @@ export interface TabLocation {
   widgetIndex: number;
   side: PanelSide;
   tabIndex: number;
-  floating?: boolean;
+  floatingWidget?: FloatingWidgetState;
 }
 
 // -----------------------------------------------------------------------------
@@ -149,14 +149,17 @@ export class WidgetDef {
   private _defaultFloatingPosition: PointProps | undefined;
 
   private _hideWithUiWhenFloating?: boolean;
+  private _allowedPanelTargets?: ReadonlyArray<"left"|"right"|"bottom"|"top">;
   private _initialProps?: WidgetProps;
 
-  private _tabLocation: TabLocation = {
+  private _tabLocation?: TabLocation;
+  private _defaultTabLocation: TabLocation = {
     side: "left",
     tabIndex: 0,
     widgetId: "",
     widgetIndex: 0,
   };
+  private _popoutBounds?: Rectangle;
 
   public get state(): WidgetState {
     if ("1" === UiFramework.uiVersion)
@@ -196,7 +199,10 @@ export class WidgetDef {
 
   /** @internal */
   public get tabLocation() { return this._tabLocation; }
-  public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
+  public set tabLocation(tabLocation: TabLocation | undefined) { this._tabLocation = tabLocation; }
+
+  /** @internal */
+  public get defaultTabLocation() { return this._defaultTabLocation; }
 
   /** @internal */
   public get defaultFloatingPosition() { return this._defaultFloatingPosition; }
@@ -208,6 +214,10 @@ export class WidgetDef {
 
   /** @internal */
   public get defaultState() { return this._defaultState; }
+
+  /** @internal */
+  public get popoutBounds() { return this._popoutBounds; }
+  public set popoutBounds(bounds: Rectangle | undefined) { this._popoutBounds = bounds; }
 
   constructor(widgetProps: WidgetProps) {
     if (widgetProps.id !== undefined)
@@ -232,6 +242,8 @@ export class WidgetDef {
     me.defaultFloatingPosition = widgetProps.defaultFloatingPosition ? widgetProps.defaultFloatingPosition as PointProps : undefined;
 
     me._hideWithUiWhenFloating = !!widgetProps.hideWithUiWhenFloating;
+
+    me.allowedPanelTargets = widgetProps.allowedPanelTargets;
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -458,6 +470,16 @@ export class WidgetDef {
   public get hideWithUiWhenFloating(): boolean {
     return !!this._hideWithUiWhenFloating;
   }
+
+  public get allowedPanelTargets(): ReadonlyArray<"left"|"right"|"bottom"|"top"> | undefined {
+    return this._allowedPanelTargets;
+  }
+
+  public set allowedPanelTargets(targets: ReadonlyArray<"left"|"right"|"bottom"|"top"> | undefined) {
+
+    this._allowedPanelTargets = (targets && targets?.length > 0) ? targets : undefined;
+  }
+
   public onWidgetStateChanged(): void {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.widgetControl && UiFramework.postTelemetry(`Widget ${this.widgetControl.classId} state set to ${widgetStateNameMap.get(this.state)}`, "35402486-9839-441E-A5C7-46D546142D11");

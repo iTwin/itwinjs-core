@@ -3,17 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { fireEvent, render } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { IModelConnection, MockRender } from "@itwin/core-frontend";
 import { CardContainer, CardInfo, FrontstageManager, SheetCard, SheetData, SheetsModalFrontstage } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
 
 describe("SheetsModalFrontstage", () => {
   let modal: SheetsModalFrontstage;
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(()=>{
+    theUserTo = userEvent.setup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -45,17 +48,18 @@ describe("SheetsModalFrontstage", () => {
       expect(content).to.not.be.null;
     });
 
-    it("SheetCard onClick selects the card", () => {
+    it("SheetCard onClick selects the card", async () => {
       modal = new SheetsModalFrontstage(new Array<SheetData>({
         name: "Name",
         viewId: "viewId",
       }), connection.object, 0);
 
       const content = modal.content;
-      const wrapper = mount(content as React.ReactElement<any>);
+      render(content as React.ReactElement<any>);
       const onCardSelected = sinon.spy();
       const removeListener = CardContainer.onCardSelectedEvent.addListener(onCardSelected);
-      wrapper.find("div.uifw-sheet-card").simulate("click");
+
+      await theUserTo.click(screen.getByText("Name"));
       expect(onCardSelected.called).to.be.true;
       removeListener();
     });
@@ -85,46 +89,60 @@ describe("SheetsModalFrontstage", () => {
   });
 
   describe("CardContainer", () => {
-    it("renders correctly", () => {
-      shallow(<CardContainer
+    it("renders search results correctly", () => {
+      const {rerender} = render(<CardContainer
         cards={new Array<CardInfo>({ index: 0, label: "", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Test"}
         connection={connection.object} />);
 
-      shallow(<CardContainer
+      expect(screen.queryByText("Test")).to.be.null;
+
+      rerender(<CardContainer
         cards={new Array<CardInfo>({ index: 0, label: "Test", iconSpec: "", viewId: "", isActive: false })}
         searchValue={""}
         connection={connection.object} />);
 
-      shallow(<CardContainer
+      expect(screen.getByText("Test")).to.exist;
+
+      rerender(<CardContainer
         cards={new Array<CardInfo>({ index: 0, label: "Test", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Testing"}
         connection={connection.object} />);
 
-      shallow(<CardContainer
+      expect(screen.queryByText("Test")).to.be.null;
+
+      rerender(<CardContainer
         cards={new Array<CardInfo>({ index: 0, label: "Testing", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Test"}
         connection={connection.object} />);
+
+      expect(screen.getByText("Testing")).to.exist;
     });
   });
 
   describe("SheetCard", () => {
-    it("handles card selection", () => {
+    it("handles card selection", async () => {
       const onClick = sinon.spy();
-      const card = shallow(<SheetCard label="" iconSpec="" onClick={onClick} isActive={false} index={0} />);
-      card.simulate("click");
+      render(<SheetCard label="Findable Label" iconSpec="" onClick={onClick} isActive={false} index={0} />);
+
+      await theUserTo.click(screen.getByText("Findable Label"));
+
       expect(onClick.called).to.be.true;
     });
 
-    it("handles mouse down and leave", () => {
-      const card = shallow(<SheetCard label="" iconSpec="" onClick={() => { }} isActive={false} index={0} />);
-      card.simulate("mouseLeave");
-      card.simulate("mouseDown");
-      card.update();
-      expect(card.find("div.is-pressed").length).to.eq(1);
-      card.simulate("mouseLeave");
-      card.update();
-      expect(card.find("div.is-pressed").length).to.eq(0);
+    it("handles mouse down and leave", async () => {
+      render (<SheetCard label="Findable Label" iconSpec="" onClick={() => { }} isActive={false} index={0} />);
+
+      await theUserTo.pointer({target: screen.getByText("Findable Label"), keys: "[MouseLeft>]"});
+
+      expect(screen.getByText("Findable Label")).to.satisfy(selectorMatches("div.is-pressed"));
+      await theUserTo.unhover(screen.getByText("Findable Label"));
+
+      expect(screen.getByText("Findable Label")).to.not.satisfy(selectorMatches("div.is-pressed"));
+      await theUserTo.hover(screen.getByText("Findable Label"));
+
+      expect(screen.getByText("Findable Label")).to.not.satisfy(selectorMatches("div.is-pressed"));
+      await theUserTo.unhover(screen.getByText("Findable Label"));
     });
   });
 });

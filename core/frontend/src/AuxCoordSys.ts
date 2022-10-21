@@ -249,7 +249,8 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     shapePts[5] = Point3d.create(ACSDisplaySizes.ArrowTipStart, -ACSDisplaySizes.ArrowBaseWidth);
     shapePts[6] = Point3d.create(ACSDisplaySizes.ArrowTipFlange, -ACSDisplaySizes.ArrowTipWidth);
     shapePts[7] = shapePts[0].clone();
-    if (1 === axis) { shapePts.forEach((tmpPt) => { tmpPt.set(tmpPt.y, tmpPt.x); }); }
+    if (1 === axis)
+      shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
     builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
     builder.addLineString(shapePts);

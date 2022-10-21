@@ -243,11 +243,17 @@ export interface ClientDiagnosticsOptions extends DiagnosticsOptions {
     handler: ClientDiagnosticsHandler;
 }
 
+// @internal
+export function combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): DiagnosticsLoggerSeverity | undefined;
+
 // @internal (undocumented)
 export interface CommonIpcParams {
     // (undocumented)
     clientId: string;
 }
+
+// @internal
+export function compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity): 0 | 1 | -1;
 
 // @public
 export interface CompressedClassInfoJSON {
@@ -1188,6 +1194,32 @@ export interface ImageIdOverride extends RuleBase {
     ruleType: RuleTypes.ImageIdOverride;
 }
 
+// @alpha (undocumented)
+export interface InstanceFilterDefinition {
+    expression: string;
+    relatedInstances?: InstanceFilterRelatedInstanceDefinition[];
+    selectClassName?: string;
+}
+
+// @alpha (undocumented)
+export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath & (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstancePath {
+    isRequired?: boolean;
+    pathFromSelectToPropertyClass: RelationshipPath;
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstanceRelationshipAlias {
+    relationshipAlias: string;
+}
+
+// @alpha (undocumented)
+export interface InstanceFilterRelatedInstanceTargetAlias {
+    alias: string;
+}
+
 // @public
 export type InstanceId = Id64String;
 
@@ -1541,6 +1573,29 @@ export type LabelRawValue = string | number | boolean | LabelCompositeValue;
 
 // @public
 export type LabelRawValueJSON = string | number | boolean | LabelCompositeValueJSON;
+
+// @internal (undocumented)
+export class LocalizationHelper {
+    constructor(props: LocalizationHelperProps);
+    // (undocumented)
+    getLocalizedContent(content: Content): Content;
+    // (undocumented)
+    getLocalizedElementProperties(elem: ElementProperties): ElementProperties;
+    // (undocumented)
+    getLocalizedLabelDefinition(labelDefinition: LabelDefinition): LabelDefinition;
+    // (undocumented)
+    getLocalizedLabelDefinitions(labelDefinitions: LabelDefinition[]): LabelDefinition[];
+    // (undocumented)
+    getLocalizedNodes(nodes: Node_2[]): Node_2[];
+    // (undocumented)
+    getLocalizedString(text: string): string;
+}
+
+// @internal (undocumented)
+export interface LocalizationHelperProps {
+    // (undocumented)
+    getLocalizedString: (key: string) => string;
+}
 
 // @beta
 export interface MultiElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {

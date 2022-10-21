@@ -52,7 +52,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     this._pendingRequests = new TemporaryStorage({
       // remove the pending request after request timeout + 10 seconds - this gives
       // frontend 10 seconds to re-send the request until it's removed from requests' cache
-      unusedValueLifetime: this._requestTimeout + 10 * 1000,
+      unusedValueLifetime: (this._requestTimeout > 0) ? (this._requestTimeout + 10 * 1000) : undefined,
 
       // attempt to clean up every second
       cleanupInterval: 1000,
@@ -74,6 +74,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   public get requestTimeout() { return this._requestTimeout; }
+
+  public get pendingRequests() { return this._pendingRequests; }
 
   /** Returns an ok response with result inside */
   private successResponse<TResult>(result: TResult, diagnostics?: ClientDiagnostics) {
@@ -226,7 +228,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         parentKey: nodeKeyFromJson(options.parentKey),
       });
       const [nodes, count] = await Promise.all([
-        this.getManager(requestOptions.clientId).getNodes(options),
+        this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
       return { total: count, items: nodes.map(Node.toJSON) };
@@ -293,7 +295,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (!content)
@@ -316,7 +318,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getElementProperties(token: IModelRpcProps, requestOptions: SingleElementPropertiesRpcRequestOptions): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getElementProperties(options);
+      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
     });
   }
 
@@ -348,7 +350,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
       const [size, content] = await Promise.all([
         this.getManager(requestOptions.clientId).getContentSetSize(options),
-        this.getManager(requestOptions.clientId).getContent(options),
+        this.getManager(requestOptions.clientId).getDetail().getContent(options),
       ]);
 
       if (size === 0 || !content)
@@ -363,7 +365,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
 
   public override async getDisplayLabelDefinition(token: IModelRpcProps, requestOptions: DisplayLabelRpcRequestOptions): PresentationRpcResponse<LabelDefinitionJSON> {
     return this.makeRequest(token, "getDisplayLabelDefinition", requestOptions, async (options) => {
-      const label = await this.getManager(requestOptions.clientId).getDisplayLabelDefinition(options);
+      const label = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinition(options);
       return LabelDefinition.toJSON(label);
     });
   }
@@ -373,7 +375,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     if (pageOpts.paging.size < requestOptions.keys.length)
       requestOptions.keys.splice(pageOpts.paging.size);
     return this.makeRequest(token, "getPagedDisplayLabelDefinitions", requestOptions, async (options) => {
-      const labels = await this.getManager(requestOptions.clientId).getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
+      const labels = await this.getManager(requestOptions.clientId).getDetail().getDisplayLabelDefinitions({ ...options, keys: options.keys.map(InstanceKey.fromJSON) });
       return {
         total: options.keys.length,
         items: labels.map(LabelDefinition.toJSON),

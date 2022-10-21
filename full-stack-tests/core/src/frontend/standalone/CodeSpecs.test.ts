@@ -16,7 +16,8 @@ describe("CodeSpecs", async () => {
   });
 
   after(async () => {
-    if (iModel) await iModel.close();
+    if (iModel)
+      await iModel.close();
     await TestUtility.shutdownFrontend();
   });
 

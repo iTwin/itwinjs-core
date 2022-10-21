@@ -10,11 +10,11 @@ import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PointProps } from "@itwin/appui-abstract";
-import { CommonProps, Point, Rectangle, useRefs } from "@itwin/core-react";
+import { Point, Rectangle, useRefs } from "@itwin/core-react";
 import { assert } from "@itwin/core-bentley";
 import { DragManagerContext, useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
-import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
+import { FloatingWidgetNodeContext, MeasureContext, NineZoneDispatchContext, TabsStateContext, UiIsVisibleContext } from "../base/NineZone";
+import { FloatingWidgetState, WidgetState } from "../state/WidgetState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
 import { Widget, WidgetComponent, WidgetProvider, WidgetStateContext } from "./Widget";
@@ -22,6 +22,7 @@ import { PointerCaptorArgs, usePointerCaptor } from "../base/PointerCaptor";
 import { CssProperties } from "../utilities/Css";
 import { WidgetTarget } from "../target/WidgetTarget";
 import { WidgetOutline } from "../outline/WidgetOutline";
+import { toolSettingsTabId } from "../state/ToolSettingsState";
 
 type FloatingWidgetEdgeHandle = "left" | "right" | "top" | "bottom";
 type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "bottomRight";
@@ -30,53 +31,26 @@ type FloatingWidgetCornerHandle = "topLeft" | "topRight" | "bottomLeft" | "botto
 export type FloatingWidgetResizeHandle = FloatingWidgetEdgeHandle | FloatingWidgetCornerHandle;
 
 /** @internal */
-export interface FloatingWidgetProps {
+export interface FloatingWidgetProviderProps {
   floatingWidget: FloatingWidgetState;
   widget: WidgetState;
 }
 
 /** @internal */
-export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingWidget(props) { // eslint-disable-line @typescript-eslint/naming-convention, no-shadow
-  const { id, bounds, userSized } = props.floatingWidget;
-  const { minimized, tabs, activeTabId } = props.widget;
-  const isSingleTab = 1 === tabs.length;
-  const tabsState = React.useContext(TabsStateContext);
-  const activeTab = tabsState[activeTabId];
-  const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
-  const uiIsVisible = React.useContext(UiIsVisibleContext);
-  const autoSized = isSingleTab && !userSized;
-  const style = React.useMemo(() => {
-    const boundsRect = Rectangle.create(bounds);
-    const { height, width } = boundsRect.getSize();
-    const position = boundsRect.topLeft();
-    return {
-      ...CssProperties.transformFromPosition(position),
-      height: minimized || autoSized ? undefined : height,
-      width: autoSized ? undefined : width,
-      maxHeight: autoSized ? "60%" : undefined,
-      maxWidth: autoSized ? "60%" : undefined,
-    };
-  }, [autoSized, bounds, minimized]);
-  const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
-  const className = React.useMemo(() => classnames(
-    minimized && "nz-minimized",
-    hideFloatingWidget && "nz-hidden",
-  ), [minimized, hideFloatingWidget]);
+export function FloatingWidgetProvider(props: FloatingWidgetProviderProps) {
+  const floatingWidget = React.useContext(FloatingWidgetNodeContext);
   return (
-    <FloatingWidgetIdContext.Provider value={id}>
+    <FloatingWidgetIdContext.Provider value={props.floatingWidget.id}>
       <FloatingWidgetContext.Provider value={props.floatingWidget}>
         <WidgetProvider
           widget={props.widget}
         >
-          <FloatingWidgetComponent
-            className={className}
-            style={style}
-          />
+          {floatingWidget}
         </WidgetProvider>
       </FloatingWidgetContext.Provider>
     </FloatingWidgetIdContext.Provider>
   );
-});
+}
 
 /** @internal */
 export const FloatingWidgetIdContext = React.createContext<FloatingWidgetState["id"] | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
@@ -86,35 +60,67 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
+/** @internal */
+export interface FloatingWidgetProps {
+  onMouseEnter?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+  onMouseLeave?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
+}
+
+/** @internal */
+export function FloatingWidget(props: FloatingWidgetProps) {
   const widget = React.useContext(WidgetStateContext);
-  const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
+  const floatingWidget = React.useContext(FloatingWidgetContext);
+  const tabsState = React.useContext(TabsStateContext);
+  const uiIsVisible = React.useContext(UiIsVisibleContext);
   assert(!!widget);
-  assert(!!floatingWidgetId);
+  assert(!!floatingWidget);
+  const { id, bounds, userSized } = floatingWidget;
+  const { minimized, tabs, activeTabId } = widget;
+  const isSingleTab = 1 === tabs.length;
+  const activeTab = tabsState[activeTabId];
+  const hideWithUiWhenFloating = activeTab.hideWithUiWhenFloating;
+  const autoSized = isSingleTab && !userSized;
+  const hideFloatingWidget = !uiIsVisible && hideWithUiWhenFloating;
+  const isToolSettingsTab = widget.tabs[0] === toolSettingsTabId;
+
+  // Never allow resizing of tool settings - always auto-fit them.
+  const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
+
   const item = React.useMemo(() => ({
-    id: floatingWidgetId,
+    id,
     type: "widget" as const,
-  }), [floatingWidgetId]);
+  }), [id]);
   const dragged = useIsDraggedItem(item);
   const ref = useHandleAutoSize(dragged);
 
-  const isToolSettingsTab = widget.tabs[0] === toolSettingsTabId;
   const className = classnames(
     "nz-widget-floatingWidget",
     dragged && "nz-dragged",
-    props.className,
     isToolSettingsTab && "nz-floating-toolsettings",
+    minimized && "nz-minimized",
+    hideFloatingWidget && "nz-hidden",
   );
-
-  // never allow resizing of tool settings - always auto-fit them
-  const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
-
+  const style = React.useMemo(() => {
+    const boundsRect = Rectangle.create(bounds);
+    const { height, width } = boundsRect.getSize();
+    const position = boundsRect.topLeft();
+    // istanbul ignore next
+    return {
+      ...CssProperties.transformFromPosition(position),
+      height: minimized || autoSized ? undefined : height,
+      width: autoSized ? undefined : width,
+      maxHeight: autoSized ? "60%" : undefined,
+      maxWidth: autoSized ? "60%" : undefined,
+    };
+  }, [autoSized, bounds, minimized]);
   return (
     <Widget
       className={className}
-      widgetId={floatingWidgetId}
-      style={props.style}
+      widgetId={id}
+      style={style}
       ref={ref}
+      onMouseEnter={props.onMouseEnter}
+      onMouseLeave={props.onMouseLeave}
     >
       <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer>
@@ -133,7 +139,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
       </>}
     </Widget >
   );
-});
+}
 
 // Re-adjust bounds so that widget is behind pointer when auto-sized.
 // istanbul ignore next
@@ -217,6 +223,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);
     handleDragStart({
       initialPointerPosition,
+      pointerPosition: initialPointerPosition,
     });
     dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",

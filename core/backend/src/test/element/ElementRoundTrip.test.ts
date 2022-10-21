@@ -59,12 +59,18 @@ interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectPr
 interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements { }
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
-  if (expectedValue.i) assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
-  if (expectedValue.l) assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
-  if (expectedValue.d) assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
-  if (expectedValue.b) assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
-  if (expectedValue.dt) assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
-  if (expectedValue.s) assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
+  if (expectedValue.i)
+    assert.equal(actualValue.i, expectedValue.i, "'integer' type property did not roundtrip as expected");
+  if (expectedValue.l)
+    assert.equal(actualValue.l, expectedValue.l, "'long' type property did not roundtrip as expected");
+  if (expectedValue.d)
+    assert.equal(actualValue.d, expectedValue.d, "'double' type property did not roundtrip as expected");
+  if (expectedValue.b)
+    assert.equal(actualValue.b, expectedValue.b, "'boolean' type property did not roundtrip as expected");
+  if (expectedValue.dt)
+    assert.equal(actualValue.dt, expectedValue.dt, "'dateTime' type property did not roundtrip as expected");
+  if (expectedValue.s)
+    assert.equal(actualValue.s, expectedValue.s, "'string' type property did not roundtrip as expected");
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d?.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d?.y, "'Point2d.y' type property did not roundtrip as expected");
@@ -74,8 +80,10 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
     assert.equal(actualValue.p3d?.y, expectedValue.p3d?.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d?.z, "'Point3d.z' type property did not roundtrip as expected");
   }
-  if (expectedValue.bin) assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  if (expectedValue.g) expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
+  if (expectedValue.bin)
+    assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
+  if (expectedValue.g)
+    expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
 }
 
 function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValue: IPrimitiveArrayBase) {
@@ -765,14 +773,14 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       imodel.saveChanges();
 
       const inMemoryCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(inMemoryCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
+      expect(inMemoryCopy.placement).to.deep.advancedEqual(expectedPlacement);
 
       // reload db since there is a different path for loading properties not in memory that we want to force
       imodel.close();
       imodel = SnapshotDb.openFile(imodelPath);
 
       const readFromDbCopy = imodel.elements.getElement<PhysicalObject>({ id: objId, wantGeometry: true }, PhysicalObject);
-      expect(readFromDbCopy.placement).to.deep.equalWithFpTolerance(expectedPlacement);
+      expect(readFromDbCopy.placement).to.deep.advancedEqual(expectedPlacement);
 
       imodel.close();
     };
@@ -803,25 +811,45 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
       }
     );
 
-    const geom = [
-      { header: { flags: 0 } },
-      { box: { origin: Point3d.create(0, 1, 2), baseX: 10, baseY: 20 } },
-    ];
+    interface TestBoxProps {
+      originX?: number;
+      baseOriginX?: number;
+    }
 
-    insertAndVerifyPlacement(
-      "geom-through-json",
-      {
-        geom,
-        elementGeometryBuilderParams: undefined,
-      },
-      {
-        expectedPlacementOverrides: {
-          bbox: {
-            low: { x: 0, y: 0, z: 0 },
-            high: { x: 10, y: 20, z: 0 },
-          },
+    // Previously, TypeScript BoxProps defined "origin" but native code only understood "baseOrigin".
+    // Now, native code accepts either, preferring "origin" if both are specified.
+    const testBox = (props: TestBoxProps, expectedXOffset: number) => {
+      const box: any = { };
+      if (undefined !== props.originX)
+        box.origin = [ props.originX, 1, 2 ];
+
+      if (undefined !== props.baseOriginX)
+        box.baseOrigin = [ props.baseOriginX, 1, 2 ];
+
+      const geom = [
+        { header: { flags: 0 } },
+        { box: { ...box, baseX: 10, baseY: 20 } },
+      ];
+
+      insertAndVerifyPlacement(
+        "geom-through-json",
+        {
+          geom,
+          elementGeometryBuilderParams: undefined,
         },
-      }
-    );
+        {
+          expectedPlacementOverrides: {
+            bbox: {
+              low: { x: expectedXOffset, y: 1, z: 2 },
+              high: { x: expectedXOffset + 10, y: 21, z: 12 },
+            },
+          },
+        }
+      );
+    };
+
+    testBox({ originX: 0 }, 0);
+    testBox({ baseOriginX: 5 }, 5);
+    testBox({ originX: 2, baseOriginX: 4 }, 2);
   });
 });

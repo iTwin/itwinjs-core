@@ -188,11 +188,11 @@ export class Geometry {
   public static readonly smallAngleDegrees = 5.7e-11;
   /** tolerance for small angle measured in arc-seconds. */
    public static readonly smallAngleSeconds = 2e-7;
-  /** numeric value that may considered huge for numbers expected to be 0..1 fractions.
-   * * But note that the "allowed" result value is vastly larger than 1.
+  /** numeric value that may be considered huge for a ratio of numbers.
+   * * Note that the "allowed" result value is vastly larger than 1.
    */
   public static readonly largeFractionResult = 1.0e10;
-  /** numeric value that may considered zero  0..1 fractions. */
+  /** numeric value that may be considered zero for fractions between 0 and 1. */
   public static readonly smallFraction = 1.0e-10;
   /** numeric value that may considered huge for numbers expected to be coordinates.
    * * This allows larger results than `largeFractionResult`.
@@ -693,25 +693,30 @@ public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | u
   }
 
   /** return the 0, 1, or 2 pairs of (c,s) values that solve
-   * {constCoff + cosCoff * c + sinCoff * s = }
+   * {constCoff + cosCoff * c + sinCoff * s = 0}
    * with the constraint {c*c+s*s = 1}
    */
   public static solveTrigForm(constCoff: number, cosCoff: number, sinCoff: number): Vector2d[] | undefined {
     {
       const delta2 = cosCoff * cosCoff + sinCoff * sinCoff;
       const constCoff2 = constCoff * constCoff;
-      // let nSolution = 0;
+      // nSolution = 0
       let result;
       if (delta2 > 0.0) {
         const lambda = - constCoff / delta2;
         const a2 = constCoff2 / delta2;
         const D2 = 1.0 - a2;
-        if (D2 >= 0.0) {
+        if (-Geometry.smallMetricDistanceSquared < D2 && D2 <= 0.0) { // observed D2 = -2.22e-16 in rotated system
+          // nSolution = 1
+          const c0 = lambda * cosCoff;
+          const s0 = lambda * sinCoff;
+          result = [Vector2d.create(c0, s0)];
+        } else if (D2 > 0.0) {
           const mu = Math.sqrt(D2 / delta2);
           /* c0,s0 = closest approach of line to origin */
           const c0 = lambda * cosCoff;
           const s0 = lambda * sinCoff;
-          // nSolution = 2;
+          // nSolution = 2
           result = [Vector2d.create(c0 - mu * sinCoff, s0 + mu * cosCoff), Vector2d.create(c0 + mu * sinCoff, s0 - mu * cosCoff)];
         }
       }

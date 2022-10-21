@@ -44,7 +44,7 @@ export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
       const tools: Id64Array = this.agenda.elements.slice(1);
       const params: BooleanOperationProps = { mode: this.mode, tools };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("booleanOperation", target, params, opts);
+      return await this.commandConnection.booleanOperation(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -123,7 +123,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
       const tools: Id64Array = this.agenda.elements.slice(1);
       const params: SewSheetProps = { tools };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("sewSheets", target, params, opts);
+      return await this.commandConnection.sewSheets(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -180,7 +180,7 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
       const target = this.agenda.elements[0];
       const params: ThickenSheetProps = { front: this.frontDistance, back: this.backDistance };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("thickenSheets", target, params, opts);
+      return await this.commandConnection.thickenSheets(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -278,7 +278,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      return await ElementGeometryCacheTool.callCommand("isPlanarBody", id, 0);
+      return await this.commandConnection.isPlanarBody(id, 0);
     } catch (err) {
       return false;
     }
@@ -303,7 +303,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
       const profile = this.agenda.elements[1];
       const params: CutProps = { profile, direction, depth, distance: this.depth, outside: this.outside ? true : undefined, closeOpen: ProfileClosure.Auto, targetPoint: this.targetPoint, toolPoint: this.toolPoint };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("cutSolid", target, params, opts);
+      return await this.commandConnection.cutSolid(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -384,7 +384,7 @@ export class EmbossSolidElementsTool extends ElementGeometryCacheTool {
       const profile = this.agenda.elements[1];
       const params: EmbossProps = { profile, direction: EmbossDirectionMode.Auto, targetPoint: this.targetPoint };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("embossBody", target, params, opts);
+      return await this.commandConnection.embossBody(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -431,7 +431,7 @@ export class SweepAlongPathTool extends ElementGeometryCacheTool {
       const path = this.agenda.elements[1];
       const params: SweepPathProps = { path };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("sweepAlongPath", target, params, opts);
+      return await this.commandConnection.sweepAlongPath(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -472,7 +472,7 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
       const tools = this.agenda.elements.slice(1);
       const params: LoftProps = { tools, orderCurves: this.isSelectionSetModify ? true : undefined, orientCurves: true };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("loftProfiles", target, params, opts);
+      return await this.commandConnection.loftProfiles(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -578,7 +578,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
       // NOTE: For offset, include all smoothly connected faces, not just adjacent...
-      return await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, face, SubEntityType.Face, { smoothFaces: true });
+      return await this.commandConnection.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true });
     } catch (err) {
       return undefined;
     }
@@ -645,7 +645,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${id}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await ElementGeometryCacheTool.callCommand("offsetFaces", id, params, opts);
+      return await this.commandConnection.offsetFaces(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -740,7 +740,7 @@ export class HollowFacesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await ElementGeometryCacheTool.callCommand("hollowFaces", this.agenda.elements[0], params, opts);
+      return await this.commandConnection.hollowFaces(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -805,7 +805,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
       return hits.filter((hit) => { return SubEntityType.Face === hit.subEntity.type; });
 
     try {
-      const accept = await ElementGeometryCacheTool.callCommand("isRedundantEdge", id, hits[0].subEntity);
+      const accept = await this.commandConnection.isRedundantEdge(id, hits[0].subEntity);
 
       if (accept)
         return hits;
@@ -832,7 +832,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await ElementGeometryCacheTool.callCommand("deleteSubEntities", this.agenda.elements[0], params, opts);
+      return await this.commandConnection.deleteSubEntities(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -969,12 +969,12 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === edge)
           return undefined;
 
-        const edgeFaces = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Face);
+        const edgeFaces = await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Face);
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
+        const edgeLoop = await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
@@ -984,7 +984,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
       }
 
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await ElementGeometryCacheTool.callCommand("imprintBody", id, params, opts);
+      return await this.commandConnection.imprintBody(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1119,7 +1119,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected async getTangentEdges(id: Id64String, edge: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
-      return await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, edge, SubEntityType.Edge, { smoothEdges: true });
+      return await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Edge, { smoothEdges: true });
     } catch (err) {
       return undefined;
     }
@@ -1204,7 +1204,11 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected override getAcceptedSubEntities(): SubEntityProps[] {
     const edges: SubEntityProps[] = [];
-    this._acceptedSubEntities.forEach((entry) => { if (undefined === entry.toolData) edges.push(entry.props); });
+    this._acceptedSubEntities.forEach((entry) => {
+      if (undefined === entry.toolData)
+        edges.push(entry.props);
+    });
+
     return edges;
   }
 }
@@ -1237,7 +1241,7 @@ export class RoundEdgesTool extends BlendEdgesTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await ElementGeometryCacheTool.callCommand("blendEdges", this.agenda.elements[0], params, opts);
+      return await this.commandConnection.blendEdges(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1372,7 +1376,7 @@ export class ChamferEdgesTool extends BlendEdgesTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await ElementGeometryCacheTool.callCommand("chamferEdges", this.agenda.elements[0], params, opts);
+      return await this.commandConnection.chamferEdges(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1461,7 +1465,7 @@ export abstract class LocateFaceOrProfileTool extends LocateSubEntityTool {
 
     // Only want edges from wire bodies...
     const accept = (BRepEntityType.Wire === this.getBRepEntityTypeForSubEntity(id, hits[0].subEntity) ? SubEntityType.Edge : SubEntityType.Face);
-    return hits.filter((hit) => { return accept === hit.subEntity.type; });
+    return hits.filter((hit) => accept === hit.subEntity.type);
   }
 
   protected override async createSubEntityData(id: Id64String, hit: SubEntityLocationProps): Promise<SubEntityData> {
@@ -1547,7 +1551,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
       // NOTE: For sweep/translation, it makes sense to limit smooth to immediately adjacent...
-      return await ElementGeometryCacheTool.callCommand("getConnectedSubEntities", id, face, SubEntityType.Face, { smoothFaces: true, adjacentFaces: true });
+      return await this.commandConnection.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true, adjacentFaces: true });
     } catch (err) {
       return undefined;
     }
@@ -1591,7 +1595,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
       const params: SweepFacesProps = { path };
 
       if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
-        return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
+        return await this.commandConnection.sweepFaces(id, params, opts);
       }
 
       if (this.addSmooth) {
@@ -1610,7 +1614,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
       }
 
       params.faces = subEntities;
-      return await ElementGeometryCacheTool.callCommand("sweepFaces", id, params, opts);
+      return await this.commandConnection.sweepFaces(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1706,16 +1710,16 @@ export class SpinFacesTool extends LocateFaceOrProfileTool {
       const params: SpinFacesProps = { origin, direction, angle };
 
       if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
-        return await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
+        return await this.commandConnection.spinFaces(id, params, opts);
       }
 
       params.faces = subEntities;
-      let result = await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
+      let result = await this.commandConnection.spinFaces(id, params, opts);
 
       // Spun face can be used to create a pocket...retry with negative sweep...
       if (undefined === result) {
         angle.setRadians(-angle.radians);
-        result = await ElementGeometryCacheTool.callCommand("spinFaces", id, params, opts);
+        result = await this.commandConnection.spinFaces(id, params, opts);
       }
 
       return result;
