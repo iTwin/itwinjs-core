@@ -86,26 +86,26 @@ stages:
       parameters:
         env: QA
 
-  - stage: UpdateDocumentationIndexQA
-    displayName: Update Documentation Index (QA)
-    dependsOn: QA
-    jobs:
-    - template: ./jobs/docs/update-docs-index.yaml
-      parameters:
-        variableGroup: iTwin.js Docs - Algolia - QA
+  # - stage: UpdateDocumentationIndexQA
+  #   displayName: Update Documentation Index (QA)
+  #   dependsOn: QA
+  #   jobs:
+  #   - template: ./jobs/docs/update-docs-index.yaml
+  #     parameters:
+  #       variableGroup: iTwin.js Docs - Algolia - QA
 
   # - stage: ActiveScanQA
   #   displayName: Active Scan (QA)
   #   dependsOn: ProductTestsQA
   #   jobs:
 
-  # - stage: Scorecard
-  #   displayName: Scorecard
-  #   dependsOn: ProductTestsQA
-  #   jobs:
-  #   - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
-  #     parameters:
-  #       gprId: 2947
+  - stage: Scorecard
+    displayName: Scorecard
+    dependsOn: ProductTestsQA
+    jobs:
+    - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
+      parameters:
+        variableGroup: iTwin.js Docs - Scorecard
 
   # - stage: PROD
   #   displayName: Deployment (PROD)
