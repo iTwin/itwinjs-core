@@ -96,8 +96,9 @@ float computeObscurance(float depth) {
     vec2 neighbors[8] = vec2[8] (  //neighbor relative position
         vec2( 1.0, 0.0), vec2( 0.70710678,  0.70710678), vec2(0.0,  1.0), vec2(-0.70710678,  0.70710678),
         vec2(-1.0, 0.0), vec2(-0.70710678, -0.70710678), vec2(0.0, -1.0), vec2( 0.70710678, -0.70710678));
-    #if 0 // light angle factor
-        vec4 p = vec4(u_LightDir.xyz, -dot(u_LightDir.xyz, vec3(0.0, 0.0, depth)));
+    #if 1 // light angle factor
+        vec3 ld = normalize(u_lightDir.xyz);
+        vec4 p = vec4(ld, -dot(ld, vec3(0.0, 0.0, depth)));
     #endif
     float sum = 0.0;
     vec2 posScale = u_pointCloudEDL1.y * u_scale * u_invScreenSize;
@@ -107,15 +108,15 @@ float computeObscurance(float depth) {
         vec2 nRelPos = posScale * neighbors[c];
         vec2 nPos = v_texCoord + nRelPos;
         float zN = TEXTURE(u_depthTexture, nPos).r;  // neighbor depth
-        #if 0 // light angle factor
-            vec4 zPos = vec4(nRelPos, zNP, 1.0);
+        #if 1 // light angle factor
+            vec4 zPos = vec4(nRelPos, zN, 1.0);
             float zNP = dot(zPos, p);
         #else
             float zNP = depth - zN;
         #endif
         sum += max(0.0, zNP) / u_scale;
     }
-    return sum / 8.0; // ###TODO divide by 8 here?
+    return sum / 8.0;
 }
 `;
 
@@ -153,6 +154,13 @@ export function createEDLCalcProgram(context: WebGLContext): ShaderProgram {
   frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
       params.target.uniforms.viewRect.bindInverseDimensions(uniform);
+    });
+  });
+
+  // Uniforms based on the PointCloudDisplaySettings.
+  frag.addUniform("u_lightDir", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_lightDir", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL3(uniform);
     });
   });
 
