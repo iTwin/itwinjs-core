@@ -39,7 +39,7 @@ describe("Localization", async () => {
     await terminate();
   });
 
-  it.only("localizes using app/test supplied localized strings", async () => {
+  it("localizes using app/test supplied localized strings", async () => {
     const nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: RULESET });
     expect(nodes.length).to.eq(1);
     expect(nodes[0].label.displayValue).to.eq("test value");

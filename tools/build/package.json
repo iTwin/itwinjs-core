@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "18.7.7",
+    "@types/node": "18.11.2",
     "eslint": "^7.11.0"
   },
   "eslintConfig": {
