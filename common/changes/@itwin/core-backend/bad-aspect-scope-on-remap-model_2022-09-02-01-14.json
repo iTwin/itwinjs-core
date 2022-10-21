@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Add EntityReferences and associated utilities",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

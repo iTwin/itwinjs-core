@@ -63,9 +63,7 @@ export class PlaceLineStringTool extends CreateElementTool {
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  public commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected override setupAndPromptForNextAction(): void {
     const nPts = this._points.length;
@@ -183,7 +181,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
-          const partId = await PlaceLineStringTool.callCommand("insertGeometryPart", partProps);
+          const partId = await this.commandConnection.insertGeometryPart(partProps);
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -192,7 +190,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-        await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps);
+        await this.commandConnection.insertGeometricElement(elemProps);
         await this.saveChanges();
       } else {
         const builder = new ElementGeometry.Builder();
@@ -210,7 +208,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          const partId = await PlaceLineStringTool.callCommand("insertGeometryPart", partProps, { entryArray: partBuilder.entries });
+          const partId = await this.commandConnection.insertGeometryPart(partProps, { entryArray: partBuilder.entries });
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -219,7 +217,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        await PlaceLineStringTool.callCommand("insertGeometricElement", elemProps, { entryArray: builder.entries });
+        await this.commandConnection.insertGeometricElement(elemProps, { entryArray: builder.entries });
         await this.saveChanges();
       }
     } catch (err: any) {
