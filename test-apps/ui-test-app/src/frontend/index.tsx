@@ -36,7 +36,7 @@ import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
-import { ArcGisAccessClient, ArcGisEnterpriseClientId } from "@itwin/map-layers-auth";
+import { ArcGisAccessClient } from "@itwin/map-layers-auth";
 import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
