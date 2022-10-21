@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
+  Angle, AngleSweep, Arc3d, Box, BSplineCurve3d, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
   CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, LineSegment3d, LineString3d, Loop, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range3d, SolidPrimitive, Sphere,
   StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
@@ -3007,6 +3007,64 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numOutside);
     assert.isTrue(1 === result.numOverlap);
     result.candidatesContainment!.forEach((val, index) => { assert.isTrue(val === expectedContainment[index]); });
+  });
+
+  it.skip("should cleanly reject invalid bspline3d geometry", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+
+    const order = 2;
+    const poles: Point3d[] = [];
+    for (let i = 0; i < 10; i++)
+      poles.push(Point3d.create(i, i * i, 0));
+    // The number of knots must equal the number of poles + order
+    const knots: number[] = []; // this is an invalid knot vector -- there are too few knots
+    assert.notEqual(knots.length, poles.length + order);
+    const bcurve = BSplineCurve3d.create(poles, knots, order)!;
+    const geomEntry = ElementGeometry.fromGeometryQuery(bcurve)!;
+
+    const elementGeometryBuilderParams = { entryArray: [geomEntry] };
+
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      elementGeometryBuilderParams,
+    };
+
+    const spatialElementId = imodel.elements.insertElement(elementProps);
+    expect(spatialElementId).not.empty;
+  });
+
+  it("should create an element with a valid bspline3d curve", async () => {
+    const seedElement = imodel.elements.getElement<GeometricElement>("0x1d");
+
+    // The number of knots must equal the number of poles + order
+    const order = 2;
+    const poles: Point3d[] = [];
+    for (let i = 0; i < 10; i++)
+      poles.push(Point3d.create(i, i * i, 0));
+    const knots: number[] = [0, 0, 0, 1, 1, 2, 2, 3, 3, 4, 4, 4];
+    assert.equal(knots.length, poles.length + order);
+    const bcurve = BSplineCurve3d.create(poles, knots, order);
+    if (bcurve === undefined)
+      throw new Error();
+    const geomEntry = ElementGeometry.fromGeometryQuery(bcurve);
+    if (geomEntry === undefined)
+      throw new Error();
+
+    const elementGeometryBuilderParams = { entryArray: [geomEntry] };
+
+    const elementProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      elementGeometryBuilderParams,
+    };
+
+    const spatialElementId = imodel.elements.insertElement(elementProps);
+    expect(spatialElementId).not.empty;
   });
 
 });
