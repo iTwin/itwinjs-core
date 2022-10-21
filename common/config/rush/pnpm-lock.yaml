@@ -1407,6 +1407,7 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/imodel-components-react': workspace:*
       '@itwin/itwinui-css': 0.x
+      '@itwin/itwinui-icons-color-react': ~1.0.3
       '@itwin/itwinui-react': ~1.42.0
       '@itwin/presentation-common': workspace:*
       '@testing-library/react': ^12.0.0
@@ -1442,6 +1443,7 @@ importers:
       typemoq: ^2.1.0
       typescript: ~4.4.0
     dependencies:
+      '@itwin/itwinui-icons-color-react': 1.0.3_react-dom@17.0.2+react@17.0.2
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.1_react-dom@17.0.2+react@17.0.2
     devDependencies:
@@ -7619,6 +7621,16 @@ packages:
 
   /@itwin/itwinui-css/0.63.1:
     resolution: {integrity: sha512-GWXRaaYBxbmIpXncrf6yOeqvyIaQWmtdx8lJ/UehT+vjahcklO00+dFEzWBboFdE/4ftDOqurqbuiDcNf2lugQ==}
+
+  /@itwin/itwinui-icons-color-react/1.0.3_react-dom@17.0.2+react@17.0.2:
+    resolution: {integrity: sha512-TGIv0AAYCUKDadl2AnwndzorTOocCYtfMbL3aVmfeFsAq8WqNGSqP7yi3D8opWqdhLXjO/yBzbz9PsaOpxvnaw==}
+    peerDependencies:
+      react: '>=16.8.6'
+      react-dom: '>=16.8.6'
+    dependencies:
+      react: 17.0.2
+      react-dom: 17.0.2_react@17.0.2
+    dev: false
 
   /@itwin/itwinui-icons-react/1.16.0_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-0jlfxz+8qy2h13UuVfh5mgtK3NCv5hagphcjPA4XC4Qe4FDG9p3ku50jLTXyBOTZTZWrd7aTMdZjrMIlJyEMbw==}

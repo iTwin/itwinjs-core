@@ -86,7 +86,8 @@
   },
   "dependencies": {
     "classnames": "^2.3.1",
-    "react-beautiful-dnd": "^13.0.0"
+    "react-beautiful-dnd": "^13.0.0",
+    "@itwin/itwinui-icons-color-react": "~1.0.3"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^3.5.0-dev.21",
