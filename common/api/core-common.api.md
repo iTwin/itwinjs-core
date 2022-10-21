@@ -3797,6 +3797,9 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 
 export { GetMetaDataFunction }
 
+// @internal
+export const getPullChangesIpcChannel: (iModelId: string) => string;
+
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
 
@@ -4908,7 +4911,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullChanges: (key: string, toIndex?: ChangesetIndex, reportProgress?: boolean, progressInterval?: number) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -6594,6 +6597,13 @@ export interface PropertyMetaDataProps {
     relationshipClass?: string;
     // (undocumented)
     structName?: string;
+}
+
+// @internal
+export interface PullChangesOptions {
+    enableCancellation?: boolean;
+    progressInterval?: number;
+    reportProgress?: boolean;
 }
 
 // @public

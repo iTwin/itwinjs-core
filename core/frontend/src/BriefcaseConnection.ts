@@ -8,8 +8,8 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex,
-  ChangesetIndexAndId, IModelConnectionProps, IModelError, IpcAppChannel, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
+  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -318,9 +318,9 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void> {
     const removeListeners: VoidFunction[] = [];
-    if (options?.progressCallback){
+    if (options?.progressCallback) {
       const removeProgressListener = IpcApp.addListener(
-        `${IpcAppChannel.Functions}.pullChanges-progress-${this.iModelId}`,
+        getPullChangesIpcChannel(this.iModelId),
         (_evt: Event, data: { loaded: number, total: number }) => options?.progressCallback?.(data),
       );
       removeListeners.push(removeProgressListener);
@@ -332,9 +332,13 @@ export class BriefcaseConnection extends IModelConnection {
     }
 
     this.requireTimeline();
-    const shouldTrackProgress = !!options?.progressCallback || !!options?.abortSignal;
+    const ipcAppOptions: IpcAppPullChangesOptions = {
+      reportProgress: !!options?.progressCallback,
+      progressInterval: options?.progressInterval,
+      enableCancellation: !!options?.abortSignal,
+    };
     try {
-      this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex, shouldTrackProgress, options?.progressInterval);
+      this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex, ipcAppOptions);
     } finally {
       removeListeners.forEach((remove) => remove());
     }

@@ -8,9 +8,9 @@
 
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IpcAppChannel, IpcAppFunctions,
-  IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps, RemoveFunction, StandaloneOpenOptions,
-  TileTreeContentIds, TxnNotifications,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
+  PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseDb, IModelDb, StandaloneDb } from "./IModelDb";
@@ -236,18 +236,21 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullChanges(key: string, toIndex?: ChangesetIndex, reportProgress?: boolean, progressInterval?: number): Promise<ChangesetIndexAndId> {
+  public async pullChanges(key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
+
     this._iModelKeyToPullStatus.set(key, ProgressStatus.Continue);
+    const checkAbort = () => this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
 
     let onProgress: ProgressFunction | undefined;
-    if (reportProgress) {
-      const checkAbort = () => this._iModelKeyToPullStatus.get(key) ?? ProgressStatus.Continue;
+    if (options?.reportProgress) {
       const progressCallback: ProgressFunction = (loaded, total) => {
-        IpcHost.send(`${this.channelName}.pullChanges-progress-${iModelDb.iModelId}`, { loaded, total });
+        IpcHost.send(getPullChangesIpcChannel(iModelDb.iModelId), { loaded, total });
         return checkAbort();
       };
-      onProgress = throttleProgressCallback(progressCallback, checkAbort, progressInterval);
+      onProgress = throttleProgressCallback(progressCallback, checkAbort, options?.progressInterval);
+    } else if (options?.enableCancellation) {
+      onProgress = checkAbort;
     }
 
     try {
