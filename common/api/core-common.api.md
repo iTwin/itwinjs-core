@@ -477,6 +477,10 @@ export namespace Base64EncodedString {
     export function toUint8Array(base64: Base64EncodedString): Uint8Array;
     const reviver: (_name: string, value: any) => any;
     const replacer: (_name: string, value: any) => any;
+    const // (undocumented)
+    encode: (src: string, urlSafe?: boolean | undefined) => string;
+    const // (undocumented)
+    decode: (src: string) => string;
 }
 
 // @public

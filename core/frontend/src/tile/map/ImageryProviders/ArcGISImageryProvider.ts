@@ -16,7 +16,7 @@ import { NotifyMessageDetails, OutputMessagePriority } from "../../../Notificati
  * The initial purpose of this class is to offer shared methods
  * to query ArcGIS services and apply the appropriate security token.
  * @see [[ArcGISMapLayerImageryProvider]]
- * @beta
+ * @internal
  */
 export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 

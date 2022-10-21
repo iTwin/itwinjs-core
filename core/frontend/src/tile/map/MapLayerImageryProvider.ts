@@ -26,7 +26,7 @@ export enum MapLayerImageryProviderStatus {
 }
 
 /** Base class for map layer imagery providers.
- * @beta
+ * @internal
  */
 export abstract class MapLayerImageryProvider {
   protected _hasSuccessfullyFetchedTile = false;

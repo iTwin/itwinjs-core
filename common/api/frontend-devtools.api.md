@@ -118,6 +118,13 @@ export class ApplyViewTool extends Tool {
 }
 
 // @beta
+export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
+    constructor();
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
     constructor();
     // (undocumented)

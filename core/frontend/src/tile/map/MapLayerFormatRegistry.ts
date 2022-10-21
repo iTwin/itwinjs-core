@@ -34,6 +34,7 @@ export class MapLayerFormat {
   public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 
   /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
+   * @internal
   */
   public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
 
@@ -130,6 +131,7 @@ export class MapLayerFormatRegistry {
     return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
+  /** @internal */
   public createImageryProvider(layerSettings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;

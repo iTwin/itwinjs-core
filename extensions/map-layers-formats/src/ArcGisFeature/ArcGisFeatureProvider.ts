@@ -255,7 +255,7 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
   // Makes an identify request to ESRI MapService , and return it as a list MapLayerFeatureInfo object
   public  override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree): Promise<void> {
-    if (!this._querySupported || this.format == undefined)
+    if (!this._querySupported || this.format === undefined)
       return;
 
     const cartoPoint = {
