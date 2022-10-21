@@ -5,24 +5,16 @@ publish: false
 
 Table of contents:
 
-- [@itwin/core-backend](#itwincore-backend)
-  - [Element aspect ids](#element-aspect-ids)
 - [Display system](#display-system)
   - [Reality model display customization](#reality-model-display-customization)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
 - [Deprecations](#deprecations)
-  - [Transformer API](#transformer-api)
-  - [IModelCloneContext split out with new base IModelElementCloneContext](#imodelclonecontext-split-out-with-new-base-imodelelementclonecontext)
-
-## @itwin/core-backend
-
-### Element aspect ids
-
-[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
-the ids returned are not unique from all element ids and may collide.
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Display system
 
@@ -96,6 +88,11 @@ With the new approach we "break" at the duplicate A node:
    +--+ A
 ```
 
+## Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
+
 ## AppUi
 
 ### Setting allowed panel zones for widgets
@@ -104,16 +101,13 @@ When defining a Widget with AbstractWidgetProperties, you can now specify on whi
 
 ## Deprecations
 
-### Transformer API
+### @itwin/core-backend
 
-The function [IModelTransformer.initFromExternalSourceAspects]($transformer) has been deprecated, in most cases you no longer need to use it.
-If you are not using a `process*` function to run the transformer, then you do need to replace it with [IModelTransformer.initialize]($transformer).
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
 
-The transformer now handles referencing properties on out-of-order non-element entities like aspects, models, or relationships, previously
-traversal might invalidate references on, for example,  `ExternalSourceAspects`.
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
 
-### IModelCloneContext split out with new base IModelElementCloneContext
+### @itwin/core-transformer
 
-The [IModelCloneContext]($backend) in `@itwin/core-backend` is now deprecated, and renamed to [IModelElementCloneContext]($backend), since it
-can only clone elements. If you want to clone entities other than elements, as the transformer now does, you must use the transformer's derived
-class, [IModelCloneContext]($transformer).
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).

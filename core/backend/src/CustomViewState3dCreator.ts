@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { CompressedId64Set, Id64Array, Id64String, Logger, StopWatch } from "@itwin/core-bentley";
-import { CustomViewState3dCreatorOptions, CustomViewState3dProps, IModelError, IModelStatus, QueryRowFormat } from "@itwin/core-common";
+import { CustomViewState3dCreatorOptions, CustomViewState3dProps, QueryRowFormat } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
@@ -20,16 +20,15 @@ export class CustomViewState3dCreator {
   public constructor(iModel: IModelDb) {
     this._imodel = iModel;
   }
-  /**
-   * Gets default view state data such as category Ids and modelextents. If no model ids are passed in, all 3D models in the iModel are used.
+  /** Gets default view state data such as category Ids and modelextents. If no model ids are passed in, all 3D models in the iModel are used.
    * @param [modelIds] Ids of models to display in the view.
    * @throws [IModelError]($common) If no 3d models are found in the iModel.
-   * @returns CustomViewState3dProps
    */
   public async getCustomViewState3dData(options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
     let decompressedModelIds;
     if (options?.modelIds !== undefined)
       decompressedModelIds = CompressedId64Set.decompressArray(options.modelIds);
+
     const models: Id64Array = decompressedModelIds ?? await this._getAllModels();
     const categories: Id64Array = await this._getAllCategories();
     const modelExtents: Range3d = await this._getModelExtents(models);
@@ -49,51 +48,28 @@ export class CustomViewState3dCreator {
     return categories;
   }
 
-  /**
-   * Gets the union of the extents of each model id passed in. Can return null range if no ids are passed, or no geometry found for the models.
-   * @param modelIdsList array of modelIds to get extents for
-   * @returns Range3d, the union of the extents of each model id
-   */
-  private async _getModelExtents(modelIdsList: Id64String[]): Promise<Range3d> {
-    const modelExtents = new Range3d();
-    if (modelIdsList.length === 0)
-      return modelExtents;
-    const modelIds = new Set(modelIdsList);
-    for (const id of modelIds) {
-      const modelExtentsStopWatch = new StopWatch("getModelExtents query", false);
-      try {
-        await new Promise((resolve) => setImmediate(resolve)); // Free up main thread temporarily. Ideally we get queryModelExtents off the main thread and do not need to do this.
-        Logger.logInfo(loggerCategory, "Starting getModelExtents query.", {modelId: id});
-        modelExtentsStopWatch.start();
-        const props = this._imodel.nativeDb.queryModelExtents({ id }).modelExtents;
-        modelExtentsStopWatch.stop();
-        Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id});
-        modelExtents.union(Range3d.fromJSON(props), modelExtents);
-      } catch (err: any) {
-        modelExtentsStopWatch.stop();
-        if ((err as IModelError).errorNumber === IModelStatus.NoGeometry) { // if there was no geometry, just return null range
-          Logger.logInfo(loggerCategory, "Finished getModelExtents query with NoGeometry error.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id});
-          continue;
-        }
-        Logger.logInfo(loggerCategory, "Finished getModelExtents query with error.", {timeElapsedMs: modelExtentsStopWatch.elapsed, modelId: id, errorMessage: err?.message, errorNumber: err?.errorNumber});
+  /** Compute the union of the extents of all the specified models. */
+  private async _getModelExtents(modelIds: Id64String[]): Promise<Range3d> {
+    if (modelIds.length === 0)
+      return new Range3d();
 
-        if (modelIds.size === 1)
-          throw err; // if they're asking for more than one model, don't throw on error.
-        continue;
-      }
-    }
-    return modelExtents;
+    const timer = new StopWatch("getModelExtents query", true);
+    const range = await this._imodel.models.queryRange(modelIds);
+
+    timer.stop();
+    Logger.logInfo(loggerCategory, "Finished getModelExtents query.", {timeElapsedMs: timer.elapsed});
+
+    return range;
   }
 
-  /**
-   * Get all PhysicalModel ids in the iModel
-   */
+  /** Get the Ids of all spatially-located, non-template 3d models in the iModel. */
   private async _getAllModels(): Promise<Id64Array> {
     // Note: IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
     // If the iModel has an earlier version, the statement will throw because the property does not exist.
     // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
     const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
     const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
+
     let models = [];
     Logger.logInfo(loggerCategory, "Starting getAllModels query.");
     try {
@@ -101,12 +77,11 @@ export class CustomViewState3dCreator {
     } catch {
       models = await this._executeQuery(select);
     }
+
     Logger.logInfo(loggerCategory, "Finished getAllModels query.");
     return models;
   }
-  /**
-   * Helper function to execute ECSql queries.
-   */
+
   private _executeQuery = async (query: string) => {
     const rows = [];
     for await (const row of this._imodel.query(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
