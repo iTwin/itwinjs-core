@@ -456,6 +456,7 @@ internal;MeshPolylineList
 public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
+public;ModelExtentsProps
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
