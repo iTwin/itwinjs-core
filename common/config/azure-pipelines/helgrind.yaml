@@ -65,7 +65,8 @@ jobs:
       - script: mkdir $(HELGRIND_RESULTS)
 
       - script: |
-          LINES=20 top -b -d 2 -w > $(HELGRIND_RESULTS)/top.log
+          free -m
+          LINES=20 top -b -d 2 -w > $(HELGRIND_RESULTS)/top.log &
           valgrind --tool=helgrind --suppressions=$(Agent.BuildDirectory)/s/common/config/azure-pipelines/helgrind.supp --gen-suppressions=all --trace-children=yes npm test |& tee $(HELGRIND_RESULTS)helgrind$(Build.BuildId).txt'
           kill $(jobs -p)
         displayName: "Run Valgrind's datarace detector (helgrind) on core-backend tests"
