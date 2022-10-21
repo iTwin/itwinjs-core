@@ -15,9 +15,7 @@ async function startCommand(imodel: BriefcaseConnection): Promise<string> {
   return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);
 }
 
-function callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-  return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-}
+const commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
 function orderIds(elementIds: string[]): OrderedId64Array {
   const ids = new OrderedId64Array();
@@ -47,17 +45,17 @@ export async function insertLineElement(imodel: BriefcaseConnection, model: Id64
     return Id64.invalid;
 
   const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-  return callCommand("insertGeometricElement", elemProps);
+  return commandConnection.insertGeometricElement(elemProps);
 }
 
 export async function transformElements(imodel: BriefcaseConnection, ids: string[], transform: Transform) {
   await startCommand(imodel);
-  await callCommand("transformPlacement", compressIds(ids), transform.toJSON());
+  await commandConnection.transformPlacement(compressIds(ids), transform.toJSON());
 }
 
 export async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
   await startCommand(imodel);
-  return callCommand("deleteElements", compressIds(ids));
+  return commandConnection.deleteElements(compressIds(ids));
 }
 
 export async function initializeEditTools(): Promise<void> {

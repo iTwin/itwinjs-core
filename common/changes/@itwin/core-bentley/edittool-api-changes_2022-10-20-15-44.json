@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-bentley",
+      "comment": "add PickAsyncMethods utility type",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-bentley"
+}
