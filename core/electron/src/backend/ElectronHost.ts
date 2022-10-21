@@ -286,7 +286,7 @@ class ElectronDialogHandler extends IpcHandler {
   public get channelName() { return dialogChannel; }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
-    const dialogMethod = dialog[method] as any;
+    const dialogMethod = dialog[method] as Function;
     if (typeof dialogMethod !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `illegal electron dialog method`);
 
