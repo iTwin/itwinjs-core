@@ -121,7 +121,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (id: number) {
-      if (id == 1 ) {
+      if (id === 1 ) {
         return {defaultVisibility:true};
       }
       return undefined;
@@ -209,7 +209,7 @@ describe("ArcGisFeatureProvider", () => {
       subLayers: [{id: 0, name: "layer1", visible:true}, {id:2, name: "layer2", visible:true}]}
     );
 
-    const getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: number) {
       return {
         defaultVisibility:true,
         supportedQueryFormats:"PBF, JSON",
