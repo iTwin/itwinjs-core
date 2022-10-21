@@ -6,14 +6,17 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
+import {
+  AccessToken, assert, BeDuration, BentleyStatus, CompressedId64Set, GuidString, Id64, Id64String, IModelStatus, Logger,
+} from "@itwin/core-bentley";
 import {
   Code, CodeProps, CustomViewState3dCreatorOptions, CustomViewState3dProps, DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse, ElementLoadOptions, ElementLoadProps,
   ElementProps, EntityMetaData, EntityQueryParams, FontMapProps, GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, HydrateViewStateRequestProps, HydrateViewStateResponseProps, ImageSourceFormat, IModel,
   IModelConnectionProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps,
   IModelRpcProps, MassPropertiesPerCandidateRequestProps, MassPropertiesPerCandidateResponseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelExtentsProps,
-  ModelProps, NoContentError, RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps,ViewStateProps,
+  ModelProps, NoContentError, RpcInterface, RpcManager, RpcPendingResponse, SnapRequestProps, SnapResponseProps, SubCategoryResultRow, SyncMode, TextureData, TextureLoadProps,
+  ViewStateLoadProps, ViewStateProps,
 } from "@itwin/core-common";
 import { Range3dProps } from "@itwin/core-geometry";
 import { SpatialCategory } from "../Category";
@@ -25,6 +28,62 @@ import { RpcTrace } from "../RpcBackend";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CustomViewState3dCreator } from "../CustomViewState3dCreator";
 import { ViewStateHydrator } from "../ViewStateHydrator";
+import { PromiseMemoizer } from "../PromiseMemoizer";
+
+interface ViewStateRequestProps {
+  accessToken: AccessToken;
+  tokenProps: IModelRpcProps;
+  options: CustomViewState3dCreatorOptions;
+}
+
+class ViewStateRequestMemoizer extends PromiseMemoizer<CustomViewState3dProps> {
+  private readonly _timeoutMs: number;
+  private static _instance?: ViewStateRequestMemoizer;
+
+  public static async perform(props: ViewStateRequestProps): Promise<CustomViewState3dProps> {
+    if (!this._instance)
+      this._instance = new ViewStateRequestMemoizer();
+
+    return this._instance.perform(props);
+  }
+
+  private constructor() {
+    const memoize = async (props: ViewStateRequestProps) => {
+      const db = await RpcBriefcaseUtility.findOpenIModel(props.accessToken, props.tokenProps);
+      const viewCreator = new CustomViewState3dCreator(db);
+      return viewCreator.getCustomViewState3dData(props.options);
+    };
+
+    const stringify = (props: ViewStateRequestProps) => {
+      const token = props.tokenProps;
+      const modelIds = props.options.modelIds;
+      return `${token.key}-${token.iTwinId}-${token.iModelId}-${token.changeset?.id}:${modelIds}`;
+    };
+
+    super(memoize, stringify);
+    this._timeoutMs = 20 * 1000;
+  }
+
+  private async perform(props: ViewStateRequestProps): Promise<CustomViewState3dProps> {
+    const memo = this.memoize(props);
+
+    // Rejections must be caught so that the memoization entry is deleted.
+    await BeDuration.race(this._timeoutMs, memo.promise).catch(() => undefined);
+
+    if (memo.isPending)
+      throw new RpcPendingResponse();
+
+    this.deleteMemoized(props);
+
+    if (memo.isFulfilled) {
+      assert(undefined !== memo.result);
+      return memo.result;
+    }
+
+    assert(memo.isRejected);
+    throw memo.error; // eslint-disable-line no-throw-literal
+  }
+}
 
 /** The backend implementation of IModelReadRpcInterface.
  * @internal
@@ -38,9 +97,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   }
 
   public async getCustomViewState3dData(tokenProps: IModelRpcProps, options: CustomViewState3dCreatorOptions): Promise<CustomViewState3dProps> {
-    const iModelDb = await RpcBriefcaseUtility.findOpenIModel(RpcTrace.expectCurrentActivity.accessToken, tokenProps);
-    const viewCreator = new CustomViewState3dCreator(iModelDb);
-    return viewCreator.getCustomViewState3dData(options);
+    const accessToken = RpcTrace.expectCurrentActivity.accessToken;
+    return ViewStateRequestMemoizer.perform({ accessToken, tokenProps, options });
   }
 
   public async hydrateViewState(tokenProps: IModelRpcProps, options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps> {
