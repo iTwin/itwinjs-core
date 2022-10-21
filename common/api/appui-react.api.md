@@ -5629,6 +5629,8 @@ export enum SyncUiEventId {
     BackstageEvent = "backstageevent",
     ContentControlActivated = "contentcontrolactivated",
     ContentLayoutActivated = "contentlayoutactivated",
+    // (undocumented)
+    FeatureOverridesChanged = "featureoverrideschanged",
     FrontstageActivating = "frontstageactivating",
     FrontstageReady = "frontstageready",
     ModalDialogChanged = "modaldialogchanged",
