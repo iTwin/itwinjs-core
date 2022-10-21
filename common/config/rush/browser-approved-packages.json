@@ -799,6 +799,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "minimatch",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "mkdirp",
       "allowedCategories": [ "internal" ]
     },
