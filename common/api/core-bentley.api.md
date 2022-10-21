@@ -31,9 +31,7 @@ export function assert(condition: boolean | (() => boolean), message?: string | 
 export type AsyncFunction = (...args: any) => Promise<any>;
 
 // @public
-export type AsyncMethodsOf<T> = {
-    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
-}[keyof T];
+export type AsyncMethodsOf<T> = keyof PickAsyncMethods<T>;
 
 // @alpha
 export class AsyncMutex {
@@ -1346,6 +1344,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {
