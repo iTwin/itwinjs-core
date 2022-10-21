@@ -3878,7 +3878,6 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       glob: ^7.1.2
-      minimatch: ^3.0.5
       mocha: ^10.0.0
       mocha-junit-reporter: ^2.0.2
       rimraf: ^3.0.2
@@ -3895,7 +3894,6 @@ importers:
       cross-spawn: 7.0.3
       fs-extra: 8.1.0
       glob: 7.2.3
-      minimatch: 3.1.2
       mocha: 10.1.0
       mocha-junit-reporter: 2.1.0_mocha@10.1.0
       rimraf: 3.0.2

@@ -11,12 +11,10 @@
 
 var fs = require("fs");
 var p = require("path");
-var minimatch = require("minimatch");
 
-function patternMatcher(pattern) {
+function matchesFile(ignorePath) {
   return function (path, stats) {
-    var minimatcher = new minimatch.Minimatch(pattern, { matchBase: true });
-    return (!minimatcher.negate || stats.isFile()) && minimatcher.match(path);
+    return stats.isFile() && ignorePath === path;
   };
 }
 
@@ -24,7 +22,7 @@ function toMatcherFunction(ignoreEntry) {
   if (typeof ignoreEntry == "function") {
     return ignoreEntry;
   } else {
-    return patternMatcher(ignoreEntry);
+    return matchesFile(ignoreEntry);
   }
 }
 
