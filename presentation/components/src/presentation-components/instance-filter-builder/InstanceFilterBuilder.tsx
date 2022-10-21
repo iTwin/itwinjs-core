@@ -27,6 +27,7 @@ export interface InstanceFilterBuilderProps {
   onClearClasses: () => void;
   onPropertySelected?: (property: PropertyDescription) => void;
   ruleGroupDepthLimit?: number;
+  propertyRenderer?: (name: string) => React.ReactNode;
 }
 
 /** @alpha */
@@ -72,6 +73,7 @@ export function InstanceFilterBuilder(props: InstanceFilterBuilderProps) {
       onFilterChanged={onFilterChanged}
       onRulePropertySelected={onPropertySelected}
       ruleGroupDepthLimit={ruleGroupDepthLimit}
+      propertyRenderer={props.propertyRenderer}
     />
   </div>;
 }

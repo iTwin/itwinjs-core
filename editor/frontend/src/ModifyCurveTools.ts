@@ -43,9 +43,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
@@ -68,7 +66,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
       return;
 
     const appearance = this.agendaAppearance(false);
-    this.agenda.elements.forEach((elementId) => { overrides.override({ elementId, appearance }); });
+    this.agenda.elements.forEach((elementId) => overrides.override({ elementId, appearance }));
   }
 
   protected updateAgendaAppearanceProvider(drop?: true): void {
@@ -148,7 +146,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     try {
       this._startedCmd = await this.startCommand();
       const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep ];
-      const info = await ModifyCurveTool.callCommand("requestElementGeometry", id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
+      const info = await this.commandConnection.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
       if (undefined === info)
         return undefined;
 
@@ -280,12 +278,12 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
         if (repeatOperation)
           this.agenda.clear();
 
-        const newId = await ModifyCurveTool.callCommand("insertGeometricElement", elemProps);
+        const newId = await this.commandConnection.insertGeometricElement(elemProps);
 
         if (repeatOperation && this.agenda.add(newId))
           await this.onAgendaModified();
       } else {
-        await ModifyCurveTool.callCommand("updateGeometricElement", elemProps);
+        await this.commandConnection.updateGeometricElement(elemProps);
       }
       return true;
     } catch (err) {

@@ -22,6 +22,7 @@ export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiag
 /** @beta */
 export type BaseSuppressionRule<T extends AnyECType, U extends AnyECType> = ISuppressionRule<T, U>;
 
+/** @internal */
 export type AnyRuleSuppressionMap = IRuleSuppressionMap<AnyECType>;
 
 /**

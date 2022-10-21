@@ -655,8 +655,8 @@ export class Box extends SolidPrimitive {
     clone(): Box;
     cloneTransformed(transform: Transform): Box | undefined;
     constantVSection(zFraction: number): CurveCollection;
-    static createDgnBox(baseOrigin: Point3d, vectorX: Vector3d, vectorY: Vector3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
-    static createDgnBoxWithAxes(baseOrigin: Point3d, axes: Matrix3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
+    static createDgnBox(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
+    static createDgnBoxWithAxes(origin: Point3d, axes: Matrix3d, topOrigin: Point3d, baseX: number, baseY: number, topX: number, topY: number, capped: boolean): Box | undefined;
     static createRange(range: Range3d, capped: boolean): Box | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     extendRange(rangeToExtend: Range3d, transform?: Transform): void;
@@ -2446,7 +2446,7 @@ export class HalfEdge {
     static horizontalScanFraction01(node0: HalfEdge, y: number): number | undefined;
     i: number;
     get id(): any;
-    isEqualXY(other: XAndY): boolean;
+    isEqualXY(other: XAndY | HalfEdge): boolean;
     isFaceConvex(): boolean;
     get isIsolatedEdge(): boolean;
     isMaskedAroundFace(mask: HalfEdgeMask, value?: boolean): boolean;
@@ -2580,8 +2580,10 @@ export namespace IModelJson {
         points: [XYZProps];
     }
     export interface BoxProps extends AxesProps {
+        // @internal @deprecated
+        baseOrigin?: XYZProps;
         baseX: number;
-        baseY: number;
+        baseY?: number;
         capped?: boolean;
         height?: number;
         origin: XYZProps;

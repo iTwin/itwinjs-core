@@ -53,6 +53,7 @@ import { JsonGeometryStream } from '@itwin/core-common';
 import { LocateResponse } from '@itwin/core-frontend';
 import { Matrix3d } from '@itwin/core-geometry';
 import { Path } from '@itwin/core-geometry';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
 import { Point3d } from '@itwin/core-geometry';
@@ -330,7 +331,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     set useSweep(value: boolean);
     // (undocumented)
     get useSweepProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class CreateBCurveTool extends CreateOrContinuePathTool {
@@ -464,7 +465,7 @@ export class CreateBoxTool extends SolidPrimitiveTool {
     set width(value: number);
     // (undocumented)
     get widthProperty(): DialogProperty<number>;
-    }
+}
 
 // @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
@@ -518,7 +519,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateConePhase {
@@ -593,7 +594,7 @@ export class CreateConeTool extends SolidPrimitiveTool {
     set useTopRadius(value: boolean);
     // (undocumented)
     get useTopRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateCurvePhase {
@@ -664,7 +665,7 @@ export class CreateCylinderTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export abstract class CreateElementTool extends PrimitiveTool {
@@ -792,7 +793,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     // (undocumented)
     protected get allowSimplify(): boolean;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected continuationData?: {
         props: GeometricElementProps;
@@ -952,7 +953,7 @@ export class CreateRectangleTool extends CreateOrContinuePathTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class CreateSphereTool extends SolidPrimitiveTool {
@@ -991,7 +992,7 @@ export class CreateSphereTool extends SolidPrimitiveTool {
     set useRadius(value: boolean);
     // (undocumented)
     get useRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export enum CreateTorusPhase {
@@ -1061,7 +1062,7 @@ export class CreateTorusTool extends SolidPrimitiveTool {
     set useSecondaryRadius(value: boolean);
     // (undocumented)
     get useSecondaryRadiusProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha (undocumented)
 export class CurveData {
@@ -1128,7 +1129,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
     set useDepth(value: boolean);
     // (undocumented)
     get useDepthProperty(): DialogProperty<boolean>;
-    }
+}
 
 // @alpha
 export class DeleteElementsTool extends ElementSetTool {
@@ -1139,7 +1140,7 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowSelectionSet(): boolean;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
@@ -1205,8 +1206,7 @@ export interface EditorOptions {
 
 // @alpha
 export class EditTools {
-    // (undocumented)
-    static callCommand(methodName: string, ...args: any[]): Promise<any>;
+    static connect<IpcInterface>(): PickAsyncMethods<IpcInterface>;
     static initialize(options?: EditorOptions): Promise<void>;
     // (undocumented)
     static namespace: string;
@@ -1233,13 +1233,13 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // (undocumented)
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
-    static callCommand<T extends keyof SolidModelingCommandIpc>(method: T, ...args: Parameters<SolidModelingCommandIpc[T]>): ReturnType<SolidModelingCommandIpc[T]>;
-    // (undocumented)
     protected readonly _checkedIds: Map<string, boolean>;
     // (undocumented)
     protected clearElementGeometryCache(): Promise<void>;
     // (undocumented)
     protected clearGraphic(): void;
+    // (undocumented)
+    protected commandConnection: PickAsyncMethods<SolidModelingCommandIpc>;
     // (undocumented)
     protected createElementGeometryCache(id: Id64String): Promise<boolean>;
     // (undocumented)
@@ -1651,11 +1651,11 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     // (undocumented)
     protected applyAgendaOperation(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
     protected readonly _checkedIds: Map<string, boolean>;
     // (undocumented)
     protected clearGraphics(): void;
+    // (undocumented)
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -2000,7 +2000,7 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationNorthTool extends PrimitiveTool {
@@ -2044,7 +2044,7 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     static startTool(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectGeolocationPointTool extends PrimitiveTool {
@@ -2129,7 +2129,7 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     static toolId: string;
-    }
+}
 
 // @beta
 export class ProjectLocationCancelTool extends Tool {
@@ -2163,7 +2163,7 @@ export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     run(): Promise<boolean>;
     // (undocumented)
@@ -2320,7 +2320,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected baseRotation?: Matrix3d;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
@@ -2515,9 +2515,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
     // (undocumented)
     protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
-    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
-    // (undocumented)
     protected clearAgendaGraphics(): Promise<void>;
+    // (undocumented)
+    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
@@ -2618,6 +2618,5 @@ export class UniteSolidElementsTool extends BooleanOperationTool {
     // (undocumented)
     static toolId: string;
 }
-
 
 ```

@@ -3,28 +3,78 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Logger } from "@itwin/core-bentley";
 import { IModelApp, NoRenderApp } from "@itwin/core-frontend";
-import { BackstageItem as NZ_BackstageItem } from "@itwin/appui-layout-react";
 import {
   BackstageItemState, ConfigurableUiManager, CoreTools, Frontstage, FrontstageManager, FrontstageProps,
   FrontstageProvider, SyncUiEventDispatcher, TaskLaunchBackstageItem, TaskPropsList, WorkflowManager, WorkflowPropsList,
 } from "../../appui-react";
-import TestUtils, { mount } from "../TestUtils";
+import TestUtils, { selectorMatches, userEvent } from "../TestUtils";
+import { render, screen } from "@testing-library/react";
 
 /* eslint-disable deprecation/deprecation */
 
 describe("Backstage", () => {
   const testEventId = "test-state-function-event";
+  let theUserTo: ReturnType<typeof userEvent.setup>;
+  beforeEach(async ()=>{
+    theUserTo = userEvent.setup();
+    await FrontstageManager.setActiveFrontstageDef(undefined);
+    WorkflowManager.setActiveWorkflow(undefined);
+  });
 
   before(async () => {
     await TestUtils.initializeUiFramework();
     await NoRenderApp.startup();
 
-    await FrontstageManager.setActiveFrontstageDef(undefined);
+    class Frontstage1 extends FrontstageProvider {
+      public static stageId = "Test1";
+      public get id(): string {
+        return Frontstage1.stageId;
+      }
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id={this.id}
+            defaultTool={CoreTools.selectElementCommand}
+            contentGroup={TestUtils.TestContentGroup1}
+          />
+        );
+      }
+    }
+    const frontstageProvider = new Frontstage1();
+    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+
+    const taskPropsList: TaskPropsList = {
+      tasks: [
+        {
+          id: "Task1",
+          primaryStageId: Frontstage1.stageId,
+          iconSpec: "icon-placeholder",
+          labelKey: "SampleApp:backstage.task1",
+        },
+      ],
+    };
+
+    ConfigurableUiManager.loadTasks(taskPropsList);
+
+    // Test Workflows
+    const workflowPropsList: WorkflowPropsList = {
+      defaultWorkflowId: "default-workflow",
+      workflows: [
+        {
+          id: "ExampleWorkflow",
+          iconSpec: "icon-placeholder",
+          labelKey: "SampleApp:Test.my-label",
+          defaultTaskId: "task1",
+          tasks: ["Task1"],
+        },
+      ],
+    };
+
+    ConfigurableUiManager.loadWorkflows(workflowPropsList);
   });
 
   after(async () => {
@@ -34,100 +84,50 @@ describe("Backstage", () => {
 
   describe("<TaskLaunchBackstageItem />", async () => {
     it("TaskLaunchBackstageItem should render & execute", async () => {
-      class Frontstage1 extends FrontstageProvider {
-        public static stageId = "Test1";
-        public get id(): string {
-          return Frontstage1.stageId;
-        }
-        public get frontstage(): React.ReactElement<FrontstageProps> {
-          return (
-            <Frontstage
-              id={this.id}
-              defaultTool={CoreTools.selectElementCommand}
-              contentGroup={TestUtils.TestContentGroup1}
-            />
-          );
-        }
-      }
-      const frontstageProvider = new Frontstage1();
-      ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
+      const stateFunc = sinon.fake((state: Readonly<BackstageItemState>): BackstageItemState => {
+        return { ...state, isActive: true } as BackstageItemState;
+      });
 
-      const taskPropsList: TaskPropsList = {
-        tasks: [
-          {
-            id: "Task1",
-            primaryStageId: Frontstage1.stageId,
-            iconSpec: "icon-placeholder",
-            labelKey: "SampleApp:backstage.task1",
-          },
-        ],
-      };
-
-      ConfigurableUiManager.loadTasks(taskPropsList);
-
-      // Test Workflows
-      const workflowPropsList: WorkflowPropsList = {
-        defaultWorkflowId: "default-workflow",
-        workflows: [
-          {
-            id: "ExampleWorkflow",
-            iconSpec: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-            defaultTaskId: "task1",
-            tasks: ["Task1"],
-          },
-        ],
-      };
-
-      let stateFuncRun = false;
-      const stateFunc = (state: Readonly<BackstageItemState>): BackstageItemState => { // eslint-disable-line deprecation/deprecation
-        stateFuncRun = true;
-        return { ...state, isActive: true } as BackstageItemState; // eslint-disable-line deprecation/deprecation
-      };
-
-      ConfigurableUiManager.loadWorkflows(workflowPropsList);
-
-      const spy = sinon.spy(FrontstageManager.onFrontstageActivatedEvent, "emit");
-      const wrapper = mount(
+      const spy = sinon.spy(WorkflowManager, "setActiveWorkflowAndTask");
+      render(
         <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder"
           isEnabled={true} isActive={false}
           stateSyncIds={[testEventId]} stateFunc={stateFunc} />,
       );
-      const backstageItem = wrapper.find(NZ_BackstageItem);
 
-      expect(stateFuncRun).to.be.false;
+      expect(stateFunc).not.to.be.called;
       SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(testEventId);
-      expect(stateFuncRun).to.be.true;
+      expect(stateFunc).to.be.called;
 
-      backstageItem.find(".nz-backstage-item").simulate("click");
-      await TestUtils.flushAsyncOperations();
-      expect(spy.calledOnce).to.be.true;
+      await theUserTo.click(screen.getByRole("menuitem"));
+      expect(spy).to.be.calledWith(sinon.match({workflowId: "ExampleWorkflow"}), sinon.match({taskId: "Task1"}));
+      expect(screen.getByRole("menuitem")).to.satisfy(selectorMatches(".nz-active"));
     });
 
     it("TaskLaunchBackstageItem should log error when invalid workflowId is provided", async () => {
       const spyMethod = sinon.spy(Logger, "logError");
-      const wrapper = mount(
+      render(
         <TaskLaunchBackstageItem taskId="Task1" workflowId="BadWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />,
       );
-      const backstageItem = wrapper.find(NZ_BackstageItem);
-      backstageItem.find(".nz-backstage-item").simulate("click");
+
+      await theUserTo.click(screen.getByRole("menuitem"));
       spyMethod.calledOnce.should.true;
     });
 
     it("TaskLaunchBackstageItem should log error when invalid taskId is provided", async () => {
       const spyMethod = sinon.spy(Logger, "logError");
-      const wrapper = mount(
+      render(
         <TaskLaunchBackstageItem taskId="BadTask" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />,
       );
-      const backstageItem = wrapper.find(NZ_BackstageItem);
-      backstageItem.find(".nz-backstage-item").simulate("click");
+
+      await theUserTo.click(screen.getByRole("menuitem"));
       spyMethod.calledOnce.should.true;
     });
 
     it("TaskLaunchBackstageItem renders correctly when inactive", async () => {
-      WorkflowManager.setActiveWorkflow(undefined);
-      const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
-      wrapper.should.matchSnapshot();
+      render(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+
+      expect(screen.getByRole("menuitem")).to.not.satisfy(selectorMatches(".nz-active"));
     });
 
     it("TaskLaunchBackstageItem renders correctly when active", async () => {
@@ -139,18 +139,18 @@ describe("Backstage", () => {
         expect(task1).to.not.be.undefined;
 
         await WorkflowManager.setActiveWorkflowAndTask(workflow, task1!);
-        const wrapper = shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
-        wrapper.should.matchSnapshot();
       }
+      render(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
+
+      expect(screen.getByRole("menuitem")).to.satisfy(selectorMatches(".nz-active"));
     });
 
     it("TaskLaunchBackstageItem updates on property change", async () => {
-      const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" isEnabled={false} />);
-      expect(wrapper.find("li.nz-disabled").length).to.eq(1);
+      const {rerender} = render(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" isEnabled={false} />);
+      expect(screen.getByRole("menuitem")).to.satisfy(selectorMatches(".nz-disabled"));
 
-      wrapper.setProps({ isEnabled: true });
-      wrapper.update();
-      expect(wrapper.find("li.nz-disabled").length).to.eq(0);
+      rerender(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" isEnabled={true} />);
+      expect(screen.getByRole("menuitem")).not.to.satisfy(selectorMatches(".nz-disabled"));
     });
 
   });

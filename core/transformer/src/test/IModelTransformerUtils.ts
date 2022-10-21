@@ -5,6 +5,8 @@
 
 import { assert, expect } from "chai";
 import * as path from "path";
+import * as fs from "fs";
+import * as inspector from "inspector";
 import { AccessToken, CompressedId64Set, DbResult, Guid, Id64, Id64Set, Id64String, Mutable } from "@itwin/core-bentley";
 import { Schema } from "@itwin/ecschema-metadata";
 import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -198,11 +200,15 @@ function getAllElemMetaDataProperties(elem: Element) {
       const base = elem.iModel.getMetaData(baseName);
       Object.assign(allProperties, getAllClassMetaDataProperties(baseName, base));
     }
+
     Object.assign(allProperties, aliasedProperties[className.toLowerCase()]);
     return allProperties;
   }
+
   const classMetaData = elem.getClassMetaData();
-  if (!classMetaData) return undefined;
+  if (!classMetaData)
+    return undefined;
+
   return getAllClassMetaDataProperties(elem.classFullName, classMetaData);
 }
 
@@ -215,29 +221,34 @@ export async function assertIdentityTransformation(
   sourceDb: IModelDb,
   targetDb: IModelDb,
   /** either an IModelTransformer instance or a function mapping source element ids to target elements */
-  remapper: IModelTransformer | ((id: Id64String) => Id64String) | {
+  remapper: IModelTransformer |  {
     findTargetCodeSpecId: (id: Id64String) => Id64String;
     findTargetElementId: (id: Id64String) => Id64String;
-  } = (id: Id64String) => id,
+    findTargetAspectId: (id: Id64String) => Id64String;
+  } = {
+    findTargetCodeSpecId: (id) => id,
+    findTargetElementId: (id) => id,
+    findTargetAspectId: (id) => id,
+  },
   {
     expectedElemsOnlyInSource = [],
     // by default ignore the classes that the transformer ignores, this default is wrong if the option
     // [IModelTransformerOptions.includeSourceProvenance]$(transformer) is set to true
-    classesToIgnoreMissingElemsOfInTarget = IModelTransformer.provenanceElementClasses,
+    classesToIgnoreMissingEntitiesOfInTarget = [...IModelTransformer.provenanceElementClasses, ...IModelTransformer.provenanceElementAspectClasses],
     compareElemGeom = false,
   }: {
     expectedElemsOnlyInSource?: Partial<ElementProps>[];
     /** before checking elements that are only in the source are correct, filter out elements of these classes */
-    classesToIgnoreMissingElemsOfInTarget?: typeof Entity[];
+    classesToIgnoreMissingEntitiesOfInTarget?: typeof Entity[];
     compareElemGeom?: boolean;
   } = {}
 ) {
-  const [remapElem, remapCodeSpec] =
-    typeof remapper === "function"
-      ? [remapper, remapper]
-      : remapper instanceof IModelTransformer
-        ? [remapper.context.findTargetElementId.bind(remapper.context), remapper.context.findTargetCodeSpecId.bind(remapper.context)]
-        : [remapper.findTargetElementId, remapper.findTargetCodeSpecId];
+  const [remapElem, remapCodeSpec, remapAspect]
+    = remapper instanceof IModelTransformer
+      ? [remapper.context.findTargetElementId.bind(remapper.context),
+        remapper.context.findTargetCodeSpecId.bind(remapper.context),
+        remapper.context.findTargetAspectId.bind(remapper.context)]
+      : [remapper.findTargetElementId, remapper.findTargetCodeSpecId, remapper.findTargetAspectId];
 
   expect(sourceDb.nativeDb.hasUnsavedChanges()).to.be.false;
   expect(targetDb.nativeDb.hasUnsavedChanges()).to.be.false;
@@ -285,8 +296,8 @@ export async function assertIdentityTransformation(
           );
         } else if (!propChangesAllowed) {
           // kept for conditional breakpoints
-          const _propEq = BackendTestUtils.deepEqualWithFpTolerance(targetElem.asAny[propName], sourceElem.asAny[propName]);
-          expect(targetElem.asAny[propName]).to.deep.equalWithFpTolerance(
+          const _propEq = BackendTestUtils.advancedDeepEqual(targetElem.asAny[propName], sourceElem.asAny[propName]);
+          expect(targetElem.asAny[propName]).to.deep.advancedEqual(
             sourceElem.asAny[propName]
           );
         }
@@ -309,25 +320,38 @@ export async function assertIdentityTransformation(
           | undefined;
         if (styles?.environment?.sky) {
           const sky = styles.environment.sky;
-          if (!sky.image) sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+          if (!sky.image)
+            sky.image = { type: SkyBoxImageType.None } as SkyBoxImageProps;
+
           const image = sky.image;
-          if (image?.texture === Id64.invalid) (image.texture as string | undefined) = undefined;
-          if (image?.texture) image.texture = remapElem(image.texture);
-          if (!sky.twoColor) expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
-          if ((sky as any).file === "") delete (sky as any).file;
+          if (image?.texture === Id64.invalid)
+            (image.texture as string | undefined) = undefined;
+
+          if (image?.texture)
+            image.texture = remapElem(image.texture);
+
+          if (!sky.twoColor)
+            expectedSourceElemJsonProps.styles.environment.sky.twoColor = false;
+
+          if ((sky as any).file === "")
+            delete (sky as any).file;
         }
+
         const excludedElements = typeof styles?.excludedElements === "string"
           ? CompressedId64Set.decompressArray(styles.excludedElements)
           : styles?.excludedElements;
+
         for (let i = 0; i < (styles?.excludedElements?.length ?? 0); ++i) {
           const id = excludedElements![i];
           excludedElements![i] = remapElem(id);
         }
+
         for (const ovr of styles?.subCategoryOvr ?? []) {
           if (ovr.subCategory)
             ovr.subCategory = remapElem(ovr.subCategory);
         }
       }
+
       if (sourceElem instanceof SpatialViewDefinition) {
         const viewProps = expectedSourceElemJsonProps.viewDetails as ViewDetails3dProps | undefined;
         if (viewProps && viewProps.acs)
@@ -335,15 +359,25 @@ export async function assertIdentityTransformation(
       }
       // END jsonProperties TRANSFORMATION EXCEPTIONS
       // kept for conditional breakpoints
-      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.advancedDeepEqual(
         expectedSourceElemJsonProps,
         targetElem.jsonProperties,
         { considerNonExistingAndUndefinedEqual: true }
       );
-      expect(targetElem.jsonProperties).to.deep.equalWithFpTolerance(
+      expect(targetElem.jsonProperties).to.deep.advancedEqual(
         expectedSourceElemJsonProps,
         { considerNonExistingAndUndefinedEqual: true }
       );
+    }
+
+    for (const sourceAspect of sourceDb.elements.getAspects(sourceElemId)) {
+      if (classesToIgnoreMissingEntitiesOfInTarget.some((c) => sourceAspect instanceof c))
+        continue;
+      const sourceAspectId = sourceAspect.id;
+      const targetAspectId = remapAspect(sourceAspectId);
+      expect(targetAspectId).not.to.equal(Id64.invalid);
+      const targetAspect = targetDb.elements.getAspect(targetAspectId);
+      expect(targetAspect).not.to.be.undefined;
     }
   }
 
@@ -371,7 +405,7 @@ export async function assertIdentityTransformation(
   ]
     .filter(
       (elem) =>
-        !classesToIgnoreMissingElemsOfInTarget.some(
+        !classesToIgnoreMissingEntitiesOfInTarget.some(
           (cls) => elem instanceof cls
         )
     )
@@ -404,11 +438,11 @@ export async function assertIdentityTransformation(
       targetModelIds.add(targetModelId);
       targetToSourceModelsMap.set(targetModel, sourceModel);
       const expectedSourceModelJsonProps = { ...sourceModel.jsonProperties };
-      const _eq = BackendTestUtils.deepEqualWithFpTolerance(
+      const _eq = BackendTestUtils.advancedDeepEqual(
         expectedSourceModelJsonProps,
         targetModel.jsonProperties,
       );
-      expect(targetModel.jsonProperties).to.deep.equalWithFpTolerance(
+      expect(targetModel.jsonProperties).to.deep.advancedEqual(
         expectedSourceModelJsonProps,
       );
     }
@@ -462,7 +496,9 @@ export async function assertIdentityTransformation(
     const isOnlyInSource =
       onlyInSourceElements.has(relInSource.SourceECInstanceId) &&
       onlyInSourceElements.has(relInSource.TargetECInstanceId);
-    if (isOnlyInSource) continue;
+    if (isOnlyInSource)
+      continue;
+
     const relSourceInTarget = remapElem(relInSource.SourceECInstanceId);
     expect(relSourceInTarget).to.not.equal(Id64.invalid);
     const relTargetInTarget = remapElem(relInSource.TargetECInstanceId);
@@ -474,7 +510,11 @@ export async function assertIdentityTransformation(
     const relInTarget = targetRelationshipsToFind.get(relInTargetKey);
     const relClassName = sourceDb.withPreparedStatement(
       "SELECT Name FROM meta.ECClassDef WHERE ECInstanceId=?",
-      (s) => { s.bindId(1, relInSource.ECClassId); s.step(); return s.getValue(0).getString(); }
+      (s) => {
+        s.bindId(1, relInSource.ECClassId);
+        s.step();
+        return s.getValue(0).getString();
+      }
     );
     expect(relInTarget, `rel ${relClassName}:${relInSource.SourceECInstanceId}->${relInSource.TargetECInstanceId} was missing`).not.to.be.undefined;
     // this won't work if the relationship instance has navigation properties (or any property that was changed by the transformer)
@@ -483,6 +523,8 @@ export async function assertIdentityTransformation(
       TargetECInstanceId: _2,
       ECClassId: _3,
       ECInstanceId: _4,
+      SourceECClassId: _5,
+      TargetECClassId: _6,
       ...rel
     }: any) => rel;
     expect(makeRelInvariant(relInSource)).to.deep.equal(
@@ -495,7 +537,7 @@ export async function assertIdentityTransformation(
   expect(targetRelationshipsToFind.size).to.equal(0);
 }
 
-export class TransformerExtensiveTestScenario {
+export class TransformerExtensiveTestScenario extends BackendTestUtils.ExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
     const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
@@ -864,7 +906,10 @@ export class FilterByViewTransformer extends IModelTransformer {
   }
 }
 
-/** Specialization of IModelTransformer for testing */
+/**
+ * Specialization of IModelTransformer for testing that remaps the extensive test scenario's comments
+ * and records transformation data in the iModel itself.
+ */
 export class TestIModelTransformer extends IModelTransformer {
   public constructor(source: IModelDb | IModelExporter, target: IModelDb | IModelImporter) {
     super(source, target);
@@ -995,6 +1040,44 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 }
 
+/** Specialization of IModelTransformer for testing */
+export class AspectTrackingTransformer extends IModelTransformer {
+  public exportedAspectIdsByElement = new Map<Id64String, ElementMultiAspect[]>();
+
+  public override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
+    const elementId = sourceAspects[0].element.id;
+    assert(!this.exportedAspectIdsByElement.has(elementId), "tried to export element multi aspects for an element more than once");
+    this.exportedAspectIdsByElement.set(elementId, sourceAspects);
+    return super.onExportElementMultiAspects(sourceAspects);
+  }
+}
+
+/** a transformer which will throw an error if a given array of element ids are exported out of that list's order, or not at all*/
+export class AssertOrderTransformer extends IModelTransformer {
+  public constructor(private _exportOrderQueue: Id64String[], ...superArgs: ConstructorParameters<typeof IModelTransformer>) {
+    super(...superArgs);
+  }
+
+  public get errPrologue() { return "The export order given to AssertOrderTransformer was not followed"; }
+  public get errEpilogue() { return `The elements [${this._exportOrderQueue}] remain`; }
+
+  public override onExportElement(elem: Element) {
+    if (elem.id === this._exportOrderQueue[0])
+      this._exportOrderQueue.shift(); // pop the front
+    // we just popped the queue if it was expected, so it shouldn't be there the order was correct (and there are no duplicates)
+    const currentExportWasNotInExpectedOrder = this._exportOrderQueue.includes(elem.id);
+    if (currentExportWasNotInExpectedOrder)
+      throw Error(`${this.errPrologue}. '${elem.id}' came before the expected '${this._exportOrderQueue[0]}'. ${this.errEpilogue}`);
+    return super.onExportElement(elem);
+  }
+
+  public override async processAll() {
+    await super.processAll();
+    if (this._exportOrderQueue.length > 0)
+      throw Error(`${this.errPrologue}. ${this.errEpilogue}`);
+  }
+}
+
 /** Specialization of IModelImporter that counts the number of times each callback is called. */
 export class CountingIModelImporter extends IModelImporter {
   public numModelsInserted: number = 0;
@@ -1030,9 +1113,9 @@ export class CountingIModelImporter extends IModelImporter {
     this.numElementsDeleted++;
     super.onDeleteElement(elementId);
   }
-  protected override onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onInsertElementAspect(aspectProps: ElementAspectProps): Id64String {
     this.numElementAspectsInserted++;
-    super.onInsertElementAspect(aspectProps);
+    return super.onInsertElementAspect(aspectProps);
   }
   protected override onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsUpdated++;
@@ -1125,6 +1208,21 @@ export class RecordingIModelImporter extends CountingIModelImporter {
   }
 }
 
+/** In addition to recording transformation processes with information record elements, also collects
+ * test-specific data for tests to analyze.
+ */
+export class AspectTrackingImporter extends IModelImporter {
+  public importedAspectIdsByElement = new Map<Id64String, Id64String[]>();
+  public override importElementMultiAspects(...args: Parameters<IModelImporter["importElementMultiAspects"]>) {
+    const resultTargetIds = super.importElementMultiAspects(...args);
+    const [aspectsProps] = args;
+    const elementId = aspectsProps[0].element.id;
+    assert(!this.importedAspectIdsByElement.has(elementId), "should only export multiaspects for an element once");
+    this.importedAspectIdsByElement.set(elementId, resultTargetIds);
+    return resultTargetIds;
+  }
+}
+
 /** Specialization of IModelExport that exports to an output text file. */
 export class IModelToTextFileExporter extends IModelExportHandler {
   public outputFileName: string;
@@ -1162,7 +1260,9 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine("--------------------------------");
   }
   private formatOperationName(isUpdate: boolean | undefined): string {
-    if (undefined === isUpdate) return "";
+    if (undefined === isUpdate)
+      return "";
+
     return isUpdate ? ", UPDATE" : ", INSERT";
   }
   private getIndentLevelForElement(element: Element): number {
@@ -1309,4 +1409,66 @@ export class ClassCounter extends IModelExportHandler {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
     super.onExportRelationship(relationship, isUpdate);
   }
+}
+
+/** In some cases during tests, you want to modify an existing immutable database, so you need to copy it which will change the id.
+ * Forcing the same id will prevent the transformer from detecting invalid provenance/provenance conflicts
+ */
+export function copyDbPreserveId(sourceDb: IModelDb, pathForCopy: string) {
+  const copy = SnapshotDb.createFrom(sourceDb, pathForCopy);
+  // eslint-disable-next-line @typescript-eslint/dot-notation
+  copy["_iModelId"] = sourceDb.iModelId;
+  return copy;
+}
+
+/**
+ * Runs a function under the cpu profiler, by default creates cpu profiles in the working directory of
+ * the test runner process.
+ * You can override the default across all calls with the environment variable ITWIN_TESTS_CPUPROF_DIR,
+ * or per functoin just pass a specific `profileDir`
+ */
+export async function runWithCpuProfiler<F extends () => any>(
+  f: F,
+  {
+    profileDir = process.env.ITWIN_TESTS_CPUPROF_DIR ?? process.cwd(),
+    /** append an ISO timestamp to the name you provided */
+    timestamp = true,
+    profileName = "profile",
+    /** an extension to append to the profileName, including the ".". Defaults to ".js.cpuprofile" */
+    profileExtension = ".js.cpuprofile",
+    /** profile sampling interval in microseconds, you may want to adjust this to increase the resolution of your test
+     * default to half a millesecond
+     */
+    sampleIntervalMicroSec = 500, // half a millisecond
+  } = {}
+): Promise<ReturnType<F>> {
+  const maybeNameTimePortion = timestamp ? `_${new Date().toISOString()}` : "";
+  const profilePath = path.join(profileDir, `${profileName}${maybeNameTimePortion}${profileExtension}`);
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  // implementation influenced by https://github.com/wallet77/v8-inspector-api/blob/master/src/utils.js
+  const invokeFunc = async (thisSession: inspector.Session, funcName: string, args: any = {}) => {
+    return new Promise<void>((resolve, reject) => {
+      thisSession.post(funcName, args, (err) => err ? reject(err) : resolve());
+    });
+  };
+  const stopProfiler = async (thisSession: inspector.Session, funcName: "Profiler.stop", writePath: string) => {
+    return new Promise<void>((resolve, reject) => {
+      thisSession.post(funcName, async (err, res) => {
+        if (err)
+          return reject(err);
+        await fs.promises.writeFile(writePath, JSON.stringify(res.profile));
+        resolve();
+      });
+    });
+  };
+  const session = new inspector.Session();
+  session.connect();
+  await invokeFunc(session, "Profiler.enable");
+  await invokeFunc(session, "Profiler.setSamplingInterval", { interval: sampleIntervalMicroSec });
+  await invokeFunc(session, "Profiler.start");
+  const result = await f();
+  await stopProfiler(session, "Profiler.stop", profilePath);
+  await invokeFunc(session, "Profiler.disable");
+  session.disconnect();
+  return result;
 }

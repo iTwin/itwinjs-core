@@ -292,6 +292,9 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
+  /** @internal */
+  protected _hasMissingTiles = false;
+
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
    */
@@ -808,8 +811,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     this.changeView(newView, options); // switch this viewport to use new ViewState2d
 
     if (options && options.doFit) { // optionally fit view to the extents of the new model
-      const range = await this.iModel.models.queryModelRanges([baseModelId]);
-      this.zoomToVolume(Range3d.fromJSON(range[0]), options);
+      const range = await this.iModel.models.queryExtents([baseModelId]);
+      this.zoomToVolume(Range3d.fromJSON(range[0]?.extents), options);
     }
   }
 
@@ -1092,6 +1095,8 @@ export abstract class Viewport implements IDisposable, TileUser {
     removals.push(settings.onWhiteOnWhiteReversalChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onPlanarClipMaskChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onAppearanceOverridesChanged.addListener(displayStyleChanged));
+    removals.push(settings.contextRealityModels.onDisplaySettingsChanged.addListener(displayStyleChanged));
+    removals.push(settings.onRealityModelDisplaySettingsChanged.addListener(displayStyleChanged));
     removals.push(settings.contextRealityModels.onChanged.addListener(displayStyleChanged));
 
     removals.push(style.onOSMBuildingDisplayChanged.addListener(() => {
@@ -2353,6 +2358,7 @@ export abstract class Viewport implements IDisposable, TileUser {
         this.createScene(context);
 
         context.requestMissingTiles();
+        this._hasMissingTiles = context.hasMissingTiles || context.missingTiles.size > 0;
         target.changeScene(context.scene);
         isRedrawNeeded = true;
         this._frameStatsCollector.endTime("createChangeSceneTime");
@@ -2492,6 +2498,50 @@ export abstract class Viewport implements IDisposable, TileUser {
    */
   public readImageToCanvas(): HTMLCanvasElement {
     return this.target.readImageToCanvas();
+  }
+
+  /** Returns a Promise that resolves after the contents of this viewport are fully loaded and rendered.
+   * This can be useful, for example, when you want to capture an image of the viewport's contents, as in the following code:
+   * ```ts
+   *  async function captureImage(vp: Viewport): Promise<ImageBuffer | undefined> {
+   *    await vp.waitForSceneCompletion();
+   *    return vp.readImageBuffer();
+   *  }
+   * ```
+   */
+  public async waitForSceneCompletion(): Promise<void> {
+    const system = this.target.renderSystem;
+    let haveNewTiles = true;
+    let haveExternalTexRequests = true;
+    while ((haveNewTiles || haveExternalTexRequests) && !this.isDisposed) {
+      // Since this viewport is not being managed by the ViewManager, we must first manually invalidate the scene and re-render the frame each tick of the tile-wait loop.
+      this.invalidateScene();
+      this.renderFrame();
+
+      haveExternalTexRequests = system.hasExternalTextureRequests;
+      haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
+      if (!haveNewTiles) {
+        // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+        for (const vp of this.view.secondaryViewports) {
+          if (vp.numRequestedTiles > 0) {
+            haveNewTiles = true;
+            break;
+          }
+
+          const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+          if (tiles && tiles.external.requested > 0) {
+            haveNewTiles = true;
+            break;
+          }
+        }
+      }
+
+      // Since the viewport is not being managed by the ViewManager, we must manually pump the TileAdmin to initiate further tile requests each tick of the tile-wait loop.
+      if (haveNewTiles)
+        IModelApp.tileAdmin.process();
+
+      await BeDuration.wait(100);
+    }
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates.
@@ -3067,7 +3117,9 @@ export class ScreenViewport extends Viewport {
     if (targetPointNpc.z < 0.0 || targetPointNpc.z > 1.0)
       targetPointNpc.z = 0.5;
 
-    this.worldToNpc(pickPoint, projectedPt); projectedPt.z = targetPointNpc.z; this.npcToWorld(projectedPt, projectedPt);
+    this.worldToNpc(pickPoint, projectedPt);
+    projectedPt.z = targetPointNpc.z;
+    this.npcToWorld(projectedPt, projectedPt);
     return { plane: Plane3dByOriginAndUnitNormal.create(projectedPt, this.view.getZVector())!, source: DepthPointSource.TargetPoint };
   }
 
@@ -3105,7 +3157,10 @@ export class ScreenViewport extends Viewport {
   public getClientRect(): DOMRect { return this.canvas.getBoundingClientRect(); }
 
   /** The ViewRect for this ScreenViewport. Left and top will be 0, right will be the width, and bottom will be the height. */
-  public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
+  public get viewRect(): ViewRect {
+    this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight);
+    return this._viewRange;
+  }
 
   /** @internal */
   protected override addDecorations(decorations: Decorations): void {
@@ -3373,6 +3428,71 @@ export class ScreenViewport extends Viewport {
       this.invalidateController();
     }
     this.invalidateRenderPlan();
+  }
+
+  /** @internal override */
+  public override async waitForSceneCompletion(): Promise<void> {
+    if (!IModelApp.viewManager.hasViewport(this))
+      return super.waitForSceneCompletion();
+
+    const system = this.target.renderSystem;
+
+    // Let the ViewManager/TileAdmin initiate all further requests for tiles until no more requests are pending.
+    // We will latch onto the onRender event in order to know when tile requests are finished and the promise is fulfilled.
+    const promise = new Promise<void>((resolve, _reject) => {
+      const removeOnRender = this.onRender.addListener(() => {
+        const removeOnViewClose = IModelApp.viewManager.onViewClose.addListener((vp: ScreenViewport) => {
+          if (vp as Viewport === this) {
+            removeOnViewClose();
+            removeOnRender();
+            resolve();
+            return;
+          }
+        });
+
+        if (this.isDisposed) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+
+        let haveNewTiles = !this.areAllTileTreesLoaded || this._hasMissingTiles;
+        if (!haveNewTiles) {
+          // ViewAttachments and 3d section drawing attachments render to separate off-screen viewports - check those too.
+          for (const vp of this.view.secondaryViewports) {
+            if (vp.numRequestedTiles > 0) {
+              haveNewTiles = true;
+              break;
+            }
+
+            const tiles = IModelApp.tileAdmin.getTilesForUser(vp);
+            if (tiles && tiles.external.requested > 0) {
+              haveNewTiles = true;
+              break;
+            }
+          }
+        }
+
+        if (!haveNewTiles && !system.hasExternalTextureRequests) {
+          removeOnViewClose();
+          removeOnRender();
+          resolve();
+          return;
+        }
+      });
+    });
+
+    // Must first wait to ensure all tile trees are loaded -- tile requests will not happen before then; it may look like we have no requests pending, but in reality no requests even began.
+    while (!this.areAllTileTreesLoaded) {
+      await BeDuration.wait(100);
+    }
+
+    // After all tile trees have loaded, kick off an initial request for tiles.
+    this.invalidateScene();
+    this.renderFrame();
+
+    return promise;
   }
 }
 

@@ -120,7 +120,20 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     private var webView : WKWebView? = nil
     private var configData: JSON = [:]
     private var authClient: AuthorizationClient? = nil
-
+    private var documentCompletion : ((URL?) -> Void)? = nil
+    
+    private func parseArguments() {
+        // args can come from Xcode or when running the simulator (xcrun simctl launch), useful for automation
+        ProcessInfo.processInfo.arguments[1...].forEach { arg in
+            if arg.hasPrefix("IMJS_") {
+                let split = arg.split(separator: "=")
+                if split.count == 2 {
+                    configData[String(split[0])] = String(split[1])
+                }
+            }
+        }
+    }
+    
     func setupBackend() {
         let url = URL(fileURLWithPath: Bundle.main.bundlePath.appending("/Assets/main.js"))
         if let envUrl = Bundle.main.url(forResource: "env", withExtension: "json", subdirectory: "Assets"),
@@ -128,15 +141,12 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
            let envData = JSON.fromString(envString) {
             configData = envData
         }
-        authClient = DtaServiceAuthorizationClient(configData: configData)
-        if authClient == nil {
-            authClient = DtaOidcAuthorizationClient(configData: configData)
-        }
+        parseArguments()
+        authClient = DtaServiceAuthorizationClient(configData: configData) ?? DtaOidcAuthorizationClient(configData: configData)
         IModelJsHost.sharedInstance().loadBackend(url, withAuthClient: authClient, withInspect: true)
     }
 
-
-    func setupFrontend(bimFile: URL?, iModelId: String? = nil, iTwinId: String? = nil) {
+    func setupFrontend(bimFile: URL? = nil, iModelId: String? = nil, iTwinId: String? = nil) {
         let config = WKWebViewConfiguration()
         let wwwRoot = URL(fileURLWithPath: Bundle.main.resourcePath!.appending("/Assets/www"))
         config.setURLSchemeHandler(AssetHandler(root: wwwRoot), forURLScheme: "imodeljs")
@@ -154,36 +164,40 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         self.view.setNeedsLayout()
 
         let host = IModelJsHost.sharedInstance()
-        var hashParams = "#port=\(host.getPort())&platform=ios"
+        var hashParams = "#port=\(host.getPort())&platform=ios&standalone=true"
 
         if let bimFilePath = bimFile?.path.encodedForURLQuery() {
-            hashParams.append("&standalone=true&iModelName=" + bimFilePath)
+            hashParams.append("&iModelName=" + bimFilePath)
         }
         if let iModelId = iModelId?.encodedForURLQuery(), let iTwinId = iTwinId?.encodedForURLQuery() {
-            hashParams.append("&standalone=true&iModelId=\(iModelId)&iTwinId=\(iTwinId)")
+            hashParams.append("&iModelId=\(iModelId)&iTwinId=\(iTwinId)")
         }
         if configData["IMJS_IGNORE_CACHE"] != nil {
             hashParams.append("&ignoreCache=true")
         }
 
-        webView.load(URLRequest(url: URL(string: "imodeljs://app" + hashParams)!))
+        webView.addUserContentController(OpenModelHander(self))
+        webView.addUserContentController(ModelOpenedHandler(exitOnMessage: configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil))
+        let baseURL = configData["IMJS_DEBUG_URL"] as? String ?? "imodeljs://app"
+        webView.load(URLRequest(url: URL(string: baseURL + hashParams)!))
         host.register(webView)
     }
 
-    /// Show alert for webkit alert
-    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+    func showAlert(message: String, completionHandler: @escaping () -> Void = {}) {
         let alert = UIAlertController(title: message, message: nil, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .cancel) { action in
             completionHandler()
         })
         self.present(alert, animated: true)
     }
-
-    @IBAction func onOpenSnapshotIModel(_ sender: Any) {
-        pickSnapshot()
+    
+    /// Show alert for webkit alert
+    func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+        showAlert(message: message, completionHandler: completionHandler)
     }
-
-    func pickSnapshot() {
+    
+    func pickSnapshot(completion: @escaping (URL?) -> Void) {
+        self.documentCompletion = completion
         let picker = UIDocumentPickerViewController(documentTypes: ["com.bentley.bim-imodel"], in: .open)
         picker.modalPresentationStyle = .fullScreen
         picker.allowsMultipleSelection = false
@@ -195,11 +209,7 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
     func getDocumentsDirectory() -> URL {
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
     }
-
-    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
-        setupFrontend(bimFile: nil)
-    }
-
+    
     func copyExternalFileWithPrompt(srcUrl: URL, destUrl: URL, handler: @escaping () -> ()) {
         if FileManager.default.fileExists(atPath: destUrl.path) {
             // File exists, check if it is the same
@@ -244,6 +254,11 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         return true
     }
 
+    private func callDocumentCompletion(_ url: URL?) {
+        documentCompletion?(url)
+        documentCompletion = nil
+    }
+    
     func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentAt url: URL) {
         let documentsDirectory = getDocumentsDirectory()
         let documentsDirectoryPath = documentsDirectory.path
@@ -254,28 +269,95 @@ class ViewController: UIViewController, WKUIDelegate, UIDocumentPickerDelegate {
         let urlPath = url.path
         if urlPath.hasPrefix(documentsDirectoryPath) || urlPath.hasPrefix(privateDocumentsDirectoryPath) {
             // The picked file is already in our Documents directory; no need to copy.
-            setupFrontend(bimFile: url)
+            callDocumentCompletion(url)
         } else {
             // The picked file is not in our Documents directory; copy it there so that SQLite lock file and
             // iTwin tiles file can be created.
             let destUrl = URL(fileURLWithPath: documentsDirectoryPath).appendingPathComponent(url.lastPathComponent)
             copyExternalFileWithPrompt(srcUrl: url, destUrl: destUrl) {
-                self.setupFrontend(bimFile: destUrl)
+                self.callDocumentCompletion(destUrl)
             }
         }
     }
-
+    
+    func documentPickerWasCancelled(_ controller: UIDocumentPickerViewController) {
+        callDocumentCompletion(nil)
+    }
+  
     override func viewDidLoad() {
         super.viewDidLoad()
         setupBackend()
         if let standaloneFilename = configData["IMJS_STANDALONE_FILENAME"] as? String {
-            let documentsDirectory = getDocumentsDirectory()
-            let bimFile = documentsDirectory.appendingPathComponent(standaloneFilename)
-            setupFrontend(bimFile: bimFile)
+            let bimFile = getDocumentsDirectory().appendingPathComponent(standaloneFilename)
+            let exists = FileManager.default.fileExists(atPath: bimFile.path)
+            if configData["IMJS_EXIT_AFTER_MODEL_OPENED"] != nil, !exists {
+                print("ERROR: \(standaloneFilename) does not exist in the app's Documents directory")
+                exit(EXIT_FAILURE)
+            } else {
+                setupFrontend(bimFile: exists ? bimFile : nil)
+                if !exists {
+                    // alert the user after the view controller has loaded
+                    DispatchQueue.main.asyncAfter(deadline: DispatchTime.now()) {
+                        self.showAlert(message: "File does not exist: \(bimFile.path)")
+                    }
+                }
+            }
         } else if let _ = authClient,
                   let iModelId = configData["IMJS_IMODEL_ID"] as? String,
                   let iTwinId = configData["IMJS_ITWIN_ID"] as? String {
             setupFrontend(bimFile: nil, iModelId: iModelId, iTwinId: iTwinId)
+        } else {
+            setupFrontend()
         }
+    }
+    
+    class OpenModelHander: NSObject, MessageHandler {
+        static let NAME = "openModel"
+        private var viewController: ViewController
+        
+        init (_ viewController: ViewController) {
+            self.viewController = viewController
+        }
+        
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let webView = self.viewController.webView, let promiseName = message.body as? String, promiseName.count > 0 {
+                viewController.pickSnapshot() { url in
+                    let fileName = (url?.path.count ?? 0) > 0 ? "\"\(url!.path)\"" : "undefined";
+                    let js = "window.\(promiseName)(\(fileName));"
+                    webView.evaluateJavaScript(js)
+                }
+            }
+        }
+    }
+    
+    class ModelOpenedHandler : NSObject, MessageHandler {
+        static let NAME = "modelOpened"
+        private var exitOnMessage: Bool
+        
+        init(exitOnMessage: Bool) {
+            self.exitOnMessage = exitOnMessage
+        }
+        
+        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+            if let stringMessage = message.body as? String {
+                // Note: don't change this string without also updating runIosSimulator.ts as it is also hardcoded there.
+                // Despite us providing a proper success/error exit status, it doesn't get returned by simctl so the script relies
+                // on this string to know if it succeeded.
+                print("iModel opened: \(stringMessage)")
+            }
+            if exitOnMessage {
+                exit(EXIT_SUCCESS)
+            }
+        }
+    }
+}
+
+protocol MessageHandler : WKScriptMessageHandler {
+    static var NAME: String { get }
+}
+
+extension WKWebView {
+    func addUserContentController(_ messageHandler: MessageHandler) {
+        self.configuration.userContentController.add(messageHandler, name: type(of: messageHandler).NAME)
     }
 }

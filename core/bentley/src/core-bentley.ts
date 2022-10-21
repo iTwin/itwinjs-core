@@ -33,6 +33,8 @@ export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";
 export * from "./Tracing";
+export * from "./TupleKeyedMap";
+export * from "./TypedArrayBuilder";
 export * from "./UnexpectedErrors";
 export * from "./UtilityTypes";
 export * from "./YieldManager";
