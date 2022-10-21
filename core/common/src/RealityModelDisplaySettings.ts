@@ -42,6 +42,16 @@ export interface PointCloudDisplayProps {
   edlStrength?: number;
   /** See [[PointCloudDisplaySettings.edlRadius]]. */
   edlRadius?: number;
+  // ###TODO: figure out and finalize all the EDL options and comments
+  edlAdvanced?: number;
+  edlFilter?: number;
+  edlDbg1?: number;
+  edlLightDirX?: number;
+  edlLightDirY?: number;
+  edlLightDirZ?: number;
+  edlMixWts1?: number;
+  edlMixWts2?: number;
+  edlMixWts4?: number;
 }
 
 /** The JSON representation of [[RealityModelDisplaySettings]].
@@ -101,6 +111,15 @@ export class PointCloudDisplaySettings {
    * Default: 1.0
    */
   public readonly edlRadius: number;
+  public readonly edlAdvanced?: number;
+  public readonly edlFilter?: number;
+  public readonly edlDbg1?: number;
+  public readonly edlLightDirX?: number;
+  public readonly edlLightDirY?: number;
+  public readonly edlLightDirZ?: number;
+  public readonly edlMixWts1?: number;
+  public readonly edlMixWts2?: number;
+  public readonly edlMixWts4?: number;
 
   /** Settings with all properties initialized to their default values. */
   public static defaults = new PointCloudDisplaySettings();
@@ -116,6 +135,15 @@ export class PointCloudDisplaySettings {
     this.maxPixelsPerVoxel = props?.maxPixelsPerVoxel ?? 20;
     this.edlStrength = props?.edlStrength ?? 0;
     this.edlRadius = props?.edlRadius ?? 1;
+    this.edlAdvanced = props?.edlAdvanced ?? 0;
+    this.edlFilter = props?.edlFilter ?? 0;
+    this.edlDbg1 = props?.edlDbg1 ?? 1;
+    this.edlLightDirX = props?.edlLightDirX ?? 0;
+    this.edlLightDirY = props?.edlLightDirY ?? 0;
+    this.edlLightDirZ = props?.edlLightDirZ ?? -1;
+    this.edlMixWts1 = props?.edlMixWts1 ?? 1.0;
+    this.edlMixWts2 = props?.edlMixWts2 ?? 0.5;
+    this.edlMixWts4 = props?.edlMixWts4 ?? 0.25;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
@@ -154,6 +182,33 @@ export class PointCloudDisplaySettings {
     if (this.edlRadius !== defs.edlRadius)
       props.edlRadius = this.edlRadius;
 
+    if (this.edlAdvanced !== defs.edlAdvanced)
+      props.edlAdvanced = this.edlAdvanced;
+
+    if (this.edlFilter !== defs.edlFilter)
+      props.edlFilter = this.edlFilter;
+
+    if (this.edlDbg1 !== defs.edlDbg1)
+      props.edlDbg1 = this.edlDbg1;
+
+    if (this.edlLightDirX !== defs.edlLightDirX)
+      props.edlLightDirX = this.edlLightDirX;
+
+    if (this.edlLightDirY !== defs.edlLightDirY)
+      props.edlLightDirY = this.edlLightDirY;
+
+    if (this.edlLightDirZ !== defs.edlLightDirZ)
+      props.edlLightDirZ = this.edlLightDirZ;
+
+    if (this.edlMixWts1 !== defs.edlMixWts1)
+      props.edlMixWts1 = this.edlMixWts1;
+
+    if (this.edlMixWts2 !== defs.edlMixWts2)
+      props.edlMixWts2 = this.edlMixWts2;
+
+    if (this.edlMixWts4 !== defs.edlMixWts4)
+      props.edlMixWts4 = this.edlMixWts4;
+
     return props;
   }
 
@@ -172,7 +227,12 @@ export class PointCloudDisplaySettings {
 
     return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
       && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
-      && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius;
+      && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius
+      && this.edlAdvanced === other.edlAdvanced && this.edlFilter === other.edlFilter
+      && this.edlDbg1 === other.edlDbg1 && this.edlLightDirX === other.edlLightDirX
+      && this.edlLightDirY === other.edlLightDirY && this.edlLightDirZ === other.edlLightDirZ
+      && this.edlMixWts1 === other.edlMixWts1 && this.edlMixWts2 === other.edlMixWts2 && this.edlMixWts4 === other.edlMixWts4
+    ;
   }
 }
 

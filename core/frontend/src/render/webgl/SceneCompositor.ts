@@ -9,7 +9,7 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { Transform, Vector2d, Vector3d } from "@itwin/core-geometry";
 import {
-  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
+  Feature, PackedFeatureTable, PointCloudDisplaySettings, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay,
 } from "@itwin/core-common";
 import { DepthType, RenderType } from "@itwin/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
@@ -2231,18 +2231,30 @@ class MRTCompositor extends Compositor {
     // ### Could we filter the commands by pointclouds earlier and iterate over them in order to do this per-point-cloud?
     this._readPickDataFromPingPong = !useMsBuffers; // if multisampling then can read pick textures directly.
     // WIP
-    // undefined !== this.primitive.cachedGeometry.asPointCloud
-    // const cmds = commands.getCommands(RenderPass.None !== cmdPass ? cmdPass : pass);
-    // if (0 === cmds.length)
-    // const params = getDrawParams(this.target, this._geom.edlSimple!);
-    // undefined !== this.primitive.cachedGeometry.asPointCloud
-    // if (params.target.uniforms.branch.top.realityModelDisplaySettings?.pointCloud.edlStrength > 0) {
+    // ###TODO figure out how to get setting for these, kludge for now
+    const cmds = commands.getCommands(RenderPass.PointClouds);
+    let _primCnt = 0;
+    let _psCnt = 0;
+    let pcs: PointCloudDisplaySettings | undefined;
+    if (cmds.length > 0) {
+      for (const command of cmds) {
+        if (command.opcode === "drawPrimitive")
+          ++_primCnt;
+        else if (command.opcode === "pushBranch")
+          pcs = command.branch.branch.realityModelDisplaySettings?.pointCloud;
+        else if (command.opcode === "pushState")
+          ++_psCnt;
+      }
+    }
 
-    // ###TODO figure out how to get setting for these
-    const edlOff = false; // should be .pointCloud.edlStrength > 0
-    const useAdvSimple = true;
-    const useSimple = false;
-    const filter = true;
+    // const edlOff = false;
+    // const useAdvSimple = true;
+    // const useSimple = false;
+    // const filter = true;
+    const edlOff = !pcs?.edlStrength;
+    const useSimple = !pcs?.edlAdvanced;
+    const useAdvSimple = !!pcs?.edlDbg1;
+    const filter = !pcs?.edlFilter;
     if (edlOff) {
       // draw the regular way
       fbStack.execute(fbo, true, useMsBuffers, () => {
@@ -2265,17 +2277,19 @@ class MRTCompositor extends Compositor {
         fbStack.execute(edlFin, true, useMsBuffers, () => {
         // this.drawPass(commands, RenderPass.PointClouds);
           if (this._geom.edlSimple === undefined)
-            this._geom.edlSimple = EDLSimpleGeometry.createGeometry(this._textures.hilite!.getHandle()!,
-              this._depth!.getHandle()!);
+            this._geom.edlSimple = EDLSimpleGeometry.createGeometry(this._textures.hilite!.getHandle()!, this._depth!.getHandle()!);
           const params = getDrawParams(this.target, this._geom.edlSimple!);
           this.target.techniques.draw(params);
         });
       } else if (useAdvSimple) {
         fbStack.execute(edlFin, true, useMsBuffers, () => {
-          // this.drawPass(commands, RenderPass.PointClouds);
-          if (this._geom.edlSimple === undefined)
-            this._geom.edlSimple = EDLCalcGeometry.createGeometry(this._textures.hilite!.getHandle()!, this._depth!.getHandle()!, 1);
-          const params = getDrawParams(this.target, this._geom.edlSimple!);
+          if (this._geom.edlCalc === undefined) {
+            const ct1 = this._textures.hilite!.getHandle()!;
+            const ct2 = this._depth!.getHandle()!;
+            this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1, ct2, 1), EDLCalcGeometry.createGeometry(ct1, ct2, 2),
+              EDLCalcGeometry.createGeometry(ct1, ct2, 4)];
+          }
+          const params = getDrawParams(this.target, this._geom.edlCalc[0]!);
           this.target.techniques.draw(params);
         });
       } else {
@@ -2316,11 +2330,11 @@ class MRTCompositor extends Compositor {
         const tex4 = filter ? this._fbos.edlFilt4.getColor(0).getHandle() : this._fbos.edlCalc4.getColor(0).getHandle();
         fbStack.execute(edlFin, true, useMsBuffers, () => {
           if (this._geom.edlMix === undefined) {
-            this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!, this._depth!.getHandle()!);
+            this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
           } else {
             if (this._geom.edlMix.colorTexture1 !== tex1 || this._geom.edlMix.colorTexture2 !== tex2 || this._geom.edlMix.colorTexture4 !== tex4) {
               dispose(this._geom.edlMix);
-              this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!, this._depth!.getHandle()!);
+              this._geom.edlMix = EDLMixGeometry.createGeometry(tex1!, tex2!, tex4!);
             }
           }
           const params = getDrawParams(this.target, this._geom.edlMix!);

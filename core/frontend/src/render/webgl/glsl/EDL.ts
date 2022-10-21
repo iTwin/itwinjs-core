@@ -54,9 +54,6 @@ export function createEDLSimpleProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  addWindowToTexCoords(frag);
-
-  addRenderOrderConstants(frag);
   frag.addFunction(neighborContribution);
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeSimpleEDL);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
@@ -118,7 +115,7 @@ float computeObscurance(float depth) {
         #endif
         sum += max(0.0, zNP) / u_scale;
     }
-    return sum;
+    return sum / 8.0; // ###TODO divide by 8 here?
 }
 `;
 
@@ -126,11 +123,12 @@ float computeObscurance(float depth) {
 const calcEDL = `
   vec4 color = TEXTURE(u_colorTexture, v_texCoord);
   if (color.a == 0.0)
-      return color;
+      // return color;
+      discard;
   else {
     float depth = TEXTURE(u_depthTexture, v_texCoord).r;
     float f = computeObscurance(depth);
-    f = exp(-f * 100.0 * u_pointCloudEDL1.x);
+    f = exp(-f * 300.0 * u_pointCloudEDL1.x);
     return vec4(f*color.rgb, 1.0);
   }
 `;
@@ -140,9 +138,6 @@ export function createEDLCalcProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  addWindowToTexCoords(frag);
-
-  addRenderOrderConstants(frag);
   frag.addFunction(computeObscurance);
   frag.set(FragmentShaderComponent.ComputeBaseColor, calcEDL);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
@@ -216,9 +211,6 @@ export function createEDLFilterProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  addWindowToTexCoords(frag);
-
-  addRenderOrderConstants(frag);
   frag.addFunction(neighborContribution);
   frag.set(FragmentShaderComponent.ComputeBaseColor, filterEDL);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
@@ -258,25 +250,14 @@ export function createEDLFilterProgram(context: WebGLContext): ShaderProgram {
 
 // This shader mixes the 3 EDL images into the final image
 const mixEDL = `
-  vec4 color = TEXTURE(u_colorTexture, v_texCoord);
-  if (color.a == 0.0)
+  vec4 col1 = TEXTURE(u_colorTexture1, v_texCoord);
+  if (col1.a == 0.0)
       discard;
   else {
-      float depth = TEXTURE(u_depthTexture, v_texCoord).r;
-
-      // sample from neighbors up, down, left, right
-      vec2 off = u_pointCloudEDL1.y * u_invScreenSize;
-      vec2 responseAndCount = vec2(0.0, 0.0);
-      responseAndCount += neighborContribution(depth, vec2(0, off.y));
-      responseAndCount += neighborContribution(depth, vec2(off.x, 0));
-      responseAndCount += neighborContribution(depth, vec2(0, -off.y));
-      responseAndCount += neighborContribution(depth, vec2(-off.x, 0));
-
-      float response = responseAndCount.x / responseAndCount.y;
-      float shade = exp(-response * 300.0 * u_pointCloudEDL1.x);
-      color.rgb *= shade;
+      vec3 col2 = TEXTURE(u_colorTexture2, v_texCoord).rgb;
+      vec3 col4 = TEXTURE(u_colorTexture4, v_texCoord).rgb;
+      return vec4 ((u_weights.x * col1.rgb + u_weights.y * col2 + u_weights.z * col4) / (u_weights.x + u_weights.y + u_weights.z), 1.0);
   }
-  return color;
 `;
 
 /** @internal */
@@ -284,18 +265,8 @@ export function createEDLMixProgram(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  addWindowToTexCoords(frag);
-
-  addRenderOrderConstants(frag);
-  frag.addFunction(neighborContribution);
   frag.set(FragmentShaderComponent.ComputeBaseColor, mixEDL);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
-
-  frag.addUniform("u_invScreenSize", VariableType.Vec2, (prog) => {
-    prog.addGraphicUniform("u_invScreenSize", (uniform, params) => {
-      params.target.uniforms.viewRect.bindInverseDimensions(uniform);
-    });
-  });
 
   frag.addUniform("u_colorTexture1", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_colorTexture1", (uniform, params) => {
@@ -318,17 +289,10 @@ export function createEDLMixProgram(context: WebGLContext): ShaderProgram {
     });
   });
 
-  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
-      const geom = params.geometry as EDLMixGeometry;
-      Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
-    });
-  });
-
   // Uniforms based on the PointCloudDisplaySettings.
-  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
-      params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
+  frag.addUniform("u_weights", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_weights", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL2(uniform);
     });
   });
 

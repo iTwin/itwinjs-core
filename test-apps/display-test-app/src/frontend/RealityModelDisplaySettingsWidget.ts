@@ -9,7 +9,7 @@ import {
   ContextRealityModelState, IModelApp, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
+  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -149,6 +149,11 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   sizeMode.form.style.display = "inline";
 
   // Pixel size
+  const sdiv0 = document.createElement("div");
+  sdiv0.style.display = "inline";
+  const slabel0 = document.createElement("label");
+  slabel0.innerText = model.settings.pointCloud.voxelScale.toString();
+  sdiv0.appendChild(slabel0);
   const voxelSizeSlider = createSlider({
     name: " Size ", id: "rms_scale", parent: sizeMode.div,
     min: "0.25", max: "10", step: "0.25",
@@ -156,11 +161,18 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
+      slabel0.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ voxelScale: scale });
     },
   }).div;
+  voxelSizeSlider.appendChild(sdiv0);
 
+  const sdiv0p = document.createElement("div");
+  sdiv0p.style.display = "inline";
+  const slabel0p = document.createElement("label");
+  slabel0p.innerText = model.settings.pointCloud.voxelScale.toString();
+  sdiv0p.appendChild(slabel0p);
   const pixelSizeSlider = createSlider({
     name: " Size ", id: "rms_size", parent: sizeMode.div,
     min: "1", max: "64", step: "1",
@@ -168,40 +180,149 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const pixelSize = Number.parseInt(slider.value, 10);
+      slabel0p.innerText = slider.value.toString();
       if (!Number.isNaN(pixelSize))
         updatePointCloud({ pixelSize });
     },
   }).div;
+  pixelSizeSlider.appendChild(sdiv0p);
 
   setSizeMode(model.settings.pointCloud.sizeMode);
 
+  //  ----------------- EDL -----------------
+  const tdiv = document.createElement("div");
+  const hr = document.createElement("hr");
+  hr.style.borderColor = "grey";
+  tdiv.appendChild(hr);
+  const label1 = document.createElement("label");
+  label1.innerText = "EDL";
+  tdiv.appendChild(label1);
+  element.appendChild(tdiv);
+
+  createCheckBox({
+    name: "Advanced:", id: "pcs_adv",
+    parent: element,
+    isChecked: model.settings.pointCloud.edlAdvanced === 1,
+    handler: (cb) => updatePointCloud({ edlAdvanced: cb.checked ? 1 : 0 }),
+  });
+
+  createCheckBox({
+    name: "Filter:", id: "pcs_filter",
+    parent: element,
+    isChecked: model.settings.pointCloud.edlFilter === 1,
+    handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
+  });
+
   // EDL strength
+  const sdiv1 = document.createElement("div");
+  sdiv1.style.display = "inline";
+  const slabel1 = document.createElement("label");
+  slabel1.innerText = model.settings.pointCloud.edlStrength.toString();
+  sdiv1.appendChild(slabel1);
   const edlStrengthSlider = createSlider({
-    name: " Strength ", id: "rms_strength", parent: sizeMode.div,
+    name: " Strength ", id: "pcs_strength", parent: element,
     min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlStrength.toString(),
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
+      slabel1.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ edlStrength: scale });
     },
   }).div;
   edlStrengthSlider.style.display = "";
+  edlStrengthSlider.appendChild(sdiv1);
 
   // EDL radius
+  const sdiv2 = document.createElement("div");
+  sdiv2.style.display = "inline";
+  const slabel2 = document.createElement("label");
+  slabel2.innerText = model.settings.pointCloud.edlRadius.toString();
+  sdiv2.appendChild(slabel2);
   const edlRadiusSlider = createSlider({
-    name: " Radius ", id: "rms_radius", parent: sizeMode.div,
+    name: " Radius ", id: "pcs_radius", parent: element,
     min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlRadius.toString(),
     verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
+      slabel2.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ edlRadius: scale });
     },
   }).div;
   edlRadiusSlider.style.display = "";
+  edlRadiusSlider.appendChild(sdiv2);
+
+  createCheckBox({
+    name: "AdvSimpTemp:", id: "pcs_dbg1",
+    parent: element,
+    isChecked: model.settings.pointCloud.edlDbg1 === 1,
+    handler: (cb) => updatePointCloud({ edlDbg1: cb.checked ? 1 : 0 }),
+  });
+
+  createLabeledNumericInput({
+    name: "edlMixWts1: ", id: "pcs_mixwt1", parent: element,
+    value: model.settings.pointCloud.edlMixWts1 ?? 1,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlMixWts1: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+  });
+
+  createLabeledNumericInput({
+    name: "edlMixWts2: ", id: "pcs_mixwt2", parent: element,
+    value: model.settings.pointCloud.edlMixWts2 ?? 0.5,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlMixWts2: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+  });
+
+  createLabeledNumericInput({
+    name: "edlMixWts4: ", id: "pcs_mixwt4", parent: element,
+    value: model.settings.pointCloud.edlMixWts4 ?? 0.25,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlMixWts4: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+  });
+
+  createLabeledNumericInput({
+    name: "LightDirX: ", id: "pcs_lightDirX", parent: element,
+    value: model.settings.pointCloud.edlLightDirX ?? 0,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlLightDirX: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+  });
+
+  createLabeledNumericInput({
+    id: "pcs_lightDirY",
+    parent: element,
+    value: model.settings.pointCloud.edlLightDirY ?? 0,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlLightDirY: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+    name: "LightDirY: ",
+  });
+
+  createLabeledNumericInput({
+    name: "LightDirZ: ", id: "pcs_lightDirZ", parent: element,
+    value: model.settings.pointCloud.edlLightDirZ ?? 0,
+    handler: async (value, _) => {
+      if (!Number.isNaN(value))
+        updatePointCloud({ edlLightDirZ: value });
+    },
+    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
+  });
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
@@ -212,7 +333,7 @@ class RealityModelSettingsWidget extends Window {
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0, width: 408, height: 204 });
+    super(Surface.instance, { top: 0, left: 0, width: 408, height: 400 });
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;

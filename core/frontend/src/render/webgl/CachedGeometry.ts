@@ -851,18 +851,17 @@ export class EDLFilterGeometry extends TexturedViewportQuadGeometry {
 /** @internal */
 export class EDLMixGeometry extends TexturedViewportQuadGeometry {
 
-  public static createGeometry(colorTexture1: WebGLTexture, colorTexture2: WebGLTexture, colorTexture4: WebGLTexture, depthBuffer: WebGLTexture) {
+  public static createGeometry(colorTexture1: WebGLTexture, colorTexture2: WebGLTexture, colorTexture4: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params)
       return undefined;
 
-    return new EDLMixGeometry(params, [colorTexture1, colorTexture2, colorTexture4, depthBuffer]);
+    return new EDLMixGeometry(params, [colorTexture1, colorTexture2, colorTexture4]);
   }
 
   public get colorTexture1() { return this._textures[0]; }
   public get colorTexture2() { return this._textures[1]; }
   public get colorTexture4() { return this._textures[2]; }
-  public get depthTexture() { return this._textures[3]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.EDLMix, textures);
