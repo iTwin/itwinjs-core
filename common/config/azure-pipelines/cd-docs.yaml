@@ -12,18 +12,18 @@ resources:
   pipelines:
   - pipeline: itwinjs-docs
     source: iTwin.js Docs - YAML
-    # version: 20221020.4
-    trigger:
-      branches:
-        include:
-        - master
-        - release/*
-        - docs-release-pipeline
-        exclude:
-        - release/2*
-        - release/1*
-      tags:
-      - iTwinJsDocsRelease
+    version: 20221021.13
+    # trigger:
+    #   branches:
+    #     include:
+    #     - master
+    #     - release/*
+    #     - docs-release-pipeline
+    #     exclude:
+    #     - release/2*
+    #     - release/1*
+    #   tags:
+    #   - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
 
