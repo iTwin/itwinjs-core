@@ -6,7 +6,12 @@
 import { MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
+// const sleep = async (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 const dtaMobileMain = (async () => {
+  // await sleep(10000);
+  // debugger; // eslint-disable-line no-debugger
+
   const opts: MobileHostOpts = {
     mobileHost: {
       rpcInterfaces: getRpcInterfaces(),

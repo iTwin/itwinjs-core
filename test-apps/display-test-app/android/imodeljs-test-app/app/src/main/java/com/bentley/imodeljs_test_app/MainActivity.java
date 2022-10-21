@@ -23,12 +23,17 @@ public class MainActivity extends AppCompatActivity {
         MobileFrontend frontend = new MobileFrontend(m_host, "&standalone=true&iModelName=" + files + "/JoesHouse.bim") {
             @Override
             protected String supplyEntryPoint() {
-                return "192.168.86.20:3000";
+                return super.supplyEntryPoint();
+//                return "192.168.86.20:3000";
             }
         };
         m_host.setFrontend(frontend);
         setContentView(frontend);
         frontend.loadEntryPoint();
+        int port = m_host.getPort();
+        if (port == 9229) {
+            port = port + 0;
+        }
     }
 
     @Override
