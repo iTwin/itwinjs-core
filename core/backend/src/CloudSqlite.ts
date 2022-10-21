@@ -443,6 +443,7 @@ export namespace CloudSqlite {
     * @param container the CloudContainer for which the lock is to be acquired
     * @param operation an asynchronous operation performed with the write lock held.
     * @param busyHandler if present, function called when the write lock is currently held by another user.
+    * @returns a Promise with the result of `operation`
     */
   export async function withWriteLock<T>(user: string, container: CloudContainer, operation: () => T, busyHandler?: WriteLockBusyHandler) {
     if (container.hasWriteLock)

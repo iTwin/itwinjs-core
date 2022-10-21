@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { PropertyDescription } from "@itwin/appui-abstract";
-import { PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
+import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
+import { PropertyFilterRule, PropertyFilterRuleGroup, PropertyFilterRuleGroupOperator, PropertyFilterRuleOperator } from "@itwin/components-react";
 import { Field } from "@itwin/presentation-common";
 import {
   createTestCategoryDescription, createTestContentDescriptor, createTestECClassInfo, createTestNestedContentField, createTestPropertiesContentField,
@@ -150,6 +150,15 @@ describe("createPresentationInstanceFilter", () => {
         property: { name: `${INSTANCE_FILTER_FIELD_SEPARATOR}invalidFieldName`, displayLabel: "Prop2", typename: "string" },
         operator: PropertyFilterRuleOperator.IsNull,
       }],
+    };
+    expect(createPresentationInstanceFilter(descriptor, filter)).to.be.undefined;
+  });
+
+  it("returns undefined when rule has non primitive value", () => {
+    const filter: PropertyFilterRule = {
+      property: { name: getPropertyDescriptionName(propertyField1), displayLabel: "Prop1", typename: "string" },
+      operator: PropertyFilterRuleOperator.IsEqual,
+      value: { valueFormat: PropertyValueFormat.Array, items: [], itemsTypeName: "number" },
     };
     expect(createPresentationInstanceFilter(descriptor, filter)).to.be.undefined;
   });

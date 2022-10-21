@@ -211,16 +211,16 @@
     "OpenSettings": {
       "keyin": "open settings"
     },
+    "RestoreAllFrontstages": {
+      "keyin": "restore all frontstages",
+      "description": "Restore all Frontstages to Default Layout",
+      "flyover": "Restore all Stages to Default Layout"
+    },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
       "description": "Restore Frontstage to Default Layout",
       "flyover": "Restore Stage to Default Layout",
       "noStageFound": "Specified stage not found."
-    },
-    "RestoreFrontstagesLayout": {
-      "keyin": "restore frontstages layout",
-      "description": "Restore all Frontstages to Default Layout",
-      "flyover": "Restore all Stages to Default Layout"
     },
     "ClearKeyinPaletteHistory": {
       "keyin": "clear keyin history",

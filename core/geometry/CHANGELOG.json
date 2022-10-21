@@ -2,6 +2,63 @@
   "name": "@itwin/core-geometry",
   "entries": [
     {
+      "version": "3.4.1",
+      "tag": "@itwin/core-geometry_v3.4.1",
+      "date": "Mon, 17 Oct 2022 20:06:51 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.4.0",
+      "tag": "@itwin/core-geometry_v3.4.0",
+      "date": "Thu, 13 Oct 2022 20:24:47 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add missing call to clone when calling Ray3d.createStartEnd."
+          },
+          {
+            "comment": "ConvexClipPlaneSet from convex Polyface"
+          },
+          {
+            "comment": "BoxProps.origin name changed to baseOrigin to agree with json format"
+          },
+          {
+            "comment": "revisit skipped geomlibs tests"
+          },
+          {
+            "comment": "RegionOps.constructAllXYRegionLoops bug fix"
+          },
+          {
+            "comment": "When finding closest point on bspline, bezier endpoints were not explicitly tested"
+          },
+          {
+            "comment": "New method PolyfaceQuery.cloneWithMaximalPlanarFacets"
+          },
+          {
+            "comment": "Updated Node types declaration to support latest v16"
+          }
+        ]
+      }
+    },
+    {
+      "version": "3.3.5",
+      "tag": "@itwin/core-geometry_v3.3.5",
+      "date": "Tue, 27 Sep 2022 11:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.4",
+      "tag": "@itwin/core-geometry_v3.3.4",
+      "date": "Thu, 08 Sep 2022 19:00:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "3.3.3",
+      "tag": "@itwin/core-geometry_v3.3.3",
+      "date": "Tue, 06 Sep 2022 20:54:19 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.3.2",
       "tag": "@itwin/core-geometry_v3.3.2",
       "date": "Thu, 01 Sep 2022 14:37:22 GMT",

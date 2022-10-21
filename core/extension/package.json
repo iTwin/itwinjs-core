@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-extension",
-  "version": "3.5.0-dev.12",
+  "version": "3.5.0-dev.21",
   "description": "iTwin.js Extension API",
   "typings": "index.d.ts",
   "license": "MIT",
@@ -17,7 +17,8 @@
     "docs": "",
     "lint": "",
     "test": "",
-    "generate": "node ./codeGen/generate-exports.js '[\"@itwin/core-frontend\",\"core/frontend\"] [\"@itwin/core-common\",\"core/common\"]'"
+    "extract-api": "npm run -s generate",
+    "generate": "node ./codeGen/generate-exports.js"
   },
   "keywords": [
     "Bentley",
