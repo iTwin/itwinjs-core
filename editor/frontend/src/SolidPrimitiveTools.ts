@@ -27,9 +27,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected getPlacementProps(): PlacementProps | undefined {
     if (undefined === this.current)
@@ -70,7 +68,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await SolidPrimitiveTool.callCommand("insertGeometricElement", props, data);
+      await this.commandConnection.insertGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
