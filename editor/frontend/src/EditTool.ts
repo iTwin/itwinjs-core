@@ -6,18 +6,24 @@
  * @module Editing
  */
 
-import { editorChannel } from "@itwin/editor-common";
+import { PickAsyncMethods } from "@itwin/core-bentley";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
+import { BasicManipulationCommandIpc, editorChannel, SolidModelingCommandIpc } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool, SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
-import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
+import {
+  ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
+} from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
-import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
+import {
+  ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool,
+  IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool,
+  SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool,
+} from "./SolidModelingTools";
 import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
-import { AsyncFunction, PickAsyncMethods, PromiseReturnType } from "@itwin/core-bentley";
+import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
@@ -35,6 +41,26 @@ export interface EditorOptions {
   registerSolidModelingTools?: true | undefined;
 }
 
+/**
+ * A type-safe Proxy object that "connects" to the backend IPC implementation by
+ * forwarding all calls through [IpcApp.callIpcChannel]($backend).
+ */
+export class IpcConnection<IpcInterface> {
+  private _proxy?: PickAsyncMethods<IpcInterface>;
+  public get connection() {
+    return this._proxy ??=
+      new Proxy({} as PickAsyncMethods<IpcInterface>, {
+        get(_target, methodName: string) {
+          return async (...args: any[]) =>
+            IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
+        },
+      });
+  }
+}
+
+export const solidModelingIpc = new IpcConnection<SolidModelingCommandIpc>();
+export const basicManipulationIpc = new IpcConnection<BasicManipulationCommandIpc>();
+
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
 export class EditTools {
   public static namespace = "Editor";
@@ -43,30 +69,6 @@ export class EditTools {
 
   public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
-  }
-
-  /**
-   * Create a typed object that "connects" to the underlying backend IPC representation, but
-   * will just forward all typed calls through [IpcApp.callIpcChannel]($backend).
-   */
-  public static connect<IpcInterface>(): PickAsyncMethods<IpcInterface> {
-    type IpcConnector = PickAsyncMethods<IpcInterface>;
-
-    const makeIpcCall =
-      <K extends keyof IpcConnector>(methodName: K) =>
-        async (...args: Parameters<IpcConnector[K]>) =>
-          IpcApp.callIpcChannel(
-            editorChannel,
-            "callMethod",
-            methodName,
-            ...args as any[]
-          ) as PromiseReturnType<IpcConnector[K]>;
-
-    return new Proxy({} as IpcConnector, {
-      get(_target, key: string): AsyncFunction {
-        return makeIpcCall(key as keyof IpcConnector) as AsyncFunction;
-      },
-    });
   }
 
   /** @internal */

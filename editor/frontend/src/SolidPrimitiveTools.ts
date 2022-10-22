@@ -2,14 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { BentleyError } from "@itwin/core-bentley";
-import { Angle, Arc3d, Box, Cone, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Point3d, SolidPrimitive, Sphere, TorusPipe, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ElementGeometry, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction, Viewport } from "@itwin/core-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { CreateElementWithDynamicsTool } from "./CreateElementTool";
-import { EditTools } from "./EditTool";
+
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
+import { BentleyError } from "@itwin/core-bentley";
+import {
+  Code, ElementGeometry, ElementGeometryBuilderParams, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream, PlacementProps,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority,
+  ToolAssistanceInstruction, Viewport,
+} from "@itwin/core-frontend";
+import {
+  Angle, Arc3d, Box, Cone, FrameBuilder, GeometryQuery, LineSegment3d, LineString3d, Loop, Matrix3d, Point3d, SolidPrimitive, Sphere, TorusPipe,
+  Vector3d, YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { CreateElementWithDynamicsTool } from "./CreateElementTool";
+import { basicManipulationIpc, EditTools } from "./EditTool";
 
 /** @alpha Base class for creating a capped or uncapped SolidPrimitive. */
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
@@ -26,8 +35,6 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
-
-  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected getPlacementProps(): PlacementProps | undefined {
     if (undefined === this.current)
@@ -68,7 +75,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await this.commandConnection.insertGeometricElement(props, data);
+      await basicManipulationIpc.connection.insertGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import {
+  DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams,
+} from "@itwin/appui-abstract";
 import { BentleyError, Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
+import {
+  Code, ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d,
+  Placement3d,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp,
+  IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner,
+  ToolAssistanceInstruction,
+} from "@itwin/core-frontend";
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ColorDef, GeometricElementProps, IModelStatus, isPlacement2dProps, LinePixels, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CoreTools, DynamicsContext, ElementSetTool, GraphicBranch, GraphicType, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner, ToolAssistanceInstruction } from "@itwin/core-frontend";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
-import { EditTools } from "./EditTool";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { basicManipulationIpc, EditTools } from "./EditTool";
 
 /** @alpha */
 export interface TransformGraphicsData {
@@ -246,8 +255,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
-
   protected async replaceAgenda(newIds: Id64Arg | undefined): Promise<void> {
     this.agenda.clear();
 
@@ -274,7 +281,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected async transformAgenda(transform: Transform): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await this.commandConnection.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
+      if (IModelStatus.Success === await basicManipulationIpc.connection.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
@@ -390,7 +397,7 @@ export class CopyElementsTool extends MoveElementsTool {
 
       for (let iCopy = 0; iCopy < numCopies; ++iCopy) {
         placement.multiplyTransform(transform);
-        newId = await this.commandConnection.insertGeometricElement(newProps);
+        newId = await basicManipulationIpc.connection.insertGeometricElement(newProps);
       }
 
       if (undefined !== newId)
@@ -630,7 +637,7 @@ export class RotateElementsTool extends TransformElementsTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await this.commandConnection.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
+      if (IModelStatus.Success === await basicManipulationIpc.connection.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
