@@ -508,6 +508,15 @@ export class HalfEdge {
   }
 
   /**
+   * Set (copy) the this.x, this.y, this.z from xyz.x, xyz.y, xyz.z
+   * @param node source with x,y,z properties
+   */
+   public setXYZ(xyz: XYAndZ) {
+    this.x = xyz.x;
+    this.y = xyz.y;
+    this.z = xyz.z;
+  }
+  /**
    * Test if mask bits are set in the node's bitMask.
    * @return Return true (as a simple boolean, not a mask) if any bits of the mask parameter match bits of the node's bitMask
    */
@@ -1101,6 +1110,19 @@ export class HalfEdgeGraph {
     return a;
   }
   /**
+   * * Create 2 half edges forming 2 vertices, 1 edge, and 1 face
+   * * The two edges are joined as edgeMate pair.
+   * * The two edges are a 2-half-edge face loop in both the faceSuccessor and facePredecessor directions.
+   * * The two edges are added to the graph's HalfEdge set
+   * * Coordinates are set to zero.
+   * * ids are installed in the two half edges.
+   * @returns Return pointer to the first half edge created.  (This has idA as its id.)
+   */
+   public createEdgeIdId(iA: number = 0, iB: number = 0): HalfEdge {
+    const a = HalfEdge.createHalfEdgePairWithCoordinates(0.0, 0.0, 0.0, iA, 0.0, 0.0, 0.0, iB, this.allHalfEdges);
+    return a;
+  }
+  /**
    * * create an edge from coordinates x,y,z to (the tail of) an existing half edge.
    * @returns Return pointer to the half edge with tail at x,y,z
    */
@@ -1320,8 +1342,8 @@ export class HalfEdgeGraph {
     }
   }
   /**
-   * * Visit each vertex loop of the graph once.
-   * * Call the announceVertex function
+   * * Visit each half edge (node) of the graph once.
+   * * Call the announceNode function
    * * continue search if announceNode(graph, node) returns true
    * * terminate search if announce face (graph, node) returns false
    * @param  announceNode function to apply at one node of each face.
