@@ -1031,14 +1031,21 @@ export abstract class ViewState extends ElementState {
       // If the camera is on, the only way to guarantee we can see the entire volume is to set delta at the front plane, not focus plane.
       // That generally causes the view to be too large (objects in it are too small), since we can't tell whether the objects are at
       // the front or back of the view. For this reason, don't attempt to add any "margin" to camera views.
-    } else if (options?.paddingPercent) {
+    } else if (undefined !== options?.paddingPercent) {
+      let left, right, top, bottom;
       const padding = options.paddingPercent;
+      if (typeof padding === "number"){
+        left = right = top = bottom = padding;
+      } else {
+        left = padding.left ?? 0;
+        right = padding.right ?? 0;
+        top = padding.top ?? 0;
+        bottom = padding.bottom ?? 0;
+      }
+
       const width = newDelta.x;
       const height = newDelta.y;
-      const left = padding.left ?? 0;
-      const right = padding.right ?? 0;
-      const top = padding.top ?? 0;
-      const bottom = padding.bottom ?? 0;
+
       newOrigin.x -= left * width;
       newDelta.x += (right + left) * width;
       newOrigin.y -= bottom * height;

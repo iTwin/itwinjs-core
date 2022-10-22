@@ -73,7 +73,7 @@ export interface OnViewExtentsError {
 export interface MarginOptions {
   /** The percentage of the view to leave blank around the edges. */
   marginPercent?: MarginPercent;
-  paddingPercent?: PaddingPercent;
+  paddingPercent?: PaddingPercent | number;
 }
 
 /** Options that control how operations that change a viewport behave.

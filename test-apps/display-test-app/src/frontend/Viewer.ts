@@ -39,7 +39,7 @@ async function zoomToSelectedElements(vp: Viewport, options?: MarginOptions) {
 
 export class ZoomToSelectedElementsTool extends Tool {
   private _margin?: MarginPercent;
-  private _padding?: PaddingPercent;
+  private _padding?: PaddingPercent | number;
 
   public static override toolId = "ZoomToSelectedElements";
   public static override get maxArgs() { return 4; }
@@ -58,15 +58,23 @@ export class ZoomToSelectedElementsTool extends Tool {
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);
-    const left = args.getFloat("l") ?? 0;
-    const right = args.getFloat("r") ?? 0;
-    const top = args.getFloat("t") ?? 0;
-    const bottom = args.getFloat("b") ?? 0;
-    if (left || right || top || bottom) {
+    const padding = args.getFloat("p");
+    if (undefined !== padding) {
       if (args.getBoolean("m"))
-        this._margin = { left, right, top, bottom };
+        this._margin = { left: padding, right: padding, top: padding, bottom: padding };
       else
-        this._padding = { left, right, top, bottom };
+        this._padding = padding;
+    } else {
+      const left = args.getFloat("l") ?? 0;
+      const right = args.getFloat("r") ?? 0;
+      const top = args.getFloat("t") ?? 0;
+      const bottom = args.getFloat("b") ?? 0;
+      if (undefined !== left || undefined !== right || undefined !== top || undefined !== bottom) {
+        if (args.getBoolean("m"))
+          this._margin = { left, right, top, bottom };
+        else
+          this._padding = { left, right, top, bottom };
+      }
     }
 
     return this.run();
