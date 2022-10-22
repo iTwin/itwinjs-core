@@ -71,8 +71,15 @@ export interface OnViewExtentsError {
  * @extensions
  */
 export interface MarginOptions {
-  /** The percentage of the view to leave blank around the edges. */
+  /** Margins to apply around the edges of the view.
+   * @note This property is ignored if [[paddingPercent]] is specified.
+   */
   marginPercent?: MarginPercent;
+  /** Padding to apply around the edges of the view.
+   * Individual padding for any or all sides can be specified as a [[PaddingPercent]], or a uniform padding to be applied
+   * to all sides can be specified as a single number.
+   * @note This property takes precedence over [[marginPercent]].
+   */
   paddingPercent?: PaddingPercent | number;
 }
 
