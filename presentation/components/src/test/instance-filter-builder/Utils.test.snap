@@ -36,9 +36,7 @@ Array [
       "name": "nested1#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
   Object {
     "categoryLabel": "Nested Category 2 | Nested Category 2 1",
@@ -74,9 +72,7 @@ Array [
       "name": "nested2/nested21#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
 ]
 `;
@@ -117,9 +113,7 @@ Array [
       "name": "#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
   Object {
     "categoryLabel": undefined,
@@ -155,9 +149,7 @@ Array [
       "name": "#PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [
-      "0x1",
-    ],
+    "sourceClassId": "0x1",
   },
 ]
 `;
@@ -198,7 +190,7 @@ Array [
       "name": "#NestedContentField$PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [],
+    "sourceClassId": "0x2",
   },
   Object {
     "categoryLabel": undefined,
@@ -234,7 +226,7 @@ Array [
       "name": "#NestedContentField$PropertiesField",
       "typename": "string",
     },
-    "sourceClassIds": Array [],
+    "sourceClassId": "0x2",
   },
 ]
 `;

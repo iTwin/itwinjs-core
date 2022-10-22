@@ -1,16 +1,19 @@
 sep=;
 Release Tag;API Item
+beta;buildTestIModel(name: string, cb: (builder: TestIModelBuilder) => void): Promise
 public;ContentBuilder
 public;ContentBuilderProps
 public;ContentBuilderResult
 public;defaultNodeMappingFunc: NodeMappingFunc
+internal;getTestOutputDir: () => string
 public;HierarchyBuilder
 public;HierarchyBuilderProps
 public;HierarchyNode 
 public;IContentBuilderDataProvider
-internal;IModelTestUtility
+internal;IModelBuilder 
 public;initialize: (props?: PresentationTestingInitProps | undefined) => Promise
 public;MappedNode
 public;NodeMappingFunc = (node: TreeNodeItem) => MappedNode
 public;PresentationTestingInitProps
 public;terminate: (frontendApp?: typeof IModelApp) => Promise
+beta;TestIModelBuilder

@@ -103,13 +103,15 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   public get treeModelId(): Id64String { return this.id; }
 
   /** Query for the union of the ranges of all the elements in this GeometricModel.
-   * @internal
+   * @note This value is cached after the first time it is called.
+   * @public
    */
   public async queryModelRange(): Promise<Range3d> {
     if (undefined === this._modelRange) {
-      const ranges = await this.iModel.models.queryModelRanges(this.id);
-      this._modelRange = Range3d.fromJSON(ranges[0]);
+      const ranges = await this.iModel.models.queryExtents(this.id);
+      this._modelRange = Range3d.fromJSON(ranges[0]?.extents);
     }
+
     return this._modelRange;
   }
 
