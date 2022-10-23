@@ -55,7 +55,7 @@ describe("IModelTileRequestChannels", () => {
     return waitUntil(() => tile.loadStatus !== TileLoadStatus.Queued && tile.loadStatus !== TileLoadStatus.Loading);
   }
 
-  describe("CloudStorageCacheChannel", () => {
+  describe.only("CloudStorageCacheChannel", () => {
     let imodel: SnapshotConnection;
 
     beforeEach(async () => {
@@ -94,12 +94,32 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
     });
 
-    it("falls back to RPC if content is not found", async () => {
+    it("falls back to RPC if requestContent returns undefined", async () => {
       const tile = await getTile();
       const channel = getCloudStorageChannel();
       expect(tile.channel).to.equal(channel);
 
       channel.requestContent = async () => Promise.resolve(undefined);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
+      expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
+
+      tile.channel.requestContent = async () => Promise.resolve(TILE_DATA_2_0.rectangle.bytes);
+      await loadContent(tile);
+      expect(tile.loadStatus).to.equal(TileLoadStatus.Ready);
+    });
+
+    it("falls back to RPC if requestContent produces a 404 error", async () => {
+      const tile = await getTile();
+      const channel = getCloudStorageChannel();
+      expect(tile.channel).to.equal(channel);
+
+      channel.requestContent = async () => {
+        const error: any = new Error("The specified blob does not exist.");
+        error.statusCode = 404;
+        throw error;
+      };
+
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
