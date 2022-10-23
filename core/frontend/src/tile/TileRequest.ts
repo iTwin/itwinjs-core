@@ -92,7 +92,11 @@ export class TileRequest {
       // Set this now, so our `isCanceled` check can see it.
       this._state = TileRequest.State.Loading;
     } catch (err: any) {
-      if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
+      if (err.statusCode === 404) {
+        // Previously requestContent would produce undefined when requesting a non-existent tile from cloud storage.
+        // Now, the object-storage package throws a 404 RestError.
+        gotResponse = true;
+      } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
