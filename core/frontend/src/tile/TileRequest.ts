@@ -96,6 +96,7 @@ export class TileRequest {
         // Previously requestContent would produce undefined when requesting a non-existent tile from cloud storage.
         // Now, the object-storage package throws a 404 RestError.
         gotResponse = true;
+        this._state = TileRequest.State.Loading;
       } else if (err.errorNumber && err.errorNumber === IModelStatus.ServerTimeout) {
         // Invalidate scene - if tile is re-selected, it will be re-requested.
         this.notifyAndClear();
