@@ -62,7 +62,10 @@ describe("EnvironmentDecorations", () => {
       format: ImageSourceFormat.Png,
     };
 
-    const createTexture = () => { return {} as unknown as RenderTexture; };
+    const createTexture = () => {
+      return {} as unknown as RenderTexture;
+    };
+
     IModelApp.renderSystem.createTextureFromCubeImages = createTexture;
     IModelApp.renderSystem.createTexture = createTexture;
     IModelApp.renderSystem.loadTextureImage = async () => Promise.resolve(textureImage);

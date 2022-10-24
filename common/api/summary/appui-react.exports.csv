@@ -474,6 +474,7 @@ public;ReducerMapActions
 beta;ReducerRegistry
 beta;ReducerRegistryInstance: ReducerRegistry
 internal;removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
+alpha;RestoreAllFrontstagesTool 
 alpha;RestoreFrontstageLayoutTool 
 internal;restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedNineZoneState): NineZoneState
 beta;ReviewToolWidget 

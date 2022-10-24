@@ -23,9 +23,12 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-transformer": "workspace:*",
+    "@itwin/ecschema-metadata": "workspace:*",
+    "@itwin/ecschema-editing": "workspace:*",
     "@itwin/projects-client": "^0.6.0",
     "@itwin/service-authorization": "^0.6.1",
-    "fs-extra": "^8.1.0"
+    "fs-extra": "^8.1.0",
+    "@xmldom/xmldom": "~0.8.3"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

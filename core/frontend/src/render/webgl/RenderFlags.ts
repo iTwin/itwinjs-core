@@ -216,7 +216,9 @@ export const enum RenderOrder {
 }
 
 /** @internal */
-export function isPlanar(order: RenderOrder): boolean { return order >= RenderOrder.PlanarBit; }
+export function isPlanar(order: RenderOrder): boolean {
+  return order >= RenderOrder.PlanarBit;
+}
 
 /** Flags indicating operations to be performed by the post-process composite step.
  * @internal
@@ -274,7 +276,6 @@ export const enum SurfaceFlags {
   HasMaterialAtlas = 1 << SurfaceBitIndex.HasMaterialAtlas,
 }
 
-/** @internal */
 /** 16-bit flags indicating what aspects of a feature's symbology are overridden.
  * @internal
  */
@@ -293,6 +294,17 @@ export const enum OvrFlags {
   ViewIndependentTransparency = 1 << 10,
 
   Rgba = Rgb | Alpha,
+}
+
+/** 8-bit flags indicating emphasis effects applied to a feature.
+ * @internal
+ */
+export const enum EmphasisFlags {
+  None = 0,
+  Hilite = 1,
+  Emphasized = 2,
+  Flashed = 4,
+  NonLocatable = 8,
 }
 
 /** @internal */

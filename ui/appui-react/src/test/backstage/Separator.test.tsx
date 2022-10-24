@@ -2,28 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { shallow } from "enzyme";
+/* eslint-disable deprecation/deprecation */
+import { render, screen } from "@testing-library/react";
+import { expect } from "chai";
 import * as React from "react";
 import { SeparatorBackstageItem } from "../../appui-react/backstage/Separator";
-import TestUtils, { mount } from "../TestUtils";
+import { selectorMatches } from "../TestUtils";
 
 describe("Backstage", () => {
-
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-  });
-
-  after(() => {
-    TestUtils.terminateUiFramework();
-  });
-
   describe("<SeparatorBackstageItem />", () => {
-    it("SeparatorBackstageItem should render", () => {
-      mount(<SeparatorBackstageItem />); // eslint-disable-line deprecation/deprecation
-    });
-
     it("SeparatorBackstageItem renders correctly", () => {
-      shallow(<SeparatorBackstageItem />).should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
+      render(<SeparatorBackstageItem />);
+
+      expect(screen.getByRole("separator")).to.satisfy(selectorMatches(".nz-backstage-separator"));
     });
   });
 });

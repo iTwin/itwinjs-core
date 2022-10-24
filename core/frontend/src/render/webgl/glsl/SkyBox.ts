@@ -33,9 +33,15 @@ export function createSkyBoxProgram(context: WebGLContext): ShaderProgram {
     prg.addGraphicUniform("u_rot", (uniform, params) => {
       const rot = params.target.uniforms.frustum.viewMatrix.matrix;
       const mat3 = scratchRotMatrix;
-      mat3.m00 = -rot.at(0, 0); mat3.m01 = -rot.at(0, 1); mat3.m02 = -rot.at(0, 2);
-      mat3.m10 = -rot.at(1, 0); mat3.m11 = -rot.at(1, 1); mat3.m12 = -rot.at(1, 2);
-      mat3.m20 = rot.at(2, 0); mat3.m21 = rot.at(2, 1); mat3.m22 = rot.at(2, 2);
+      mat3.m00 = -rot.at(0, 0);
+      mat3.m01 = -rot.at(0, 1);
+      mat3.m02 = -rot.at(0, 2);
+      mat3.m10 = -rot.at(1, 0);
+      mat3.m11 = -rot.at(1, 1);
+      mat3.m12 = -rot.at(1, 2);
+      mat3.m20 = rot.at(2, 0);
+      mat3.m21 = rot.at(2, 1);
+      mat3.m22 = rot.at(2, 2);
       uniform.setMatrix3(mat3);
     });
   });

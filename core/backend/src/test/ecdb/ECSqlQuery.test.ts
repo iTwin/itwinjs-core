@@ -88,7 +88,7 @@ describe("ECSql Query", () => {
     assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
-  it("restart query", async () => {
+  it.skip("restart query", async () => { // Issue #4355 @khanaffan
     let cancelled = 0;
     let successful = 0;
     let rowCount = 0;

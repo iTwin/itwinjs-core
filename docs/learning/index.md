@@ -67,6 +67,7 @@ Step by step instructions to:
 Tutorials:
 
 - [ECSQL Tutorial](./ECSQLTutorial/index.md)
+- [EC Schema Serialization](./serializing-xml-schemas.md)
 
 See also:
 

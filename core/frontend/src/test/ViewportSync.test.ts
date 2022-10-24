@@ -256,7 +256,7 @@ describe("connectViewports", () => {
       };
 
       test(() => undefined);
-      test(() => { vps.reverse(); });
+      test(() => vps.reverse());
     }
   });
 

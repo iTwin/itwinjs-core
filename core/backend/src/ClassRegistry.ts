@@ -6,12 +6,14 @@
  * @module Schema
  */
 
-import { DbResult, Id64, Id64Set, IModelStatus, Logger } from "@itwin/core-bentley";
-import { EntityMetaData, IModelError, RelatedElement } from "@itwin/core-common";
+import { DbResult, Id64, IModelStatus, Logger } from "@itwin/core-bentley";
+import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
 import { Entity } from "./Entity";
-import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
+import { EntityReferences } from "./EntityReferences";
+import * as assert from "assert";
+import type { RelationshipClassProps } from "@itwin/ecschema-metadata";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -59,6 +61,21 @@ export class ClassRegistry {
     return schemaClass;
   }
 
+  private static getRootMetaData(iModel: IModelDb, entityMetaData: EntityMetaData): EntityMetaData {
+    let rootClassMetaData = entityMetaData;
+    while (true) {
+      if (rootClassMetaData.baseClasses.length === 0)
+        break;
+      const firstBase = iModel.getMetaData(rootClassMetaData.baseClasses[0]);
+      const firstBaseIsMixin = firstBase.customAttributes?.some((ca) => ca.ecclass === "IsMixin");
+      if (firstBaseIsMixin)
+        break;
+      else
+        rootClassMetaData = firstBase;
+    }
+    return rootClassMetaData;
+  }
+
   /** Generate a JavaScript class from Entity metadata.
    * @param entityMetaData The Entity metadata that defines the class
    */
@@ -85,7 +102,9 @@ export class ClassRegistry {
     let currentSuperclass = superclass;
     const MAX_ITERS = 1000;
     for (let i = 0; i < MAX_ITERS; ++i) {
-      if (currentSuperclass.schema.schemaName === "BisCore") break;
+      if (currentSuperclass.schema.schemaName === "BisCore")
+        break;
+
       if (!currentSuperclass.isGeneratedClass) {
         generatedClassHasNonGeneratedNonCoreAncestor = true;
         break;
@@ -108,30 +127,42 @@ export class ClassRegistry {
     // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
-    const navigationProps = Object.entries(entityMetaData.properties)
-      .filter(([_propName, prop]) => prop.isNavigation)
-      .map(([propName, _prop]) => propName);
-
-    const isElement = (t: typeof Entity): t is typeof Element => t.is(Element); // Entity.is check but with type information to avoid casts later
-
-    // a class only gets an automatic `collectReferenceIds` implementation if:
-    // - it derives from `BisCore:Element`
+    // a class only gets an automatic `collectReferenceConcreteIds` implementation if:
     // - it is not in the `BisCore` schema
     // - there are no ancestors with manually registered JS implementations, (excluding BisCore base classes)
-    if (!generatedClassHasNonGeneratedNonCoreAncestor && isElement(superclass)) {
+    if (!generatedClassHasNonGeneratedNonCoreAncestor) {
+      const navigationProps = Object.entries(entityMetaData.properties)
+        .filter(([_name, prop]) => prop.isNavigation)
+        // eslint-disable-next-line @typescript-eslint/no-shadow
+        .map(([name, prop]) => {
+          assert(prop.relationshipClass);
+          const maybeMetaData = iModel.nativeDb.getSchemaItem(...prop.relationshipClass.split(":") as [string, string]);
+          assert(maybeMetaData.result !== undefined, "The nav props relationship metadata was not found");
+          const relMetaData: RelationshipClassProps = JSON.parse(maybeMetaData.result);
+          const normalizeClassName = (clsName: string) => clsName.replace(".", ":");
+          const ecClassMetaData = iModel.getMetaData(normalizeClassName(relMetaData.target.constraintClasses[0]));
+          const rootClassMetaData = ClassRegistry.getRootMetaData(iModel, ecClassMetaData);
+          // root class must be in BisCore so should be loaded since biscore classes will never get this
+          // generated implementation
+          const rootClass = ClassRegistry.findRegisteredClass(rootClassMetaData.ecclass);
+          assert(rootClass, `The root class for ${prop.relationshipClass} was not in BisCore.`);
+          return { name, concreteEntityType: EntityReferences.typeFromClass(rootClass) };
+        });
+
       Object.defineProperty(
         generatedClass.prototype,
-        "collectReferenceIds",
+        "collectReferenceConcreteIds",
         {
-          // first prototype of `this` is its class
-          value(this: typeof generatedClass, referenceIds: Id64Set) {
+          value(this: typeof generatedClass, referenceIds: EntityReferenceSet) {
             // eslint-disable-next-line @typescript-eslint/dot-notation
-            const superImpl = superclass.prototype["collectReferenceIds"];
+            const superImpl = superclass.prototype["collectReferenceConcreteIds"];
             superImpl.call(this, referenceIds);
             for (const navProp of navigationProps) {
-              const relatedElem: RelatedElement | undefined = (this as any)[navProp]; // cast to any since subclass can have any extensions
-              if (!relatedElem || !Id64.isValid(relatedElem.id)) continue;
-              referenceIds.add(relatedElem.id);
+              const relatedElem: RelatedElement | undefined = (this as any)[navProp.name]; // cast to any since subclass can have any extensions
+              if (!relatedElem || !Id64.isValid(relatedElem.id))
+                continue;
+              const referenceId = EntityReferences.fromEntityType(relatedElem.id, navProp.concreteEntityType);
+              referenceIds.add(referenceId);
             }
           },
           // defaults for methods on a prototype (required for sinon to stub out methods on tests)
@@ -143,7 +174,10 @@ export class ClassRegistry {
 
     // if the schema is a proxy for a domain with behavior, throw exceptions for all protected operations
     if (schema.missingRequiredBehavior) {
-      const throwError = () => { throw new IModelError(IModelStatus.WrongHandler, `Schema [${domainName}] not registered, but is marked with SchemaHasBehavior`); };
+      const throwError = () => {
+        throw new IModelError(IModelStatus.WrongHandler, `Schema [${domainName}] not registered, but is marked with SchemaHasBehavior`);
+      };
+
       superclass.protectedOperations.forEach((operation) => (generatedClass as any)[operation] = throwError);
     }
 
