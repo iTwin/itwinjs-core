@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { CompressedId64Set, GuidString, Id64String } from "@itwin/core-bentley";
+import { CompressedId64Set, GuidString, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { Range3dProps } from "@itwin/core-geometry";
 import { CodeProps } from "../Code";
 import { DbBlobRequest, DbBlobResponse, DbQueryRequest, DbQueryResponse } from "../ConcurrentQuery";
@@ -40,6 +40,28 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
   public override message = "iModel not found";
 }
 
+/** Describes the volume of geometry contained with a [GeometricModel]($backend) as returned by
+ * [IModelConnection.Models.queryExtents]($frontend) and [IModelDb.Models.queryExtents]($backend).
+ * @public
+ */
+export interface ModelExtentsProps {
+  /** The Id of the model, or [Id64.invalid]($bentley) if the input model Id was not a well-formed [Id64String]($bentley). */
+  id: Id64String;
+  /** The volume of geometry contained within the model.
+   * This range will be null (@see [Range3d.isNull]($geometry)) if [[status]] is not [IModelStatus.Success]($bentley) or the model contains no geometry.
+   */
+  extents: Range3dProps;
+  /** A status code indicating what if any error occurred obtaining the model's extents. For example:
+   *  - [IModelStatus.InvalidId]($bentley) if the input model Id was not a well-formed [Id64String]($bentley);
+   *  - [IModelStatus.NotFound]($bentley) if no model with the specified Id exists in the [[IModel]];
+   *  - [IModelStatus.WrongModel]($bentley) if the specified model is not a [GeometricModel]($backend); or
+   *  - [IModelStatus.Success]($bentley) if the extents were successfully obtained.
+   *
+   * If `status` is anything other than [IModelStatus.Success]($bentley), [[extents]] will be a null range.
+   */
+  status: IModelStatus;
+}
+
 /** The RPC interface for reading from an iModel.
  * All operations only require read-only access.
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
@@ -56,7 +78,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelReadRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "3.3.0";
+  public static interfaceVersion = "3.4.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -72,6 +94,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getModelProps(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelProps[]> { return this.forward(arguments); }
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]> { return this.forward(arguments); }
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
+  public async queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]> { return this.forward(arguments); }
   public async queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
   public async getElementProps(_iModelToken: IModelRpcProps, _elementIds: Id64String[]): Promise<ElementProps[]> { return this.forward(arguments); }
   public async queryElementProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
