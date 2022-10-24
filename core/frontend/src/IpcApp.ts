@@ -101,7 +101,7 @@ export class IpcApp {
     return retVal.result;
   }
 
-  /** Create a type safe Proxy object to make IPC calls to a registered backend interface via [[callIpcChannel]]
+  /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */
   public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
