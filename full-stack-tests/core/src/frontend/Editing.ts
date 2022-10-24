@@ -3,19 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
-import { EditTools } from "@itwin/editor-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { basicManipulationIpc, EditTools } from "@itwin/editor-frontend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 
 async function startCommand(imodel: BriefcaseConnection): Promise<string> {
   return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, imodel.key);
 }
-
-const commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
 function orderIds(elementIds: string[]): OrderedId64Array {
   const ids = new OrderedId64Array();
@@ -45,17 +43,17 @@ export async function insertLineElement(imodel: BriefcaseConnection, model: Id64
     return Id64.invalid;
 
   const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-  return commandConnection.insertGeometricElement(elemProps);
+  return basicManipulationIpc.insertGeometricElement(elemProps);
 }
 
 export async function transformElements(imodel: BriefcaseConnection, ids: string[], transform: Transform) {
   await startCommand(imodel);
-  await commandConnection.transformPlacement(compressIds(ids), transform.toJSON());
+  await basicManipulationIpc.transformPlacement(compressIds(ids), transform.toJSON());
 }
 
 export async function deleteElements(imodel: BriefcaseConnection, ids: string[]) {
   await startCommand(imodel);
-  return commandConnection.deleteElements(compressIds(ids));
+  return basicManipulationIpc.deleteElements(compressIds(ids));
 }
 
 export async function initializeEditTools(): Promise<void> {
@@ -71,7 +69,4 @@ export async function makeModelCode(iModel: IModelConnection, scope: Id64String,
   return makeCode(iModel, BisCodeSpec.informationPartitionElement, scope, value);
 }
 
-export async function callFullStackTestIpc<T extends AsyncMethodsOf<FullStackTestIpc>>(methodName: T, ...args: Parameters<FullStackTestIpc[T]>) {
-  return IpcApp.callIpcChannel(fullstackIpcChannel, methodName, ...args) as PromiseReturnType<FullStackTestIpc[T]>;
-}
-
+export const coreFullStackTestIpc = IpcApp.makeIpcProxy<FullStackTestIpc>(fullstackIpcChannel);

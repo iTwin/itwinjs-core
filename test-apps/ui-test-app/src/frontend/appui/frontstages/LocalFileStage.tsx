@@ -163,7 +163,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
         { name: "iModels", extensions: ["ibim", "bim"] },
       ],
     };
-    const val = await ElectronApp.callDialog("showOpenDialog", opts);
+    const val = await ElectronApp.dialogIpc.showOpenDialog(opts);
     if (val.canceled)
       return;
 
