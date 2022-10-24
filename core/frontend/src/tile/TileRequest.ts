@@ -97,6 +97,10 @@ export class TileRequest {
         this.notifyAndClear();
         this._state = TileRequest.State.Failed;
         this.channel.recordTimeout();
+      } else if (err.errorNumber === IModelStatus.NotFound && this.channel.onNoContent(this)) {
+        this.notifyAndClear();
+        this._state = TileRequest.State.Failed;
+        return;
       } else {
         // Unknown error - not retryable
         this.setFailed();
@@ -108,13 +112,6 @@ export class TileRequest {
 
     if (!gotResponse || this.isCanceled)
       return;
-
-    if (undefined === response && this.channel.onNoContent(this)) {
-      // Invalidate scene - if tile is re-selected, it will be re-requested - presumably via a different channel.
-      this.notifyAndClear();
-      this._state = TileRequest.State.Failed;
-      return;
-    }
 
     return this.handleResponse(response);
   }

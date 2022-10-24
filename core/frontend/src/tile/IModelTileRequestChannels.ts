@@ -19,7 +19,11 @@ import { IModelTile, IModelTileContent, Tile, TileRequest, TileRequestChannel, T
 class CloudStorageCacheChannel extends TileRequestChannel {
   public override async requestContent(tile: Tile): Promise<TileRequest.Response> {
     assert(tile instanceof IModelTile);
-    return IModelApp.tileAdmin.requestCachedTileContent(tile);
+    try {
+      return await IModelApp.tileAdmin.requestCachedTileContent(tile);
+    } catch (_e) {
+      return undefined;
+    }
   }
 
   public override onNoContent(request: TileRequest): boolean {

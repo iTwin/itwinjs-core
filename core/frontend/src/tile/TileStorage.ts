@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
 import { getTileObjectReference, IModelRpcProps, IModelTileRpcInterface } from "@itwin/core-common";
+import { BentleyError, IModelStatus } from "@itwin/core-bentley";
 
 /** @beta */
 export class TileStorage {
@@ -19,26 +20,32 @@ export class TileStorage {
     treeId: string,
     contentId: string,
     guid?: string
-  ): Promise<Uint8Array | undefined> {
+  ): Promise<Uint8Array> {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
-    if(transferConfig === undefined)
-      return undefined;
-    const buffer = await this.storage.download(
-      {
-        reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
-        transferConfig,
-        transferType: "buffer",
-      }
-    );
-    return new Uint8Array(buffer); // should always be Buffer because transferType === "buffer"
+    if (transferConfig === undefined)
+      throw new BentleyError(IModelStatus.NotFound, "Tile cache container not found");
+
+    try {
+      const buffer = await this.storage.download(
+        {
+          reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
+          transferConfig,
+          transferType: "buffer",
+        }
+      );
+      return new Uint8Array(buffer);
+    } catch (_e) {
+      // @itwin/object-storage re-throws internal implementation-specific errors, so let's treat them all as 404 for now.
+      throw new BentleyError(IModelStatus.NotFound, "Failed to download tile");
+    }
   }
 
   private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
-    if(this._transferConfigs.has(iModelId)) {
+    if (this._transferConfigs.has(iModelId)) {
       const transferConfig = this._transferConfigs.get(iModelId);
-      if(transferConfig === undefined)
+      if (transferConfig === undefined)
         return undefined;
-      if(transferConfig.expiration > new Date())
+      if (transferConfig.expiration > new Date())
         return transferConfig;
       else // Refresh expired transferConfig
         return this.sendTransferConfigRequest(tokenProps, iModelId);
@@ -48,7 +55,7 @@ export class TileStorage {
 
   private async sendTransferConfigRequest(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
     const pendingRequest = this._pendingTransferConfigRequests.get(iModelId);
-    if(pendingRequest !== undefined)
+    if (pendingRequest !== undefined)
       return pendingRequest;
 
     const request = (async () => {

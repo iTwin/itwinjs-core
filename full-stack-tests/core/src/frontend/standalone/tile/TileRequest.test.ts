@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import * as sinonChai from "sinon-chai";
 import { expect, use } from "chai";
-import { BeDuration } from "@itwin/core-bentley";
+import { BeDuration, BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { CloudStorageContainerUrl, CloudStorageTileCache, IModelTileRpcInterface, ServerTimeoutError, TileContentIdentifier } from "@itwin/core-common";
 import {
   IModelApp, IModelConnection, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
@@ -94,12 +94,12 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
     });
 
-    it("falls back to RPC if content is not found", async () => {
+    it("falls back to RPC if channel.requestContent produces a NotFound error", async () => {
       const tile = await getTile();
       const channel = getCloudStorageChannel();
       expect(tile.channel).to.equal(channel);
 
-      channel.requestContent = async () => Promise.resolve(undefined);
+      channel.requestContent = async () => Promise.reject(new BentleyError(IModelStatus.NotFound));
       await loadContent(tile);
       expect(tile.loadStatus).to.equal(TileLoadStatus.NotLoaded);
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.rpc);
@@ -395,7 +395,7 @@ describe("TileStorage", () => {
   it("should cache transfer configs", async () => {
     const transferConfig: TransferConfig = {
       baseUrl: "test",
-      expiration: new Date(new Date().getTime()+(1000*60*60)), // 1 hour from now
+      expiration: new Date(new Date().getTime() + (1000 * 60 * 60)), // 1 hour from now
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
@@ -407,7 +407,7 @@ describe("TileStorage", () => {
   it("should refresh expired cached transfer config", async () => {
     const clock = sinon.useFakeTimers();
     after(() => clock.restore());
-    const dateExpiration = new Date(new Date().getTime()+(1000*60*60)); // 1 hour from now
+    const dateExpiration = new Date(new Date().getTime() + (1000 * 60 * 60)); // 1 hour from now
     const transferConfig: TransferConfig = {
       baseUrl: "test",
       expiration: dateExpiration,
