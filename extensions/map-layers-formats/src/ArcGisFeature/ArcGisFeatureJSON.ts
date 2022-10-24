@@ -136,8 +136,10 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
         propertyValue.value = strValue;
       }
 
-      propertyValue.displayValue = propertyValue.value === undefined ? "" : `${propertyValue.value}`;
-      return new MapFeatureInfoRecord (propertyValue, {name: fieldName, displayLabel: fieldName,  typename: getStandardTypeName(fieldType)});
+      const typename = getStandardTypeName(fieldType);
+      propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
+
+      return new MapFeatureInfoRecord (propertyValue, {name: fieldName, displayLabel: fieldName,  typename});
     };
 
     for (const feature of responseObj.features) {

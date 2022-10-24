@@ -17,6 +17,18 @@ import { fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
 const esriFeatureSampleSource = {name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId};
+
+const createFeatureJSON =  () => {
+  const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+  const featurePbf = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+
+  // Locale configuration depends on the testing machine (i.e. linux vs windows),
+  // so we need to force date display to Iso to get a consistent value.
+  // In real scenario, we still want dates to be displayed in end-user's locale.
+  featurePbf.forceDateDisplayValueToIso = true;
+  return featurePbf;
+};
+
 describe("ArcGisFeatureJSON", () => {
 
   const sandbox = sinon.createSandbox();
@@ -78,8 +90,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should readAndRender single ring polygon feature", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
 
     const data = PhillyLandmarksDataset.phillySimplePolyQueryJson;
 
@@ -98,8 +109,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should readAndRender multiple ring polygon feature", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
 
     const data = PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson;
 
@@ -118,8 +128,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should readAndRender simple path", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
     const data = PhillyLandmarksDataset.phillySimplePathQueryJson;
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType,
       PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
@@ -138,8 +147,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should readAndRender multi path", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
     const data = PhillyLandmarksDataset.phillyMultiPathQueryJson;
     const symbolRenderer = new ArcGisSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
 
@@ -157,8 +165,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should readAndRender simple point", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
     const data = PhillyLandmarksDataset.phillySimplePointQueryJson;
     const symbolRenderer = new ArcGisSymbologyRenderer(
       data.geometryType as ArcGisFeatureGeometryType,
@@ -178,8 +185,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
     const symbolRenderer = new ArcGisSymbologyRenderer(
       "esriGeometryAny",
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);

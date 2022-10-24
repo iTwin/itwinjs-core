@@ -183,7 +183,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
         return undefined;
       }
 
-      propertyValue.displayValue = propertyValue.value === undefined ? "" : `${propertyValue.value}`;
+      propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
       return new MapFeatureInfoRecord(propertyValue, { name: fieldInfo.name, displayLabel: fieldInfo.name, typename });
     };

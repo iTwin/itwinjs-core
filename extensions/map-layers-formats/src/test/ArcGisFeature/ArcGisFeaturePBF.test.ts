@@ -15,6 +15,17 @@ import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { esriFeatureSampleSource, fakeContext } from "./Mocks";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
+const createFeaturePBF =  () => {
+  const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
+  const featurePbf = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+
+  // Locale configuration depends on the testing machine (i.e. linux vs windows),
+  // so we need to force date display to Iso to get a consistent value.
+  // In real scenario, we still want dates to be displayed in end-user's locale.
+  featurePbf.forceDateDisplayValueToIso = true;
+  return featurePbf;
+};
+
 describe("ArcGisFeaturePBF", () => {
 
   const sandbox = sinon.createSandbox();
@@ -94,8 +105,7 @@ describe("ArcGisFeaturePBF", () => {
     // The is to ensure we cover correctly all possible attribute value types.
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.fieldsCoveragePbufferCollection);
 
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featurePbf = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
 
     const results: MapLayerFeatureInfo[] = [];
     featurePbf.readFeatureInfo({data:featureCollection, exceedTransferLimit: false}, results);
@@ -105,8 +115,7 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should readAndRender single ring polygon feature", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
 
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePolyQueryPbf);
     const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType);
@@ -114,7 +123,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -125,8 +134,7 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should readAndRender multiple ring polygon feature", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
 
     const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType);
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf);
@@ -135,7 +143,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -146,8 +154,7 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should readAndRender simple path", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const feature = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePathQueryPbf);
     const symbolRenderer = new ArcGisSymbologyRenderer(
       ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.geometryType),
@@ -155,7 +162,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    feature.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -167,14 +174,13 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should readAndRender multi path", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const feature = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyMultiPathQueryPbf);
     const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
-    feature.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
@@ -185,15 +191,14 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should readAndRender simple point", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePointQueryPbf);
     const geomType = ArcGisFeaturePBF.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
     const symbolRenderer = new ArcGisSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
-    featureJson.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data, exceedTransferLimit: false}, featureRenderer);
     expect(spy.calledOnce);
 
     // Pbf contains already the right output format expect, lets rely on that.
@@ -205,19 +210,18 @@ describe("ArcGisFeaturePBF", () => {
   });
 
   it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
     const symbolRenderer = new ArcGisSymbologyRenderer(
       "esriGeometryAny",
       PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new ArcGisFeatureRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
-    featureJson.readAndRender({data: {test:"test"}, exceedTransferLimit: false}, featureRenderer);
+    featurePbf.readAndRender({data: {test:"test"}, exceedTransferLimit: false}, featureRenderer);
     expect(logErrorSpy.calledOnce);
 
     logErrorSpy.resetHistory();
-    featureJson.readFeatureInfo({data: {test:"test"}, exceedTransferLimit: false}, []);
+    featurePbf.readFeatureInfo({data: {test:"test"}, exceedTransferLimit: false}, []);
     expect(logErrorSpy.calledOnce);
 
   });

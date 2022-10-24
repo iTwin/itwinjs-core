@@ -249,7 +249,7 @@ export class PhillyLandmarksDataset {
                    {
                      valueFormat: 0,
                      value: "1970-01-01T00:00:00.006Z",
-                     displayValue: "Wed Dec 31 1969 19:00:00 GMT-0500 (Eastern Standard Time)",
+                     displayValue: "1970-01-01T00:00:00.006Z",
                    },
               property:
                    {
