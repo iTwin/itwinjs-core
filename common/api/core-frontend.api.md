@@ -11408,7 +11408,7 @@ export class Tiles implements Iterable<{
 export class TileStorage {
     constructor(storage: FrontendStorage);
     // (undocumented)
-    downloadTile(tokenProps: IModelRpcProps, iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array | undefined>;
+    downloadTile(tokenProps: IModelRpcProps, iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): Promise<Uint8Array>;
     // (undocumented)
     readonly storage: FrontendStorage;
 }
