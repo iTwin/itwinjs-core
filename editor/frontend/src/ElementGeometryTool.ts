@@ -20,7 +20,8 @@ import {
   SubEntityFilter, SubEntityGeometryProps, SubEntityLocationProps, SubEntityProps, SubEntityType,
 } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
-import { EditTools, solidModelingIpc } from "./EditTool";
+import { EditTools } from "./EditTool";
+import { solidModelingIpc } from "./IpcConnection";
 
 /** @alpha */
 export class ElementGeometryGraphicsProvider {
@@ -243,7 +244,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     // NOTE: Creates cache if it doesn't already exist then test new or existing cache against filter...
     try {
       this._startedCmd = await this.startCommand();
-      return await solidModelingIpc.connection.createElementGeometryCache(id, this.geometryCacheFilter);
+      return await solidModelingIpc.createElementGeometryCache(id, this.geometryCacheFilter);
     } catch (err) {
       return false;
     }
@@ -353,7 +354,7 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
   protected async clearElementGeometryCache(): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await solidModelingIpc.connection.clearElementGeometryCache();
+      await solidModelingIpc.clearElementGeometryCache();
     } catch (err) { }
   }
 
@@ -482,7 +483,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
 
       try {
         this._startedCmd = await this.startCommand();
-        if (undefined === (summary = await solidModelingIpc.connection.summarizeElementGeometryCache(id)))
+        if (undefined === (summary = await solidModelingIpc.summarizeElementGeometryCache(id)))
           return false;
       } catch (err) {
         return false;
@@ -597,7 +598,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
         hiddenEdgesVisible,
         filter,
       };
-      return await solidModelingIpc.connection.locateSubEntities(id, boresite.origin, boresite.direction, opts);
+      return await solidModelingIpc.locateSubEntities(id, boresite.origin, boresite.direction, opts);
     } catch (err) {
       return undefined;
     }
@@ -820,7 +821,7 @@ export abstract class LocateSubEntityTool extends ElementGeometryCacheTool {
       };
 
       data.chordTolerance = chordTolerance;
-      data.geometry = await solidModelingIpc.connection.getSubEntityGeometry(id, data.props, opts);
+      data.geometry = await solidModelingIpc.getSubEntityGeometry(id, data.props, opts);
 
       return await data.createGraphic(this.iModel);
     } catch (err) {

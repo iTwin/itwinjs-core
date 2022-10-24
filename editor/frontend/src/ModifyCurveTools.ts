@@ -19,7 +19,8 @@ import {
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
-import { basicManipulationIpc, EditTools } from "./EditTool";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./IpcConnection";
 
 /** @alpha */
 export class CurveData {
@@ -153,7 +154,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     try {
       this._startedCmd = await this.startCommand();
       const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep];
-      const info = await basicManipulationIpc.connection.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
+      const info = await basicManipulationIpc.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
       if (undefined === info)
         return undefined;
 
@@ -285,12 +286,12 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
         if (repeatOperation)
           this.agenda.clear();
 
-        const newId = await basicManipulationIpc.connection.insertGeometricElement(elemProps);
+        const newId = await basicManipulationIpc.insertGeometricElement(elemProps);
 
         if (repeatOperation && this.agenda.add(newId))
           await this.onAgendaModified();
       } else {
-        await basicManipulationIpc.connection.updateGeometricElement(elemProps);
+        await basicManipulationIpc.updateGeometricElement(elemProps);
       }
       return true;
     } catch (err) {

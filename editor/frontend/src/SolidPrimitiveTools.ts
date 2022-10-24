@@ -18,7 +18,8 @@ import {
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
-import { basicManipulationIpc, EditTools } from "./EditTool";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./IpcConnection";
 
 /** @alpha Base class for creating a capped or uncapped SolidPrimitive. */
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
@@ -75,7 +76,7 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
   protected override async doCreateElement(props: GeometricElementProps, data?: ElementGeometryBuilderParams): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      await basicManipulationIpc.connection.insertGeometricElement(props, data);
+      await basicManipulationIpc.insertGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

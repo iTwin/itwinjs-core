@@ -23,7 +23,8 @@ import {
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
-import { basicManipulationIpc, EditTools } from "./EditTool";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./IpcConnection";
 
 /** @alpha Values for [[CreateOrContinueTool.createCurvePhase] to support join and closure. */
 export enum CreateCurvePhase {
@@ -141,7 +142,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
 
     try {
       this._startedCmd = await this.startCommand();
-      const info = await basicManipulationIpc.connection.requestElementGeometry(snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
+      const info = await basicManipulationIpc.requestElementGeometry(snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
       if (undefined === info)
         return;
 
@@ -650,9 +651,9 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     try {
       this._startedCmd = await this.startCommand();
       if (undefined === props.id)
-        await basicManipulationIpc.connection.insertGeometricElement(props, data);
+        await basicManipulationIpc.insertGeometricElement(props, data);
       else
-        await basicManipulationIpc.connection.updateGeometricElement(props, data);
+        await basicManipulationIpc.updateGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));

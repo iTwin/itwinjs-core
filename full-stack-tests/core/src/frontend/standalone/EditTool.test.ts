@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
-import { EditTools, IpcConnection } from "@itwin/editor-frontend";
+import { EditTools, makeEditorIpcProxy } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
@@ -25,11 +25,11 @@ class TestEditTool1 extends PrimitiveTool {
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public async onRestartTool() { return this.exitTool(); }
 
-  public testIpc = new IpcConnection<TestCommandIpc>();
+  public testIpc = makeEditorIpcProxy<TestCommandIpc>();
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
     cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
-    testOut = await this.testIpc.connection.testMethod1(str1, str2, obj1);
+    testOut = await this.testIpc.testMethod1(str1, str2, obj1);
   }
 }
 

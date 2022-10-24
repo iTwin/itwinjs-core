@@ -179,7 +179,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
-          const partId = await basicManipulationIpc.connection.insertGeometryPart(partProps);
+          const partId = await basicManipulationIpc.insertGeometryPart(partProps);
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -188,7 +188,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-        await basicManipulationIpc.connection.insertGeometricElement(elemProps);
+        await basicManipulationIpc.insertGeometricElement(elemProps);
         await this.saveChanges();
       } else {
         const builder = new ElementGeometry.Builder();
@@ -206,7 +206,7 @@ export class PlaceLineStringTool extends CreateElementTool {
             return;
 
           const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty() };
-          const partId = await basicManipulationIpc.connection.insertGeometryPart(partProps, { entryArray: partBuilder.entries });
+          const partId = await basicManipulationIpc.insertGeometryPart(partProps, { entryArray: partBuilder.entries });
 
           for (const pt of this._points) {
             if (!builder.appendGeometryPart3d(partId, pt))
@@ -215,7 +215,7 @@ export class PlaceLineStringTool extends CreateElementTool {
         }
 
         const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
-        await basicManipulationIpc.connection.insertGeometricElement(elemProps, { entryArray: builder.entries });
+        await basicManipulationIpc.insertGeometricElement(elemProps, { entryArray: builder.entries });
         await this.saveChanges();
       }
     } catch (err: any) {

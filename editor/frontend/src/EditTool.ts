@@ -6,9 +6,8 @@
  * @module Editing
  */
 
-import { PickAsyncMethods } from "@itwin/core-bentley";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
-import { BasicManipulationCommandIpc, editorChannel, SolidModelingCommandIpc } from "@itwin/editor-common";
+import { editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
 import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
 import {
@@ -40,26 +39,6 @@ export interface EditorOptions {
   /** If true, tools for solid modeling will be registered. */
   registerSolidModelingTools?: true | undefined;
 }
-
-/**
- * A type-safe Proxy object that "connects" to the backend IPC implementation by
- * forwarding all calls through [IpcApp.callIpcChannel]($backend).
- */
-export class IpcConnection<IpcInterface> {
-  private _proxy?: PickAsyncMethods<IpcInterface>;
-  public get connection() {
-    return this._proxy ??=
-      new Proxy({} as PickAsyncMethods<IpcInterface>, {
-        get(_target, methodName: string) {
-          return async (...args: any[]) =>
-            IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
-        },
-      });
-  }
-}
-
-export const solidModelingIpc = new IpcConnection<SolidModelingCommandIpc>();
-export const basicManipulationIpc = new IpcConnection<BasicManipulationCommandIpc>();
 
 /** @alpha functions to support PrimitiveTool and InputCollector sub-classes with using EditCommand. */
 export class EditTools {

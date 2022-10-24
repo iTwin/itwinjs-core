@@ -18,7 +18,8 @@ import {
   Transform, Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, EditTools } from "../EditTool";
+import { EditTools } from "../EditTool";
+import { basicManipulationIpc } from "../IpcConnection";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) {
@@ -966,10 +967,10 @@ export class ProjectLocationSaveTool extends Tool {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, deco.iModel.key);
 
       if (undefined !== extents)
-        await basicManipulationIpc.connection.updateProjectExtents(extents);
+        await basicManipulationIpc.updateProjectExtents(extents);
 
       if (undefined !== ecefLocation)
-        await basicManipulationIpc.connection.updateEcefLocation(ecefLocation);
+        await basicManipulationIpc.updateEcefLocation(ecefLocation);
 
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();

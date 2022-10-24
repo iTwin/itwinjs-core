@@ -18,7 +18,8 @@ import {
 } from "@itwin/core-frontend";
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
-import { basicManipulationIpc, EditTools } from "./EditTool";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./IpcConnection";
 
 /** @alpha */
 export interface TransformGraphicsData {
@@ -281,7 +282,7 @@ export abstract class TransformElementsTool extends ElementSetTool {
   protected async transformAgenda(transform: Transform): Promise<void> {
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await basicManipulationIpc.connection.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
+      if (IModelStatus.Success === await basicManipulationIpc.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
@@ -397,7 +398,7 @@ export class CopyElementsTool extends MoveElementsTool {
 
       for (let iCopy = 0; iCopy < numCopies; ++iCopy) {
         placement.multiplyTransform(transform);
-        newId = await basicManipulationIpc.connection.insertGeometricElement(newProps);
+        newId = await basicManipulationIpc.insertGeometricElement(newProps);
       }
 
       if (undefined !== newId)
@@ -637,7 +638,7 @@ export class RotateElementsTool extends TransformElementsTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      if (IModelStatus.Success === await basicManipulationIpc.connection.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
+      if (IModelStatus.Success === await basicManipulationIpc.rotatePlacement(this.agenda.compressIds(), transform.matrix.toJSON(), RotateAbout.Center === this.rotateAbout))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
