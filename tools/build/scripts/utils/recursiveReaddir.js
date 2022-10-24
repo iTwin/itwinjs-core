@@ -92,5 +92,5 @@ function readdir(path, ignores, callback) {
 }
 
 module.exports = {
-  readdir
+  readDirectory: readdir
 };
