@@ -16,7 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## [recursive-readdir](https://github.com/jergason/recursive-readdir)
 
-*There is no attributed copyright year or copyright holders mentioned, but for clarity: the GitHub user who published the repository is 'jergason' who publishes their name as Jamison Dance. The following text is copied verbatim from [recursive-readdir](https://github.com/jergason/recursive-readdir).*
+*The following text is copied verbatim from recursive-readdir.*
 
 The MIT License (MIT)
 

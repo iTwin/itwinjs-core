@@ -1,16 +1,5 @@
-/**
- * Adapted from:
- *
- * recursive-readdir
- * By Jamison Dance / GitHub User jergason
- * Source: https://github.com/jergason/recursive-readdir
- *
- * Licensed under the MIT License.
- * See tools\build\ThirdPartyNotices.md for full license.
- */
-
-var fs = require("fs");
-var p = require("path");
+const fs = require("fs");
+const p = require("path");
 
 function matchesFile(ignorePath) {
   return function (path, stats) {
@@ -46,21 +35,21 @@ function readdir(path, ignores, callback) {
 
   ignores = ignores.map(toMatcherFunction);
 
-  var list = [];
+  let list = [];
 
   fs.readdir(path, function (err, files) {
     if (err) {
       return callback(err);
     }
 
-    var pending = files.length;
+    let pending = files.length;
     if (!pending) {
-      // we are done, woop woop
+      // we are done
       return callback(null, list);
     }
 
     files.forEach(function (file) {
-      var filePath = p.join(path, file);
+      const filePath = p.join(path, file);
       fs.stat(filePath, function (_err, stats) {
         if (_err) {
           return callback(_err);
