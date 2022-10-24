@@ -230,7 +230,7 @@ export class BriefcaseConnection extends IModelConnection {
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
-    const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
+    const iModelProps = await IpcApp.appFunctionIpc.openBriefcase(briefcaseProps);
     const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -240,7 +240,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
-    const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
+    const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
     const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
@@ -263,7 +263,7 @@ export class BriefcaseConnection extends IModelConnection {
     this.txns.dispose();
 
     this._isClosed = true;
-    await IpcApp.callIpcHost("closeIModel", this._fileKey);
+    await IpcApp.appFunctionIpc.closeIModel(this._fileKey);
   }
 
   private requireTimeline() {
@@ -280,7 +280,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @param description Optional description of the changes.
    */
   public async saveChanges(description?: string): Promise<void> {
-    await IpcApp.callIpcHost("saveChanges", this.key, description);
+    await IpcApp.appFunctionIpc.saveChanges(this.key, description);
   }
 
   /** Pull (and potentially merge if there are local changes) up to a specified changeset from iModelHub into this briefcase
@@ -289,7 +289,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pullChanges(toIndex?: ChangesetIndex): Promise<void> {
     this.requireTimeline();
-    this.changeset = await IpcApp.callIpcHost("pullChanges", this.key, toIndex);
+    this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex);
   }
 
   /** Create a changeset from local Txns and push to iModelHub. On success, clear Txn table.
@@ -299,7 +299,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public async pushChanges(description: string): Promise<ChangesetIndexAndId> {
     this.requireTimeline();
-    return IpcApp.callIpcHost("pushChanges", this.key, description);
+    return IpcApp.appFunctionIpc.pushChanges(this.key, description);
   }
 
   /** The current graphical editing scope, if one is in progress.
@@ -314,7 +314,7 @@ export class BriefcaseConnection extends IModelConnection {
    * @see [[enterEditingScope]] to enable graphical editing.
    */
   public async supportsGraphicalEditing(): Promise<boolean> {
-    return IpcApp.callIpcHost("isGraphicalEditingSupported", this.key);
+    return IpcApp.appFunctionIpc.isGraphicalEditingSupported(this.key);
   }
 
   /** Begin a new graphical editing scope.
