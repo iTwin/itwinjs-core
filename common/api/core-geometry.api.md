@@ -742,9 +742,8 @@ export abstract class BSpline2dNd extends GeometryQuery {
     getPoint3dPoleXYZW(i: number, j: number, result?: Point3d): Point3d | undefined;
     getPoint4dPole(i: number, j: number, result?: Point4d): Point4d | undefined;
     getWrappable(select: UVSelect): BSplineWrapMode;
-    isClosable(select: UVSelect, wrapMode?: {
-        value: BSplineWrapMode;
-    }): boolean;
+    isClosable(select: UVSelect): boolean;
+    isClosableSurface(select: UVSelect): BSplineWrapMode;
     static isWrappedGrid(data: Float64Array, numRows: number, numColumns: number, dimension: number, blockLength: number, select: UVSelect): boolean;
     knots: KnotVector[];
     numberToUVSelect(value: number): UVSelect;
@@ -970,9 +969,7 @@ export interface BSplineSurface3dQuery {
     fractionToRigidFrame(uFraction: number, vFraction: number, result?: Transform): Transform | undefined;
     getPointGridJSON(): PackedPointGrid;
     isAlmostEqual(other: any): boolean;
-    isClosable(select: UVSelect, wrapMode?: {
-        value: BSplineWrapMode;
-    }): boolean;
+    isClosable(select: UVSelect): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
     isSameGeometryClass(other: any): boolean;
     knotToPoint(uKnot: number, vKnot: number): Point3d;
