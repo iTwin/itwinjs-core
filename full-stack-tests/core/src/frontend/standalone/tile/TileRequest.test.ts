@@ -94,7 +94,7 @@ describe("IModelTileRequestChannels", () => {
       expect(tile.channel).to.equal(IModelApp.tileAdmin.channels.iModelChannels.cloudStorage);
     });
 
-    it("falls back to RPC if requestContent returns undefined", async () => {
+    it("falls back to RPC if content is not found", async () => {
       const tile = await getTile();
       const channel = getCloudStorageChannel();
       expect(tile.channel).to.equal(channel);
