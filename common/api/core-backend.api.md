@@ -138,6 +138,7 @@ import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
 import { Metadata } from '@itwin/object-storage-core';
+import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
 import { ModelLoadProps } from '@itwin/core-common';
@@ -2509,6 +2510,7 @@ export class GeometricModel extends Model {
     // (undocumented)
     geometryGuid?: GuidString;
     queryExtents(): AxisAlignedBox3d;
+    queryRange(): Promise<AxisAlignedBox3d>;
 }
 
 // @public
@@ -2937,8 +2939,10 @@ export namespace IModelDb {
         getModelProps<T extends ModelProps>(id: Id64String): T;
         getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T;
         insertModel(props: ModelProps): Id64String;
+        queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
         // @internal
         queryLastModifiedTime(modelId: Id64String): string;
+        queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d>;
         tryGetModel<T extends Model>(modelId: Id64String, modelClass?: EntityClassType<Model>): T | undefined;
         tryGetModelProps<T extends ModelProps>(id: Id64String): T | undefined;
         tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined;
@@ -2969,8 +2973,9 @@ export namespace IModelDb {
         constructor(_iModel: IModelDb);
         static readonly defaultQueryParams: ViewQueryParams;
         getThumbnail(viewDefinitionId: Id64String): ThumbnailProps | undefined;
-        // (undocumented)
+        // @deprecated (undocumented)
         getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps;
+        getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps>;
         iterateViews(params: ViewQueryParams, callback: (view: ViewDefinition) => boolean): boolean;
         queryViewDefinitionProps(className?: string, limit?: number, offset?: number, wantPrivate?: boolean): ViewDefinitionProps[];
         saveThumbnail(viewDefinitionId: Id64String, thumbnail: ThumbnailProps): number;

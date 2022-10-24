@@ -4690,6 +4690,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
     // (undocumented)
+    queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]>;
+    // (undocumented)
     queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
@@ -5488,6 +5490,13 @@ export class ModelClipGroups {
     getClipForModel(modelId: Id64String): ClipVector | undefined;
     readonly groups: ModelClipGroup[];
     toJSON(): ModelClipGroupProps[];
+}
+
+// @public
+export interface ModelExtentsProps {
+    extents: Range3dProps;
+    id: Id64String;
+    status: IModelStatus;
 }
 
 // @public

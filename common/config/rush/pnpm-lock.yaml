@@ -8,7 +8,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.4.19
+      '@bentley/imodeljs-native': 3.4.20
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -55,7 +55,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.11.0
-      '@bentley/imodeljs-native': 3.4.19
+      '@bentley/imodeljs-native': 3.4.20
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -197,7 +197,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ^0.7.6
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -223,7 +223,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.7.6
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -247,7 +247,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ^0.7.6
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -259,7 +259,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.7.6
       fs-extra: 8.1.0
       glob: 7.2.3
     devDependencies:
@@ -296,7 +296,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ^0.7.6
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -323,7 +323,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.7.6
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -1352,7 +1352,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ^0.7.6
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1372,7 +1372,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.2
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.7.6
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1574,7 +1574,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': ^1.0.3
       '@bentley/cif-subsurface-schema': ^1.0.3
       '@bentley/cif-units-schema': ^1.0.1
-      '@bentley/imodeljs-native': 3.4.19
+      '@bentley/imodeljs-native': 3.4.20
       '@bentley/plant-custom-attributes-schema': ^1.0.1
       '@bentley/process-functional-schema': ^1.0.1
       '@bentley/process-physical-schema': ^1.0.2
@@ -1627,7 +1627,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': 1.0.3
       '@bentley/cif-subsurface-schema': 1.0.3
       '@bentley/cif-units-schema': 1.0.1
-      '@bentley/imodeljs-native': 3.4.19
+      '@bentley/imodeljs-native': 3.4.20
       '@bentley/plant-custom-attributes-schema': 1.0.1
       '@bentley/process-functional-schema': 1.0.1
       '@bentley/process-physical-schema': 1.0.2
@@ -3974,7 +3974,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ^0.7.6
       chai: ^4.1.2
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -3994,7 +3994,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.7.6
       chai-string: 1.5.0_chai@4.3.6
       chalk: 3.0.0
       commander: 2.20.3
@@ -6682,8 +6682,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.4.19:
-    resolution: {integrity: sha512-YRVX/XYJkWtMn3hgBEMbUaEaPFaL+f7DD7vOHDJP53ol4HC7Ltniij8dTp59CQ/gRac2d003f8838pmK1TDO6g==}
+  /@bentley/imodeljs-native/3.4.20:
+    resolution: {integrity: sha512-IGL2jyEaSOB/S5as/uVc0mIHvGXg8X7/ZmTWo2H7M7frFNJ6oOVt0wlRsDSDK7EXsoStilVBugqlZ/0VNfLyRg==}
     requiresBuild: true
     dev: false
 
@@ -9852,8 +9852,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@xmldom/xmldom/0.7.5:
-    resolution: {integrity: sha512-V3BIhmY36fXZ1OtVcI9W+FxQqxVLsPKcNjWigIaa81dLC9IolJl5Mt4Cvhmr0flUnjSpTdrbMTSbXqYqV5dT6A==}
+  /@xmldom/xmldom/0.7.6:
+    resolution: {integrity: sha512-HHXP9hskkFQHy8QxxUXkS7946FFIhYVfGqsk0WLwllmexN9x/+R4UBLvurHEuyXRfVEObVR8APuQehykLviwSQ==}
     engines: {node: '>=10.0.0'}
 
   /@xtuc/ieee754/1.2.0:
