@@ -107,14 +107,10 @@ When defining a Widget with AbstractWidgetProperties, you can now specify on whi
 ## New packages
 
 ### @itwin/map-layers-formats
-A new `@itwin/map-layers-formats` package has been created.  This new package aims to provide additional map-layers formats not delivered part of the core (i.e. `@itwin/core-frontend`).  
 
-After installing this new package, you must initialize it:
-`MapLayersFormats.initialize();`
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeatre` format which allows **vector data&& published by *ArcGIS Feature services* to be displayed in a [Viewport]($frontend).
 
-Doing so, map-layers formats will be added to the [MapLayerFormatRegistry]($frontend) and will be ready to be used part of [ImageMapLayerSettings]($common) object definitions (by referring the corresponding `formatId`).
-
-The initial release contains the new 'ArcGISFeature' format, which will allow **vector data** published by *ArcGIS Feature services* to be displayed in an iTwin view.
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($package-alias???). This should be done only **after** [IModelHost.startup]($frontend) has been called.
 
 ## Geometry
 
