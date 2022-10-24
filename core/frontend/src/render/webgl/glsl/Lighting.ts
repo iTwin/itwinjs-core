@@ -27,7 +27,7 @@ const applyLighting = `
   // Extract surface properties
   vec3 rgb = baseColor.rgb;
   vec3 normal = normalize(v_n.xyz);
-  normal *= 2.0 * float(!u_surfaceFlags[kSurfaceBitIndex_NoFaceFront] &&  gl_FrontFacing) - 1.0;
+  normal *= 2.0 * float(gl_FrontFacing) - 1.0;
   vec3 toEye = kFrustumType_Perspective == u_frustum.z ? normalize(v_eyeSpace.xyz) : vec3(0.0, 0.0, -1.0);
 
   // Extract material properties
