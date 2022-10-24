@@ -23,14 +23,18 @@ export class TileStorage {
     const transferConfig = await this.getTransferConfig(tokenProps, iModelId);
     if(transferConfig === undefined)
       return undefined;
-    const buffer = await this.storage.download(
-      {
+    try {
+      const buffer = await this.storage.download({
         reference: getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
         transferConfig,
         transferType: "buffer",
-      }
-    );
-    return new Uint8Array(buffer); // should always be Buffer because transferType === "buffer"
+      });
+
+      return new Uint8Array(buffer); // should always be Buffer because transferType === "buffer"
+    } catch (_) {
+      // @itwin/object-storage re-throws internal implementation-specific errors, so let's treat them all as 404 for now.
+      return undefined;
+    }
   }
 
   private async getTransferConfig(tokenProps: IModelRpcProps, iModelId: string): Promise<TransferConfig | undefined> {
