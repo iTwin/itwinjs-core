@@ -1348,6 +1348,11 @@ export class PerfLogger implements IDisposable {
 }
 
 // @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
+
+// @public
 export class PriorityQueue<T> implements Iterable<T> {
     [Symbol.iterator](): Iterator<T>;
     constructor(compare: OrderedComparator<T>, clone?: CloneFunction<T>);

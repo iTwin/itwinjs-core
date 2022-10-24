@@ -101,6 +101,7 @@ public;OrderedId64Iterable
 public;OrderedSet
 public;partitionArray
 public;PerfLogger 
+public;PickAsyncMethods
 public;PriorityQueue
 public;ProcessDetector
 public;PromiseReturnType
