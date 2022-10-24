@@ -19,7 +19,7 @@ import {
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
-import { basicManipulationIpc } from "../EditorIpcProxy";
+import { basicManipulationIpc } from "../EditToolIpc";
 import { ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectGeolocation";
 
 function translateMessage(key: string) {

@@ -24,7 +24,7 @@ import {
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./EditorIpcProxy";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha Values for [[CreateOrContinueTool.createCurvePhase] to support join and closure. */
 export enum CreateCurvePhase {

@@ -9,7 +9,7 @@ export * from "./CreateElementTool";
 export * from "./DeleteElementsTool";
 export * from "./EditTool";
 export * from "./ElementGeometryTool";
-export * from "./EditorIpcProxy";
+export * from "./EditToolIpc";
 export * from "./ModifyCurveTools";
 export * from "./ProjectLocation/ProjectExtentsDecoration";
 export * from "./ProjectLocation/ProjectGeolocation";

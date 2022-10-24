@@ -19,7 +19,7 @@ import {
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./EditorIpcProxy";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha */
 export interface TransformGraphicsData {

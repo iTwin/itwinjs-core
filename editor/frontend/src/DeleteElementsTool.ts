@@ -7,7 +7,7 @@ import { BentleyError, IModelStatus } from "@itwin/core-bentley";
 import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./EditorIpcProxy";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {

@@ -20,7 +20,7 @@ import {
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./EditorIpcProxy";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha */
 export class CurveData {
