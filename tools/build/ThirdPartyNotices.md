@@ -16,8 +16,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ## [recursive-readdir](https://github.com/jergason/recursive-readdir)
 
-*The following text is copied verbatim from recursive-readdir.*
-
 The MIT License (MIT)
 
 Copyright (c) \<year> \<copyright holders>
