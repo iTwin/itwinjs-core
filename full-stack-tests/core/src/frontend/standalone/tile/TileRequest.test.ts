@@ -55,7 +55,7 @@ describe("IModelTileRequestChannels", () => {
     return waitUntil(() => tile.loadStatus !== TileLoadStatus.Queued && tile.loadStatus !== TileLoadStatus.Loading);
   }
 
-  describe("CloudStorageCacheChannel", () => {
+  describe.only("CloudStorageCacheChannel", () => {
     let imodel: SnapshotConnection;
 
     beforeEach(async () => {
