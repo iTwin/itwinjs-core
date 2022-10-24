@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@itwin/core-bentley";
+import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@itwin/core-common";
 import { BriefcaseConnection, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -69,7 +69,4 @@ export async function makeModelCode(iModel: IModelConnection, scope: Id64String,
   return makeCode(iModel, BisCodeSpec.informationPartitionElement, scope, value);
 }
 
-export async function callFullStackTestIpc<T extends AsyncMethodsOf<FullStackTestIpc>>(methodName: T, ...args: Parameters<FullStackTestIpc[T]>) {
-  return IpcApp.callIpcChannel(fullstackIpcChannel, methodName, ...args) as PromiseReturnType<FullStackTestIpc[T]>;
-}
-
+export const coreFullStackTestIpc = IpcApp.makeIpcProxy<FullStackTestIpc>(fullstackIpcChannel);

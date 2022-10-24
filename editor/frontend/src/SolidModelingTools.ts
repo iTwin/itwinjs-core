@@ -23,7 +23,7 @@ import {
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
 import { ElementGeometryCacheTool, isSameSubEntity, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
-import { solidModelingIpc } from "./IpcConnection";
+import { solidModelingIpc } from "./EditorIpcProxy";
 
 /** @alpha Base class for tools that perform boolean operations on a set of elements. */
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {

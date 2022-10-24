@@ -21,7 +21,7 @@ import {
 } from "@itwin/editor-common";
 import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { solidModelingIpc } from "./IpcConnection";
+import { solidModelingIpc } from "./EditorIpcProxy";
 
 /** @alpha */
 export class ElementGeometryGraphicsProvider {

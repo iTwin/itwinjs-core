@@ -101,10 +101,9 @@ export class IpcApp {
     return retVal.result;
   }
 
-  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
-  }
-
+  /** Create a type safe Proxy object to make IPC calls to a registered backend interface via [[callIpcChannel]]
+   * @param channelName the channel registered by the backend handler.
+   */
   public static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
@@ -113,6 +112,14 @@ export class IpcApp {
       },
     });
   }
+
+  /** @deprecated use [[appFunctionIpc]] */
+  public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
+    return this.callIpcChannel(IpcAppChannel.Functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
+  }
+
+  /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
+  public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(IpcAppChannel.Functions);
 
   /** start an IpcApp.
    * @note this should not be called directly. It is called by NativeApp.startup */

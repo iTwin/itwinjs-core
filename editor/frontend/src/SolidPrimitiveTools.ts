@@ -19,7 +19,7 @@ import {
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./IpcConnection";
+import { basicManipulationIpc } from "./EditorIpcProxy";
 
 /** @alpha Base class for creating a capped or uncapped SolidPrimitive. */
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {

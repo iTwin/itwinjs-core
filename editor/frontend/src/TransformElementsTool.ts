@@ -19,7 +19,7 @@ import {
 import { Angle, Geometry, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
-import { basicManipulationIpc } from "./IpcConnection";
+import { basicManipulationIpc } from "./EditorIpcProxy";
 
 /** @alpha */
 export interface TransformGraphicsData {
@@ -96,7 +96,7 @@ export class TransformGraphicsProvider {
     if (0 === requests.length)
       return;
 
-    return IpcApp.callIpcHost("cancelElementGraphicsRequests", this.iModel.key, requests);
+    return IpcApp.appFunctionIpc.cancelElementGraphicsRequests(this.iModel.key, requests);
   }
 
   /** Call to request a RenderGraphic for the supplied element id.
@@ -375,7 +375,7 @@ export class CopyElementsTool extends MoveElementsTool {
       super.updateAnchorLocation(transform);
   }
 
-  protected async doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
+  protected async doTransformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined> {
     if (numCopies < 1 || 0 === ids.length)
       return undefined;
 
@@ -410,7 +410,7 @@ export class CopyElementsTool extends MoveElementsTool {
 
   protected override async transformAndCopyAgenda(transform: Transform): Promise<Id64Arg | undefined> {
     try {
-      const newIds = await this.doTranformedCopy(this.agenda.elements, transform, this.numCopies);
+      const newIds = await this.doTransformedCopy(this.agenda.elements, transform, this.numCopies);
       if (undefined !== newIds)
         await this.saveChanges();
       return newIds;
