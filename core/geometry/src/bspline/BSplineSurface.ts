@@ -107,7 +107,7 @@ export interface BSplineSurface3dQuery {
   /** test for nearly equality with `other` */
   isAlmostEqual(other: any): boolean;
   /** ask if the u or v direction could be converted to periodic form */
-  isClosable(select: UVSelect, wrapMode?: {value: BSplineWrapMode}): boolean;
+  isClosable(select: UVSelect): boolean;
   /** Ask if the entire surface is within a plane. */
   isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
   /** return the total number of poles (product of u,v counts) */
@@ -525,19 +525,24 @@ export abstract class BSpline2dNd extends GeometryQuery {
   }
   /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
    * @param select select U or V direction
-   * @param wrapMode the manner of closing, as a boxed enum value so it can be returned. See `BSplineWrapMode` for particulars of each mode.
    * @return whether the surface can be wrapped in the given parametric direction.
    */
-  public isClosable(select: UVSelect, wrapMode?: {value: BSplineWrapMode}): boolean {
+  public isClosable(select: UVSelect): boolean {
+    return BSplineWrapMode.None !== this.isClosableSurface(select);
+  }
+  /** Test knots and control points to determine if it is possible to close (aka "wrap") the surface in the selected parametric direction.
+   * @param select select U or V direction
+   * @return the manner of closing. See `BSplineWrapMode` for particulars of each mode.
+   */
+  public isClosableSurface(select: UVSelect): BSplineWrapMode {
     const mode = this.knots[select].wrappable;
-    let closable = BSplineWrapMode.None !== mode;
-    if (closable)
-      closable = this.knots[select].testClosable(mode);
-    if (closable)
-      closable = this.testClosableGrid(select, mode);
-    if (undefined !== wrapMode)
-      wrapMode.value = closable ? mode : BSplineWrapMode.None;
-    return closable;
+    if (mode === BSplineWrapMode.None)
+      return BSplineWrapMode.None;
+    if (!this.knots[select].testClosable(mode))
+      return BSplineWrapMode.None;
+    if (!this.testClosableGrid(select, mode))
+      return BSplineWrapMode.None;
+    return mode;
   }
 }
 

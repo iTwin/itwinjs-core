@@ -148,11 +148,8 @@ describe("BSplineSurface", () => {
       surfaceA.setWrappable(UVSelect.uDirection, BSplineWrapMode.OpenByAddingControlPoints);
       surfaceA.setWrappable(UVSelect.vDirection, BSplineWrapMode.OpenByRemovingKnots);
       testBSplineSurface(ck, surfaceA);
-      const mode = {value: BSplineWrapMode.None};
-      ck.testFalse(surfaceA.isClosable(UVSelect.uDirection, mode));
-      ck.testExactNumber(mode.value, BSplineWrapMode.None);
-      ck.testFalse(surfaceA.isClosable(UVSelect.vDirection, mode));
-      ck.testExactNumber(mode.value, BSplineWrapMode.None);
+      ck.testFalse(surfaceA.isClosable(UVSelect.uDirection));
+      ck.testFalse(surfaceA.isClosable(UVSelect.vDirection));
     }
     // A rational surface with unit weigths ... This is just a plane
     const surfaceAH1 = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2);
@@ -180,11 +177,10 @@ describe("BSplineSurface", () => {
           Math.max(12, orderU + 1), Math.max(6, orderV + 1),    // grid edges
           orderU, orderV);
         if (ck.testPointer(bsurf)) {
-          const mode = {value: BSplineWrapMode.None};
-          if (ck.testTrue(bsurf.isClosable(UVSelect.uDirection, mode)))
-            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints);
-          if (ck.testTrue(bsurf.isClosable(UVSelect.vDirection, mode)))
-            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints);
+          if (ck.testTrue(bsurf.isClosable(UVSelect.uDirection)))
+            ck.testExactNumber(BSplineWrapMode.OpenByAddingControlPoints, bsurf.isClosableSurface(UVSelect.uDirection));
+          if (ck.testTrue(bsurf.isClosable(UVSelect.vDirection)))
+            ck.testExactNumber(BSplineWrapMode.OpenByAddingControlPoints, bsurf.isClosableSurface(UVSelect.vDirection));
           bsurf.tryTranslateInPlace(dx, dy);
           allGeometry.push(bsurf);
         }
@@ -216,12 +212,11 @@ describe("BSplineSurface", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [surf, builder.claimPolyface()]);
     }
 
-    const mode = {value: BSplineWrapMode.None};
     for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
       for (const surf of [surfaceA, surfaceB]) {
-        surf.isClosable(uvDir, mode);
-        ck.testExactNumber(mode.value, surf.getWrappable(uvDir), "WrapMode is as expected");
-        ck.testExactNumber(mode.value, BSplineWrapMode.OpenByAddingControlPoints, "WrapMode is OpenByAddingControlPoints");
+        const mode = surf.isClosableSurface(uvDir);
+        ck.testExactNumber(mode, surf.getWrappable(uvDir), "WrapMode is as expected");
+        ck.testExactNumber(mode, BSplineWrapMode.OpenByAddingControlPoints, "WrapMode is OpenByAddingControlPoints");
       }
     }
 
@@ -270,11 +265,10 @@ describe("BSplineSurface", () => {
           builder.addUVGridBody(input, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [input, builder.claimPolyface()]);
 
-          const mode = {value: BSplineWrapMode.None};
           for (const uvDir of [UVSelect.uDirection, UVSelect.vDirection]) {
-            input.isClosable(uvDir, mode);
-            ck.testExactNumber(mode.value, input.getWrappable(uvDir), "WrapMode is as expected");
-            ck.testExactNumber(mode.value, BSplineWrapMode.OpenByRemovingKnots, "WrapMode is OpenByRemovingKnots");
+            const mode = input.isClosableSurface(uvDir);
+            ck.testExactNumber(mode, input.getWrappable(uvDir), "WrapMode is as expected");
+            ck.testExactNumber(mode, BSplineWrapMode.OpenByRemovingKnots, "WrapMode is OpenByRemovingKnots");
           }
         }
         testGeometryQueryRoundTrip(ck, input);

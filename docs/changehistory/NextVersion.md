@@ -14,7 +14,6 @@ Table of contents:
 - [AppUi](#appui)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
-  - [B-Splines](#b-splines)  
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
@@ -108,10 +107,6 @@ When defining a Widget with AbstractWidgetProperties, you can now specify on whi
 ### Polyface
 
 The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
-
-### B-Splines
-
-[BSplineSurface3dQuery.isClosable]($core-geometry) and [BSpline2dNd.isClosable]($core-geometry) have a new optional argument to return a [BSplineWrapMode]($core-geometry) enum value classifying the manner in which the surface can be closed (if at all) in the given parametric direction.
 
 ## Deprecations
 
