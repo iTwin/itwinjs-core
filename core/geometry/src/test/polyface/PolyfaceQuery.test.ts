@@ -12,7 +12,7 @@ import { GrowableXYArray } from "../../geometry3d/GrowableXYArray";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { TorusImplicit } from "../../numerics/Polynomials";
-import { IndexedPolyface } from "../../polyface/Polyface";
+import { IndexedPolyface, Polyface, PolyfaceVisitor } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { DuplicateFacetClusterSelector, PolyfaceQuery } from "../../polyface/PolyfaceQuery";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -26,6 +26,9 @@ import { Transform } from "../../geometry3d/Transform";
 import { Range3d } from "../../geometry3d/Range";
 import { SpacePolygonTriangulation } from "../../topology/SpaceTriangulation";
 import { Arc3d } from "../../curve/Arc3d";
+import { PolyfaceData } from "../../polyface/PolyfaceData";
+import { SortableEdge, SortableEdgeCluster } from "../../polyface/IndexedEdgeMatcher";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 it("ChainMergeVariants", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -178,6 +181,56 @@ it("ExpandToMaximalPlanarFacetsA", () => {
     expect(ck.getNumErrors()).equals(0);
 });
 
+/** Return whether all edges in the clusters are visible.
+ * @param allHidden whether to return whether all edges in the clusters are hidden instead
+ */
+function allEdgesAreVisible(mesh: IndexedPolyface, clusters: SortableEdgeCluster[], allHidden?: boolean): boolean {
+  if (undefined === allHidden)
+    allHidden = false;
+  for (const cluster of clusters) {
+    if (cluster instanceof SortableEdge) {
+      if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, cluster.facetIndex, cluster.vertexIndexA))
+        return false;
+    } else {
+      for (const edge of cluster) {
+        if (allHidden === PolyfaceQuery.getSingleEdgeVisibility(mesh, edge.facetIndex, edge.vertexIndexA))
+          return false;
+      }
+    }
+  }
+  return true;
+}
+
+/** Flex dihedral edge filter, and verify various clustered edge counts and visibilities.
+ * @param expectedSmoothCount expected count of smooth manifold edge pairs
+ * @param expectedSharpCount expected count of sharp manifold edge pairs
+ * @param expectedOtherCount expected count of non-manifold edge clusters
+ * @param expectAllSmoothEdgesHidden whether to verify all smooth edges are hidden (default, false: verify all are visible)
+ * @param expectAllSharpEdgesHidden whether to verify all sharp edges are hidden (default, false: verify all are visible)
+ * @param expectAllOtherEdgesHidden whether to verify all other edges are hidden (default, false: verify all are visible)
+ */
+function verifyEdgeCountsAndVisibilities(ck: Checker, mesh: IndexedPolyface, dihedralAngle: Angle | undefined,
+    expectedSmoothCount: number, expectedSharpCount: number, expectedOtherCount: number,
+    expectAllSmoothEdgesHidden?: boolean, expectAllSharpEdgesHidden?: boolean, expectAllOtherEdgesHidden?: boolean): boolean {
+  const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle);
+  const sharpEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, dihedralAngle, true);
+  const otherEdges: SortableEdgeCluster[] = [];
+  PolyfaceQuery.createIndexedEdges(mesh).sortAndCollectClusters(undefined, otherEdges, otherEdges, otherEdges);
+  if (!ck.testExactNumber(expectedSmoothCount, smoothEdges.length, "Unexpected smooth edge count"))
+    return false;
+  if (!ck.testExactNumber(expectedSharpCount, sharpEdges.length, "Unexpected sharp edge count"))
+    return false;
+  if (!ck.testExactNumber(expectedOtherCount, otherEdges.length, "Unexpected other edge count"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, smoothEdges, expectAllSmoothEdgesHidden), "Unexpected smooth edge visibility"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, sharpEdges, expectAllSharpEdgesHidden), "Unexpected sharp edge visibility"))
+    return false;
+  if (!ck.testTrue(allEdgesAreVisible(mesh, otherEdges, expectAllOtherEdgesHidden), "Unexpected other edge visibility"))
+    return false;
+  return true;
+}
+
 it("ExpandToMaximalPlanarFacetsWithHole", () => {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
@@ -195,15 +248,84 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
   let dy = 0;
   const yStep = 10.0;
   GeometryCoreTestIO.captureCloneGeometry (allGeometry, polyface, dx, dy, 0);
+  verifyEdgeCountsAndVisibilities(ck, polyface, undefined, 42, 4, 36);
+
   const maximalPolyface = PolyfaceQuery.cloneWithMaximalPlanarFacets (polyface);
   if (maximalPolyface){
-    PolyfaceQuery.markAllEdgeVisibility(maximalPolyface, true);
+    verifyEdgeCountsAndVisibilities(ck, maximalPolyface, undefined, 4, 4, 36, true);  // smooth edges are hidden because they are bridges
     GeometryCoreTestIO.captureCloneGeometry (allGeometry, maximalPolyface, dx, dy += yStep, 0);
     dx += 20;
-    }
+  }
 
-    GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
-    expect(ck.getNumErrors()).equals(0);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
+  expect(ck.getNumErrors()).equals(0);
+});
+
+// implement a do-nothing visitor NOT backed by a Polyface
+class VisitorSansMesh extends PolyfaceData implements PolyfaceVisitor {
+  private _index: number;
+  private _numIndices: number;
+  public constructor(numIndices: number) {
+    super();
+    this._numIndices = numIndices;
+    this._index = -1;
+  }
+  public moveToReadIndex(index: number): boolean {
+    if (index < 0 || index >= this._numIndices)
+      return false;
+    this._index = index;
+    return true;
+  }
+  public currentReadIndex(): number {
+    return this._index;
+  }
+  public moveToNextFacet(): boolean {
+    return this.moveToReadIndex(this._index + 1);
+  }
+  public reset(): void {
+    this._index = -1;
+  }
+  public clientPolyface(): Polyface | undefined {
+    return undefined; // highly unusual
+  }
+  public clientPointIndex(_i: number): number {
+    return 0;
+  }
+  public clientParamIndex(_i: number): number {
+    return 0;
+  }
+  public clientNormalIndex(_i: number): number {
+    return 0;
+  }
+  public clientColorIndex(_i: number): number {
+    return 0;
+  }
+  public clientAuxIndex(_i: number): number {
+    return 0;
+  }
+  public setNumWrap(_numWrap: number): void {
+  }
+  public clearArrays(): void {
+  }
+  public pushDataFrom(_other: PolyfaceVisitor, _index: number): void {
+  }
+  public pushInterpolatedDataFrom(_other: PolyfaceVisitor, _index0: number, _fraction: number, _index1: number): void {
+  }
+}
+
+it("CountVisitableFacets", () => {
+  const ck = new Checker();
+  const mesh = ImportedSample.createPolyhedron62();
+  if (ck.testDefined(mesh) && undefined !== mesh) {
+    const visitor = mesh.createVisitor(0);
+    ck.testExactNumber(60, PolyfaceQuery.visitorClientPointCount(visitor));
+    ck.testExactNumber(62, PolyfaceQuery.visitorClientFacetCount(visitor));
+  }
+  // test a visitor without polyface backing
+  const visitor0 = new VisitorSansMesh(5);
+  ck.testExactNumber(0, PolyfaceQuery.visitorClientPointCount(visitor0));
+  ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
+  expect(ck.getNumErrors()).equals(0);
 });
 
 it("FillHoles", () => {

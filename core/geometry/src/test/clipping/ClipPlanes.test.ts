@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import * as fs from "fs";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { Clipper, ClipPlaneContainment, ClipStatus, ClipUtilities } from "../../clipping/ClipUtils";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
@@ -39,8 +38,8 @@ import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceCl
 import { LinearSweep } from "../../solid/LinearSweep";
 import { Cone } from "../../solid/Cone";
 import { GrowableXYZArrayCache } from "../../geometry3d/ReusableObjectCache";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { IndexedPolyface } from "../../polyface/Polyface";
+import { ImportedSample } from "../testInputs/ImportedSamples";
 
 /* eslint-disable no-console, no-trailing-spaces */
 
@@ -344,18 +343,14 @@ describe("ConvexClipPlaneSet", () => {
     }
   }
 
-  // cspell:word rhombicosidodecahedron
   it("CreateFromConvexPolyface", () => {
-    const json = fs.readFileSync("./src/test/testInputs/polyface/rhombicosidodecahedron.imjs", "utf8");
-    const inputs = IModelJson.Reader.parse(JSON.parse(json)) as GeometryQuery[];
-    for (const mesh of inputs) {
-      if (ck.testDefined(mesh) && mesh instanceof IndexedPolyface) {
-        testConvertMeshToClipper(mesh);
-        // verify that the reversed closed mesh produces same clipper with inward plane normals
-        mesh.reverseIndices();
-        mesh.reverseNormals();
-        testConvertMeshToClipper(mesh);
-      }
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testDefined(mesh) && undefined !== mesh) {
+      testConvertMeshToClipper(mesh);
+      // verify that the reversed closed mesh produces same clipper with inward plane normals
+      mesh.reverseIndices();
+      mesh.reverseNormals();
+      testConvertMeshToClipper(mesh);
     }
     expect(ck.getNumErrors()).equals(0);
   });
