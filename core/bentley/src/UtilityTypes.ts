@@ -88,6 +88,11 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
 
+/** The members of `T` that are async functions (functions that return a promise), and no other properties
+ * @public
+ */
+export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never; };
+
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
  */

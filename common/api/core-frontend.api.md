@@ -183,6 +183,7 @@ import { MeshPolyline } from '@itwin/core-common';
 import { MeshPolylineList } from '@itwin/core-common';
 import { MessagePresenter } from '@itwin/appui-abstract';
 import { MessageSeverity } from '@itwin/appui-abstract';
+import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChanges } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
@@ -3478,7 +3479,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     abstract get is3d(): boolean;
     // @internal (undocumented)
     get isGeometricModel(): boolean;
-    // @internal
     queryModelRange(): Promise<Range3d>;
     // @internal (undocumented)
     get treeModelId(): Id64String;
@@ -4933,6 +4933,7 @@ export namespace IModelConnection {
         // @internal (undocumented)
         get loaded(): Map<string, ModelState>;
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
+        queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         get repositoryModelId(): string;
