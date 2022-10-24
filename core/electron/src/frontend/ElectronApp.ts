@@ -78,8 +78,12 @@ export class ElectronApp {
    * Call an asynchronous method in the [Electron.Dialog](https://www.electronjs.org/docs/api/dialog) interface from a previously initialized ElectronFrontend.
    * @param methodName the name of the method to call
    * @param args arguments to method
+   * @deprecated use [[dialogIpc]]
    */
   public static async callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>) {
     return IpcApp.callIpcChannel(dialogChannel, "callDialog", methodName, ...args) as PromiseReturnType<Electron.Dialog[T]>;
   }
+
+  /** Proxy object for calling methods of `Electron.Dialog` */
+  public static dialogIpc = IpcApp.makeIpcProxy<Electron.Dialog>(dialogChannel);
 }

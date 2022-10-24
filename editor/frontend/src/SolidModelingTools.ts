@@ -6,15 +6,24 @@
  * @module Editing
  */
 
-import { Id64Array, Id64String } from "@itwin/core-bentley";
-import { BlendEdgesProps, BooleanMode, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps, DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps, HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps, SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps } from "@itwin/editor-common";
-import { ColorDef, ElementGeometry } from "@itwin/core-common";
-import { Angle, Geometry, LineString3d, Matrix3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
-import { AccuDraw, AccuDrawHintBuilder, AngleDescription, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, TentativeOrAccuSnap } from "@itwin/core-frontend";
-import { computeChordToleranceFromPoint } from "./CreateElementTool";
-import { ElementGeometryCacheTool, isSameSubEntity, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
 import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper } from "@itwin/appui-abstract";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
+import { ColorDef, ElementGeometry } from "@itwin/core-common";
+import {
+  AccuDraw, AccuDrawHintBuilder, AngleDescription, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
+  LengthDescription, TentativeOrAccuSnap,
+} from "@itwin/core-frontend";
+import { Angle, Geometry, LineString3d, Matrix3d, Point3d, Vector3d, XYZProps } from "@itwin/core-geometry";
+import {
+  BlendEdgesProps, BooleanMode, BooleanOperationProps, BRepEntityType, ChamferEdgesProps, ChamferMode, CutDepthMode, CutDirectionMode, CutProps,
+  DeleteSubEntityProps, ElementGeometryCacheFilter, ElementGeometryResultOptions, ElementGeometryResultProps, EmbossDirectionMode, EmbossProps,
+  HollowFacesProps, ImprintProps, LoftProps, OffsetFacesProps, ProfileClosure, SewSheetProps, SpinFacesProps, SubEntityFilter, SubEntityLocationProps,
+  SubEntityProps, SubEntityType, SweepFacesProps, SweepPathProps, ThickenSheetProps,
+} from "@itwin/editor-common";
+import { computeChordToleranceFromPoint } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
+import { ElementGeometryCacheTool, isSameSubEntity, LocateSubEntityTool, SubEntityData } from "./ElementGeometryTool";
+import { solidModelingIpc } from "./EditToolIpc";
 
 /** @alpha Base class for tools that perform boolean operations on a set of elements. */
 export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
@@ -44,7 +53,7 @@ export abstract class BooleanOperationTool extends ElementGeometryCacheTool {
       const tools: Id64Array = this.agenda.elements.slice(1);
       const params: BooleanOperationProps = { mode: this.mode, tools };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.booleanOperation(target, params, opts);
+      return await solidModelingIpc.booleanOperation(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -123,7 +132,7 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
       const tools: Id64Array = this.agenda.elements.slice(1);
       const params: SewSheetProps = { tools };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.sewSheets(target, params, opts);
+      return await solidModelingIpc.sewSheets(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -180,7 +189,7 @@ export class ThickenSheetElementsTool extends ElementGeometryCacheTool {
       const target = this.agenda.elements[0];
       const params: ThickenSheetProps = { front: this.frontDistance, back: this.backDistance };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.thickenSheets(target, params, opts);
+      return await solidModelingIpc.thickenSheets(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -278,7 +287,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
 
     try {
       this._startedCmd = await this.startCommand();
-      return await this.commandConnection.isPlanarBody(id, 0);
+      return await solidModelingIpc.isPlanarBody(id, 0);
     } catch (err) {
       return false;
     }
@@ -303,7 +312,7 @@ export class CutSolidElementsTool extends ElementGeometryCacheTool {
       const profile = this.agenda.elements[1];
       const params: CutProps = { profile, direction, depth, distance: this.depth, outside: this.outside ? true : undefined, closeOpen: ProfileClosure.Auto, targetPoint: this.targetPoint, toolPoint: this.toolPoint };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.cutSolid(target, params, opts);
+      return await solidModelingIpc.cutSolid(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -384,7 +393,7 @@ export class EmbossSolidElementsTool extends ElementGeometryCacheTool {
       const profile = this.agenda.elements[1];
       const params: EmbossProps = { profile, direction: EmbossDirectionMode.Auto, targetPoint: this.targetPoint };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.embossBody(target, params, opts);
+      return await solidModelingIpc.embossBody(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -431,7 +440,7 @@ export class SweepAlongPathTool extends ElementGeometryCacheTool {
       const path = this.agenda.elements[1];
       const params: SweepPathProps = { path };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.sweepAlongPath(target, params, opts);
+      return await solidModelingIpc.sweepAlongPath(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -472,7 +481,7 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
       const tools = this.agenda.elements.slice(1);
       const params: LoftProps = { tools, orderCurves: this.isSelectionSetModify ? true : undefined, orientCurves: true };
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.loftProfiles(target, params, opts);
+      return await solidModelingIpc.loftProfiles(target, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -578,7 +587,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
       // NOTE: For offset, include all smoothly connected faces, not just adjacent...
-      return await this.commandConnection.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true });
+      return await solidModelingIpc.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true });
     } catch (err) {
       return undefined;
     }
@@ -645,7 +654,7 @@ export class OffsetFacesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${id}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await this.commandConnection.offsetFaces(id, params, opts);
+      return await solidModelingIpc.offsetFaces(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -740,7 +749,7 @@ export class HollowFacesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await this.commandConnection.hollowFaces(this.agenda.elements[0], params, opts);
+      return await solidModelingIpc.hollowFaces(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -805,7 +814,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
       return hits.filter((hit) => { return SubEntityType.Face === hit.subEntity.type; });
 
     try {
-      const accept = await this.commandConnection.isRedundantEdge(id, hits[0].subEntity);
+      const accept = await solidModelingIpc.isRedundantEdge(id, hits[0].subEntity);
 
       if (accept)
         return hits;
@@ -832,7 +841,7 @@ export class DeleteSubEntitiesTool extends LocateSubEntityTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await this.commandConnection.deleteSubEntities(this.agenda.elements[0], params, opts);
+      return await solidModelingIpc.deleteSubEntities(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -969,12 +978,12 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
         if (undefined === edge)
           return undefined;
 
-        const edgeFaces = await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Face);
+        const edgeFaces = await solidModelingIpc.getConnectedSubEntities(id, edge, SubEntityType.Face);
         if (undefined === edgeFaces || 0 === edgeFaces.length)
           return undefined;
 
         // TODO: Check planar face...get preferred face from cursor location in dynamics, etc.
-        const edgeLoop = await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
+        const edgeLoop = await solidModelingIpc.getConnectedSubEntities(id, edge, SubEntityType.Edge, { loopFace: edgeFaces[0] });
         if (undefined === edgeLoop || 0 === edgeLoop.length)
           return undefined;
 
@@ -984,7 +993,7 @@ export class ImprintSolidElementsTool extends LocateSubEntityTool {
       }
 
       const opts: ElementGeometryResultOptions = { writeChanges: true };
-      return await this.commandConnection.imprintBody(id, params, opts);
+      return await solidModelingIpc.imprintBody(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1119,7 +1128,7 @@ export abstract class BlendEdgesTool extends LocateSubEntityTool {
 
   protected async getTangentEdges(id: Id64String, edge: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
-      return await this.commandConnection.getConnectedSubEntities(id, edge, SubEntityType.Edge, { smoothEdges: true });
+      return await solidModelingIpc.getConnectedSubEntities(id, edge, SubEntityType.Edge, { smoothEdges: true });
     } catch (err) {
       return undefined;
     }
@@ -1241,7 +1250,7 @@ export class RoundEdgesTool extends BlendEdgesTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await this.commandConnection.blendEdges(this.agenda.elements[0], params, opts);
+      return await solidModelingIpc.blendEdges(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1376,7 +1385,7 @@ export class ChamferEdgesTool extends BlendEdgesTool {
         requestId: `${this.toolId}:${this.agenda.elements[0]}`,
         writeChanges: isAccept ? true : undefined,
       };
-      return await this.commandConnection.chamferEdges(this.agenda.elements[0], params, opts);
+      return await solidModelingIpc.chamferEdges(this.agenda.elements[0], params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1551,7 +1560,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
   protected async getSmoothFaces(id: Id64String, face: SubEntityProps): Promise<SubEntityProps[] | undefined> {
     try {
       // NOTE: For sweep/translation, it makes sense to limit smooth to immediately adjacent...
-      return await this.commandConnection.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true, adjacentFaces: true });
+      return await solidModelingIpc.getConnectedSubEntities(id, face, SubEntityType.Face, { smoothFaces: true, adjacentFaces: true });
     } catch (err) {
       return undefined;
     }
@@ -1595,7 +1604,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
       const params: SweepFacesProps = { path };
 
       if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
-        return await this.commandConnection.sweepFaces(id, params, opts);
+        return await solidModelingIpc.sweepFaces(id, params, opts);
       }
 
       if (this.addSmooth) {
@@ -1614,7 +1623,7 @@ export class SweepFacesTool extends LocateFaceOrProfileTool {
       }
 
       params.faces = subEntities;
-      return await this.commandConnection.sweepFaces(id, params, opts);
+      return await solidModelingIpc.sweepFaces(id, params, opts);
     } catch (err) {
       return undefined;
     }
@@ -1710,16 +1719,16 @@ export class SpinFacesTool extends LocateFaceOrProfileTool {
       const params: SpinFacesProps = { origin, direction, angle };
 
       if (SubEntityType.Edge === subEntities[0].type || BRepEntityType.Solid !== this.getBRepEntityTypeForSubEntity(id, subEntities[0])) {
-        return await this.commandConnection.spinFaces(id, params, opts);
+        return await solidModelingIpc.spinFaces(id, params, opts);
       }
 
       params.faces = subEntities;
-      let result = await this.commandConnection.spinFaces(id, params, opts);
+      let result = await solidModelingIpc.spinFaces(id, params, opts);
 
       // Spun face can be used to create a pocket...retry with negative sweep...
       if (undefined === result) {
         angle.setRadians(-angle.radians);
-        result = await this.commandConnection.spinFaces(id, params, opts);
+        result = await solidModelingIpc.spinFaces(id, params, opts);
       }
 
       return result;

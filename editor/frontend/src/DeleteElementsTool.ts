@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { BentleyError, IModelStatus } from "@itwin/core-bentley";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
 import { ElementSetTool, IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@itwin/core-frontend";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha Delete elements immediately from active selection set or prompt user to identify elements to delete. */
 export class DeleteElementsTool extends ElementSetTool {
@@ -19,12 +20,10 @@ export class DeleteElementsTool extends ElementSetTool {
   protected override get controlKeyContinuesSelection(): boolean { return true; }
   protected override get requireAcceptForSelectionSetOperation(): boolean { return false; }
 
-  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
-
   public override async processAgendaImmediate(): Promise<void> {
     try {
       await EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-      if (IModelStatus.Success === await this.commandConnection.deleteElements(this.agenda.compressIds()))
+      if (IModelStatus.Success === await basicManipulationIpc.deleteElements(this.agenda.compressIds()))
         await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
