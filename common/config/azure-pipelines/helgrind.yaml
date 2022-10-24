@@ -24,6 +24,7 @@ jobs:
       name: iModelTechCI
       demands:
       - Agent.OS -equals Linux
+      - Agent.Name -equals BuildLinuxMinion01-A
     variables:
       HELGRIND_RESULTS: $(Build.StagingDirectory)/helgrind-results/
     workspace:
