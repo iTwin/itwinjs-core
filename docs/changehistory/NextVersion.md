@@ -12,6 +12,8 @@ Table of contents:
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [Geometry](#geometry)
+  - [Polyface](#polyface)
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
@@ -113,6 +115,12 @@ After installing this new package, you must initialize it:
 Doing so, map-layers formats will be added to the [MapLayerFormatRegistry]($frontend) and will be ready to be used part of [ImageMapLayerSettings]($common) object definitions (by referring the corresponding `formatId`).
 
 The initial release contains the new 'ArcGISFeature' format, which will allow **vector data** published by *ArcGIS Feature services* to be displayed in an iTwin view.
+
+## Geometry
+
+### Polyface
+
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
 ## Deprecations
 
