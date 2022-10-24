@@ -7080,7 +7080,7 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
-    // (undocumented)
+    // @deprecated (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
@@ -7090,6 +7090,7 @@ export class NativeApp {
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static get isValid(): boolean;
+    static nativeAppIpc: PickAsyncMethods<NativeAppFunctions>;
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static openStorage(name: string): Promise<Storage_2>;
     // @internal (undocumented)
