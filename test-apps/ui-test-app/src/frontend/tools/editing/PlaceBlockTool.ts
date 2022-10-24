@@ -31,9 +31,7 @@ export class PlaceBlockTool extends CreateElementTool {
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
 
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
-  }
+  public commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -197,7 +195,7 @@ export class PlaceBlockTool extends CreateElementTool {
         return;
 
       const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-      await PlaceBlockTool.callCommand("insertGeometricElement", elemProps);
+      await this.commandConnection.insertGeometricElement(elemProps);
       await this.saveChanges();
 
     } catch (err: any) {
