@@ -15,6 +15,8 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#map-layers-formats)
 
 ## Display system
 
@@ -98,6 +100,17 @@ the ids returned are not unique from all element ids and may collide.
 ### Setting allowed panel zones for widgets
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+
+## New packages
+
+### @itwin/map-layers-formats
+A new `@itwin/map-layers-formats` package has been created.  This new package aims to provide additional map-layers formats not delivered part of the core (i.e. `@itwin/core-frontend`).  
+
+After installing this new package, you must initialize it:
+`MapLayersFormats.initialize();`
+
+Doing so, map-layers formats will be added to the [MapLayerFormatRegistry]($frontend) and will be ready to be used part of [ImageMapLayerSettings]($common) object definitions (by referring the corresponding `formatId`).
 
 ## Deprecations
 
