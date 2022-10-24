@@ -26,7 +26,6 @@ export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 export class ElectronApp {
     // @deprecated
     static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
-    // (undocumented)
     static dialogIpc: PickAsyncMethods<Electron.Dialog>;
     // (undocumented)
     static get isValid(): boolean;
