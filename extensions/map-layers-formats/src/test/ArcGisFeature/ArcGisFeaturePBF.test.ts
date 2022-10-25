@@ -84,9 +84,7 @@ describe("ArcGisFeaturePBF", () => {
 
     const byteArray = Base64EncodedString.toUint8Array(PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryEncodedPbf);
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
-    // const featureCollection = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryPbf);
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featurePbf = new ArcGisFeaturePBF(settings, {name: "SampleLayer"});
+    const featurePbf = createFeaturePBF();
 
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision.
