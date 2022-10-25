@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
