@@ -30,7 +30,6 @@ export class MeshData implements WebGLDisposable {
   public readonly edgeLineCode: number; // Must call LineCode.valueFromLinePixels(val: LinePixels) and set the output to edgeLineCode
   public readonly isPlanar: boolean;
   public readonly hasBakedLighting: boolean;
-  public readonly hasFixedNormals: boolean;   // Fixed normals will not be flipped to face front (Terrain skirts).
   public readonly lut: VertexLUT;
   public readonly viewIndependentOrigin?: Point3d;
   private readonly _textureAlwaysDisplayed: boolean;
@@ -57,7 +56,6 @@ export class MeshData implements WebGLDisposable {
     this.fillFlags = params.surface.fillFlags;
     this.isPlanar = params.isPlanar;
     this.hasBakedLighting = params.surface.hasBakedLighting;
-    this.hasFixedNormals = params.surface.hasFixedNormals;
     const edges = params.edges;
     this.edgeWidth = undefined !== edges ? edges.weight : 1;
     this.edgeLineCode = LineCode.valueFromLinePixels(undefined !== edges ? edges.linePixels : LinePixels.Solid);

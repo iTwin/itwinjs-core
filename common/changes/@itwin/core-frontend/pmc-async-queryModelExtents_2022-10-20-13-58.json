@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Add functions to obtain the extents of geometric models asynchronously on the backend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

@@ -670,7 +670,6 @@ export function splitMeshParams(args: SplitMeshArgs): Map<number, MeshParams> {
         indices,
         fillFlags: args.params.surface.fillFlags,
         hasBakedLighting: args.params.surface.hasBakedLighting,
-        hasFixedNormals: args.params.surface.hasFixedNormals,
         textureMapping: args.params.surface.textureMapping,
         material: material !== undefined ? material : args.params.surface.material,
       },
