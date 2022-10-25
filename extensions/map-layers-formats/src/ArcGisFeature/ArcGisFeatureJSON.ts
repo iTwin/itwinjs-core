@@ -12,7 +12,6 @@ import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
-  private _defaultZDepth  = 0.0;  // TODO: figure out the proper value here
   public transform: Transform|undefined;
 
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
@@ -22,8 +21,6 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
   public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
 
     const responseObj = response.data;
-
-    // Check view type, project extents is only applicable to show in spatial views.
 
     if (responseObj?.geometryType === "esriGeometryPolyline" ||
         responseObj?.geometryType === "esriGeometryPolygon") {

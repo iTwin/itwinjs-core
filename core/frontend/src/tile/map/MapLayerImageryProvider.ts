@@ -49,7 +49,9 @@ export abstract class MapLayerImageryProvider {
 
   // Those values are used internally for various computation,
   // this not get overriden.
+  /** @internal */
   protected get defaultMinimumZoomLevel(): number { return 0; }
+  /** @internal */
   protected get defaultMaximumZoomLevel(): number { return 22; }
 
   /** @internal */
