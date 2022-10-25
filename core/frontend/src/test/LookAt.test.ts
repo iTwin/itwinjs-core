@@ -11,7 +11,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { StandardViewId } from "../StandardView";
 import { MarginOptions } from "../ViewAnimation";
-import {MarginPercent} from "../MarginPercent";
+import {MarginPercent, PaddingPercent} from "../MarginPercent";
 
 describe("Look At", () => {
   let imodel: IModelConnection;
@@ -101,6 +101,18 @@ describe("Look At", () => {
     });
 
     it("applies PaddingPercent", () => {
+      function padding(percent: number | PaddingPercent): MarginOptions {
+        return { paddingPercent: percent };
+      }
+
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], padding(0.5));
+      expectExtents([0, 0, 100, 100], [-25, -25, 150, 150], padding(0.25));
+      expectExtents([0, 0, 100, 100], [-25, -25, 125, 125], padding({left: 0.25, bottom: 0.25}));
+      expectExtents([0, 0, 100, 100], [0, -25, 150, 150], padding({right: 0.5}));
+      expectExtents([0, 0, 100, 100], [-100, -50, 200, 200], padding({left: 1}));
+      expectExtents([0, 0, 100, 100], [-100, 0, 200, 100], padding({left: 1}), 2);
+
+      expectExtents([0, 0, 100, 100], [25, 25, 50, 50], padding(-0.25));
     });
 
     it("prioritizes PaddingPercent over MarginPercent", () => {
