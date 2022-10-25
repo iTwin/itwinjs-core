@@ -45,7 +45,7 @@ describe("Look At", () => {
     });
   });
 
-  describe.only("lookAtViewAlignedVolume", () => {
+  describe("lookAtViewAlignedVolume", () => {
     function createTopView(): SpatialViewState {
       const view = SpatialViewState.createBlank(imodel, new Point3d(), new Point3d());
       view.setStandardRotation(StandardViewId.Top);
@@ -56,23 +56,14 @@ describe("Look At", () => {
     // [lowX, lowY, highX, highY]
     type Range = [number, number, number, number];
 
-    function expectNumber(actual: number, expected: number): void {
-      expect(Math.round(actual)).to.equal(Math.round(expected));
-    }
-
-    function expectExtents(volume: Range, extents: Range, options?: MarginOptions, aspect = 1.0): void {
+    function expectExtents(volume: Range, expected: Range, options?: MarginOptions, aspect = 1.0): void {
       const view = createTopView();
       const range = new Range3d(volume[0], volume[1], -1, volume[2], volume[3], 1);
       view.lookAtViewAlignedVolume(range, aspect, options);
 
       const delta = view.getExtents();
-      console.log(JSON.stringify(view.origin));
-      console.log(JSON.stringify(delta));
-      expectNumber(view.origin.x, extents[0]);
-      expectNumber(view.origin.y, extents[1]);
-
-      expectNumber(delta.x, extents[2]);
-      expectNumber(delta.y, extents[3]);
+      const actual = [Math.round(view.origin.x), Math.round(view.origin.y), Math.round(delta.x), Math.round(delta.y)];
+      expect(actual).to.deep.equal(expected);
     }
 
     it("applies default dilation of 1.04", () => {
@@ -113,9 +104,14 @@ describe("Look At", () => {
       expectExtents([0, 0, 100, 100], [-100, 0, 200, 100], padding({left: 1}), 2);
 
       expectExtents([0, 0, 100, 100], [25, 25, 50, 50], padding(-0.25));
+      expectExtents([0, 0, 100, 100], [25, 25, 75, 75], padding({left: -0.25, bottom: -0.25}));
+      expectExtents([0, 0, 100, 100], [0, 0, 25, 25], padding({right: -0.75, top: -0.75}));
+      expectExtents([0, 0, 100, 100], [100, 0, 100, 100], padding({left: -1, right: 1}));
     });
 
     it("prioritizes PaddingPercent over MarginPercent", () => {
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], {paddingPercent: 0.5, marginPercent: {left: 0, right: 0.25, top: 0.125, bottom: 0.2}});
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], {paddingPercent: undefined, marginPercent: {left: 0.25, right: 0.25, top: 0.25, bottom: 0.25}});
     });
   });
 });
