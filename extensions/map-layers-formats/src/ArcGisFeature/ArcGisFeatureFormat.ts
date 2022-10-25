@@ -3,18 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module MapLayers
+ * @module MapLayersFormats
  */
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import {
-  ArcGisUtilities,
-  ImageryMapLayerFormat,
-  MapLayerImageryProvider,
-  MapLayerSourceValidation,
-} from "@itwin/core-frontend";
+import { ArcGisUtilities, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceValidation } from "@itwin/core-frontend";
 import { ArcGisFeatureProvider } from "./ArcGisFeatureProvider";
 
+/** @internal */
 export class ArcGisFeatureMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGISFeature";
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new ArcGisFeatureProvider(settings); }

@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
@@ -21,8 +25,8 @@ interface PbfFieldInfo {
   type: esriPBuffer.FeatureCollectionPBuffer.FieldType;
 }
 
+/** @internal */
 export class ArcGisFeaturePBF extends ArcGisFeatureReader {
-
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
   }
@@ -43,6 +47,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
         return "esriGeometryNull";
     }
   }
+
   public readAndRender(response: ArcGisResponseData, renderer: ArcGisFeatureRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
       const msg = "Response was not in PBF format";
@@ -50,6 +55,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       Logger.logError(loggerCategory, msg);
       return;
     }
+
     const collection = response.data;
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
@@ -60,20 +66,13 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     // console.log(`Nb Feature: ${collection.queryResult.featureResult.features.length}`);
     if (geomType === esriGeometryType.esriGeometryTypePoint ||
       geomType === esriGeometryType.esriGeometryTypeMultipoint) {
-      for (const feature of collection.queryResult.featureResult.features) {
-
+      for (const feature of collection.queryResult.featureResult.features)
         renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, renderer.transform === undefined);
-      }
-    } else if (
-      geomType === esriGeometryType.esriGeometryTypePolyline ||
-      geomType === esriGeometryType.esriGeometryTypePolygon) {
+    } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
       const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
-
-      for (const feature of collection.queryResult.featureResult.features) {
-        if (feature?.has_geometry) {
+      for (const feature of collection.queryResult.featureResult.features)
+        if (feature?.has_geometry)
           renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, renderer.transform === undefined);
-        }
-      }
     }
   }
 
@@ -83,6 +82,7 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
       assert(!msg);
       Logger.logError(loggerCategory, msg);
     }
+
     const collection = response.data as esriPBuffer.FeatureCollectionPBuffer;
     if (!collection.has_queryResult || !collection.queryResult.has_featureResult || collection?.queryResult?.featureResult?.features === undefined)
       return;
@@ -91,13 +91,11 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
 
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
-    for (const field of collection.queryResult.featureResult.fields) {
+    for (const field of collection.queryResult.featureResult.fields)
       fields.push({name: field.name, type:field.fieldType});
-    }
 
     const getNumericValue = (attrValue: esriPBuffer.FeatureCollectionPBuffer.Value) => {
       const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
-
       let typename = StandardTypeNames.Number;
       if (attrValue.has_double_value) {
         const value = this.toFixedWithoutPadding(attrValue.double_value);
@@ -219,6 +217,5 @@ export class ArcGisFeaturePBF extends ArcGisFeatureReader {
     }
 
     featureInfos.push(layerInfo);
-
   }
 }

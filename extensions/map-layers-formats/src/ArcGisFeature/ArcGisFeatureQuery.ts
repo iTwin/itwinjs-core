@@ -3,7 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
+/** @internal */
 export type ArcGisFeatureResultType = "none" | "standard" | "tile";
+
+/** @internal */
 export type ArcGisFeatureGeometryType =
  "esriGeometryNull"
  | "esriGeometryPoint"
@@ -25,17 +32,23 @@ export type ArcGisFeatureGeometryType =
  | "esriGeometryRay"
  | "esriGeometrySphere"
  | "esriGeometryTriangles";
+
+/** @internal */
 export type ArcGisFeatureSpatialRel =  "esriSpatialRelIntersects" | "esriSpatialRelContains" | "esriSpatialRelCrosses" | "esriSpatialRelEnvelopeIntersects" | "esriSpatialRelIndexIntersects" | "esriSpatialRelOverlaps" | "esriSpatialRelTouches" | "esriSpatialRelWithin";
 
+/** @internal */
 export interface ArcGisGeometry {
   type: ArcGisFeatureGeometryType;
   geom: ArcGisExtent | ArcGisPointGeometry;
 }
+
+/** @internal */
 export interface ArcGisSpatialReference {
   wkid: number;
   latestWkid: number;
 }
 
+/** @internal */
 export interface ArcGisExtent {
   xmin: number;
   xmax: number;
@@ -44,12 +57,14 @@ export interface ArcGisExtent {
   spatialReference: ArcGisSpatialReference;
 }
 
+/** @internal */
 export interface ArcGisPointGeometry {
   x: number;
   y: number;
   spatialReference: ArcGisSpatialReference;
 }
 
+/** @internal */
 export interface FeatureQueryQuantizationParams {
   extent: ArcGisExtent;
   mode: "view" | "edit";
@@ -57,10 +72,12 @@ export interface FeatureQueryQuantizationParams {
   tolerance: number;
 }
 
+/** @internal */
 export type ArcGisFeatureFormat = "JSON" | "PBF";
 
 // Based on official documentation:
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm
+/** @internal */
 export interface ArcGisFeatureQueryParams {
 
   /** This option can be used for fetching query results up to the resultRecordCount specified.
@@ -98,6 +115,8 @@ export interface ArcGisFeatureQueryParams {
    *  */
   distance?: number;
 }
+
+/** @internal */
 export class ArcGisFeatureQuery {
   public baseUrl: string;
   public layerIdx: number;

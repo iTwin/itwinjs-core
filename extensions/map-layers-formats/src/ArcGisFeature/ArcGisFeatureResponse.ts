@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
 import { ArcGisExtent, ArcGisFeatureFormat } from "./ArcGisFeatureQuery";
 import { esriPBuffer } from "./esriPBuffer.gen";
 
-/**
-* @internal
-*/
+/** @internal */
 export interface ArcGisResponseData {
   data: any;
   exceedTransferLimit: boolean;
 }
 
-/**
-* @internal
-*/
+/** @internal */
 export type ArcGisFieldType =
   "esriFieldTypeInteger"
   | "esriFieldTypeSmallInteger"
@@ -32,11 +32,8 @@ export type ArcGisFieldType =
   | "esriFieldTypeGUID"
   | "esriFieldTypeXML";
 
-/**
-* @internal
-*/
+/** @internal */
 export class ArcGisFeatureResponse {
-
   public readonly format: ArcGisFeatureFormat;
   public readonly envelope: ArcGisExtent | undefined;
 
@@ -46,11 +43,9 @@ export class ArcGisFeatureResponse {
     this.format = format;
     this._response = response;
     this.envelope = envelope;
-
   }
 
   public async getResponseData(): Promise<ArcGisResponseData|undefined> {
-
     let data: any|undefined;
     try {
       const tileResponse = await this._response;

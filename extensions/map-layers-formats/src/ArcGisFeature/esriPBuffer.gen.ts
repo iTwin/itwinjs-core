@@ -3,6 +3,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 /* eslint-disable @typescript-eslint/explicit-member-accessibility */
@@ -14,6 +19,8 @@
  * source: FeatureCollection.proto
  * git: https://github.com/thesayyn/protoc-gen-ts */
 import * as pb_1 from "google-protobuf";
+
+/** @internal */
 export namespace esriPBuffer {
   export class FeatureCollectionPBuffer extends pb_1.Message {
         #one_of_decls: number[][] = [];

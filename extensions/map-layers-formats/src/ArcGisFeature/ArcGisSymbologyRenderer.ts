@@ -3,6 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+/** @packageDocumentation
+ * @module MapLayersFormats
+ */
+
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
@@ -18,11 +22,13 @@ function colorFromArray(channels?: number[]) {
 
 const loggerCategory =  "MapLayersFormats.ArcGISFeature";
 
+/** @internal */
 export type EsriSymbolType = "esriSFS" | "esriPMS" | "esriSLS" | "esriSMS" | "esriTS" | "CIMSymbolReference";
 interface EsriSymbol {
   type: EsriSymbolType;
 }
 
+/** @internal */
 export type EsriSLSStyle = "esriSLSDash" | "esriSLSDashDot" | "esriSLSDashDotDot" | "esriSLSDot" | "esriSLSLongDash" | "esriSLSLongDashDot" |
 "esriSLSNull" | "esriSLSShortDash" | "esriSLSShortDashDot" | "esriSLSShortDashDotDot" | "esriSLSShortDot" | "esriSLSSolid";
 
@@ -33,6 +39,7 @@ interface EsriSLSProps {
   style: EsriSLSStyle;
 }
 
+/** @internal */
 export class EsriSLS implements EsriSymbol {
   public readonly props: EsriSLSProps;
 
@@ -61,6 +68,8 @@ interface EsriPMSProps {
   yoffset?: number;
   angle?: number;
 }
+
+/** @internal */
 export class EsriPMS implements EsriSymbol {
   public readonly props: EsriPMSProps;
   private _image: HTMLImageElement;
@@ -90,6 +99,7 @@ export class EsriPMS implements EsriSymbol {
   }
 }
 
+/** @internal */
 export type EsriSFSStyleProps = "esriSFSBackwardDiagonal" | "esriSFSCross" | "esriSFSDiagonalCross" | "esriSFSForwardDiagonal" | "esriSFSHorizontal" | "esriSFSNull" | "esriSFSSolid" | "esriSFSVertical";
 interface EsriSFSProps {
   color?: number[];
@@ -97,6 +107,8 @@ interface EsriSFSProps {
   style: EsriSFSStyleProps;
   outline?: EsriSLSProps;
 }
+
+/** @internal */
 export class EsriSFS implements EsriSymbol {
   public readonly props: EsriSFSProps;
   private _outline: EsriSLS | undefined;
@@ -116,6 +128,7 @@ export class EsriSFS implements EsriSymbol {
   }
 }
 
+/** @internal */
 export class ArcGisSymbologyRenderer {
   private _symbol: EsriSymbol | undefined;
 
