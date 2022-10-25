@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-frontend",
+      "comment": "use ipc Proxy for calling EditCommand methods",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-frontend"
+}
