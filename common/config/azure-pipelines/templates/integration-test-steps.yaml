@@ -79,9 +79,14 @@ steps:
     condition: succeededOrFailed()
 
   # By default linux agents do not have a real display so use the virtual framebuffer
-  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend:ci
     workingDirectory: "core/electron"
-    displayName: "Run Electron Tests"
+    displayName: "Run Electron Frontend Tests"
+    condition: succeededOrFailed()
+
+  - script: test:integration:backend
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Backend Tests"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2

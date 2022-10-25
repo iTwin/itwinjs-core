@@ -15,9 +15,10 @@
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
-    "test:integration": "npm run -s webpack:frontend-test && npm run test:integration:backend && npm run test:integration:frontend",
-    "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
+    "test:integration": "npm run test:integration:backend && npm run test:integration:frontend:ci",
     "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
+    "test:integration:frontend:ci": "npm run -s webpack:frontend-test && npm run test:integration:frontend",
+    "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
     "webpack:frontend-test": "webpack --config ./src/test/frontend/utils/webpack.config.js 1>&2",
     "cover": ""
   },
