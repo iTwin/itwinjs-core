@@ -22,6 +22,9 @@ pr:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   - template: ci-core.yaml

@@ -1,14 +1,33 @@
-# For pull requests that only modify documentation, individual CI events may forego running.
-# (This is done by each action/pipeline/event's config.) The itwinjs-core repo requires some
-# of those events to have finished successfully or neutrally to allow a pull request to be
-# merged.
+# This config will fake successful status checks for individual CI events in a pull
+# request when it detects *only* changes in the files listed below; i.e., the files
+# listed under "paths:".
 #
-# This config will fake successful status checks for such events when it detects
-# *only* documentation changes in a pull request.
+# While this config will fake a successul status check, it does *not* forego running the
+# real status check. That needs to be handled by each status check events' own config;
+# i.e., a Github Action's or Azure Pipeline's .yaml file.
 #
-# Note: When Azure Pipeline builds (triggered by Azure DevOps webhooks) skip running due to
+# For example, if the extract-api status check is faked, the extract-api.yaml config
+# needs to know for what files it should not run. (It will be faked as a successful
+# check, so there is no need for it to run.)
+#
+# Why does this exist?
+# The itwinjs-core repo requires certain status checks to be marked successful or
+# neutral* to allow a pull request to be merged. Since some changes are limited in scope
+# (e.g., a documenation change) or do not affect the application at all (e.g., a
+# CODEOWNERS file change), there is no need to wait for or spend resources on every CI
+# build to run.
+#
+# *Note: When Azure Pipeline builds (triggered by Azure DevOps webhooks) skip running due to
 # path exclusions, their status checks are set neutral by Azure DevOps. This satisfies
-# GitHub's "required" check and thus these status checks do not need to be faked below. 
+# GitHub's "required" check and thus these status checks do not need to be faked below.
+
+# HOW TO: Add New Files To The Exclusion List
+# 1. Add files to *this* config to trigger
+# 1. Add the glob of paths to trigger on to the "paths:" list below.
+# 2. Add the same paths to the "changed-files-specific" step below.
+# 3. For any status check that should potentially be skipped and/or faked, go to the
+#    status check's config and add the relevant paths to the paths exclusion list.
+#    ("paths-ignore" for Github Actions and "paths.exclude" for Azure Pipelines.)
 
 name: Skip Check
 
@@ -21,6 +40,9 @@ on:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 jobs:
   detect-if-skip:
@@ -38,6 +60,9 @@ jobs:
             **/*.md
             docs/**
             .github/CODEOWNERS
+            common/changes/**/*.json
+            "**/CHANGELOG.json"
+            "**/CHANGELOG.md"
 
       # Fake required checks if neccessary
       - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks

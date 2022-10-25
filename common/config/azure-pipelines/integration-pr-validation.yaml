@@ -21,6 +21,9 @@ pr:
       - "**.md"
       - docs/**
       - .github/CODEOWNERS
+      - common/changes/**/*.json
+      - "**/CHANGELOG.json"
+      - "**/CHANGELOG.md"
 
 variables:
   - group: iTwin.js non-secret config variables
