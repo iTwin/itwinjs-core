@@ -42,7 +42,6 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
 // @beta
 export class MapLayersFormats {
-    // (undocumented)
     static initialize(): void;
 }
 
