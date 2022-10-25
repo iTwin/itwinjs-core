@@ -536,25 +536,28 @@ export class PolyfaceQuery {
       collector.announceChainsAsLineString3d (announceLoop);
       }
 
-/**
- * Return a mesh with
- *  * clusters of adjacent, coplanar facets merged into larger facets.
- *  * other facets included unchanged.
- * @param mesh existing mesh
- * @returns
- */
-public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyface | undefined {
-  PolyfaceQuery.markPairedEdgesInvisible (mesh, Angle.createRadians (Geometry.smallAngleRadians));
-  const partitions = PolyfaceQuery.partitionFacetIndicesByEdgeConnectedComponent (mesh, true);
-  const builder = PolyfaceBuilder.create ();
-  const visitor = mesh.createVisitor (0);
-  const planarPartitions: number[][] = [];
-  for (const partition of partitions) {
-    if (partition.length === 1){
-      if (visitor.moveToReadIndex (partition[0]))
-        builder.addFacetFromVisitor (visitor);
+  /**
+   * Return a mesh with
+   *  * clusters of adjacent, coplanar facets merged into larger facets.
+   *  * other facets included unchanged.
+   * @param mesh existing mesh or visitor
+   * @returns
+   */
+  public static cloneWithMaximalPlanarFacets(mesh: Polyface | PolyfaceVisitor): IndexedPolyface | undefined {
+    if (mesh instanceof Polyface)
+      return this.cloneWithMaximalPlanarFacets(mesh.createVisitor(0));
+    const numFacets = PolyfaceQuery.visitorClientFacetCount(mesh);
+    const smoothEdges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh);
+    const partitions = PolyfaceQuery.partitionFacetIndicesBySortableEdgeClusters(smoothEdges, numFacets);
+    const builder = PolyfaceBuilder.create ();
+    const visitor = mesh;
+    const planarPartitions: number[][] = [];
+    for (const partition of partitions) {
+      if (partition.length === 1){
+        if (visitor.moveToReadIndex (partition[0]))
+          builder.addFacetFromVisitor (visitor);
       } else {
-      // This is a non-trivial set of contiguous coplanar facets
+        // This is a non-trivial set of contiguous coplanar facets
         planarPartitions.push (partition);
       }
     }
@@ -569,8 +572,8 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
           edges.push (LineSegment3d.create (pointA, pointB));
           edgeStrings.push([pointA.clone (), pointB.clone()]);
         });
-        const chains = OffsetHelpers.collectChains (edges, gapTolerance, planarityTolerance);
-        if (chains){
+      const chains = OffsetHelpers.collectChains (edges, gapTolerance, planarityTolerance);
+      if (chains) {
         const frameBuilder = new FrameBuilder ();
         frameBuilder.announce (chains);
         const frame = frameBuilder.getValidatedFrame (false);
@@ -578,72 +581,72 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
           const inverseFrame = frame.inverse ();
           if (inverseFrame !== undefined){
             inverseFrame.multiplyPoint3dArrayArrayInPlace (edgeStrings);
-              const graph = HalfEdgeGraphMerge.formGraphFromChains (edgeStrings, true, HalfEdgeMask.BOUNDARY_EDGE);
-              if (graph){
-                HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
-                  new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
-                // this.purgeNullFaces(HalfEdgeMask.EXTERIOR);
-                const polyface1 = PolyfaceBuilder.graphToPolyface(graph);
-                builder.addIndexedPolyface (polyface1, false, frame);
-                }
+            const graph = HalfEdgeGraphMerge.formGraphFromChains (edgeStrings, true, HalfEdgeMask.BOUNDARY_EDGE);
+            if (graph) {
+              HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph,
+                new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+              // this.purgeNullFaces(HalfEdgeMask.EXTERIOR);
+              const polyface1 = PolyfaceBuilder.graphToPolyface(graph);
+              builder.addIndexedPolyface (polyface1, false, frame);
             }
           }
         }
       }
+    }
     return builder.claimPolyface (true);
-    }
-
-/**
- * Return a mesh with "some" holes filled in with new facets.
- *  * The candidates to be filled are all loops returned by boundaryChainsAsLineString3d
- *  * unclosed chains are rejected.
- *  * optionally also copy the original mesh, so the composite is a clone with holes filled.
- *  * The options structure enforces restrictions on how complicated the hole filling can be:
- *     * maxEdgesAroundHole -- holes with more edges are skipped
- *     * maxPerimeter -- holes with larger summed edge lengths are skipped.
- *     * upVector -- holes that do not have positive area along this view are skipped.
- *     * includeOriginalMesh -- includes the original mesh in the output mesh.
- * @param mesh existing mesh
- * @param options options controlling the hole fill.
- * @param unfilledChains optional array to receive the points around holes that were not filled.
- * @returns
- */
- public static fillSimpleHoles(mesh: IndexedPolyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined {
-  if (mesh instanceof IndexedPolyface)
-    return this.fillSimpleHoles (mesh.createVisitor (0), options, unfilledChains);
-  const builder = PolyfaceBuilder.create ();
-  const chains: LineString3d[] = [];
-  PolyfaceQuery.announceBoundaryChainsAsLineString3d (mesh,
-    (ls: LineString3d)=>{ls.reverseInPlace (); chains.push(ls);});
-
-  for (const c of chains){
-    const points = c.points;
-    let rejected = false;
-    if (!c.isPhysicallyClosed)
-      rejected = true;
-    else if (options.maxEdgesAroundHole !== undefined && points.length > options.maxEdgesAroundHole)
-      rejected = true;
-    else if (options.maxPerimeter !== undefined && Point3dArray.sumEdgeLengths (points, false) > options.maxPerimeter)
-      rejected = true;
-    else if (options.upVector !== undefined && PolygonOps.sumTriangleAreasPerpendicularToUpVector (points, options.upVector) <= 0.0)
-      rejected = true;
-
-    if (!rejected && SpacePolygonTriangulation.triangulateSimplestSpaceLoop (points,
-      (_loop: Point3d[], triangles: Point3d[][]) =>{
-        for (const t of triangles)
-        builder.addPolygon (t);
-      }
-      )){
-      } else {
-        rejected = true;
-      }
-    if (rejected && unfilledChains !== undefined)
-        unfilledChains.push (c);    // yes, capture it -- this scope owns the chains and has no further use for it.
-    }
-  if (options.includeOriginalMesh !== undefined && options.includeOriginalMesh){
-    for (mesh.reset ();mesh.moveToNextFacet ();)
-    builder.addFacetFromVisitor (mesh);
   }
+
+  /**
+   * Return a mesh with "some" holes filled in with new facets.
+   *  * The candidates to be filled are all loops returned by boundaryChainsAsLineString3d
+   *  * unclosed chains are rejected.
+   *  * optionally also copy the original mesh, so the composite is a clone with holes filled.
+   *  * The options structure enforces restrictions on how complicated the hole filling can be:
+   *     * maxEdgesAroundHole -- holes with more edges are skipped
+   *     * maxPerimeter -- holes with larger summed edge lengths are skipped.
+   *     * upVector -- holes that do not have positive area along this view are skipped.
+   *     * includeOriginalMesh -- includes the original mesh in the output mesh.
+   * @param mesh existing mesh
+   * @param options options controlling the hole fill.
+   * @param unfilledChains optional array to receive the points around holes that were not filled.
+   * @returns
+   */
+  public static fillSimpleHoles(mesh: Polyface | PolyfaceVisitor, options: HoleFillOptions, unfilledChains?: LineString3d[]): IndexedPolyface | undefined {
+    if (mesh instanceof Polyface)
+      return this.fillSimpleHoles (mesh.createVisitor (0), options, unfilledChains);
+    const builder = PolyfaceBuilder.create ();
+    const chains: LineString3d[] = [];
+    PolyfaceQuery.announceBoundaryChainsAsLineString3d (mesh,
+      (ls: LineString3d)=>{ls.reverseInPlace (); chains.push(ls);});
+
+    for (const c of chains){
+      const points = c.points;
+      let rejected = false;
+      if (!c.isPhysicallyClosed)
+        rejected = true;
+      else if (options.maxEdgesAroundHole !== undefined && points.length > options.maxEdgesAroundHole)
+        rejected = true;
+      else if (options.maxPerimeter !== undefined && Point3dArray.sumEdgeLengths (points, false) > options.maxPerimeter)
+        rejected = true;
+      else if (options.upVector !== undefined && PolygonOps.sumTriangleAreasPerpendicularToUpVector (points, options.upVector) <= 0.0)
+        rejected = true;
+
+      if (!rejected && SpacePolygonTriangulation.triangulateSimplestSpaceLoop (points,
+        (_loop: Point3d[], triangles: Point3d[][]) =>{
+          for (const t of triangles)
+          builder.addPolygon (t);
+        }
+        )){
+        } else {
+          rejected = true;
+        }
+      if (rejected && unfilledChains !== undefined)
+          unfilledChains.push (c);    // yes, capture it -- this scope owns the chains and has no further use for it.
+      }
+    if (options.includeOriginalMesh !== undefined && options.includeOriginalMesh){
+      for (mesh.reset ();mesh.moveToNextFacet ();)
+      builder.addFacetFromVisitor (mesh);
+    }
 
   return builder.claimPolyface (true);
   }
@@ -696,7 +699,7 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
   /** If the visitor's client is a polyface, simply return its point array length.
    * If not a polyface, visit all facets to find the largest index.
    */
-  private static visitorClientPointCount(visitor: PolyfaceVisitor): number {
+  public static visitorClientPointCount(visitor: PolyfaceVisitor): number {
     const polyface = visitor.clientPolyface();
     if (polyface !== undefined)
       return polyface.data.point.length;
@@ -709,33 +712,27 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
     }
     return maxIndex + 1;
   }
-
-  /** Search the facets for facet subsets that are connected with at least edge contact.
-   * * Return array of arrays of facet indices.
+  /** If the visitor's client is a polyface, simply return its facet count.
+   * If not a polyface, visit all facets to accumulate a count.
    */
-  public static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges: boolean = false): number[][] {
-    if (polyface instanceof Polyface) {
-      return this.partitionFacetIndicesByEdgeConnectedComponent(polyface.createVisitor(0), stopAtVisibleEdges);
-    }
-    polyface.setNumWrap(1);
-    const matcher = new IndexedEdgeMatcher();
-    polyface.reset();
-    let numFacets = 0;
-    while (polyface.moveToNextFacet()) {
-      const numEdges = polyface.pointCount - 1;
-      numFacets++;
-      for (let i = 0; i < numEdges; i++) {
-        if (stopAtVisibleEdges && polyface.edgeVisible[i]){
-
-        } else {
-          matcher.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
-        }
-      }
-    }
-    const allEdges: SortableEdgeCluster[] = [];
-    matcher.sortAndCollectClusters(allEdges, allEdges, allEdges, allEdges);
+   public static visitorClientFacetCount(visitor: PolyfaceVisitor): number {
+    const polyface = visitor.clientPolyface();
+    if (polyface !== undefined && polyface.facetCount !== undefined)
+      return polyface.facetCount;
+    let facetCount = 0;
+    visitor.reset();
+    while (visitor.moveToNextFacet())
+      ++facetCount;
+    return facetCount;
+  }
+  /** Partition the facet set into connected components such that two adjacent facets are in the same component if and only if they are adjacent across a clustered edge.
+   * @param edgeClusters sorted and clustered edges (cf. `IndexedEdgeMatcher.sortAndCollectClusters`).
+   * @param numFacets facet count in the parent mesh. In particular, `edge.facetIndex < numFacets` for every input edge.
+   * @return collection of facet index arrays, one array per connected component
+   */
+  private static partitionFacetIndicesBySortableEdgeClusters(edgeClusters: SortableEdgeCluster[], numFacets: number): number[][] {
     const context = new UnionFindContext(numFacets);
-    for (const cluster of allEdges) {
+    for (const cluster of edgeClusters) {
       if (cluster instanceof SortableEdge) {
         // this edge does not connect anywhere.  Ignore it!!
       } else {
@@ -762,6 +759,34 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
       }
     }
     return facetsInComponent;
+  }
+  /** Partition the facet set into connected components. Each facet in a given component shares an edge only with other facets in the component (or is a boundary edge).
+   * @param polyface facets to partition
+   * @param stopAtVisibleEdges whether to further split connected components by visible edges of the polyface
+   * @return collection of facet index arrays, one per connected component
+   */
+  public static partitionFacetIndicesByEdgeConnectedComponent(polyface: Polyface | PolyfaceVisitor, stopAtVisibleEdges: boolean = false): number[][] {
+    if (polyface instanceof Polyface) {
+      return this.partitionFacetIndicesByEdgeConnectedComponent(polyface.createVisitor(0), stopAtVisibleEdges);
+    }
+    polyface.setNumWrap(1);
+    const matcher = new IndexedEdgeMatcher();
+    polyface.reset();
+    let numFacets = 0;
+    while (polyface.moveToNextFacet()) {
+      const numEdges = polyface.pointCount - 1;
+      numFacets++;
+      for (let i = 0; i < numEdges; i++) {
+        if (stopAtVisibleEdges && polyface.edgeVisible[i]){
+
+        } else {
+          matcher.addEdge(polyface.clientPointIndex(i), polyface.clientPointIndex(i + 1), polyface.currentReadIndex());
+        }
+      }
+    }
+    const allEdges: SortableEdgeCluster[] = [];
+    matcher.sortAndCollectClusters(allEdges, allEdges, allEdges, allEdges);
+    return this.partitionFacetIndicesBySortableEdgeClusters(allEdges, numFacets);
   }
   /** Find segments (within the linestring) which project to facets.
    * * Assemble each segment pair as a facet in a new polyface
@@ -1069,7 +1094,7 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
    * Set the visibility of a particular edge of a particular facet.
    * @param polyface containing polyface
    * @param facetIndex facet index
-   * @param vertexIndex vertex index (in vertex array)
+   * @param vertexIndex vertex index (in vertex array) at which the edge starts
    * @param value visibility value.
    */
   public static setSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number, value: boolean) {
@@ -1078,7 +1103,22 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
     const index1 = polyface.facetIndex1(facetIndex);
     for (let i = index0; i < index1; i++)
       if (data.pointIndex[i] === vertexIndex)
-        data.edgeVisible[i] = value;
+        data.edgeVisible[i] = value;  // actually sets visibility on all edges in the face that start at this vertex
+  }
+  /**
+   * Get the visibility of a particular edge of a particular facet.
+   * @param polyface containing polyface
+   * @param facetIndex facet index
+   * @param vertexIndex vertex index (in vertex array) at which the edge starts
+   */
+  public static getSingleEdgeVisibility(polyface: IndexedPolyface, facetIndex: number, vertexIndex: number): boolean | undefined {
+    const data = polyface.data;
+    const index0 = polyface.facetIndex0(facetIndex);
+    const index1 = polyface.facetIndex1(facetIndex);
+    for (let i = index0; i < index1; i++)
+      if (data.pointIndex[i] === vertexIndex)
+        return data.edgeVisible[i]; // return visibility of first edge in the face that starts at this vertex
+    return undefined;
   }
   /** Load all half edges from a mesh to an IndexedEdgeMatcher.
    * @param polyface a mesh, or a visitor assumed to have numWrap === 1
@@ -1096,6 +1136,46 @@ public static cloneWithMaximalPlanarFacets(mesh: IndexedPolyface): IndexedPolyfa
     }
     return edges;
   }
+  /**
+   * Return manifold edge pairs whose dihedral angle is bounded by the given angle.
+   * * The dihedral angle of a manifold edge is measured between the normals of its two adjacent faces.
+   * * Boundary edges are not returned as they are not manifold.
+   * @param mesh existing polyface or visitor
+   * @param maxSmoothEdgeAngle maximum dihedral angle of a smooth edge. If undefined, uses `Geometry.smallAngleRadians`.
+   * @param sharpEdges true to reverse the angle threshold test and return sharp edges; otherwise return smooth edges (default)
+   */
+  public static collectEdgesByDihedralAngle(mesh: Polyface | PolyfaceVisitor, maxSmoothEdgeAngle?: Angle, sharpEdges: boolean = false): SortableEdgeCluster[] {
+    if (mesh instanceof Polyface)
+      return this.collectEdgesByDihedralAngle(mesh.createVisitor(1), maxSmoothEdgeAngle, sharpEdges);
+    mesh.setNumWrap(1);
+    const allEdges = this.createIndexedEdges(mesh);
+    const manifoldEdges: SortableEdgeCluster[] = [];
+    allEdges.sortAndCollectClusters(manifoldEdges);
+    if (undefined === maxSmoothEdgeAngle || maxSmoothEdgeAngle.radians < 0)
+      maxSmoothEdgeAngle = Angle.createRadians(Geometry.smallAngleRadians);
+    const outEdges: SortableEdgeCluster[] = [];
+    const normal0 = Vector3d.create();
+    const normal1 = Vector3d.create();
+    for (const pair of manifoldEdges) {
+      if (Array.isArray(pair) && pair.length === 2) {
+        const e0 = pair[0];
+        const e1 = pair[1];
+        if (undefined !== PolyfaceQuery.computeFacetUnitNormal(mesh, e0.facetIndex, normal0)
+          && undefined !== PolyfaceQuery.computeFacetUnitNormal(mesh, e1.facetIndex, normal1)) {
+          const edgeAngle = normal0.smallerUnorientedAngleTo(normal1);
+          if (sharpEdges) {
+            if (edgeAngle.radians > maxSmoothEdgeAngle.radians)
+              outEdges.push(pair);
+          } else {
+            if (edgeAngle.radians <= maxSmoothEdgeAngle.radians)
+              outEdges.push(pair);
+          }
+        }
+      }
+    }
+    return outEdges;
+  }
+
   /**
   * * Find mated pairs among facet edges.
   * * Mated pairs have the same vertex indices appearing in opposite order.
