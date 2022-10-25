@@ -2729,6 +2729,8 @@ export class FrontstageManager {
     // @internal
     static ensureToolInformationIsSet(toolId: string): void;
     static findWidget(widgetId: string): WidgetDef | undefined;
+    // @internal (undocumented)
+    static get frontstageDefs(): ReadonlyMap<string, FrontstageDef>;
     static getFrontstageDef(id?: string): Promise<FrontstageDef | undefined>;
     // (undocumented)
     static hasFrontstage(frontstageId: string): boolean;
@@ -4485,6 +4487,16 @@ export const ReducerRegistryInstance: ReducerRegistry;
 
 // @internal
 export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
+
+// @alpha
+export class RestoreAllFrontstagesTool extends Tool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
 
 // @alpha
 export class RestoreFrontstageLayoutTool extends Tool {
@@ -6835,6 +6847,9 @@ export class WidgetDef {
     constructor(widgetProps: WidgetProps);
     // (undocumented)
     get activeState(): WidgetState;
+    // (undocumented)
+    get allowedPanelTargets(): ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined;
+    set allowedPanelTargets(targets: ReadonlyArray<"left" | "right" | "bottom" | "top"> | undefined);
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)

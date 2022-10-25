@@ -174,7 +174,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
-    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
+    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.appFunctionIpc.queryConcurrency("cpu")) : undefined;
     const isMobile = ProcessDetector.isMobileBrowser;
     return new TileAdmin(isMobile, rpcConcurrency, props);
   }
@@ -294,19 +294,31 @@ export class TileAdmin {
   }
 
   private _tileStorage?: TileStorage;
+  private _tileStoragePromise?: Promise<TileStorage>;
   private async getTileStorage(): Promise<TileStorage> {
-    if (this._tileStorage === undefined) {
-      if (this._cloudStorage !== undefined) {
-        this._tileStorage = new TileStorage(this._cloudStorage);
-      } else {
-        await import("reflect-metadata");
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const azureFrontend = await require("./object-storage-azure")();
-        const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
-        this._tileStorage = new TileStorage(azureStorage);
-      }
+    if (this._tileStorage !== undefined)
+      return this._tileStorage;
+
+    // if object-storage-azure is already being dynamically loaded, just return the promise.
+    if (this._tileStoragePromise !== undefined)
+      return this._tileStoragePromise;
+
+    // if custom implementation is provided, construct a new TileStorage instance and return it.
+    if (this._cloudStorage !== undefined) {
+      this._tileStorage = new TileStorage(this._cloudStorage);
+      return this._tileStorage;
     }
-    return this._tileStorage;
+
+    // start dynamically loading default implementation and save the promise to avoid duplicate instances
+    this._tileStoragePromise = (async () => {
+      await import("reflect-metadata");
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const azureFrontend = await require("./object-storage-azure")();
+      const azureStorage = new azureFrontend.AzureFrontendStorage(new azureFrontend.FrontendBlockBlobClientWrapperFactory());
+      this._tileStorage = new TileStorage(azureStorage);
+      return this._tileStorage;
+    })();
+    return this._tileStoragePromise;
   }
 
   /** @internal */
@@ -683,8 +695,14 @@ export class TileAdmin {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
       requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
-    if (undefined === requestProps.quantizePositions)
-      requestProps = { ...requestProps, quantizePositions: false };
+    // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
+    if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
+      requestProps = {
+        ...requestProps,
+        quantizePositions: requestProps.quantizePositions ?? false,
+        useAbsolutePositions: requestProps.useAbsolutePositions ?? false,
+      };
+    }
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();

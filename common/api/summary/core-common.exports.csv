@@ -131,6 +131,9 @@ internal;CompositeTileHeader
 internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata):
 alpha;ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) => number
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number
+alpha;ConcreteEntityTypes
+alpha;ConcreteEntityTypes
+internal;toBisCoreRootClassFullName(type: ConcreteEntityTypes): string
 alpha;ContentFlags
 internal;class ContentIdProvider
 public;ContextRealityModel
@@ -181,6 +184,7 @@ public;DisplayStyleModelAppearanceProps
 public;DisplayStyleOverridesOptions
 public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
+beta;DisplayStyleRealityModelDisplayProps 
 public;DisplayStyleSettings
 public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
@@ -230,6 +234,8 @@ beta;EntityMetaData
 beta;EntityMetaDataProps
 public;EntityProps
 public;EntityQueryParams
+alpha;EntityReference = `${ConcreteEntityTypes}${Id64String}`
+alpha;EntityReferenceSet 
 public;Environment
 public;EnvironmentProperties = NonFunctionPropertiesOf
 public;EnvironmentProps
@@ -450,6 +456,7 @@ internal;MeshPolylineList
 public;ModelClipGroup
 public;ModelClipGroupProps
 public;ModelClipGroups
+public;ModelExtentsProps
 public;ModelGeometryChanges
 public;ModelGeometryChanges
 public;ModelGeometryChangesProps
@@ -524,6 +531,10 @@ public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
 public;Point2dProps = number[]
+beta;PointCloudDisplayProps
+beta;PointCloudDisplaySettings
+beta;PointCloudShape = "square" | "round"
+beta;PointCloudSizeMode = "voxel" | "pixel"
 beta;PointWithStatus
 internal;POLICY: unique symbol
 internal;PolylineData
@@ -580,10 +591,13 @@ beta;RealityDataProvider
 beta;RealityDataSourceKey
 beta;RealityDataSourceKey
 beta;RealityDataSourceProps
+beta;RealityModelDisplayProps
+beta;RealityModelDisplaySettings
 internal;REGISTRY: unique symbol
 public;RelatedElement 
 public;RelatedElementProps
 public;RelationshipProps 
+internal;RelTypeInfo
 public;RemoveFunction = () => void
 public;class RenderMaterial
 public;RenderMaterial

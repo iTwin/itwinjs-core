@@ -82,34 +82,26 @@ class DtaServiceAuthorizationClient: NSObject, DtaAuthorizationClient {
         let encoded = "\(authSettings.clientId.encodedForURLQuery()!):\(authSettings.clientSecret.encodedForURLQuery()!)"
         request.setValue("Basic \(encoded.toBase64())", forHTTPHeaderField: "Authorization")
         let task = session.dataTask(with: request) { (data, response, error) in
-            if error == nil {
-                if let response = response as? HTTPURLResponse {
-                    if response.statusCode == 200 {
-                        if let data = data,
-                           let json = try? JSONSerialization.jsonObject(with: data) as? JSON {
-                            if let accessToken = json["access_token"] as? String {
-                                self.accessToken = "Bearer \(accessToken)"
-                            } else {
-                                self.accessToken = nil
-                            }
-                            if let expiresIn = json["expires_in"] as? Double {
-                                self.expirationDate = Date(timeIntervalSinceNow: expiresIn)
-                            } else {
-                                self.expirationDate = nil
-                            }
-                            completion(nil)
-                        } else {
-                            completion(self.error(reason: "Invalid response body."))
-                        }
-                    } else {
-                        completion(self.error(reason: "Status code: \(response.statusCode)"))
-                    }
-                } else {
-                    completion(self.error(reason: "Invalid response."))
-                }
-            } else {
+            if let error = error {
                 completion(error)
+                return
             }
+            guard let response = response as? HTTPURLResponse else {
+                completion(self.error(reason: "Invalid response."))
+                return
+            }
+            guard response.statusCode == 200 else {
+                completion(self.error(reason: "Status code: \(response.statusCode)"))
+                return
+            }
+            guard let data = data, let json = try? JSONSerialization.jsonObject(with: data) as? JSON else {
+                completion(self.error(reason: "Invalid response body."))
+                return
+            }
+
+            self.accessToken = (json["access_token"] as? String).map { "Bearer \($0)" }
+            self.expirationDate = (json["expires_in"] as? Double).map { Date(timeIntervalSinceNow: $0) }
+            completion(nil)
         }
         task.resume()
     }

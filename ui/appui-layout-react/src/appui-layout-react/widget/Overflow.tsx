@@ -12,6 +12,7 @@ import * as React from "react";
 import { useRefs, useRefState, useResizeObserver } from "@itwin/core-react";
 import { WidgetMenu } from "./Menu";
 import { useLabel } from "../base/NineZone";
+import { PanelStateContext } from "../widget-panels/Panel";
 
 /** @internal */
 export interface WidgetOverflowProps {
@@ -34,6 +35,7 @@ export const WidgetOverflow = React.memo<WidgetOverflowProps>(function WidgetOve
   const handleClose = React.useCallback(() => {
     setOpen(false);
   }, []);
+  usePanelPopup(handleClose);
   const className = classnames(
     "nz-widget-overflow",
     props.hidden && "nz-hidden",
@@ -78,3 +80,13 @@ interface WidgetOverflowContextArgs {
 /** @internal */
 export const WidgetOverflowContext = React.createContext<WidgetOverflowContextArgs | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 WidgetOverflowContext.displayName = "nz:WidgetOverflowContext";
+
+function usePanelPopup(onClose: () => void) {
+  const panel = React.useContext(PanelStateContext);
+  const { collapsed } = panel || {};
+  React.useEffect(() => {
+    if (collapsed) {
+      onClose();
+    }
+  }, [collapsed, onClose]);
+}
