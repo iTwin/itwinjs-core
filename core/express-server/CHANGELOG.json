@@ -2,6 +2,12 @@
   "name": "@bentley/express-server",
   "entries": [
     {
+      "version": "2.19.47",
+      "tag": "@bentley/express-server_v2.19.47",
+      "date": "Tue, 25 Oct 2022 16:10:36 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.46",
       "tag": "@bentley/express-server_v2.19.46",
       "date": "Mon, 10 Oct 2022 15:18:18 GMT",
