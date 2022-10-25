@@ -27,6 +27,7 @@ import { DialogPropertySyncItem } from '@itwin/appui-abstract';
 import { DynamicsContext } from '@itwin/core-frontend';
 import { EcefLocation } from '@itwin/core-common';
 import { EcefLocationProps } from '@itwin/core-common';
+import { EditCommandIpc } from '@itwin/editor-common';
 import { EditManipulator } from '@itwin/core-frontend';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryCacheFilter } from '@itwin/editor-common';
@@ -94,6 +95,9 @@ export enum ArcMethod {
     // (undocumented)
     StartMidEnd = 2
 }
+
+// @alpha
+export const basicManipulationIpc: PickAsyncMethods<BasicManipulationCommandIpc>;
 
 // @alpha (undocumented)
 export enum BCurveMethod {
@@ -244,7 +248,7 @@ export class CopyElementsTool extends MoveElementsTool {
     // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean>;
     // (undocumented)
-    protected doTranformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
+    protected doTransformedCopy(ids: Id64Array, transform: Transform, numCopies: number): Promise<Id64Arg | undefined>;
     // (undocumented)
     static iconSpec: string;
     // (undocumented)
@@ -793,8 +797,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     // (undocumented)
     protected get allowSimplify(): boolean;
     // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
-    // (undocumented)
     protected continuationData?: {
         props: GeometricElementProps;
         path: Path;
@@ -1140,8 +1142,6 @@ export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowSelectionSet(): boolean;
     // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
-    // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)
     static iconSpec: string;
@@ -1206,7 +1206,6 @@ export interface EditorOptions {
 
 // @alpha
 export class EditTools {
-    static connect<IpcInterface>(): PickAsyncMethods<IpcInterface>;
     static initialize(options?: EditorOptions): Promise<void>;
     // (undocumented)
     static namespace: string;
@@ -1238,8 +1237,6 @@ export abstract class ElementGeometryCacheTool extends ElementSetTool implements
     protected clearElementGeometryCache(): Promise<void>;
     // (undocumented)
     protected clearGraphic(): void;
-    // (undocumented)
-    protected commandConnection: PickAsyncMethods<SolidModelingCommandIpc>;
     // (undocumented)
     protected createElementGeometryCache(id: Id64String): Promise<boolean>;
     // (undocumented)
@@ -1633,6 +1630,9 @@ export class LoftProfilesTool extends ElementGeometryCacheTool {
 }
 
 // @alpha
+export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K>;
+
+// @alpha
 export abstract class ModifyCurveTool extends ElementSetTool implements FeatureOverrideProvider {
     // (undocumented)
     protected acceptCurve(_curve: CurveCollection | CurvePrimitive): boolean;
@@ -1654,8 +1654,6 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     protected readonly _checkedIds: Map<string, boolean>;
     // (undocumented)
     protected clearGraphics(): void;
-    // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected createGraphics(ev: BeButtonEvent): Promise<void>;
     // (undocumented)
@@ -2163,8 +2161,6 @@ export class ProjectLocationSaveTool extends Tool {
     // (undocumented)
     protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
     // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
-    // (undocumented)
     run(): Promise<boolean>;
     // (undocumented)
     protected saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void>;
@@ -2312,6 +2308,9 @@ export class SewSheetElementsTool extends ElementGeometryCacheTool {
 }
 
 // @alpha
+export const solidModelingIpc: PickAsyncMethods<SolidModelingCommandIpc>;
+
+// @alpha
 export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     // (undocumented)
     protected readonly accepted: Point3d[];
@@ -2319,8 +2318,6 @@ export abstract class SolidPrimitiveTool extends CreateElementWithDynamicsTool {
     protected allowView(vp: Viewport): boolean;
     // (undocumented)
     protected baseRotation?: Matrix3d;
-    // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected current?: GeometryQuery;
     // (undocumented)
@@ -2516,8 +2513,6 @@ export abstract class TransformElementsTool extends ElementSetTool {
     protected abstract calculateTransform(ev: BeButtonEvent): Transform | undefined;
     // (undocumented)
     protected clearAgendaGraphics(): Promise<void>;
-    // (undocumented)
-    protected commandConnection: PickAsyncMethods<BasicManipulationCommandIpc>;
     // (undocumented)
     protected get controlKeyContinuesSelection(): boolean;
     // (undocumented)

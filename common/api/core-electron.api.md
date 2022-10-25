@@ -11,6 +11,7 @@ import type * as ElectronModule from 'electron';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
@@ -23,7 +24,9 @@ export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
 // @beta
 export class ElectronApp {
+    // @deprecated
     static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
+    static dialogIpc: PickAsyncMethods<Electron.Dialog>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)

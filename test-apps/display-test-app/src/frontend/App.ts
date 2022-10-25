@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -137,11 +137,7 @@ class PullChangesTool extends Tool {
   }
 }
 
-export class DtaIpc {
-  public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
-  }
-}
+export const dtaIpc = IpcApp.makeIpcProxy<DtaIpcInterface>(dtaChannel);
 
 class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
@@ -209,7 +205,7 @@ class ExitTool extends Tool {
 
 function createHubAccess(configuration: DtaConfiguration) {
   if (configuration.urlPrefix) {
-    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${configuration.urlPrefix}api.bentley.com/imodels` } }));
   } else {
     return new FrontendIModelsAccess();
   }
