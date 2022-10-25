@@ -13,7 +13,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "nyc npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=ArcGisFeature/**/*",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
