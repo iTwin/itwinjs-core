@@ -338,7 +338,7 @@ export class BriefcaseConnection extends IModelConnection {
       enableCancellation: !!options?.abortSignal,
     };
     try {
-      this.changeset = await IpcApp.appFunctionIpc.pullChanges("pullChanges", this.key, toIndex, ipcAppOptions);
+      this.changeset = await IpcApp.appFunctionIpc.pullChanges(this.key, toIndex, ipcAppOptions);
     } finally {
       removeListeners.forEach((remove) => remove());
     }
