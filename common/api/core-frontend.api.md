@@ -5755,9 +5755,9 @@ export abstract class MapLayerImageryProvider {
     // (undocumented)
     abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
     // (undocumented)
-    protected get defaultMaximumZoomLevel(): number;
+    protected readonly defaultMaximumZoomLevel = 22;
     // (undocumented)
-    protected get defaultMinimumZoomLevel(): number;
+    protected readonly defaultMinimumZoomLevel = 0;
     // (undocumented)
     protected get _filterByCartoRange(): boolean;
     // (undocumented)
