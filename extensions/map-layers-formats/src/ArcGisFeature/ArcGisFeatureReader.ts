@@ -3,10 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapLayerFeatureInfo } from "@itwin/core-frontend";

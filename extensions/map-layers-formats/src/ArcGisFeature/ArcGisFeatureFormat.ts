@@ -2,10 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { ArcGisUtilities, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceValidation } from "@itwin/core-frontend";
 import { ArcGisFeatureProvider } from "./ArcGisFeatureProvider";

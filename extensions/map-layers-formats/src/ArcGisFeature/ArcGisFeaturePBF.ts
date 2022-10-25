@@ -3,10 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";

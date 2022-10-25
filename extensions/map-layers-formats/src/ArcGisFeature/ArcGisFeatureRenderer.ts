@@ -5,10 +5,6 @@
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisSymbologyRenderer } from "./ArcGisSymbologyRenderer";
 
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 /** @internal */
 export class ArcGisFeatureRenderer  {
   private _symbol: ArcGisSymbologyRenderer;

@@ -3,10 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 import { Logger } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
 import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";

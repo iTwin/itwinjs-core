@@ -3,10 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-/** @packageDocumentation
- * @module MapLayersFormats
- */
-
 import { ArcGisExtent, ArcGisFeatureFormat } from "./ArcGisFeatureQuery";
 import { esriPBuffer } from "./esriPBuffer.gen";
 
