@@ -11,6 +11,7 @@ import { SpatialViewState } from "../SpatialViewState";
 import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { StandardViewId } from "../StandardView";
 import { MarginOptions } from "../ViewAnimation";
+import {MarginPercent} from "../MarginPercent";
 
 describe("Look At", () => {
   let imodel: IModelConnection;
@@ -81,6 +82,22 @@ describe("Look At", () => {
     });
 
     it("applies MarginPercent", () => {
+      function marginPercent(percent: number | Partial<MarginPercent>): MarginOptions {
+        if (typeof percent === "number")
+          return { marginPercent: { left: percent, right: percent, top: percent, bottom: percent } };
+
+        return {
+          marginPercent: {
+            left: percent.left ?? 0, right: percent.right ?? 0, top: percent.top ?? 0, bottom: percent.bottom ?? 0,
+          },
+        };
+      }
+
+      // Note: MarginPercent "percentages" are not accurate. For example: a percentage of 0.25 per side actually adds 50% to each side.
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], marginPercent(0.25));
+      expectExtents([0, 0, 100, 100], [-33, 0, 133, 133], marginPercent({left: 0.25, top: 0.25}));
+      expectExtents([0, 0, 100, 100], [-33, -33, 133, 133], marginPercent({left: 0.25, bottom: 0.25}));
+      expectExtents([0, 0, 100, 100], [0, 0, 133, 133], marginPercent({ right: 0.25, top: 0.25}));
     });
 
     it("applies PaddingPercent", () => {
