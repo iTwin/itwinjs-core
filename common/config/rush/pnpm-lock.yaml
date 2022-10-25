@@ -3943,7 +3943,6 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       mocha-junit-reporter: ^2.0.2
-      recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
       typedoc: ^0.22.11
@@ -3960,7 +3959,6 @@ importers:
       glob: 7.2.3
       mocha: 10.1.0
       mocha-junit-reporter: 2.1.0_mocha@10.1.0
-      recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
       typedoc: 0.22.18_typescript@4.4.4
@@ -16989,6 +16987,7 @@ packages:
     resolution: {integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==}
     dependencies:
       brace-expansion: 1.1.11
+    dev: true
 
   /minimatch/3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
@@ -19612,6 +19611,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       minimatch: 3.0.4
+    dev: true
 
   /reduce-flatten/2.0.0:
     resolution: {integrity: sha512-EJ4UNY/U1t2P/2k6oqotuX2Cc3T6nxJwsM0N0asT7dhrtH1ltUxDn4NalSYmPE2rCkVpcf/X6R0wDwcFpzhd4w==}
