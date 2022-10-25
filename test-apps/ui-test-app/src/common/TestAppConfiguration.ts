@@ -15,7 +15,6 @@ export interface TestAppConfiguration {
   // ArcGis OAuth2 configuration
   arcGisOnlineClientId?: string;
   arcGisEnterpriseBaseUrl?: string;
-  arcGisEnterpriseClientId?: string;
 }
 
 export const loggerCategory = "ui-test-app";
