@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, BentleyError, BriefcaseStatus, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -204,8 +204,8 @@ export class BriefcaseManager {
    * @note *It is invalid to edit briefcases on a shared network drive* and that is a sure way to corrupt your briefcase (see https://www.sqlite.org/howtocorrupt.html)
    */
   public static async downloadBriefcase(arg: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
-    const briefcaseId = arg.briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
-    const fileName = arg.fileName ?? this.getFileName(arg as BriefcaseProps);
+    const briefcaseId = arg.briefcaseId ?? await this.acquireNewBriefcaseId(arg);
+    const fileName = arg.fileName ?? this.getFileName({ ...arg, briefcaseId });
 
     if (IModelJsFs.existsSync(fileName))
       throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
@@ -217,10 +217,7 @@ export class BriefcaseManager {
     try {
       await CheckpointManager.downloadCheckpoint({ localFile: fileName, checkpoint, onProgress: arg.onProgress });
     } catch (error: unknown) {
-      if (!arg.accessToken)
-        throw error;
-
-      if (error && (error as BentleyError).errorNumber === BriefcaseStatus.DownloadCancelled)
+      if (arg.accessToken && arg.briefcaseId === undefined)
         await this.releaseBriefcase(arg.accessToken, { briefcaseId, iModelId: arg.iModelId });
 
       throw error;
