@@ -63,13 +63,13 @@ export namespace Base64EncodedString { // eslint-disable-line @typescript-eslint
     return value;
   };
 
-  /* Encode an string a Base64EncodedString */
-  export const encode = (src: string, urlSafe?: boolean) => {
+  /* Encode a string into a Base64EncodedString. */
+  export function encode(src: string, urlSafe?: boolean): Base64EncodedString {
     return Base64.encode(src, urlSafe);
-  };
+  }
 
-  /* Decode Base64EncodedString into a string*/
-  export const decode = (src: string) => {
+  /* Decode a Base64EncodedString into a string. */
+  export function decode(src: string): Base64EncodedString {
     return Base64.decode(src);
-  };
+  }
 }

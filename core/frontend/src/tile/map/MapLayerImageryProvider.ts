@@ -117,24 +117,22 @@ export abstract class MapLayerImageryProvider {
     if (this.matchesMissingTile(byteArray) && zoomLevel > 8)
       return undefined;
 
-    // Note: 'includes' is used here instead of exact comparison because we encountered
-    // some servers that would give content type such as 'image/png;charset=UTF-8'.
-    const contentType = tileResponse.headers.get("content-type");
+    const contentType = tileResponse.headers.get("content-type")?.toLowerCase();
     let imageFormat: ImageSourceFormat | undefined;
     if (contentType) {
-      if (contentType.toLowerCase().includes("image/jpeg")) {
+      // Note: 'includes' is used here instead of exact comparison because we encountered
+      // some servers that would give content type such as 'image/png;charset=UTF-8'.
+      if (contentType.includes("image/jpeg"))
         imageFormat = ImageSourceFormat.Jpeg;
-      } else if (contentType.toLowerCase().includes("image/png")){
+      else if (contentType.includes("image/png"))
         imageFormat = ImageSourceFormat.Png;
-      }
     }
 
-    if (imageFormat !== undefined) {
+    if (imageFormat !== undefined)
       return new ImageSource(byteArray, imageFormat);
-    } else {
-      assert(false, "Invalid tile content type");
-      return undefined;
-    }
+
+    assert(false, "Invalid tile content type");
+    return undefined;
   }
 
   /** @internal */
