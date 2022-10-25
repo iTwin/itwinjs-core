@@ -47,12 +47,11 @@ export abstract class MapLayerImageryProvider {
   public get useGeographicTilingScheme() { return false;}
   public cartoRange?: MapCartoRectangle;
 
-  // Those values are used internally for various computation,
-  // this not get overriden.
+  // Those values are used internally for various computation, this should not get overriden.
   /** @internal */
-  protected get defaultMinimumZoomLevel(): number { return 0; }
+  protected readonly defaultMinimumZoomLevel = 0;
   /** @internal */
-  protected get defaultMaximumZoomLevel(): number { return 22; }
+  protected readonly defaultMaximumZoomLevel = 22;
 
   /** @internal */
   protected get _filterByCartoRange() { return true; }
