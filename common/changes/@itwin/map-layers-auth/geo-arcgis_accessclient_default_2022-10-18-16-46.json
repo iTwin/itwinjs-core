@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/map-layers-auth",
+      "comment": "ArcGIS access client now allow default client id.  Also, oauth2 endpoint validation will be ignored if a CORS error occurs.  Also fixed 'tilemap' requests not including oauth2 token.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/map-layers-auth"
+}
