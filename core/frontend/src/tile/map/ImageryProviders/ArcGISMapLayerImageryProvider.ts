@@ -187,7 +187,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
       // Create tile map object only if we are going to request tiles from this server and it support tilemap requests.
       if (this._usesCachedTiles && this._tileMapSupported) {
-        this._tileMap = new ArcGISTileMap(this._settings.url, json.tileInfo?.lods?.length);
+        this._tileMap = new ArcGISTileMap(this._settings.url, this._settings, json.tileInfo?.lods?.length, this._accessClient);
       }
 
       // Read range using fullextent from service metadata
