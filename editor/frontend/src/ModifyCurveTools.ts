@@ -2,14 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LengthDescription, LocateResponse, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction, Viewport } from "@itwin/core-frontend";
-import { BentleyError, Code, ElementGeometry, ElementGeometryInfo, ElementGeometryOpcode, FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, JsonGeometryStream } from "@itwin/core-common";
-import { EditTools } from "./EditTool";
-import { AngleSweep, Arc3d, AxisOrder, CurveCollection, CurvePrimitive, FrameBuilder, Geometry, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d, Path, RegionOps, Vector3d } from "@itwin/core-geometry";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
+
 import { DialogItem, DialogProperty, DialogPropertySyncItem, PropertyDescriptionHelper } from "@itwin/appui-abstract";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import {
+  BentleyError, Code, ElementGeometry, ElementGeometryInfo, ElementGeometryOpcode, FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps,
+  GeometryParams, JsonGeometryStream,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp,
+  LengthDescription, LocateResponse, NotifyMessageDetails, OutputMessagePriority, ToolAssistanceInstruction, Viewport,
+} from "@itwin/core-frontend";
+import {
+  AngleSweep, Arc3d, AxisOrder, CurveCollection, CurvePrimitive, FrameBuilder, Geometry, JointOptions, LineSegment3d, LineString3d, Loop, Matrix3d,
+  Path, RegionOps, Vector3d,
+} from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
+import { EditTools } from "./EditTool";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha */
 export class CurveData {
@@ -23,7 +34,6 @@ export class CurveData {
     this.geom = geom;
   }
 }
-
 /** @alpha Base class for applying an offset to path and loops. */
 export abstract class ModifyCurveTool extends ElementSetTool implements FeatureOverrideProvider {
   protected _startedCmd?: string;
@@ -42,8 +52,6 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
-
-  protected commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
@@ -145,8 +153,8 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
   protected async getCurveData(id: Id64String): Promise<CurveData | undefined> {
     try {
       this._startedCmd = await this.startCommand();
-      const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep ];
-      const info = await this.commandConnection.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
+      const reject: ElementGeometryOpcode[] = [ElementGeometryOpcode.Polyface, ElementGeometryOpcode.SolidPrimitive, ElementGeometryOpcode.BsplineSurface, ElementGeometryOpcode.BRep];
+      const info = await basicManipulationIpc.requestElementGeometry(id, { maxDisplayable: 1, reject, geometry: { curves: true, surfaces: true, solids: false } });
       if (undefined === info)
         return undefined;
 
@@ -199,7 +207,7 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
     if (this.agenda.isEmpty)
       return;
 
-    const id = this.agenda.elements[this.agenda.length-1];
+    const id = this.agenda.elements[this.agenda.length - 1];
     this.curveData = await this.getCurveData(id);
   }
 
@@ -278,12 +286,12 @@ export abstract class ModifyCurveTool extends ElementSetTool implements FeatureO
         if (repeatOperation)
           this.agenda.clear();
 
-        const newId = await this.commandConnection.insertGeometricElement(elemProps);
+        const newId = await basicManipulationIpc.insertGeometricElement(elemProps);
 
         if (repeatOperation && this.agenda.add(newId))
           await this.onAgendaModified();
       } else {
-        await this.commandConnection.updateGeometricElement(elemProps);
+        await basicManipulationIpc.updateGeometricElement(elemProps);
       }
       return true;
     } catch (err) {
@@ -594,7 +602,7 @@ export class BreakCurveTool extends ModifyCurveTool {
       return;
     } else if (geom instanceof Path) {
       const firstCurve = geom.children[0];
-      const lastCurve = geom.children[geom.children.length-1];
+      const lastCurve = geom.children[geom.children.length - 1];
 
       if ((closeDetail.curve === firstCurve && selectedStart) || (closeDetail.curve === lastCurve && selectedEnd))
         return; // split is no-op...
@@ -787,8 +795,8 @@ export class ExtendCurveTool extends ModifyCurveTool {
       } else if (geom instanceof LineString3d) {
         const pickDetail = (undefined !== this.anchorPoint ? geom.closestPoint(this.anchorPoint, false) : undefined);
         if (undefined !== pickDetail?.curve && geom.numPoints() > 1) {
-          hints.setOrigin(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-2 : 1));
-          hints.setXAxis(Vector3d.createStartEnd(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-2 : 1), geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints()-1 : 0)));
+          hints.setOrigin(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints() - 2 : 1));
+          hints.setXAxis(Vector3d.createStartEnd(geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints() - 2 : 1), geom.packedPoints.getPoint3dAtUncheckedPointIndex(pickDetail.fraction > 0.5 ? geom.numPoints() - 1 : 0)));
         }
         hints.setModeRectangular();
       }
