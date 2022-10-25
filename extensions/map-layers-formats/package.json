@@ -16,7 +16,7 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
-    "test": "mocha \"./lib/cjs/test/**/*.test.js\"",
+    "test": "mocha \"./lib/cjs/test/**/*.test.js\" --reporter-option maxDiffSize=0",
     "rebuild": "npm run -s clean && npm run -s build"
   },
   "repository": {
