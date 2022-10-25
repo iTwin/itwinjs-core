@@ -38,8 +38,7 @@ describe("ArcGisFeatureJSON", () => {
   });
 
   it("should read FeatureInfo in JSON (phillyTansportation)", async () => {
-    const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
-    const featureJson = new ArcGisFeatureJSON(settings, {name: "SampleLayer"});
+    const featureJson = createFeatureJSON();
     // In some cases, PBF gives more floating-point precision than JSON.
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
