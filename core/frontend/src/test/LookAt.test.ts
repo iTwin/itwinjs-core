@@ -52,23 +52,17 @@ describe("Look At", () => {
       return view;
     }
 
-    // [lowX, lowY, highX, highY
+    // [lowX, lowY, highX, highY]
     type Range = [number, number, number, number];
-
-    // volume is [lowX, lowY, highX, highY]
-    function lookAtVolume(view: SpatialViewState, volume: Range, options?: MarginOptions): void {
-      const range = new Range3d(volume[0], volume[1], -1, volume[2], volume[3], 1);
-      view.lookAtViewAlignedVolume(range, 1.0, options);
-    }
 
     function expectNumber(actual: number, expected: number): void {
       expect(Math.round(actual)).to.equal(Math.round(expected));
     }
 
-    // volume is [lowX, lowY, highX, highY]
-    function expectExtents(volume: Range, extents: Range, options?: MarginOptions, view?: SpatialViewState): void {
-      view = view ?? createTopView();
-      lookAtVolume(view, volume, options);
+    function expectExtents(volume: Range, extents: Range, options?: MarginOptions, aspect = 1.0): void {
+      const view = createTopView();
+      const range = new Range3d(volume[0], volume[1], -1, volume[2], volume[3], 1);
+      view.lookAtViewAlignedVolume(range, aspect, options);
 
       const delta = view.getExtents();
       console.log(JSON.stringify(view.origin));
@@ -80,12 +74,10 @@ describe("Look At", () => {
       expectNumber(delta.y, extents[3]);
     }
 
-    it("ignores MarginOptions if camera is on", () => {
-      // ###TODO need to turn camera on...
-    });
-
     it("applies default dilation of 1.04", () => {
       expectExtents([0, 0, 100, 100], [-2, -2, 104, 104]);
+      expectExtents([0, 0, 100, 100], [-2, -54, 104, 208], undefined, 0.5);
+      expectExtents([0, 0, 100, 100], [-54, -2, 208, 104], undefined, 2.0);
     });
 
     it("applies MarginPercent", () => {
