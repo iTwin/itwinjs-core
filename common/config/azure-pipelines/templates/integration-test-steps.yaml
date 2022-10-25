@@ -84,7 +84,7 @@ steps:
     displayName: "Run Electron Frontend Tests"
     condition: succeededOrFailed()
 
-  - script: test:integration:backend
+  - script: npm run test:integration:backend
     workingDirectory: "core/electron"
     displayName: "Run Electron Backend Tests"
     condition: succeededOrFailed()
