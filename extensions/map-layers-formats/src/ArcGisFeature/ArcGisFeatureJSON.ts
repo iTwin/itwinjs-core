@@ -127,10 +127,10 @@ export class ArcGisFeatureJSON  extends ArcGisFeatureReader {
         case "esriFieldTypeDate":
           propertyValue.value = new Date(value);
           break;
-        case undefined:
-          break;
         default:
-          propertyValue.value = strValue;
+          if (value !== undefined)
+            propertyValue.value = strValue;
+
           break;
       }
 
