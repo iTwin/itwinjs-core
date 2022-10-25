@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ImageMapLayerSettings } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
 
@@ -101,6 +102,9 @@ const emptyBundleError = {
   },
 };
 
+const wmsSampleSource = { formatId: "WMS", url: "https://localhost/wms", name: "Test WMS" };
+const settings = ImageMapLayerSettings.fromJSON(wmsSampleSource);
+
 describe("ArcGISTileMap", () => {
   const sandbox = sinon.createSandbox();
 
@@ -142,7 +146,7 @@ describe("ArcGISTileMap", () => {
       }
     }
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -182,7 +186,7 @@ describe("ArcGISTileMap", () => {
 
     const parentQuadId = QuadId.createFromContentId(dataset1.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -204,7 +208,7 @@ describe("ArcGISTileMap", () => {
 
     const parentQuadId = QuadId.createFromContentId(dataset3.parentContentId);
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl, 24);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings, 24);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
 
@@ -223,7 +227,7 @@ describe("ArcGISTileMap", () => {
       return dataset2.tilemap;
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
@@ -238,7 +242,7 @@ describe("ArcGISTileMap", () => {
       return dataset4.tilemap;
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
     const available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
@@ -258,7 +262,7 @@ describe("ArcGISTileMap", () => {
       return dataset5.tilemap;  // always returns an 1x1 tilemap
     });
 
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const parentQuadId = QuadId.createFromContentId(dataset4.parentContentId);
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset4.parentContentId).getChildIds());
@@ -290,7 +294,7 @@ describe("ArcGISTileMap", () => {
     });
 
     const allFalse = [false,false,false,false];
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 4;
     const available = await tileMap.getChildrenAvailability(QuadId.createFromContentId(dataset2.parentContentId).getChildIds());
     expect(getTileMapStub.calledOnce).to.be.true;
@@ -308,7 +312,7 @@ describe("ArcGISTileMap", () => {
       return dataset6.tilemap;
     });
     const parentQuadId = QuadId.createFromContentId(dataset6.parentContentId1);
-    const tileMap = new ArcGISTileMap(fakeArcGisUrl);
+    const tileMap = new ArcGISTileMap(fakeArcGisUrl, settings);
     tileMap.tileMapRequestSize = 8;
     let available = await tileMap.getChildrenAvailability(parentQuadId.getChildIds());
     expect(available).to.eql(dataset6.available1);
