@@ -24,7 +24,7 @@
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
     "@itwin/eslint-plugin": "workspace:*",
-    "@types/node": "18.11.2",
+    "@types/node": "18.11.5",
     "@types/yargs": "^17.0.10",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

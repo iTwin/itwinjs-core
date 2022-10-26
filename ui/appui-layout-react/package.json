@@ -61,7 +61,7 @@
     "@types/enzyme": "3.9.3",
     "@types/lodash": "^4.14.0",
     "@types/mocha": "^8.2.2",
-    "@types/node": "18.11.2",
+    "@types/node": "18.11.5",
     "@types/react": "^17.0.37",
     "@types/react-dom": "^17.0.0",
     "@types/react-transition-group": "^4.4.4",
