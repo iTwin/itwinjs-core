@@ -25,13 +25,13 @@ pr:
 
 jobs:
 - job:
-  variables:
-  - name: linuxPool
-    value: 'iModeljs Linux'
-  - name: mac_pool
-    value: iModelTechCI
-  - name: win_pool
-    value: iModelTechCI
+  # variables:
+  # - name: linuxPool
+  #   value: 'iModeljs Linux'
+  # - name: mac_pool
+  #   value: iModelTechCI
+  # - name: win_pool
+  #   value: iModelTechCI
 
   strategy:
     matrix:
