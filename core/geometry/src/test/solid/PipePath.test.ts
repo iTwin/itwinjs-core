@@ -42,7 +42,7 @@ describe("PipePath", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("TorusPipeTransformed", () => {
+  it("TorusPipeTransformed", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
