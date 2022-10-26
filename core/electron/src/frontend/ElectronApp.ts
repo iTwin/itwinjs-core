@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { PickAsyncMethods, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
@@ -85,5 +85,5 @@ export class ElectronApp {
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */
-  public static dialogIpc = IpcApp.makeIpcProxy<Electron.Dialog>(dialogChannel);
+  public static dialogIpc = IpcApp.makeIpcFunctionProxy<Electron.Dialog>(dialogChannel, "callDialog");
 }
