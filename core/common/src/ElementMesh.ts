@@ -15,9 +15,6 @@ export interface ElementMeshOptions {
   minBRepFeatureSize?: number;
 }
 
-const signature = new Uint8Array("MESH".split("").map((ch) => ch.charCodeAt(0)));
-const headerSignature = new Uint32Array(signature.buffer)[0];
-
 export function readElementMeshes(_data: Uint8Array): IndexedPolyface[] {
   return []; // ###TODO
 }
