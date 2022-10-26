@@ -208,10 +208,10 @@ class Textures implements WebGLDisposable, RenderMemory.Consumer {
 
     // ###TODO these should probably move? (if not, what about checking status?)
     this.edlCalc1 = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.edlCalc2 = TextureHandle.createForAttachment(width * 0.5, height * 0.5, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.edlCalc4 = TextureHandle.createForAttachment(width * 0.25, height * 0.25, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.edlFilt2 = TextureHandle.createForAttachment(width * 0.5, height * 0.5, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.edlFilt4 = TextureHandle.createForAttachment(width * 0.25, height * 0.25, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlCalc2 = TextureHandle.createForAttachment(width >> 1, height >> 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlCalc4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlFilt2 = TextureHandle.createForAttachment(width >> 1, height >> 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.edlFilt4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     return rVal;
   }
@@ -417,6 +417,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
   public edlSimple?: EDLSimpleGeometry;
+  public edlCalcSimp?: EDLCalcGeometry;
   public edlCalc?: [EDLCalcGeometry | undefined, EDLCalcGeometry | undefined, EDLCalcGeometry | undefined];
   public edlFilt?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined];
   public edlMix?: EDLMixGeometry;
@@ -432,6 +433,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     collectGeometryStatistics(this.occlusionXBlur, stats);
     collectGeometryStatistics(this.occlusionYBlur, stats);
     collectGeometryStatistics(this.edlSimple, stats);
+    collectGeometryStatistics(this.edlCalcSimp, stats);
     collectGeometryStatistics(this.edlCalc?.[0], stats);
     collectGeometryStatistics(this.edlCalc?.[1], stats);
     collectGeometryStatistics(this.edlCalc?.[2], stats);
@@ -499,6 +501,7 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassBlend
       && undefined === this.volClassCopyZWithPoints
       && undefined === this.edlSimple
+      && undefined === this.edlCalcSimp
       && undefined === this.edlCalc?.[0]
       && undefined === this.edlCalc?.[1]
       && undefined === this.edlCalc?.[2]
@@ -515,12 +518,17 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.disableVolumeClassifier();
     // TODO: decide where these should be handled
     this.edlSimple = dispose(this.edlSimple);
-    this.edlSimple = dispose(this.edlCalc?.[0]);
-    this.edlSimple = dispose(this.edlCalc?.[1]);
-    this.edlSimple = dispose(this.edlCalc?.[2]);
-    this.edlSimple = dispose(this.edlFilt?.[0]);
-    this.edlSimple = dispose(this.edlFilt?.[1]);
-    this.edlSimple = dispose(this.edlMix);
+    this.edlCalcSimp = dispose(this.edlCalcSimp);
+    if (this.edlCalc) {
+      this.edlCalc[0] = dispose(this.edlCalc?.[0]);
+      this.edlCalc[1] = dispose(this.edlCalc?.[1]);
+      this.edlCalc[2] = dispose(this.edlCalc?.[2]);
+    }
+    if (this.edlFilt) {
+      this.edlFilt[0] = dispose(this.edlFilt?.[0]);
+      this.edlFilt[1] = dispose(this.edlFilt?.[1]);
+    }
+    this.edlMix = dispose(this.edlMix);
   }
 }
 
@@ -2254,7 +2262,7 @@ class MRTCompositor extends Compositor {
     const edlOff = !pcs?.edlStrength;
     const useSimple = !pcs?.edlAdvanced;
     const useAdvSimple = !!pcs?.edlDbg1;
-    const filter = !pcs?.edlFilter;
+    const filter = !!pcs?.edlFilter;
     if (edlOff) {
       // draw the regular way
       fbStack.execute(fbo, true, useMsBuffers, () => {
@@ -2284,12 +2292,11 @@ class MRTCompositor extends Compositor {
       } else if (useAdvSimple) {
         fbStack.execute(edlFin, true, useMsBuffers, () => {
           if (this._geom.edlCalc === undefined) {
-            const ct1 = this._textures.hilite!.getHandle()!;
-            const ct2 = this._depth!.getHandle()!;
-            this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1, ct2, 1), EDLCalcGeometry.createGeometry(ct1, ct2, 2),
-              EDLCalcGeometry.createGeometry(ct1, ct2, 4)];
+            const ct1 = this._textures.hilite!;
+            const ctd = this._depth!.getHandle()!;
+            this._geom.edlCalcSimp = EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height);
           }
-          const params = getDrawParams(this.target, this._geom.edlCalc[0]!);
+          const params = getDrawParams(this.target, this._geom.edlCalcSimp!);
           this.target.techniques.draw(params);
         });
       } else {
@@ -2297,22 +2304,29 @@ class MRTCompositor extends Compositor {
         // calculate the EDL result for full, 1/2, and 1/4 sizes
         const edlCalc: FrameBuffer[] = [this._fbos.edlCalc1, this._fbos.edlCalc2, this._fbos.edlCalc4];
         if (this._geom.edlCalc === undefined) {
-          const ct1 = this._textures.hilite!.getHandle()!;
-          const ct2 = this._depth!.getHandle()!;
-          this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1, ct2, 1), EDLCalcGeometry.createGeometry(ct1, ct2, 2),
-            EDLCalcGeometry.createGeometry(ct1, ct2, 4)];
+          const ct1 = this._textures.hilite!;
+          const ct2 = this._fbos.edlCalc2.getColor(0);
+          const ct4 = this._fbos.edlCalc4.getColor(0);
+          const ctd = this._depth!.getHandle()!;
+          this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
+            EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2.width, ct2.height),
+            EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4.width, ct4.height)];
         }
         const edlFilt: FrameBuffer[] = [this._fbos.edlFilt2, this._fbos.edlFilt4];
         if (this._geom.edlFilt === undefined) {
-          const ft2 = this._fbos.edlCalc2.getColor(0).getHandle()!;
-          const ft4 = this._fbos.edlCalc4.getColor(0).getHandle()!;
+          const ft2 = this._fbos.edlCalc2.getColor(0);
+          const ft4 = this._fbos.edlCalc4.getColor(0);
           const ftd = this._depth!.getHandle()!;
-          this._geom.edlFilt = [EDLFilterGeometry.createGeometry(ft2, ftd, 2), EDLCalcGeometry.createGeometry(ft4, ftd, 4)];
+          this._geom.edlFilt = [EDLFilterGeometry.createGeometry(ft2.getHandle()!, ftd, 2, ft2.width, ft2.height),
+            EDLFilterGeometry.createGeometry(ft4.getHandle()!, ftd, 4, ft4.width, ft4.height)];
         }
 
         // Loop through the 3 sizes calculating an edl buffer, and if not first size, then optionally filtering those
         for (let i = 0; i < 3; ++i) {
           fbStack.execute(edlCalc[i], true, useMsBuffers, () => {
+            const system = System.instance;
+            system.context.clearColor(0, 0, 0, 0);
+            system.context.clear(GL.BufferBit.Color);
             const params = getDrawParams(this.target, this._geom.edlCalc![i]!);
             this.target.techniques.draw(params);
           });

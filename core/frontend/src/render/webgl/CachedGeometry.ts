@@ -808,43 +808,47 @@ export class EDLSimpleGeometry extends TexturedViewportQuadGeometry {
 
 /** @internal */
 export class EDLCalcGeometry extends TexturedViewportQuadGeometry {
-  public readonly scale: number;
+  public readonly texInfo = new Float32Array(3);
 
-  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number) {
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params)
       return undefined;
 
-    return new EDLCalcGeometry(params, [colorBuffer, depthBuffer], scale);
+    return new EDLCalcGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }
   public get depthTexture() { return this._textures[1]; }
 
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number) {
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
     super(params, TechniqueId.EDLCalc, textures);
-    this.scale = scale;
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = scale;
   }
 }
 
 /** @internal */
 export class EDLFilterGeometry extends TexturedViewportQuadGeometry {
-  public readonly scale: number;
+  public readonly texInfo = new Float32Array(3);
 
-  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number) {
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params)
       return undefined;
 
-    return new EDLFilterGeometry(params, [colorBuffer, depthBuffer], scale);
+    return new EDLFilterGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }
   public get depthTexture() { return this._textures[1]; }
 
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number) {
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
     super(params, TechniqueId.EDLFilter, textures);
-    this.scale = scale;
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = scale;
   }
 }
 
