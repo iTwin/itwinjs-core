@@ -36,7 +36,7 @@ export class MarginPercent {
  * All properties default to zero if `undefined`.
  * For example, if the original volume has a width of 100 and the padding is specified as `{ left: 1 }`, the width will be doubled to 200, with 100 padding on the left side of the view.
  * If a padding of 0.25 is specified for each of [[left]], [[right]], [[top]], and [[bottom]], then the final volume will be inset such that 25% of the original volume falls outside
- * of the view on each side.\
+ * of the view on each side.
  * @note Margins are only applied in 2d views, or 3d views in which the camera has been turned off.
  * @see [[MarginOptions.paddingPercent]].
  * @public
