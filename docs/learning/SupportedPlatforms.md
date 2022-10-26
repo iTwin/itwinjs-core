@@ -52,4 +52,5 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Mobile Native
 
-- Not yet supported
+- iOS 13: [Minimum supported devices](https://support.apple.com/guide/iphone/supported-iphone-models-iphe3fa5df43/13.0/ios/13.0)
+- Android 7.0 (API Level 24)
