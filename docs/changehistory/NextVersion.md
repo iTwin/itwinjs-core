@@ -54,6 +54,8 @@ Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding valu
 
 The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
 
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
+
 ## Presentation
 
 ### Controlling in-memory cache sizes
