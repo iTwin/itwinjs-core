@@ -16,7 +16,7 @@ import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
 import { ThematicDisplayEditor } from "./ThematicDisplay";
 import { ToolBarDropDown } from "./ToolBar";
-import { AtmosphericScatteringEditor } from "./AtmosphericScattering";
+import { AtmosphereEditor } from "./AtmosphericScattering";
 
 // cspell:ignore cels
 
@@ -229,8 +229,19 @@ const renderingStyles: RenderingStyle[] = [{
     transThreshold: 1,
   },
 }, {
-  name: "0_Atmospheric",
-  viewflags: { ...renderingStyleViewFlags, atmosphericScattering: true },
+  name: "Atmosphere",
+  environment: {
+    sky: {
+      display: true,
+    },
+    ground: {
+      display: true,
+    },
+    atmosphere: {
+      display: true,
+    },
+  },
+  viewflags: renderingStyleViewFlags,
 }];
 
 export class ViewAttributes {
@@ -314,7 +325,7 @@ export class ViewAttributes {
 
     this.addAmbientOcclusion();
     this.addThematicDisplay();
-    this.addAtmosphericScattering();
+    this.addAtmosphere();
 
     // Set initial states
     this.update();
@@ -476,9 +487,9 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
-  private addAtmosphericScattering(): void {
-    const atmosphericScattering = new AtmosphericScatteringEditor(this._vp, this._element);
-    this._updates.push((view) => atmosphericScattering.update(view));
+  private addAtmosphere(): void {
+    const atmosphere = new AtmosphereEditor(this._vp, this._element);
+    this._updates.push((view) => atmosphere.update(view));
   }
 
   private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }

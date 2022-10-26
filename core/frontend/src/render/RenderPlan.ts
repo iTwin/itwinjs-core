@@ -6,13 +6,14 @@
  * @module Rendering
  */
 
-import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, AtmosphericScattering, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
-  ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
+  AmbientOcclusion, AnalysisStyle, Atmosphere, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc,
+  RenderTexture, ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
+import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { FlashSettings } from "../FlashSettings";
 import { Viewport } from "../Viewport";
+import { ViewState3d } from "../ViewState";
 
 const scratchPoint3a = new Point3d();
 const scratchPoint3b = new Point3d();
@@ -36,7 +37,7 @@ export interface RenderPlan {
   readonly analysisStyle?: AnalysisStyle;
   readonly ao?: AmbientOcclusion.Settings;
   readonly thematic?: ThematicDisplay;
-  readonly atmosphericScattering?: AtmosphericScattering.Settings;
+  readonly atmosphere?: Atmosphere.Settings;
   readonly isFadeOutActive: boolean;
   readonly analysisTexture?: RenderTexture;
   readonly frustum: Frustum;
@@ -47,9 +48,11 @@ export interface RenderPlan {
   readonly upVector: Vector3d;
   readonly lights?: LightSettings;
   readonly whiteOnWhiteReversal: WhiteOnWhiteReversalSettings;
-  readonly ellipsoidCenter?: Point3d;
-  readonly ellipsoidRotation?: Matrix3d;
-  readonly ellipsoidRadii?: Point3d;
+  readonly ellipsoid?: {
+    readonly ellipsoidCenter: Point3d;
+    readonly ellipsoidRotation: Matrix3d;
+    readonly ellipsoidRadii: Point3d;
+  };
 }
 
 /** @internal */
@@ -83,6 +86,7 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const is3d = view.is3d();
 
   const globalViewTransition = view.is3d() ? view.globalViewTransition() : 0.0;
+  const isGlobeMode3D = GlobeMode.Ellipsoid === view.globeMode;
   const backgroundMapOn = view.displayStyle.viewFlags.backgroundMap;
   const frustum = vp.viewingSpace.getFrustum();
   const fraction = vp.viewingSpace.frustFraction;
@@ -104,11 +108,10 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
-  const isGlobeModeEllipsoid = (GlobeMode.Ellipsoid === view.globeMode);
-  const atmosphericScattering = (style.is3d() && isGlobeModeEllipsoid && vp.iModel.isGeoLocated && style.viewFlags.atmosphericScattering && style.viewFlags.backgroundMap) ? style.settings.atmosphericScattering : undefined;
+  const atmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 
   let upVector;
-  if (isGlobeModeEllipsoid) {
+  if (GlobeMode.Ellipsoid === view.globeMode) {
     const lb = frustum.getCorner(Npc.LeftBottomRear).interpolate(0.5, frustum.getCorner(Npc.LeftBottomFront), scratchPoint3a);
     const rt = frustum.getCorner(Npc.RightTopRear).interpolate(0.5, frustum.getCorner(Npc.RightTopFront), scratchPoint3b);
     const cntr = lb.interpolate(0.5, rt, scratchPoint3c);
@@ -121,13 +124,13 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   if (analysisStyle?.thematic)
     analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.thematic.gradient, vp.iModel);
 
-  let ellipsoidCenter;
-  let ellipsoidRotation;
-  let ellipsoidRadii;
-  if (isGlobeModeEllipsoid) {
-    ellipsoidCenter = Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin);
-    ellipsoidRotation = view.iModel.getMapEcefToDb(0).matrix;
-    ellipsoidRadii = Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar});
+  let ellipsoid;
+  if (GlobeMode.Ellipsoid === view.globeMode) {
+    ellipsoid = {
+      ellipsoidCenter: Point3d.fromJSON(view.iModel.getMapEcefToDb(0).origin),
+      ellipsoidRotation: view.iModel.getMapEcefToDb(0).matrix,
+      ellipsoidRadii: Point3d.fromJSON({x:Constant.earthRadiusWGS84.equator, y:Constant.earthRadiusWGS84.equator, z:Constant.earthRadiusWGS84.polar}),
+    };
   }
 
   return {
@@ -145,19 +148,17 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
     analysisStyle,
     ao,
     thematic,
-    atmosphericScattering,
+    atmosphere,
     isFadeOutActive,
     analysisTexture,
     frustum,
     fraction,
     globalViewTransition,
-    isGlobeMode3D: isGlobeModeEllipsoid,
+    isGlobeMode3D,
     backgroundMapOn,
     upVector,
     lights,
     whiteOnWhiteReversal: vp.displayStyle.settings.whiteOnWhiteReversal,
-    ellipsoidCenter,
-    ellipsoidRotation,
-    ellipsoidRadii,
+    ellipsoid,
   };
 }

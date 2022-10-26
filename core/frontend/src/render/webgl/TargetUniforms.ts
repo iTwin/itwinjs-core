@@ -22,7 +22,7 @@ import { Target } from "./Target";
 import { ThematicUniforms } from "./ThematicUniforms";
 import { ViewRectUniforms } from "./ViewRectUniforms";
 import { RealityModelUniforms } from "./RealityModelUniforms";
-import { AtmosphericScatteringUniforms } from "./AtmosphericScatteringUniforms";
+import { AtmosphereUniforms } from "./AtmosphericScatteringUniforms";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */
@@ -134,7 +134,7 @@ export class TargetUniforms {
   public readonly batch: BatchUniforms;
   public readonly shadow: ShadowUniforms;
   public readonly realityModel = new RealityModelUniforms();
-  public readonly atmosphericScattering = new AtmosphericScatteringUniforms();
+  public readonly atmosphericScattering = new AtmosphereUniforms();
   private readonly _pixelWidthFactor = new PixelWidthFactor();
   private readonly _sunDirection = new SunDirection();
 

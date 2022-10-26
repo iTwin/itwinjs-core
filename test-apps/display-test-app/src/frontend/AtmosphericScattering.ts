@@ -5,19 +5,10 @@
 
 import { assert } from "@itwin/core-bentley";
 import { createButton, createCheckBox, createLabeledNumericInput, LabeledNumericInput } from "@itwin/frontend-devtools";
-import {
-  AtmosphericScattering,
-  ViewFlags,
-} from "@itwin/core-common";
+import { Atmosphere, ViewFlags } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
 
-type Required<T> = {
-  [P in keyof T]-?: T[P];
-};
-
-const defaultSettings: Required<AtmosphericScattering.Props> = AtmosphericScattering.Settings.defaults;
-
-export class AtmosphericScatteringEditor {
+export class AtmosphereEditor {
 
   private readonly _vp: Viewport;
   private readonly _scratchViewFlags = new ViewFlags();
@@ -40,52 +31,50 @@ export class AtmosphericScatteringEditor {
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
 
-    const isAtmosphericScatteringSupported = (view: ViewState) => view.is3d();
-    const isAtmosphericScatteringEnabled = (view: ViewState) => view.viewFlags.atmosphericScattering;
-
+    const isAtmosphereSupported = (view: ViewState) => view.is3d();
+    const isAtmosphereEnabled = (view: ViewState) => view.is3d() ? view.getDisplayStyle3d().environment.displayAtmosphere : false;
     const div = document.createElement("div");
 
-    const atmosphericScatteringControlsDiv = document.createElement("div")!;
+    const atmosphereControlsDiv = document.createElement("div")!;
 
     const showHideControls = (show: boolean) => {
       const display = show ? "block" : "none";
-      atmosphericScatteringControlsDiv.style.display = display;
+      atmosphereControlsDiv.style.display = display;
     };
 
-    const enableAtmosphericScattering = (enabled: boolean) => {
+    const enableAtmosphere = (enabled: boolean) => {
       const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.atmosphericScattering = AtmosphericScattering.Settings.fromJSON(defaultSettings);
-      this._vp.viewFlags = this._vp.viewFlags.with("atmosphericScattering", enabled);
+      displaySettings.environment = displaySettings.environment.clone({ displayAtmosphere: true });
       showHideControls(enabled);
       this.sync();
     };
 
     const resetButton = createButton({
-      parent: atmosphericScatteringControlsDiv,
-      id: "atmosphericScattering_reset",
+      parent: atmosphereControlsDiv,
+      id: "atmosphere_reset",
       value: "Reset",
-      handler: () => this.resetAtmosphericScattering(),
+      handler: () => this.resetAtmosphere(),
     });
     resetButton.div.style.textAlign = "center";
 
     const checkboxInterface = createCheckBox({
       parent: div,
-      handler: (cb) => enableAtmosphericScattering(cb.checked),
-      name: "Atmospheric Scattering",
-      id: "cbx_AtmosphericScattering",
+      handler: (cb) => enableAtmosphere(cb.checked),
+      name: "Atmosphere",
+      id: "cbx_Atmosphere",
     });
     const checkbox = checkboxInterface.checkbox;
     const checkboxLabel = checkboxInterface.label;
 
     const spanIntensity = document.createElement("span");
     spanIntensity.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanIntensity);
+    atmosphereControlsDiv.appendChild(spanIntensity);
     this._inScatteringIntensity = createLabeledNumericInput({
-      id: "atmosphericScattering_inScatteringIntensity",
+      id: "atmosphere_inScatteringIntensity",
       parent: spanIntensity,
       value: 1.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.inScatteringIntensity = value;
         return props;
       }),
@@ -96,11 +85,11 @@ export class AtmosphericScatteringEditor {
       name: "inScatteringIntensity: ",
     });
     this._outScatteringIntensity = createLabeledNumericInput({
-      id: "atmosphericScattering_outScatteringIntensity",
+      id: "atmosphere_outScatteringIntensity",
       parent: spanIntensity,
       value: 1.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.outScatteringIntensity = value;
         return props;
       }),
@@ -111,11 +100,11 @@ export class AtmosphericScatteringEditor {
       name: "outScatteringIntensity: ",
     });
     this._brightnessAdaptationStrength = createLabeledNumericInput({
-      id: "atmosphericScattering_brightnessAdaptationStrength",
+      id: "atmosphere_brightnessAdaptationStrength",
       parent: spanIntensity,
       value: 1.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.brightnessAdaptationStrength = value;
         return props;
       }),
@@ -128,13 +117,13 @@ export class AtmosphericScatteringEditor {
 
     const spanAtmosphereScale = document.createElement("span");
     spanAtmosphereScale.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanAtmosphereScale);
+    atmosphereControlsDiv.appendChild(spanAtmosphereScale);
     this._atmosphereHeightAboveEarth = createLabeledNumericInput({
-      id: "atmosphericScattering_atmosphereHeightAboveEarth",
+      id: "atmosphere_atmosphereHeightAboveEarth",
       parent: spanAtmosphereScale,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.atmosphereHeightAboveEarth = value;
         return props;
       }),
@@ -145,11 +134,11 @@ export class AtmosphericScatteringEditor {
       name: "Atmosphere Height Above Earth: ",
     });
     this._minDensityHeightBellowEarth = createLabeledNumericInput({
-      id: "atmosphericScattering_minDensityHeightBellowEarth",
+      id: "atmosphere_minDensityHeightBellowEarth",
       parent: spanAtmosphereScale,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.minDensityHeightBelowEarth = value;
         return props;
       }),
@@ -162,13 +151,13 @@ export class AtmosphericScatteringEditor {
 
     const spanScattering = document.createElement("span");
     spanScattering.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanScattering);
+    atmosphereControlsDiv.appendChild(spanScattering);
     this._scatteringStrength = createLabeledNumericInput({
-      id: "atmosphericScattering_scatteringStrength",
+      id: "atmosphere_scatteringStrength",
       parent: spanScattering,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.scatteringStrength = value;
         return props;
       }),
@@ -180,11 +169,11 @@ export class AtmosphericScatteringEditor {
     });
 
     this._wavelengthR = createLabeledNumericInput({
-      id: "atmosphericScattering_wavelengthR",
+      id: "atmosphere_wavelengthR",
       parent: spanScattering,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
         wavelenghts.r = value;
         props.wavelengths = wavelenghts;
@@ -199,11 +188,11 @@ export class AtmosphericScatteringEditor {
     this._wavelengthR.div.style.marginRight = "0.5em";
 
     this._wavelengthG = createLabeledNumericInput({
-      id: "atmosphericScattering_wavelengthG",
+      id: "atmosphere_wavelengthG",
       parent: spanScattering,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
         wavelenghts.g = value;
         props.wavelengths = wavelenghts;
@@ -218,11 +207,11 @@ export class AtmosphericScatteringEditor {
     this._wavelengthG.div.style.marginRight = "0.5em";
 
     this._wavelengthB = createLabeledNumericInput({
-      id: "atmosphericScattering_wavelengthB",
+      id: "atmosphere_wavelengthB",
       parent: spanScattering,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         const wavelenghts = props.wavelengths!;
         wavelenghts.b = value;
         props.wavelengths = wavelenghts;
@@ -236,11 +225,11 @@ export class AtmosphericScatteringEditor {
     });
 
     this._densityFalloff = createLabeledNumericInput({
-      id: "atmosphericScattering_densityFalloff",
-      parent: atmosphericScatteringControlsDiv,
+      id: "atmosphere_densityFalloff",
+      parent: atmosphereControlsDiv,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.densityFalloff = value;
         return props;
       }),
@@ -253,14 +242,14 @@ export class AtmosphericScatteringEditor {
 
     const spanSamplePoints = document.createElement("span");
     spanSamplePoints.style.display = "flex";
-    atmosphericScatteringControlsDiv.appendChild(spanSamplePoints);
+    atmosphereControlsDiv.appendChild(spanSamplePoints);
 
     this._numInScatteringPoints = createLabeledNumericInput({
-      id: "atmosphericScattering_numInScatteringPoints",
+      id: "atmosphere_numInScatteringPoints",
       parent: spanSamplePoints,
       value: 10,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.numInScatteringPoints = value;
         return props;
       }),
@@ -271,11 +260,11 @@ export class AtmosphericScatteringEditor {
     });
 
     this._numOpticalDepthPoints = createLabeledNumericInput({
-      id: "atmosphericScattering_numOpticalDepthPoints",
+      id: "atmosphere_numOpticalDepthPoints",
       parent: spanSamplePoints,
       value: 10,
-      handler: (value, _) => this.updateAtmosphericScattering((view): AtmosphericScattering.Props => {
-        const props = this.getAtmosphericScatteringSettingsProps(view);
+      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
+        const props = this.getAtmosphereSettingsProps(view);
         props.numOpticalDepthPoints = value;
         return props;
       }),
@@ -286,19 +275,19 @@ export class AtmosphericScatteringEditor {
     });
 
     this._update = (view) => {
-      const visible = isAtmosphericScatteringSupported(view);
+      const visible = isAtmosphereSupported(view);
       div.style.display = visible ? "block" : "none";
       if (!visible)
         return;
 
-      checkbox.checked = isAtmosphericScatteringEnabled(view);
+      checkbox.checked = isAtmosphereEnabled(view);
       checkboxLabel.style.fontWeight = checkbox.checked ? "bold" : "500";
       showHideControls(checkbox.checked);
 
-      this.updateAtmosphericScatteringUI(view);
+      this.updateAtmosphereUI(view);
     };
 
-    div.appendChild(atmosphericScatteringControlsDiv);
+    div.appendChild(atmosphereControlsDiv);
 
     const hr = document.createElement("hr");
     hr.style.borderColor = "grey";
@@ -311,17 +300,17 @@ export class AtmosphericScatteringEditor {
     this._update(view);
   }
 
-  private getAtmosphericScatteringSettings(view: ViewState): AtmosphericScattering.Settings {
+  private getAtmosphereSettings(view: ViewState): Atmosphere.Settings {
     assert(view.is3d());
-    return view.displayStyle.settings.atmosphericScattering;
+    return view.displayStyle.settings.environment.atmosphere;
   }
 
-  private getAtmosphericScatteringSettingsProps(view: ViewState): AtmosphericScattering.Props {
-    return this.getAtmosphericScatteringSettings(view).toJSON();
+  private getAtmosphereSettingsProps(view: ViewState): Atmosphere.Props {
+    return this.getAtmosphereSettings(view).toJSON();
   }
 
-  private updateAtmosphericScatteringUI(view: ViewState) {
-    const settings = this.getAtmosphericScatteringSettings(view);
+  private updateAtmosphereUI(view: ViewState) {
+    const settings = this.getAtmosphereSettings(view);
 
     this._inScatteringIntensity.input.value = settings.inScatteringIntensity.toString();
     this._outScatteringIntensity.input.value = settings.outScatteringIntensity.toString();
@@ -337,17 +326,17 @@ export class AtmosphericScatteringEditor {
     this._numOpticalDepthPoints.input.value = settings.numOpticalDepthPoints.toString();
   }
 
-  private updateAtmosphericScattering(updateFunction: (view: ViewState) => AtmosphericScattering.Props) {
+  private updateAtmosphere(updateFunction: (view: ViewState) => Atmosphere.Props) {
     const props = updateFunction(this._vp.view);
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.atmosphericScattering = AtmosphericScattering.Settings.fromJSON(props);
+    assert(this._vp.view.is3d());
+    const settings = (this._vp.view).getDisplayStyle3d().settings;
+    settings.environment = settings.environment.clone({ atmosphere: Atmosphere.Settings.fromJSON(props) });
     this.sync();
+    this.updateAtmosphereUI(this._vp.view);
   }
 
-  private resetAtmosphericScattering(): void {
-    const atmosphericScattering = AtmosphericScattering.Settings.fromJSON(defaultSettings);
-    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.atmosphericScattering = atmosphericScattering;
-    this.sync();
-    this.updateAtmosphericScatteringUI(this._vp.view);
+  private resetAtmosphere(): void {
+    this.updateAtmosphere(() => Atmosphere.Settings.defaults);
   }
 
   private sync(): void {

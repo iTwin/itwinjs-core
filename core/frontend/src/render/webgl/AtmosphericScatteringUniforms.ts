@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AtmosphericScattering } from "@itwin/core-common";
+import { Atmosphere } from "@itwin/core-common";
 import { WebGLDisposable } from "./Disposable";
 import { desync, sync, SyncTarget } from "./Sync";
 import { Target } from "./Target";
@@ -13,8 +13,8 @@ import { FrustumUniformType } from "./FrustumUniforms";
 
 export const MAX_SAMPLE_POINTS = 20; // Maximum number of sample points to be used for the in-scattering and out-scattering computations.
 
-export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarget {
-  private _atmosphericScattering?: AtmosphericScattering.Settings;
+export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
+  private _atmosphere?: Atmosphere.Settings;
 
   // computed values
   private _atmosphereHeightAboveEarth = 0.0;
@@ -41,45 +41,45 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
   private _scratchVector3d = new Vector3d();
   private _scratchMatrix3d = new Matrix3d();
 
-  public get atmosphericScattering(): AtmosphericScattering.Settings | undefined {
-    return this._atmosphericScattering;
+  public get atmosphere(): Atmosphere.Settings | undefined {
+    return this._atmosphere;
   }
 
   public update(target: Target): void {
     desync(this);
 
     const plan = target.plan;
-    if (!(this.atmosphericScattering && plan.atmosphericScattering && this.atmosphericScattering.equals(plan.atmosphericScattering))) {
-      this._atmosphericScattering = plan.atmosphericScattering;
+    if (!(this.atmosphere && plan.atmosphere && this.atmosphere.equals(plan.atmosphere))) {
+      this._atmosphere = plan.atmosphere;
     }
 
-    this._updateIsEnabled(target.wantAtmosphericScattering);
+    this._updateIsEnabled(target.wantAtmosphere);
 
-    if (!this.atmosphericScattering) {
+    if (!this.atmosphere) {
       return;
     }
 
-    this._updateAtmosphereHeightAboveEarth(this.atmosphericScattering.atmosphereHeightAboveEarth);
-    this._updateAtmosphereScaleMatrix(this.atmosphericScattering.atmosphereHeightAboveEarth);
-    this._updateBrightnessAdaptationStrength(this.atmosphericScattering.brightnessAdaptationStrength);
-    this._updateDensityFalloff(this.atmosphericScattering.densityFalloff);
-    this._updateEarthCenter(plan.ellipsoidCenter!, target.uniforms.frustum.viewMatrix);
-    this._updateEarthScaleMatrix(plan.ellipsoidRadii!);
-    this._updateEllipsoidRotationMatrix(plan.ellipsoidRotation!);
+    this._updateAtmosphereHeightAboveEarth(this.atmosphere.atmosphereHeightAboveEarth);
+    this._updateAtmosphereScaleMatrix(this.atmosphere.atmosphereHeightAboveEarth);
+    this._updateBrightnessAdaptationStrength(this.atmosphere.brightnessAdaptationStrength);
+    this._updateDensityFalloff(this.atmosphere.densityFalloff);
+    this._updateEarthCenter(plan.ellipsoid!.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
+    this._updateEarthScaleMatrix(plan.ellipsoid!.ellipsoidRadii);
+    this._updateEllipsoidRotationMatrix(plan.ellipsoid!.ellipsoidRotation);
     this._updateEllipsoidToEye();
-    this._updateInScatteringIntensity(this.atmosphericScattering.inScatteringIntensity);
-    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoidRotation!, target.uniforms.frustum.viewMatrix.matrix);
+    this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
+    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid!.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateIsCameraEnabled(target.uniforms.frustum.type);
-    this._updateMinDensityScaleMatrix(this.atmosphericScattering.minDensityHeightBelowEarth);
-    this._updateMinDensityToAtmosphereScaleFactor(this.atmosphericScattering.atmosphereHeightAboveEarth, this.atmosphericScattering.minDensityHeightBelowEarth);
-    this._updateNumInScatteringPoints(this.atmosphericScattering.numInScatteringPoints);
-    this._updateNumOpticalDepthPoints(this.atmosphericScattering.numOpticalDepthPoints);
-    this._updateOutScatteringIntensity(this.atmosphericScattering.outScatteringIntensity);
-    this._updateScatteringCoefficients(this.atmosphericScattering.scatteringStrength, this.atmosphericScattering.wavelengths);
+    this._updateMinDensityScaleMatrix(this.atmosphere.minDensityHeightBelowEarth);
+    this._updateMinDensityToAtmosphereScaleFactor(this.atmosphere.atmosphereHeightAboveEarth, this.atmosphere.minDensityHeightBelowEarth);
+    this._updateNumInScatteringPoints(this.atmosphere.numInScatteringPoints);
+    this._updateNumOpticalDepthPoints(this.atmosphere.numOpticalDepthPoints);
+    this._updateOutScatteringIntensity(this.atmosphere.outScatteringIntensity);
+    this._updateScatteringCoefficients(this.atmosphere.scatteringStrength, this.atmosphere.wavelengths);
   }
 
-  private _updateIsEnabled(wantAtmosphericScattering: boolean) {
-    this._isEnabled = wantAtmosphericScattering;
+  private _updateIsEnabled(wantAtmosphere: boolean) {
+    this._isEnabled = wantAtmosphere;
   }
 
   private _updateIsCameraEnabled(frustumType: FrustumUniformType) {
@@ -145,10 +145,10 @@ export class AtmosphericScatteringUniforms implements WebGLDisposable, SyncTarge
     this._densityFalloff = densityFalloff;
   }
 
-  private _updateScatteringCoefficients(scatteringStrength: number, wavelenghts: AtmosphericScattering.Wavelengths) {
-    this._scatteringCoefficients[0] = ((400.0 / wavelenghts.r) ** 4.0) * scatteringStrength;
-    this._scatteringCoefficients[1] = ((400.0 / wavelenghts.g) ** 4.0) * scatteringStrength;
-    this._scatteringCoefficients[2] = ((400.0 / wavelenghts.b) ** 4.0) * scatteringStrength;
+  private _updateScatteringCoefficients(scatteringStrength: number, wavelengths: Atmosphere.Wavelengths) {
+    this._scatteringCoefficients[0] = ((400.0 / wavelengths.r) ** 4.0) * scatteringStrength;
+    this._scatteringCoefficients[1] = ((400.0 / wavelengths.g) ** 4.0) * scatteringStrength;
+    this._scatteringCoefficients[2] = ((400.0 / wavelengths.b) ** 4.0) * scatteringStrength;
   }
 
   private _updateNumInScatteringPoints(numInScatteringPoints: number) {
