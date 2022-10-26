@@ -39,13 +39,13 @@ export interface IpcHostOpts {
  * @note if either end terminates, the other must too.
  * @public
  */
-export class IpcHost {
+export class IpcHost extends IModelHost {
   public static noStack = false;
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
   private static get ipc(): IpcSocketBackend { return this._ipc!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
   /** Determine whether Ipc is available for this backend. This will only be true if [[startup]] has been called on this class. */
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+  public static override get isValid(): boolean { return super.isValid && undefined !== this._ipc; }
 
   /**
    * Send a message to the frontend over an Ipc channel.
@@ -108,7 +108,8 @@ export class IpcHost {
    * @param opt
    * @note this method calls [[IModelHost.startup]] internally.
    */
-  public static async startup(opt?: IpcHostOpts): Promise<void> {
+  public static override async startup(inOpt?: IpcHostOpts | {}): Promise<void> {
+    const opt = inOpt as Partial<IpcHostOpts>; // type-safely tell typescript that we can check for IpcHostOpts properties on empty objects
     this._ipc = opt?.ipcHost?.socket;
     if (opt?.ipcHost?.exceptions?.noStack)
       this.noStack = true;
@@ -117,13 +118,13 @@ export class IpcHost {
       IpcAppHandler.register();
     }
 
-    await IModelHost.startup(opt?.iModelHost);
+    await super.startup(opt);
   }
 
   /** Shutdown IpcHost backend. Also calls [[IModelHost.shutdown]] */
-  public static async shutdown(): Promise<void> {
+  public static override async shutdown(): Promise<void> {
     this._ipc = undefined;
-    await IModelHost.shutdown();
+    await super.shutdown();
   }
 }
 

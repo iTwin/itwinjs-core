@@ -10,7 +10,7 @@ import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
 import { ServerStorage } from "@itwin/object-storage-core";
-import { AccessToken, assert, BeEvent, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
+import { AccessToken, assert, BeEvent, BentleyError, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, ProcessDetector } from "@itwin/core-bentley";
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { TelemetryManager } from "@itwin/core-telemetry";
 import { Container } from "inversify";
@@ -257,7 +257,11 @@ class ApplicationSettings extends BaseSettings {
  * @public
  */
 export class IModelHost {
-  private constructor() { }
+  /** typescript currently disallows extending classes with private ctors, while that is the case (even if it doesn't make sense in JS),
+   * this constructor must be protected (but throwing) to allow extending
+   * @internal
+   */
+  protected constructor() { throw new BentleyError(BentleyStatus.ERROR, "IModelHost is a static class, and cannot be instantiated"); }
   public static authorizationClient?: AuthorizationClient;
 
   /** @alpha */
@@ -395,20 +399,30 @@ export class IModelHost {
     this.onWorkspaceStartup.raiseEvent();
   }
 
-  private static _isValid = false;
+  private static _isIModelHostValid = false;
   /** Returns true if IModelHost is started.  */
-  public static get isValid() { return this._isValid; }
+  public static get isValid() { return this._isIModelHostValid; }
+
   /** This method must be called before any iTwin.js services are used.
-   * @param options Host configuration data.
+   * @param inOptions Host configuration data.
    * Raises [[onAfterStartup]].
    * @see [[shutdown]].
    */
-  public static async startup(options?: IModelHostOptions): Promise<void> {
-    if (this._isValid)
+  public static async startup(options?: { iModelHost?: IModelHostOptions }): Promise<void>;
+  /** @deprecated pass an { "iModelHost": IModelHostOptions } instead */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public static async startup(options?: IModelHostOptions): Promise<void>;
+  public static async startup(inOptions?: IModelHostOptions | { iModelHost?: IModelHostOptions }): Promise<void> {
+    if (this._isIModelHostValid)
       return; // we're already initialized
-    this._isValid = true;
+    this._isIModelHostValid = true;
 
-    options = options ?? {};
+    const options = (
+      inOptions && "iModelHost" in inOptions
+        ? inOptions.iModelHost
+        : inOptions as IModelHostOptions
+    ) ?? {};
+
     if (IModelHost.sessionId === "")
       IModelHost.sessionId = Guid.createValue();
 
@@ -517,10 +531,10 @@ export class IModelHost {
   /** This method must be called when an iTwin.js host is shut down. Raises [[onBeforeShutdown]] */
   public static async shutdown(): Promise<void> {
     // NB: This method is set as a node listener where `this` is unbound
-    if (!IModelHost._isValid)
+    if (!IModelHost._isIModelHostValid)
       return;
 
-    IModelHost._isValid = false;
+    IModelHost._isIModelHostValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
     IModelHost.configuration = undefined;
     // eslint-disable-next-line deprecation/deprecation

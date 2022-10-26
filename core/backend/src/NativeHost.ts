@@ -134,10 +134,9 @@ export interface NativeHostOpts extends IpcHostOpts {
  * Backend for desktop/mobile native applications
  * @public
  */
-export class NativeHost {
+export class NativeHost extends IModelHost {
   private static _reachability?: InternetConnectivityStatus;
   private static _applicationName: string;
-  private constructor() { } // no instances - static methods only
 
   /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -156,8 +155,8 @@ export class NativeHost {
     return IpcHost.send(nativeAppNotify, methodName, ...args);
   }
 
-  private static _isValid = false;
-  public static get isValid(): boolean { return this._isValid; }
+  private static _isNativeHostValid = false;
+  public static override get isValid(): boolean { return this._isNativeHostValid; }
   public static get applicationName() { return this._applicationName; }
   /** Get the settings store for this NativeHost. */
   public static get settingsStore() {
@@ -168,22 +167,24 @@ export class NativeHost {
    * Start the backend of a native app.
    * @note this method calls [[IpcHost.startup]] internally.
    */
-  public static async startup(opt?: NativeHostOpts): Promise<void> {
+  public static override async startup(inOpt?: NativeHostOpts | {}): Promise<void> {
+    const opt = inOpt as Partial<NativeHostOpts>; // type-safely tell typescript that we can check for NativeHostOpts properties on empty objects
+
     if (!this.isValid) {
-      this._isValid = true;
+      this._isNativeHostValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 
-    await IpcHost.startup(opt);
-    if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
+    await super.startup(opt);
+    if (super.isValid)  // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }
 
   /** Shutdown native app backend. Also calls [[IpcHost.shutdown]] */
-  public static async shutdown(): Promise<void> {
-    this._isValid = false;
+  public static override async shutdown(): Promise<void> {
+    this._isNativeHostValid = false;
     this.onInternetConnectivityChanged.clear();
     await IpcHost.shutdown();
   }
