@@ -7,8 +7,8 @@
 import { assert } from "@itwin/core-bentley";
 import { AxisOrder, LinearSweep, Matrix3d, Point3d, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { Code, ColorDef, ElementGeometry, GeometryStreamBuilder, LinePixels, PhysicalElementProps } from "@itwin/core-common";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
-import { CreateElementTool, EditTools } from "@itwin/editor-frontend";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
+import { basicManipulationIpc, CreateElementTool, EditTools } from "@itwin/editor-frontend";
 import {
   AccuDrawHintBuilder, BeButtonEvent, ContextRotationId, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, NotifyMessageDetails, OutputMessagePriority, ToolAssistance,
   ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport,
@@ -30,8 +30,6 @@ export class PlaceBlockTool extends CreateElementTool {
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
   }
-
-  public commandConnection = EditTools.connect<BasicManipulationCommandIpc>();
 
   protected allowView(vp: Viewport) { return vp.view.isSpatialView() || vp.view.isDrawingView(); }
   public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
@@ -195,7 +193,7 @@ export class PlaceBlockTool extends CreateElementTool {
         return;
 
       const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
-      await this.commandConnection.insertGeometricElement(elemProps);
+      await basicManipulationIpc.insertGeometricElement(elemProps);
       await this.saveChanges();
 
     } catch (err: any) {

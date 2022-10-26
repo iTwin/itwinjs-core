@@ -85,5 +85,5 @@ export class ElectronApp {
   }
 
   /** Proxy object for calling methods of `Electron.Dialog` */
-  public static dialogIpc = IpcApp.makeIpcProxy<Electron.Dialog>(dialogChannel);
+  public static dialogIpc = IpcApp.makeIpcFunctionProxy<Electron.Dialog>(dialogChannel, "callDialog");
 }
