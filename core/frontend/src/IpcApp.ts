@@ -19,13 +19,16 @@ import { IModelApp, IModelAppOptions } from "./IModelApp";
  */
 export interface IpcAppOptions {
   iModelApp?: IModelAppOptions;
+  ipcApp?: {
+    ipcFrontend?: IpcSocketFrontend;
+  };
 }
 
 /**
  * The frontend of apps with a dedicated backend that can use [Ipc]($docs/learning/IpcInterface.md).
  * @public
  */
-export class IpcApp {
+export class IpcApp extends IModelApp {
   private static _ipc: IpcSocketFrontend | undefined;
   /** Get the implementation of the [[IpcSocketFrontend]] interface. */
 
@@ -135,18 +138,35 @@ export class IpcApp {
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */
   public static appFunctionIpc = IpcApp.makeIpcProxy<IpcAppFunctions>(IpcAppChannel.Functions);
 
-  /** start an IpcApp.
-   * @note this should not be called directly. It is called by NativeApp.startup */
-  public static async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions) {
-    this._ipc = ipc;
+  /** start an IpcApp */
+  public static override async startup(opts?: IpcAppOptions | {}): Promise<void>;
+  /**
+   * @deprecated this should not be called directly. It is called by NativeApp.startup
+   * This will be marked internal in a future release
+   */
+  public static override async startup(ipc: IpcSocketFrontend, opts?: IpcAppOptions): Promise<void>;
+  public static override async startup(inOptsOrIpcFrontend?: IpcSocketFrontend | IpcAppOptions | {}, maybeDeprecatedOpts?: IpcAppOptions) {
+    let opts: Partial<IpcAppOptions> = {};
+    if (maybeDeprecatedOpts) {
+      opts = maybeDeprecatedOpts;
+      if (!opts)
+        opts = {};
+      if (!opts.ipcApp)
+        opts.ipcApp = {};
+      opts.ipcApp.ipcFrontend = inOptsOrIpcFrontend as IpcSocketFrontend;
+    } else {
+      opts = inOptsOrIpcFrontend as IpcAppOptions;
+    }
+
+    this._ipc = opts.ipcApp?.ipcFrontend;
     IpcAppNotifyHandler.register(); // receives notifications from backend
-    await IModelApp.startup(opts?.iModelApp);
+    await super.startup(opts);
   }
 
   /** @internal */
-  public static async shutdown() {
+  public static override async shutdown() {
     this._ipc = undefined;
-    await IModelApp.shutdown();
+    await super.shutdown();
   }
 }
 

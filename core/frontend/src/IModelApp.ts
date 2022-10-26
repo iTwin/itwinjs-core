@@ -344,12 +344,22 @@ export class IModelApp {
    * ```
    * @param opts The options for configuring IModelApp
    */
-  public static async startup(opts?: IModelAppOptions): Promise<void> {
+  public static async startup(opts?: { iModelApp?: IModelAppOptions }): Promise<void>;
+  /** @deprecated pass an { "iModelApp": IModelAppOptions } instead */
+  // eslint-disable-next-line @typescript-eslint/unified-signatures
+  public static async startup(opts?: IModelAppOptions): Promise<void>;
+
+  public static async startup(inOpts?: IModelAppOptions | { iModelApp?: IModelAppOptions }): Promise<void> {
     if (this._initialized)
       return; // we're already initialized, do nothing.
     this._initialized = true;
 
-    opts = opts ?? {};
+    const opts = (
+      inOpts && "iModelApp" in inOpts
+        ? inOpts.iModelApp
+        : inOpts as IModelAppOptions
+    ) ?? {};
+
     this._securityOptions = opts.security ?? {};
 
     if (process.env.NODE_ENV === "development") {
