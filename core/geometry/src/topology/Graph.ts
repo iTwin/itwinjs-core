@@ -133,7 +133,11 @@ export class HalfEdge {
    * * edge split operations are expected to copy this to new sub-edges.
    */
   public edgeTag?: any;
-  private _id: any;   // immutable id useful for debugging.
+  /** application-specific data for the face loop
+   * * edge split operations are expected to copy this to new sub-edges.
+   */
+   public faceTag?: any;
+   private _id: any;   // immutable id useful for debugging.
   /** id assigned sequentially during construction --- useful for debugging. */
   public get id() { return this._id; }
   private _facePredecessor: HalfEdge;
