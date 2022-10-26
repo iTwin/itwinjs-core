@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Reproject reality tiles to the surface of the Earth.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
