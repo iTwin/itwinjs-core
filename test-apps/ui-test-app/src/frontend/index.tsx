@@ -373,7 +373,7 @@ export class SampleAppIModelApp {
     });
 
     IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
-      IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGISFeature", accessClient);
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGISFeature", accessClient);
     assert(initStatus === true);
 
     // try starting up event loop if not yet started so key-in palette can be opened
