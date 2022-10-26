@@ -58,7 +58,7 @@ export interface NativeAppOpts extends IpcAppOptions {
  * @see [Native Applications]($docs/learning/NativeApps.md)
  * @public
  */
-export class NativeApp {
+export class NativeApp extends IpcApp {
   private static _removeAppNotify?: RemoveFunction;
 
   /** @deprecated use nativeAppIpc */
@@ -102,18 +102,23 @@ export class NativeApp {
   public static async overrideInternetConnectivity(status: InternetConnectivityStatus): Promise<void> {
     return this.nativeAppIpc.overrideInternetConnectivity(OverriddenBy.User, status);
   }
-  private static _isValid = false;
-  public static get isValid(): boolean { return this._isValid; }
+  private static _isNativeAppValid = false;
+  public static override get isValid(): boolean { return super.isValid && this._isNativeAppValid; }
 
   /**
    * This is called by either ElectronApp.startup or MobileApp.startup - it should not be called directly
    * @internal
    */
-  public static async startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts) {
-    await IpcApp.startup(ipc, opts);
-    if (this._isValid)
+  public static override async startup(opts?: NativeAppOpts | {}): Promise<void>;
+  /** @deprecated this should not be called directly. It is called by NativeApp.startup */
+  public static override async startup(ipc: IpcSocketFrontend, opts?: NativeAppOpts): Promise<void>;
+  public static override async startup(inOptsOrIpcFrontend?: IpcSocketFrontend | NativeAppOpts | {}, maybeDeprecatedOpts?: NativeAppOpts) {
+    // internally use the deprecated overload to avoid duplicating validation code
+    // eslint-disable-next-line deprecation/deprecation
+    await super.startup(inOptsOrIpcFrontend as any, maybeDeprecatedOpts);
+    if (this._isNativeAppValid)
       return;
-    this._isValid = true;
+    this._isNativeAppValid = true;
 
     this._removeAppNotify = NativeAppNotifyHandler.register(); // receives notifications from backend
     NativeApp.hookBrowserConnectivityEvents();
@@ -126,12 +131,12 @@ export class NativeApp {
   }
 
   /** @internal */
-  public static async shutdown() {
+  public static override async shutdown() {
     this._removeAppNotify?.();
     NativeApp.unhookBrowserConnectivityEvents();
     await NativeAppLogger.flush();
-    await IpcApp.shutdown();
-    this._isValid = false;
+    await super.shutdown();
+    this._isNativeAppValid = false;
   }
 
   public static async requestDownloadBriefcase(iTwinId: string, iModelId: string, downloadOptions: DownloadBriefcaseOptions,

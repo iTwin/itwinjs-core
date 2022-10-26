@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
+import { BentleyError, BentleyStatus, ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
@@ -49,28 +49,34 @@ export type ElectronAppOpts = NativeAppOpts;
  * Frontend of an Electron App.
  * @beta
  */
-export class ElectronApp {
-  private static _ipc?: ElectronIpc;
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+export class ElectronApp extends NativeApp {
+  private static _electronIpc?: ElectronIpc;
+  public static override get isValid(): boolean { return super.isValid && undefined !== this._electronIpc; }
 
   /**
    * Start the frontend of an Electron application.
    * @param opts Options for your ElectronApp
    * @note This method must only be called from the frontend of an Electron app (i.e. when [ProcessDetector.isElectronAppFrontend]($bentley) is `true`).
    */
-  public static async startup(opts?: ElectronAppOpts) {
+  public static override async startup(opts?: ElectronAppOpts | {}): Promise<void>;
+  /** @internal @deprecated this overload should never be called, it will produce an error */
+  public static override async startup(ipc: IpcSocketFrontend, opts?: ElectronAppOpts): Promise<void>;
+  public static override async startup(inOpts?: IpcSocketFrontend | ElectronAppOpts | {}, deprecatedOptsArg?: ElectronAppOpts) {
+    const opts = inOpts as Partial<ElectronAppOpts>; // type-safely tell typescript that we can check for ElectronAppOpts properties on empty objects
+    if (deprecatedOptsArg)
+      throw new BentleyError(BentleyStatus.ERROR, "illegal overload called, this overload exists only for compatibility with IpcApp.startup");
     if (!ProcessDetector.isElectronAppFrontend)
       throw new Error("Not running under Electron");
     if (!this.isValid) {
-      this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces);
+      this._electronIpc = new ElectronIpc();
+      ElectronRpcManager.initializeFrontend(this._electronIpc, opts?.iModelApp?.rpcInterfaces);
     }
-    await NativeApp.startup(this._ipc!, opts);
+    await super.startup(this._electronIpc!, opts);
   }
 
-  public static async shutdown() {
-    this._ipc = undefined;
-    await NativeApp.shutdown();
+  public static override async shutdown() {
+    this._electronIpc = undefined;
+    await super.shutdown();
     ElectronRpcManager.terminateFrontend();
   }
 
