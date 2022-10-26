@@ -324,7 +324,7 @@ describe("RPC channels", () => {
   it("use http or rpc concurrency based on type of app", async () => {
     const channels = IModelApp.tileAdmin.channels;
     if (IpcApp.isValid)
-      expect(channels.rpcConcurrency).to.equal(await IpcApp.callIpcHost("queryConcurrency", "cpu"));
+      expect(channels.rpcConcurrency).to.equal(await IpcApp.appFunctionIpc.queryConcurrency("cpu"));
     else
       expect(channels.rpcConcurrency).to.equal(channels.httpConcurrency);
 
@@ -395,7 +395,7 @@ describe("TileStorage", () => {
   it("should cache transfer configs", async () => {
     const transferConfig: TransferConfig = {
       baseUrl: "test",
-      expiration: new Date(new Date().getTime()+(1000*60*60)), // 1 hour from now
+      expiration: new Date(new Date().getTime() + (1000 * 60 * 60)), // 1 hour from now
     };
     const tileRpcInterfaceStub = stubTileRpcInterface(transferConfig);
     await tileStorage.downloadTile(...downloadTileParameters);
@@ -407,7 +407,7 @@ describe("TileStorage", () => {
   it("should refresh expired cached transfer config", async () => {
     const clock = sinon.useFakeTimers();
     after(() => clock.restore());
-    const dateExpiration = new Date(new Date().getTime()+(1000*60*60)); // 1 hour from now
+    const dateExpiration = new Date(new Date().getTime() + (1000 * 60 * 60)); // 1 hour from now
     const transferConfig: TransferConfig = {
       baseUrl: "test",
       expiration: dateExpiration,

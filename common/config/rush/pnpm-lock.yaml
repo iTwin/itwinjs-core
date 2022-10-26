@@ -8,7 +8,7 @@ importers:
   ../../core/backend:
     specifiers:
       '@azure/storage-blob': ^12.7.0
-      '@bentley/imodeljs-native': 3.5.1
+      '@bentley/imodeljs-native': 3.5.5
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ~1.4.0
       '@itwin/core-bentley': workspace:*
@@ -16,6 +16,7 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-telemetry': workspace:*
       '@itwin/core-webpack-tools': workspace:*
+      '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/object-storage-azure': ~1.4.0
       '@itwin/object-storage-core': ~1.4.0
@@ -54,7 +55,7 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 12.11.0
-      '@bentley/imodeljs-native': 3.5.1
+      '@bentley/imodeljs-native': 3.5.5
       '@itwin/cloud-agnostic-core': 1.4.0
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 1.4.0
@@ -73,6 +74,7 @@ importers:
       '@itwin/core-common': link:../common
       '@itwin/core-geometry': link:../geometry
       '@itwin/core-webpack-tools': link:../../tools/webpack-core
+      '@itwin/ecschema-metadata': link:../ecschema-metadata
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
       '@opentelemetry/api': 1.0.4
       '@types/chai': 4.3.1
@@ -195,7 +197,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ~0.8.3
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -221,7 +223,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.8.3
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -245,7 +247,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ~0.8.3
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -257,7 +259,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.8.3
       fs-extra: 8.1.0
       glob: 7.2.3
     devDependencies:
@@ -294,7 +296,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ~0.8.3
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -321,7 +323,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 16.11.59
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.8.3
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -384,6 +386,7 @@ importers:
   ../../core/electron:
     specifiers:
       '@itwin/build-tools': workspace:*
+      '@itwin/certa': workspace:*
       '@itwin/core-backend': workspace:*
       '@itwin/core-bentley': workspace:*
       '@itwin/core-common': workspace:*
@@ -400,14 +403,17 @@ importers:
       mocha: ^10.0.0
       open: ^7.0.0
       rimraf: ^3.0.2
+      source-map-loader: ^4.0.0
       typescript: ~4.4.0
       username: ^5.1.0
+      webpack: ^5.64.4
     dependencies:
       '@openid/appauth': 1.3.1
       open: 7.4.2
       username: 5.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
+      '@itwin/certa': link:../../tools/certa
       '@itwin/core-backend': link:../backend
       '@itwin/core-bentley': link:../bentley
       '@itwin/core-common': link:../common
@@ -422,7 +428,9 @@ importers:
       eslint: 7.32.0
       mocha: 10.0.0
       rimraf: 3.0.2
+      source-map-loader: 4.0.0_webpack@5.74.0
       typescript: 4.4.4
+      webpack: 5.74.0
 
   ../../core/express-server:
     specifiers:
@@ -1350,7 +1358,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ~0.8.3
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1370,7 +1378,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.2
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.8.3
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -1572,7 +1580,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': ^1.0.3
       '@bentley/cif-subsurface-schema': ^1.0.3
       '@bentley/cif-units-schema': ^1.0.1
-      '@bentley/imodeljs-native': 3.5.1
+      '@bentley/imodeljs-native': 3.5.5
       '@bentley/plant-custom-attributes-schema': ^1.0.1
       '@bentley/process-functional-schema': ^1.0.1
       '@bentley/process-physical-schema': ^1.0.2
@@ -1585,8 +1593,8 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/ecschema-metadata': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/projects-client': ^0.6.0
@@ -1625,7 +1633,7 @@ importers:
       '@bentley/cif-subsurface-conflict-analysis-schema': 1.0.3
       '@bentley/cif-subsurface-schema': 1.0.3
       '@bentley/cif-units-schema': 1.0.1
-      '@bentley/imodeljs-native': 3.5.1
+      '@bentley/imodeljs-native': 3.5.5
       '@bentley/plant-custom-attributes-schema': 1.0.1
       '@bentley/process-functional-schema': 1.0.1
       '@bentley/process-physical-schema': 1.0.2
@@ -1636,8 +1644,8 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
       '@itwin/oidc-signin-tool': 3.5.0
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@itwin/projects-client': 0.6.0
@@ -1688,10 +1696,10 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/object-storage-core': ~1.4.0
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/projects-client': ^0.6.0
@@ -1748,10 +1756,10 @@ importers:
       '@itwin/electron-authorization': 0.8.5_electron@17.4.11
       '@itwin/express-server': link:../../core/express-server
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/object-storage-core': 1.4.0
       '@itwin/reality-data-client': 0.9.0
       chai: 4.3.6
@@ -1810,10 +1818,10 @@ importers:
       '@itwin/ecschema-rpcinterface-impl': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -1854,10 +1862,10 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@itwin/ecschema-rpcinterface-impl': link:../../core/ecschema-rpc/impl
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/oidc-signin-tool': 3.5.0
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2102,10 +2110,10 @@ importers:
       '@itwin/core-quantity': workspace:*
       '@itwin/eslint-plugin': workspace:*
       '@itwin/express-server': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
@@ -2147,10 +2155,10 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/eslint-plugin': link:../../tools/eslint-plugin
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/oidc-signin-tool': 3.5.0
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
@@ -2772,10 +2780,10 @@ importers:
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodel-browser-react': 0.12.2
       '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ~1.42.0
@@ -2852,10 +2860,10 @@ importers:
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
       '@itwin/imodel-browser-react': 0.12.2_react-dom@17.0.2+react@17.0.2
       '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.15.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
@@ -2944,10 +2952,10 @@ importers:
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ~1.42.0
@@ -3023,10 +3031,10 @@ importers:
       '@itwin/frontend-devtools': link:../../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../../core/hypermodeling
       '@itwin/imodel-components-react': link:../../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.15.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
@@ -3096,10 +3104,10 @@ importers:
       '@itwin/electron-authorization': ^0.8.3
       '@itwin/eslint-plugin': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/oidc-signin-tool': ^3.2.2
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': 0.9.0
@@ -3135,10 +3143,10 @@ importers:
       '@itwin/core-quantity': link:../../core/quantity
       '@itwin/electron-authorization': 0.8.5_electron@17.4.11
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/oidc-signin-tool': 3.5.0_electron@17.4.11
       '@itwin/reality-data-client': 0.9.0
       body-parser: 1.20.0
@@ -3192,10 +3200,10 @@ importers:
       '@itwin/eslint-plugin': workspace:*
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/object-storage-core': ~1.4.0
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': workspace:*
@@ -3249,10 +3257,10 @@ importers:
       '@itwin/electron-authorization': 0.8.5_electron@17.4.11
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/object-storage-core': 1.4.0
       '@itwin/reality-data-client': 0.9.0
       '@itwin/webgl-compatibility': link:../../core/webgl-compatibility
@@ -3471,8 +3479,8 @@ importers:
       '@itwin/core-geometry': workspace:*
       '@itwin/core-transformer': workspace:*
       '@itwin/eslint-plugin': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
       '@itwin/node-cli-authorization': ~0.9.0
       '@itwin/projects-client': ^0.6.0
       '@types/chai': 4.3.1
@@ -3496,8 +3504,8 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/core-transformer': link:../../core/transformer
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
       '@itwin/node-cli-authorization': 0.9.2
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
@@ -3708,10 +3716,10 @@ importers:
       '@itwin/frontend-devtools': workspace:*
       '@itwin/hypermodeling-frontend': workspace:*
       '@itwin/imodel-components-react': workspace:*
-      '@itwin/imodels-access-backend': ^2.0.0
-      '@itwin/imodels-access-frontend': ^2.0.0
-      '@itwin/imodels-client-authoring': ^2.0.0
-      '@itwin/imodels-client-management': ^2.0.0
+      '@itwin/imodels-access-backend': ^2.2.1
+      '@itwin/imodels-access-frontend': ^2.2.1
+      '@itwin/imodels-client-authoring': ^2.2.1
+      '@itwin/imodels-client-management': ^2.2.1
       '@itwin/itwinui-css': 0.x
       '@itwin/itwinui-icons-react': ^1.8.0
       '@itwin/itwinui-react': ~1.42.0
@@ -3785,10 +3793,10 @@ importers:
       '@itwin/frontend-devtools': link:../../core/frontend-devtools
       '@itwin/hypermodeling-frontend': link:../../core/hypermodeling
       '@itwin/imodel-components-react': link:../../ui/imodel-components-react
-      '@itwin/imodels-access-backend': 2.1.0
-      '@itwin/imodels-access-frontend': 2.1.0
-      '@itwin/imodels-client-authoring': 2.1.0
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-access-backend': 2.2.1
+      '@itwin/imodels-access-frontend': 2.2.1
+      '@itwin/imodels-client-authoring': 2.2.1
+      '@itwin/imodels-client-management': 2.2.1
       '@itwin/itwinui-css': 0.63.1
       '@itwin/itwinui-icons-react': 1.15.1_react-dom@17.0.2+react@17.0.2
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
@@ -3880,7 +3888,6 @@ importers:
       glob: ^7.1.2
       mocha: ^10.0.0
       mocha-junit-reporter: ^2.0.2
-      recursive-readdir: ^2.2.2
       rimraf: ^3.0.2
       tree-kill: ^1.2.0
       typedoc: ^0.22.11
@@ -3897,7 +3904,6 @@ importers:
       glob: 7.2.3
       mocha: 10.0.0
       mocha-junit-reporter: 2.1.0_mocha@10.0.0
-      recursive-readdir: 2.2.2
       rimraf: 3.0.2
       tree-kill: 1.2.2
       typedoc: 0.22.18_typescript@4.4.4
@@ -3978,7 +3984,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 16.11.59
-      '@xmldom/xmldom': ^0.7.0
+      '@xmldom/xmldom': ~0.8.3
       chai: ^4.1.2
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -3998,7 +4004,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@xmldom/xmldom': 0.7.5
+      '@xmldom/xmldom': 0.8.3
       chai-string: 1.5.0_chai@4.3.6
       chalk: 3.0.0
       commander: 2.20.3
@@ -6688,8 +6694,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/3.5.1:
-    resolution: {integrity: sha512-I5pl7Ck+DDhM2vk6syRBhyA0ePPYCi9jQWbKFRr+DEUJGf+Dqq8tk2cyDCaYZV0pD0Gsesf4Bu247B9OOX1Esg==}
+  /@bentley/imodeljs-native/3.5.5:
+    resolution: {integrity: sha512-QpwN13NKnXXt7MHllhlUbvHv5WWp56hwR7wMpmhlFlacvg6XGOlLNTGUU0m//YmoOfnBCeBf9fzUye9Bpwv0tw==}
     requiresBuild: true
     dev: false
 
@@ -7433,8 +7439,8 @@ packages:
       - supports-color
       - utf-8-validate
 
-  /@itwin/cloud-agnostic-core/1.0.0:
-    resolution: {integrity: sha512-9lSvBXWknuDqOcSqZ5sDLngdVsUZtKDBsEJxvnQa8fi+e4Rm64Mc/NGf+495k5rYYKpi8dSxt1oxgRrSjAbmfQ==}
+  /@itwin/cloud-agnostic-core/1.3.0:
+    resolution: {integrity: sha512-ScX/hQrG7L1aMMJo40+UQCGqut7ykZyK1KVkdWOlWiqpJnhgZPreeg5e4/disjAwtlAtqruEcu4Zu51Gw21Rnw==}
     engines: {node: '>=12.20 <17.0.0'}
     dependencies:
       inversify: 5.0.5
@@ -7496,44 +7502,45 @@ packages:
       react-intersection-observer: 8.34.0_react@17.0.2
     dev: false
 
-  /@itwin/imodels-access-backend/2.1.0:
-    resolution: {integrity: sha512-/jQxE8/rjY3byiH0PLK4mTAX0JVVyE4qQSOcjT7DqKuHdnCRFmLczUIMVzLc2OOumRLzo2g8Z5j890jpahCYhw==}
+  /@itwin/imodels-access-backend/2.2.1:
+    resolution: {integrity: sha512-Bccu6SS9I9TQTNElWJBR+XG6ygXWnvgMdTO+E/o/zugug9ESOqcqXHfWPIYduiS3jRQX0FfxHZTfqomNacmxnA==}
     dependencies:
+      '@azure/abort-controller': 1.1.0
       '@itwin/core-backend': link:../../core/backend
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
-      '@itwin/imodels-client-authoring': 2.1.0
+      '@itwin/imodels-client-authoring': 2.2.1
       axios: 0.21.4
     transitivePeerDependencies:
       - debug
       - encoding
     dev: false
 
-  /@itwin/imodels-access-frontend/2.1.0:
-    resolution: {integrity: sha512-dBdglhG6iWq+X3YTEGB9ySIKuQtu98i4nsDbNg6Z6NPAdRUtftn/QTe8oAI0zVeYrJEG3gYgEsfp9mgQ/ufcxA==}
+  /@itwin/imodels-access-frontend/2.2.1:
+    resolution: {integrity: sha512-wGsLa405OV7xFmikKvX1DJ3gNrgJREHg/RiE6mQ+7MVKefhjMbyb22us+yDQh2VIBTpMf02WTJDr4A2VOW/LLQ==}
     dependencies:
       '@itwin/core-bentley': link:../../core/bentley
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
-      '@itwin/imodels-client-management': 2.1.0
+      '@itwin/imodels-client-management': 2.2.1
     transitivePeerDependencies:
       - debug
     dev: false
 
-  /@itwin/imodels-client-authoring/2.1.0:
-    resolution: {integrity: sha512-TUQWe4b8QJ03qGPZr4m/npNcOLZJqGckwcioE++ZgR60HZHvIDRJGDMzVb0aJj5VtvmWGdHAx3oCFW8tDHvr6Q==}
+  /@itwin/imodels-client-authoring/2.2.1:
+    resolution: {integrity: sha512-oGK8JjGUZ3IiLD++mEBcd9Rz3ESyGuf3n3pyB125ZWvRXt6yAciWtgwg0xGOyMCTl6G4PyoCBqz3mju74yAJ7Q==}
     dependencies:
       '@azure/storage-blob': 12.7.0
-      '@itwin/imodels-client-management': 2.1.0
-      '@itwin/object-storage-azure': 1.0.0
-      '@itwin/object-storage-core': 1.0.0
+      '@itwin/imodels-client-management': 2.2.1
+      '@itwin/object-storage-azure': 1.3.0
+      '@itwin/object-storage-core': 1.3.0
     transitivePeerDependencies:
       - debug
       - encoding
     dev: false
 
-  /@itwin/imodels-client-management/2.1.0:
-    resolution: {integrity: sha512-zpITblgpGx0KF+BmIgRmSNkgDPLCxZ1HNXeUgIx87pHBNFepWrnjKkMcSZk0WZ40aAMxknwHoladc3wfcU42KQ==}
+  /@itwin/imodels-client-management/2.2.1:
+    resolution: {integrity: sha512-gdNyNsO7PH08sjl3FBVnrJdzHQPu6wOGJSmCi4+wIvDuNBWS+RgHMaT5VaIUPSm0KBhysUuj7tJQcxG0RTrrSw==}
     dependencies:
       axios: 0.21.4
     transitivePeerDependencies:
@@ -7597,13 +7604,14 @@ packages:
       - debug
     dev: false
 
-  /@itwin/object-storage-azure/1.0.0:
-    resolution: {integrity: sha512-HVXLiIHCPJcgnz4sXWj2dPY7hqdQKhmCAoUlFRkg6C/TWjTtvNeCp+EkfyJsiqVI2NwM4HHG5qoW8BfLFDqdTQ==}
+  /@itwin/object-storage-azure/1.3.0:
+    resolution: {integrity: sha512-iGp8OJ1L9m9ZnoGeF2LyObIwndqZ5HY+eWUIrUwoVYeFK1ACKyAaDz1ZLTSpNQARPPxNXvbMOFFyZsg/V3ncHA==}
     engines: {node: '>=12.20 <17.0.0'}
     dependencies:
+      '@azure/core-paging': 1.2.1
       '@azure/storage-blob': 12.2.1
-      '@itwin/cloud-agnostic-core': 1.0.0
-      '@itwin/object-storage-core': 1.0.0
+      '@itwin/cloud-agnostic-core': 1.3.0
+      '@itwin/object-storage-core': 1.3.0
       inversify: 5.0.5
       reflect-metadata: 0.1.13
     transitivePeerDependencies:
@@ -7626,11 +7634,11 @@ packages:
       - encoding
     dev: false
 
-  /@itwin/object-storage-core/1.0.0:
-    resolution: {integrity: sha512-eiOPTNQ5hLrQ8aL7T9P+IjL0aoxgqbxQ2L9Kt0wsC8ukpyuvVUD9UjAhS0SclxCa4bgulO8nEF5CZBeFA4+RkA==}
+  /@itwin/object-storage-core/1.3.0:
+    resolution: {integrity: sha512-cCHh5i5ttVW98e3oGX9AUx8OH/sQGim+Nb2LTDgpO8kVSh/bIuMaH80T5kdsEuX4N2k+SIoKmI0UWTo4Zhz7eg==}
     engines: {node: '>=12.20 <17.0.0'}
     dependencies:
-      '@itwin/cloud-agnostic-core': 1.0.0
+      '@itwin/cloud-agnostic-core': 1.3.0
       axios: 0.27.2
       inversify: 5.0.5
       reflect-metadata: 0.1.13
@@ -8935,7 +8943,7 @@ packages:
     resolution: {integrity: sha512-9K4zoImiZc3HlIp6AVUDE4CWYx22a+lhSZMYNpbjW04+YF0KWj4pJXnEMjdnFTiQibFFmElcsasJXDbdI/EPhA==}
     dependencies:
       '@types/eslint': 7.2.14
-      '@types/estree': 0.0.51
+      '@types/estree': 0.0.52
 
   /@types/eslint/7.2.14:
     resolution: {integrity: sha512-pESyhSbUOskqrGcaN+bCXIQDyT5zTaRWfj5ZjjSlMatgGjIn3QQPfocAu4WSabUR7CGyLZ2CQaZyISOEX7/saw==}
@@ -9905,8 +9913,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@xmldom/xmldom/0.7.5:
-    resolution: {integrity: sha512-V3BIhmY36fXZ1OtVcI9W+FxQqxVLsPKcNjWigIaa81dLC9IolJl5Mt4Cvhmr0flUnjSpTdrbMTSbXqYqV5dT6A==}
+  /@xmldom/xmldom/0.8.3:
+    resolution: {integrity: sha512-Lv2vySXypg4nfa51LY1nU8yDAGo/5YwF+EY/rUZgIbfvwVARcd67ttCM8SMsTeJy51YhHYavEq+FS6R0hW9PFQ==}
     engines: {node: '>=10.0.0'}
 
   /@xtuc/ieee754/1.2.0:
@@ -17099,6 +17107,7 @@ packages:
     resolution: {integrity: sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==}
     dependencies:
       brace-expansion: 1.1.11
+    dev: true
 
   /minimatch/3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
@@ -19770,6 +19779,7 @@ packages:
     engines: {node: '>=0.10.0'}
     dependencies:
       minimatch: 3.0.4
+    dev: true
 
   /reduce-flatten/2.0.0:
     resolution: {integrity: sha512-EJ4UNY/U1t2P/2k6oqotuX2Cc3T6nxJwsM0N0asT7dhrtH1ltUxDn4NalSYmPE2rCkVpcf/X6R0wDwcFpzhd4w==}

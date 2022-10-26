@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Expose Progress API for changeset(s) download in higher levels (BriefcaseManager, IpcAppHandler, etc.)",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

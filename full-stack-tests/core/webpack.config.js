@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const glob = require("glob");
@@ -10,8 +10,7 @@ const fs = require("fs");
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile) {
-  if (!fs.existsSync(envFile))
-    return;
+  if (!fs.existsSync(envFile)) return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -47,11 +46,12 @@ function createConfig(shouldInstrument) {
         zlib: require.resolve("browserify-zlib"),
       },
       alias: {
-        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/storage-blob$":
+          "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
         "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js",
         "@azure/logger$": "@azure/logger/dist-esm/src/index.js",
-        "supports-color$": "supports-color/browser.js"
-      }
+        "supports-color$": "supports-color/browser.js",
+      },
     },
     module: {
       noParse: [
