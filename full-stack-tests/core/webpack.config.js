@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 const path = require("path");
 const glob = require("glob");
@@ -10,7 +10,8 @@ const fs = require("fs");
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile) {
-  if (!fs.existsSync(envFile)) return;
+  if (!fs.existsSync(envFile))
+    return;
 
   const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
   const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -46,12 +47,11 @@ function createConfig(shouldInstrument) {
         zlib: require.resolve("browserify-zlib"),
       },
       alias: {
-        "@azure/storage-blob$":
-          "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
+        "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
         "@azure/core-http$": "@azure/core-http/dist-esm/src/coreHttp.js",
         "@azure/logger$": "@azure/logger/dist-esm/src/index.js",
-        "supports-color$": "supports-color/browser.js",
-      },
+        "supports-color$": "supports-color/browser.js"
+      }
     },
     module: {
       noParse: [
@@ -88,7 +88,6 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
-      fs,
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -123,7 +122,7 @@ function createConfig(shouldInstrument) {
       ],
       loader: require.resolve("istanbul-instrumenter-loader"),
       options: {
-        debug: true,
+        debug: true
       },
       enforce: "post",
     });
@@ -137,5 +136,5 @@ module.exports = [
   // FIXME: Temporarily disabling instrumented bundle, because this webpack run is taking too long.
   // Also hoping this fixes our source-map-loader out of memory issue for now...
   // createConfig(true),
-  createConfig(false),
-];
+  createConfig(false)
+]
