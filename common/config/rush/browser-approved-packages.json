@@ -555,6 +555,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "crypto-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
