@@ -316,7 +316,7 @@ export class RealityTileTree extends TileTree {
 
   /** @internal */
   public doReprojectChildren(tile: Tile): boolean {
-    if (!(tile instanceof RealityTile) || !tile.region || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
+    if (!(tile instanceof RealityTile) || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
