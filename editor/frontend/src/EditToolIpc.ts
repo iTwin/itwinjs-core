@@ -8,12 +8,12 @@
 
 import { PickAsyncMethods } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
-import { BasicManipulationCommandIpc, editorChannel, SolidModelingCommandIpc } from "@itwin/editor-common";
+import { BasicManipulationCommandIpc, EditCommandIpc, editorChannel, SolidModelingCommandIpc } from "@itwin/editor-common";
 
 /** Create a type safe Proxy object to make IPC calls to methods of the current `EditCommand`
  * @alpha
  */
-export function makeEditToolIpc<K>(): PickAsyncMethods<K> {
+export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K> {
   return IpcApp.makeIpcFunctionProxy<K>(editorChannel, "callMethod");
 }
 
