@@ -6337,6 +6337,7 @@ export abstract class MapTilingScheme {
 // @public
 export interface MarginOptions {
     marginPercent?: MarginPercent;
+    paddingPercent?: PaddingPercent | number;
 }
 
 // @public
@@ -7482,6 +7483,18 @@ export interface OverrideFormatEntry {
 
 // @internal
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
+
+// @public
+export interface PaddingPercent {
+    // (undocumented)
+    bottom?: number;
+    // (undocumented)
+    left?: number;
+    // (undocumented)
+    right?: number;
+    // (undocumented)
+    top?: number;
+}
 
 // @public
 export class PanViewTool extends ViewManip {
