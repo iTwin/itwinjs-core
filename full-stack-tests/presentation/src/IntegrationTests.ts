@@ -78,7 +78,7 @@ const initializeCommon = async (props: { backendTimeout?: number, useClientServi
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
   Logger.setLevel("i18n", LogLevel.Error);
-  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECObjects, LogLevel.Warning);
+  Logger.setLevel(PresentationBackendNativeLoggerCategory.ECPresentation, LogLevel.Info);
 
   const libDir = path.resolve("lib");
   const hierarchiesCacheDir = path.join(libDir, "cache");

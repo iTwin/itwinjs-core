@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/* eslint-disable no-console */
 import { expect } from "chai";
 import * as fs from "fs";
 import { SnapshotDb } from "@itwin/core-backend";
@@ -65,15 +66,22 @@ describe("ReadWrite", () => {
             </ECEntityClass>
         </ECSchema>`;
 
+      console.log(`[${new Date().toISOString()}] before nodes request`);
       const nodesRequest = manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
       });
 
+      console.log(`[${new Date().toISOString()}] before schemas import`);
       await imodel.importSchemaStrings([schema]);
+
+      console.log(`[${new Date().toISOString()}] before commit`);
       imodel.saveChanges();
 
+      console.log(`[${new Date().toISOString()}] before awaiting nodes`);
       const nodes = await nodesRequest;
+      console.log(`[${new Date().toISOString()}] after awaiting nodes`);
+
       expect(nodes.length).to.eq(85);
     });
 
