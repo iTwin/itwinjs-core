@@ -83,8 +83,8 @@ export interface WindowSizeAndPositionProps {
  * The backend for Electron-based desktop applications
  * @beta
  */
-export class ElectronHost {
-  private static _ipc: ElectronIpc;
+export class ElectronHost extends NativeHost {
+  private static _electronIpc: ElectronIpc;
   private static _developmentServer: boolean;
   private static _electron: typeof ElectronModule;
   private static _electronFrontend = "electron://frontend/";
@@ -96,8 +96,6 @@ export class ElectronHost {
   public static get ipcMain() { return this._electron?.ipcMain; }
   public static get app() { return this._electron?.app; }
   public static get electron() { return this._electron; }
-
-  private constructor() { }
 
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
@@ -163,12 +161,12 @@ export class ElectronHost {
           x: position[0],
           y: position[1],
         };
-        NativeHost.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
+        this.settingsStore.setData(`windowPos-${name}`, JSON.stringify(pos));
       };
       const saveMaximized = (maximized: boolean) => {
         if (!maximized)
           saveWindowPosition();
-        NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
+        this.settingsStore.setData(`windowMaximized-${name}`, maximized);
       };
 
       mainWindow.on("resized", () => saveWindowPosition());
@@ -185,13 +183,13 @@ export class ElectronHost {
 
   /** Gets window size and position for a window, by name, from settings file, if present */
   public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
-    const saved = NativeHost.settingsStore.getString(`windowPos-${windowName}`);
+    const saved = this.settingsStore.getString(`windowPos-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
   }
 
   /** Gets "window maximized" flag for a window, by name, from settings file if present */
   public static getWindowMaximizedSetting(windowName: string): boolean | undefined {
-    return NativeHost.settingsStore.getBoolean(`windowMaximized-${windowName}`);
+    return this.settingsStore.getBoolean(`windowMaximized-${windowName}`);
   }
 
   /**
@@ -236,7 +234,7 @@ export class ElectronHost {
     this._openWindow(windowOptions);
   }
 
-  public static get isValid() { return this._ipc !== undefined; }
+  public static override get isValid() { return super.isValid && this._electronIpc !== undefined; }
 
   /**
    * Initialize the backend of an Electron app.
@@ -245,13 +243,15 @@ export class ElectronHost {
    * @param opts Options that control aspects of your backend.
    * @note This method must only be called from the backend of an Electron app (i.e. when [ProcessDetector.isElectronAppBackend]($bentley) is `true`).
    */
-  public static async startup(opts?: ElectronHostOpts) {
+  public static override async startup(inOpts?: ElectronHostOpts | {}) {
+    const opts = inOpts as Partial<ElectronHostOpts>; // type-safely tell typescript that we can check for ElectronHostOpts properties on empty objects
+
     if (!ProcessDetector.isElectronAppBackend)
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {
       this._electron = require("electron");
-      this._ipc = new ElectronIpc();
+      this._electronIpc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
         this.electron.protocol.registerSchemesAsPrivileged([{
@@ -268,13 +268,12 @@ export class ElectronHost {
       this.webResourcesPath = eopt?.webResourcesPath ?? "";
       this.frontendURL = eopt?.frontendURL ?? (this._developmentServer ? `http://localhost:${frontendPort}` : `${this._electronFrontend}index.html`);
       this.appIconPath = path.join(this.webResourcesPath, eopt?.iconName ?? "appicon.ico");
-      this.rpcConfig = ElectronRpcManager.initializeBackend(this._ipc, eopt?.rpcInterfaces);
+      this.rpcConfig = ElectronRpcManager.initializeBackend(this._electronIpc, eopt?.rpcInterfaces);
     }
 
-    opts = opts ?? {};
     opts.ipcHost = opts.ipcHost ?? {};
-    opts.ipcHost.socket = this._ipc;
-    await NativeHost.startup(opts);
+    opts.ipcHost.socket = this._electronIpc;
+    await super.startup(opts);
     if (IpcHost.isValid) {
       ElectronDialogHandler.register();
       opts.electronHost?.ipcHandlers?.forEach((ipc) => ipc.register());

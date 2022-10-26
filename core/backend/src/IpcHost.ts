@@ -270,6 +270,6 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {
-    return IModelHost.platform.queryConcurrency(pool);
+    return IpcHost.platform.queryConcurrency(pool);
   }
 }

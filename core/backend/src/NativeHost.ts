@@ -14,7 +14,6 @@ import {
 } from "@itwin/core-common";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
-import { IModelHost } from "./IModelHost";
 import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
@@ -25,7 +24,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
   public async getAccessToken(): Promise<AccessToken | undefined> {
-    return IModelHost.authorizationClient?.getAccessToken();
+    return NativeHost.authorizationClient?.getAccessToken();
   }
 
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
@@ -53,7 +52,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
         const now = Date.now();
         if (loaded >= total || now >= nextTime) {
           nextTime = now + interval;
-          IpcHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
+          NativeHost.send(`nativeApp.progress-${request.iModelId}`, { loaded, total });
         }
         return checkAbort();
       };
@@ -76,7 +75,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
 
   public async deleteBriefcaseFiles(fileName: string): Promise<void> {
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, await IModelHost.getAccessToken());
+    await BriefcaseManager.deleteBriefcaseFiles(fileName, await NativeHost.getAccessToken());
   }
 
   public async getCachedBriefcases(iModelId?: GuidString): Promise<LocalBriefcaseProps[]> {
@@ -134,7 +133,7 @@ export interface NativeHostOpts extends IpcHostOpts {
  * Backend for desktop/mobile native applications
  * @public
  */
-export class NativeHost extends IModelHost {
+export class NativeHost extends IpcHost {
   private static _reachability?: InternetConnectivityStatus;
   private static _applicationName: string;
 
@@ -146,13 +145,13 @@ export class NativeHost extends IModelHost {
   /** Get the local cache folder for application settings */
   public static get appSettingsCacheDir(): string {
     if (this._appSettingsCacheDir === undefined)
-      this._appSettingsCacheDir = join(IModelHost.cacheDir, "appSettings");
+      this._appSettingsCacheDir = join(this.cacheDir, "appSettings");
     return this._appSettingsCacheDir;
   }
 
   /** Send a notification to the NativeApp connected to this NativeHost. */
   public static notifyNativeFrontend<T extends keyof NativeAppNotifications>(methodName: T, ...args: Parameters<NativeAppNotifications[T]>) {
-    return IpcHost.send(nativeAppNotify, methodName, ...args);
+    return this.send(nativeAppNotify, methodName, ...args);
   }
 
   private static _isNativeHostValid = false;
@@ -186,7 +185,7 @@ export class NativeHost extends IModelHost {
   public static override async shutdown(): Promise<void> {
     this._isNativeHostValid = false;
     this.onInternetConnectivityChanged.clear();
-    await IpcHost.shutdown();
+    await super.shutdown();
   }
 
   /** get current value of internet connectivity */
