@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 import * as path from "path";
+import { WebPreferences } from "electron";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
 import { CertaConfig } from "../../CertaConfig";
@@ -35,7 +36,7 @@ export class ElectronTestRunner {
         contextIsolation: false,
         nativeWindowOpen: true,
         sandbox: false,
-      },
+      } as WebPreferences, // nativeWindowOpen was removed starting Electron 18
     });
 
     const exitElectronApp = (exitCode: number) => {

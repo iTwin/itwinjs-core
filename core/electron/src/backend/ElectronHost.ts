@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 // Note: only import *types* from electron so this file can be imported by apps that sometimes use Electron and sometimes not.
-import type { BrowserWindow, BrowserWindowConstructorOptions } from "electron";
+import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
 import type * as ElectronModule from "electron";
 
 import * as fs from "fs";
@@ -142,7 +142,7 @@ export class ElectronHost {
         nativeWindowOpen: true,
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
-      },
+      } as WebPreferences, // nativeWindowOpen was removed starting Electron 18
     };
 
     this._mainWindow = new (this.electron.BrowserWindow)(opts);
