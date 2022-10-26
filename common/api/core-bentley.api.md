@@ -197,6 +197,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
