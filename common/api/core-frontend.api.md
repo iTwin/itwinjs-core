@@ -1178,7 +1178,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, nbLods?: number);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
@@ -5271,6 +5271,8 @@ export class IpcApp {
     static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
+    // @internal
+    static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
     static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
@@ -6337,6 +6339,7 @@ export abstract class MapTilingScheme {
 // @public
 export interface MarginOptions {
     marginPercent?: MarginPercent;
+    paddingPercent?: PaddingPercent | number;
 }
 
 // @public
@@ -7482,6 +7485,18 @@ export interface OverrideFormatEntry {
 
 // @internal
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
+
+// @public
+export interface PaddingPercent {
+    // (undocumented)
+    bottom?: number;
+    // (undocumented)
+    left?: number;
+    // (undocumented)
+    right?: number;
+    // (undocumented)
+    top?: number;
+}
 
 // @public
 export class PanViewTool extends ViewManip {

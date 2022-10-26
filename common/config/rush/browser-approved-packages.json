@@ -128,7 +128,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/cloud-agnostic-core",
