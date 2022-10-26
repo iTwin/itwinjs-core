@@ -2137,7 +2137,7 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
-   * @param scaleX scale factor for columns x
+   * @param scaleX scale factor for column x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
    * @param result optional result.
@@ -2151,11 +2151,10 @@ export class Matrix3d implements BeJSONFunctions {
         result);
   }
 
-  /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
-   * @param scaleX scale factor for columns x
+  /** Scale the columns of this Matrix3d.
+   * @param scaleX scale factor for column x
    * @param scaleY scale factor for column y
    * @param scaleZ scale factor for column z
-   * @param result optional result.
    */
   public scaleColumnsInPlace(scaleX: number, scaleY: number, scaleZ: number) {
 
@@ -2423,22 +2422,27 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return undefined;
   }
-
+  /** Adjust the matrix in place so that it is rigid:
+   * * columns are perpendicular and have unit length
+   * * transpose equals inverse
+   * @param axisOrder how to reorder the matrix columns
+   * @return whether the instance is rigid on return
+   */
+  public makeRigid(axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
+    const maxAbs = this.maxAbs();
+    if (Geometry.isSmallMetricDistance(maxAbs))
+      return false;
+    const scale = 1.0 / maxAbs;
+    this.scaleColumnsInPlace(scale, scale, scale);
+    this.axisOrderCrossProductsInPlace(axisOrder);
+    return this.normalizeColumnsInPlace();
+  }
   /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
    * columns are taken from the source Matrix3d in order indicated by the axis order.
    */
-  public static createRigidFromMatrix3d(
-    source: Matrix3d,
-    axisOrder: AxisOrder = AxisOrder.XYZ,
-    result?: Matrix3d): Matrix3d | undefined {
+  public static createRigidFromMatrix3d(source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d): Matrix3d | undefined {
     result = source.clone(result);
-    const maxAbs = result.maxAbs();
-    if (Geometry.isSmallMetricDistance(maxAbs))
-      return undefined;
-    const scale = 1.0 / maxAbs;
-    result.scaleColumnsInPlace(scale, scale, scale);
-    result.axisOrderCrossProductsInPlace(axisOrder);
-    if (result.normalizeColumnsInPlace())
+    if (result.makeRigid(axisOrder))
       return result;
     return undefined;
   }

@@ -464,7 +464,7 @@ export namespace IModelJson {
     /** primary radius  (elbow radius) */
     majorRadius: number;
     /** pipe radius */
-    minorRadius?: number;
+    minorRadius: number;
     /** sweep angle.
      * * if omitted, full 360 degree sweep.
      */
@@ -1237,7 +1237,6 @@ export namespace IModelJson {
     }
     /** Parse TorusPipe props to TorusPipe instance. */
     public static parseTorusPipe(json?: TorusPipeProps): TorusPipe | undefined {
-
       const axes = Reader.parseOrientation(json, true)!;
       const center = Reader.parsePoint3dProperty(json, "center");
       const radiusA = Reader.parseNumberProperty(json, "majorRadius");
@@ -1246,9 +1245,7 @@ export namespace IModelJson {
       const capped = Reader.parseBooleanProperty(json, "capped", false)!;
       if (center
         && radiusA !== undefined
-        && radiusB !== undefined
-      ) {
-
+        && radiusB !== undefined) {
         return TorusPipe.createDgnTorusPipe(center, axes.columnX(), axes.columnY(),
           radiusA, radiusB,
           sweepAngle ? sweepAngle : Angle.createDegrees(360), capped);
@@ -1557,7 +1554,6 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleTorusPipe(data: TorusPipe): any {
-
       const vectorX = data.cloneVectorX();
       const vectorY = data.cloneVectorY();
       const radiusA = data.getMajorRadius();
@@ -1578,7 +1574,6 @@ export namespace IModelJson {
         value.capped = data.capped;
       }
       return { torusPipe: value };
-
     }
 
     /** Convert strongly typed instance to tagged json */

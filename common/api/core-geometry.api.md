@@ -2729,7 +2729,7 @@ export namespace IModelJson {
         capped?: boolean;
         center: XYZProps;
         majorRadius: number;
-        minorRadius?: number;
+        minorRadius: number;
         sweepAngle?: AngleProps;
     }
     export interface TransitionSpiralProps extends AxesProps {
@@ -3475,6 +3475,7 @@ export class Matrix3d implements BeJSONFunctions {
     isSingular(): boolean;
     get isUpperTriangular(): boolean;
     get isXY(): boolean;
+    makeRigid(axisOrder?: AxisOrder): boolean;
     markSingular(): void;
     maxAbs(): number;
     maxDiff(other: Matrix3d): number;

@@ -40,7 +40,7 @@ export type MultiLineStringDataVariant = LineStringDataVariant | LineStringDataV
 export class Triangulator {
 
   /** Given the six nodes that make up two bordering triangles, "pinch" and relocate the nodes to flip them
-   * * The shared edge mates are a and d.
+   * * The shared edge mates are c and e.
    * * (abc) are a triangle in CCW order
    * * (dfe) are a triangle in CCW order. (!! node dfe instead of def.)
    */
