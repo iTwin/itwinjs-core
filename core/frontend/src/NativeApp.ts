@@ -63,10 +63,10 @@ export class NativeApp extends IpcApp {
 
   /** @deprecated use nativeAppIpc */
   public static async callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>) {
-    return IpcApp.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
+    return this.callIpcChannel(nativeAppChannel, methodName, ...args) as PromiseReturnType<NativeAppFunctions[T]>;
   }
   /** A Proxy to call one of the [NativeAppFunctions]($common) functions via IPC. */
-  public static nativeAppIpc = IpcApp.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
+  public static nativeAppIpc = this.makeIpcProxy<NativeAppFunctions>(nativeAppChannel);
 
   private static _storages = new Map<string, Storage>();
   private static _onOnline = async () => {
@@ -144,7 +144,7 @@ export class NativeApp extends IpcApp {
 
     let stopProgressEvents = () => { };
     if (progress !== undefined) {
-      stopProgressEvents = IpcApp.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
+      stopProgressEvents = this.addListener(`nativeApp.progress-${iModelId}`, (_evt: Event, data: { loaded: number, total: number }) => {
         progress(data);
       });
     }
