@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
-import { EditTools } from "@itwin/editor-frontend";
+import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
@@ -24,13 +24,12 @@ class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
   public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
   public async onRestartTool() { return this.exitTool(); }
-  public static callCommand<T extends keyof TestCommandIpc>(method: T, ...args: Parameters<TestCommandIpc[T]>): ReturnType<TestCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<TestCommandIpc[T]>;
-  }
+
+  public testIpc = makeEditToolIpc<TestCommandIpc>();
 
   public async go(cmd: string, str1: string, str2: string, obj1: TestCmdOjb1) {
     cmdStr = await EditTools.startCommand<string>(cmd, iModel.key, cmdArg);
-    testOut = await TestEditTool1.callCommand("testMethod1", str1, str2, obj1);
+    testOut = await this.testIpc.testMethod1(str1, str2, obj1);
   }
 }
 

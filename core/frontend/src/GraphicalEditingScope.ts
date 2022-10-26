@@ -93,7 +93,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     // Register the scope synchronously, in case enter() is called again for same iModel while awaiting asynchronous initialization.
     const scope = new GraphicalEditingScope(imodel);
     try {
-      const scopeStarted = await IpcApp.callIpcHost("toggleGraphicalEditingScope", imodel.key, true);
+      const scopeStarted = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(imodel.key, true);
       assert(scopeStarted); // If it didn't, the backend threw an error.
     } catch (e) {
       scope.dispose();
@@ -117,7 +117,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     try {
       this.onExiting.raiseEvent(this);
     } finally {
-      const scopeExited = await IpcApp.callIpcHost("toggleGraphicalEditingScope", this.iModel.key, false);
+      const scopeExited = await IpcApp.appFunctionIpc.toggleGraphicalEditingScope(this.iModel.key, false);
       assert(!scopeExited);
       try {
         this.onExited.raiseEvent(this);

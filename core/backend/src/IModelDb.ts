@@ -19,7 +19,7 @@ import {
   EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontId, FontMap, FontType, GeoCoordinatesRequestProps,
   GeoCoordinatesResponseProps, GeometryContainmentRequestProps, GeometryContainmentResponseProps, IModel, IModelCoordinatesRequestProps,
   IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelTileTreeProps, LocalFileName, MassPropertiesRequestProps,
-  MassPropertiesResponseProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
+  MassPropertiesResponseProps, ModelExtentsProps, ModelLoadProps, ModelProps, ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryBinder,
   QueryOptions, QueryOptionsBuilder, QueryRowFormat, SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions,
   SpatialViewDefinitionProps, SubCategoryResultRow, TextureData, TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps,
   ViewQueryParams, ViewStateLoadProps, ViewStateProps,
@@ -1498,6 +1498,33 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }
       });
     }
+
+    /** For each specified [[GeometricModel]], attempts to obtain the union of the volumes of all geometric elements within that model.
+     * @param ids The Id or Ids of the [[GeometricModel]]s for which to obtain the extents.
+     * @returns An array of results, one per supplied Id, in the order in which the Ids were supplied. If the extents could not be obtained, the
+     * corresponding results entry's `extents` will be a "null" range (@see [Range3d.isNull]($geometry)) and its `status` will indicate
+     * why the extents could not be obtained (e.g., because the Id did not identify a [[GeometricModel]]).
+     * @see [[queryRange]] to obtain the union of all of the models' extents.
+     */
+    public async queryExtents(ids: Id64String | Id64String[]): Promise<ModelExtentsProps[]> {
+      ids = typeof ids === "string" ? [ids] : ids;
+      if (ids.length === 0)
+        return [];
+
+      return this._iModel.nativeDb.queryModelExtentsAsync(ids);
+    }
+
+    /** Computes the union of the volumes of all geoemtric elements within any number of [[GeometricModel]]s, specified by model Id.
+     * @see [[queryExtents]] to obtain discrete volumes for each model.
+     */
+    public async queryRange(ids: Id64String | Id64String[]): Promise<AxisAlignedBox3d> {
+      const results = await this.queryExtents(ids);
+      const range = new Range3d();
+      for (const result of results)
+        range.union(Range3d.fromJSON(result.extents), range);
+
+      return range;
+    }
   }
 
   /** The collection of elements in an [[IModelDb]].
@@ -1545,7 +1572,11 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       } else if (props instanceof Code) {
         props = { code: props };
       }
-      return this._iModel.nativeDb.getElement(props) as T;
+      try {
+        return this._iModel.nativeDb.getElement(props) as T;
+      } catch (err: any) {
+        throw new IModelError(err.errorNumber, err.message);
+      }
     }
 
     /** Get properties of an Element by Id, FederationGuid, or Code
@@ -1904,10 +1935,13 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
     /** Insert a new ElementAspect into the iModel.
      * @param aspectProps The properties of the new ElementAspect.
      * @throws [[IModelError]] if unable to insert the ElementAspect.
+     * @returns the id of the newly inserted aspect.
+     * @note Aspect Ids may collide with element Ids, so don't put both in a container like Set or Map
+     *       use [EntityReference]($common) for that instead.
      */
-    public insertAspect(aspectProps: ElementAspectProps): void {
+    public insertAspect(aspectProps: ElementAspectProps): Id64String {
       try {
-        this._iModel.nativeDb.insertElementAspect(aspectProps);
+        return this._iModel.nativeDb.insertElementAspect(aspectProps);
       } catch (err: any) {
         throw new IModelError(err.errorNumber, `Error inserting ElementAspect [${err.message}], class: ${aspectProps.classFullName}`);
       }
@@ -1997,19 +2031,21 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+    private loadViewStateProps(viewDefinitionElement: ViewDefinition, options?: ViewStateLoadProps, drawingExtents?: Range3d): ViewStateProps {
       const elements = this._iModel.elements;
-      const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       const viewDefinitionProps = viewDefinitionElement.toJSON();
       const categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewDefinitionProps.categorySelectorId);
 
-      const displayStyleOptions: ElementLoadProps = {
+      const displayStyleProps = elements.getElementProps<DisplayStyleProps>({
         id: viewDefinitionProps.displayStyleId,
         displayStyle: options?.displayStyle,
-      };
-      const displayStyleProps = elements.getElementProps<DisplayStyleProps>(displayStyleOptions);
+      });
 
-      const viewStateData: ViewStateProps = { viewDefinitionProps, displayStyleProps, categorySelectorProps };
+      const viewStateData: ViewStateProps = {
+        viewDefinitionProps,
+        displayStyleProps,
+        categorySelectorProps,
+      };
 
       const modelSelectorId = (viewDefinitionProps as SpatialViewDefinitionProps).modelSelectorId;
       if (modelSelectorId !== undefined) {
@@ -2022,12 +2058,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         }));
       } else if (viewDefinitionElement instanceof DrawingViewDefinition) {
         // Ensure view has known extents
-        try {
-          const extentsJson = this._iModel.nativeDb.queryModelExtents({ id: viewDefinitionElement.baseModelId }).modelExtents;
-          viewStateData.modelExtents = Range3d.fromJSON(extentsJson);
-        } catch {
-          //
-        }
+        if (drawingExtents && !drawingExtents.isNull)
+          viewStateData.modelExtents = drawingExtents.toJSON();
 
         // Include information about the associated [[SectionDrawing]], if any.
         // NB: The SectionDrawing ECClass may not exist in the iModel's version of the BisCore ECSchema.
@@ -2046,6 +2078,31 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
       }
 
       return viewStateData;
+    }
+
+    /** @deprecated use [[getViewStateProps]]. */
+    public getViewStateData(viewDefinitionId: string, options?: ViewStateLoadProps): ViewStateProps {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition) {
+        try {
+          drawingExtents = Range3d.fromJSON(this._iModel.nativeDb.queryModelExtents({ id: view.baseModelId }).modelExtents);
+        } catch {
+          //
+        }
+      }
+
+      return this.loadViewStateProps(view, options, drawingExtents);
+    }
+
+    /** Obtain a [ViewStateProps]($common) for a [[ViewDefinition]] specified by element Id. */
+    public async getViewStateProps(viewDefinitionId: string, options?: ViewStateLoadProps): Promise<ViewStateProps> {
+      const view = this._iModel.elements.getElement<ViewDefinition>(viewDefinitionId);
+      let drawingExtents;
+      if (view instanceof DrawingViewDefinition)
+        drawingExtents = (await this._iModel.models.queryRange(view.baseModelId));
+
+      return this.loadViewStateProps(view, options, drawingExtents);
     }
 
     private getViewThumbnailArg(viewDefinitionId: Id64String): FilePropertyProps {

@@ -11,11 +11,15 @@ import { concat } from "rxjs/internal/observable/concat";
 import { defer } from "rxjs/internal/observable/defer";
 import { EMPTY } from "rxjs/internal/observable/empty";
 import { from } from "rxjs/internal/observable/from";
+import { generate } from "rxjs/internal/observable/generate";
 import { merge } from "rxjs/internal/observable/merge";
 import { of } from "rxjs/internal/observable/of";
+import { zip } from "rxjs/internal/observable/zip";
 import { concatAll } from "rxjs/internal/operators/concatAll";
 import { concatMap } from "rxjs/internal/operators/concatMap";
+import { defaultIfEmpty } from "rxjs/internal/operators/defaultIfEmpty";
 import { distinctUntilChanged } from "rxjs/internal/operators/distinctUntilChanged";
+import { filter } from "rxjs/internal/operators/filter";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
 import { mergeAll } from "rxjs/internal/operators/mergeAll";
@@ -218,18 +222,11 @@ export class TreeEventDispatcher implements TreeActions {
   ): Observable<{ selectedNodeItems: TreeNodeItem[], deselectedNodeItems: TreeNodeItem[] }> {
     const deselectedItems = this.collectNodeItems(deselection);
     if (isRangeSelection(selection)) {
-      let firstEmission = true;
-      return this.collectNodesBetween(selection.from, selection.to)
-        .pipe(
-          map((selectedNodeItems) => {
-            if (firstEmission) {
-              firstEmission = false;
-              return { selectedNodeItems, deselectedNodeItems: deselectedItems };
-            }
-
-            return { selectedNodeItems, deselectedNodeItems: [] };
-          }),
-        );
+      return zip(
+        this.collectNodesBetween(selection.from, selection.to).pipe(defaultIfEmpty([] as TreeNodeItem[])),
+        // Without a scheduler `generate` would block the main thread indefinitely
+        generate({ initialState: deselectedItems, iterate: () => [], scheduler: asapScheduler }),
+      ).pipe(map(([selectedNodeItems, deselectedNodeItems]) => ({ selectedNodeItems, deselectedNodeItems })));
     }
 
     const selectedItems = this.collectNodeItems(selection);
@@ -243,7 +240,9 @@ export class TreeEventDispatcher implements TreeActions {
 
     const loadedSelectedNodes = from(
       nodesToLoad.map((node) => {
-        const parentNode = node.parentId ? this._getVisibleNodes!().getModel().getNode(node.parentId) : this._getVisibleNodes!().getModel().getRootNode();
+        const parentNode = node.parentId
+          ? this._getVisibleNodes!().getModel().getNode(node.parentId)
+          : this._getVisibleNodes!().getModel().getRootNode();
         return parentNode ? this._nodeLoader.loadNode(parentNode, node.childIndex) : /* istanbul ignore next */ EMPTY;
       }),
     )
@@ -254,14 +253,16 @@ export class TreeEventDispatcher implements TreeActions {
         // Maybe we could simplify this to `this._nodeLoader.loadNodes(nodesToLoad)`?
         mergeAll(),
         distinctUntilChanged(),
-        map((loadResult) => loadResult.loadedNodes),
       );
 
-    return concat(of(readyNodes), loadedSelectedNodes)
-      .pipe(
-        // Give enough time for multiple subscribers to subscribe before any emissions begin
-        subscribeOn(asapScheduler),
-      );
+    return concat(
+      of(readyNodes.filter((node) => !node.isSelectionDisabled).map((node) => node.item)),
+      loadedSelectedNodes.pipe(map(({ loadedNodes }) => loadedNodes.filter((item) => !item.isSelectionDisabled))),
+    ).pipe(
+      filter((nodeItems) => nodeItems.length > 0),
+      // Give enough time for multiple subscribers to subscribe before any emissions begin
+      subscribeOn(asapScheduler),
+    );
   }
 
   private *iterateNodesBetween(
@@ -298,26 +299,28 @@ export class TreeEventDispatcher implements TreeActions {
 
   private collectNodeItems(nodeIds: string[]): TreeNodeItem[] {
     const items: TreeNodeItem[] = [];
-    if (this._getVisibleNodes === undefined)
+    if (this._getVisibleNodes === undefined) {
       return items;
+    }
 
     for (const nodeId of nodeIds) {
       const node = this._getVisibleNodes().getModel().getNode(nodeId);
       // istanbul ignore else
-      if (node !== undefined)
+      if (node !== undefined && !node.isSelectionDisabled) {
         items.push(node.item);
+      }
     }
     return items;
   }
 
   private static groupNodesByLoadingState(
     nodes: Iterable<TreeModelNode | TreeModelNodePlaceholder>,
-  ): [TreeNodeItem[], TreeModelNodePlaceholder[]] {
-    const loadedNodeItems: TreeNodeItem[] = [];
+  ): [TreeModelNode[], TreeModelNodePlaceholder[]] {
+    const loadedNodeItems: TreeModelNode[] = [];
     const nodesToLoad: TreeModelNodePlaceholder[] = [];
     for (const node of nodes) {
       if (isTreeModelNode(node)) {
-        loadedNodeItems.push(node.item);
+        loadedNodeItems.push(node);
       } else {
         nodesToLoad.push(node);
       }

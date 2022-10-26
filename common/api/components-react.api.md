@@ -2064,6 +2064,8 @@ export interface MutableTreeModelNode extends TreeModelNode {
     // (undocumented)
     isSelected: boolean;
     // (undocumented)
+    isSelectionDisabled?: boolean;
+    // (undocumented)
     item: TreeNodeItem;
     // (undocumented)
     label: PropertyRecord;
@@ -4182,6 +4184,8 @@ export interface TreeModelNode {
     // (undocumented)
     readonly isSelected: boolean;
     // (undocumented)
+    readonly isSelectionDisabled?: boolean;
+    // (undocumented)
     readonly item: TreeNodeItem;
     // (undocumented)
     readonly label: PropertyRecord;
@@ -4292,6 +4296,8 @@ export interface TreeNodeItem {
     isCheckboxVisible?: boolean;
     // (undocumented)
     isEditable?: boolean;
+    // (undocumented)
+    isSelectionDisabled?: boolean;
     // (undocumented)
     label: PropertyRecord;
     // (undocumented)

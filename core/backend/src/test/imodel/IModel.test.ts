@@ -637,7 +637,8 @@ describe("iModel", () => {
     assert.exists(model);
     assert.isTrue(model instanceof geomModel);
     roundtripThroughJson(model);
-    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents();
+    const modelExtents: AxisAlignedBox3d = (model as PhysicalModel).queryExtents(); // eslint-disable-line deprecation/deprecation
+
     assert.isBelow(modelExtents.low.x, modelExtents.high.x);
     assert.isBelow(modelExtents.low.y, modelExtents.high.y);
     assert.isBelow(modelExtents.low.z, modelExtents.high.z);
@@ -1404,6 +1405,7 @@ describe("iModel", () => {
     const id2 = elements.insertElement(elementProps);
 
     const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
+    // eslint-disable-next-line deprecation/deprecation
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2

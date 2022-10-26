@@ -36,7 +36,7 @@ import { EditTools } from "@itwin/editor-frontend";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
-import { ArcGisAccessClient, ArcGisEnterpriseClientId } from "@itwin/map-layers-auth";
+import { ArcGisAccessClient } from "@itwin/map-layers-auth";
 import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
@@ -361,28 +361,17 @@ export class SampleAppIModelApp {
     await UiFramework.initializeStateFromUserSettingsProviders();
 
     // ArcGIS Oauth setup
-    if ((SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
-      || SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId) {
-      let enterpriseClientIds: ArcGisEnterpriseClientId[] | undefined;
-      if (SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseBaseUrl && SampleAppIModelApp?.testAppConfiguration?.arcGisEnterpriseClientId)
-        enterpriseClientIds = [{
-          serviceBaseUrl: SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl,
-          clientId: SampleAppIModelApp.testAppConfiguration?.arcGisEnterpriseClientId,
-        }];
+    const accessClient = new ArcGisAccessClient();
+    const initStatus = accessClient.initialize({
+      redirectUri: "http://localhost:3000/esri-oauth2-callback",
+      clientIds: {
+        arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
+        enterpriseClientIds: [{serviceBaseUrl: "", clientId: "Bentley_TestApp"}],
+      },
+    });
 
-      const accessClient = new ArcGisAccessClient();
-
-      const initStatus = accessClient.initialize({
-        redirectUri: "http://localhost:3000/esri-oauth2-callback",
-        clientIds: {
-          arcgisOnlineClientId: SampleAppIModelApp?.testAppConfiguration?.arcGisOnlineClientId,
-          enterpriseClientIds,
-        },
-      });
-
-      IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
-      assert(initStatus === true);
-    }
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+    assert(initStatus === true);
 
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
@@ -840,7 +829,6 @@ async function main() {
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.arcGisOnlineClientId = process.env.IMJS_UITESTAPP_ARCGIS_ENT_CLIENTID;
   SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseBaseUrl = process.env.IMJS_UITESTAPP_ARCGIS_ENT_BASEURL;
-  SampleAppIModelApp.testAppConfiguration.arcGisEnterpriseClientId = process.env.IMJS_UITESTAPP_ARCGIS_ONLINE_CLIENTID;
 
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 

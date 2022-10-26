@@ -382,6 +382,9 @@ public;MarkerImage = HTMLImageElement | HTMLCanvasElement | HTMLVideoElement | I
 public;class MarkerSet
 public;MarkerTextAlign = "left" | "right" | "center" | "start" | "end"
 public;MarkerTextBaseline = "top" | "hanging" | "middle" | "alphabetic" | "ideographic" | "bottom"
+public;MaterialDiffuseProps
+public;MaterialSpecularProps
+public;MaterialTextureMappingProps
 public;MeasureAreaByPointsTool 
 public;MeasureAreaTool 
 public;MeasureDistanceTool 
@@ -431,6 +434,7 @@ public;OutputMessagePriority
 public;OutputMessageType
 public;OverrideFormatEntry
 internal;overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void
+public;PaddingPercent
 public;PanViewTool 
 public;ParseAndRunResult
 public;ParsedKeyin

@@ -107,7 +107,6 @@ export class SurfaceGeometry extends MeshGeometry {
   public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
   public override get isLitSurface() { return this.isLit; }
   public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
-  public override get hasFixedNormals() { return this.mesh.hasFixedNormals; }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -216,15 +215,12 @@ export class SurfaceGeometry extends MeshGeometry {
     flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
-    flags[SurfaceBitIndex.NoFaceFront] = 0;
+    flags[SurfaceBitIndex.HasNormalMap] = 0;
     flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
       flags[SurfaceBitIndex.HasNormals] = 1;
-      if (wantLighting(vf)) {
+      if (wantLighting(vf))
         flags[SurfaceBitIndex.ApplyLighting] = 1;
-        if (this.hasFixedNormals)
-          flags[SurfaceBitIndex.NoFaceFront] = 1;
-      }
 
       // Textured meshes store normal in place of color index.
       // Untextured lit meshes store normal where textured meshes would store UV coords.
