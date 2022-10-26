@@ -7,11 +7,14 @@ Table of contents:
 
 - [Display system](#display-system)
   - [Reality model display customization](#reality-model-display-customization)
+  - [View padding](#view-padding)
 - [Presentation](#presentation)
   - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+- [Geometry](#geometry)
+  - [Polyface](#polyface)
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
@@ -29,6 +32,29 @@ Point clouds provide the following additional customizations:
 - [PointCloudDisplaySettings.sizeMode]($common) controls how the size of each point in the cloud is computed - either as a specific radius in pixels via [PointCloudDisplaySettings.pixelSize]($common), or based on the [Tile]($frontend)'s voxel size in meters.
 - When using voxel size mode, points can be scaled using [PointCloudDisplaySettings.voxelScale]($common) and clamped to a range of pixel sizes using [PointCloudDisplaySettings.minPixelsPerVoxel]($common) and [PointCloudDisplaySettings.maxPixelsPerVoxel]($common).
 - [PointCloudDisplaySettings.shape]($common) specifies whether to draw rounded points or square points.
+
+### View padding
+
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+```
+{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
+and
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
+```
+
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
 
 ## Presentation
 
@@ -98,6 +124,12 @@ the ids returned are not unique from all element ids and may collide.
 ### Setting allowed panel zones for widgets
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+## Geometry
+
+### Polyface
+
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
 
 ## Deprecations
 

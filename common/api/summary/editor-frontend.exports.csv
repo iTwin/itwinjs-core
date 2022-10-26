@@ -1,6 +1,7 @@
 sep=;
 Release Tag;API Item
 alpha;ArcMethod
+alpha;basicManipulationIpc: PickAsyncMethods
 alpha;BCurveMethod
 alpha;class BlendEdgesTool 
 alpha;class BooleanOperationTool 
@@ -48,6 +49,7 @@ alpha;isSameSubEntity(a: SubEntityProps, b: SubEntityProps): boolean
 alpha;class LocateFaceOrProfileTool 
 alpha;class LocateSubEntityTool 
 alpha;LoftProfilesTool 
+alpha;makeEditToolIpc
 alpha;class ModifyCurveTool 
 alpha;MoveElementsTool 
 alpha;OffsetCurveTool 
@@ -68,6 +70,7 @@ alpha;RotateElementsTool
 alpha;RotateMethod
 alpha;RoundEdgesTool 
 alpha;SewSheetElementsTool 
+alpha;solidModelingIpc: PickAsyncMethods
 alpha;class SolidPrimitiveTool 
 alpha;SpinFacesTool 
 alpha;SubEntityData

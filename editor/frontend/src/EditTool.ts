@@ -6,17 +6,23 @@
  * @module Editing
  */
 
-import { editorChannel } from "@itwin/editor-common";
 import { IModelApp, IpcApp } from "@itwin/core-frontend";
+import { editorChannel } from "@itwin/editor-common";
 import { DeleteElementsTool } from "./DeleteElementsTool";
-import { ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool, IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool, SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool } from "./SolidModelingTools";
-import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
+import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
+import {
+  ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool,
+} from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
 import { CreateArcTool, CreateBCurveTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
-import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
-import { BreakCurveTool, ExtendCurveTool, OffsetCurveTool } from "./ModifyCurveTools";
-import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
+import {
+  ChamferEdgesTool, CutSolidElementsTool, DeleteSubEntitiesTool, EmbossSolidElementsTool, HollowFacesTool, ImprintSolidElementsTool,
+  IntersectSolidElementsTool, LoftProfilesTool, OffsetFacesTool, RoundEdgesTool, SewSheetElementsTool, SpinFacesTool, SubtractSolidElementsTool,
+  SweepAlongPathTool, SweepFacesTool, ThickenSheetElementsTool, UniteSolidElementsTool,
+} from "./SolidModelingTools";
 import { CreateBoxTool, CreateConeTool, CreateCylinderTool, CreateSphereTool, CreateTorusTool } from "./SolidPrimitiveTools";
+import { CopyElementsTool, MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
+import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
 /** @alpha Options for [[EditTools.initialize]]. */
 export interface EditorOptions {
@@ -42,10 +48,6 @@ export class EditTools {
 
   public static async startCommand<T>(commandId: string, iModelKey: string, ...args: any[]): Promise<T> {
     return IpcApp.callIpcChannel(editorChannel, "startCommand", commandId, iModelKey, ...args) as Promise<T>;
-  }
-
-  public static async callCommand(methodName: string, ...args: any[]): Promise<any> {
-    return IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
   }
 
   /** @internal */
