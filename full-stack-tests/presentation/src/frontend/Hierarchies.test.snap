@@ -193,7 +193,6 @@ Array [
         "index": 1,
         "isMarked": false,
         "node": Object {
-          "hasChildren": true,
           "key": Object {
             "pathFromRoot": Array [
               "d6448d44e7ee51c4d1a0b76895384418",
@@ -266,7 +265,6 @@ Array [
     "index": 1,
     "isMarked": false,
     "node": Object {
-      "hasChildren": true,
       "key": Object {
         "pathFromRoot": Array [
           "fafa795f43ac3379cd1392ee8375888d",
