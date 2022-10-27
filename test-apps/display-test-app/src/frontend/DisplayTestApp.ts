@@ -70,7 +70,7 @@ const getFrontendConfig = async (useRPC = false) => {
   };
   Object.assign(configuration, configurationOverrides);
 
-  console.log("Configuration", JSON.stringify(configuration)); // eslint-disable-line no-console
+  console.log("Configuration", configuration); // eslint-disable-line no-console
 };
 
 async function openFile(props: OpenIModelProps): Promise<IModelConnection> {
