@@ -10,11 +10,7 @@ import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelHost, IModelHostOptions, LocalhostIpcHost } from "@itwin/core-backend";
-import {
-  AuthorizationClient,
-  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager,
-  SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
