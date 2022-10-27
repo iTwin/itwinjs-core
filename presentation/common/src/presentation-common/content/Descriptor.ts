@@ -177,6 +177,7 @@ export interface DescriptorJSON {
   /** @deprecated use fieldsFilterExpression instead */
   filterExpression?: string;
   fieldsFilterExpression?: string;
+  /** @alpha */
   instanceFilter?: InstanceFilterDefinition;
 }
 
@@ -217,7 +218,10 @@ export interface DescriptorOverrides {
   filterExpression?: string;
   /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
   fieldsFilterExpression?: string;
-  /** Content instances filter */
+  /**
+   * Content instances filter
+   * @alpha
+   */
   instanceFilter?: InstanceFilterDefinition;
 }
 
@@ -253,7 +257,10 @@ export interface DescriptorSource {
   readonly filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
   readonly fieldsFilterExpression?: string;
-  /** Content instances filter */
+  /**
+   * Content instances filter
+   * @alpha
+   */
   readonly instanceFilter?: InstanceFilterDefinition;
 }
 
@@ -293,7 +300,10 @@ export class Descriptor implements DescriptorSource {
   public filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
   public fieldsFilterExpression?: string;
-  /** Content instances filter */
+  /**
+   * Content instances filter
+   * @alpha
+   */
   public instanceFilter?: InstanceFilterDefinition;
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */
