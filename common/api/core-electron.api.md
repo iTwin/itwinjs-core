@@ -7,21 +7,26 @@
 import { AsyncMethodsOf } from '@itwin/core-bentley';
 import type { BrowserWindow } from 'electron';
 import type { BrowserWindowConstructorOptions } from 'electron';
-import * as ElectronModuleExports from 'electron';
-import { ExtractLiterals } from '@itwin/core-bentley';
+import type * as ElectronModule from 'electron';
 import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
 
+// @internal (undocumented)
+export const dialogChannel = "electron-dialog";
+
 // @beta
-export type DialogModuleMethod = ExtractLiterals<AsyncMethodsOf<Electron.Dialog>, "showMessageBox" | "showOpenDialog" | "showSaveDialog">;
+export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
 // @beta
 export class ElectronApp {
+    // @deprecated
     static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
+    static dialogIpc: PickAsyncMethods<Electron.Dialog>;
     // (undocumented)
     static get isValid(): boolean;
     // (undocumented)
@@ -39,7 +44,7 @@ export class ElectronHost {
     // (undocumented)
     static appIconPath: string;
     // (undocumented)
-    static get electron(): typeof ElectronModuleExports;
+    static get electron(): typeof ElectronModule;
     // (undocumented)
     static frontendURL: string;
     static getWindowMaximizedSetting(windowName: string): boolean | undefined;

@@ -31,7 +31,9 @@ export function assert(condition: boolean | (() => boolean), message?: string | 
 export type AsyncFunction = (...args: any) => Promise<any>;
 
 // @public
-export type AsyncMethodsOf<T> = keyof PickAsyncMethods<T>;
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
 
 // @alpha
 export class AsyncMutex {
@@ -195,6 +197,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,

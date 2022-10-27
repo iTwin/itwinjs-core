@@ -155,15 +155,27 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   public getMatchingEnterpriseClientId(url: string) {
-    let clientId: string | undefined;
     const clientIds = this.arcGisEnterpriseClientIds;
     if (!clientIds) {
       return undefined;
     }
+
+    let clientId: string | undefined;
+    let defaultClientId: string | undefined;
     for (const entry of clientIds) {
-      if (url.toLowerCase().startsWith(entry.serviceBaseUrl)) {
-        clientId = entry.clientId;
+      if (entry.serviceBaseUrl === "") {
+        defaultClientId = entry.clientId;
+      } else {
+        if (url.toLowerCase().startsWith(entry.serviceBaseUrl)) {
+          clientId = entry.clientId;
+        }
       }
+    }
+
+    // If we could not find a match with serviceBaseUrl, and a default clientId
+    // was specified (i.e empty url), then use default clientId
+    if (clientId === undefined && defaultClientId !== undefined) {
+      clientId = defaultClientId;
     }
     return clientId;
   }
@@ -227,9 +239,10 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
   /**
   * Test if Oauth2 endpoint is accessible and has an associated appId
+  * @return true/false if validation succeeded, undefined if validation could not be performed (i.e CORS/network error)
   * @internal
   */
-  private async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
+  private async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean | undefined> {
 
     // Check if we got a matching appId for that endpoint, otherwise its not worth going further
     if (undefined === this.getMatchingEnterpriseClientId(endpointUrl)) {
@@ -241,7 +254,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       const data = await fetch(endpointUrl, { method: "GET" });
       status = data.status;
     } catch (error: any) {
-      status = error.status;
+      // fetch() throws when there is a CORS error, so in that case
+      // we cannot confirm if the oauth2 endpoint is valid or not, we return undefined
+      return undefined;
     }
     return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
   }
@@ -296,7 +311,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         // Validate the URL we just composed
         try {
           const oauth2Url = `${restUrlFromTokenService.toString()}oauth2/${endpointStr}`;
-          if (await this.validateOAuth2Endpoint(oauth2Url)) {
+          const valid = await this.validateOAuth2Endpoint(oauth2Url);
+          // We assume undefined means CORS error, that shouldn't prevent popup from displaying the login page.
+          if (valid === undefined || valid) {
             const oauthEndpoint = new ArcGisOAuth2Endpoint(oauth2Url, this.constructLoginUrl(oauth2Url, false), false);
             cacheResult(oauthEndpoint);
             return oauthEndpoint;
@@ -304,8 +321,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         } catch { }
       }
 
-      // If reach this point, that means we could not derive the token endpoint from 'tokenServicesUrl'
-      // lets use another approach.
+      // If reach this point, that means we could not derive the token endpoint from 'tokenServicesUrl', lets try something else.
       // ArcGIS Enterprise Format https://<host>:<port>/<subdirectory>/sharing/rest/oauth2/authorize
       const regExMatch = url.match(new RegExp(/([^&\/]+)\/rest\/services\/.*/, "i"));
       if (regExMatch !== null && regExMatch.length >= 2) {

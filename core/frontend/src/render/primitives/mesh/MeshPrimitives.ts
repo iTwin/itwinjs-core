@@ -131,7 +131,6 @@ export interface MeshArgs {
   is2d?: boolean;
   hasBakedLighting?: boolean;
   isVolumeClassifier?: boolean;
-  hasFixedNormals?: boolean;
   auxChannels?: ReadonlyArray<AuxChannel>;
   material?: RenderMaterial;
   textureMapping?: {
@@ -185,7 +184,6 @@ export namespace MeshArgs {
       isPlanar: mesh.isPlanar,
       is2d: mesh.is2d,
       hasBakedLighting: true === mesh.hasBakedLighting,
-      hasFixedNormals: false,
       isVolumeClassifier: true === mesh.isVolumeClassifier,
       edges,
       auxChannels: mesh.auxChannels,

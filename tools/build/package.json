@@ -1,6 +1,6 @@
 {
   "name": "@itwin/build-tools",
-  "version": "3.5.0-dev.22",
+  "version": "3.5.0-dev.28",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -37,7 +37,6 @@
     "glob": "^7.1.2",
     "mocha": "^10.0.0",
     "mocha-junit-reporter": "^2.0.2",
-    "recursive-readdir": "^2.2.2",
     "rimraf": "^3.0.2",
     "tree-kill": "^1.2.0",
     "typedoc": "^0.22.11",

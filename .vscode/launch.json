@@ -1485,6 +1485,48 @@
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
     },
+    { /* PARTIAL */
+      "name": "[BACKEND] Electron Frontend Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/core/electron/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration:frontend",
+        "--",
+        "--debug"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in core/electron/src/test/frontend/utils/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] Electron Frontend Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] Electron Frontend Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in core/electron/src/test/frontend/utils/certa.json
+      "timeout": 60000,
+      "outFiles": [
+        "${workspaceFolder}/{core}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] Electron Frontend Tests"
+      ]
+    },
     {
       "name": "eslint rule test @bentley/no-internal-barrel-imports",
       "presentation": {
@@ -1521,7 +1563,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/core/electron/node_modules/mocha/bin/_mocha",
       "args": [
-        "lib/cjs/test/backend/RunElectronBackendTests.js"
+        "--config",
+        "src/test/backend/.mocharc.json"
       ],
       "env": {
         "NODE_ENV": "development"
@@ -1753,6 +1796,16 @@
       "configurations": [
         "[NODE] Certa Test Runner for Clients Tests",
         "[BROWSER] Clients Tests"
+      ]
+    },
+    {
+      "name": "Electron Frontend Tests",
+      "presentation": {
+        "group": "0_CoreTests"
+      },
+      "configurations": [
+        "[FRONTEND] Electron Frontend Tests",
+        "[BACKEND] Electron Frontend Tests"
       ]
     },
   ],
