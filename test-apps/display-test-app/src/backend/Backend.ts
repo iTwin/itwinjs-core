@@ -212,7 +212,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   Logger.initializeToConsole();
   Logger.setLevelDefault(logLevel);
   Logger.setLevel("SVT", LogLevel.Trace);
-  Logger.setLevel("electron-auth", LogLevel.Trace);
 
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   const hubAccess = new BackendIModelsAccess(iModelClient);
@@ -241,11 +240,7 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
   const authClient = await initializeAuthorizationClient();
   if (ProcessDetector.isElectronAppBackend) {
     if (authClient) {
-      try {
-        await authClient.signInSilent();
-      } catch {
-        await authClient.signIn();
-      }
+      await authClient.signInSilent();
       opts.iModelHost.authorizationClient = authClient;
     }
     await ElectronHost.startup(opts);

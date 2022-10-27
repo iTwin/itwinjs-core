@@ -2,7 +2,7 @@
 {
   "editor.tabSize": 2,
   "editor.insertSpaces": true,
-  // "editor.formatOnSave": true,
+  "editor.formatOnSave": true,
   "search.exclude": {
     "**/node_modules": true,
     "**/bower_components": true,
@@ -10,17 +10,17 @@
     "**/.rush": true
   },
   "files.exclude": {
-    "**/.nyc_output": false,
-    "**/.rush": false,
-    "**/*.build.log": false,
-    "**/*.build.error.log": false,
-    "**/generated-docs": false,
-    "**/package-deps.json": false,
-    "**/node_modules": false,
-    "**/test-apps/**/build": false,
-    "**/out": false,
-    "**/lib": false,
-    "common/temp": false
+    "**/.nyc_output": true,
+    "**/.rush": true,
+    "**/*.build.log": true,
+    "**/*.build.error.log": true,
+    "**/generated-docs": true,
+    "**/package-deps.json": true,
+    "**/node_modules": true,
+    "**/test-apps/**/build": true,
+    "**/out": true,
+    "**/lib": true,
+    "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
   "files.associations": {
@@ -49,21 +49,25 @@
   ],
   "json.schemas": [
     {
-      "fileMatch": ["certa.json"],
+      "fileMatch": [
+        "certa.json"
+      ],
       "url": "./tools/certa/certa.schema.json"
-    }
+    },
   ],
   "markdownlint.config": {
     "MD024": {
       "allow_different_nesting": true
-    }
+    },
   },
-  "markdownlint.ignore": ["**/CHANGELOG.md"],
+  "markdownlint.ignore": [
+    "**/CHANGELOG.md"
+  ],
   "eslint.validate": [
     "javascript",
     "javascriptreact",
     "typescript",
-    "typescriptreact"
+    "typescriptreact",
   ],
   "eslint.workingDirectories": [
     {
@@ -111,5 +115,7 @@
     "editor.action.fixAll": true, // Run the default formatter before eslint, it handles whitespace better
     "source.fixAll.eslint": true // then run ESLint auto-fix
   },
-  "cSpell.words": ["Discoverability"]
+  "cSpell.words": [
+    "Discoverability"
+  ],
 }
