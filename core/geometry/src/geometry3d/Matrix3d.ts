@@ -1109,7 +1109,7 @@ export class Matrix3d implements BeJSONFunctions {
    * Factor this as a product C * U where C has mutually perpendicular columns and
    * U is orthogonal.
    * @param matrixC (allocate by caller, computed here)
-   * @param factor  (allocate by caller, computed here)
+   * @param matrixU (allocate by caller, computed here)
    */
   public factorPerpendicularColumns(matrixC: Matrix3d, matrixU: Matrix3d): boolean {
     matrixC.setFrom(this);
@@ -1128,6 +1128,43 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return false;
   }
+  /**
+   * Factor this matrix M as a product M = V * D * U where V and U are orthogonal, and D is diagonal (scale matrix).
+   * @param matrixV left orthogonal factor (allocate by caller, computed here)
+   * @param scale diagonal entries of D (allocate by caller, computed here)
+   * @param matrixU right orthogonal factor (allocate by caller, computed here)
+   */
+  public factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean {
+    const matrixVD = Matrix3d.createZero();
+    if (!this.factorPerpendicularColumns(matrixVD, matrixU))
+      return false;
+
+    const column: Vector3d[] = [];
+    column.push(matrixVD.getColumn(0));
+    column.push(matrixVD.getColumn(1));
+    column.push(matrixVD.getColumn(2));
+    scale.set(column[0].magnitude(), column[1].magnitude(), column[2].magnitude());
+
+    const det = matrixVD.determinant();
+    if (det < 0)
+        scale.z = - scale.z;
+
+    // ASSUME: any zero-magnitude column(s) of matrixVD are last
+    if (scale.x !== 0 && scale.y !== 0 && scale.z !== 0) { // full rank
+      matrixV = matrixVD.scaleColumns(1 / scale.x, 1 / scale.y, 1 / scale.z, matrixV);
+    } else if (scale.x !== 0 && scale.y !== 0) { // rank 2
+      column[0].scale(1 / scale.x);
+      column[1].scale(1 / scale.y);
+      column[2] = column[0].unitCrossProduct(column[1], column[2])!;
+      matrixV.setColumns(column[0], column[1], column[2]);
+    } else if (scale.x !== 0) { // rank 1
+      matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
+    } else { // rank 0
+      matrixV.setIdentity();
+    }
+    return true;
+  }
+
   /** Apply a jacobi step to lambda which evolves towards diagonal. */
   private applySymmetricJacobi(i: number, j: number, lambda: Matrix3d): number {
     const uDotU = lambda.at(i, i);
