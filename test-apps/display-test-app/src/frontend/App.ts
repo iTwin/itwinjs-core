@@ -255,7 +255,7 @@ export class DisplayTestApp {
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
-        localization: new ITwinLocalization({ detectorOptions: { order: ["htmlTag"]}}),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["navigator"]}}),
       },
       localhostIpcApp: {
         socketUrl,
