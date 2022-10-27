@@ -1,3 +1,8 @@
+/**
+ * Adapted from:
+ * https://github.com/jergason/recursive-readdir/blob/959484b1cfe2110c38b8e3013d85c86c5ed53b83/index.js
+ */
+
 const fs = require("fs");
 const p = require("path");
 
