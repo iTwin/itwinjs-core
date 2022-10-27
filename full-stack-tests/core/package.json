@@ -36,7 +36,7 @@
     "@itwin/editor-backend": "workspace:*",
     "@itwin/editor-common": "workspace:*",
     "@itwin/editor-frontend": "workspace:*",
-    "@itwin/electron-authorization": "^0.8.3",
+    "@itwin/electron-authorization": "^0.8.5",
     "@itwin/express-server": "workspace:*",
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/imodels-access-backend": "^1.0.1",
