@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "3.5.0-dev.27",
+  "version": "3.5.0-dev.28",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",

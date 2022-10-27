@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-devtools",
-  "version": "3.5.0-dev.27",
+  "version": "3.5.0-dev.28",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/cjs/frontend-devtools.js",
   "module": "lib/esm/frontend-devtools.js",
