@@ -134,7 +134,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   public trueSphereRadius(): number | undefined {
     const factors = this._localToWorld.matrix.factorRigidWithSignedScale();
     if (!factors) return undefined;
-    if (factors && factors.scale > 0)
+    if (factors && factors.scale > 0)   // why do we rule out mirror?
       return factors.scale;
     return undefined;
   }
@@ -143,7 +143,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    */
   public maxAxisRadius(): number {
     const matrix = this._localToWorld.matrix;
-    return Geometry.maxXYZ(matrix.columnXMagnitude(), matrix.columnYMagnitude(), matrix.columnYMagnitude());
+    return Geometry.maxXYZ(matrix.columnXMagnitude(), matrix.columnYMagnitude(), matrix.columnZMagnitude());
   }
   /**
    * Return a (clone of) the sphere's local to world transformation.

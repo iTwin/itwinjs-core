@@ -32,7 +32,7 @@ import { WritableXAndY } from "../geometry3d/XYZProps";
  *   * vectorTheta90 = (0, radiusA, 0)
  *   * The major arc point at angle theta is `C(theta) = vectorTheta0 * cos(theta) + vectorTheta90 * sin(theta)
  * * The minor hoop at theta various with phi "around the minor hoop"
- *    * (x,y,z) = C(theta) + (radiusB *cos(theta), radiusB * sin(theta), 0) * cos(phi) + (0, 0, radiusB) * sin(phi)
+ *    * (x,y,z) = C(theta) + (radiusB * cos(theta), radiusB * sin(theta), 0) * cos(phi) + (0, 0, radiusB) * sin(phi)
  * * The stored form of the torus pipe is oriented for positive volume:
  *   * Both radii are positive, with radiusA >= radiusB > 0
  *   * The sweep is positive
@@ -183,7 +183,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   }
   /** Return the center of the torus pipe (inside the donut hole) */
   public cloneCenter(): Point3d { return this._localToWorld.getOrigin(); }
-  /** return the vector along the x axis (in the major hoops plane) in world coordinates */
+  /** return the vector along the x axis (in the major hoop plane) in world coordinates */
   public cloneVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
   /** return the vector along the y axis (in the major hoop plane) in world coordinates */
   public cloneVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
@@ -299,7 +299,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
       } else {
         for (j = 0; j <= numPhiSample; j++) {
           phi = phi0 + j * dPhi;
-          rxy = majorRadius + minorRadius * Math.sin(phi);
+          rxy = majorRadius + minorRadius * Math.cos(phi);
           rangeToExtend.extendTransformedXYZ(transform0,
             cosTheta * rxy, sinTheta * rxy,
             Math.sin(phi) * minorRadius);

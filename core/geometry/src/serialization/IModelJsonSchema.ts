@@ -1208,8 +1208,8 @@ export namespace IModelJson {
       // optional specific X
       const radiusX = Reader.parseNumberProperty(json, "radiusX", radius);
       // missing Y and Z both pick up radiusX  (which may have already been defaulted from unqualified radius)
-      const radiusY = Reader.parseNumberProperty(json, "radiusX", radiusX);
-      const radiusZ = Reader.parseNumberProperty(json, "radiusX", radiusX);
+      const radiusY = Reader.parseNumberProperty(json, "radiusY", radiusX);
+      const radiusZ = Reader.parseNumberProperty(json, "radiusZ", radiusX);
       const latitudeStartEnd = Reader.parseAngleSweepProps(json, "latitudeStartEnd"); // this may be undefined!!
 
       const axes = Reader.parseOrientation(json, true)!;
