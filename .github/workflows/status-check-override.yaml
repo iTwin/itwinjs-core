@@ -2,7 +2,7 @@
 # request when it detects *only* changes in the files listed below; i.e., the files
 # listed under "paths:".
 #
-# While this config will fake a successul status check, it does *not* forego running the
+# While this config will fake a successful status check, it does *not* forego running the
 # real status check. That needs to be handled by each status check events' own config;
 # i.e., a Github Action's or Azure Pipeline's .yaml file.
 #
