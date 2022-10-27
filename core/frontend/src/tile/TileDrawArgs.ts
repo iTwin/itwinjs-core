@@ -168,7 +168,7 @@ export class TileDrawArgs {
   /** Compute the size in meters of one pixel at the point on a sphere closest to the camera.
    * Device scaling is not applied.
    */
-  protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
+  public computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number {
     if (this.context.viewport.view.is3d() && this.context.viewport.isCameraOn && this._nearFrontCenter) {
       const toFront = Vector3d.createStartEnd(center, this._nearFrontCenter);
       const viewZ = this.context.viewport.rotation.rowZ();

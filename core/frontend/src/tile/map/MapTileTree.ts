@@ -27,7 +27,7 @@ import {
   BingElevationProvider, createDefaultViewFlagOverrides, createMapLayerTreeReference, DisclosedTileTreeSet, EllipsoidTerrainProvider, GeometryTileTreeReference,
   GraphicsCollectorDrawArgs, ImageryMapLayerTreeReference, ImageryMapTileTree, MapCartoRectangle, MapLayerFeatureInfo,
   MapLayerTileTreeReference, MapTile, MapTileLoader, MapTilingScheme, ModelMapLayerTileTreeReference, PlanarTilePatch, QuadId,
-  RealityTile, RealityTileDrawArgs, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileParams, TileTree,
+  RealityTile, RealityTileDrawArgs, RealityTileParams, RealityTileTree, RealityTileTreeParams, TerrainMeshProviderOptions, Tile, TileDrawArgs, TileLoadPriority, TileTree,
   TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier, UpsampledMapTile, WebMercatorTilingScheme,
 } from "../internal";
 
@@ -135,7 +135,7 @@ export class MapTileTree extends RealityTileTree {
       range = Range3d.createArray(MapTile.computeRangeCorners(corners, Vector3d.create(0, 0, 1), 0, scratchCorners, globalHeightRange));
     }
 
-    this._rootTile = this.createGlobeChild({ contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
+    this._rootTile = this.createGlobeChild({ geometricError: undefined, contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
   }
 
   /** @internal */
@@ -197,7 +197,7 @@ export class MapTileTree extends RealityTileTree {
   }
 
   /** @internal */
-  public createPlanarChild(params: TileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined{
+  public createPlanarChild(params: RealityTileParams, quadId: QuadId, corners: Point3d[], normal: Vector3d, rectangle: MapCartoRectangle, chordHeight: number, heightRange?: Range1d): MapTile | undefined{
     const childAvailable = this.mapLoader.isTileAvailable(quadId);
     if (!childAvailable && this.produceGeometry)
       return undefined;
@@ -208,7 +208,7 @@ export class MapTileTree extends RealityTileTree {
   }
 
   /** @internal */
-  public createGlobeChild(params: TileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile {
+  public createGlobeChild(params: RealityTileParams, quadId: QuadId, _rangeCorners: Point3d[], rectangle: MapCartoRectangle, ellipsoidPatch: EllipsoidPatch, heightRange?: Range1d): MapTile {
     return new MapTile(params, this, quadId, ellipsoidPatch, rectangle, heightRange, this.getCornerRays(rectangle));
   }
 
@@ -470,9 +470,10 @@ class MapTileTreeProps implements RealityTileTreeParams {
   public location = Transform.createIdentity();
   public yAxisUp = true;
   public is3d = true;
-  public rootTile = { contentId: "", range: Range3d.createNull(), maximumSize: 0 };
+  public rootTile = { contentId: "", range: Range3d.createNull(), maximumSize: 0, geometricError: undefined };
   public loader: MapTileLoader;
   public iModel: IModelConnection;
+  public readonly geometricError = undefined;
   public get priority(): TileLoadPriority { return this.loader.priority; }
 
   public constructor(modelId: Id64String, loader: MapTileLoader, iModel: IModelConnection, public gcsConverterAvailable: boolean) {

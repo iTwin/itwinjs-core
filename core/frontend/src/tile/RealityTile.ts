@@ -28,6 +28,7 @@ export interface RealityTileParams extends TileParams {
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
   readonly region?: RealityTileRegion;
+  readonly geometricError: number | undefined;
 }
 
 /** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
@@ -62,6 +63,7 @@ export class RealityTile extends Tile {
   public readonly rangeCorners?: Point3d[];
   /** @internal */
   public readonly region?: RealityTileRegion;
+  public readonly geometricError: number | undefined;
   /** @internal */
   protected _geometry?: RealityTileGeometry;
   /** @internal */
@@ -79,6 +81,7 @@ export class RealityTile extends Tile {
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
+    this.geometricError = props.geometricError;
 
     if (undefined === this.transformToRoot)
       return;
@@ -352,6 +355,16 @@ export class RealityTile extends Tile {
     if (this.isLeaf)
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
+    if (undefined !== this.geometricError) {
+      const radius = args.getTileRadius(this);
+      const center = args.getTileCenter(this);
+      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
+      const sse = this.geometricError / pixelSize;
+
+      const maxSse = 16; // default
+      return maxSse / sse;
+    }
+
     return this.maximumSize / args.getPixelSize(this);
   }
 
@@ -423,7 +436,10 @@ export class RealityTile extends Tile {
         const childRange = childRegion.getRange();
 
         const contentId = `${this.contentId}_S${step++}`;
-        const childParams: RealityTileParams = { rangeCorners: childRange.corners, contentId, range: childRange.range, maximumSize, parent: this, additiveRefinement: false, isLeaf, region: childRegion };
+        const childParams: RealityTileParams = {
+          rangeCorners: childRange.corners, contentId, range: childRange.range, maximumSize, parent: this, additiveRefinement: false, isLeaf, region: childRegion,
+          geometricError: undefined,
+        };
 
         stepChildren.push(new AdditiveRefinementStepChild(childParams, this.realityRoot));
       }

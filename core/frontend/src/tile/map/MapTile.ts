@@ -413,7 +413,7 @@ export class MapTile extends RealityTile {
           const chordHeight = globeMode === GlobeMode.Ellipsoid ? Math.sqrt(diagonal * diagonal + Constant.earthRadiusWGS84.equator * Constant.earthRadiusWGS84.equator) - Constant.earthRadiusWGS84.equator : 0.0;
           const rangeCorners = MapTile.computeRangeCorners(corners, normal, chordHeight, undefined, heightRange);
           const range = Range3d.createArray(rangeCorners);
-          const child = this.mapTree.createPlanarChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange);
+          const child = this.mapTree.createPlanarChild({ geometricError: undefined, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: childrenAreLeaves }, quadId, corners, normal, rectangle, chordHeight, heightRange);
           if (child)
             children.push(child);
         }
@@ -443,7 +443,7 @@ export class MapTile extends RealityTile {
         if (undefined !== heightRange)
           range.expandInPlace(heightRange.high - heightRange.low);
 
-        children.push(this.mapTree.createGlobeChild({ contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
+        children.push(this.mapTree.createGlobeChild({ geometricError: undefined, contentId: quadId.contentId, maximumSize: 512, range, parent: this, isLeaf: false }, quadId, range.corners(), rectangle, ellipsoidPatch, heightRange));
       }
     }
 

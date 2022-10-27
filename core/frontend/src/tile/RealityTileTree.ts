@@ -19,7 +19,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
   GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
-  TileGraphicType, TileParams, TileTree, TileTreeParams,
+  TileGraphicType, TileTree, TileTreeParams,
 } from "./internal";
 
 /** @internal */
@@ -196,7 +196,7 @@ export class RealityTileTree extends TileTree {
   public override get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   /** @internal */
-  public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
+  public createTile(props: RealityTileParams): RealityTile { return new RealityTile(props, this); }
 
   /** Collect tiles from this tile tree based on the criteria implemented by `collector`.
    * @internal

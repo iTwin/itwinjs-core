@@ -302,6 +302,7 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
+  public readonly geometricError: number | undefined;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
@@ -329,6 +330,7 @@ class RealityModelTileProps implements RealityTileParams {
     }
 
     this.maximumSize = (this.noContentButTerminateOnSelection || hasContents) ? RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError) : 0;
+    this.geometricError = this.maximumSize !== 0 ? json.geometricError : undefined;
   }
 }
 
@@ -375,11 +377,17 @@ function addUrlPrefix(subTree: any, prefix: string) {
 /** @internal */
 async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
-  if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
+
+  // We could check the reponse type, but that would mean always making the request...
+  if (undefined !== childUrl && (childUrl.endsWith("json") || childUrl.indexOf("tileset") > 0)) {    // A child may contain a subTree...
     const subTree = await rdsource.getTileJson(childUrl);
-    const prefixIndex = childUrl.lastIndexOf("/");
-    if (prefixIndex > 0)
-      addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
+
+    // Special case for URL containing tileset, do not adjust the prefix otherwise we double-up the path
+    if(childUrl.indexOf("tileset") === 0) {
+      const prefixIndex = childUrl.lastIndexOf("/");
+      if (prefixIndex > 0)
+        addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
+    }
 
     return subTree.root;
   } else {

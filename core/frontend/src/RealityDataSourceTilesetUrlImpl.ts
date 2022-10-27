@@ -26,6 +26,10 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
 
+  /** For when using a parameterized key URL, for example: 'https://www.example.com/tileset?key=xxxxxx'  */
+  private _origin: string | undefined;
+  private _apiKey: string| undefined;
+
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
@@ -33,6 +37,16 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     assert(props.sourceKey.provider === RealityDataProvider.TilesetUrl || props.sourceKey.provider === RealityDataProvider.OrbitGtBlob);
     this.key = props.sourceKey;
     this._tilesetUrl = this.key.id;
+
+    // Check if we have a URL with key parameter
+    const url = new URL(this._tilesetUrl);
+    if(url && url.hostname && url.origin && url.origin !== "null") {
+      const key = url.searchParams.get("key");
+      if(key) {
+        this._apiKey = key;
+        this._origin = url.origin;
+      }
+    }
   }
 
   /**
@@ -87,6 +101,13 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return data.body;
   }
 
+  private getTileUrl(name: string): string {
+    if(this._apiKey) {
+      return `${this._origin}/${name}?key=${this._apiKey}`;
+    }
+    return this._baseUrl + name;
+  }
+
   /**
    * This method returns the URL to access the actual 3d tiles from the service provider.
    * @returns string containing the URL to reality data.
@@ -109,8 +130,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Returns the tile content. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileContent(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-
+    const tileUrl = this.getTileUrl(name);
     return this._doRequest(tileUrl, "arraybuffer");
   }
 
@@ -118,8 +138,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
    * Returns the tile content in json format. The path to the tile is relative to the base url of present reality data whatever the type.
    */
   public async getTileJson(name: string): Promise<any> {
-    const tileUrl = this._baseUrl + name;
-
+    const tileUrl = this.getTileUrl(name);
     return this._doRequest(tileUrl, "json");
   }
 

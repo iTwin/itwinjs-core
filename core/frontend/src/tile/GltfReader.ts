@@ -2109,7 +2109,8 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
   public readonly binaryData?: Uint8Array; // strictly for tests
 
-  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
+  public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs, private _range?: ElementAlignedBox3d| undefined,
+    private _transformToRoot?: Transform) {
     super({
       props,
       iModel: args.iModel,
@@ -2126,7 +2127,8 @@ export class GltfGraphicsReader extends GltfReader {
 
   public async read(): Promise<GltfReaderResult> {
     await this.resolveResources();
-    return this.readGltfAndCreateGraphics(true, this._featureTable, undefined);
+    const isLeafTemp = false;
+    return this.readGltfAndCreateGraphics(isLeafTemp, this._featureTable, this._range, this._transformToRoot);
   }
 
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }

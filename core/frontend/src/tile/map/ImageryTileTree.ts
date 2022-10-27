@@ -15,8 +15,8 @@ import { RenderMemory } from "../../render/RenderMemory";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import {
-  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
-  RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
+  MapCartoRectangle, MapLayerFeatureInfo, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, MapTilingScheme, QuadId, RealityTile, RealityTileLoader, RealityTileParams,
+  RealityTileTree, RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
   TileTreeSupplier,
 } from "../internal";
 
@@ -29,7 +29,8 @@ export interface ImageryTileContent extends TileContent {
 export class ImageryMapTile extends RealityTile {
   private _texture?: RenderTexture;
   private _mapTileUsageCount = 0;
-  constructor(params: TileParams, public imageryTree: ImageryMapTileTree, public quadId: QuadId, public rectangle: MapCartoRectangle) {
+
+  constructor(params: RealityTileParams, public imageryTree: ImageryMapTileTree, public quadId: QuadId, public rectangle: MapCartoRectangle) {
     super(params, imageryTree);
   }
   public get texture() { return this._texture; }
@@ -100,7 +101,7 @@ export class ImageryMapTile extends RealityTile {
         const rectangle = imageryTree.tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
         const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
         const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
-        children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
+        children.push(new ImageryMapTile({ geometricError: undefined, parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
       });
 
       resolve(children);
@@ -291,7 +292,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
     const rootLevel =  (1 === tilingScheme.numberOfLevelZeroTilesX && 1 === tilingScheme.numberOfLevelZeroTilesY) ? 0 : -1;
     const rootTileId = new QuadId(rootLevel, 0, 0).contentId;
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
-    const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
+    const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0, geometricError: undefined };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
     const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
     return new ImageryMapTileTree(treeProps, loader);
