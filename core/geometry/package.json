@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "3.5.0-dev.27",
+  "version": "3.5.0-dev.28",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",

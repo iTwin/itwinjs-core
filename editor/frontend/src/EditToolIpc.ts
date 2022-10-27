@@ -14,12 +14,7 @@ import { BasicManipulationCommandIpc, EditCommandIpc, editorChannel, SolidModeli
  * @alpha
  */
 export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K> {
-  return new Proxy({} as PickAsyncMethods<K>, {
-    get(_target, methodName: string) {
-      return async (...args: any[]) =>
-        IpcApp.callIpcChannel(editorChannel, "callMethod", methodName, ...args);
-    },
-  });
+  return IpcApp.makeIpcFunctionProxy<K>(editorChannel, "callMethod");
 }
 
 /** Proxy for calling methods in `BasicManipulationCommandIpc`
