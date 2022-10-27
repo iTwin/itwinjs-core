@@ -49,6 +49,7 @@
     "@itwin/hypermodeling-frontend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-electron": "workspace:*",
+    "@itwin/core-i18n": "workspace:*",
     "@itwin/core-mobile": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/imodels-access-backend": "^1.0.1",
