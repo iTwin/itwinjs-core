@@ -7,7 +7,7 @@
  */
 
 import { WebGLContext } from "@itwin/webgl-compatibility";
-import { EDLCalcGeometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry } from "../CachedGeometry";
+import { EDLCalcAdv1Geometry, EDLCalcAdv2Geometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -26,6 +26,9 @@ vec2 neighborContribution(float depth, vec2 offset) {
 
 // This shader calculates a simpler, quicker version of EDL
 const computeSimpleEDL = `
+  float strength = u_pointCloudEDL1.x;
+  float pixRadius = u_pointCloudEDL1.y;
+
   vec4 color = TEXTURE(u_colorTexture, v_texCoord);
   if (color.a == 0.0)
       discard;
@@ -33,7 +36,7 @@ const computeSimpleEDL = `
       float depth = TEXTURE(u_depthTexture, v_texCoord).r;
 
       // sample from neighbors up, down, left, right
-      vec2 off = u_pointCloudEDL1.y * u_invScreenSize;
+      vec2 off = pixRadius * u_invScreenSize;
       vec2 responseAndCount = vec2(0.0, 0.0);
       responseAndCount += neighborContribution(depth, vec2(0, off.y));
       responseAndCount += neighborContribution(depth, vec2(off.x, 0));
@@ -41,7 +44,7 @@ const computeSimpleEDL = `
       responseAndCount += neighborContribution(depth, vec2(-off.x, 0));
 
       float response = responseAndCount.x / responseAndCount.y;
-      float shade = exp(-response * 300.0 * u_pointCloudEDL1.x);
+      float shade = exp(-response * 300.0 * strength);
       color.rgb *= shade;
   }
   return color;
@@ -89,82 +92,61 @@ export function createEDLSimpleProgram(context: WebGLContext): ShaderProgram {
   return builder.buildProgram(context);
 }
 
-const computeObscurance = `
-float computeObscurance(float depth) {
-    vec2 neighbors[8] = vec2[8] (  //neighbor relative position
-        vec2( 1.0, 0.0), vec2( 0.70710678,  0.70710678), vec2(0.0,  1.0), vec2(-0.70710678,  0.70710678),
-        vec2(-1.0, 0.0), vec2(-0.70710678, -0.70710678), vec2(0.0, -1.0), vec2( 0.70710678, -0.70710678));
-    #if 1 // light angle factor
-        vec3 ld = normalize(u_lightDir.xyz);
-        vec4 p = vec4(ld, -dot(ld, vec3(0.0, 0.0, depth)));
-    #endif
-    float sum = 0.0;
-    vec2 posScale = u_pointCloudEDL1.y * u_texInfo.z * u_texInfo.xy; // u_texInfo.xy is 1/texsize, .z is scale
-    // contribution of each neighbor
-    // NOTE: this is currently using neighbor depths regardless of if that depth was written by point cloud
-    for (int c = 0; c < 8; c++) {
-        vec2 nRelPos = posScale * neighbors[c];
-        vec2 nPos = v_texCoord + nRelPos;
-        float zN = TEXTURE(u_depthTexture, nPos).r;  // neighbor depth
-        #if 1 // light angle factor
-            vec4 zPos = vec4(nRelPos, zN, 1.0);
-            float zNP = dot(zPos, p);
-        #else
-            float zNP = depth - zN;
-        #endif
-        sum += max(0.0, zNP) / u_texInfo.z;
-    }
-    return sum / 8.0;
-}
-`;
+// This shader calculates a more advanced version of EDL, but only for original size
+const calcAdv1EDL = `
+    float strength = u_pointCloudEDL1.x;
+    float pixRadius = u_pointCloudEDL1.y;
+    vec2 invTexSize = u_texInfo.xy;
 
-// This shader calculates a more advanced version of EDL
-const calcEDL = `
-  vec4 color = TEXTURE(u_colorTexture, v_texCoord);
-  if (color.a == 0.0)
-      return color;
-      // discard;
-  else {
-    float depth = TEXTURE(u_depthTexture, v_texCoord).r;
-    float f = computeObscurance(depth);
-    f = exp(-f * 300.0 * u_pointCloudEDL1.x);
-    return vec4(f*color.rgb, 1.0);
-  }
+    vec4 color = TEXTURE(u_colorTexture, v_texCoord);
+    if (color.a == 0.0)
+        discard;
+    else {
+        const vec2 neighbors[8] = vec2[8] (  //neighbor relative position
+            vec2( 1.0, 0.0), vec2( 0.70710678,  0.70710678), vec2(0.0,  1.0), vec2(-0.70710678,  0.70710678),
+            vec2(-1.0, 0.0), vec2(-0.70710678, -0.70710678), vec2(0.0, -1.0), vec2( 0.70710678, -0.70710678));
+        float depth = TEXTURE(u_depthTexture, v_texCoord).r;
+        float sum = 0.0;
+        vec2 posScale = pixRadius * invTexSize;
+        // contribution of each neighbor
+        // NOTE: this is currently using neighbor depths regardless of if they were written by point cloud
+        for (int c = 0; c < 8; c++) {
+            vec2 nRelPos = posScale * neighbors[c];
+            vec2 nPos = v_texCoord + nRelPos;
+            float zN = TEXTURE(u_depthTexture, nPos).r;  // neighbor depth
+            sum += max(0.0, depth - zN);
+        }
+        float f = sum / 8.0;
+        f = exp(-f * 300.0 * strength);
+        return vec4(f * color.rgb, 1.0);
+    }
 `;
 
 /** @internal */
-export function createEDLCalcProgram(context: WebGLContext): ShaderProgram {
+export function createEDLCalcAdv1Program(context: WebGLContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
 
-  frag.addFunction(computeObscurance);
-  frag.set(FragmentShaderComponent.ComputeBaseColor, calcEDL);
+  frag.set(FragmentShaderComponent.ComputeBaseColor, calcAdv1EDL);
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_texInfo", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_texInfo", (uniform, params) => {
-      const geom = params.geometry as EDLCalcGeometry;
+      const geom = params.geometry as EDLCalcAdv1Geometry;
       uniform.setUniform3fv(geom.texInfo);
-    });
-  });
-
-  // Uniforms based on the PointCloudDisplaySettings.
-  frag.addUniform("u_lightDir", VariableType.Vec4, (prog) => {
-    prog.addGraphicUniform("u_lightDir", (uniform, params) => {
-      params.target.uniforms.realityModel.pointCloud.bindEDL3(uniform);
     });
   });
 
   frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcGeometry;
+      const geom = params.geometry as EDLCalcAdv1Geometry;
       Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
     });
   });
 
   frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcGeometry;
+      const geom = params.geometry as EDLCalcAdv1Geometry;
       Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
     });
   });
@@ -176,19 +158,93 @@ export function createEDLCalcProgram(context: WebGLContext): ShaderProgram {
     });
   });
 
-  builder.vert.headerComment = "//!V! EDLCalc";
-  builder.frag.headerComment = "//!F! EDLCalc";
+  builder.vert.headerComment = "//!V! EDLCalcAdv1";
+  builder.frag.headerComment = "//!F! EDLCalcAdv1";
 
   return builder.buildProgram(context);
 }
 
-// This shader filters the EDL image
+// This shader calculates a more advanced version of EDL, and can be run at full, 1/2 and 1/4 scale
+const calcAdv2EDL = `
+    float strength = u_pointCloudEDL1.x;
+    float pixRadius = u_pointCloudEDL1.y;
+    float scale = u_texInfo.z;  // 1, 2, 4
+    vec2 invTexSize = u_texInfo.xy;
+
+    vec4 color = TEXTURE(u_colorTexture, v_texCoord);
+    if (color.a == 0.0)
+        return color;
+    else {
+        const vec2 neighbors[8] = vec2[8] (  //neighbor relative position
+            vec2( 1.0, 0.0), vec2( 0.70710678,  0.70710678), vec2(0.0,  1.0), vec2(-0.70710678,  0.70710678),
+            vec2(-1.0, 0.0), vec2(-0.70710678, -0.70710678), vec2(0.0, -1.0), vec2( 0.70710678, -0.70710678));
+        float depth = TEXTURE(u_depthTexture, v_texCoord).r;
+        float sum = 0.0;
+        vec2 posScale = pixRadius * invTexSize;
+        // contribution of each neighbor
+        // NOTE: this is currently using neighbor depths regardless of if they were written by point cloud
+        for (int c = 0; c < 8; c++) {
+            vec2 nRelPos = posScale * neighbors[c];
+            vec2 nPos = v_texCoord + nRelPos;
+            float zN = TEXTURE(u_depthTexture, nPos).r;  // neighbor depth
+            sum += max(0.0, depth - zN) / scale;
+        }
+        float f = sum / 8.0;
+        f = exp(-f * 300.0 * strength);
+        return vec4(f * color.rgb, 1.0);
+    }
+`;
+
+/** @internal */
+export function createEDLCalcAdv2Program(context: WebGLContext): ShaderProgram {
+  const builder = createViewportQuadBuilder(true);
+  const frag = builder.frag;
+
+  frag.set(FragmentShaderComponent.ComputeBaseColor, calcAdv2EDL);
+  frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
+
+  frag.addUniform("u_texInfo", VariableType.Vec3, (prog) => {
+    prog.addGraphicUniform("u_texInfo", (uniform, params) => {
+      const geom = params.geometry as EDLCalcAdv2Geometry;
+      uniform.setUniform3fv(geom.texInfo);
+    });
+  });
+
+  frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
+      const geom = params.geometry as EDLCalcAdv2Geometry;
+      Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
+      const geom = params.geometry as EDLCalcAdv2Geometry;
+      Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
+    });
+  });
+
+  // Uniforms based on the PointCloudDisplaySettings.
+  frag.addUniform("u_pointCloudEDL1", VariableType.Vec4, (prog) => {
+    prog.addGraphicUniform("u_pointCloudEDL1", (uniform, params) => {
+      params.target.uniforms.realityModel.pointCloud.bindEDL1(uniform);
+    });
+  });
+
+  builder.vert.headerComment = "//!V! EDLCalcAdv2";
+  builder.frag.headerComment = "//!F! EDLCalcAdv2";
+
+  return builder.buildProgram(context);
+}
+
+// This shader filters the EDL image, and can be run at 1/2 and 1/4 scale
 const filterEDL = `
     // NB: this bilateral filter hardcodes spatialSigma to 2.0 and depthSigma to 0.4, with halfSize = 2
     float distCoefs[] = float[] (
         1.0, 0.9692332344763441, 0.8824969025845955, 0.9692332344763441, 0.9394130628134758,
         0.8553453273074225, 0.8824969025845955, 0.8553453273074225, 0.8553453273074225, 0.7788007830714049);
     const float depthSigma = 0.4;
+    vec2 invTexSize = u_texInfo.xy;
 
     float depth = TEXTURE(u_depthTexture, v_texCoord).r;
     float wsum = 0.0;  // sum of all weights
@@ -196,11 +252,11 @@ const filterEDL = `
     vec2  coordi = vec2(0.0, 0.0);  // ith neighbor position x,y
 
     for (int c = -2; c <= 2; c++) {
-        coordi.x = float(c) * u_texInfo.x; // u_texInfo.x is 1/texwidth
+        coordi.x = float(c) * invTexSize.x;
         int cabs = (c < 0) ? -c : c;
 
         for (int d = -2; d <= 2; d++) {
-            coordi.y = float(d) * u_texInfo.y; // u_texInfo.y is 1/texheight
+            coordi.y = float(d) * invTexSize.y;
             vec4 ci = TEXTURE(u_colorTexture, v_texCoord + coordi); // neighbor color
 
             //pixel distance based damping
@@ -230,7 +286,7 @@ export function createEDLFilterProgram(context: WebGLContext): ShaderProgram {
 
   frag.addUniform("u_texInfo", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_texInfo", (uniform, params) => {
-      const geom = params.geometry as EDLCalcGeometry;
+      const geom = params.geometry as EDLFilterGeometry;
       uniform.setUniform3fv(geom.texInfo);
     });
   });

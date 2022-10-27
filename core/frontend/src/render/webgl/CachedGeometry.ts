@@ -807,7 +807,30 @@ export class EDLSimpleGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
-export class EDLCalcGeometry extends TexturedViewportQuadGeometry {
+export class EDLCalcAdv1Geometry extends TexturedViewportQuadGeometry {
+  public readonly texInfo = new Float32Array(3);
+
+  public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, width: number, height: number) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params)
+      return undefined;
+
+    return new EDLCalcAdv1Geometry(params, [colorBuffer, depthBuffer], width, height);
+  }
+
+  public get colorTexture() { return this._textures[0]; }
+  public get depthTexture() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], width: number, height: number) {
+    super(params, TechniqueId.EDLCalcAdv1, textures);
+    this.texInfo[0] = 1.0 / width;
+    this.texInfo[1] = 1.0 / height;
+    this.texInfo[2] = 1.0;
+  }
+}
+
+/** @internal */
+export class EDLCalcAdv2Geometry extends TexturedViewportQuadGeometry {
   public readonly texInfo = new Float32Array(3);
 
   public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
@@ -815,14 +838,14 @@ export class EDLCalcGeometry extends TexturedViewportQuadGeometry {
     if (undefined === params)
       return undefined;
 
-    return new EDLCalcGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
+    return new EDLCalcAdv2Geometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }
   public get depthTexture() { return this._textures[1]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], scale: number, width: number, height: number) {
-    super(params, TechniqueId.EDLCalc, textures);
+    super(params, TechniqueId.EDLCalcAdv2, textures);
     this.texInfo[0] = 1.0 / width;
     this.texInfo[1] = 1.0 / height;
     this.texInfo[2] = scale;

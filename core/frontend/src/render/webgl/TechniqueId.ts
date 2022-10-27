@@ -54,7 +54,8 @@ export const enum TechniqueId {
   VolClassSetBlend,
   VolClassBlend,
   EDLSimple,
-  EDLCalc,
+  EDLCalcAdv1,
+  EDLCalcAdv2,
   EDLFilter,
   EDLMix,
 

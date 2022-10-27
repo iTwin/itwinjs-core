@@ -14,7 +14,7 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawCommands, DrawParams } from "./DrawCommand";
 import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
 import { createBlurProgram } from "./glsl/Blur";
-import { createEDLCalcProgram, createEDLFilterProgram, createEDLMixProgram, createEDLSimpleProgram } from "./glsl/EDL";
+import { createEDLCalcAdv1Program, createEDLCalcAdv2Program, createEDLFilterProgram, createEDLMixProgram, createEDLSimpleProgram } from "./glsl/EDL";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createCombine3TexturesProgram } from "./glsl/Combine3Textures";
@@ -963,7 +963,8 @@ export class Techniques implements WebGLDisposable {
     this._list[TechniqueId.RealityMesh] = new RealityMeshTechnique(gl);
     this._list[TechniqueId.PlanarGrid] = new SingularTechnique(createPlanarGridProgram(gl));
     this._list[TechniqueId.EDLSimple] = new SingularTechnique(createEDLSimpleProgram(gl));
-    this._list[TechniqueId.EDLCalc] = new SingularTechnique(createEDLCalcProgram(gl));
+    this._list[TechniqueId.EDLCalcAdv1] = new SingularTechnique(createEDLCalcAdv1Program(gl));
+    this._list[TechniqueId.EDLCalcAdv2] = new SingularTechnique(createEDLCalcAdv2Program(gl));
     this._list[TechniqueId.EDLFilter] = new SingularTechnique(createEDLFilterProgram(gl));
     this._list[TechniqueId.EDLMix] = new SingularTechnique(createEDLMixProgram(gl));
 

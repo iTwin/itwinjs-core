@@ -21,7 +21,8 @@ import { RenderMemory } from "../RenderMemory";
 import { BranchState } from "./BranchState";
 import { BatchState } from "./BatchState";
 import {
-  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, EDLCalcGeometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry, ScreenPointsGeometry,
+  AmbientOcclusionGeometry, BlurGeometry, BlurType, BoundaryType, CachedGeometry, CompositeGeometry, CopyPickBufferGeometry, EDLCalcAdv1Geometry,
+  EDLCalcAdv2Geometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry, ScreenPointsGeometry,
   SingleTexturedViewportQuadGeometry, ViewportQuadGeometry, VolumeClassifierGeometry,
 } from "./CachedGeometry";
 import { Debug } from "./Diagnostics";
@@ -417,8 +418,8 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
   public occlusionXBlur?: BlurGeometry;
   public occlusionYBlur?: BlurGeometry;
   public edlSimple?: EDLSimpleGeometry;
-  public edlCalcSimp?: EDLCalcGeometry;
-  public edlCalc?: [EDLCalcGeometry | undefined, EDLCalcGeometry | undefined, EDLCalcGeometry | undefined];
+  public edlCalcAdv1?: EDLCalcAdv1Geometry;
+  public edlCalcAdv2?: [EDLCalcAdv2Geometry | undefined, EDLCalcAdv2Geometry | undefined, EDLCalcAdv2Geometry | undefined];
   public edlFilt?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined];
   public edlMix?: EDLMixGeometry;
 
@@ -433,10 +434,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     collectGeometryStatistics(this.occlusionXBlur, stats);
     collectGeometryStatistics(this.occlusionYBlur, stats);
     collectGeometryStatistics(this.edlSimple, stats);
-    collectGeometryStatistics(this.edlCalcSimp, stats);
-    collectGeometryStatistics(this.edlCalc?.[0], stats);
-    collectGeometryStatistics(this.edlCalc?.[1], stats);
-    collectGeometryStatistics(this.edlCalc?.[2], stats);
+    collectGeometryStatistics(this.edlCalcAdv1, stats);
+    collectGeometryStatistics(this.edlCalcAdv2?.[0], stats);
+    collectGeometryStatistics(this.edlCalcAdv2?.[1], stats);
+    collectGeometryStatistics(this.edlCalcAdv2?.[2], stats);
     collectGeometryStatistics(this.edlFilt?.[0], stats);
     collectGeometryStatistics(this.edlFilt?.[1], stats);
     collectGeometryStatistics(this.edlMix, stats);
@@ -501,10 +502,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.volClassBlend
       && undefined === this.volClassCopyZWithPoints
       && undefined === this.edlSimple
-      && undefined === this.edlCalcSimp
-      && undefined === this.edlCalc?.[0]
-      && undefined === this.edlCalc?.[1]
-      && undefined === this.edlCalc?.[2]
+      && undefined === this.edlCalcAdv1
+      && undefined === this.edlCalcAdv2?.[0]
+      && undefined === this.edlCalcAdv2?.[1]
+      && undefined === this.edlCalcAdv2?.[2]
       && undefined === this.edlFilt?.[0]
       && undefined === this.edlFilt?.[1]
       && undefined === this.edlMix;
@@ -518,11 +519,11 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
     this.disableVolumeClassifier();
     // TODO: decide where these should be handled
     this.edlSimple = dispose(this.edlSimple);
-    this.edlCalcSimp = dispose(this.edlCalcSimp);
-    if (this.edlCalc) {
-      this.edlCalc[0] = dispose(this.edlCalc?.[0]);
-      this.edlCalc[1] = dispose(this.edlCalc?.[1]);
-      this.edlCalc[2] = dispose(this.edlCalc?.[2]);
+    this.edlCalcAdv1 = dispose(this.edlCalcAdv1);
+    if (this.edlCalcAdv2) {
+      this.edlCalcAdv2[0] = dispose(this.edlCalcAdv2?.[0]);
+      this.edlCalcAdv2[1] = dispose(this.edlCalcAdv2?.[1]);
+      this.edlCalcAdv2[2] = dispose(this.edlCalcAdv2?.[2]);
     }
     if (this.edlFilt) {
       this.edlFilt[0] = dispose(this.edlFilt?.[0]);
@@ -2255,21 +2256,15 @@ class MRTCompositor extends Compositor {
       }
     }
 
-    // const edlOff = false;
-    // const useAdvSimple = true;
-    // const useSimple = false;
-    // const filter = true;
     const edlOff = !pcs?.edlStrength;
     const useSimple = !pcs?.edlAdvanced;
-    const useAdvSimple = !!pcs?.edlDbg1;
+    const useAdv1 = !!pcs?.edlDbg1;
     const filter = !!pcs?.edlFilter;
-    if (edlOff) {
-      // draw the regular way
+    if (edlOff) { // draw the regular way
       fbStack.execute(fbo, true, useMsBuffers, () => {
         this.drawPass(commands, RenderPass.PointClouds);
       });
-    } else {
-      // draw pointcloud to hilite texture and regular depth buffer
+    } else { // draw pointcloud to hilite texture and regular depth buffer as first step
       fbStack.execute(this._fbos.edlDrawPoints!, true, useMsBuffers, () => {
         // WIP
         const system = System.instance;
@@ -2280,7 +2275,7 @@ class MRTCompositor extends Compositor {
 
       if (useSimple || this._fbos.edlFilt2 === undefined || this._fbos.edlFilt4 === undefined ||
         this._fbos.edlCalc1 === undefined || this._fbos.edlCalc2 === undefined || this._fbos.edlCalc4 === undefined) {
-        // simple method
+        // draw using simple method (just samples 4 neighbors)
         // TODO: should radius be (optionally?) voxel based instead of pixel here?
         fbStack.execute(edlFin, true, useMsBuffers, () => {
         // this.drawPass(commands, RenderPass.PointClouds);
@@ -2289,28 +2284,27 @@ class MRTCompositor extends Compositor {
           const params = getDrawParams(this.target, this._geom.edlSimple!);
           this.target.techniques.draw(params);
         });
-      } else if (useAdvSimple) {
+      } else if (useAdv1) { // draw using advanced version of simple, but still single draw
         fbStack.execute(edlFin, true, useMsBuffers, () => {
-          if (this._geom.edlCalc === undefined) {
+          if (this._geom.edlCalcAdv1 === undefined) {
             const ct1 = this._textures.hilite!;
             const ctd = this._depth!.getHandle()!;
-            this._geom.edlCalcSimp = EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height);
+            this._geom.edlCalcAdv1 = EDLCalcAdv1Geometry.createGeometry(ct1.getHandle()!, ctd, ct1.width, ct1.height);
           }
-          const params = getDrawParams(this.target, this._geom.edlCalcSimp!);
+          const params = getDrawParams(this.target, this._geom.edlCalcAdv1!);
           this.target.techniques.draw(params);
         });
-      } else {
-        // more advanced method based on original paper
+      } else { // draw with full advanced method based on original paper
         // calculate the EDL result for full, 1/2, and 1/4 sizes
-        const edlCalc: FrameBuffer[] = [this._fbos.edlCalc1, this._fbos.edlCalc2, this._fbos.edlCalc4];
-        if (this._geom.edlCalc === undefined) {
+        const edlCalc2FB: FrameBuffer[] = [this._fbos.edlCalc1, this._fbos.edlCalc2, this._fbos.edlCalc4];
+        if (this._geom.edlCalcAdv2 === undefined) {
           const ct1 = this._textures.hilite!;
           const ct2 = this._fbos.edlCalc2.getColor(0);
           const ct4 = this._fbos.edlCalc4.getColor(0);
           const ctd = this._depth!.getHandle()!;
-          this._geom.edlCalc = [EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
-            EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2.width, ct2.height),
-            EDLCalcGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4.width, ct4.height)];
+          this._geom.edlCalcAdv2 = [EDLCalcAdv2Geometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
+            EDLCalcAdv2Geometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2.width, ct2.height),
+            EDLCalcAdv2Geometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4.width, ct4.height)];
         }
         const edlFilt: FrameBuffer[] = [this._fbos.edlFilt2, this._fbos.edlFilt4];
         if (this._geom.edlFilt === undefined) {
@@ -2321,13 +2315,13 @@ class MRTCompositor extends Compositor {
             EDLFilterGeometry.createGeometry(ft4.getHandle()!, ftd, 4, ft4.width, ft4.height)];
         }
 
+        const gl = System.instance.context;
         // Loop through the 3 sizes calculating an edl buffer, and if not first size, then optionally filtering those
         for (let i = 0; i < 3; ++i) {
-          fbStack.execute(edlCalc[i], true, useMsBuffers, () => {
-            const system = System.instance;
-            system.context.clearColor(0, 0, 0, 0);
-            system.context.clear(GL.BufferBit.Color);
-            const params = getDrawParams(this.target, this._geom.edlCalc![i]!);
+          fbStack.execute(edlCalc2FB[i], true, useMsBuffers, () => {
+            const colTex = edlCalc2FB[i].getColor(0);
+            gl.viewport(0, 0, colTex.width, colTex.height);
+            const params = getDrawParams(this.target, this._geom.edlCalcAdv2![i]!);
             this.target.techniques.draw(params);
           });
           if (filter && i > 0) {
@@ -2337,6 +2331,7 @@ class MRTCompositor extends Compositor {
             });
           }
         }
+        gl.viewport(0, 0, this.target.viewRect.width, this.target.viewRect.height); // Restore viewport
 
         // Now combine the 3 results and output
         const tex1 = this._fbos.edlCalc1.getColor(0).getHandle();
