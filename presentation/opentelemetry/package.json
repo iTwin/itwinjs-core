@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-opentelemetry",
-  "version": "3.5.0-dev.27",
+  "version": "3.5.0-dev.28",
   "description": "Package for making interop between OpenTelemetry and iTwin.js Presentation types easier.",
   "license": "MIT",
   "engines": {
