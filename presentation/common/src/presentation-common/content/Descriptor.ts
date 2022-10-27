@@ -11,6 +11,7 @@ import {
   ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelatedClassInfoWithOptionalRelationship,
   RelatedClassInfoWithOptionalRelationshipJSON, RelationshipPath, RelationshipPathJSON,
 } from "../EC";
+import { InstanceFilterDefinition } from "../InstanceFilterDefinition";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
@@ -173,7 +174,10 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
+  /** @deprecated use fieldsFilterExpression instead */
   filterExpression?: string;
+  fieldsFilterExpression?: string;
+  instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
@@ -206,8 +210,15 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
+  /**
+   * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
+   * @deprecated Use fieldsFilterExpression instead.
+   */
   filterExpression?: string;
+  /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
+  fieldsFilterExpression?: string;
+  /** Content instances filter */
+  instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
@@ -235,8 +246,15 @@ export interface DescriptorSource {
   readonly sortingField?: Field;
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  /**
+   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
+   * @deprecated Use fieldsFilterExpression instead.
+   */
   readonly filterExpression?: string;
+  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  readonly fieldsFilterExpression?: string;
+  /** Content instances filter */
+  readonly instanceFilter?: InstanceFilterDefinition;
 }
 
 /**
@@ -268,8 +286,15 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  /**
+   * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
+   * @deprecated Use fieldsFilterExpression instead.
+   */
   public filterExpression?: string;
+  /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
+  public fieldsFilterExpression?: string;
+  /** Content instances filter */
+  public instanceFilter?: InstanceFilterDefinition;
 
   /** Construct a new Descriptor using a [[DescriptorSource]] */
   public constructor(source: DescriptorSource) {
@@ -283,7 +308,9 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.filterExpression;
+    this.filterExpression = source.filterExpression ?? source.fieldsFilterExpression; // eslint-disable-line deprecation/deprecation
+    this.fieldsFilterExpression = source.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.instanceFilter = source.instanceFilter;
   }
 
   /** Serialize [[Descriptor]] to JSON */
@@ -305,7 +332,9 @@ export class Descriptor implements DescriptorSource {
       },
       this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
-      this.filterExpression !== undefined && { filterExpression: this.filterExpression },
+      this.filterExpression !== undefined && { filterExpression: this.filterExpression }, // eslint-disable-line deprecation/deprecation
+      this.fieldsFilterExpression !== undefined && { fieldsFilterExpression: this.fieldsFilterExpression },
+      this.instanceFilter !== undefined && { instanceFilter: this.instanceFilter },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
     );
   }
@@ -356,8 +385,12 @@ export class Descriptor implements DescriptorSource {
       overrides.displayType = this.displayType;
     if (this.contentFlags !== 0)
       overrides.contentFlags = this.contentFlags;
-    if (this.filterExpression)
-      overrides.filterExpression = this.filterExpression;
+    if (this.filterExpression || this.fieldsFilterExpression) { // eslint-disable-line deprecation/deprecation
+      overrides.filterExpression = this.filterExpression ?? this.fieldsFilterExpression; // eslint-disable-line deprecation/deprecation
+      overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
+    }
+    if (this.instanceFilter)
+      overrides.instanceFilter = this.instanceFilter;
     if (this.sortingField)
       overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
     return overrides;

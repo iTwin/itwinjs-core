@@ -46,7 +46,7 @@ export function useNavigationPropertyTargetsLoader(props: UseNavigationPropertyT
       keys: new KeySet(),
       descriptor: {
         contentFlags: ContentFlags.ShowLabels | ContentFlags.NoFields,
-        filterExpression: filter ? `/DisplayLabel/ LIKE \"%${filter}%\"` : undefined,
+        fieldsFilterExpression: filter ? `/DisplayLabel/ LIKE \"%${filter}%\"` : undefined,
       },
       paging: { start: loadedOptions.length, size: NAVIGATION_PROPERTY_TARGETS_BATCH_SIZE },
     });
