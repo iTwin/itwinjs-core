@@ -197,6 +197,7 @@ export enum ChangeSetStatus {
     ChangeTrackingNotEnabled = 90114,
     CorruptedChangeStream = 90115,
     CouldNotOpenDgnDb = 90131,
+    DownloadCancelled = 90138,
     FileNotFound = 90116,
     FileWriteError = 90117,
     HasLocalChanges = 90118,
@@ -1346,6 +1347,11 @@ export class PerfLogger implements IDisposable {
     // (undocumented)
     dispose(): void;
 }
+
+// @public
+export type PickAsyncMethods<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never;
+};
 
 // @public
 export class PriorityQueue<T> implements Iterable<T> {

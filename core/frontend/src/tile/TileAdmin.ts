@@ -174,7 +174,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
-    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
+    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.appFunctionIpc.queryConcurrency("cpu")) : undefined;
     const isMobile = ProcessDetector.isMobileBrowser;
     return new TileAdmin(isMobile, rpcConcurrency, props);
   }

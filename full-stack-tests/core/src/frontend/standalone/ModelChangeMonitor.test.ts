@@ -7,7 +7,7 @@ import * as path from "path";
 import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
-import { callFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import { coreFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 if (!ProcessDetector.isMobileAppFrontend) {
@@ -48,9 +48,9 @@ if (!ProcessDetector.isMobileAppFrontend) {
       let elemId: string;
 
       beforeEach(async () => {
-        const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+        const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
         const dictId = await imodel.models.getDictionaryModel();
-        const categoryId = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictId, Guid.createValue(), { color: 0 });
+        const categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictId, Guid.createValue(), { color: 0 });
         elemId = await insertLineElement(imodel, modelId, categoryId);
 
         // Make sure the event produced by saveChanges doesn't pollute our tests.

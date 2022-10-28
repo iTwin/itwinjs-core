@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, GuidString, ProcessDetector } from "@itwin/core-bentley";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationCallbackHandler } from "@itwin/browser-authorization";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
@@ -54,6 +54,8 @@ import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -137,11 +139,7 @@ class PullChangesTool extends Tool {
   }
 }
 
-export class DtaIpc {
-  public static async callBackend<T extends AsyncMethodsOf<DtaIpcInterface>>(methodName: T, ...args: Parameters<DtaIpcInterface[T]>) {
-    return IpcApp.callIpcChannel(dtaChannel, methodName, ...args);
-  }
-}
+export const dtaIpc = IpcApp.makeIpcProxy<DtaIpcInterface>(dtaChannel);
 
 class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
@@ -209,7 +207,7 @@ class ExitTool extends Tool {
 
 function createHubAccess(configuration: DtaConfiguration) {
   if (configuration.urlPrefix) {
-    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl:`https://${configuration.urlPrefix}api.bentley.com/imodels` }}));
+    return new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${configuration.urlPrefix}api.bentley.com/imodels` } }));
   } else {
     return new FrontendIModelsAccess();
   }
@@ -248,11 +246,16 @@ export class DisplayTestApp {
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
-          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+          MapboxImagery: configuration.mapBoxKey
+            ? { key: "access_token", value: configuration.mapBoxKey }
+            : undefined,
+          BingMaps: configuration.bingMapsKey
+            ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["navigator"]}}),
       },
       localhostIpcApp: {
         socketUrl,
@@ -262,6 +265,7 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
