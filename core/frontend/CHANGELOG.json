@@ -2,6 +2,21 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "3.4.3",
+      "tag": "@itwin/core-frontend_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ArcGIS tilemap requests were missing oauth2 token if available."
+          },
+          {
+            "comment": "Reproject reality tiles to the surface of the Earth."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.2",
       "tag": "@itwin/core-frontend_v3.4.2",
       "date": "Mon, 24 Oct 2022 13:23:45 GMT",

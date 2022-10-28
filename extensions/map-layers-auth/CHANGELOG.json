@@ -2,6 +2,18 @@
   "name": "@itwin/map-layers-auth",
   "entries": [
     {
+      "version": "3.4.3",
+      "tag": "@itwin/map-layers-auth_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ArcGIS access client now allow default client id.  Also, oauth2 endpoint validation will be ignored if a CORS error occurs.  Also fixed 'tilemap' requests not including oauth2 token."
+          }
+        ]
+      }
+    },
+    {
       "version": "3.4.2",
       "tag": "@itwin/map-layers-auth_v3.4.2",
       "date": "Mon, 24 Oct 2022 13:23:45 GMT",
