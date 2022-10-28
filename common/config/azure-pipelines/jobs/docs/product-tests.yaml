@@ -9,7 +9,9 @@ parameters:
 jobs:
 - job: ProductTests_${{ parameters.env }}
   pool:
-    name: SecurityScans
+    # name: SecurityScans
+    # demands: Agent.OS -equals Windows_NT
+    name: iModelTechCI
     demands: Agent.OS -equals Windows_NT
 
   variables:
