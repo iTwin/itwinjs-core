@@ -6,9 +6,11 @@
  * @module InstancesFilter
  */
 
-import { PropertyDescription } from "@itwin/appui-abstract";
+import { PropertyDescription, PropertyValueFormat } from "@itwin/appui-abstract";
 import { isPropertyFilterRuleGroup, PropertyFilter, PropertyFilterRule, PropertyFilterRuleGroup } from "@itwin/components-react";
-import { CategoryDescription, ClassId, Descriptor, Field, FIELD_NAMES_SEPARATOR } from "@itwin/presentation-common";
+import {
+  CategoryDescription, ClassInfo, Descriptor, Field, FIELD_NAMES_SEPARATOR, NestedContentField, PropertiesField,
+} from "@itwin/presentation-common";
 import { createPropertyDescriptionFromFieldInfo } from "../common/ContentBuilder";
 import { findField } from "../common/Utils";
 import { InstanceFilterPropertyInfo, PresentationInstanceFilter, PresentationInstanceFilterCondition } from "./Types";
@@ -30,6 +32,15 @@ export function createPresentationInstanceFilter(descriptor: Descriptor, filter:
 export function getInstanceFilterFieldName(property: PropertyDescription) {
   const [_, fieldName] = property.name.split(INSTANCE_FILTER_FIELD_SEPARATOR);
   return fieldName;
+}
+
+function getPropertySourceClassInfo(field: PropertiesField | NestedContentField): ClassInfo {
+  if (field.parent)
+    return getPropertySourceClassInfo(field.parent);
+
+  if (field.isPropertiesField())
+    return field.properties[0].property.classInfo;
+  return field.pathToPrimaryClass[field.pathToPrimaryClass.length - 1].targetClassInfo;
 }
 
 function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, group: PropertyFilterRuleGroup): PresentationInstanceFilter | undefined {
@@ -56,6 +67,8 @@ function createPresentationInstanceFilterConditionGroup(descriptor: Descriptor, 
 function createPresentationInstanceFilterCondition(descriptor: Descriptor, condition: PropertyFilterRule): PresentationInstanceFilterCondition | undefined {
   const field = findField(descriptor, getInstanceFilterFieldName(condition.property));
   if (!field || !field.isPropertiesField())
+    return undefined;
+  if (condition.value && condition.value.valueFormat !== PropertyValueFormat.Primitive)
     return undefined;
   return {
     operator: condition.operator,
@@ -90,17 +103,16 @@ function createPropertyInfos(descriptor: Descriptor, parentInfo: ParentInfo): In
   }
 
   for (const field of descriptor.fields) {
-    const sourceClassIds = getSourceClassIds(field);
-    fields.push(...createPropertyInfosFromContentField(field, parentInfo, sourceClassIds, undefined));
+    fields.push(...createPropertyInfosFromContentField(field, parentInfo, undefined));
   }
 
   return fields;
 }
 
-function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInfo, sourceClassIds?: ClassId[], fieldNamePrefix?: string): InstanceFilterPropertyInfo[] {
+function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInfo, fieldNamePrefix?: string): InstanceFilterPropertyInfo[] {
   if (field.isNestedContentField()) {
     const childPrefix = getPrefixedFieldName(field.name, fieldNamePrefix);
-    return field.nestedFields.flatMap((nestedField) => createPropertyInfosFromContentField(nestedField, parentInfo, sourceClassIds, childPrefix));
+    return field.nestedFields.flatMap((nestedField) => createPropertyInfosFromContentField(nestedField, parentInfo, childPrefix));
   }
 
   if (field.category.name !== parentInfo.categoryName || !field.isPropertiesField())
@@ -119,18 +131,11 @@ function createPropertyInfosFromContentField(field: Field, parentInfo: ParentInf
 
   return [{
     field,
-    sourceClassIds: sourceClassIds ?? [field.properties[0].property.classInfo.id],
+    sourceClassId: getPropertySourceClassInfo(field).id,
     propertyDescription,
     categoryLabel: parentInfo.label,
     className: field.properties[0].property.classInfo.name,
   }];
-}
-
-function getSourceClassIds(field: Field) {
-  if (field.isNestedContentField())
-    return field.actualPrimaryClassIds;
-
-  return undefined;
 }
 
 /** @alpha */

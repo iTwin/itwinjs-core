@@ -5,16 +5,20 @@ publish: false
 
 Table of contents:
 
-- [NextVersion](#nextversion)
-  - [Display system](#display-system)
-    - [Reality model display customization](#reality-model-display-customization)
-    - [Atmospheric Scattering](#atmospheric-scattering)
-  - [Presentation](#presentation)
-    - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
-    - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
-      - [Example](#example)
-  - [AppUi](#appui)
-    - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
+- [Display system](#display-system)
+  - [Reality model display customization](#reality-model-display-customization)
+  - [Atmospheric Scattering](#atmospheric-scattering)
+  - [View padding](#view-padding)
+- [Presentation](#presentation)
+  - [Controlling in-memory cache sizes](#controlling-in-memory-cache-sizes)
+  - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
+- [Element aspect ids](#element-aspect-ids)
+- [AppUi](#appui)
+- [Geometry](#geometry)
+  - [Polyface](#polyface)
+- [Deprecations](#deprecations)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-transformer](#itwincore-transformer)
 
 ## Display system
 
@@ -41,6 +45,32 @@ The effect is only displayed with 3d geolocated iModels with [DisplayStyleSettin
 The effect can be controlled using [AtmosphericScattering.Settings]($common). It is also reactive to the sun's position defined at [DisplayStyle3dSettings.lights]($common).
 
 ![Sky View of Atmospheric Scattering](.\assets\atmospheric_scattering_sky.jpg)
+
+### View padding
+
+Functions like [ViewState.lookAtVolume]($frontend) and [Viewport.zoomToElements]($frontend) fit a view to a specified volume. They accept a [MarginOptions]($frontend) that allows the caller to customize how tightly the view fits to the volume, via [MarginPercent]($frontend). However, the amount by which the volume is enlarged to add extra space can yield surprising results. For example, a [MarginPercent]($frontend) that specifies a margin of 25% on each side - `{left: .25, right: .25, top: .25, bottom: .25}` - actually *doubles* the width and height of the volume, adding 50% of the original volume's size to each side. Moreover, [MarginPercent]($frontend)'s constructor clamps the margin values to a minimum of zero and maximum of 0.25.
+
+Now, [MarginOptions]($frontend) has an alternative way to specify how to adjust the size of the viewed volume, using [MarginOptions.paddingPercent]($frontend). Like [MarginPercent]($frontend), a [PaddingPercent]($frontend) specifies the extra space as a percentage of the original volume's space on each side - though it may also specify a single padding to be applied to all four sides, or omit any side that should have no padding applied. For example,
+
+```
+{paddingPercent: {{left: .2, right: .2, top: .2, bottom: .2}}
+// is equivalent to
+{paddingPercent: .2}
+```
+
+and
+
+```
+{paddingPercent: {left: 0, top: 0, right: .5, bottom: .5}}
+// is equivalent to
+{paddingPercent: {right: .5, bottom: .5}
+```
+
+Moreover, [PaddingPercent]($frontend) imposes no constraints on the padding values. They can even be negative, which causes the volume to shrink instead of expand by **subtracting** a percentage of the original volume's size from one or more sides.
+
+The padding computations are more straightforward than those used for margins. For example, `{paddingPercent: 0.25}` adds 25% of the original volume's size to each side, whereas the equivalent `marginPercent` adds 50% to each side.
+
+Note that both margins and padding apply only to 2d views, or to 3d views with the camera turned off; and that additional extra space will be allocated on either the top and bottom or left and right to preserve the viewport's aspect ratio.
 
 ## Presentation
 
@@ -100,8 +130,32 @@ With the new approach we "break" at the duplicate A node:
    +--+ A
 ```
 
+## Element aspect ids
+
+[IModelDb.Elements.insertAspect]($backend) now returns the id of the newly inserted aspect. Aspects exist in a different id space from elements, so
+the ids returned are not unique from all element ids and may collide.
+
 ## AppUi
 
 ### Setting allowed panel zones for widgets
 
-When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array
+
+## Geometry
+
+### Polyface
+
+The method [Polyface.facetCount]($core-geometry) has been added to this abstract class, with a default implementation that returns undefined. Implementers should override to return the number of facets of the mesh.
+
+## Deprecations
+
+### @itwin/core-backend
+
+The synchronous [IModelDb.Views.getViewStateData]($backend) has been deprecated in favor of [IModelDb.Views.getViewStateProps]($backend), which accepts the same inputs and returns the same output, but performs some potentially-expensive work on a background thread to avoid blocking the JavaScript event loop.
+
+The [IModelCloneContext]($backend) class in `@itwin/core-backend` has been renamed to [IModelElementCloneContext]($backend) to better reflect its inability to clone non-element entities.
+ The type `IModelCloneContext` is still exported from the package as an alias for `IModelElementCloneContext`. `@itwin/core-transformer` now provides a specialization of `IModelElementCloneContext` named [IModelCloneContext]($transformer).
+
+### @itwin/core-transformer
+
+[IModelTransformer.initFromExternalSourceAspects]($transformer) is deprecated and in most cases no longer needed, because the transformer now handles referencing properties on out-of-order non-element entities like aspects, models, and relationships. If you are not using a method like `processAll` or `processChanges` to run the transformer, then you do need to replace `initFromExternalSourceAspects` with [IModelTransformer.initialize]($transformer).

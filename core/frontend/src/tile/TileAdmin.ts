@@ -174,7 +174,7 @@ export class TileAdmin {
    * @returns the TileAdmin
    */
   public static async create(props?: TileAdmin.Props): Promise<TileAdmin> {
-    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.callIpcHost("queryConcurrency", "cpu")) : undefined;
+    const rpcConcurrency = IpcApp.isValid ? (await IpcApp.appFunctionIpc.queryConcurrency("cpu")) : undefined;
     const isMobile = ProcessDetector.isMobileBrowser;
     return new TileAdmin(isMobile, rpcConcurrency, props);
   }
@@ -695,8 +695,14 @@ export class TileAdmin {
     if (true !== requestProps.omitEdges && undefined === requestProps.edgeType)
       requestProps = { ...requestProps, edgeType: this.enableIndexedEdges ? 2 : 1 };
 
-    if (undefined === requestProps.quantizePositions)
-      requestProps = { ...requestProps, quantizePositions: false };
+    // For backwards compatibility, these options default to true in the backend. Explicitly set them to false in (newer) frontends if not supplied.
+    if (undefined === requestProps.quantizePositions || undefined === requestProps.useAbsolutePositions) {
+      requestProps = {
+        ...requestProps,
+        quantizePositions: requestProps.quantizePositions ?? false,
+        useAbsolutePositions: requestProps.useAbsolutePositions ?? false,
+      };
+    }
 
     this.initializeRpc();
     const intfc = IModelTileRpcInterface.getClient();

@@ -4489,6 +4489,16 @@ export const ReducerRegistryInstance: ReducerRegistry;
 export function removeMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState;
 
 // @alpha
+export class RestoreAllFrontstagesTool extends Tool {
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    run(): Promise<boolean>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @alpha
 export class RestoreFrontstageLayoutTool extends Tool {
     // (undocumented)
     static iconSpec: string;
@@ -4500,16 +4510,6 @@ export class RestoreFrontstageLayoutTool extends Tool {
     parseAndRun(...args: string[]): Promise<boolean>;
     // (undocumented)
     run(frontstageId?: string): Promise<boolean>;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @alpha
-export class RestoreFrontstagesLayoutTool extends Tool {
-    // (undocumented)
-    static iconSpec: string;
-    // (undocumented)
-    run(): Promise<boolean>;
     // (undocumented)
     static toolId: string;
 }

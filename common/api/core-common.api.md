@@ -32,7 +32,6 @@ import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
-import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
 import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
@@ -1633,6 +1632,24 @@ export type ComputeNodeId = (elementId: Id64.Uint32Pair, featureIndex: number) =
 export function computeTileChordTolerance(tile: TileMetadata, is3d: boolean, tileScreenSize: number): number;
 
 // @alpha
+export enum ConcreteEntityTypes {
+    // (undocumented)
+    Element = "e",
+    // (undocumented)
+    ElementAspect = "a",
+    // (undocumented)
+    Model = "m",
+    // (undocumented)
+    Relationship = "r"
+}
+
+// @alpha
+export namespace ConcreteEntityTypes {
+    // @internal
+    export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
+}
+
+// @alpha
 export enum ContentFlags {
     // (undocumented)
     AllowInstancing = 1,
@@ -2893,6 +2910,21 @@ export interface EntityQueryParams {
     where?: string;
 }
 
+// @alpha
+export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
+
+// @alpha
+export class EntityReferenceSet extends Set<EntityReference> {
+    // (undocumented)
+    addAspect(id: Id64String): void;
+    // (undocumented)
+    addElement(id: Id64String): void;
+    // (undocumented)
+    addModel(id: Id64String): void;
+    // (undocumented)
+    addRelationship(id: Id64String): void;
+}
+
 // @public
 export class Environment {
     protected constructor(props?: Partial<EnvironmentProperties>);
@@ -3840,6 +3872,9 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 
 export { GetMetaDataFunction }
 
+// @internal
+export const getPullChangesIpcChannel: (iModelId: string) => string;
+
 // @internal (undocumented)
 export function getTileObjectReference(iModelId: string, changesetId: string, treeId: string, contentId: string, guid?: string): ObjectReference;
 
@@ -4009,6 +4044,7 @@ export interface GraphicsRequestProps {
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
+    useAbsolutePositions?: boolean;
 }
 
 // @public
@@ -4758,6 +4794,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // (undocumented)
     queryEntityIds(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<Id64String[]>;
     // (undocumented)
+    queryModelExtents(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<ModelExtentsProps[]>;
+    // (undocumented)
     queryModelProps(_iModelToken: IModelRpcProps, _params: EntityQueryParams): Promise<ModelProps[]>;
     // (undocumented)
     queryModelRanges(_iModelToken: IModelRpcProps, _modelIds: Id64String[]): Promise<Range3dProps[]>;
@@ -4937,6 +4975,7 @@ export enum IpcAppChannel {
 // @internal
 export interface IpcAppFunctions {
     cancelElementGraphicsRequests: (key: string, _requestIds: string[]) => Promise<void>;
+    cancelPullChangesRequest: (key: string) => Promise<void>;
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
@@ -4949,7 +4988,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -5556,6 +5595,13 @@ export class ModelClipGroups {
     getClipForModel(modelId: Id64String): ClipVector | undefined;
     readonly groups: ModelClipGroup[];
     toJSON(): ModelClipGroupProps[];
+}
+
+// @public
+export interface ModelExtentsProps {
+    extents: Range3dProps;
+    id: Id64String;
+    status: IModelStatus;
 }
 
 // @public
@@ -6637,6 +6683,13 @@ export interface PropertyMetaDataProps {
     structName?: string;
 }
 
+// @internal
+export interface PullChangesOptions {
+    enableCancellation?: boolean;
+    progressInterval?: number;
+    reportProgress?: boolean;
+}
+
 // @public
 export class QParams2d {
     clone(out?: QParams2d): QParams2d;
@@ -7069,6 +7122,14 @@ export interface RelatedElementProps {
 export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
+// @internal
+export interface RelTypeInfo {
+    // (undocumented)
+    source: ConcreteEntityTypes;
+    // (undocumented)
+    target: ConcreteEntityTypes;
+}
+
 // @public
 export type RemoveFunction = () => void;
 
@@ -7299,7 +7360,7 @@ export namespace RenderSchedule {
         readonly containsModelClipping: boolean;
         readonly containsTransform: boolean;
         // @internal
-        discloseIds(ids: Id64Set): void;
+        discloseIds(ids: EntityReferenceSet): void;
         readonly duration: Range1d;
         // (undocumented)
         equals(other: Script): boolean;
