@@ -25,6 +25,12 @@
 # 1. Add files to *this* config to trigger
 # 1. Add the glob of paths to trigger on to the "paths:" list below.
 # 2. Add the same paths to the "changed-files-specific" step below.
+#    IMPORTANT NOTE: The tj-actions/changed-files globs are slightly different than GitHub
+#    Actions' globs. There are at least two differences to be aware of:
+#    1. GitHub Actions globs require quotes if they start with a * character,
+#       tj-actions globs do not.
+#    2. ** matches slightly differently. For example, GitHub actions "**.md" would be
+#       tj-actions **/*.md.
 # 3. For any status check that should potentially be skipped and/or faked, go to the
 #    status check's config and add the relevant paths to the paths exclusion list.
 #    ("paths-ignore" for Github Actions and "paths.exclude" for Azure Pipelines.)
@@ -61,8 +67,8 @@ jobs:
             docs/**
             .github/CODEOWNERS
             common/changes/**/*.json
-            "**/CHANGELOG.json"
-            "**/CHANGELOG.md"
+            **/CHANGELOG.json
+            **/CHANGELOG.md
 
       # Fake required checks if neccessary
       - uses: LouisBrunner/checks-action@v1.3.0   # See https://github.com/marketplace/actions/github-checks
