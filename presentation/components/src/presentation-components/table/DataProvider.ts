@@ -194,7 +194,6 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
       };
     }
     if (this._filterExpression) {
-      overrides.filterExpression = this._filterExpression; // eslint-disable-line deprecation/deprecation
       overrides.fieldsFilterExpression = this._filterExpression;
     }
     return overrides;

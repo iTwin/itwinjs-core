@@ -30,7 +30,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -47,7 +46,6 @@ describe("Descriptor", () => {
         displayType: faker.random.word(),
         categories: [category],
         fields: [createTestSimpleContentField({ category }), createTestSimpleContentField({ category })],
-        filterExpression: faker.random.words(),
         selectClasses: [],
       };
       const descriptor = new Descriptor(source);
@@ -232,7 +230,7 @@ describe("Descriptor", () => {
         })],
         categories: [category],
         fields,
-        filterExpression: "testFilterExpression",
+        fieldsFilterExpression: "testFilterExpression",
         selectionInfo: { providerName: "testProviderName", level: 1 },
         sortingField: fields[0],
         sortDirection: SortDirection.Ascending,
@@ -329,9 +327,8 @@ describe("Descriptor", () => {
         fields: [],
         filterExpression: "test filter",
       });
-      descriptor.fieldsFilterExpression = undefined; // eslint-disable-line deprecation/deprecation
+      descriptor.fieldsFilterExpression = undefined;
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        filterExpression: "test filter",
         fieldsFilterExpression: "test filter",
       });
     });
@@ -341,9 +338,7 @@ describe("Descriptor", () => {
         fields: [],
         fieldsFilterExpression: "test filter",
       });
-      descriptor.filterExpression = undefined; // eslint-disable-line deprecation/deprecation
       expect(descriptor.createDescriptorOverrides()).to.deep.eq({
-        filterExpression: "test filter",
         fieldsFilterExpression: "test filter",
       });
     });

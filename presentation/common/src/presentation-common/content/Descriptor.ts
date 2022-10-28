@@ -318,8 +318,8 @@ export class Descriptor implements DescriptorSource {
     this.fields = [...source.fields];
     this.sortingField = source.sortingField;
     this.sortDirection = source.sortDirection;
-    this.filterExpression = source.filterExpression ?? source.fieldsFilterExpression; // eslint-disable-line deprecation/deprecation
-    this.fieldsFilterExpression = source.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.filterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
+    this.fieldsFilterExpression = source.fieldsFilterExpression ?? source.filterExpression; // eslint-disable-line deprecation/deprecation
     this.instanceFilter = source.instanceFilter;
   }
 
@@ -395,10 +395,8 @@ export class Descriptor implements DescriptorSource {
       overrides.displayType = this.displayType;
     if (this.contentFlags !== 0)
       overrides.contentFlags = this.contentFlags;
-    if (this.filterExpression || this.fieldsFilterExpression) { // eslint-disable-line deprecation/deprecation
-      overrides.filterExpression = this.filterExpression ?? this.fieldsFilterExpression; // eslint-disable-line deprecation/deprecation
+    if (this.filterExpression || this.fieldsFilterExpression) // eslint-disable-line deprecation/deprecation
       overrides.fieldsFilterExpression = this.fieldsFilterExpression ?? this.filterExpression; // eslint-disable-line deprecation/deprecation
-    }
     if (this.instanceFilter)
       overrides.instanceFilter = this.instanceFilter;
     if (this.sortingField)
