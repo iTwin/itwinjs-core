@@ -6,23 +6,22 @@ parameters:
 steps:
 - powershell: |
     $commitMsg = '$(Build.SourceVersionMessage)'
-    Write-Host $commitMsg
     if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
       Write-Host `'$commitMsg`'` is a version bump
-      Write-Host ##vso[task.setvariable variable=shouldPublish;]true
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]True'
     } else {
       Write-Host `'$commitMsg`'` is not a version bump
-      Write-Host ##vso[task.setvariable variable=shouldPublish;]false
+      Write-Host '##vso[task.setvariable variable=ShouldPublish;]False'
     }
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
 - powershell: |
     Write-Host Publishing!
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['shouldPublish'], true))
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - powershell: |
     Write-Host Not publishing!
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['shouldPublish'], false))
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'False'))
 
 # - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
 #   displayName: rush publish pack
