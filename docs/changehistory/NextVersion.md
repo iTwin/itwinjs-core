@@ -14,6 +14,7 @@ Table of contents:
   - [Changes to infinite hierarchy prevention](#changes-to-infinite-hierarchy-prevention)
 - [Element aspect ids](#element-aspect-ids)
 - [AppUi](#appui)
+  - [Setting allowed panel zones for widgets](#setting-allowed-panel-zones-for-widgets)
 - [Geometry](#geometry)
   - [Polyface](#polyface)
 - [Deprecations](#deprecations)
