@@ -9,7 +9,7 @@ import {
   ContextRealityModelState, IModelApp, SpatialModelState, Tool, Viewport,
 } from "@itwin/core-frontend";
 import {
-  convertHexToRgb, createCheckBox, createColorInput, createLabeledNumericInput, createRadioBox, createSlider,
+  convertHexToRgb, createCheckBox, createColorInput, createRadioBox, createSlider,
 } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
@@ -149,43 +149,29 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   sizeMode.form.style.display = "inline";
 
   // Pixel size
-  const sdiv0 = document.createElement("div");
-  sdiv0.style.display = "inline";
-  const slabel0 = document.createElement("label");
-  slabel0.innerText = model.settings.pointCloud.voxelScale.toString();
-  sdiv0.appendChild(slabel0);
   const voxelSizeSlider = createSlider({
     name: " Size ", id: "rms_scale", parent: sizeMode.div,
     min: "0.25", max: "10", step: "0.25",
     value: model.settings.pointCloud.voxelScale.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      slabel0.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ voxelScale: scale });
     },
   }).div;
-  voxelSizeSlider.appendChild(sdiv0);
 
-  const sdiv0p = document.createElement("div");
-  sdiv0p.style.display = "inline";
-  const slabel0p = document.createElement("label");
-  slabel0p.innerText = model.settings.pointCloud.voxelScale.toString();
-  sdiv0p.appendChild(slabel0p);
   const pixelSizeSlider = createSlider({
     name: " Size ", id: "rms_size", parent: sizeMode.div,
     min: "1", max: "64", step: "1",
     value: model.settings.pointCloud.pixelSize.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const pixelSize = Number.parseInt(slider.value, 10);
-      slabel0p.innerText = slider.value.toString();
       if (!Number.isNaN(pixelSize))
         updatePointCloud({ pixelSize });
     },
   }).div;
-  pixelSizeSlider.appendChild(sdiv0p);
 
   setSizeMode(model.settings.pointCloud.sizeMode);
 
@@ -195,134 +181,108 @@ function createRealityModelSettingsPanel(model: RealityModel, parent: HTMLElemen
   hr.style.borderColor = "grey";
   tdiv.appendChild(hr);
   const label1 = document.createElement("label");
-  label1.innerText = "EDL";
+  label1.innerText = "EDL  (enabled if Strength > 0)";
   tdiv.appendChild(label1);
   element.appendChild(tdiv);
 
-  createCheckBox({
-    name: "Advanced:", id: "pcs_adv",
-    parent: element,
-    isChecked: model.settings.pointCloud.edlAdvanced === 1,
-    handler: (cb) => updatePointCloud({ edlAdvanced: cb.checked ? 1 : 0 }),
-  });
+  const setEDLMode = (mode: string) => {
+    // const isSimple = mode === "simple";
+    const isAdv1 = mode === "adv1";
+    const isAdv2 = mode === "adv2";
+    updatePointCloud({ edlAdvanced: isAdv2 ? 1 : 0, edlDbg1: isAdv1 ? 1 : 0 }),
+    edlFilter.style.display = isAdv2 ? "" : "none";
+    edlMixWt1Slider.style.display = isAdv2 ? "" : "none";
+    edlMixWt2Slider.style.display = isAdv2 ? "" : "none";
+    edlMixWt4Slider.style.display = isAdv2 ? "" : "none";
+  };
 
-  createCheckBox({
-    name: "Filter:", id: "pcs_filter",
+  createRadioBox({
+    id: "pcs_edlMode",
+    defaultValue: model.settings.pointCloud.edlAdvanced ? "adv2" : (model.settings.pointCloud.edlDbg1 ? "adv1" : "simple"),
+    entries: [
+      { value: "simple", label: "Simple " },
+      { value: "adv1", label: "Advanced " },
+      { value: "adv2", label: "Advanced Full " },
+    ],
     parent: element,
-    isChecked: model.settings.pointCloud.edlFilter === 1,
-    handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
+    handler: (value) => setEDLMode(value),
   });
 
   // EDL strength
-  const sdiv1 = document.createElement("div");
-  sdiv1.style.display = "inline";
-  const slabel1 = document.createElement("label");
-  slabel1.innerText = model.settings.pointCloud.edlStrength.toString();
-  sdiv1.appendChild(slabel1);
   const edlStrengthSlider = createSlider({
     name: " Strength ", id: "pcs_strength", parent: element,
     min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlStrength.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      slabel1.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ edlStrength: scale });
     },
   }).div;
   edlStrengthSlider.style.display = "";
-  edlStrengthSlider.appendChild(sdiv1);
 
   // EDL radius
-  const sdiv2 = document.createElement("div");
-  sdiv2.style.display = "inline";
-  const slabel2 = document.createElement("label");
-  slabel2.innerText = model.settings.pointCloud.edlRadius.toString();
-  sdiv2.appendChild(slabel2);
   const edlRadiusSlider = createSlider({
     name: " Radius ", id: "pcs_radius", parent: element,
     min: "0.0", max: "25", step: "0.25",
     value: model.settings.pointCloud.edlRadius.toString(),
-    verticalAlign: false, textAlign: false,
+    readout: "right", verticalAlign: false, textAlign: false,
     handler: (slider) => {
       const scale = Number.parseFloat(slider.value);
-      slabel2.innerText = slider.value.toString();
       if (!Number.isNaN(scale))
         updatePointCloud({ edlRadius: scale });
     },
   }).div;
   edlRadiusSlider.style.display = "";
-  edlRadiusSlider.appendChild(sdiv2);
 
-  createCheckBox({
-    name: "AdvSimpTemp:", id: "pcs_dbg1",
+  const edlFilter = createCheckBox({
+    name: " Filter", id: "pcs_filter",
     parent: element,
-    isChecked: model.settings.pointCloud.edlDbg1 === 1,
-    handler: (cb) => updatePointCloud({ edlDbg1: cb.checked ? 1 : 0 }),
-  });
+    isChecked: model.settings.pointCloud.edlFilter === 1,
+    handler: (cb) => updatePointCloud({ edlFilter: cb.checked ? 1 : 0 }),
+  }).div;
 
-  createLabeledNumericInput({
-    name: "edlMixWts1: ", id: "pcs_mixwt1", parent: element,
-    value: model.settings.pointCloud.edlMixWts1 ?? 1,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlMixWts1: value });
+  const edlMixWt1Slider = createSlider({
+    name: " Mix Wt 1 ", id: "pcs_mixwt1", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts1?.toString() ?? "1",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts1: scale });
     },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-  });
+  }).div;
+  edlMixWt1Slider.style.display = "";
 
-  createLabeledNumericInput({
-    name: "edlMixWts2: ", id: "pcs_mixwt2", parent: element,
-    value: model.settings.pointCloud.edlMixWts2 ?? 0.5,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlMixWts2: value });
+  const edlMixWt2Slider = createSlider({
+    name: " Mix Wt 2 ", id: "pcs_mixwt2", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts2?.toString() ?? "0.5",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts2: scale });
     },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-  });
+  }).div;
+  edlMixWt2Slider.style.display = "";
 
-  createLabeledNumericInput({
-    name: "edlMixWts4: ", id: "pcs_mixwt4", parent: element,
-    value: model.settings.pointCloud.edlMixWts4 ?? 0.25,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlMixWts4: value });
+  const edlMixWt4Slider = createSlider({
+    name: " Mix Wt 4 ", id: "pcs_mixwt4", parent: element,
+    min: "0.0", max: "1", step: "0.01",
+    value: model.settings.pointCloud.edlMixWts4?.toString() ?? "0.25",
+    readout: "right", verticalAlign: false, textAlign: false,
+    handler: (slider) => {
+      const scale = Number.parseFloat(slider.value);
+      if (!Number.isNaN(scale))
+        updatePointCloud({ edlMixWts4: scale });
     },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-  });
+  }).div;
+  edlMixWt4Slider.style.display = "";
 
-  createLabeledNumericInput({
-    name: "LightDirX: ", id: "pcs_lightDirX", parent: element,
-    value: model.settings.pointCloud.edlLightDirX ?? 0,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlLightDirX: value });
-    },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-  });
-
-  createLabeledNumericInput({
-    id: "pcs_lightDirY",
-    parent: element,
-    value: model.settings.pointCloud.edlLightDirY ?? 0,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlLightDirY: value });
-    },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-    name: "LightDirY: ",
-  });
-
-  createLabeledNumericInput({
-    name: "LightDirZ: ", id: "pcs_lightDirZ", parent: element,
-    value: model.settings.pointCloud.edlLightDirZ ?? 0,
-    handler: async (value, _) => {
-      if (!Number.isNaN(value))
-        updatePointCloud({ edlLightDirZ: value });
-    },
-    min: -1.0, max: 1.0, step: 0.1, parseAsFloat: true,
-  });
+  setEDLMode(model.settings.pointCloud.edlAdvanced ? "adv2" : (model.settings.pointCloud.edlDbg1 ? "adv1" : "simple"));
 }
 
 const viewportIdsWithOpenWidgets = new Set<number>();
@@ -333,7 +293,7 @@ class RealityModelSettingsWidget extends Window {
   private readonly _dispose: () => void;
 
   public constructor(viewport: Viewport, model: RealityModel) {
-    super(Surface.instance, { top: 0, left: 0, width: 408, height: 400 });
+    super(Surface.instance, { top: 0, left: 0, width: 408, height: 300 });
     this._viewport = viewport;
 
     this._windowId = `realityModelSettings-${viewport.viewportId}-${model.name}`;

@@ -136,8 +136,8 @@ export class PointCloudDisplaySettings {
     this.edlStrength = props?.edlStrength ?? 0;
     this.edlRadius = props?.edlRadius ?? 1;
     this.edlAdvanced = props?.edlAdvanced ?? 0;
-    this.edlFilter = props?.edlFilter ?? 0;
-    this.edlDbg1 = props?.edlDbg1 ?? 1;
+    this.edlFilter = props?.edlFilter ?? 1;
+    this.edlDbg1 = props?.edlDbg1 ?? 0;
     this.edlLightDirX = props?.edlLightDirX ?? 0;
     this.edlLightDirY = props?.edlLightDirY ?? 0;
     this.edlLightDirZ = props?.edlLightDirZ ?? -1;

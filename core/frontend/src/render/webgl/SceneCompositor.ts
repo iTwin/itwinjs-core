@@ -506,8 +506,10 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       && undefined === this.edlCalcAdv2?.[0]
       && undefined === this.edlCalcAdv2?.[1]
       && undefined === this.edlCalcAdv2?.[2]
+      && undefined === this.edlCalcAdv2
       && undefined === this.edlFilt?.[0]
       && undefined === this.edlFilt?.[1]
+      && undefined === this.edlFilt
       && undefined === this.edlMix;
   }
 
@@ -524,10 +526,12 @@ class Geometry implements WebGLDisposable, RenderMemory.Consumer {
       this.edlCalcAdv2[0] = dispose(this.edlCalcAdv2?.[0]);
       this.edlCalcAdv2[1] = dispose(this.edlCalcAdv2?.[1]);
       this.edlCalcAdv2[2] = dispose(this.edlCalcAdv2?.[2]);
+      this.edlCalcAdv2 = undefined;
     }
     if (this.edlFilt) {
       this.edlFilt[0] = dispose(this.edlFilt?.[0]);
       this.edlFilt[1] = dispose(this.edlFilt?.[1]);
+      this.edlFilt = undefined;
     }
     this.edlMix = dispose(this.edlMix);
   }
@@ -2257,8 +2261,8 @@ class MRTCompositor extends Compositor {
     }
 
     const edlOff = !pcs?.edlStrength;
-    const useSimple = !pcs?.edlAdvanced;
-    const useAdv1 = !!pcs?.edlDbg1;
+    const useSimple = !pcs?.edlAdvanced && !pcs?.edlDbg1;
+    const useAdv1 = !pcs?.edlAdvanced && !!pcs?.edlDbg1;
     const filter = !!pcs?.edlFilter;
     if (edlOff) { // draw the regular way
       fbStack.execute(fbo, true, useMsBuffers, () => {
@@ -2273,6 +2277,7 @@ class MRTCompositor extends Compositor {
         this.drawPass(commands, RenderPass.PointClouds);
       });
 
+      // Calculate EDL with screen space shaders at specified quality
       if (useSimple || this._fbos.edlFilt2 === undefined || this._fbos.edlFilt4 === undefined ||
         this._fbos.edlCalc1 === undefined || this._fbos.edlCalc2 === undefined || this._fbos.edlCalc4 === undefined) {
         // draw using simple method (just samples 4 neighbors)
