@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { LogFunction, Logger, LoggingMetaData, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronMain";
 import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
@@ -247,8 +247,6 @@ export const initializeDtaBackend = async (hostOpts?: ElectronHostOptions & Mobi
     await LocalhostIpcHost.startup(opts);
     EditCommandAdmin.registerModule(editorBuiltInCommands);
   }
-  if (ProcessDetector.isMobileAppBackend)
-    redirectLoggingToFrontend();
 };
 
 async function initializeAuthorizationClient(): Promise<ElectronMainAuthorization  | undefined> {
@@ -286,27 +284,4 @@ function checkEnvVars(...keys: Array<string>): boolean {
     console.log(`Skipping auth setup due to missing: ${missing.join(", ")}`);
   }
   return false;
-}
-
-function redirectLoggingToFrontend() {
-  const getLogFunction = (level: LogLevel): LogFunction => {
-    return (category: string, message: string, getMetaData?: LoggingMetaData): void => {
-      let metaData = {};
-      if (getMetaData) {
-        // Sometimes getMetaData sent to this function is an Object instead of a GetMetaDataFunction.
-        // The following code is a defensive workaround to stop getMetaData() raising an exception in above case.
-        if (typeof getMetaData === "function") {
-          try {
-            metaData = getMetaData();
-          } catch (_ex) {
-            // NEEDS_WORK: Need to improve handling of exception and return data correctly.
-          }
-        } else {
-          metaData = getMetaData;
-        }
-      }
-      IpcHost.send("backend-log", { level, category, message, metaData });
-    };
-  };
-  Logger.initialize(getLogFunction(LogLevel.Error), getLogFunction(LogLevel.Warning), getLogFunction(LogLevel.Info), getLogFunction(LogLevel.Trace));
 }
