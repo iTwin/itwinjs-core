@@ -6414,6 +6414,8 @@ export enum PrimitiveTypeCode {
     // (undocumented)
     Double = 1025,
     // (undocumented)
+    IGeometry = 2561,
+    // (undocumented)
     Integer = 1281,
     // (undocumented)
     Long = 1537,
