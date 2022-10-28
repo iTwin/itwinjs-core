@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Added instance filter to content descriptor",
+      "comment": "Renamed content descriptor property 'filterExpression' to 'fieldsFilterExpression'",
       "type": "none"
     }
   ],
