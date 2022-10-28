@@ -13,34 +13,26 @@ steps:
       Write-Host `'$commitMsg`'` is not a version bump
       Write-Host '##vso[task.setvariable variable=ShouldPublish;]False'
     }
+  displayName: Publish if version bump
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
 
-- powershell: |
-    Write-Host Publishing! (not really)
+- script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
+  displayName: rush publish pack
+  workingDirectory: ${{ parameters.workingDir }}
   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
-- powershell: |
-    Write-Host Not publishing!
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'False'))
+- task: PythonScript@0
+  displayName: Gather packages for release
+  inputs:
+    workingDirectory: ${{ parameters.workingDir }}
+    scriptSource: filepath
+    scriptPath: common/scripts/gather_packages.py
+    arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
-# - script: node common/scripts/install-run-rush.js publish --publish --pack --include-all
-#   displayName: rush publish pack
-#   workingDirectory: ${{ parameters.workingDir }}
-#   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
-# - task: PythonScript@0
-#   displayName: Gather packages for release
-#   inputs:
-#     workingDirectory: ${{ parameters.workingDir }}
-#     scriptSource: filepath
-#     scriptPath: common/scripts/gather_packages.py
-#     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
-#     condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
-# - task: PublishBuildArtifacts@1
-#   displayName: 'Publish Artifact: packages'
-#   inputs:
-#     PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
-#     ArtifactName: packages
-#   condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'))
-
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: packages'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)/imodeljs/packages'
+    ArtifactName: packages
+  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
