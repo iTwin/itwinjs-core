@@ -18,7 +18,7 @@ Complete source is available [DynamicSchema.ts](https://github.com/iTwin/pcf/blo
 Create the schema, compare it with existing version schema if it exists, register the schema if its either new or changed from previous version
 
 ```ts
-[[include:TestConnector-syncDynamicSchema.example-code]]
+[[include:DynamicSchema-syncDynamicSchema.example-code]]
 ```
 
 ### Register the Dynamic Schema
@@ -26,7 +26,7 @@ Create the schema, compare it with existing version schema if it exists, registe
 First unregister if already registered in case of upgrading schema, then register current version of schema
 
 ```ts
-[[include:TestConnector-registerDynamicSchema.example-code]]
+[[include:DynamicSchema-registerDynamicSchema.example-code]]
 ```
 
 ### Create the Dynamic Schema
@@ -34,5 +34,5 @@ First unregister if already registered in case of upgrading schema, then registe
 Iterate through classes and properties and add them to the schema
 
 ```ts
-[[include:TestConnector-createDynamicSchema.example-code]]
+[[include:DynamicSchema-createDynamicSchema.example-code]]
 ```

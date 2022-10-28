@@ -37,7 +37,7 @@ export async function tryGetSchema(db: IModelDb, schemaName: string): Promise<Me
   return schema;
 }
 
-// PUBLISH_EXTRACT_START TestConnector-syncDynamicSchema.example-code
+// __PUBLISH_EXTRACT_START__  DynamicSchema-syncDynamicSchema.example-code
 export async function syncDynamicSchema(
   db: IModelDb,
   domainSchemaNames: string[],
@@ -77,9 +77,9 @@ export async function syncDynamicSchema(
 
   return schemaState;
 }
-// PUBLISH_EXTRACT_END
+// __PUBLISH_EXTRACT_END__
 
-// PUBLISH_EXTRACT_START TestConnector-registerDynamicSchema.example-code
+// __PUBLISH_EXTRACT_START__ DynamicSchema-registerDynamicSchema.example-code
 function registerDynamicSchema(props: DynamicSchemaProps) {
 
   const entitiesModule: any = {};
@@ -111,9 +111,10 @@ function registerDynamicSchema(props: DynamicSchemaProps) {
   };
   dynamicSchemaClass.registerSchema();
 }
-// PUBLISH_EXTRACT_END
 
-// PUBLISH_EXTRACT_START TestConnector-createDynamicSchema.example-code
+// __PUBLISH_EXTRACT_END__
+
+//  __PUBLISH_EXTRACT_START__ DynamicSchema-createDynamicSchema.example-code
 // Generates an in-memory [Dynamic EC Schema](https://www.itwinjs.org/bis/intro/schema-customization/) from user-defined DMO.
 async function createDynamicSchema(
   db: IModelDb,
@@ -171,7 +172,7 @@ async function createDynamicSchema(
   return newSchema;
 }
 
-// PUBLISH_EXTRACT_END
+// __PUBLISH_EXTRACT_END__
 
 function getSchemaVersion(db: IModelDb, schemaName: string): SchemaVersion {
   const versionStr = db.querySchemaVersion(schemaName);
