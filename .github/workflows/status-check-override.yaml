@@ -13,7 +13,7 @@
 # Why does this exist?
 # The itwinjs-core repo requires certain status checks to be marked successful or
 # neutral* to allow a pull request to be merged. Since some changes are limited in scope
-# (e.g., a documenation change) or do not affect the application at all (e.g., a
+# (e.g., a documentation change) or do not affect the application at all (e.g., a
 # CODEOWNERS file change), there is no need to wait for or spend resources on every CI
 # build to run.
 #
