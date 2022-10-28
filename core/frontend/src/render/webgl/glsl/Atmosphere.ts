@@ -9,7 +9,7 @@ import {
   VariablePrecision,
   VariableType,
 } from "../ShaderBuilder";
-import { MAX_SAMPLE_POINTS } from "../AtmosphericScatteringUniforms";
+import { MAX_SAMPLE_POINTS } from "../AtmosphereUniforms";
 
 /** A physics-based atmospheric scattering technique that simulates how an atmosphere diverts light.
  * @internal
@@ -315,7 +315,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_densityFalloff", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindDensityFalloff(
+        params.target.uniforms.atmosphere.bindDensityFalloff(
           uniform
         );
       });
@@ -327,7 +327,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_scatteringCoefficients", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindScatteringCoefficients(
+        params.target.uniforms.atmosphere.bindScatteringCoefficients(
           uniform
         );
       });
@@ -339,7 +339,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Int,
     (prog) => {
       prog.addProgramUniform("u_numInScatteringPoints", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindNumInScatteringPoints(
+        params.target.uniforms.atmosphere.bindNumInScatteringPoints(
           uniform
         );
       });
@@ -351,7 +351,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Int,
     (prog) => {
       prog.addProgramUniform("u_numOpticalDepthPoints", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindNumOpticalDepthPoints(
+        params.target.uniforms.atmosphere.bindNumOpticalDepthPoints(
           uniform
         );
       });
@@ -373,7 +373,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Vec3,
     (prog) => {
       prog.addProgramUniform("u_earthCenter", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindEarthCenter(uniform);
+        params.target.uniforms.atmosphere.bindEarthCenter(uniform);
       });
     },
     VariablePrecision.High
@@ -383,7 +383,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_inverseEllipsoidRotationMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseEllipsoidRotationMatrix(uniform);
+        params.target.uniforms.atmosphere.bindInverseEllipsoidRotationMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -393,7 +393,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_atmosphereScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindAtmosphereScaleMatrix(uniform);
+        params.target.uniforms.atmosphere.bindAtmosphereScaleMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -403,7 +403,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_minDensityToAtmosphereScaleFactor", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindMinDensityToAtmosphereScaleFactor(uniform);
+        params.target.uniforms.atmosphere.bindMinDensityToAtmosphereScaleFactor(uniform);
       });
     },
     VariablePrecision.High
@@ -413,7 +413,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_inScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInScatteringIntensity(uniform);
+        params.target.uniforms.atmosphere.bindInScatteringIntensity(uniform);
       });
     },
     VariablePrecision.High
@@ -423,7 +423,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_inverseAtmosphereScaleInverseRotationMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
+        params.target.uniforms.atmosphere.bindInverseRotationInverseAtmosphereScaleMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -433,7 +433,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_inverseEarthScaleInverseRotationMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseEarthScaleMatrix(uniform);
+        params.target.uniforms.atmosphere.bindInverseRotationInverseEarthScaleMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -443,7 +443,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Mat3,
     (prog) => {
       prog.addProgramUniform("u_inverseRotationInverseMinDensityScaleMatrix", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindInverseRotationInverseMinDensityScaleMatrix(uniform);
+        params.target.uniforms.atmosphere.bindInverseRotationInverseMinDensityScaleMatrix(uniform);
       });
     },
     VariablePrecision.High
@@ -453,7 +453,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Boolean,
     (prog) => {
       prog.addProgramUniform("u_isCameraEnabled", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindIsCameraEnabled(uniform);
+        params.target.uniforms.atmosphere.bindIsCameraEnabled(uniform);
       });
     }
   );
@@ -476,7 +476,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_brightnessAdaptionStrength", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindBrightnessAdaptationStrength(uniform);
+        params.target.uniforms.atmosphere.bindBrightnessAdaptationStrength(uniform);
       });
     },
     VariablePrecision.High
@@ -486,7 +486,7 @@ export function addAtmosphericScatteringEffect(
     VariableType.Float,
     (prog) => {
       prog.addProgramUniform("u_outScatteringIntensity", (uniform, params) => {
-        params.target.uniforms.atmosphericScattering.bindOutScatteringIntensity(uniform);
+        params.target.uniforms.atmosphere.bindOutScatteringIntensity(uniform);
       });
     },
     VariablePrecision.High
@@ -499,7 +499,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Mat3,
       (prog) => {
         prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
-          params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
+          params.target.uniforms.atmosphere.bindEarthScaleMatrix(uniform);
         });
       },
       VariablePrecision.High
@@ -509,7 +509,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Boolean,
       (prog) => {
         prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-          params.target.uniforms.atmosphericScattering.bindIsEnabled(uniform);
+          params.target.uniforms.atmosphere.bindIsEnabled(uniform);
         });
       },
     );
@@ -520,7 +520,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Mat3,
       (prog) => {
         prog.addProgramUniform("u_earthScaleMatrix", (uniform, params) => {
-          params.target.uniforms.atmosphericScattering.bindEarthScaleMatrix(uniform);
+          params.target.uniforms.atmosphere.bindEarthScaleMatrix(uniform);
         });
       },
       ShaderType.Both
@@ -530,7 +530,7 @@ export function addAtmosphericScatteringEffect(
       VariableType.Boolean,
       (prog) => {
         prog.addProgramUniform("u_isEnabled", (uniform, params) => {
-          params.target.uniforms.atmosphericScattering.bindIsEnabled(uniform);
+          params.target.uniforms.atmosphere.bindIsEnabled(uniform);
         });
       },
       ShaderType.Both
