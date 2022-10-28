@@ -49,8 +49,8 @@ export class RestoreFrontstageLayoutTool extends Tool {
  * Immediate tool that will reset the layout of all frontstages to that specified in the stage definition.
  * @alpha
  */
-export class RestoreFrontstagesLayoutTool extends Tool {
-  public static override toolId = "RestoreFrontstagesLayout";
+export class RestoreAllFrontstagesTool extends Tool {
+  public static override toolId = "RestoreAllFrontstages";
   public static override iconSpec = "icon-view-layouts";
 
   public override async run() {

@@ -409,4 +409,10 @@ export class MineDataController extends DataControllerBase {
   }
 }
 
+/**
+ * Simplified type for `sinon.SinonSpy`.
+ * @internal
+ */
+export type SinonSpy<T extends (...args: any) => any> = sinon.SinonSpy<Parameters<T>, ReturnType<T>>;
+
 export default TestUtils;   // eslint-disable-line: no-default-export

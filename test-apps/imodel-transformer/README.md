@@ -43,7 +43,7 @@ Here are the steps that can be used:
 - Set the appropriate options either on the command line or by editing the `imodel-transformer (app)` launch configuration within `launch.json` (in the root imodeljs directory)
   - `--hub qa` (or 'dev' or 'prod')
   - `--logTransformer`
-  - `--sourceContextId <context GUID>`
+  - `--sourceITwinId <iTwin GUID>`
   - `--sourceIModelId <iModel GUID>`
   - `--targetDestination <full path to file on local computer>`
 

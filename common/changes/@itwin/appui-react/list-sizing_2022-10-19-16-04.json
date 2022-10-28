@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-react",
+      "comment": "Add automatic horizonal scrolling to the ListPicker's expandable blocks for small form factors or long strings.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-react"
+}

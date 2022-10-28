@@ -128,7 +128,7 @@
     },
     {
       "name": "@itwin/certa",
-      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@itwin/cloud-agnostic-core",
@@ -559,6 +559,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "crypto-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "debug",
       "allowedCategories": [ "common" ]
     },
@@ -820,6 +824,10 @@
     },
     {
       "name": "nock",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "node-simctl",
       "allowedCategories": [ "internal" ]
     },
     {

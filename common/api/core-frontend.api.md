@@ -183,6 +183,7 @@ import { MeshPolyline } from '@itwin/core-common';
 import { MeshPolylineList } from '@itwin/core-common';
 import { MessagePresenter } from '@itwin/appui-abstract';
 import { MessageSeverity } from '@itwin/appui-abstract';
+import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChanges } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
 import { ModelIdAndGeometryGuid } from '@itwin/core-common';
@@ -206,6 +207,7 @@ import { PackedFeatureTable } from '@itwin/core-common';
 import { ParseResults } from '@itwin/appui-abstract';
 import { ParserSpec } from '@itwin/core-quantity';
 import { Path } from '@itwin/core-geometry';
+import { PickAsyncMethods } from '@itwin/core-bentley';
 import { Placement } from '@itwin/core-common';
 import { PlacementProps } from '@itwin/core-common';
 import { PlanarClipMaskProps } from '@itwin/core-common';
@@ -1176,7 +1178,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 
 // @internal (undocumented)
 export class ArcGISTileMap {
-    constructor(restBaseUrl: string, nbLods?: number);
+    constructor(restBaseUrl: string, settings: ImageMapLayerSettings, nbLods?: number, accessClient?: MapLayerAccessClient);
     // (undocumented)
     fallbackTileMapRequestSize: number;
     // (undocumented)
@@ -1644,7 +1646,7 @@ export class BriefcaseConnection extends IModelConnection {
     readonly onBufferedModelChanges: BeEvent<(changedModelIds: Set<string>) => void>;
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
-    pullChanges(toIndex?: ChangesetIndex): Promise<void>;
+    pullChanges(toIndex?: ChangesetIndex, options?: PullChangesOptions): Promise<void>;
     pushChanges(description: string): Promise<ChangesetIndexAndId>;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
@@ -3406,6 +3408,12 @@ export class FuzzySearchResults<T> implements Iterable<T> {
     results: any[];
 }
 
+// @alpha
+export interface GenericAbortSignal {
+    addEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+    removeEventListener: (type: "abort", listener: (this: GenericAbortSignal, ev: any) => any) => void;
+}
+
 // @internal
 export class GeoConverter {
     constructor(iModel: IModelConnection, datumOrGCRS: string | GeographicCRSProps);
@@ -3472,7 +3480,6 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     abstract get is3d(): boolean;
     // @internal (undocumented)
     get isGeometricModel(): boolean;
-    // @internal
     queryModelRange(): Promise<Range3d>;
     // @internal (undocumented)
     get treeModelId(): Id64String;
@@ -4604,6 +4611,7 @@ export interface Imdl {
     patternSymbols?: ImdlDictionary<ImdlAreaPatternSymbol>;
     // (undocumented)
     renderMaterials?: ImdlDictionary<ImdlRenderMaterial>;
+    rtcCenter?: number[];
     scene: string;
     scenes: ImdlDictionary<ImdlScene>;
 }
@@ -4926,6 +4934,7 @@ export namespace IModelConnection {
         // @internal (undocumented)
         get loaded(): Map<string, ModelState>;
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
+        queryExtents(modelIds: Id64String | Id64String[]): Promise<ModelExtentsProps[]>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
         get repositoryModelId(): string;
@@ -5261,12 +5270,16 @@ export class IntersectDetail extends SnapDetail {
 // @public
 export class IpcApp {
     static addListener(channel: string, handler: IpcListener): RemoveFunction;
+    static appFunctionIpc: PickAsyncMethods<IpcAppFunctions>;
     // @internal
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
-    // (undocumented)
+    // @deprecated (undocumented)
     static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
+    // @internal
+    static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K>;
+    static makeIpcProxy<K>(channelName: string): PickAsyncMethods<K>;
     static removeListener(channel: string, listener: IpcListener): void;
     static send(channel: string, ...data: any[]): void;
     // @internal (undocumented)
@@ -6332,6 +6345,7 @@ export abstract class MapTilingScheme {
 // @public
 export interface MarginOptions {
     marginPercent?: MarginPercent;
+    paddingPercent?: PaddingPercent | number;
 }
 
 // @public
@@ -7075,7 +7089,7 @@ export class MutableChangeFlags extends ChangeFlags {
 
 // @public
 export class NativeApp {
-    // (undocumented)
+    // @deprecated (undocumented)
     static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage_2, deleteStorage?: boolean): Promise<void>;
@@ -7085,6 +7099,7 @@ export class NativeApp {
     static getStorageNames(): Promise<string[]>;
     // (undocumented)
     static get isValid(): boolean;
+    static nativeAppIpc: PickAsyncMethods<NativeAppFunctions>;
     static onInternetConnectivityChanged: BeEvent<(status: InternetConnectivityStatus) => void>;
     static openStorage(name: string): Promise<Storage_2>;
     // @internal (undocumented)
@@ -7478,6 +7493,18 @@ export interface OverrideFormatEntry {
 export function overrideRequestTileTreeProps(func: RequestTileTreePropsFunc | undefined): void;
 
 // @public
+export interface PaddingPercent {
+    // (undocumented)
+    bottom?: number;
+    // (undocumented)
+    left?: number;
+    // (undocumented)
+    right?: number;
+    // (undocumented)
+    top?: number;
+}
+
+// @public
 export class PanViewTool extends ViewManip {
     constructor(vp: ScreenViewport | undefined, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
@@ -7813,6 +7840,14 @@ export interface PublisherProductInfo {
     engine: string;
     product: string;
     version: string;
+}
+
+// @public
+export interface PullChangesOptions {
+    // @alpha
+    abortSignal?: GenericAbortSignal;
+    progressCallback?: ProgressCallback;
+    progressInterval?: number;
 }
 
 // @beta

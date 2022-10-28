@@ -2,14 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+import {
+  DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams,
+} from "@itwin/appui-abstract";
 import { BentleyError, Id64String } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@itwin/core-common";
-import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@itwin/core-frontend";
-import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@itwin/editor-common";
+import {
+  Code, ColorDef, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams,
+  GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled,
+  GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance,
+  ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+} from "@itwin/core-frontend";
+import {
+  Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson,
+  InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal,
+  Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { CreateElementWithDynamicsTool } from "./CreateElementTool";
 import { EditTools } from "./EditTool";
-import { DialogItem, DialogProperty, DialogPropertySyncItem, EnumerationChoice, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams } from "@itwin/appui-abstract";
+import { basicManipulationIpc } from "./EditToolIpc";
 
 /** @alpha Values for [[CreateOrContinueTool.createCurvePhase] to support join and closure. */
 export enum CreateCurvePhase {
@@ -42,10 +57,6 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     if (undefined !== this._startedCmd)
       return this._startedCmd;
     return EditTools.startCommand<string>(editorBuiltInCmdIds.cmdBasicManipulation, this.iModel.key);
-  }
-
-  public static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]> {
-    return EditTools.callCommand(method, ...args) as ReturnType<BasicManipulationCommandIpc[T]>;
   }
 
   protected get allowJoin(): boolean { return this.isControlDown; }
@@ -131,7 +142,7 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
 
     try {
       this._startedCmd = await this.startCommand();
-      const info = await CreateOrContinuePathTool.callCommand("requestElementGeometry", snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
+      const info = await basicManipulationIpc.requestElementGeometry(snap.sourceId, { maxDisplayable: 1, geometry: { curves: true, surfaces: false, solids: false } });
       if (undefined === info)
         return;
 
@@ -640,9 +651,9 @@ export abstract class CreateOrContinuePathTool extends CreateElementWithDynamics
     try {
       this._startedCmd = await this.startCommand();
       if (undefined === props.id)
-        await CreateOrContinuePathTool.callCommand("insertGeometricElement", props, data);
+        await basicManipulationIpc.insertGeometricElement(props, data);
       else
-        await CreateOrContinuePathTool.callCommand("updateGeometricElement", props, data);
+        await basicManipulationIpc.updateGeometricElement(props, data);
       await this.saveChanges();
     } catch (err) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
@@ -1812,7 +1823,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     if (CreateCurvePhase.DefineOther === this._tangentPhase)
       mainMsg = CoreTools.translate(0 === nPts ? "ElementSet.Prompts.StartPoint" : "ElementSet.Inputs.AdditionalPoint");
     else
-      mainMsg = EditTools.translate(CreateCurvePhase.DefineStart === this._tangentPhase ? "CreateBCurve.Prompts.StartTangent" : "CreateBCurve.Prompts.EndTangent") ;
+      mainMsg = EditTools.translate(CreateCurvePhase.DefineStart === this._tangentPhase ? "CreateBCurve.Prompts.StartTangent" : "CreateBCurve.Prompts.EndTangent");
 
     const leftMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rightMsg = CoreTools.translate(CreateCurvePhase.DefineOther === this._tangentPhase && nPts >= this.requiredPointCount ? "ElementSet.Inputs.Complete" : "ElementSet.Inputs.Cancel");
@@ -1921,7 +1932,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       const color = context.viewport.getContrastToBackgroundColor();
 
       builder.setSymbology(color, ColorDef.black, 1, LinePixels.Code2);
-      builder.addLineString([ev.point, fitCurve.options.fitPoints[CreateCurvePhase.DefineStart === this._tangentPhase ? 0 : fitCurve.options.fitPoints.length-1]]);
+      builder.addLineString([ev.point, fitCurve.options.fitPoints[CreateCurvePhase.DefineStart === this._tangentPhase ? 0 : fitCurve.options.fitPoints.length - 1]]);
 
       builder.setSymbology(color, ColorDef.black, 8);
       builder.addPointString([ev.point]);
@@ -1941,7 +1952,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
         if (tangentS.magnitude() > Geometry.smallMetricDistance)
           fitCurve.options.startTangent = tangentS;
       } else {
-        const tangentE = Vector3d.createStartEnd(ev.point, fitCurve.options.fitPoints[fitCurve.options.fitPoints.length-1]);
+        const tangentE = Vector3d.createStartEnd(ev.point, fitCurve.options.fitPoints[fitCurve.options.fitPoints.length - 1]);
         if (tangentE.magnitude() > Geometry.smallMetricDistance)
           fitCurve.options.endTangent = tangentE;
       }
@@ -1961,7 +1972,7 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
     }
 
     // Create periodic-looking curve on physical closure with sufficient points even when not creating a loop/surface...
-    this._isPhysicallyClosedOrComplete = (undefined === this.continuationData && pts[0].isAlmostEqual(pts[pts.length -1]));
+    this._isPhysicallyClosedOrComplete = (undefined === this.continuationData && pts[0].isAlmostEqual(pts[pts.length - 1]));
 
     if (BCurveMethod.ControlPoints === this.method) {
       if (this._isPhysicallyClosedOrComplete && this.order > 2) {

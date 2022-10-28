@@ -39,6 +39,7 @@ function createConfig(shouldInstrument) {
       mainFields: ["main", "module"],
       fallback: {
         assert: require.resolve("assert"),
+        crypto: require.resolve("crypto-browserify"),
         http: require.resolve("stream-http"),
         https: require.resolve("https-browserify"),
         path: require.resolve("path-browserify"),
@@ -87,6 +88,7 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
+      fs
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
