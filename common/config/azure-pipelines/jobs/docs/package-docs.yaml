@@ -10,7 +10,7 @@ jobs:
       demands: Agent.OS -equals Windows_NT
 
     variables:
-      tempDocsLocation: $(Pipeline.Workspace)\itwinjs-docs\DocsBuild
+      tempDocsLocation: $(Pipeline.Workspace)\DocsBuild
 
     steps:
       - task: NodeTool@0
@@ -19,7 +19,7 @@ jobs:
           versionSpec: 14.17.4
           checkLatest: true
 
-      - download: itwinjs-docs
+      - download: current
         artifact: DocsBuild
         displayName: Download itwinjs-docs artifact
 

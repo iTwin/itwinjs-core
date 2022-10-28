@@ -6,24 +6,22 @@ pr: none
 # Octopus requires release be of format 'x.y.z' or 'w.x.y.z'
 name: $(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
-# Pull in artifacts
-
 resources:
   pipelines:
-  - pipeline: itwinjs-docs
-    source: iTwin.js Docs - YAML
-    version: 20221027.8
-    # trigger:
-    #   branches:
-    #     include:
-    #     - master
-    #     - release/*
-    #     - docs-release-pipeline
-    #     exclude:
-    #     - release/2*
-    #     - release/1*
-    #   tags:
-    #   - iTwinJsDocsRelease
+  # - pipeline: itwinjs-docs
+  #   source: iTwin.js Docs - YAML
+  #   version: 20221027.8
+  #   trigger:
+  #     branches:
+  #       include:
+  #       - master
+  #       - release/*
+  #       - docs-release-pipeline
+  #       exclude:
+  #       - release/2*
+  #       - release/1*
+  #     tags:
+  #     - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
 
@@ -41,6 +39,13 @@ variables:
   octopusProjectName: iModel.js Documentation
 
 stages:
+  - template: ./jobs/docs/docs-build.yaml
+    parameters:
+      workingDir: $(Pipeline.Workspace)/itwinjs-core
+      outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
+      # shouldPublish: and(eq(variables['Build.Reason'], 'IndividualCI'), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release')))
+      shouldPublish: true
+
   - stage: CreateRelease
     displayName: Create release
     jobs:
@@ -106,6 +111,7 @@ stages:
     - template: templates/scorecard/docs-scorecard.yaml@build-pipeline-scripts
       parameters:
         variableGroup: iTwin.js Docs - Scorecard
+        artifactName: DocsBuild
 
   # - stage: PROD
   #   displayName: Deployment (PROD)
