@@ -174,7 +174,7 @@ export interface DescriptorJSON {
   sortingFieldName?: string;
   sortDirection?: SortDirection;
   contentFlags: number;
-  /** @deprecated use fieldsFilterExpression instead */
+  /** @deprecated The attribute was replaced with [[fieldsFilterExpression]]. */
   filterExpression?: string;
   fieldsFilterExpression?: string;
   /** @alpha */
