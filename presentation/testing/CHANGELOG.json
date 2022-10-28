@@ -2,6 +2,12 @@
   "name": "@itwin/presentation-testing",
   "entries": [
     {
+      "version": "3.4.3",
+      "tag": "@itwin/presentation-testing_v3.4.3",
+      "date": "Fri, 28 Oct 2022 13:34:58 GMT",
+      "comments": {}
+    },
+    {
       "version": "3.4.2",
       "tag": "@itwin/presentation-testing_v3.4.2",
       "date": "Mon, 24 Oct 2022 13:23:45 GMT",
