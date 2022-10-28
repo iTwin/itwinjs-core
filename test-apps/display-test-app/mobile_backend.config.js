@@ -40,7 +40,7 @@ function getConfig(env) {
       pathinfo: true,
     },
     target: "node",
-    devtool: "source-map",
+    devtool: "inline-source-map",
     resolve: { mainFields: ["main", "module"] },
     module: {
       // don't parse @bentley/imodeljs-native/NativeLibrary.js,
