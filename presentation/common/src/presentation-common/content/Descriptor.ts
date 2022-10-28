@@ -213,7 +213,7 @@ export interface DescriptorOverrides {
 
   /**
    * [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content
-   * @deprecated Use fieldsFilterExpression instead.
+   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
    */
   filterExpression?: string;
   /** [ECExpression]($docs/presentation/advanced/ECExpressions.md) for filtering content */
@@ -252,7 +252,7 @@ export interface DescriptorSource {
   readonly sortDirection?: SortDirection;
   /**
    * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated Use fieldsFilterExpression instead.
+   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
    */
   readonly filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
@@ -295,7 +295,7 @@ export class Descriptor implements DescriptorSource {
   public sortDirection?: SortDirection;
   /**
    * Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions)
-   * @deprecated Use fieldsFilterExpression instead.
+   * @deprecated The attribute was replaced with [[fieldsFilterExpression]].
    */
   public filterExpression?: string;
   /** Content filtering [ECExpression]($docs/presentation/advanced/ECExpressions) */
