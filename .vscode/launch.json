@@ -1138,7 +1138,7 @@
         "hidden": true
       },
       "cwd": "${workspaceFolder}/test-apps/display-test-app/",
-      "type": "pwa-node",
+      "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/test-apps/display-test-app/node_modules/.bin/electron",
       "runtimeArgs": [
@@ -1150,6 +1150,7 @@
         "IMJS_NO_DEV_TOOLS": "1",
         "NODE_ENV": "development"
       },
+      "envFile": "${workspaceFolder}/test-apps/display-test-app/.env",
       "outFiles": [
         "${workspaceFolder}/test-apps/display-test-app/lib/backend/**/*.js",
         "${workspaceFolder}/{core,clients,editor}/*/lib/**/*.js",
@@ -1164,7 +1165,7 @@
       "presentation": {
         "hidden": true
       },
-      "type": "pwa-chrome",
+      "type": "chrome",
       "request": "attach",
       "port": 9223,
       "outFiles": [
