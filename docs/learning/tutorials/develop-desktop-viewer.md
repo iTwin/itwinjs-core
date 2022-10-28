@@ -15,10 +15,9 @@
   5. Give your application a Name
   6. Select the **Visualization**, **iModels**, **Reality Data**, and **Projects** APIs
   7. Enable the following scopes:
+      - **Administration**: `projects:read`
+      - **Digitial Twin Management**: `imodels:read realitydata:read`
       - **Visualization**: `imodelaccess:read`
-      - **iModels**: `imodels:read`
-      - **Reality Data**: `realitydata:read`
-      - **Projects**: `projects:read`
   8. Select application type **Desktop/Mobile**
   9. Enter **Redirect URI** `http://localhost:3000/signin-callback`
   10. Enter **Post logout Redirect URI**: `http://localhost:3000`.
