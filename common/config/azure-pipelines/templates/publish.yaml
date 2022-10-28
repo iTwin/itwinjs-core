@@ -28,7 +28,7 @@ steps:
     scriptSource: filepath
     scriptPath: common/scripts/gather_packages.py
     arguments: '$(Build.ArtifactStagingDirectory) $(Build.SourcesDirectory) $(Build.SourceBranch)'
-  condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
+    condition: and(succeeded(), in(variables['Build.Reason'], 'IndividualCI', 'Schedule', 'Manual'), eq(variables['Agent.OS'], 'Windows_NT'), eq(variables['ShouldPublish'], 'True'))
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: packages'
