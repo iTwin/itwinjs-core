@@ -5,7 +5,7 @@ parameters:
 
 steps:
 - powershell: |
-    $commitMsg = $(Build.SourceVersionMessage)
+    $commitMsg = '$(Build.SourceVersionMessage)'
     Write-Host $commitMsg
     if ($commitMsg -match '^(\d+.\d+.\d+)(-dev.\d+)?$') {
       Write-Host `'$commitMsg`'` is a version bump
