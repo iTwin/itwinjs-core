@@ -24,6 +24,7 @@ resources:
   #     - iTwinJsDocsRelease
   - pipeline: bemetalsmith-tests
     source: Bemetalsmith - Selenium Tests
+    version: 1764374
 
   repositories:
   - repository: build-pipeline-scripts
