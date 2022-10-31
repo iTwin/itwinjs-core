@@ -37,6 +37,7 @@ internal;AnimationBranchStates
 internal;AnimationNodeId
 public;Animator
 internal;ArcGisErrorCode
+internal;class ArcGISImageryProvider 
 internal;ArcGISMapLayerImageryProvider 
 internal;ArcGISTileMap
 internal;ArcGisUtilities
@@ -280,7 +281,7 @@ public;imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha?: boolean): HTMLCa
 public;imageBufferToPngDataUrl(buffer: ImageBuffer, preserveAlpha?: boolean): string | undefined
 public;imageElementFromImageSource(source: ImageSource): Promise
 public;imageElementFromUrl(url: string, skipCrossOriginCheck?: boolean): Promise
-internal;ImageryMapLayerFormat 
+beta;ImageryMapLayerFormat 
 internal;ImageryMapLayerTreeReference 
 internal;ImageryMapTile 
 internal;ImageryMapTileTree 
@@ -358,7 +359,7 @@ internal;MapLayerFormatEntry
 beta;MapLayerFormatRegistry
 beta;MapLayerFormatType = typeof MapLayerFormat
 internal;class MapLayerImageryProvider
-internal;MapLayerImageryProviderStatus
+beta;MapLayerImageryProviderStatus
 beta;MapLayerOptions
 public;MapLayerSource
 internal;MapLayerSources
