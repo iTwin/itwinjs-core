@@ -310,19 +310,19 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly geometricError?: number;
 
   constructor(args: {
-    json: any,
-    parent?: RealityTile,
-    id: string,
-    transformToRoot?: Transform,
-    additiveRefinement?: boolean,
-    usesGeometricError?: boolean,
+    json: any;
+    parent?: RealityTile;
+    id: string;
+    transformToRoot?: Transform;
+    additiveRefinement?: boolean;
+    usesGeometricError?: boolean;
   }) {
     this.contentId = args.id;
     this.parent = args.parent;
     this.transformToRoot = args.transformToRoot;
     this.additiveRefinement = args.additiveRefinement;
 
-    const json = args.json
+    const json = args.json;
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
     if (boundingVolume) {
       this.range = boundingVolume.range;
@@ -402,7 +402,6 @@ async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<an
   const childUrl = getUrl(root.content);
   if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
     return root;
-
 
   const subTree = await rdsource.getTileJson(childUrl);
   const prefixIndex = childUrl.lastIndexOf("/");
