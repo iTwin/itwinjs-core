@@ -651,17 +651,59 @@ describe("IModelTransformerHub", () => {
       await synchronizer.processChanges(accessToken);
       expect(didExportModelSelector).to.be.true;
       expect(didImportModelSelector).to.be.true;
-      provenanceInitializer.dispose();
+      synchronizer.dispose();
       targetDb.saveChanges();
       await targetDb.pushChanges({ accessToken, description: "synchronize" });
 
       // check that the model selector has the expected change in the target
       const modelSelectorInTargetId = targetDb.elements.queryElementIdByCode(modelSelectorCode);
-      if (modelSelectorInTargetId === undefined)
-        throw Error(`expected obj ${modelSelectorInTargetId} to be defined`);
+      assert(modelSelectorInTargetId !== undefined, `expected obj ${modelSelectorInTargetId} to be defined`);
 
       const modelSelectorInTarget = targetDb.elements.getElement<ModelSelector>(modelSelectorInTargetId, ModelSelector);
       expect(modelSelectorInTarget.models).to.have.length(2);
+
+      // close iModel briefcases
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
+      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
+    } finally {
+      try {
+        // delete iModel briefcases
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
+      } catch (err) {
+        assert.fail(err, undefined, "failed to clean up");
+      }
+    }
+  });
+
+  it.only("process empty changeset list", async () => {
+    const sourceIModelName = "EmptyListSource";
+    const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
+    assert.isTrue(Guid.isGuid(sourceIModelId));
+    let targetIModelId!: GuidString;
+
+    try {
+      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
+      const targetIModelName = "EmptyListTarget";
+      targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
+      assert.isTrue(Guid.isGuid(targetIModelId));
+      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
+
+      const sourceDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: sourceIModelId, targetDir: BriefcaseManager.getChangeSetsPath(sourceIModelId) });
+      expect(sourceDbChangesets).to.have.length(0);
+
+      const elemCount = (db: IModelDb): number => db.withPreparedStatement("SELECT COUNT(*) AS c FROM bis.Element",  (s) => [...s])[0].c;
+      console.log(elemCount(targetDb));
+      const targetBeforeSyncElemCount = elemCount(targetDb);
+
+      // synchronize
+      const synchronizer = new IModelTransformer(sourceDb, targetDb);
+      await synchronizer.processChanges(accessToken);
+      synchronizer.dispose();
+      targetDb.saveChanges();
+
+      const targetAfterSyncElemCount = elemCount(targetDb);
+      expect(targetBeforeSyncElemCount).to.equal(targetAfterSyncElemCount);
 
       // close iModel briefcases
       await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
