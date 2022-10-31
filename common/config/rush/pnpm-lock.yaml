@@ -2848,6 +2848,7 @@ importers:
       '@itwin/itwinui-react': ~1.42.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
+      '@itwin/map-layers-formats': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -2928,6 +2929,7 @@ importers:
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
+      '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
       '@itwin/presentation-backend': link:../../../presentation/backend
       '@itwin/presentation-common': link:../../../presentation/common
       '@itwin/presentation-components': link:../../../presentation/components
@@ -3020,6 +3022,7 @@ importers:
       '@itwin/itwinui-react': ~1.42.0
       '@itwin/map-layers': workspace:*
       '@itwin/map-layers-auth': workspace:*
+      '@itwin/map-layers-formats': workspace:*
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-components': workspace:*
@@ -3099,6 +3102,7 @@ importers:
       '@itwin/itwinui-react': 1.42.0_react-dom@17.0.2+react@17.0.2
       '@itwin/map-layers': link:../../../extensions/map-layers
       '@itwin/map-layers-auth': link:../../../extensions/map-layers-auth
+      '@itwin/map-layers-formats': link:../../../extensions/map-layers-formats
       '@itwin/presentation-backend': link:../../../presentation/backend
       '@itwin/presentation-common': link:../../../presentation/common
       '@itwin/presentation-components': link:../../../presentation/components
@@ -13349,7 +13353,7 @@ packages:
       '@typescript-eslint/eslint-plugin': 5.41.0_268b366a0203bc8d0713aae6ad73aaa0
       '@typescript-eslint/experimental-utils': 5.41.0_eslint@8.26.0+typescript@4.4.4
       eslint: 8.26.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -16208,7 +16212,7 @@ packages:
     dependencies:
       ansi-escapes: 4.3.2
       chalk: 4.1.2
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-regex-util: 28.0.2
       jest-watcher: 28.1.3
       slash: 4.0.0
@@ -21704,7 +21708,7 @@ packages:
       babel-jest: 27.5.1_@babel+core@7.19.6
       bs-logger: 0.2.6
       fast-json-stable-stringify: 2.1.0
-      jest: 27.5.1_ts-node@10.9.1
+      jest: 27.5.1
       jest-util: 27.5.1
       json5: 2.2.1
       lodash.memoize: 4.1.2

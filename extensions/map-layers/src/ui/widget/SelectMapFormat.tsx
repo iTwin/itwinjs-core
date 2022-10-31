@@ -10,6 +10,7 @@ import { MapTypesOptions } from "../Interfaces";
 import "./MapUrlDialog.scss";
 import {SvgTechnicalPreviewMini} from "@itwin/itwinui-icons-color-react";
 import { MapLayersUI } from "../../mapLayers";
+import { IModelApp, MapLayerFormatRegistry } from "@itwin/core-frontend";
 
 // TODO:
 // Remove this structure and iterate over the registry's active formats.
@@ -37,14 +38,17 @@ export function SelectMapFormat(props: SelectMapFormatProps) {
   const [techPreviewTooltip] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.TechPreviewBadgeTooltip"));
 
   const [mapFormats] = React.useState((): SelectOption<string>[] => {
-    const formats = [
+    const formats: SelectOption<string>[] = [
       { value: MAP_TYPES.arcGis,        label: MAP_TYPES.arcGis },
-      { value: MAP_TYPES.arcGisFeature, label: MAP_TYPES.arcGisFeature, id:"techPreview" },
       { value: MAP_TYPES.wms,           label: MAP_TYPES.wms },
       { value: MAP_TYPES.wmts,          label: MAP_TYPES.wmts },
     ];
     if (props.mapTypesOptions?.supportTileUrl)
       formats.push({ value: MAP_TYPES.tileUrl, label: MAP_TYPES.tileUrl });
+
+    if (IModelApp.mapLayerFormatRegistry.isRegistered(MAP_TYPES.arcGisFeature))
+      formats.push( { value: MAP_TYPES.arcGisFeature, label: MAP_TYPES.arcGisFeature, id:"techPreview" });
+
     return formats;
   });
 

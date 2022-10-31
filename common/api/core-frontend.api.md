@@ -5741,6 +5741,8 @@ export class MapLayerFormatRegistry {
     // (undocumented)
     getAccessClient(formatId: string): MapLayerAccessClient | undefined;
     // (undocumented)
+    isRegistered(formatId: string): boolean;
+    // (undocumented)
     register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient): void;
     // (undocumented)
     setAccessClient(formatId: string, accessClient: MapLayerAccessClient): boolean;

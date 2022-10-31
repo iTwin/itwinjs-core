@@ -93,6 +93,9 @@ export class MapLayerFormatRegistry {
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
+
+  public isRegistered(formatId: string) {return this._formats.get(formatId) !== undefined;}
+
   public register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient) {
     if (formatClass.formatId.length === 0)
       return; // must be an abstract class, ignore it
