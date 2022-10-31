@@ -48,7 +48,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   /** String name for schema properties */
   public readonly solidPrimitiveType = "torusPipe";
 
-  private _localToWorld: Transform;   // rigid!
+  private _localToWorld: Transform;
   private _radiusA: number;  // radius of (large) circle in xy plane
   private _radiusB: number;  // radius of (small) circle in xz plane.
   private _sweep: Angle;
@@ -69,44 +69,11 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     result._isReversed = this._isReversed;
     return result;
   }
-  /** Adjust TorusPipe data to remove skew, scale, and mirror in its coordinate frame.
-   * * This forces the matrix part of the transform to be a pure rotation without mirror.
-   * * Original column (0, 2) lengths are optionally transferred to radii (major, minor) as scale factors.
-   */
-  private static enforceRigidity(localToWorld: Transform, radii?: WritableXAndY): boolean {
-    const matrix = localToWorld.matrix;
-    let majorRadiusScale = 1;
-    let minorRadiusScale = 1;
-    if (undefined !== radii) {
-      // NOTE: y mag is ignored as in createAlongArc; the major arc must be circular!
-      majorRadiusScale = matrix.columnXMagnitude();
-      minorRadiusScale = matrix.columnZMagnitude();
-    }
-    if (!matrix.makeRigid())
-      return false;
-    if (matrix.determinant() < 0) // it's a mirror
-      matrix.scaleColumnsInPlace(1, 1, -1);
-
-    if (undefined !== radii) {
-      if (!Geometry.isSameCoordinate(majorRadiusScale, 1))
-        radii.x *= majorRadiusScale;
-      if (!Geometry.isSameCoordinate(minorRadiusScale, 1))
-        radii.y *= minorRadiusScale;
-    }
-    return true;
-  }
   /** Apply `transform` to the local coordinate system. */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
-    // transfer scale to radii. Do this *before* the multiply, while we still know which column maps to which radius
-    const newTransform = transform.clone();
-    const newRadii = Point2d.create(this._radiusA, this._radiusB);
-    if (!TorusPipe.enforceRigidity(newTransform, newRadii))
-      return false;
-    newTransform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
-    this._radiusA = newRadii.x;
-    this._radiusB = newRadii.y;
+    transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
   /** Clone this TorusPipe and transform the clone */
@@ -117,7 +84,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     return result;
   }
   /** Create a new `TorusPipe`
-   * @param frame local to world transformation, assumed rigid (possibly mirror)
+   * @param frame local to world transformation. For best results, the matrix part should be a pure rotation.
    * @param majorRadius major hoop radius
    * @param minorRadius minor hoop radius
    * @param sweep sweep angle for major circle, with positive sweep from x axis towards y axis.
@@ -136,10 +103,12 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     if (sweep.isAlmostZero)
       return undefined;
 
-    // remove negative sweep
+    // remove mirror and negative sweep
     let yScale = 1.0;
     let zScale = 1.0;
     let isReversed = false;
+    if (frame.matrix.determinant() < 0.0)
+      zScale *= -1.0;
     const sweep1 = sweep.clone();
     if (sweep.radians < 0.0) {
       sweep1.setRadians(-sweep.radians);
@@ -149,8 +118,6 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     }
     const frame1 = frame.clone();
     frame1.matrix.scaleColumnsInPlace(1, yScale, zScale);
-    if (!TorusPipe.enforceRigidity(frame1))   // don't transfer scale to radii; they are explicitly specified
-      return undefined;
 
     const result = new TorusPipe(frame1, majorRadius, minorRadius, sweep1, capped);
     result._isReversed = isReversed;
@@ -159,7 +126,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
 
   /** Create a TorusPipe from the typical parameters of the Dgn file */
   public static createDgnTorusPipe(center: Point3d, vectorX: Vector3d, vectorY: Vector3d, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean) {
-    const vectorZ = vectorX.crossProduct(vectorY);
+    const vectorZ = vectorX.unitCrossProductWithDefault(vectorY, 0, 0, 1);
     const frame = Transform.createOriginAndMatrixColumns(center, vectorX, vectorY, vectorZ);
     return TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped);
   }
@@ -175,43 +142,66 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
 
   /** Return a coordinate frame (right handed, unit axes)
    * * origin at center of major circle
-   * * major circle in xy plane
-   * * z axis perpendicular
+   * * major circle in plane of first two columns
+   * * last column perpendicular to first two
    */
   public getConstructiveFrame(): Transform | undefined {
-    return this._localToWorld;  // we've already confirmed it is rigid
+    return this._localToWorld.cloneRigid();
   }
   /** Return the center of the torus pipe (inside the donut hole) */
   public cloneCenter(): Point3d { return this._localToWorld.getOrigin(); }
-  /** return the vector along the x axis (in the major hoop plane) in world coordinates */
-  public cloneVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
-  /** return the vector along the y axis (in the major hoop plane) in world coordinates */
-  public cloneVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  /** return unit vector along the x axis (in the major hoop plane) */
+  public cloneVectorX(): Vector3d {
+    const xAxis = this._localToWorld.matrix.columnX();
+    return xAxis.normalizeWithDefault(1, 0, 0, xAxis);
+  }
+  /** return unit vector along the y axis (in the major hoop plane) */
+  public cloneVectorY(): Vector3d {
+    const yAxis = this._localToWorld.matrix.columnY();
+    return yAxis.normalizeWithDefault(0, 1, 0, yAxis);
+  }
+  /** return unit vector along the z axis (in the major hoop plane) */
+  public cloneVectorZ(): Vector3d {
+    const zAxis = this._localToWorld.matrix.columnZ();
+    return zAxis.normalizeWithDefault(0, 0, 1, zAxis);
+  }
   /** get the minor hoop radius (`radiusB`) in world coordinates */
-  public getMinorRadius(): number { return this._radiusB; }
+  public getMinorRadius(): number { return this._radiusB * this._localToWorld.matrix.columnZMagnitude(); }
   /** get the major hoop radius (`radiusA`) in world coordinates */
-  public getMajorRadius(): number { return this._radiusA; }
+  public getMajorRadius(): number { return this._radiusA * this._localToWorld.matrix.columnXMagnitude(); }
   /** get the sweep angle along the major circle. */
   public getSweepAngle(): Angle { return this._sweep.clone(); }
   /** Ask if this TorusPipe is labeled as reversed */
   public getIsReversed(): boolean { return this._isReversed; }
   /** Return the sweep angle as a fraction of full 360 degrees (2PI radians) */
   public getThetaFraction(): number { return this._sweep.radians / (Math.PI * 2.0); }
+  /** Return a (clone of) the TorusPipe's local to world transformation. */
+  public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }
   /** ask if `other` is an instance of `TorusPipe` */
   public isSameGeometryClass(other: any): boolean { return other instanceof TorusPipe; }
+
   /** test if `this` and `other` have nearly equal geometry */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof TorusPipe) {
       if ((!this._sweep.isFullCircle) && this.capped !== other.capped)
         return false;
-      if (!this._localToWorld.isAlmostEqual(other._localToWorld))
+      // Compare outputs of getters to test for TorusPipes created and/or transformed in equivalent ways.
+      // In particular, the column vectors contribute their scale to the radii, so we ignore their length.
+      if (!this.cloneCenter().isAlmostEqual(other.cloneCenter()))
         return false;
-      if (!Geometry.isSameCoordinate(this._radiusA, other._radiusA))
+      if (!this.cloneVectorX().isAlmostEqual(other.cloneVectorX()))
         return false;
-      if (!Geometry.isSameCoordinate(this._radiusB, other._radiusB))
+      if (!this.cloneVectorY().isAlmostEqual(other.cloneVectorY()))
         return false;
-      if (!this._sweep.isAlmostEqualNoPeriodShift(other._sweep))
+      if (!this.cloneVectorZ().isAlmostEqual(other.cloneVectorZ()))
         return false;
+      if (!Geometry.isSameCoordinate(this.getMinorRadius(), other.getMinorRadius()))
+        return false;
+      if (!Geometry.isSameCoordinate(this.getMajorRadius(), other.getMajorRadius()))
+        return false;
+      if (!this.getSweepAngle().isAlmostEqualNoPeriodShift(other.getSweepAngle()))
+        return false;
+      // ignore _isReversed; it doesn't affect geometry
       return true;
     }
     return false;
@@ -232,9 +222,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const thetaRadians = this.vFractionToRadians(v);
     const c0 = Math.cos(thetaRadians);
     const s0 = Math.sin(thetaRadians);
-    const majorRadius = this.getMajorRadius();
-    const minorRadius = this.getMinorRadius();
-
+    const majorRadius = this._radiusA;
+    const minorRadius = this._radiusB;
     const center = this._localToWorld.multiplyXYZ(majorRadius * c0, majorRadius * s0, 0);
     const vector0 = this._localToWorld.multiplyVectorXYZ(minorRadius * c0, minorRadius * s0, 0);
     const vector90 = this._localToWorld.multiplyVectorXYZ(0, 0, minorRadius);
@@ -244,9 +233,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   public constantUSection(uFraction: number): CurveCollection | undefined {
     const theta1Radians = this._sweep.radians;
     const phiRadians = uFraction * Math.PI;
-
-    const majorRadius = this.getMajorRadius();
-    const minorRadius = this.getMinorRadius();
+    const majorRadius = this._radiusA;
+    const minorRadius = this._radiusB;
     const transform = this._localToWorld;
     const axes = transform.matrix;
     const center = this._localToWorld.multiplyXYZ(0, 0, minorRadius * Math.sin(phiRadians));
@@ -258,8 +246,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   /** extend `rangeToExtend` to include this `TorusPipe` */
   public extendRange(rangeToExtend: Range3d, transform?: Transform) {
     const theta1Radians = this._sweep.radians;
-    const majorRadius = this.getMajorRadius();
-    const minorRadius = this.getMinorRadius();
+    const majorRadius = this._radiusA;
+    const minorRadius = this._radiusB;
     const transform0 = this._localToWorld;
     const numThetaSample = Math.ceil(theta1Radians / (Math.PI / 16.0));
     const numHalfPhiSample = 16;
@@ -316,8 +304,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const phiRadians = u * Math.PI * 2.0;
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
-    const minorRadius = this.getMinorRadius();
-    const rxy = this.getMajorRadius() + Math.cos(phiRadians) * minorRadius;
+    const majorRadius = this._radiusA;
+    const minorRadius = this._radiusB;
+    const rxy = majorRadius + Math.cos(phiRadians) * minorRadius;
     return this._localToWorld.multiplyXYZ(rxy * cosTheta, rxy * sinTheta, minorRadius * Math.sin(phiRadians), result);
   }
   /** Evaluate as a uv surface, returning point and two vectors.
@@ -333,8 +322,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const sinTheta = Math.sin(thetaRadians);
     const sinPhi = Math.sin(phiRadians);
     const cosPhi = Math.cos(phiRadians);
-    const minorRadius = this.getMinorRadius();
-    const rxy = this.getMajorRadius() + Math.cos(phiRadians) * minorRadius;
+    const majorRadius = this._radiusA;
+    const minorRadius = this._radiusB;
+    const rxy = majorRadius + Math.cos(phiRadians) * minorRadius;
     const rSinPhi = minorRadius * sinPhi;
     const rCosPhi = minorRadius * cosPhi;   // appears only as derivative of rSinPhi.
     return Plane3dByOriginAndVectors.createOriginAndVectors(

@@ -1560,6 +1560,7 @@ export namespace IModelJson {
       const radiusB = data.getMinorRadius();
       const sweep = data.getSweepAngle();
       if (data.getIsReversed()) {
+        // the TorusPipe was created with negative sweep that was forced positive; restore original values
         vectorY.scaleInPlace(-1.0);
         sweep.setRadians(-sweep.radians);
       }

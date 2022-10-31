@@ -139,7 +139,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return undefined;
   }
   /**
-   * Return the larger of the primary xyz axis radii
+   * Return the largest of the primary xyz axis radii
    */
   public maxAxisRadius(): number {
     const matrix = this._localToWorld.matrix;

@@ -58,11 +58,11 @@ describe("PipePath", () => {
     const sweep = Angle.createDegrees(90);
     const capped = true;
 
-    // verify invalid inputs fail
+    // test invalid inputs
     let pipeBad = TorusPipe.createDgnTorusPipe(center, Vector3d.createZero(), vectorY, majorRadius, minorRadius, sweep, capped);
-    ck.testUndefined(pipeBad, "Zero vectorX yields undefined TorusPipe");
+    ck.testDefined(pipeBad, "Zero vectorX nevertheless yields defined TorusPipe");  // default vec is used!
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, Vector3d.createZero(), majorRadius, minorRadius, sweep, capped);
-    ck.testUndefined(pipeBad, "Zero vectorY yields undefined TorusPipe");
+    ck.testDefined(pipeBad, "Zero vectorY nevertheless yields defined TorusPipe");  // default vec is used!
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, 0, minorRadius, sweep, capped);
     ck.testUndefined(pipeBad, "Zero majorRadius yields undefined TorusPipe");
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, 0, sweep, capped);
@@ -79,7 +79,7 @@ describe("PipePath", () => {
     mirrorY.matrix.setAt(1, 1, -1);
     const pipeM = pipe0.cloneTransformed(mirrorY);
     if (ck.testDefined(pipeM) && pipeM !== undefined) {
-      ck.testTrue(pipeM.getConstructiveFrame()!.matrix.isRigid(false), "TorusPipe.clone mirrored has rigid, non-mirror transform");
+      ck.testTrue(pipeM.getConstructiveFrame()!.matrix.isRigid(false), "getConstructiveFrame removes mirror");
       const builderM = PolyfaceBuilder.create(options);
       builderM.addUVGridBody(pipeM, 20, 20);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeM, builderM.claimPolyface()], x0);
@@ -96,29 +96,36 @@ describe("PipePath", () => {
 
         // now create scaled pipe, then try to remove scale with a transform
         for (const scale of [Point2d.create(10, 10), Point3d.create(5, 10), Point3d.create(10, 5)]) {
-          const pipe1 = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius * scale.x, minorRadius * scale.y, sweep, capped);
-          if (!ck.testDefined(pipe1) || pipe1 === undefined)
+          const pipeScaledRadii = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius * scale.x, minorRadius * scale.y, sweep, capped);
+          if (!ck.testDefined(pipeScaledRadii) || pipeScaledRadii === undefined)
             continue;
-          if (!ck.testTrue(pipe1.cloneVectorX().isPerpendicularTo(pipe1.cloneVectorY()), "TorusPipe axes are perpendicular"))
+          if (!ck.testCoordinate(1, pipeScaledRadii.cloneVectorX().magnitude(), "TorusPipe.cloneVectorX returns unit vector"))
             continue;
-          const builder1 = PolyfaceBuilder.create(options);
-          builder1.addUVGridBody(pipe1, 20, 20);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipe1, builder1.claimPolyface()], x0 += 5, y0, z0);
-
-          const inverseScaleTransform = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(scale.x, scale.x, scale.y)).inverse()!;
-          const pipe2 = pipe1.cloneTransformed(inverseScaleTransform);
-          if (!ck.testDefined(pipe2) || pipe2 === undefined)
+          if (!ck.testCoordinate(1, pipeScaledRadii.cloneVectorY().magnitude(), "TorusPipe.cloneVectorY returns unit vector"))
             continue;
-          const builder2 = PolyfaceBuilder.create(options);
-          builder2.addUVGridBody(pipe2, 20, 20);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipe2, builder2.claimPolyface()], x0, y0, z0);
+          let builder = PolyfaceBuilder.create(options);
+          builder.addUVGridBody(pipeScaledRadii, 20, 20);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeScaledRadii, builder.claimPolyface()], x0 += 5, y0, z0);
 
-          if (ck.testDefined(pipe1.getConstructiveFrame()))
-            ck.testTrue(pipe1.getConstructiveFrame()!.matrix.isRigid(false), "TorusPipe 1 transform is rigid");
-          if (ck.testDefined(pipe2.getConstructiveFrame()))
-            ck.testTrue(pipe2.getConstructiveFrame()!.matrix.isRigid(false), "TorusPipe 2 transform is rigid");
+          const scaleInLocalCoords = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(scale.x, scale.x, scale.y));
+          const scaleInWorldCoords = pipe0.cloneLocalToWorld().multiplyTransformTransform(scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!));
+          const pipeCloneScaled = pipe0.cloneTransformed(scaleInWorldCoords);
+          if (!ck.testDefined(pipeCloneScaled) || pipeCloneScaled === undefined)
+            continue;
+          builder = PolyfaceBuilder.create(options);
+          builder.addUVGridBody(pipeCloneScaled, 20, 20);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneScaled, builder.claimPolyface()], x0, y0, z0);
 
-          ck.testTrue(pipe2.isAlmostEqual(pipe0), "Scaled then unscaled TorusPipe is equal to original");
+          ck.testTrue(pipeScaledRadii.isAlmostEqual(pipeCloneScaled), "TorusPipe with scaled radii is equivalent to TorusPipe cloned with scale transform");
+
+          const pipeCloneUnScaled = pipeScaledRadii.cloneTransformed(scaleInWorldCoords.inverse()!);
+          if (!ck.testDefined(pipeCloneUnScaled) || pipeCloneUnScaled === undefined)
+            continue;
+          builder = PolyfaceBuilder.create(options);
+          builder.addUVGridBody(pipeCloneUnScaled, 20, 20);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneUnScaled, builder.claimPolyface()], x0, y0, z0);
+
+          ck.testTrue(pipe0.isAlmostEqual(pipeCloneUnScaled), "TorusPipe with scaled radii cloned with reciprocal scale is equivalent to original");
         }
         y0 += 10;
       }

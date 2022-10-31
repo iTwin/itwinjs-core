@@ -2386,7 +2386,9 @@ export class Matrix3d implements BeJSONFunctions {
       this.coffs[5] - this.coffs[7]);
   }
 
-  /** Test if the matrix is a pure rotation. */
+  /** Test if the matrix is a pure rotation.
+   * @param allowMirror whether to widen the test to return true if the matrix is orthogonal (a pure rotation or a mirror)
+  */
   public isRigid(allowMirror: boolean = false): boolean {
     return this.testPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
   }
@@ -2459,9 +2461,10 @@ export class Matrix3d implements BeJSONFunctions {
     }
     return undefined;
   }
-  /** Adjust the matrix in place so that it is rigid:
+  /** Adjust the matrix in place so that:
    * * columns are perpendicular and have unit length
    * * transpose equals inverse
+   * * mirroring is removed
    * @param axisOrder how to reorder the matrix columns
    * @return whether the instance is rigid on return
    */
@@ -2474,8 +2477,9 @@ export class Matrix3d implements BeJSONFunctions {
     this.axisOrderCrossProductsInPlace(axisOrder);
     return this.normalizeColumnsInPlace();
   }
-  /** create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
-   * columns are taken from the source Matrix3d in order indicated by the axis order.
+  /** Create a new orthogonal matrix (perpendicular columns, unit length, transpose is inverse).
+   * * Columns are taken from the source Matrix3d in order indicated by the axis order.
+   * * Mirroring in the matrix is removed.
    */
   public static createRigidFromMatrix3d(source: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ, result?: Matrix3d): Matrix3d | undefined {
     result = source.clone(result);
