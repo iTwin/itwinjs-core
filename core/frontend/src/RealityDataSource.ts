@@ -77,7 +77,7 @@ export interface RealityDataSource {
   readonly usesGeometricError?: boolean;
   /** @alpha */
   readonly maximumScreenSpaceError?: number;
-
+  /** @alpha */
   getTileContentType(url: string): "tile" | "tileset";
 
   /** Gets a reality data root document json

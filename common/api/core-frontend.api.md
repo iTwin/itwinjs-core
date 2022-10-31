@@ -4726,6 +4726,8 @@ export class IModelApp {
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
+    // @alpha (undocumented)
+    static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
     // @internal
@@ -8013,9 +8015,15 @@ export function readGltfGraphics(args: ReadGltfGraphicsArgs): Promise<RenderGrap
 // @public
 export interface ReadGltfGraphicsArgs {
     baseUrl?: string;
+    // @alpha (undocumented)
+    contentRange?: ElementAlignedBox3d;
     gltf: Uint8Array | Object;
+    // @alpha (undocumented)
+    hasChildren?: boolean;
     iModel: IModelConnection;
     pickableOptions?: PickableGraphicOptions;
+    // @alpha (undocumented)
+    transform?: Transform;
 }
 
 // @public
@@ -8056,16 +8064,22 @@ export interface RealityDataSource {
     getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
     // @internal
     getTileContent(name: string): Promise<any>;
+    // @alpha (undocumented)
+    getTileContentType(url: string): "tile" | "tileset";
     // @internal
     getTileJson(name: string): Promise<any>;
     // (undocumented)
     readonly isContextShare: boolean;
     // (undocumented)
     readonly key: RealityDataSourceKey;
+    // @alpha (undocumented)
+    readonly maximumScreenSpaceError?: number;
     readonly realityData: RealityData | undefined;
     // (undocumented)
     readonly realityDataId: string | undefined;
     readonly realityDataType: string | undefined;
+    // @alpha
+    readonly usesGeometricError?: boolean;
 }
 
 // @beta
@@ -8080,7 +8094,23 @@ export namespace RealityDataSource {
     // @alpha
     export function createOrbitGtBlobPropsFromKey(rdSourceKey: RealityDataSourceKey): OrbitGtBlobProps | undefined;
     // @alpha
-    export function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+    export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+}
+
+// @alpha (undocumented)
+export interface RealityDataSourceProvider {
+    // (undocumented)
+    createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+}
+
+// @alpha (undocumented)
+export class RealityDataSourceProviderRegistry {
+    // @internal
+    constructor();
+    // (undocumented)
+    find(name: string): RealityDataSourceProvider | undefined;
+    // (undocumented)
+    register(name: string, provider: RealityDataSourceProvider): void;
 }
 
 // @internal (undocumented)
@@ -8418,6 +8448,8 @@ export abstract class RealityTileLoader {
     // (undocumented)
     abstract get maxDepth(): number;
     // (undocumented)
+    get maximumScreenSpaceError(): number | undefined;
+    // (undocumented)
     abstract get minDepth(): number;
     // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
@@ -8441,6 +8473,8 @@ export abstract class RealityTileLoader {
 export interface RealityTileParams extends TileParams {
     // (undocumented)
     readonly additiveRefinement?: boolean;
+    // (undocumented)
+    readonly geometricError?: number;
     // (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // (undocumented)
@@ -11143,6 +11177,8 @@ export interface TileDrawArgParams {
     hiddenLineSettings?: HiddenLine.Settings;
     intersectionClip?: ClipVector;
     location: Transform;
+    // @alpha (undocumented)
+    maximumScreenSpaceError?: number;
     now: BeTimePoint;
     parentsAndChildrenExclusive: boolean;
     symbologyOverrides: FeatureSymbology.Overrides | undefined;
@@ -11161,7 +11197,7 @@ export class TileDrawArgs {
     // @internal (undocumented)
     get clip(): ClipVector | undefined;
     clipVolume: RenderClipVolume | undefined;
-    protected computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number;
+    computePixelSizeInMetersAtClosestPoint(center: Point3d, radius: number): number;
     readonly context: SceneContext;
     // @internal (undocumented)
     drape?: RenderTextureDrape;
@@ -11186,6 +11222,8 @@ export class TileDrawArgs {
     markChildrenLoading(): void;
     markReady(tile: Tile): void;
     markUsed(tile: Tile): void;
+    // @alpha (undocumented)
+    maximumScreenSpaceError: number;
     // (undocumented)
     get maxRealityTreeSelectionCount(): number | undefined;
     // @internal (undocumented)
