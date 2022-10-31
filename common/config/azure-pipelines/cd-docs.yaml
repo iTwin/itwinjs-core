@@ -55,6 +55,7 @@ stages:
       parameters:
         shortCode: $(ShortCode)
         gprId: $(GprId)
+        suppressionFilePath: common\config\azure-pipelines\credscan\credscan-supressions.json
 
   - stage: CreateRelease
     displayName: Create release
