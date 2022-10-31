@@ -38,6 +38,9 @@ resources:
 
 variables:
   octopusProjectName: iModel.js Documentation
+  ShortCode: IMJD
+  PrgId: 2813
+  GprId: 2833
 
 stages:
   - stage: Build
@@ -48,6 +51,10 @@ stages:
         workingDir: $(Pipeline.Workspace)/itwinjs-core
         outputDir: $(Agent.BuildDirectory)/tempDocsBuild/public_build
         shouldPublish: true
+    - template: templates/appsec/scanners/source-scans.yaml@build-pipeline-scripts
+      parameters:
+        shortCode: $(ShortCode)
+        gprId: $(GprId)
 
   - stage: CreateRelease
     displayName: Create release
