@@ -14,8 +14,8 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderSystem } from "../render/RenderSystem";
 import { ScreenViewport, Viewport } from "../Viewport";
 import {
-  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, GltfWrapMode, I3dmReader, readPointCloudTileContent, RealityTile, RealityTileContent, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
+  B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfGraphicsReader, GltfReader, GltfReaderProps, GltfWrapMode, I3dmReader, readPointCloudTileContent,
+  RealityTile, RealityTileContent, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel, TileUser,
 } from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -112,6 +112,18 @@ export abstract class RealityTileLoader {
         break;
       case TileFormat.I3dm:
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
+        break;
+      case TileFormat.Gltf:
+        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
+        if (props) {
+          reader = new GltfGraphicsReader(props, {
+            iModel,
+            gltf: props.glTF,
+            contentRange: tile.contentRange,
+            transform: tile.transformToRoot,
+          });
+        }
+
         break;
       case TileFormat.Cmpt:
         const header = new CompositeTileHeader(streamBuffer);
