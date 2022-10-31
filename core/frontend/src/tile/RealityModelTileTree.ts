@@ -339,8 +339,13 @@ class FindChildResult {
 
 /** @internal */
 function assembleUrl(prefix: string, url: string): string {
+  if (url.startsWith("/")) {
+    // Relative to base origin, not to parent tile
+    return url;
+  }
 
   if (url.startsWith("./")) {
+    // Relative to parent tile
     url = url.substring(2);
   } else {
     const prefixParts = prefix.split("/");
@@ -349,9 +354,11 @@ function assembleUrl(prefix: string, url: string): string {
       prefixParts.pop();
       url = url.substring(3);
     }
+
     prefixParts.push("");
     prefix = prefixParts.join("/");
   }
+
   return prefix + url;
 }
 
