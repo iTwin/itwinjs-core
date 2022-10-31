@@ -341,7 +341,7 @@ class FindChildResult {
 function assembleUrl(prefix: string, url: string): string {
   if (url.startsWith("/")) {
     // Relative to base origin, not to parent tile
-    return url;
+    return url.substring(1);
   }
 
   if (url.startsWith("./")) {
@@ -382,16 +382,16 @@ function addUrlPrefix(subTree: any, prefix: string) {
 /** @internal */
 async function expandSubTree(root: any, rdsource: RealityDataSource): Promise<any> {
   const childUrl = getUrl(root.content);
-  if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
-    const subTree = await rdsource.getTileJson(childUrl);
-    const prefixIndex = childUrl.lastIndexOf("/");
-    if (prefixIndex > 0)
-      addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
-
-    return subTree.root;
-  } else {
+  if (undefined === childUrl || "tileset" !== rdsource.getTileContentType(childUrl))
     return root;
-  }
+
+
+  const subTree = await rdsource.getTileJson(childUrl);
+  const prefixIndex = childUrl.lastIndexOf("/");
+  if (prefixIndex > 0)
+    addUrlPrefix(subTree.root, childUrl.substring(0, prefixIndex + 1));
+
+  return subTree.root;
 }
 
 /** @internal */

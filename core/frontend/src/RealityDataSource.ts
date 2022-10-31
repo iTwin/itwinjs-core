@@ -72,6 +72,8 @@ export interface RealityDataSource {
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
 
+  getTileContentType(url: string): "tile" | "tileset";
+
   /** Gets a reality data root document json
    * @returns tile data json
    * @internal
