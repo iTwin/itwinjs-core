@@ -6,7 +6,7 @@
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { MapFeatureInfoRecord, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
-import {  Transform } from "@itwin/core-geometry";
+import { Transform } from "@itwin/core-geometry";
 import { ArcGisFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFeatureRenderer } from "./ArcGisFeatureRenderer";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
