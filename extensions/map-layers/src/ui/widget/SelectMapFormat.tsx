@@ -67,11 +67,15 @@ export function SelectMapFormat(props: SelectMapFormatProps) {
       itemRenderer={
         (option) => (
           <MenuItem
-            badge={ option.id?.includes("techPreview") ?
+            badge={option.id?.includes("techPreview") ?
               <div title={techPreviewTooltip}>
-                <IconButton className="map-layer-source-select-previewBadge"  size="small"><SvgTechnicalPreviewMini /></IconButton>
-              </div> : undefined}
-          >{option.label}</MenuItem>) }
+                <IconButton className="map-layer-source-select-previewBadge"  size="small">
+                  <SvgTechnicalPreviewMini />
+                </IconButton>
+              </div>
+              : undefined}>
+            {option.label}
+          </MenuItem>) }
     />
   );
 }

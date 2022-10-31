@@ -86,8 +86,6 @@ export class EsriPMS implements EsriSymbol {
     this.props = json;
     this._image = new Image();
     this._image.src = this.imageUrl;
-    // this._image = sampleIconImg;
-
   }
 
   public static fromJSON(json: EsriPMSProps) {
