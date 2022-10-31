@@ -285,10 +285,12 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
     this.id = tileTreeId;
     this.modelId = modelId;
     this.iModel = iModel;
+    const refine = loader.tree.tilesetJson.refine;
     this.rootTile = new RealityModelTileProps({
       json: loader.tree.tilesetJson,
       id: "",
-      additiveRefinement: "ADD" === loader.tree.tilesetJson.refine ? true : undefined,
+      // If not specified explicitly, additiveRefinement is inherited from parent tile.
+      additiveRefinement: undefined !== refine ? "ADD" === refine : undefined,
       usesGeometricError: loader.tree.rdSource.usesGeometricError,
     });
   }
@@ -472,12 +474,14 @@ class RealityModelTileLoader extends RealityTileLoader {
         const childId = prefix + i;
         const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
         if (undefined !== foundChild) {
+          const refine = foundChild.json.refine;
           props.push(new RealityModelTileProps({
             json: foundChild.json,
             parent,
             id: foundChild.id,
             transformToRoot: foundChild.transformToRoot,
-            additiveRefinement: foundChild.json.refine === "ADD" ? true : undefined,
+            // If not specified explicitly, additiveRefinement is inherited from parent tile.
+            additiveRefinement: undefined !== refine ? refine === "ADD" : undefined,
             usesGeometricError: this.tree.rdSource.usesGeometricError,
           }));
         }
