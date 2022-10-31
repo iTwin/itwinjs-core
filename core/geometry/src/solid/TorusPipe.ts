@@ -17,12 +17,11 @@ import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { GeometryHandler, UVSurface, UVSurfaceIsoParametricDistance } from "../geometry3d/GeometryHandler";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
+import { Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { SolidPrimitive } from "./SolidPrimitive";
-import { WritableXAndY } from "../geometry3d/XYZProps";
 
 /**
  * A torus pipe is a partial torus (donut).  In a local coordinate system
@@ -160,15 +159,15 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const yAxis = this._localToWorld.matrix.columnY();
     return yAxis.normalizeWithDefault(0, 1, 0, yAxis);
   }
-  /** return unit vector along the z axis (in the major hoop plane) */
+  /** return unit vector along the z axis */
   public cloneVectorZ(): Vector3d {
     const zAxis = this._localToWorld.matrix.columnZ();
     return zAxis.normalizeWithDefault(0, 0, 1, zAxis);
   }
-  /** get the minor hoop radius (`radiusB`) in world coordinates */
-  public getMinorRadius(): number { return this._radiusB * this._localToWorld.matrix.columnZMagnitude(); }
   /** get the major hoop radius (`radiusA`) in world coordinates */
   public getMajorRadius(): number { return this._radiusA * this._localToWorld.matrix.columnXMagnitude(); }
+  /** get the minor hoop radius (`radiusB`) in world coordinates */
+  public getMinorRadius(): number { return this._radiusB * this._localToWorld.matrix.columnZMagnitude(); }
   /** get the sweep angle along the major circle. */
   public getSweepAngle(): Angle { return this._sweep.clone(); }
   /** Ask if this TorusPipe is labeled as reversed */
@@ -185,7 +184,7 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     if (other instanceof TorusPipe) {
       if ((!this._sweep.isFullCircle) && this.capped !== other.capped)
         return false;
-      // Compare outputs of getters to test for TorusPipes created and/or transformed in equivalent ways.
+      // Compare getter output so that we can equate TorusPipes created/transformed in equivalent ways.
       // In particular, the column vectors contribute their scale to the radii, so we ignore their length.
       if (!this.cloneCenter().isAlmostEqual(other.cloneCenter()))
         return false;
@@ -229,10 +228,10 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const vector90 = this._localToWorld.multiplyVectorXYZ(0, 0, minorRadius);
     return Loop.create(Arc3d.create(center, vector0, vector90));
   }
-  /** Return an arc at constant u, and arc sweep  matching this TorusPipe sweep. */
+  /** Return an arc at constant u, and arc sweep matching this TorusPipe sweep. */
   public constantUSection(uFraction: number): CurveCollection | undefined {
     const theta1Radians = this._sweep.radians;
-    const phiRadians = uFraction * Math.PI;
+    const phiRadians = uFraction * 2 * Math.PI;
     const majorRadius = this._radiusA;
     const minorRadius = this._radiusB;
     const transform = this._localToWorld;
