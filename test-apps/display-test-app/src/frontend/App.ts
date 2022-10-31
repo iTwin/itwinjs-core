@@ -53,6 +53,7 @@ import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
@@ -291,6 +292,7 @@ export class DisplayTestApp {
     [
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
@@ -342,6 +344,10 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
     BingTerrainMeshProvider.register();
+
+    const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
+    if (realityApiKey)
+      registerRealityDataSourceProvider(realityApiKey);
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
