@@ -4726,7 +4726,7 @@ export class IModelApp {
     static queryRenderCompatibility(): WebGLRenderCompatibilityInfo;
     // @beta
     static get realityDataAccess(): RealityDataAccess | undefined;
-    // @alpha (undocumented)
+    // @alpha
     static get realityDataSourceProviders(): RealityDataSourceProviderRegistry;
     // @internal
     static registerEntityState(classFullName: string, classType: typeof EntityState): void;
@@ -8064,7 +8064,7 @@ export interface RealityDataSource {
     getSpatialLocationAndExtents(): Promise<SpatialLocationAndExtents | undefined>;
     // @internal
     getTileContent(name: string): Promise<any>;
-    // @alpha (undocumented)
+    // @alpha
     getTileContentType(url: string): "tile" | "tileset";
     // @internal
     getTileJson(name: string): Promise<any>;
@@ -8072,7 +8072,7 @@ export interface RealityDataSource {
     readonly isContextShare: boolean;
     // (undocumented)
     readonly key: RealityDataSourceKey;
-    // @alpha (undocumented)
+    // @alpha
     readonly maximumScreenSpaceError?: number;
     readonly realityData: RealityData | undefined;
     // (undocumented)
@@ -8097,19 +8097,16 @@ export namespace RealityDataSource {
     export function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
-// @alpha (undocumented)
+// @alpha
 export interface RealityDataSourceProvider {
-    // (undocumented)
     createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
-// @alpha (undocumented)
+// @alpha
 export class RealityDataSourceProviderRegistry {
     // @internal
     constructor();
-    // (undocumented)
     find(name: string): RealityDataSourceProvider | undefined;
-    // (undocumented)
     register(name: string, provider: RealityDataSourceProvider): void;
 }
 

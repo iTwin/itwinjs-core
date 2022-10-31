@@ -75,9 +75,16 @@ export interface RealityDataSource {
    * @alpha
    */
   readonly usesGeometricError?: boolean;
-  /** @alpha */
+  /** If [[usesGeometricError]] is `true`, optionally specifies the maximum error, in pixels, to permit for a tile before requiring refinement of that tile.
+   * Default: 16
+   * @alpha
+   */
   readonly maximumScreenSpaceError?: number;
-  /** @alpha */
+  /** Given the URL of a tile's content, return the type of that content.
+   * "tileset" indicates the content points to a JSON tileset describing the structure of the tile tree below the tile.
+   * "tile" indicates the content points to a binary representation of the tile's graphics.
+   * @alpha
+   */
   getTileContentType(url: string): "tile" | "tileset";
 
   /** Gets a reality data root document json
@@ -203,12 +210,26 @@ export namespace RealityDataSource {
   }
 }
 
-/** @alpha */
+/** A named supplier of [RealityDataSource]]s.
+ * The provider's name is stored in a [RealityDataSourceKey]($common). When the [[RealityDataSource]] is requested from the key,
+ * the provider is looked up in [[IModelApp.realityDataSourceProviders]] by its name and, if found, its [[createRealityDataSource]] method
+ * is invoked to produce the reality data source.
+ * @alpha
+ */
 export interface RealityDataSourceProvider {
+  /** Produce a RealityDataSource for the specified `key`.
+   * @param key Identifies the reality data source.
+   * @param iTwinId A default iTwinId to use.
+   * @returns the requested reality data source, or `undefined` if it could not be produced.
+   */
   createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
 }
 
-/** @alpha */
+/** A registry of [[RealityDataSourceProvider]]s identified by their unique names. The registry can be accessed via [[IModelApp.realityDataSourceProviders]].
+ * It includes a handful of built-in providers for sources like Cesium ION, ContextShare, OrbitGT, and arbitrary public-accessible URLs.
+ * Any number of additional providers can be registered. They should typically be registered just after [[IModelAp.startup]].
+ * @alpha
+ */
 export class RealityDataSourceProviderRegistry {
   private readonly _providers = new Map<string, RealityDataSourceProvider>();
 
@@ -229,10 +250,12 @@ export class RealityDataSourceProviderRegistry {
     });
   }
 
+  /** Register `provider` to produce [[RealityDataSource]]s for the specified provider `name`. */
   public register(name: string, provider: RealityDataSourceProvider): void {
     this._providers.set(name, provider);
   }
 
+  /** Look up the provider registered by the specified `name`. */
   public find(name: string): RealityDataSourceProvider | undefined {
     return this._providers.get(name);
   }
