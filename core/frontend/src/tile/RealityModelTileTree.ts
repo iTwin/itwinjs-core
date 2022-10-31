@@ -288,7 +288,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
     this.rootTile = new RealityModelTileProps({
       json: loader.tree.tilesetJson,
       id: "",
-      additiveRefinement: "ADD" === loader.tree.tilesetJson.refine,
+      additiveRefinement: "ADD" === loader.tree.tilesetJson.refine ? true : undefined,
       usesGeometricError: loader.tree.rdSource.usesGeometricError,
     });
   }
@@ -477,7 +477,7 @@ class RealityModelTileLoader extends RealityTileLoader {
             parent,
             id: foundChild.id,
             transformToRoot: foundChild.transformToRoot,
-            additiveRefinement: foundChild.json.refine === "ADD",
+            additiveRefinement: foundChild.json.refine === "ADD" ? true : undefined,
             usesGeometricError: this.tree.rdSource.usesGeometricError,
           }));
         }
