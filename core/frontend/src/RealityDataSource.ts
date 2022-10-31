@@ -12,6 +12,7 @@ import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from 
 import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
 import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
 import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { IModelApp } from "./IModelApp";
 import { Range3d } from "@itwin/core-geometry";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
@@ -183,20 +184,48 @@ export namespace RealityDataSource {
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.
    * @alpha
    */
-  export async function fromKey(rdSourceKey: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
-    switch(rdSourceKey.provider) {
-      case RealityDataProvider.CesiumIonAsset:
-        return RealityDataSourceCesiumIonAssetImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.TilesetUrl:
-        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.ContextShare:
-        return RealityDataSourceContextShareImpl.createFromKey(rdSourceKey, iTwinId);
-      case RealityDataProvider.OrbitGtBlob:
-        return RealityDataSourceTilesetUrlImpl.createFromKey(rdSourceKey, iTwinId);
-      default:
-        Logger.logError(loggerCategory, `Error realityModelFromJson - region undefined`);
+  export async function fromKey(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined> {
+    const provider = IModelApp.realityDataSourceProviders.find(key.provider);
+    if (!provider) {
+      Logger.logWarning(loggerCategory, `RealityDataSourceProvider "${key.provider}" is not registered`);
+      return undefined;
     }
-    return undefined;
+
+    return provider.createRealityDataSource(key, iTwinId);
   }
 }
 
+/** @alpha */
+export interface RealityDataSourceProvider {
+  createRealityDataSource(key: RealityDataSourceKey, iTwinId: GuidString | undefined): Promise<RealityDataSource | undefined>;
+}
+
+/** @alpha */
+export class RealityDataSourceProviderRegistry {
+  private readonly _providers = new Map<string, RealityDataSourceProvider>();
+
+  /** @internal */
+  public constructor() {
+    this.register(RealityDataProvider.CesiumIonAsset, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceCesiumIonAssetImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.TilesetUrl, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.ContextShare, {
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceContextShareImpl.createFromKey(key, iTwinId),
+    });
+    this.register(RealityDataProvider.OrbitGtBlob, {
+      // ###TODO separate TilesetUrlImpl
+      createRealityDataSource: async (key, iTwinId) => RealityDataSourceTilesetUrlImpl.createFromKey(key, iTwinId),
+    });
+  }
+
+  public register(name: string, provider: RealityDataSourceProvider): void {
+    this._providers.set(name, provider);
+  }
+
+  public find(name: string): RealityDataSourceProvider | undefined {
+    return this._providers.get(name);
+  }
+}

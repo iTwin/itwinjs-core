@@ -39,6 +39,7 @@ import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
+import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
 import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
@@ -202,6 +203,7 @@ export class IModelApp {
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
   private static _terrainProviderRegistry: TerrainProviderRegistry;
+  private static _realityDataSourceProviders: RealityDataSourceProviderRegistry;
   private static _hubAccess?: FrontendHubAccess;
   private static _realityDataAccess?: RealityDataAccess;
   private static _publicPath: string;
@@ -231,6 +233,8 @@ export class IModelApp {
    * @beta
    */
   public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  /** @alpha */
+  public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
   /** The [[RenderSystem]] for this session. */
   public static get renderSystem(): RenderSystem { return this._renderSystem!; }
   /** The [[ViewManager]] for this session. */
@@ -406,6 +410,7 @@ export class IModelApp {
     this._uiAdmin = opts.uiAdmin ?? new UiAdmin();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
     this._terrainProviderRegistry = new TerrainProviderRegistry();
+    this._realityDataSourceProviders = new RealityDataSourceProviderRegistry();
     this._realityDataAccess = opts.realityDataAccess;
     this._publicPath = opts.publicPath ?? "";
 
