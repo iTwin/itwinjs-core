@@ -10,7 +10,7 @@ import { IModelApp, RealityDataSource, Tool } from "@itwin/core-frontend";
 class CustomRealityDataSource implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   public readonly usesGeometricError = true;
-  public maximumScreenSpaceError = 32; // ###TODO experiment with this. Cesium default is 16.
+  public maximumScreenSpaceError = 32; // Experiment with this. Cesium default is 16.
   private readonly _tilesetUrl: string;
   private readonly _baseUrl: string;
   private readonly _apiKey: string;
