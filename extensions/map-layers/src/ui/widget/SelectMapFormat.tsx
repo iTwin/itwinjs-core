@@ -10,7 +10,7 @@ import { MapTypesOptions } from "../Interfaces";
 import "./MapUrlDialog.scss";
 import {SvgTechnicalPreviewMini} from "@itwin/itwinui-icons-color-react";
 import { MapLayersUI } from "../../mapLayers";
-import { IModelApp, MapLayerFormatRegistry } from "@itwin/core-frontend";
+import { IModelApp } from "@itwin/core-frontend";
 
 // TODO:
 // Remove this structure and iterate over the registry's active formats.
