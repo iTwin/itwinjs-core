@@ -285,7 +285,12 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
     this.id = tileTreeId;
     this.modelId = modelId;
     this.iModel = iModel;
-    this.rootTile = new RealityModelTileProps(loader.tree.tilesetJson, undefined, "", undefined, undefined === loader.tree.tilesetJson.refine ? undefined : loader.tree.tilesetJson.refine === "ADD");
+    this.rootTile = new RealityModelTileProps({
+      json: loader.tree.tilesetJson,
+      id: "",
+      additiveRefinement: "ADD" === loader.tree.tilesetJson.refine,
+      usesGeometricError: loader.tree.rdSource.usesGeometricError,
+    });
   }
 }
 
@@ -302,10 +307,22 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
   public readonly region?: RealityTileRegion;
+  public readonly geometricError?: number;
 
-  constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
-    this.contentId = thisId;
-    this.parent = parent;
+  constructor(args: {
+    json: any,
+    parent?: RealityTile,
+    id: string,
+    transformToRoot?: Transform,
+    additiveRefinement?: boolean,
+    usesGeometricError?: boolean,
+  }) {
+    this.contentId = args.id;
+    this.parent = args.parent;
+    this.transformToRoot = args.transformToRoot;
+    this.additiveRefinement = args.additiveRefinement;
+
+    const json = args.json
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
     if (boundingVolume) {
       this.range = boundingVolume.range;
@@ -315,20 +332,21 @@ class RealityModelTileProps implements RealityTileParams {
       this.range = Range3d.createNull();
       assert(false, "Unbounded tile");
     }
+
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    this.transformToRoot = transformToRoot;
-    this.additiveRefinement = additiveRefinement;
     const hasContents = undefined !== getUrl(json.content);
     if (hasContents)
       this.contentRange = RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume)?.range;
     else {
       // A node without content should probably be selectable even if not additive refinement - But restrict it to that case here
       // to avoid potential problems with existing reality models, but still avoid overselection in the OSM world building set.
-      if (this.additiveRefinement || parent?.additiveRefinement)
+      if (this.additiveRefinement || args.parent?.additiveRefinement)
         this.noContentButTerminateOnSelection = true;
     }
 
     this.maximumSize = (this.noContentButTerminateOnSelection || hasContents) ? RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError) : 0;
+    if (args.usesGeometricError)
+      this.geometricError = json.geometricError;
   }
 }
 
@@ -451,8 +469,16 @@ class RealityModelTileLoader extends RealityTileLoader {
       for (let i = 0; i < findResult.json.children.length; i++) {
         const childId = prefix + i;
         const foundChild = await this.findTileInJson(this.tree.tilesetJson, childId, "", undefined);
-        if (undefined !== foundChild)
-          props.push(new RealityModelTileProps(foundChild.json, parent, foundChild.id, foundChild.transformToRoot, foundChild.json.refine === undefined ? undefined : foundChild.json.refine === "ADD"));
+        if (undefined !== foundChild) {
+          props.push(new RealityModelTileProps({
+            json: foundChild.json,
+            parent,
+            id: foundChild.id,
+            transformToRoot: foundChild.transformToRoot,
+            additiveRefinement: foundChild.json.refine === "ADD",
+            usesGeometricError: this.tree.rdSource.usesGeometricError,
+          }));
+        }
       }
     }
     return props;

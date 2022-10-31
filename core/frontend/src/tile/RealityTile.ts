@@ -28,6 +28,7 @@ export interface RealityTileParams extends TileParams {
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
   readonly region?: RealityTileRegion;
+  readonly geometricError?: number;
 }
 
 /** The geometry representing the contents of a reality tile.  Currently only polyfaces are returned
@@ -64,12 +65,11 @@ export class RealityTile extends Tile {
   public readonly region?: RealityTileRegion;
   /** @internal */
   protected _geometry?: RealityTileGeometry;
-  /** @internal */
   private _everDisplayed = false;
   /** @internal */
   protected _reprojectionTransform?: Transform;
-  /** @internal */
   private _reprojectedGraphic?: RenderGraphic;
+  private readonly _geometricError?: number;
 
   /** @internal */
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -79,6 +79,7 @@ export class RealityTile extends Tile {
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
     this.region = props.region;
+    this._geometricError = props.geometricError;
 
     if (undefined === this.transformToRoot)
       return;
@@ -351,6 +352,16 @@ export class RealityTile extends Tile {
 
     if (this.isLeaf)
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
+
+    if (undefined !== this._geometricError) {
+      const radius = args.getTileRadius(this);
+      const center = args.getTileCenter(this);
+      const pixelSize = args.computePixelSizeInMetersAtClosestPoint(center, radius);
+      const sse = this._geometricError / pixelSize;
+
+      const maxSse = 16; // ###TODO make configurable
+      return maxSse / sse;
+    }
 
     return this.maximumSize / args.getPixelSize(this);
   }

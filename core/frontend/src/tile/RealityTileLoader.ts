@@ -121,6 +121,7 @@ export abstract class RealityTileLoader {
             gltf: props.glTF,
             contentRange: tile.contentRange,
             transform: tile.transformToRoot,
+            hasChildren: !tile.isLeaf,
           });
         }
 

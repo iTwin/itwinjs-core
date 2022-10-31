@@ -71,6 +71,10 @@ export interface RealityDataSource {
    * @returns string containing the URL to reality data.
    */
   getServiceUrl(iTwinId: GuidString | undefined): Promise<string | undefined>;
+  /** If true, the geometricError property of the tiles will be used to compute screen-space error.
+   * @alpha
+   */
+  readonly usesGeometricError?: boolean;
 
   getTileContentType(url: string): "tile" | "tileset";
 

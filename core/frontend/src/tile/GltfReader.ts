@@ -2086,6 +2086,8 @@ export interface ReadGltfGraphicsArgs {
   contentRange?: ElementAlignedBox3d;
   /** @alpha */
   transform?: Transform;
+  /** @alpha */
+  hasChildren?: boolean;
 }
 
 /** Produce a [[RenderGraphic]] from a [glTF](https://www.khronos.org/gltf/) asset suitable for use in [view decorations]($docs/learning/frontend/ViewDecorations).
@@ -2113,6 +2115,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _featureTable?: FeatureTable;
   private readonly _contentRange?: ElementAlignedBox3d;
   private readonly _transform?: Transform;
+  private readonly _isLeaf: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
@@ -2124,6 +2127,7 @@ export class GltfGraphicsReader extends GltfReader {
 
     this._contentRange = args.contentRange;
     this._transform = args.transform;
+    this._isLeaf = true !== args.hasChildren;
 
     this.binaryData = props.binaryData;
     const pickableId = args.pickableOptions?.id;
@@ -2135,7 +2139,7 @@ export class GltfGraphicsReader extends GltfReader {
 
   public async read(): Promise<GltfReaderResult> {
     await this.resolveResources();
-    return this.readGltfAndCreateGraphics(true, this._featureTable, this._contentRange, this._transform);
+    return this.readGltfAndCreateGraphics(this._isLeaf, this._featureTable, this._contentRange, this._transform);
   }
 
   public get nodes(): GltfDictionary<GltfNode> { return this._nodes; }

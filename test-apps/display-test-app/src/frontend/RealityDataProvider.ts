@@ -9,6 +9,7 @@ import { IModelApp, RealityDataSource, Tool } from "@itwin/core-frontend";
 
 class CustomRealityDataSource implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
+  public readonly usesGeometricError = true;
   private readonly _tilesetUrl: string;
   private readonly _baseUrl: string;
   private readonly _apiKey: string;
