@@ -55,6 +55,7 @@ export abstract class RealityTileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
+  public get maximumScreenSpaceError(): number | undefined { return undefined; }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 

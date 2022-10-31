@@ -447,6 +447,9 @@ class RealityModelTileLoader extends RealityTileLoader {
   public override getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public get clipLowResolutionTiles(): boolean { return true; }
   public override get viewFlagOverrides(): ViewFlagOverrides { return this._viewFlagOverrides; }
+  public override get maximumScreenSpaceError(): number | undefined {
+    return this.tree.rdSource.maximumScreenSpaceError;
+  }
 
   public async loadChildren(tile: RealityTile): Promise<Tile[] | undefined> {
     const props = await this.getChildrenProps(tile);
@@ -682,8 +685,14 @@ export namespace RealityModelTileTree {
 
     public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
       const args = super.createDrawArgs(context);
-      if (args)
+      if (args) {
         args.graphics.realityModelDisplaySettings = this._getDisplaySettings();
+
+        assert(args.tree instanceof RealityTileTree);
+        const maxSSE = args.tree.loader.maximumScreenSpaceError;
+        if (undefined !== maxSSE)
+          args.maximumScreenSpaceError = maxSSE;
+      }
 
       return args;
     }
