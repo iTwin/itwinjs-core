@@ -5,7 +5,7 @@
 
 import { assert } from "@itwin/core-bentley";
 import { RealityDataSourceKey } from "@itwin/core-common";
-import { IModelApp, RealityDataSource } from "@itwin/core-frontend";
+import { IModelApp, RealityDataSource, Tool } from "@itwin/core-frontend";
 
 class CustomRealityDataSource implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
@@ -19,9 +19,8 @@ class CustomRealityDataSource implements RealityDataSource {
     this._tilesetUrl = this.key.id;
     this._apiKey = apiKey;
 
-    const urlParts = this._tilesetUrl.split("/");
-    urlParts.pop();
-    this._baseUrl = 0 === urlParts.length ? "" : `${urlParts.join("/")}/`;
+    const url = new URL(this._tilesetUrl);
+    this._baseUrl = url.origin;
   }
 
   public get isContextShare() { return false; }
@@ -38,7 +37,7 @@ class CustomRealityDataSource implements RealityDataSource {
   }
 
   private async _getTileContent(name: string, responseType: "json" | "arraybuffer"): Promise<any> {
-    const response = await fetch(`${this._baseUrl}${name}?key=${this._apiKey}`);
+    const response = await fetch(`${this._baseUrl}/${name}?key=${this._apiKey}`);
     return "json" === responseType ? response.json() : response.arrayBuffer();
   }
 
@@ -59,4 +58,30 @@ export function registerRealityDataSourceProvider(apiKey: string): void {
   IModelApp.realityDataSourceProviders.register("DtaRealityDataProvider", {
     createRealityDataSource: async (key) => new CustomRealityDataSource(key, apiKey),
   });
+}
+
+export class AttachCustomRealityDataTool extends Tool {
+  public static override toolId = "AttachCustomRealityData";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
+
+  public override async run(url: string): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      vp.displayStyle.attachRealityModel({
+        tilesetUrl: url,
+        rdSourceKey: {
+          provider: "DtaRealityDataProvider",
+          format: "ThreeDTile",
+          id: url,
+        },
+      });
+    }
+
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    return this.run(args[0]);
+  }
 }

@@ -53,7 +53,7 @@ import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
-import { registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -291,6 +291,7 @@ export class DisplayTestApp {
     [
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
