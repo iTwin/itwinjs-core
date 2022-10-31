@@ -17,7 +17,7 @@ export class MapLayersUiItemsProvider implements UiItemsProvider {
   public constructor(mapLayerOptions?: MapLayerOptions) {
     this._mapLayerOptions = mapLayerOptions ?? {
       hideExternalMapLayers: false,
-      mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: true },
+      mapTypeOptions: { supportTileUrl: false, supportWmsAuthentication: false },
       fetchPublicMapLayerSources: false,
     };
   }

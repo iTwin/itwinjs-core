@@ -38,6 +38,7 @@
     "MissingCredentials": "This layer requires credentials to be provided",
     "Name": "Name",
     "NameInputPlaceHolder": "Enter Map Name",
+    "NoCredentialsSupportLabel": "Server requires credentials but the current configuration does not allow it",
     "RemoveLayerDefButtonTitle": "Delete layer definition",
     "RemoveLayerDefDialogMessage": "Are you sure you want to delete {{layerName}} ?",
     "RemoveLayerDefDialogTitle": "Delete layer definition",

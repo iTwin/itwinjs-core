@@ -85,8 +85,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [externalLoginSucceededMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginSucceeded"));
   const [externalLoginWaitingMsg] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginWaiting"));
   const [externalLoginTryAgainLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.ExternalLoginTryAgain"));
+  const [noCredentialsSupportLabel] = React.useState(MapLayersUI.localization.getLocalizedString("mapLayers:CustomAttach.NoCredentialsSupportLabel"));
+
   const [serverRequireCredentials, setServerRequireCredentials] = React.useState(false);
   const [invalidCredentialsProvided, setInvalidCredentialsProvided] = React.useState(false);
+  const [noCredentialsSupport, setNoCredentialsSupport] = React.useState(false);
   const [layerAttachPending, setLayerAttachPending] = React.useState(false);
   const [layerAuthPending, setLayerAuthPending] = React.useState(false);
   const [mapUrl, setMapUrl] = React.useState(getMapUrlFromProps());
@@ -201,9 +204,16 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
         }
       }
-
     }
-    setServerRequireCredentials(sourceRequireAuth || invalidCredentials);
+    if (sourceRequireAuth || invalidCredentials ) {
+      let reqCredentials = false;
+      if (mapTypesOptions?.supportWmsAuthentication) {
+        reqCredentials = true;
+      } else {
+        setNoCredentialsSupport(true);
+      }
+      setServerRequireCredentials(reqCredentials);
+    }
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
     } else if (invalidCredentialsProvided) {
@@ -211,7 +221,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     return sourceRequireAuth || invalidCredentials;
-  }, [accessClient, invalidCredentialsProvided]);
+  }, [accessClient, invalidCredentialsProvided, mapTypesOptions?.supportWmsAuthentication]);
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
@@ -431,6 +441,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     setShowOauthPopup(false);
     setOAuthProcessSucceeded(undefined);
     setExternalLoginUrl(undefined);
+    setNoCredentialsSupport(false);
 
   }, [mapType]);
 
@@ -539,7 +550,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       warningMessage = externalLoginFailedMsg;
     } else if (oauthProcessSucceeded === true) {
       warningMessage = externalLoginSucceededMsg;
-    }else if (invalidCredentialsProvided) {
+    } else if (noCredentialsSupport) {
+      warningMessage = noCredentialsSupportLabel;
+    } else if (invalidCredentialsProvided) {
       warningMessage = invalidCredentialsLabel;
     } else if (serverRequireCredentials && (!userName || !password))  {
       warningMessage = missingCredentialsLabel;
@@ -603,6 +616,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             <Input className="map-layer-source-input" placeholder={urlInputPlaceHolder} onKeyPress={handleOnKeyDown} onChange={onUrlChange} disabled={props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} value={mapUrl} />
             {serverRequireCredentials
              && externalLoginUrl === undefined  // external login is handled in popup
+             && mapTypesOptions?.supportWmsAuthentication
              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>

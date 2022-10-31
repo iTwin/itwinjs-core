@@ -196,6 +196,76 @@ describe("MapUrlDialog", () => {
     component.unmount();
   });
 
+  it("test credentials fields are displayed, and proper warning message", async () => {
+    const sampleLayerSettings = getSampleLayerSettings("WMS", true);
+    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
+      return Promise.resolve({
+        status: MapLayerSourceStatus.RequireAuth,
+      });
+    });
+
+    const component = enzyme.mount(<MapUrlDialog mapTypesOptions={{supportTileUrl: false, supportWmsAuthentication:true}}isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const layerTypeSelect = component.find(Select);
+    await (layerTypeSelect.props() as any).onChange(sampleLayerSettings.formatId);
+
+    // First, lets fill the 'Name' and 'URL' fields
+    const allInputs = component.find("input");
+    expect(allInputs.length).to.equals(2);
+    allInputs.at(0).simulate("change", { target: { value: sampleLayerSettings?.name } });
+    allInputs.at(1).simulate("change", { target: { value: sampleLayerSettings?.url } });
+
+    // We need to click the 'Ok' button a first time to trigger the layer source
+    // validation and make the credentials fields appear
+    const okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
+
+    await TestUtils.flushAsyncOperations();
+
+    component.update();
+    const spans = component.find("span");
+    expect(spans.containsAllMatchingElements([
+      <span key={0}>mapLayers:CustomAttach.MissingCredentials</span>,
+      <span key={1}>mapLayers:AuthenticationInputs.Username</span>,
+      <span key={2}>mapLayers:AuthenticationInputs.Password</span>,
+    ])).to.equal(true);
+
+  });
+
+  it.only("test credentials fields are displayed, and proper warning message", async () => {
+    const sampleLayerSettings = getSampleLayerSettings("WMS", true);
+    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
+      return Promise.resolve({
+        status: MapLayerSourceStatus.RequireAuth,
+      });
+    });
+
+    const component = enzyme.mount(<MapUrlDialog mapTypesOptions={{supportTileUrl: false, supportWmsAuthentication:false}}isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const layerTypeSelect = component.find(Select);
+    await (layerTypeSelect.props() as any).onChange(sampleLayerSettings.formatId);
+
+    // First, lets fill the 'Name' and 'URL' fields
+    const allInputs = component.find("input");
+    expect(allInputs.length).to.equals(2);
+    allInputs.at(0).simulate("change", { target: { value: sampleLayerSettings?.name } });
+    allInputs.at(1).simulate("change", { target: { value: sampleLayerSettings?.url } });
+
+    // We need to click the 'Ok' button a first time to trigger the layer source
+    // validation and make the credentials fields appear
+    const okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
+
+    await TestUtils.flushAsyncOperations();
+
+    component.update();
+
+    const spans = component.find("span");
+    expect(spans.containsAllMatchingElements([
+      <span key={0}>mapLayers:CustomAttach.NoCredentialsSupportLabel</span>,
+    ])).to.equal(true);
+  });
+
   it("attach a WMS layer requiring basic auth to display style", async () => {
     await testAddAuthLayer(false, "WMS");
   });

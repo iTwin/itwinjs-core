@@ -29,6 +29,13 @@ export interface StyleMapLayerSettings {
 
 export interface MapTypesOptions {
   readonly supportTileUrl: boolean;
+
+  /*  @deprecated
+    Basic authentication is unsecure, and should be avoided.  Keep this to false unless necessary.
+    By your use of this deprecated feature, You are acknowledging and agreeing that (a) Bentley is providing the deprecated feature “AS IS” without warranty;
+    (b) you are not entitled to Bentley support or maintenance of any kind for the deprecated feature; and
+    (c) you hereby release Bentley from any and all claims, causes of action, or damages of any kind, arising from or in connection with the deprecated feature.”
+*/
   readonly supportWmsAuthentication: boolean;
 }
 
