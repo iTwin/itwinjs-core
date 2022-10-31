@@ -6,26 +6,44 @@
  * @module MapLayers
  */
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
-import { RequestBasicCredentials } from "../../request/Request";
+const loggerCategory = "ArcGISFeatureProvider";
 
 /** @beta */
+/** Class representing a map-layer format.
+ * Each format has it's unique 'formatId' string, used to uniquely identify a format in the [[MapLayerFormatRegistry]].
+ * When creating an [[ImageMapLayerSettings]] object, a format needs to be specified this 'formatId'.
+ * The MapLayerFormat object can later be used to validate a source, or create a provider.
+ *
+* Subclasses should override formatId and [[MapLayerFormat.createImageryProvider]].
+ * @beta
+ */
 export class MapLayerFormat {
   public static formatId: string;
+
+  /** Register the current format in the [[MapLayerFormatRegistry]].
+  */
   public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
 
-  /** @internal */
+  /** Allow a source of a specific to be validated before being attached as a map-layer.
+  */
+  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+
+  /** Create a [[MapLayerImageryProvider]] that will be used to feed data in a map-layer tile Tree.
+   * @internal
+  */
   public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+
   /** @internal */
   public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;
   }
-  public static async validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+
 }
 
 /** @beta */
@@ -75,6 +93,9 @@ export class MapLayerFormatRegistry {
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
+
+  public isRegistered(formatId: string) {return this._formats.get(formatId) !== undefined;}
+
   public register(formatClass: MapLayerFormatType, accessClient?: MapLayerAccessClient) {
     if (formatClass.formatId.length === 0)
       return; // must be an abstract class, ignore it
@@ -106,7 +127,11 @@ export class MapLayerFormatRegistry {
   public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
-    return format !== undefined ? (format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference) : undefined;
+    if (format === undefined) {
+      Logger.logError(loggerCategory, `Could not find format '${layerSettings.formatId}' in registry`);
+      return undefined;
+    }
+    return format.createMapLayerTree(layerSettings, layerIndex, iModel) as ImageryMapLayerTreeReference;
   }
 
   /** @internal */
@@ -121,9 +146,9 @@ export class MapLayerFormatRegistry {
     return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
   }
 
-  public async validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const entry = this._formats.get(formatId);
     const format = entry?.type;
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, credentials, ignoreCache);
+    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, userName, password, ignoreCache);
   }
 }
