@@ -74,10 +74,19 @@ stages:
   - stage: ProductTestsDEV
     displayName: Product Tests (DEV)
     dependsOn: DEV
+    variables:
+    - group: Selenium Test Variables
+    - name: env
+      value: Development
+    - name: SeleniumTestUrl
+      value: https://dev.imodeljs.org
     jobs:
-    - template: ./jobs/docs/product-tests.yaml
-      parameters:
-        env: Development
+    - job: ProductTests_Dev
+      pool:
+        name: SecurityScans
+        demands: Agent.OS -equals Windows_NT
+      steps:
+        - template: ./templates/docs-product-test-steps.yaml
 
   - stage: QA
     displayName: Deployment (QA)
@@ -90,10 +99,22 @@ stages:
   - stage: ProductTestsQA
     displayName: Product Tests (QA)
     dependsOn: QA
+    variables:
+    - group: ZapSecurityScan
+    - group: Selenium Test Variables
+    - name: env
+      value: QA
+    - name: SeleniumTestUrl
+      value: https://qa.imodeljs.org
     jobs:
-    - template: ./jobs/docs/product-tests.yaml
+    - template: templates/appsec/security-scans.yaml@build-pipeline-scripts
       parameters:
-        env: QA
+        gprId: $(GprId)
+        shortCode: $(ShortCode)
+        targetUrl: https://qa.imodeljs.org
+        steps: ./templates/docs-product-test-steps.yaml
+        pssFolderName: $(ShortCode)_$(Build.BuildNumber)
+        skipCheckout: true
 
   # - stage: LinkValidatorQA
   #   displayName: Link Validator (QA)

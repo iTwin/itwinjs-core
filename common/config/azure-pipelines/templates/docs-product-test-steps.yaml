@@ -1,0 +1,26 @@
+steps:
+  - download: bemetalsmith-tests
+    artifact: DocsSeleniumTests
+    displayName: Download Selenium Tests
+
+  - powershell: ((Get-Item "C:\Program Files (x86)\Google\Chrome\Application\chrome.exe").VersionInfo)
+    displayName: PowerShell Script
+
+  - task: qetza.replacetokens.replacetokens-task.replacetokens@3
+    displayName: Replace tokens in settings.xml
+    inputs:
+      rootDirectory: $(Pipeline.Workspace)/bemetalsmith-tests/DocsSeleniumTests
+      targetFiles: settings.xml
+      escapeType: none
+
+  - task: VisualStudioTestPlatformInstaller@1
+    displayName: Visual Studio Test Platform Installer
+
+  - task: VSTest@2
+    displayName: Run Selenium Tests
+    inputs:
+      testAssemblyVer2: imodeljs-docs-selenium-tests.dll
+      searchFolder: $(Pipeline.Workspace)/bemetalsmith-tests/DocsSeleniumTests
+      vsTestVersion: toolsInstaller
+      rerunFailedTests: true
+      rerunType: basedOnTestFailureCount
