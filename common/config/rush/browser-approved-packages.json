@@ -971,10 +971,6 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "redux",
       "allowedCategories": [ "frontend", "internal" ]
     },
