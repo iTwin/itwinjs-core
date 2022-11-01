@@ -691,10 +691,11 @@ export namespace RealityModelTileTree {
       if (args) {
         args.graphics.realityModelDisplaySettings = this._getDisplaySettings();
 
-        assert(args.tree instanceof RealityTileTree);
-        const maxSSE = args.tree.loader.maximumScreenSpaceError;
-        if (undefined !== maxSSE)
-          args.maximumScreenSpaceError = maxSSE;
+        if (args.tree instanceof RealityTileTree) {
+          const maxSSE = args.tree.loader.maximumScreenSpaceError;
+          if (undefined !== maxSSE)
+            args.maximumScreenSpaceError = maxSSE;
+        }
       }
 
       return args;
