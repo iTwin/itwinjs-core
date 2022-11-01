@@ -693,7 +693,6 @@ describe("IModelTransformerHub", () => {
       expect(sourceDbChangesets).to.have.length(0);
 
       const elemCount = (db: IModelDb): number => db.withPreparedStatement("SELECT COUNT(*) AS c FROM bis.Element",  (s) => [...s])[0].c;
-      console.log(elemCount(targetDb));
       const targetBeforeSyncElemCount = elemCount(targetDb);
 
       // synchronize

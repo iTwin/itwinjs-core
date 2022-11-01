@@ -550,10 +550,10 @@ export class ChangeSummaryManager {
     range.end = range.end ?? (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.latest() })).index;
     if (range.first > range.end)
       throw new IModelError(IModelStatus.BadArg, "Invalid range of changesets");
+    if (range.first === range.end)
+      return []; // an empty range was specified
 
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId, range });
-    if (changesets.length <= 0)
-      return [];
 
     // Setup a temporary briefcase to help with extracting change summaries
     const briefcasePath = BriefcaseManager.getBriefcaseBasePath(iModelId);
