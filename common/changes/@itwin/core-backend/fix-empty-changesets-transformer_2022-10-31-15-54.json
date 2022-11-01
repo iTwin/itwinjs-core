@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "y",
+      "comment": "return empty change summary array on empty changeset range in ChangeSummaryManager",
       "type": "none"
     }
   ],
