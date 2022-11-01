@@ -1149,15 +1149,20 @@ export class Matrix3d implements BeJSONFunctions {
     if (det < 0)
         scale.z = - scale.z;
 
+    const almostZero = 1.0e-15;
+    const scaleXIsZero = Math.abs(scale.x) < almostZero;
+    const scaleYIsZero = Math.abs(scale.y) < almostZero;
+    const scaleZIsZero = Math.abs(scale.z) < almostZero;
+
     // ASSUME: any zero-magnitude column(s) of matrixVD are last
-    if (scale.x !== 0 && scale.y !== 0 && scale.z !== 0) { // full rank
+    if (!scaleXIsZero && !scaleYIsZero && !scaleZIsZero) { // full rank
       matrixV = matrixVD.scaleColumns(1 / scale.x, 1 / scale.y, 1 / scale.z, matrixV);
-    } else if (scale.x !== 0 && scale.y !== 0) { // rank 2
-      column[0].scale(1 / scale.x);
-      column[1].scale(1 / scale.y);
+    } else if (!scaleXIsZero && !scaleYIsZero) { // rank 2
+      column[0].scaleInPlace(1 / scale.x);
+      column[1].scaleInPlace(1 / scale.y);
       column[2] = column[0].unitCrossProduct(column[1], column[2])!;
       matrixV.setColumns(column[0], column[1], column[2]);
-    } else if (scale.x !== 0) { // rank 1
+    } else if (!scaleXIsZero) { // rank 1
       matrixV = Matrix3d.createRigidHeadsUp(column[0], AxisOrder.XYZ, matrixV); // preserve column0
     } else { // rank 0
       matrixV.setIdentity();
