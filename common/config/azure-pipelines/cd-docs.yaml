@@ -74,17 +74,17 @@ stages:
   - stage: ProductTestsDEV
     displayName: Product Tests (DEV)
     dependsOn: DEV
-    variables:
-    - group: Selenium Test Variables
-    - name: env
-      value: Development
-    - name: SeleniumTestUrl
-      value: https://dev.imodeljs.org
     jobs:
     - job: ProductTests_Dev
       pool:
         name: SecurityScans
         demands: Agent.OS -equals Windows_NT
+      variables:
+      - group: Selenium Test Variables
+      - name: env
+        value: Development
+      - name: SeleniumTestUrl
+        value: https://dev.imodeljs.org
       steps:
         - template: ./templates/docs-product-test-steps.yaml
 
@@ -99,20 +99,21 @@ stages:
   - stage: ProductTestsQA
     displayName: Product Tests (QA)
     dependsOn: QA
-    variables:
-    - group: ZapSecurityScan
-    - group: Selenium Test Variables
-    - name: env
-      value: QA
-    - name: SeleniumTestUrl
-      value: https://qa.imodeljs.org
     jobs:
     - template: templates/appsec/security-scans.yaml@build-pipeline-scripts
       parameters:
         gprId: $(GprId)
         shortCode: $(ShortCode)
         targetUrl: https://qa.imodeljs.org
-        steps: ./templates/docs-product-test-steps.yaml
+        steps:
+          - template: ./templates/docs-product-test-steps.yaml
+        variables:
+        - group: ZapSecurityScan
+        - group: Selenium Test Variables
+        - name: env
+          value: QA
+        - name: SeleniumTestUrl
+          value: https://qa.imodeljs.org
         pssFolderName: $(ShortCode)_$(Build.BuildNumber)
         skipCheckout: true
 
