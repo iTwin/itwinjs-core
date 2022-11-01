@@ -49,10 +49,9 @@ jobs:
       customCommand: run deleteOldDocsIndex
       workingDir: $(bemetalsmithAlgoliaDir)
 
-
   - task: Npm@1
-    displayName: npm run uploadNewDocsIndex
+    displayName: npm run uploadDocsIndex
     inputs:
       command: custom
-      customCommand: run uploadNewDocsIndex
+      customCommand: run uploadDocsIndex
       workingDir: $(bemetalsmithAlgoliaDir)
