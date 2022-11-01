@@ -23,14 +23,6 @@ jobs:
       filePattern: algolia.json
       secretTokens: AlgoliaApiKey:$(AlgoliaApiKey)
 
-  # - task: qetza.replacetokens.replacetokens-task.replacetokens@3
-  #   displayName: Replace tokens in algolia.json
-  #   inputs:
-  #     targetFiles: $(bemetalsmithAlgoliaDir)/algolia.json
-  #     tokenPattern: custom
-  #     tokenPrefix: __
-  #     tokenSuffix: __
-
   - task: NodeTool@0
     displayName: Use node 12.15.x
     inputs:
