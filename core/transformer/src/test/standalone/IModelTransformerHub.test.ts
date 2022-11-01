@@ -676,48 +676,6 @@ describe("IModelTransformerHub", () => {
     }
   });
 
-  it.only("process empty changeset list", async () => {
-    const sourceIModelName = "EmptyListSource";
-    const sourceIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: sourceIModelName, noLocks: true });
-    assert.isTrue(Guid.isGuid(sourceIModelId));
-    let targetIModelId!: GuidString;
-
-    try {
-      const sourceDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: sourceIModelId });
-      const targetIModelName = "EmptyListTarget";
-      targetIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: targetIModelName, noLocks: true, version0: sourceDb.pathName });
-      assert.isTrue(Guid.isGuid(targetIModelId));
-      const targetDb = await HubWrappers.downloadAndOpenBriefcase({ accessToken, iTwinId, iModelId: targetIModelId });
-
-      const sourceDbChangesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId: sourceIModelId, targetDir: BriefcaseManager.getChangeSetsPath(sourceIModelId) });
-      expect(sourceDbChangesets).to.have.length(0);
-
-      const elemCount = (db: IModelDb): number => db.withPreparedStatement("SELECT COUNT(*) AS c FROM bis.Element",  (s) => [...s])[0].c;
-      const targetBeforeSyncElemCount = elemCount(targetDb);
-
-      // synchronize
-      const synchronizer = new IModelTransformer(sourceDb, targetDb);
-      await synchronizer.processChanges(accessToken);
-      synchronizer.dispose();
-      targetDb.saveChanges();
-
-      const targetAfterSyncElemCount = elemCount(targetDb);
-      expect(targetBeforeSyncElemCount).to.equal(targetAfterSyncElemCount);
-
-      // close iModel briefcases
-      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, sourceDb);
-      await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, targetDb);
-    } finally {
-      try {
-        // delete iModel briefcases
-        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
-        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
-      } catch (err) {
-        assert.fail(err, undefined, "failed to clean up");
-      }
-    }
-  });
-
   it("should delete branch-deleted elements in reverse synchronization", async () => {
     const masterIModelName = "ReSyncDeleteMaster";
     const masterIModelId = await HubWrappers.recreateIModel({ accessToken, iTwinId, iModelName: masterIModelName, noLocks: true });
