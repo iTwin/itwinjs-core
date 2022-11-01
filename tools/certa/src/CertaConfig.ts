@@ -136,9 +136,13 @@ export namespace CertaConfig {
    */
   function resolvePaths(baseDir: string, opts: PartialCertaConfig): void {
     for (const propPath of _filePathOpts) {
-      const relativeFilePath: string | undefined = lodash.get(opts, propPath);
-      if (relativeFilePath)
-        lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
+      const relativeFilePath = lodash.get(opts, propPath);
+      if (relativeFilePath) {
+        if (Array.isArray(relativeFilePath))
+          lodash.set(opts, propPath, relativeFilePath.map((p) => path.resolve(baseDir, p)));
+        else
+          lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
+      }
     }
   }
 
