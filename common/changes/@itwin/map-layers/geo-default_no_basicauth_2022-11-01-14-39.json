@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/map-layers",
-      "comment": "Changed the default bahavior of MapLayers Widget, WMS basic authentifcation and ESRI legacy token are now disabled by default.",
+      "comment": "Changed the default behavior of MapLayers widget, WMS basic authentication and ESRI legacy token are now disabled by default",
       "type": "none"
     }
   ],
