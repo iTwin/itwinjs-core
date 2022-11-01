@@ -117,18 +117,18 @@ stages:
   #       pssFolderName: $(ShortCode)_$(Build.BuildNumber)
   #       skipCheckout: true
 
-  - stage: LinkValidatorQA
-    displayName: Link Validator (QA)
-    # dependsOn: QA
-    jobs:
-    - template: ./jobs/docs/validate-links.yaml
-      parameters:
-        env: QA
+  # - stage: LinkValidatorQA
+  #   displayName: Link Validator (QA)
+  #   # dependsOn: QA
+  #   jobs:
+  #   - template: ./jobs/docs/validate-links.yaml
+  #     parameters:
+  #       env: QA
 
   - stage: UpdateDocumentationIndexQA
     displayName: Update Documentation Index (QA)
     # dependsOn: QA
-    dependsOn: []
+    # dependsOn: []
     jobs:
     - template: ./jobs/docs/update-docs-index.yaml
       parameters:

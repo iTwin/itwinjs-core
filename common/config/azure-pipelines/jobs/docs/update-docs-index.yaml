@@ -8,8 +8,9 @@ jobs:
 
 
   variables:
-    group: ${{ parameters.variableGroup }}
-    bemetalsmithAlgoliaDir: $(Pipeline.Workspace)/bemetalsmith/packages/bemetalsmith-algolia/
+  - group: ${{ parameters.variableGroup }}
+  - name: bemetalsmithAlgoliaDir
+    value: $(Pipeline.Workspace)/bemetalsmith/packages/bemetalsmith-algolia/
 
   steps:
   - checkout: bemetalsmith
