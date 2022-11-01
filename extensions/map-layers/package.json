@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers",
-  "version": "3.5.0-dev.32",
+  "version": "3.5.0-dev.33",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/cjs/map-layers.js",
   "module": "lib/esm/map-layers.js",
@@ -85,21 +85,22 @@
     "typescript": "~4.4.0"
   },
   "dependencies": {
+    "@itwin/itwinui-icons-color-react": "~1.0.3",
     "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^3.5.0-dev.32",
-    "@itwin/core-geometry": "workspace:^3.5.0-dev.32",
-    "@itwin/core-common": "workspace:^3.5.0-dev.32",
-    "@itwin/core-frontend": "workspace:^3.5.0-dev.32",
-    "@itwin/core-quantity": "workspace:^3.5.0-dev.32",
-    "@itwin/appui-abstract": "workspace:^3.5.0-dev.32",
-    "@itwin/components-react": "workspace:^3.5.0-dev.32",
-    "@itwin/core-react": "workspace:^3.5.0-dev.32",
-    "@itwin/appui-react": "workspace:^3.5.0-dev.32",
-    "@itwin/imodel-components-react": "workspace:^3.5.0-dev.32",
-    "@itwin/appui-layout-react": "workspace:^3.5.0-dev.32",
+    "@itwin/core-bentley": "workspace:^3.5.0-dev.33",
+    "@itwin/core-geometry": "workspace:^3.5.0-dev.33",
+    "@itwin/core-common": "workspace:^3.5.0-dev.33",
+    "@itwin/core-frontend": "workspace:^3.5.0-dev.33",
+    "@itwin/core-quantity": "workspace:^3.5.0-dev.33",
+    "@itwin/appui-abstract": "workspace:^3.5.0-dev.33",
+    "@itwin/components-react": "workspace:^3.5.0-dev.33",
+    "@itwin/core-react": "workspace:^3.5.0-dev.33",
+    "@itwin/appui-react": "workspace:^3.5.0-dev.33",
+    "@itwin/imodel-components-react": "workspace:^3.5.0-dev.33",
+    "@itwin/appui-layout-react": "workspace:^3.5.0-dev.33",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
