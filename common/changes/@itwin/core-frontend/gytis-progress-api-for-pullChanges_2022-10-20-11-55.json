@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Fall back to requesting a tile from the backend when a request to cloud storage throws a 404 error.",
+      "comment": "Support for reporting progress and cancelling 'BriefcaseConnection.pullChanges'.",
       "type": "none"
     }
   ],

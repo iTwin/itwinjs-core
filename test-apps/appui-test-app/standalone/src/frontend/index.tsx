@@ -46,6 +46,7 @@ import {
   FloatingWidgetsUiItemsProvider, InspectUiItemInfoToolProvider, WidgetApiStage,
 } from "@itwin/appui-test-providers";
 import { useHandleURLParams } from "./UrlParams";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -215,6 +216,7 @@ export class SampleAppIModelApp {
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
