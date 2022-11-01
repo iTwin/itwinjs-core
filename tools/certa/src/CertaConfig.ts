@@ -138,7 +138,7 @@ export namespace CertaConfig {
     for (const propPath of _filePathOpts) {
       const relativeFilePath = lodash.get(opts, propPath);
       if (relativeFilePath)
-          lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
+        lodash.set(opts, propPath, path.resolve(baseDir, relativeFilePath));
     }
   }
 
