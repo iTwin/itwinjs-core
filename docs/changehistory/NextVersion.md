@@ -18,6 +18,8 @@ Table of contents:
 - [Deprecations](#deprecations)
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-transformer](#itwincore-transformer)
+- [New packages](#new-packages)
+  - [@itwin/map-layers-formats](#map-layers-formats)
 
 ## Display system
 
@@ -124,6 +126,15 @@ the ids returned are not unique from all element ids and may collide.
 ### Setting allowed panel zones for widgets
 
 When defining a Widget with AbstractWidgetProperties, you can now specify on which sides of the ContentArea the it can be docked. The optional prop allowedPanelTargets is an array of any of the following: "left", "right", "top", "bottom". By default, all regions are allowed. You must specify at least one allowed target in the array.
+
+
+## New packages
+
+### @itwin/map-layers-formats
+
+A new `@itwin/map-layers-formats` package has been introduced to provide additional [MapLayerFormat]($frontend)s not delivered as part of `@itwin/core-frontend`. The initial release contains the new `ArgGISFeature` format which allows vector data published by [ArcGIS Feature services](https://enterprise.arcgis.com/en/server/latest/publish-services/windows/what-is-a-feature-service-.htm) to be displayed in a [Viewport]($frontend).
+
+To use this package, you must initialize it by calling [MapLayersFormats.initialize]($map-layers-formats) to register the additional formats. This should be done only **after** [IModelApp.startup]($frontend) has been called.
 
 ## Geometry
 

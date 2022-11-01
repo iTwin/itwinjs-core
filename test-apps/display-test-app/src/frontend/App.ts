@@ -53,7 +53,11 @@ import { MacroTool } from "./MacroTools";
 import { TerrainDrapeTool } from "./TerrainDrapeTool";
 import { SaveImageTool } from "./SaveImageTool";
 import { BingTerrainMeshProvider } from "./BingTerrainProvider";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/lib/cjs/ElectronRenderer";
+import { ITwinLocalization } from "@itwin/core-i18n";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -244,11 +248,16 @@ export class DisplayTestApp {
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
-          MapboxImagery: configuration.mapBoxKey ? { key: "access_token", value: configuration.mapBoxKey } : undefined,
-          BingMaps: configuration.bingMapsKey ? { key: "key", value: configuration.bingMapsKey } : undefined,
+          MapboxImagery: configuration.mapBoxKey
+            ? { key: "access_token", value: configuration.mapBoxKey }
+            : undefined,
+          BingMaps: configuration.bingMapsKey
+            ? { key: "key", value: configuration.bingMapsKey }
+            : undefined,
         },
         /* eslint-enable @typescript-eslint/naming-convention */
         hubAccess: createHubAccess(configuration),
+        localization: new ITwinLocalization({ detectorOptions: { order: ["navigator"]}}),
       },
       localhostIpcApp: {
         socketUrl,
@@ -258,6 +267,7 @@ export class DisplayTestApp {
     this._iTwinId = configuration.iTwinId;
 
     if (ProcessDetector.isElectronAppFrontend) {
+      opts.iModelApp!.authorizationClient = new ElectronRendererAuthorization();
       await ElectronApp.startup(opts);
     } else if (ProcessDetector.isMobileAppFrontend) {
       await MobileApp.startup(opts as MobileAppOpts);
@@ -282,6 +292,7 @@ export class DisplayTestApp {
     [
       ApplyModelDisplayScaleTool,
       ApplyModelTransformTool,
+      AttachCustomRealityDataTool,
       ChangeGridSettingsTool,
       CloneViewportTool,
       CloseIModelTool,
@@ -334,9 +345,14 @@ export class DisplayTestApp {
 
     BingTerrainMeshProvider.register();
 
+    const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
+    if (realityApiKey)
+      registerRealityDataSourceProvider(realityApiKey);
+
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
     await EditTools.initialize({ registerAllTools: true });
+    MapLayersFormats.initialize();
   }
 
   public static setActiveSnapModes(snaps: SnapMode[]): void {

@@ -37,6 +37,7 @@ import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { DefaultMapFeatureInfoTool, MapLayersUI } from "@itwin/map-layers";
 import { ArcGisAccessClient } from "@itwin/map-layers-auth";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { ArcGisOauthRedirect } from "./appui/ArcGisOauthRedirect";
 import { SchemaUnitProvider } from "@itwin/ecschema-metadata";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes, Presentation } from "@itwin/presentation-frontend";
@@ -333,7 +334,8 @@ export class SampleAppIModelApp {
 
     await FrontendDevTools.initialize();
     await HyperModeling.initialize();
-    await MapLayersUI.initialize({ featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    await MapLayersUI.initialize({ iTwinConfig: new MichelTestPrefs(), featureInfoOpts: { onMapHit: DefaultMapFeatureInfoTool.onMapHit } });
+    MapLayersFormats.initialize();
 
     AppSettingsTabsProvider.initializeAppSettingProvider();
 
@@ -371,6 +373,7 @@ export class SampleAppIModelApp {
     });
 
     IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGIS", accessClient);
+    IModelApp.mapLayerFormatRegistry.setAccessClient("ArcGISFeature", accessClient);
     assert(initStatus === true);
 
     // try starting up event loop if not yet started so key-in palette can be opened

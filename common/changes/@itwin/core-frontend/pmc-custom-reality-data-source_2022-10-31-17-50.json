@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Add functions to obtain the extents of geometric models asynchronously on the backend.",
+      "comment": "Add preliminary alpha support for custom reality data providers.",
       "type": "none"
     }
   ],
