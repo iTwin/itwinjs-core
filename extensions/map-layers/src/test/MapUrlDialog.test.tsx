@@ -60,7 +60,7 @@ describe("MapUrlDialog", () => {
       });
     });
 
-    const component = enzyme.mount(<MapUrlDialog isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const component = enzyme.mount(<MapUrlDialog mapTypesOptions={{supportTileUrl: false, supportWmsAuthentication:true}} isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
     const layerTypeSelect = component.find(Select);
     await (layerTypeSelect.props() as any).onChange(format);
 
@@ -196,7 +196,7 @@ describe("MapUrlDialog", () => {
     component.unmount();
   });
 
-  it("test credentials fields are displayed, and proper warning message", async () => {
+  it("test credentials fields and warning message are displayed", async () => {
     const sampleLayerSettings = getSampleLayerSettings("WMS", true);
     sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
       return Promise.resolve({
@@ -204,7 +204,7 @@ describe("MapUrlDialog", () => {
       });
     });
 
-    const component = enzyme.mount(<MapUrlDialog mapTypesOptions={{supportTileUrl: false, supportWmsAuthentication:true}}isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const component = enzyme.mount(<MapUrlDialog mapTypesOptions={{supportTileUrl: false, supportWmsAuthentication:true}} isOverlay={false} activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
     const layerTypeSelect = component.find(Select);
     await (layerTypeSelect.props() as any).onChange(sampleLayerSettings.formatId);
 
@@ -232,7 +232,7 @@ describe("MapUrlDialog", () => {
 
   });
 
-  it.only("test credentials fields are displayed, and proper warning message", async () => {
+  it("test credentials fields are displayed, and proper warning message displayed", async () => {
     const sampleLayerSettings = getSampleLayerSettings("WMS", true);
     sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
       return Promise.resolve({
@@ -264,6 +264,11 @@ describe("MapUrlDialog", () => {
     expect(spans.containsAllMatchingElements([
       <span key={0}>mapLayers:CustomAttach.NoCredentialsSupportLabel</span>,
     ])).to.equal(true);
+
+    expect(spans.containsAnyMatchingElements([
+      <span key={0}>mapLayers:AuthenticationInputs.Username</span>,
+      <span key={1}>mapLayers:AuthenticationInputs.Password</span>,
+    ])).to.equal(false);
   });
 
   it("attach a WMS layer requiring basic auth to display style", async () => {
