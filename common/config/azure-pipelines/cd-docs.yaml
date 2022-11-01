@@ -128,6 +128,7 @@ stages:
   - stage: UpdateDocumentationIndexQA
     displayName: Update Documentation Index (QA)
     # dependsOn: QA
+    dependsOn: []
     jobs:
     - template: ./jobs/docs/update-docs-index.yaml
       parameters:

@@ -24,5 +24,5 @@ jobs:
     displayName: 'Link Validator'
     inputs:
       command: run
-      arguments: --rm ghcr.io/linkchecker/linkchecker:latest --no-robots --check-extern --no-status $(DocsUrl)
+      arguments: --rm ghcr.io/linkchecker/linkchecker:latest --no-robots --check-extern --no-status --ignore-url=/v1 --ignore-url=/v2 $(DocsUrl)
       addPipelineData: false
