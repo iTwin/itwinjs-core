@@ -34,6 +34,7 @@ import { SweepContour } from "../../solid/SweepContour";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
+import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 /* eslint-disable no-console */
 let outputFolderPath = "./src/test/output";
@@ -223,6 +224,7 @@ describe("Solids", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+
   it("TransformedSpheres", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -241,6 +243,15 @@ describe("Solids", () => {
       x0 += 5.0 * radius;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("RoundTrippedEllipsoids", () => {
+    const ck = new Checker();
+    const origin = Point3d.createZero();
+    const radii = Point3d.create(1, 3, 4);
+    const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
+    testGeometryQueryRoundTrip(ck, ellipsoid);
     expect(ck.getNumErrors()).equals(0);
   });
 
