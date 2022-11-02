@@ -78,9 +78,15 @@ steps:
     displayName: "Run Presentation Full Stack Tests"
     condition: succeededOrFailed()
 
-  - script: npm run test:integration
+  # By default linux agents do not have a real display so use the virtual framebuffer
+  - script: xvfb-run --auto-servernum --server-args='-screen 0, 1600x900x24' npm run test:integration:frontend:ci
     workingDirectory: "core/electron"
-    displayName: "Run Electron Tests"
+    displayName: "Run Electron Frontend Tests"
+    condition: succeededOrFailed()
+
+  - script: npm run test:integration:backend
+    workingDirectory: "core/electron"
+    displayName: "Run Electron Backend Tests"
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
@@ -127,8 +133,8 @@ steps:
     condition: succeededOrFailed()
 
   - task: PublishTestResults@2
-    displayName: "Publish Electron Integration Test Results"
+    displayName: "Publish Electron Test Results"
     inputs:
-      testResultsFiles: core/electron/lib/test/junit_results.xml
-      testRunTitle: "Electron - Integration Tests - ${{ parameters.Node_Version }}"
+      testResultsFiles: core/electron/lib/test/*_junit_results.xml
+      testRunTitle: "Core - Electron Tests - ${{ parameters.Node_Version }}"
     condition: succeededOrFailed()

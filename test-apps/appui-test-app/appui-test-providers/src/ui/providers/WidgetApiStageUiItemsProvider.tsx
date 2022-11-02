@@ -10,7 +10,7 @@ import {
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@itwin/appui-abstract";
 import { ToolbarHelper } from "@itwin/appui-react";
-import { getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
+import { getShowHideFloatingWidgetCommandItemDef, getToggleCustomOverlayCommandItemDef, WidgetApiStage } from "../frontstages/WidgetApiStage";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 import { AppUiTestProviders } from "../../AppUiTestProviders";
 import { SetWidgetStateTool } from "../../tools/UiLayoutTools";
@@ -229,6 +229,7 @@ export class WidgetApiStageUiItemsProvider implements UiItemsProvider {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         const items: CommonToolbarItem[] = [];
         items.push(ToolbarHelper.createToolbarItemFromItemDef(17, getToggleCustomOverlayCommandItemDef(), { groupPriority: 3000 }));
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(18, getShowHideFloatingWidgetCommandItemDef(), { groupPriority: 3000 }));
         return items;
       }
     }
