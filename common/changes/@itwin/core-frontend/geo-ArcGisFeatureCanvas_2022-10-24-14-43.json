@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "ArcGIS tilemap requests were missing oauth2 token if available.",
+      "comment": "",
       "type": "none"
     }
   ],

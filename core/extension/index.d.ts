@@ -256,6 +256,7 @@ export type {
 	MarkerTextBaseline,
 	OnViewExtentsError,
 	OsmBuildingDisplayOptions,
+	PaddingPercent,
 	ParseKeyinError,
 	ParseKeyinResult,
 	ParsedKeyin,

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "Return a pending response from calls to IModelReadRpcInterface.getCustomViewState3dData if they take too long.",
+      "comment": "Expose Progress API for changeset(s) download in higher levels (BriefcaseManager, IpcAppHandler, etc.)",
       "type": "none"
     }
   ],
