@@ -3266,6 +3266,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
     static fromJSON(json?: any): LineString3d;
     getIndexedSegment(index: number): LineSegment3d | undefined;
+    globalFractionToSegmentIndexAndLocalFraction(globalFraction: number): {
+        index: number;
+        fraction: number;
+    };
     isAlmostEqual(other: GeometryQuery): boolean;
     get isExtensibleFractionSpace(): boolean;
     isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
