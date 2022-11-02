@@ -12,26 +12,58 @@ export interface BrowserFileSelector {
   directory: string;
 }
 
-async function sendMessageToMobile(handlerName: string): Promise<string | undefined> {
-  const anyWindow = (window as any);
-  const messageHandlers = anyWindow.webkit?.messageHandlers;
-  if (!messageHandlers)
-    return undefined;
+export class Messenger {
+  private static _anyWindow: any = window;
 
-  const handler = messageHandlers[handlerName];
-  if (handler) {
-    // formulate unique name for the resolver and pass it to the native code as a parameter
-    const promiseName = `DTA_${handlerName}Resolver`;
+  public static getHandler(handlerName: string): ((data: string) => any) | undefined {
+    const messageHandlers = ProcessDetector.isIOSAppFrontend ? this._anyWindow.webkit?.messageHandlers : this._anyWindow.DTA_Android;
+    if (!messageHandlers) {
+      console.log("No message handler found for this platform!"); // eslint-disable-line no-console
+      return undefined;
+    }
+
+    const handler = messageHandlers[handlerName];
+    if (!handler) {
+      console.log(`No message handler found with name: ${handlerName}!`); // eslint-disable-line no-console
+      return undefined;
+    }
+
+    if (ProcessDetector.isIOSAppFrontend) {
+      return handler.postMessage;
+    } else {
+      return (data: string) => {
+        // Calling handler(data) here doesn't work for some reason, gives this error: "Java bridge method can't be invoked on a non-injected object"
+        this._anyWindow.DTA_Android[handlerName](data);
+      };
+    }
+  }
+
+  public static postMessageToMobile(handlerName: string, data: string): boolean {
+    const handler = this.getHandler(handlerName);
+    if (!handler)
+      return false;
+    handler(data);
+    return true;
+  }
+
+  public static async sendMessageToMobile(handlerName: string): Promise<string | undefined> {
+    const handler = this.getHandler(handlerName);
+    if (!handler)
+      return undefined;
+
+    // formulate unique name for the promise resolver and pass it to the native code as a parameter
+    const resolverName = `DTA_${handlerName}Resolver`;
+
     // create a promise that will be resolved by native code (via js injection)
     const messageResponse = new Promise<string | undefined>((resolve) => {
-      anyWindow[promiseName] = resolve;
+      this._anyWindow[resolverName] = resolve;
     });
-    handler.postMessage(promiseName);
+
+    handler(resolverName);
     const result = await messageResponse;
-    delete anyWindow[promiseName];
+    delete this._anyWindow[resolverName];
     return null !== result ? result : undefined;
   }
-  return undefined;
 }
 
 export async function selectFileName(selector: BrowserFileSelector | undefined): Promise<string | undefined> {
@@ -47,8 +79,8 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
   }
 
   if (ProcessDetector.isMobileAppFrontend) {
-    // send message to native code to open a model (iOS/webkit only for now)
-    const filename = await sendMessageToMobile("openModel");
+    // send message to native code to open a model
+    const filename = await Messenger.sendMessageToMobile("openModel");
     return filename;
   }
 
