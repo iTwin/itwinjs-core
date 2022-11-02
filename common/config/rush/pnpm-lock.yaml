@@ -197,7 +197,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ~0.8.3
+      '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -223,7 +223,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.8.3
+      '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -247,7 +247,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ~0.8.3
+      '@xmldom/xmldom': ~0.8.5
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -259,7 +259,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.4.0
     dependencies:
-      '@xmldom/xmldom': 0.8.3
+      '@xmldom/xmldom': 0.8.5
       fs-extra: 8.1.0
       glob: 7.2.3
     devDependencies:
@@ -296,7 +296,7 @@ importers:
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
       '@types/sinon': ^9.0.0
-      '@xmldom/xmldom': ~0.8.3
+      '@xmldom/xmldom': ~0.8.5
       almost-equal: ^1.1.0
       benchmark: ^2.1.4
       chai: ^4.1.2
@@ -323,7 +323,7 @@ importers:
       '@types/mocha': 8.2.3
       '@types/node': 18.11.5
       '@types/sinon': 9.0.11
-      '@xmldom/xmldom': 0.8.3
+      '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
       chai: 4.3.6
       chai-as-promised: 7.1.1_chai@4.3.6
@@ -1358,7 +1358,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
-      '@xmldom/xmldom': ~0.8.3
+      '@xmldom/xmldom': ~0.8.5
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx2: ^3.0.0
@@ -1378,7 +1378,7 @@ importers:
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
       '@itwin/projects-client': 0.6.0
       '@itwin/service-authorization': 0.6.2
-      '@xmldom/xmldom': 0.8.3
+      '@xmldom/xmldom': 0.8.5
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
@@ -4055,7 +4055,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 18.11.5
-      '@xmldom/xmldom': ~0.8.3
+      '@xmldom/xmldom': ~0.8.5
       chai: ^4.1.2
       chai-string: ^1.5.0
       chalk: ^3.0.0
@@ -4075,7 +4075,7 @@ importers:
       '@itwin/core-geometry': link:../../core/geometry
       '@itwin/ecschema-locaters': link:../../core/ecschema-locaters
       '@itwin/ecschema-metadata': link:../../core/ecschema-metadata
-      '@xmldom/xmldom': 0.8.3
+      '@xmldom/xmldom': 0.8.5
       chai-string: 1.5.0_chai@4.3.6
       chalk: 3.0.0
       commander: 2.20.3
@@ -10006,8 +10006,8 @@ packages:
       react: 17.0.2
     dev: true
 
-  /@xmldom/xmldom/0.8.3:
-    resolution: {integrity: sha512-Lv2vySXypg4nfa51LY1nU8yDAGo/5YwF+EY/rUZgIbfvwVARcd67ttCM8SMsTeJy51YhHYavEq+FS6R0hW9PFQ==}
+  /@xmldom/xmldom/0.8.5:
+    resolution: {integrity: sha512-0dpjDLeCXYThL2YhqZcd/spuwoH+dmnFoND9ZxZkAYxp1IJUB2GP16ow2MJRsjVxy8j1Qv8BJRmN5GKnbDKCmQ==}
     engines: {node: '>=10.0.0'}
 
   /@xtuc/ieee754/1.2.0:

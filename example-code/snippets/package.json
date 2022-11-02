@@ -28,7 +28,7 @@
     "@itwin/projects-client": "^0.6.0",
     "@itwin/service-authorization": "^0.6.1",
     "fs-extra": "^8.1.0",
-    "@xmldom/xmldom": "~0.8.3"
+    "@xmldom/xmldom": "~0.8.5"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
