@@ -152,7 +152,7 @@ export namespace Atmosphere {
       this.numOpticalDepthPoints = JsonUtils.asDouble(json.numOpticalDepthPoints, Settings._defaultNumOpticalDepthPoints);
       this.outScatteringIntensity = JsonUtils.asDouble(json.outScatteringIntensity, Settings._defaultOutScatteringIntensity);
       this.scatteringStrength = JsonUtils.asDouble(json.scatteringStrength, Settings._defaultScatteringStrength);
-      this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths)) ?? Settings._defaultWavelengths;
+      this.wavelengths = Wavelengths.fromJSON(JsonUtils.asObject(json.wavelengths) ?? Settings._defaultWavelengths);
     }
 
     public static fromJSON(json?: Props) {
