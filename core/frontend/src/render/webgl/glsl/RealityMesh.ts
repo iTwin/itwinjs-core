@@ -240,10 +240,6 @@ export function addColorOverrideMix(frag: ShaderBuilder) {
   });
 }
 
-function addAtmosphericScatteringToRealityMesh(builder: ProgramBuilder) {
-  addAtmosphericScatteringEffect(builder, false);
-}
-
 function createRealityMeshHiliterBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(TechniqueId.RealityMesh, false));
   const vert = builder.vert;
@@ -343,7 +339,7 @@ export function createRealityMeshBuilder(flags: TechniqueFlags): ProgramBuilder 
   if (flags.isWiremesh)
     addWiremesh(builder);
 
-  addAtmosphericScatteringToRealityMesh(builder);
+  addAtmosphericScatteringEffect(builder, false);
 
   return builder;
 }

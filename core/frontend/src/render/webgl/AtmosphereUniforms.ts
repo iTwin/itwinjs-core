@@ -55,7 +55,7 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
 
     this._updateIsEnabled(target.wantAtmosphere);
 
-    if (!this.atmosphere) {
+    if (!this.atmosphere || !plan.ellipsoid) {
       return;
     }
 
@@ -63,12 +63,12 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     this._updateAtmosphereScaleMatrix(this.atmosphere.atmosphereHeightAboveEarth);
     this._updateBrightnessAdaptationStrength(this.atmosphere.brightnessAdaptationStrength);
     this._updateDensityFalloff(this.atmosphere.densityFalloff);
-    this._updateEarthCenter(plan.ellipsoid!.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
-    this._updateEarthScaleMatrix(plan.ellipsoid!.ellipsoidRadii);
-    this._updateEllipsoidRotationMatrix(plan.ellipsoid!.ellipsoidRotation);
+    this._updateEarthCenter(plan.ellipsoid.ellipsoidCenter, target.uniforms.frustum.viewMatrix);
+    this._updateEarthScaleMatrix(plan.ellipsoid.ellipsoidRadii);
+    this._updateEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation);
     this._updateEllipsoidToEye();
     this._updateInScatteringIntensity(this.atmosphere.inScatteringIntensity);
-    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid!.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
+    this._updateInverseEllipsoidRotationMatrix(plan.ellipsoid.ellipsoidRotation, target.uniforms.frustum.viewMatrix.matrix);
     this._updateIsCameraEnabled(target.uniforms.frustum.type);
     this._updateMinDensityScaleMatrix(this.atmosphere.minDensityHeightBelowEarth);
     this._updateMinDensityToAtmosphereScaleFactor(this.atmosphere.atmosphereHeightAboveEarth, this.atmosphere.minDensityHeightBelowEarth);
