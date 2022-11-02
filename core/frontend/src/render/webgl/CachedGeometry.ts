@@ -807,7 +807,7 @@ export class EDLSimpleGeometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
-export class EDLCalcAdv1Geometry extends TexturedViewportQuadGeometry {
+export class EDLCalcEnhGeometry extends TexturedViewportQuadGeometry {
   public readonly texInfo = new Float32Array(3);
 
   public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, width: number, height: number) {
@@ -815,7 +815,7 @@ export class EDLCalcAdv1Geometry extends TexturedViewportQuadGeometry {
     if (undefined === params)
       return undefined;
 
-    return new EDLCalcAdv1Geometry(params, [colorBuffer, depthBuffer], width, height);
+    return new EDLCalcEnhGeometry(params, [colorBuffer, depthBuffer], width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }
@@ -830,7 +830,7 @@ export class EDLCalcAdv1Geometry extends TexturedViewportQuadGeometry {
 }
 
 /** @internal */
-export class EDLCalcAdv2Geometry extends TexturedViewportQuadGeometry {
+export class EDLCalcFullGeometry extends TexturedViewportQuadGeometry {
   public readonly texInfo = new Float32Array(3);
 
   public static createGeometry(colorBuffer: WebGLTexture, depthBuffer: WebGLTexture, scale: number, width: number, height: number) {
@@ -838,7 +838,7 @@ export class EDLCalcAdv2Geometry extends TexturedViewportQuadGeometry {
     if (undefined === params)
       return undefined;
 
-    return new EDLCalcAdv2Geometry(params, [colorBuffer, depthBuffer], scale, width, height);
+    return new EDLCalcFullGeometry(params, [colorBuffer, depthBuffer], scale, width, height);
   }
 
   public get colorTexture() { return this._textures[0]; }

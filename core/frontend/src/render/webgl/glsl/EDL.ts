@@ -7,7 +7,7 @@
  */
 
 import { WebGLContext } from "@itwin/webgl-compatibility";
-import { EDLCalcAdv1Geometry, EDLCalcAdv2Geometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry } from "../CachedGeometry";
+import { EDLCalcEnhGeometry, EDLCalcFullGeometry, EDLFilterGeometry, EDLMixGeometry, EDLSimpleGeometry } from "../CachedGeometry";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -132,21 +132,21 @@ export function createEDLCalcAdv1Program(context: WebGLContext): ShaderProgram {
 
   frag.addUniform("u_texInfo", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_texInfo", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv1Geometry;
+      const geom = params.geometry as EDLCalcEnhGeometry;
       uniform.setUniform3fv(geom.texInfo);
     });
   });
 
   frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv1Geometry;
+      const geom = params.geometry as EDLCalcEnhGeometry;
       Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
     });
   });
 
   frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv1Geometry;
+      const geom = params.geometry as EDLCalcEnhGeometry;
       Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
     });
   });
@@ -205,21 +205,21 @@ export function createEDLCalcAdv2Program(context: WebGLContext): ShaderProgram {
 
   frag.addUniform("u_texInfo", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_texInfo", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv2Geometry;
+      const geom = params.geometry as EDLCalcFullGeometry;
       uniform.setUniform3fv(geom.texInfo);
     });
   });
 
   frag.addUniform("u_colorTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_colorTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv2Geometry;
+      const geom = params.geometry as EDLCalcFullGeometry;
       Texture2DHandle.bindSampler(uniform, geom.colorTexture, TextureUnit.Zero);
     });
   });
 
   frag.addUniform("u_depthTexture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("u_depthTexture", (uniform, params) => {
-      const geom = params.geometry as EDLCalcAdv2Geometry;
+      const geom = params.geometry as EDLCalcFullGeometry;
       Texture2DHandle.bindSampler(uniform, geom.depthTexture, TextureUnit.One);
     });
   });
