@@ -67,7 +67,7 @@ export namespace WorkspaceContainer {
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
-    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. */
+    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true*/
     syncOnConnect?: boolean;
   }
 
@@ -478,7 +478,7 @@ export class ITwinWorkspaceContainer implements WorkspaceContainer {
       return;
 
     cloudContainer.connect(this.workspace.cloudCache);
-    if (props.syncOnConnect) {
+    if (false !== props.syncOnConnect) {
       try {
         cloudContainer.checkForChanges();
       } catch (e: unknown) {
