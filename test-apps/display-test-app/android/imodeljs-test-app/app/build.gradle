@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.bentley.imodeljs_test_app"
@@ -33,11 +33,11 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
-    implementation 'com.github.itwin:mobile-native-android:3.5.5'
-    implementation 'androidx.webkit:webkit:1.4.0'
+    implementation 'com.github.itwin:mobile-native-android:3.5.6'
+    implementation 'androidx.webkit:webkit:1.5.0'
 }

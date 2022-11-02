@@ -61,8 +61,7 @@ class MainActivity : AppCompatActivity() {
         val frontend: MobileFrontend = object : MobileFrontend(host, "&standalone=true") {
             override fun supplyEntryPoint(): String {
                 // If you want to connect to a local dev server instead of the built-in frontend, return something like: "192.168.86.20:3000"
-                return "192.168.86.20:3000"
-//                return "https://appassets.androidplatform.net/assets/frontend/index.html"
+                return "https://appassets.androidplatform.net/assets/frontend/index.html"
             }
         }
 
