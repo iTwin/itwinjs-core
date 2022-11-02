@@ -1,6 +1,16 @@
 # Change Log - @itwin/editor-backend
 
-This log was last generated on Mon, 17 Oct 2022 20:06:51 GMT and should not be manually modified.
+This log was last generated on Fri, 28 Oct 2022 13:34:58 GMT and should not be manually modified.
+
+## 3.4.3
+Fri, 28 Oct 2022 13:34:58 GMT
+
+_Version update only_
+
+## 3.4.2
+Mon, 24 Oct 2022 13:23:45 GMT
+
+_Version update only_
 
 ## 3.4.1
 Mon, 17 Oct 2022 20:06:51 GMT

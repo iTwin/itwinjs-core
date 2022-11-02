@@ -111,6 +111,7 @@
     "@itwin/itwinui-icons-react": "^1.8.0",
     "@itwin/map-layers": "workspace:*",
     "@itwin/map-layers-auth": "workspace:*",
+    "@itwin/map-layers-formats": "workspace:*",
     "@itwin/presentation-backend": "workspace:*",
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-components": "workspace:*",

@@ -287,6 +287,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "@itwin/itwinui-icons-color-react",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "@itwin/itwinui-icons-react",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -304,6 +308,10 @@
     },
     {
       "name": "@itwin/map-layers-auth",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/map-layers-formats",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -707,6 +715,10 @@
       "allowedCategories": [ "backend", "frontend", "internal", "tools" ]
     },
     {
+      "name": "google-protobuf",
+      "allowedCategories": [ "extensions" ]
+    },
+    {
       "name": "https-browserify",
       "allowedCategories": [ "internal" ]
     },
@@ -957,10 +969,6 @@
     {
       "name": "react-window",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "recursive-readdir",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "redux",

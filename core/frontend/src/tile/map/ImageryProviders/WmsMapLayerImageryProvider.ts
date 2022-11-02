@@ -40,7 +40,8 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
 
   public override async initialize(): Promise<void> {
     try {
-      this._capabilities = await WmsCapabilities.create(this._baseUrl);
+      const credentials = (this._settings.userName && this._settings.password ? {user: this._settings.userName, password:  this._settings.password} : undefined);
+      this._capabilities = await WmsCapabilities.create(this._baseUrl, credentials);
       if (undefined !== this._capabilities) {
         this._allLayersRange = this._capabilities.cartoRange;
         if (this._capabilities.layer && Array.isArray(this._capabilities.layer.subLayers)) {

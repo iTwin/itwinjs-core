@@ -59,6 +59,7 @@ export * from "./map/WmsUtilities";
 export * from "./map/WmsCapabilities";
 export * from "./map/WmtsCapabilities";
 export * from "./map/MapLayerImageryProvider";
+export * from "./map/ImageryProviders/ArcGISImageryProvider";
 export * from "./map/ImageryProviders/ArcGISMapLayerImageryProvider";
 export * from "./map/ImageryProviders/AzureMapsLayerImageryProvider";
 export * from "./map/ImageryProviders/BingImageryProvider";
