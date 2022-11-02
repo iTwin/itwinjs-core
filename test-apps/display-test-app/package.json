@@ -71,6 +71,7 @@
     "@itwin/imodels-client-authoring": "^2.2.1",
     "@itwin/imodels-client-management": "^2.2.1",
     "@itwin/object-storage-core": "~1.4.0",
+    "@itwin/map-layers-formats": "workspace:*",
     "@itwin/reality-data-client": "0.9.0",
     "@itwin/webgl-compatibility": "workspace:*",
     "body-parser": "^1.18.2"

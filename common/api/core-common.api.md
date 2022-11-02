@@ -470,13 +470,17 @@ export type Base64EncodedString = string;
 // @public
 export namespace Base64EncodedString {
     const prefix = "encoding=base64;";
+    // (undocumented)
+    export function decode(src: string): Base64EncodedString;
+    // (undocumented)
+    export function encode(src: string, urlSafe?: boolean): Base64EncodedString;
     export function ensurePrefix(base64: string): Base64EncodedString;
     export function fromUint8Array(bytes: Uint8Array): Base64EncodedString;
     export function hasPrefix(str: string): boolean;
-    export function stripPrefix(base64: Base64EncodedString): string;
-    export function toUint8Array(base64: Base64EncodedString): Uint8Array;
     const reviver: (_name: string, value: any) => any;
     const replacer: (_name: string, value: any) => any;
+    export function stripPrefix(base64: Base64EncodedString): string;
+    export function toUint8Array(base64: Base64EncodedString): Uint8Array;
 }
 
 // @public
