@@ -30,7 +30,8 @@ jobs:
   - template: ci-core.yaml
     parameters:
       name: Node_18
-      nodeVersion: 18.12.0
+      nodeVersion: 18.12.x
+      buildIos: true
       pool:
         name: $(name)
         demands:
