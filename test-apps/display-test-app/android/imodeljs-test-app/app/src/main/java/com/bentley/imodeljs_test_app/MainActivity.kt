@@ -66,7 +66,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         // using a WebViewAssetLoader so that the localization json files load properly
-        // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in a newer version)
+        // the version of i18next-http-backend we're using tries to use the fetch API with file URL's (apparently fixed in version 2.0.1)
         val assetLoader = WebViewAssetLoader.Builder()
             .addPathHandler("/assets/", WebViewAssetLoader.AssetsPathHandler(this))
             .build()
