@@ -67,7 +67,7 @@ export namespace WorkspaceContainer {
   export interface Props extends Optional<CloudSqlite.ContainerProps, "accessToken"> {
     /** true if the container is public (doesn't require authentication) */
     isPublic?: boolean;
-    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true*/
+    /** attempt to synchronize (i.e. call `checkForChanges`) this cloud container whenever it is connected to a cloud cache. Default=true */
     syncOnConnect?: boolean;
   }
 
