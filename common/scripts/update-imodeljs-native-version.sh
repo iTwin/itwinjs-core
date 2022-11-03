@@ -53,7 +53,8 @@ PbxProj2="$RepoRoot/test-apps/display-test-app/ios/imodeljs-test-app/imodeljs-te
 
 for PbxProj in $PbxProj1 $PbxProj2
 do
-  sed -i "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
+  # Note: the '' seems to be required on MacOS to get around a strange "undefined label" error
+  sed -i '' "s/version = .*;/version = $AddonVersion;/" "$PbxProj"
 done
 
 # Update Android projects.
