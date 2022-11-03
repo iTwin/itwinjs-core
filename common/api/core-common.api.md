@@ -14,7 +14,7 @@ import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
 import { BentleyStatus } from '@itwin/core-bentley';
 import { BriefcaseStatus } from '@itwin/core-bentley';
-import { Buffer as Buffer_2 } from 'buffer';
+import type { Buffer as Buffer_2 } from 'buffer';
 import { ByteStream } from '@itwin/core-bentley';
 import { ChangeSetStatus } from '@itwin/core-bentley';
 import { ClipPlane } from '@itwin/core-geometry';
@@ -61,7 +61,7 @@ import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
-import { Readable } from 'stream';
+import type { Readable } from 'stream';
 import { RepositoryStatus } from '@itwin/core-bentley';
 import { RpcInterfaceStatus } from '@itwin/core-bentley';
 import type { TransferConfig } from '@itwin/object-storage-core/lib/common';
@@ -70,7 +70,7 @@ import { TransformProps } from '@itwin/core-geometry';
 import { Uint16ArrayBuilder } from '@itwin/core-bentley';
 import { Vector2d } from '@itwin/core-geometry';
 import { Vector3d } from '@itwin/core-geometry';
-import { Writable } from 'stream';
+import type { Writable } from 'stream';
 import { XAndY } from '@itwin/core-geometry';
 import { XYAndZ } from '@itwin/core-geometry';
 import { XYProps } from '@itwin/core-geometry';
@@ -384,10 +384,19 @@ export class B3dmHeader extends TileHeader {
     readonly length: number;
 }
 
+// @internal (undocumented)
+export type BackendBuffer = Buffer_2;
+
 // @public (undocumented)
 export class BackendError extends IModelError {
     constructor(errorNumber: number, name: string, message: string, getMetaData?: GetMetaDataFunction);
 }
+
+// @public (undocumented)
+export type BackendReadable = Readable;
+
+// @public (undocumented)
+export type BackendWritable = Writable;
 
 // @public
 export enum BackgroundFill {
@@ -3265,7 +3274,7 @@ export enum FontType {
 // @internal (undocumented)
 export interface FormDataCommon {
     // (undocumented)
-    append(name: string, value: string | Blob | Buffer_2, fileName?: string): void;
+    append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
 // @public
@@ -4263,7 +4272,7 @@ export enum HSVConstants {
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
 // @public
-export interface HttpServerRequest extends Readable {
+export interface HttpServerRequest extends BackendReadable {
     // (undocumented)
     aborted: boolean;
     // (undocumented)
@@ -4313,7 +4322,7 @@ export interface HttpServerRequest extends Readable {
 }
 
 // @public
-export interface HttpServerResponse extends Writable {
+export interface HttpServerResponse extends BackendWritable {
     // (undocumented)
     send(body?: any): HttpServerResponse;
     // (undocumented)
@@ -6247,6 +6256,22 @@ export interface PlanProjectionSettingsProps {
     transparency?: number;
 }
 
+// @internal (undocumented)
+export abstract class PlatformUtilities {
+    // (undocumented)
+    abstract getHostname(): string;
+    // (undocumented)
+    static get initialized(): boolean;
+    // (undocumented)
+    abstract isBackendBuffer(value: any): value is BackendBuffer;
+    // (undocumented)
+    protected static supplyUtilities(utilities: PlatformUtilities): void;
+    // (undocumented)
+    abstract toBase64(value: Uint8Array | string): string;
+    // (undocumented)
+    static get utilities(): PlatformUtilities;
+}
+
 // @internal
 export class PntsHeader extends TileHeader {
     constructor(stream: ByteStream);
@@ -6940,7 +6965,7 @@ export enum Rank {
 }
 
 // @internal (undocumented)
-export interface ReadableFormData extends Readable {
+export interface ReadableFormData extends BackendReadable {
     // (undocumented)
     getHeaders(): {
         [key: string]: any;
@@ -7678,6 +7703,8 @@ export class RpcControlChannel {
     // (undocumented)
     describeEndpoints(): Promise<RpcInterfaceEndpoints[]>;
     // (undocumented)
+    static ensureInitialized(): void;
+    // (undocumented)
     handleUnknownOperation(invocation: RpcInvocation, _error: any): boolean;
     // (undocumented)
     initialize(): void;
@@ -7823,9 +7850,15 @@ export class RpcMarshaling {
 
 // @internal
 export class RpcMultipart {
+    // (undocumented)
+    static backend: {
+        createStream(_value: RpcSerializedValue): ReadableFormData;
+        parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue>;
+        appendToForm(_form: FormDataCommon, _i: number, _buf: Uint8Array): void;
+    };
     static createForm(value: RpcSerializedValue): FormData;
-    static createStream(_value: RpcSerializedValue): ReadableFormData;
-    static parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue>;
+    static createStream(value: RpcSerializedValue): ReadableFormData;
+    static parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue>;
     // (undocumented)
     static writeValueToForm(form: FormDataCommon, value: RpcSerializedValue): void;
 }
@@ -8284,7 +8317,7 @@ export interface RpcSerializedValue {
     // (undocumented)
     objects: string;
     // (undocumented)
-    stream?: Readable;
+    stream?: BackendReadable;
 }
 
 // @internal (undocumented)
@@ -9908,6 +9941,12 @@ export const WEB_RPC_CONSTANTS: {
     MULTIPART: string;
 };
 
+// @internal (undocumented)
+export class WebAppRpcLogging {
+    // (undocumented)
+    static logProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Promise<void>;
+}
+
 // @internal
 export abstract class WebAppRpcProtocol extends RpcProtocol {
     constructor(configuration: RpcConfiguration);
@@ -9933,8 +9972,13 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
 export class WebAppRpcRequest extends RpcRequest {
     constructor(client: RpcInterface, operation: string, parameters: any[]);
     // (undocumented)
+    static backend: {
+        sendResponse: (_protocol: WebAppRpcProtocol, _request: SerializedRpcRequest, _fulfillment: RpcRequestFulfillment, _req: HttpServerRequest, _res: HttpServerResponse) => Promise<void>;
+        parseRequest: (_protocol: WebAppRpcProtocol, _req: HttpServerRequest) => Promise<SerializedRpcRequest>;
+    };
+    // (undocumented)
     protected computeRetryAfter(attempts: number): number;
-    protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
+    static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType;
     // (undocumented)
     protected handleUnknownResponse(code: number): void;
     // (undocumented)

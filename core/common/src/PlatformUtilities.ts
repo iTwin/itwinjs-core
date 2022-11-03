@@ -8,10 +8,10 @@ import type { Buffer } from "buffer"; // Must be "import type" to avoid polyfill
 
 const UTILITIES = Symbol.for("@itwin/core-common/PlatformUtilities");
 
-/** @internal */
+/** @public */
 export type BackendReadable = Readable;
 
-/** @internal */
+/** @public */
 export type BackendWritable = Writable;
 
 /** @internal */
