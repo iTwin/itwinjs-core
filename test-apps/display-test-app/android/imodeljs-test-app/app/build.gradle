@@ -36,5 +36,5 @@ dependencies {
     implementation 'com.google.android.material:material:1.6.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-ui:2.5.2'
-    implementation 'com.github.itwin:mobile-native-android:3.5.4'
+    implementation 'com.github.itwin:mobile-native-android:3.5.6'
 }
