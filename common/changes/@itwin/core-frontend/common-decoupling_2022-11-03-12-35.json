@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Removing node (runtime) dependencies from core-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
