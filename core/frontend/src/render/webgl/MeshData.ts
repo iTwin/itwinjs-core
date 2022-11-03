@@ -24,6 +24,7 @@ export class MeshData implements WebGLDisposable {
   public readonly hasFeatures: boolean;
   public readonly uniformFeatureId?: number; // Used strictly by BatchPrimitiveCommand.computeIsFlashed for flashing volume classification primitives.
   public readonly texture?: Texture;
+  public readonly normalMap?: Texture;
   public readonly materialInfo?: MaterialInfo;
   public readonly type: SurfaceType;
   public readonly fillFlags: FillFlags;
@@ -44,6 +45,8 @@ export class MeshData implements WebGLDisposable {
 
     if (undefined !== params.surface.textureMapping) {
       this.texture = params.surface.textureMapping.texture as Texture;
+      // TODO: (Marc) Need to set normal map somehow. For now can comment out above line and uncomment out line below.
+      // this.normalMap = params.surface.textureMapping.texture as Texture;
       this._textureAlwaysDisplayed = params.surface.textureMapping.alwaysDisplayed;
     } else {
       this.texture = undefined;

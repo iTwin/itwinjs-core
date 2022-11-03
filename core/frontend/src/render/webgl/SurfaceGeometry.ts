@@ -61,6 +61,7 @@ export class SurfaceGeometry extends MeshGeometry {
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
   public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
+  public get hasNormalMap() { return this.isLit && this.isTexturedType && undefined !== this.normalMap; }
   public get isGlyph() { return this.mesh.isGlyph; }
   public override get alwaysRenderTranslucent() { return this.isGlyph; }
   public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
@@ -206,6 +207,10 @@ export class SurfaceGeometry extends MeshGeometry {
     return this.wantTextures(params.target, this.hasTexture);
   }
 
+  public useNormalMap(params: ShaderProgramParams): boolean {
+    return this.wantNormalMaps(params.target, this.hasNormalMap);
+  }
+
   public computeSurfaceFlags(params: ShaderProgramParams, flags: Int32Array): void {
     const target = params.target;
     const vf = target.currentViewFlags;
@@ -215,7 +220,6 @@ export class SurfaceGeometry extends MeshGeometry {
     flags[SurfaceBitIndex.HasMaterialAtlas] = useMaterial && this.hasMaterialAtlas ? 1 : 0;
 
     flags[SurfaceBitIndex.ApplyLighting] = 0;
-    flags[SurfaceBitIndex.HasNormalMap] = 0;
     flags[SurfaceBitIndex.HasColorAndNormal] = 0;
     if (this.isLit) {
       flags[SurfaceBitIndex.HasNormals] = 1;
@@ -233,6 +237,7 @@ export class SurfaceGeometry extends MeshGeometry {
     }
 
     flags[SurfaceBitIndex.HasTexture] = this.useTexture(params) ? 1 : 0;
+    flags[SurfaceBitIndex.HasNormalMap] = this.useNormalMap(params) ? 1 : 0;
 
     // The transparency threshold controls how transparent a surface must be to allow light to pass through; more opaque surfaces cast shadows.
     flags[SurfaceBitIndex.TransparencyThreshold] = params.target.isDrawingShadowMap ? 1 : 0;
@@ -293,6 +298,20 @@ export class SurfaceGeometry extends MeshGeometry {
         return FillFlags.Always === (fill & FillFlags.Always) || (flags.fill && FillFlags.ByView === (fill & FillFlags.ByView));
       default:
         return FillFlags.Always === (fill & FillFlags.Always);
+    }
+  }
+
+  private wantNormalMaps(target: Target, normalMapExists: boolean): boolean {
+    if (!normalMapExists)
+      return false;
+
+    const flags = target.currentViewFlags;
+
+    switch (flags.renderMode) {
+      case RenderMode.SmoothShade:
+        return flags.textures;
+      default:
+        return false;
     }
   }
 }
