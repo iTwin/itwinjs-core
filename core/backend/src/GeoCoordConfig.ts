@@ -36,7 +36,6 @@ export class GeoCoordConfig {
     const dbProps = ws.resolveDatabase(gcsDbAlias) as GcsDbProps;
     const containerProps = ws.resolveContainer(dbProps.containerName);
     const account = ws.resolveAccount(containerProps.accountName);
-    containerProps.syncOnConnect = true;
     try {
       const container = ws.getContainer(containerProps, account);
       const cloudContainer = container.cloudContainer;
