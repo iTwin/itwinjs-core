@@ -1941,6 +1941,41 @@ describe("IModelTransformer", () => {
     }
   });
 
+  it.only("handles nested schema references during schema export", async () => {
+    const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "NestedSchemaOrderSrc.bim");
+    const sourceDb  = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "NestedSchemaOrderSrc" } });
+
+    const testSchema1 = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+        <ECSchemaReference name="Units" version="01.00.05" alias="u"/>
+      </ECSchema>`;
+
+    const testSchema2 = `
+      <?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema2" alias="ts2" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="TestSchema1" version="01.00" alias="ts1"/>
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+          </ECEntityClass>
+      </ECSchema>`;
+
+    await sourceDb.importSchemaStrings([testSchema1, testSchema2]);
+    sourceDb.saveChanges();
+
+    const targetDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "AspectIdOrderTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "AspectIdOrderTarget" } });
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    assert.isTrue(transformer.context.isBetweenIModels);
+    // no need to expect.eventually.fulfilled, because chai-as-promised ellipses long error messages so best
+    // to just let it throw itself since that's what we're testing
+    await transformer.processSchemas();
+    transformer.dispose();
+  });
+
   /** unskip to generate a javascript CPU profile on just the processAll portion of an iModel */
   it.skip("should profile an IModel transformation", async function () {
     const sourceDbFile = IModelTransformerTestUtils.prepareOutputFile("IModelTransformer", "ProfileTransformation.bim");
