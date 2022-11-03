@@ -6,9 +6,8 @@
  * @module RpcInterface
  */
 
-import { Buffer } from "buffer";
-import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
+import { BackendReadable, PlatformUtilities } from "../../PlatformUtilities";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
@@ -36,7 +35,7 @@ export interface RpcSerializedValue {
   objects: string;
   data: Uint8Array[];
   chunks?: number;
-  stream?: Readable;
+  stream?: BackendReadable;
 }
 
 /** @internal */
@@ -116,7 +115,7 @@ class WireFormat {
   }
 
   private static marshalBinary(value: any): any {
-    if (value instanceof Uint8Array || Buffer.isBuffer(value)) {
+    if (value instanceof Uint8Array || PlatformUtilities.utilities.isBackendBuffer(value)) {
       const marker: MarshalingBinaryMarker = { isBinary: true, index: -1, size: value.byteLength, chunks: 1 };
 
       if (chunkThreshold && value.byteLength > chunkThreshold) {

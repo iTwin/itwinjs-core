@@ -8,6 +8,7 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { PlatformUtilities } from "../../PlatformUtilities";
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcProtocolEvent } from "../core/RpcConstants";
 import { RpcInvocation } from "../core/RpcInvocation";
@@ -15,24 +16,6 @@ import { RpcOperation } from "../core/RpcOperation";
 import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-
-let hostname = "";
-function getHostname(): string {
-  if (!hostname) {
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const os = require("os");
-      hostname = os.hostname();
-    } catch (_) {
-      if (globalThis.window) {
-        hostname = globalThis.window.location.host;
-      } else {
-        hostname = "imodeljs-mobile";
-      }
-    }
-  }
-  return hostname;
-}
 
 /** @internal */
 export class WebAppRpcLogging {
@@ -98,7 +81,7 @@ export class WebAppRpcLogging {
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: object.id, // eslint-disable-line @typescript-eslint/naming-convention
       TimeElapsed: ("elapsed" in object) ? object.elapsed : 0, // eslint-disable-line @typescript-eslint/naming-convention
-      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: PlatformUtilities.utilities.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -116,7 +99,7 @@ export class WebAppRpcLogging {
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: object.id, // eslint-disable-line @typescript-eslint/naming-convention
       TimeElapsed: elapsed, // eslint-disable-line @typescript-eslint/naming-convention
-      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: PlatformUtilities.utilities.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -130,7 +113,7 @@ export class WebAppRpcLogging {
       path: request.path,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: request.id, // eslint-disable-line @typescript-eslint/naming-convention
-      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: PlatformUtilities.utilities.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }
@@ -148,7 +131,7 @@ export class WebAppRpcLogging {
       errorMessage,
       // Alert! The following properties are required by Bentley DevOps standards. Do not change their names!
       ActivityId: invocation.request.id, // eslint-disable-line @typescript-eslint/naming-convention
-      MachineName: getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
+      MachineName: PlatformUtilities.utilities.getHostname(), // eslint-disable-line @typescript-eslint/naming-convention
       ...pathIds,
     }));
   }

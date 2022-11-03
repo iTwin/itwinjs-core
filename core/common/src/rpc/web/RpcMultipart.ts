@@ -6,19 +6,18 @@
  * @module RpcInterface
  */
 
-import { Buffer } from "buffer";
-import { Readable } from "stream";
 import { BentleyStatus, IModelError } from "../../IModelError";
+import { BackendBuffer, BackendReadable } from "../../PlatformUtilities";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
 import { HttpServerRequest } from "../web/WebAppRpcProtocol";
 
 /** @internal */
 export interface FormDataCommon {
-  append(name: string, value: string | Blob | Buffer, fileName?: string): void;
+  append(name: string, value: string | Blob | BackendBuffer, fileName?: string): void;
 }
 
 /** @internal */
-export interface ReadableFormData extends Readable {
+export interface ReadableFormData extends BackendReadable {
   getHeaders(): { [key: string]: any };
 }
 
@@ -34,13 +33,13 @@ export class RpcMultipart {
   }
 
   /** Creates a multipart stream for an RPC value. */
-  public static createStream(_value: RpcSerializedValue): ReadableFormData {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  public static createStream(value: RpcSerializedValue): ReadableFormData {
+    return this.backend.createStream(value);
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
-  public static async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
-    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  public static async parseRequest(req: HttpServerRequest): Promise<RpcSerializedValue> {
+    return this.backend.parseRequest(req);
   }
 
   /** @internal */
@@ -52,8 +51,21 @@ export class RpcMultipart {
         form.append(`data-${i}`, new Blob([value.data[i]], { type: "application/octet-stream" }));
       } else {
         const buf = value.data[i];
-        form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
+        this.backend.appendToForm(form, i, buf);
       }
     }
   }
+
+  /** @internal */
+  public static backend = {
+    createStream(_value: RpcSerializedValue): ReadableFormData {
+      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    },
+    async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
+      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    },
+    appendToForm(_form: FormDataCommon, _i: number, _buf: Uint8Array): void {
+      throw new IModelError(BentleyStatus.ERROR, "Not bound.");
+    },
+  };
 }

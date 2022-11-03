@@ -6,7 +6,7 @@
  * @module IpcSocket
  */
 
-import { Buffer } from "buffer";
+import { PlatformUtilities } from "../PlatformUtilities";
 import { IpcWebSocketMessage } from "./IpcWebSocket";
 
 let parts: any[] = [];
@@ -73,7 +73,7 @@ export abstract class IpcWebSocketTransport {
 interface Marker { ipc: "binary", type: number, index: number }
 const types = [Uint8Array, Int8Array, Uint8ClampedArray, Int16Array, Uint16Array, Int32Array, Uint32Array, Float32Array, Float64Array, DataView];
 function identify(value: any) {
-  return Buffer.isBuffer(value) ? 0 : types.indexOf(value.constructor);
+  return PlatformUtilities.utilities.isBackendBuffer(value) ? 0 : types.indexOf(value.constructor);
 }
 
 function lookup(value: Marker) {
@@ -98,7 +98,7 @@ function reviver(_key: string, value: any) {
 }
 
 function replaceBinary(value: any): Marker | undefined {
-  if (ArrayBuffer.isView(value) || Buffer.isBuffer(value)) {
+  if (ArrayBuffer.isView(value) || PlatformUtilities.utilities.isBackendBuffer(value)) {
     const index = parts.push(value) - 1;
     const type = identify(value);
     return { ipc: "binary", type, index };

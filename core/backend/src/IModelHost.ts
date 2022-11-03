@@ -35,6 +35,7 @@ import { TileStorage } from "./TileStorage";
 import { BaseSettings, SettingDictionary, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { ITwinWorkspace, Workspace, WorkspaceOpts } from "./workspace/Workspace";
+import { PlatformUtilitiesBackend } from "./PlatformUtilitiesBackend";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -189,7 +190,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileLoadTimeThreshold = 40;
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
-  public  static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
 
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
@@ -407,6 +408,8 @@ export class IModelHost {
     if (this._isValid)
       return; // we're already initialized
     this._isValid = true;
+
+    PlatformUtilitiesBackend.initialize();
 
     options = options ?? {};
     if (IModelHost.sessionId === "")

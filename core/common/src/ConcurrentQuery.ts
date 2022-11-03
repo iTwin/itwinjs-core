@@ -7,7 +7,7 @@
  */
 import { BentleyError, CompressedId64Set, DbResult, Id64, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { Buffer } from "buffer";
+import { PlatformUtilities } from "./PlatformUtilities";
 
 /**
  * Specifies the format of the rows returned by the `query` and `restartQuery` methods of
@@ -239,7 +239,7 @@ export class QueryBinder {
   public bindBlob(indexOrName: string | number, val: Uint8Array) {
     this.verify(indexOrName);
     const name = String(indexOrName);
-    const base64 = Buffer.from(val).toString("base64");
+    const base64 = PlatformUtilities.utilities.toBase64(val);
     Object.defineProperty(this._args, name, {
       enumerable: true, value: {
         type: QueryParamType.Blob,
